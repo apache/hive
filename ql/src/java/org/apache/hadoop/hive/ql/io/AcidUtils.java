@@ -2343,6 +2343,7 @@ public class AcidUtils {
    */
   public static void setValidWriteIdList(Configuration conf, TableScanDesc tsDesc) {
     if (tsDesc.isTranscationalTable()) {
+      String catName = tsDesc.getCatalogName();
       String dbName = tsDesc.getDatabaseName();
       String tableName = tsDesc.getTableName();
       ValidWriteIdList validWriteIdList = getTableValidWriteIdList(conf,
@@ -2484,7 +2485,11 @@ public class AcidUtils {
   }
 
   public static String getFullTableName(String dbName, String tableName) {
-    return TableName.fromString(tableName, null, dbName).getNotEmptyDbTable().toLowerCase();
+    return getFullTableName(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName);
+  }
+
+  public static String getFullTableName(String catName, String dbName, String tableName) {
+    return TableName.fromString(tableName, catName, dbName, null).getQualified().toLowerCase();
   }
 
   /**

@@ -400,8 +400,8 @@ class DriverTxnHandler {
       // conditions in ACID. This case is supported only for single source query.
       Operator<?> source = driverContext.getPlan().getFetchTask().getWork().getSource();
       if (source instanceof TableScanOperator tsOp) {
-        String fullTableName = AcidUtils.getFullTableName(tsOp.getConf().getDatabaseName(),
-            tsOp.getConf().getTableName());
+        String fullTableName = AcidUtils.getFullTableName(tsOp.getConf().getCatalogName(),
+            tsOp.getConf().getDatabaseName(), tsOp.getConf().getTableName());
         ValidWriteIdList writeIdList = txnWriteIds.getTableValidWriteIdList(fullTableName);
         if (tsOp.getConf().isTranscationalTable() && (writeIdList == null)) {
           throw new IllegalStateException(String.format(
@@ -514,7 +514,7 @@ class DriverTxnHandler {
     default:
       return;
     }
-    String fullTableName = AcidUtils.getFullTableName(table.getDbName(), table.getTableName());
+    String fullTableName = AcidUtils.getFullTableName(table.getCatName(), table.getDbName(), table.getTableName());
     tables.put(fullTableName, table);
   }
 

@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -66,6 +67,7 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
   public void cleanupAfterAbortedAndRetriedMajorCompaction() throws Exception {
     Table t = prepareTestTable("camtc");
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     long compactTxn = compactInTxn(rqst, CommitAction.ABORT);
     addBaseFile(t, null, 25L, 25, compactTxn);
 
@@ -90,6 +92,7 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
   public void cleanupAfterKilledAndRetriedMajorCompaction() throws Exception {
     Table t = prepareTestTable("camtc");
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     long compactTxn1 = compactInTxn(rqst, CommitAction.NONE);
     addBaseFile(t, null, 25L, 25, compactTxn1);
 
@@ -141,6 +144,7 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
   public void cleanupAndDanglingOpenTxnOnSameTable() throws Exception {
     Table t = prepareTestTable("camtc");
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     long compactTxn = compactInTxn(rqst, CommitAction.MARK_COMPACTED);
     addBaseFile(t, null, 25L, 25, compactTxn);
 
@@ -219,7 +223,7 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 25L, 25, 2);
 
-    burnThroughTransactions("default", tblName, 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", tblName, 25);
     return t;
   }
 

@@ -1138,7 +1138,7 @@ public class Table implements Serializable {
   }
 
   public String getFullyQualifiedName() {
-    return Warehouse.getQualifiedName(tTable);
+    return Warehouse.getCatalogQualifiedTableName(tTable);
   }
 
   /**

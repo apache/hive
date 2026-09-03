@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -41,6 +42,7 @@ public class ShowCompactionsDesc implements DDLDesc, Serializable {
     private String resFile;
     private long compactionId;
     private final String poolName;
+    private final String catName;
     private final String dbName;
     private final String tbName;
     private final String compactionType;
@@ -50,11 +52,13 @@ public class ShowCompactionsDesc implements DDLDesc, Serializable {
     private final String orderBy;
 
 
-    public ShowCompactionsDesc(Path resFile, long compactionId, String dbName, String tbName, String poolName, String compactionType,
-                               String compactionStatus, Map<String, String> partSpec, short limit, String orderBy) {
+    public ShowCompactionsDesc(Path resFile, long compactionId, String catName, String dbName, String tbName,
+                               String poolName, String compactionType, String compactionStatus,
+                               Map<String, String> partSpec, short limit, String orderBy) {
         this.resFile = resFile.toString();
         this.compactionId = compactionId;
         this.poolName = poolName;
+        this.catName = catName;
         this.dbName = dbName;
         this.tbName = tbName;
         this.compactionType = compactionType;
@@ -74,6 +78,10 @@ public class ShowCompactionsDesc implements DDLDesc, Serializable {
     @Explain(displayName = "poolName", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED})
     public String getPoolName() {
         return poolName;
+    }
+    @Explain(displayName = "catName", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED})
+    public String getCatName() {
+      return catName;
     }
     @Explain(displayName = "dbName", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED})
     public String getDbName() {

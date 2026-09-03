@@ -37,7 +37,7 @@ public class GetCompactionInfoHandler implements QueryHandler<CompactionInfo> {
 
   // language=SQL
   public static final String SELECT_BY_ID = 
-      "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+      "SELECT \"CQ_ID\", \"CQ_CATALOG\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
       + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
       + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
       + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
@@ -46,7 +46,7 @@ public class GetCompactionInfoHandler implements QueryHandler<CompactionInfo> {
 
   // language=SQL
   public static final String SELECT_BY_TXN_ID =
-      "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+      "SELECT \"CQ_ID\", \"CQ_CATALOG\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
           + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
           + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
           + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
@@ -73,6 +73,7 @@ public class GetCompactionInfoHandler implements QueryHandler<CompactionInfo> {
     if (rs.next()) {
       CompactionInfo fullCi = new CompactionInfo();
       fullCi.id = rs.getLong("CQ_ID");
+      fullCi.catName = rs.getString("CQ_CATALOG");
       fullCi.dbname = rs.getString("CQ_DATABASE");
       fullCi.tableName = rs.getString("CQ_TABLE");
       fullCi.partName = rs.getString("CQ_PARTITION");

@@ -112,7 +112,7 @@ public abstract class TaskHandler {
   protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo info, ValidTxnList validTxnList)
       throws Exception {
     List<String> tblNames = Collections.singletonList(
-        TxnUtils.getFullTableName(info.dbname, info.tableName));
+        TxnUtils.getFullTableName(info.catName, info.dbname, info.tableName));
 
     GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
     request.setValidTxnList(validTxnList.writeToString());
@@ -158,7 +158,7 @@ public abstract class TaskHandler {
 
     if (!deleted.isEmpty()) {
       AcidMetricService.updateMetricsFromCleaner(
-          info.dbname, info.tableName, info.partName, dir.getObsolete(), getConf(),
+          info.catName, info.dbname, info.tableName, info.partName, dir.getObsolete(), getConf(),
           txnHandler);
     }
 

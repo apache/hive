@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -77,10 +78,12 @@ public class TestInitiator extends CompactorTest {
   public void recoverFailedWorkers() throws Exception {
     Table t = newTable("default", "rflw1", false);
     CompactionRequest rqst = new CompactionRequest("default", "rflw1", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     txnHandler.compact(rqst);
 
     t = newTable("default", "rflw2", false);
     rqst = new CompactionRequest("default", "rflw2", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     txnHandler.compact(rqst);
 
     txnHandler.findNextToCompact(aFindNextCompactRequest(ServerUtils.hostname() + "-193892", WORKER_VERSION));
@@ -321,6 +324,7 @@ public class TestInitiator extends CompactorTest {
     }
 
     CompactionRequest rqst = new CompactionRequest("default", "ncwcas", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     txnHandler.compact(rqst);
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
@@ -347,7 +351,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "cthdp", 23);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cthdp", 23);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
@@ -358,7 +362,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "cthdp", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cthdp", txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -381,7 +385,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2);
     addDeltaFile(t, p, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "cphdp", 23);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cphdp", 23);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
@@ -393,7 +397,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "cphdp", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cphdp", txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -417,7 +421,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2);
     addDeltaFile(t, p, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "test_table", 23);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "test_table", 23);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
@@ -429,7 +433,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "test_table", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "test_table", txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -452,7 +456,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "nctdpnhe", 53);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "nctdpnhe", 53);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
@@ -463,7 +467,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "nctdpnhe", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "nctdpnhe", txnid);
     Assert.assertEquals(54, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -490,7 +494,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, null, 210L, 210L, 1);
     addDeltaFile(t, null, 211L, 211L, 1);
 
-    burnThroughTransactions("default", "cttmd", 210);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cttmd", 210);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
@@ -501,7 +505,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "cttmd", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cttmd", txnid);
     Assert.assertEquals(211, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -533,7 +537,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, p, 210L, 210L, 1);
     addDeltaFile(t, p, 211L, 211L, 1);
 
-    burnThroughTransactions("default", "cptmd", 210);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cptmd", 210);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
@@ -545,7 +549,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "cptmd", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cptmd", txnid);
     Assert.assertEquals(211, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -568,7 +572,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, null, 201L, 205L, 5);
     addDeltaFile(t, null, 206L, 211L, 6);
 
-    burnThroughTransactions("default", "nctned", 210);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "nctned", 210);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
@@ -579,7 +583,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "nctned", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "nctned", txnid);
     Assert.assertEquals(211, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -606,7 +610,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, null, 300L, 310L, 11);
     addDeltaFile(t, null, 311L, 321L, 11);
 
-    burnThroughTransactions("default", "cmomwbv", 320);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cmomwbv", 320);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
@@ -617,7 +621,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "cmomwbv", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "cmomwbv", txnid);
     Assert.assertEquals(321, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -648,7 +652,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, p, 210L, 210L, 1);
     addDeltaFile(t, p, 211L, 211L, 1);
 
-    burnThroughTransactions("default", "ednb", 210);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "ednb", 210);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
@@ -660,7 +664,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "ednb", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "ednb", txnid);
     Assert.assertEquals(211, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -684,7 +688,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2);
     addDeltaFile(t, p, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "ttospgocr", 23);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "ttospgocr", 23);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
@@ -696,7 +700,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "ttospgocr", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "ttospgocr", txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -710,7 +714,7 @@ public class TestInitiator extends CompactorTest {
     req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     res = txnHandler.lock(req);
-    writeid = allocateWriteId("default", "ttospgocr", txnid);
+    writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "ttospgocr", txnid);
     Assert.assertEquals(25, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -734,7 +738,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2);
     addDeltaFile(t, p, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "nctdp", 23);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "nctdp", 23);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
@@ -745,7 +749,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "nctdp", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "nctdp", txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -764,7 +768,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "dt", 23);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "dt", 23);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
@@ -775,7 +779,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "dt", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "dt", txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -797,7 +801,7 @@ public class TestInitiator extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2);
     addDeltaFile(t, p, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "dp", 23);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "dp", 23);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
@@ -809,7 +813,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "dp", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "dp", txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -839,7 +843,7 @@ public class TestInitiator extends CompactorTest {
       comp.setOperationType(DataOperationType.UPDATE);
       components.add(comp);
     }
-    burnThroughTransactions("default", "dp", 23);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "dp", 23);
     long txnid = openTxn();
 
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -847,7 +851,7 @@ public class TestInitiator extends CompactorTest {
     LockResponse res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
 
-    long writeid = allocateWriteId("default", "dp", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "dp", txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
@@ -867,7 +871,7 @@ public class TestInitiator extends CompactorTest {
     addBaseFile(t, null, 50L, 50);
     addBaseFile(t, null, 100L, 50);
 
-    burnThroughTransactions("default", "nctdpnhe", 102);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "nctdpnhe", 102);
 
     long txnid = openTxn();
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
@@ -878,7 +882,7 @@ public class TestInitiator extends CompactorTest {
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
-    long writeid = allocateWriteId("default", "nctdpnhe", txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", "nctdpnhe", txnid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -1090,7 +1094,7 @@ public class TestInitiator extends CompactorTest {
       comp.setOperationType(DataOperationType.UPDATE);
       components.add(comp);
     }
-    burnThroughTransactions(dbname, tableName, 23);
+    allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbname, tableName, 23);
     long txnid = openTxn();
 
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -1098,7 +1102,7 @@ public class TestInitiator extends CompactorTest {
     LockResponse res = txnHandler.lock(req);
     Assert.assertEquals(LockState.ACQUIRED, res.getState());
 
-    long writeid = allocateWriteId(dbname, tableName, txnid);
+    long writeid = allocateWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbname, tableName, txnid);
     Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 

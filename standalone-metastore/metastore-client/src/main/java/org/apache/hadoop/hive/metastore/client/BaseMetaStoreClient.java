@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.utils.HiveMetaStoreClientUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -243,6 +244,7 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  @Deprecated
   public final void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
       throws MetaException, TException {
     updateCreationMetadata(getDefaultCatalog(conf), dbName, tableName, cm);
@@ -740,7 +742,12 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public final long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
-    return allocateTableWriteId(txnId, dbName, tableName, false);
+    return allocateTableWriteId(txnId, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, false);
+  }
+
+  @Override
+  public final long allocateTableWriteId(long txnId, String catName, String dbName, String tableName) throws TException {
+    return allocateTableWriteId(txnId, catName, dbName, tableName, false);
   }
 
   @Override

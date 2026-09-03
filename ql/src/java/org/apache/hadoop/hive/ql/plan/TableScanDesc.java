@@ -131,6 +131,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
 
+  private String catName = null;
   private String dbName = null;
   private String tableName = null;
 
@@ -183,6 +184,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     this.tableMetadata = tblMetadata;
 
     if (tblMetadata != null) {
+      catName = tblMetadata.getCatName();
       dbName = tblMetadata.getDbName();
       tableName = tblMetadata.getTableName();
       numBuckets = tblMetadata.getNumBuckets();
@@ -225,6 +227,11 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   @Explain(displayName = "database", jsonOnly = true)
   public String getDatabaseName() {
     return this.dbName;
+  }
+
+  @Explain(displayName = "catalog", jsonOnly = true)
+  public String getCatalogName() {
+    return this.catName;
   }
 
   @Explain(displayName = "columns", jsonOnly = true)
@@ -466,7 +473,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   @Signature
   public String getQualifiedTable() {
-    return dbName + "." + tableName;
+    return catName + "." + dbName + "." + tableName;
   }
 
   public Table getTableMetadata() {

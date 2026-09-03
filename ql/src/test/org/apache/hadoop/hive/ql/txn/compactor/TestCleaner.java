@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -117,9 +118,10 @@ public class TestCleaner extends CompactorTest {
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
-    burnThroughTransactions("default", "retry_test", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "retry_test", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "retry_test", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     long compactTxn = compactInTxn(rqst);
     addBaseFile(t, null, 25L, 25, compactTxn);
 
@@ -189,9 +191,10 @@ public class TestCleaner extends CompactorTest {
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
-    burnThroughTransactions("default", "retry_test", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "retry_test", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "retry_test", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     long compactTxn = compactInTxn(rqst);
     addBaseFile(t, null, 25L, 25, compactTxn);
 
@@ -239,9 +242,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "camtc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "camtc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     long compactTxn = compactInTxn(rqst);
     addBaseFile(t, null, 25L, 25, compactTxn);
 
@@ -267,9 +271,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addBaseFile(t, null, 25L, 25); //IOW
 
-    burnThroughTransactions("default", "camtc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "camtc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     long compactTxn = compactInTxn(rqst);
     addBaseFile(t, null, 25L, 25, compactTxn);
 
@@ -294,9 +299,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
 
-    burnThroughTransactions("default", "camtc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "camtc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     long compactTxn = compactInTxn(rqst, CommitAction.MARK_COMPACTED);
     addBaseFile(t, null, 25L, 25, 26);
 
@@ -343,9 +349,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addBaseFile(t, p, 25L, 25);
 
-    burnThroughTransactions("default", "campc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "campc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "campc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
 
@@ -371,9 +378,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "camitc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "camitc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "camitc", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
 
     startCleaner();
@@ -410,9 +418,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "camipc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "camipc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
 
@@ -449,9 +458,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addBaseFile(t, p, 25L, 25);
 
-    burnThroughTransactions("default", "campcnb", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "campcnb", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "campcnb", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
 
@@ -476,9 +486,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addBaseFile(t, null, 25L, 25);
 
-    burnThroughTransactions("default", "dt", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dt", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dt", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
 
     // Drop table will clean the table entry from the compaction queue and hence cleaner have no effect
@@ -500,9 +511,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addBaseFile(t, p, 25L, 25);
 
-    burnThroughTransactions("default", "dp", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dp", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dp", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
 
@@ -531,9 +543,10 @@ public class TestCleaner extends CompactorTest {
       partitions.add(p);
     }
 
-    burnThroughTransactions("default", "camipc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "camipc", 25);
     for (int i = 0; i < 10; i++) {
       CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
+      rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
       rqst.setPartitionname("ds=today" + i);
       compactInTxn(rqst);
     }
@@ -574,9 +587,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addBaseFile(t, null, 25L, 25);
 
-    burnThroughTransactions("default", "dcamc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dcamc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dcamc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
 
     conf.setBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, true);
@@ -614,9 +628,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "dcamicop", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dcamicop", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dcamicop", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
 
@@ -666,16 +681,17 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 21L, 21L, 1);
     addDeltaFile(t, p, 22L, 22L, 1);
 
-    burnThroughTransactions("default", "dcamimcop", 22);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dcamimcop", 22);
 
     CompactionRequest rqst = new CompactionRequest("default", "dcamimcop", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
     addDeltaFile(t, p, 21L, 22L, 2);
 
     // one more delta after compact
     addDeltaFile(t, p, 23L, 23L, 1);
-    burnThroughTransactions("default", "dcamimcop", 1);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dcamimcop", 1);
 
     conf.setBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, true);
     conf.setTimeVar(HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 5, TimeUnit.SECONDS);
@@ -684,6 +700,7 @@ public class TestCleaner extends CompactorTest {
     Thread.sleep(conf.getTimeVar(HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS));
 
     rqst = new CompactionRequest("default", "dcamimcop", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     long compactTxn = compactInTxn(rqst);
     addBaseFile(t, p, 23L, 23, compactTxn);
@@ -736,7 +753,7 @@ public class TestCleaner extends CompactorTest {
     addBaseFile(t, p, 20L, 20);
     addDeltaFile(t, p, 21L, 21L, 1);
     addDeltaFile(t, p, 22L, 22L, 1);
-    burnThroughTransactions(dbName, tblName, 22);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 22);
 
     // block cleaner with an open txn
     long blockingTxn = openTxn();
@@ -744,6 +761,7 @@ public class TestCleaner extends CompactorTest {
         .registerMinOpenWriteId(dbName, tblName, blockingTxn);
 
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partName);
     long compactTxn = compactInTxn(rqst);
     addDeltaFile(t, p, 21, 22, 2);
@@ -763,8 +781,9 @@ public class TestCleaner extends CompactorTest {
     // major compaction
     addDeltaFile(t, p, 23L, 23L, 1);
     addDeltaFile(t, p, 24L, 24L, 1);
-    burnThroughTransactions(dbName, tblName, 2, null, new HashSet<>(Collections.singletonList(compactTxn + 1)));
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 2, null, new HashSet<>(Collections.singletonList(compactTxn + 1)));
     rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partName);
     compactTxn = compactInTxn(rqst);
     addBaseFile(t, p, 24, 24, compactTxn);
@@ -818,9 +837,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addBaseFile(t, null, 25L, 25);
 
-    burnThroughTransactions("default", "dcamc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dcamc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dcamc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
 
     startCleaner();
@@ -838,6 +858,7 @@ public class TestCleaner extends CompactorTest {
     t.getParameters().put("no_cleanup", "false");
     ms.alter_table("default", "dcamc", t);
     rqst = new CompactionRequest("default", "dcamc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
 
     startCleaner();
@@ -864,9 +885,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "dcamicop", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dcamicop", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dcamicop", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
 
@@ -886,6 +908,7 @@ public class TestCleaner extends CompactorTest {
     p.getParameters().put("NO_CLEANUP", "false");
     ms.alter_partition("default", "dcamicop", p);
     rqst = new CompactionRequest("default", "dcamicop", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
 
@@ -921,9 +944,10 @@ public class TestCleaner extends CompactorTest {
 
     addBaseFile(t, null, 25L, 25);
 
-    burnThroughTransactions("default", "dcamc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dcamc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dcamc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
 
     startCleaner();
@@ -941,12 +965,13 @@ public class TestCleaner extends CompactorTest {
 
     addBaseFile(t, null, 25L, 25);
 
-    burnThroughTransactions("default", "dcamc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dcamc", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dcamc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
 
-    burnThroughTransactions("default", "dcamc", 1);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "dcamc", 1);
     addBaseFile(t, null, 26L, 26);
 
     startCleaner();
@@ -968,9 +993,10 @@ public class TestCleaner extends CompactorTest {
     Table t = newTable(dbName, tableName, false);
 
     addBaseFile(t, null, 20L, 20);
-    burnThroughTransactions(dbName, tableName, 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, 25);
 
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
 
     long compactTxn = compactInTxn(rqst);
     addBaseFile(t, null, 25L, 25, compactTxn);
@@ -989,9 +1015,10 @@ public class TestCleaner extends CompactorTest {
 
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
-    burnThroughTransactions(dbName, tableName, 22);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, 22);
 
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     addBaseFile(t, null, 22L, 22);
     compactInTxn(rqst);
 
@@ -1021,9 +1048,10 @@ public class TestCleaner extends CompactorTest {
     addBaseFile(t, null, 20L, 1);
     addDeltaFile(t, null, 21L, 21L, 2);
     addDeltaFile(t, null, 22L, 22L, 2);
-    burnThroughTransactions(dbName, tableName, 22, null, new HashSet<>(Arrays.asList(21L, 22L)));
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, 22, null, new HashSet<>(Arrays.asList(21L, 22L)));
 
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
 
     compactInTxn(rqst);
     CompactionResponse response = txnHandler.compact(rqst);
@@ -1052,9 +1080,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, null, 20L, 20L, 1);
     addDeltaFile(t, null, 21L, 21L, 2);
     addDeltaFile(t, null, 22L, 22L, 2);
-    burnThroughTransactions(dbName, tableName, 22, null, new HashSet<>(Arrays.asList(21L, 22L)));
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, 22, null, new HashSet<>(Arrays.asList(21L, 22L)));
 
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
 
     compactInTxn(rqst);
     CompactionResponse response = txnHandler.compact(rqst);
@@ -1087,7 +1116,7 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 20L, 20L, 1);
     addDeltaFile(t, p, 21L, 21L, 1);
     addDeltaFile(t, p, 22L, 22L, 1);
-    burnThroughTransactions(dbName, tblName, 22);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 22);
 
     // block cleaner with an open txn
     long blockingTxn = openTxn();
@@ -1095,6 +1124,7 @@ public class TestCleaner extends CompactorTest {
         .registerMinOpenWriteId(dbName, tblName, blockingTxn);
 
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partName);
     long compactTxn = compactInTxn(rqst);
     addDeltaFile(t, p, 20, 22, 2, compactTxn);
@@ -1124,9 +1154,10 @@ public class TestCleaner extends CompactorTest {
     addDeltaFile(t, p, 20L, 20L, 1);
     addDeltaFile(t, p, 21L, 21L, 1);
     addDeltaFile(t, p, 22L, 22L, 1);
-    burnThroughTransactions(dbName, tblName, 22);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 22);
 
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partName);
     long compactTxn = compactInTxn(rqst);
     addDeltaFile(t, p, 20, 22, 3, compactTxn);
@@ -1134,9 +1165,10 @@ public class TestCleaner extends CompactorTest {
     //2nd minor
     addDeltaFile(t, p, 23L, 23L, 1);
     addDeltaFile(t, p, 24L, 24L, 1);
-    burnThroughTransactions(dbName, tblName, 2);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 2);
 
     rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname(partName);
     compactTxn = compactInTxn(rqst);
     addDeltaFile(t, p, 20, 24, 5, compactTxn);
@@ -1175,9 +1207,10 @@ public class TestCleaner extends CompactorTest {
     // Overlapping compacted deltas with different visibilityTxnIDs simulating concurrent compaction from two workers
     addDeltaFile(t, null, 22L, 23L, 2, 24);
     addDeltaFile(t, null, 22L, 23L, 2, 25);
-    burnThroughTransactions(dbName, tblName, 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, 25);
     
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
     
     startCleaner();
@@ -1205,6 +1238,7 @@ public class TestCleaner extends CompactorTest {
   @Test
   public void testCompactionHwmIsHonoredWithMinOpenWriteIdSet() throws Exception {
 
+    String catName = Warehouse.DEFAULT_CATALOG_NAME;
     String dbName = "default";
     String tableName = "campcnb";
 
@@ -1223,7 +1257,7 @@ public class TestCleaner extends CompactorTest {
     // Then a new insert is started on the table and it will be open when the cleaner starts.
     // With this open transaction, the minOpenWriteId will be set in the GetValidWriteIdsForTableFunction
     long txnId = openTxn(TxnType.DEFAULT);
-    long writeId = allocateWriteId(dbName, tableName, txnId);
+    long writeId = allocateWriteId(catName, dbName, tableName, txnId);
     addDeltaFile(table, null, writeId, writeId, 1);
 
     Set<String> expectedDirs = new HashSet<>();
@@ -1273,6 +1307,7 @@ public class TestCleaner extends CompactorTest {
 
   @Test
   public void testCompactionHwmIsHonoredWithMinOpenWriteIdSetAndAbortedIOW() throws Exception {
+    String catName = Warehouse.DEFAULT_CATALOG_NAME;
     String dbName = "default";
     String tableName = "campcnb";
 
@@ -1284,7 +1319,7 @@ public class TestCleaner extends CompactorTest {
 
     // Create an aborted insert overwrite, this will create a base directory.
     long txnId1 = openTxn(TxnType.DEFAULT);
-    long writeId1 = allocateWriteId(dbName, tableName, txnId1);
+    long writeId1 = allocateWriteId(catName, dbName, tableName, txnId1);
     addBaseFile(table, null, writeId1, 1, 0);
     txnHandler.abortTxn(new AbortTxnRequest(txnId1));
 
@@ -1296,7 +1331,7 @@ public class TestCleaner extends CompactorTest {
     // Then a new insert is started on the table, and it will be open when the cleaner starts.
     // With this open transaction, the minOpenWriteId will be set in the GetValidWriteIdsForTableFunction
     long txnId = openTxn(TxnType.DEFAULT);
-    long writeId = allocateWriteId(dbName, tableName, txnId);
+    long writeId = allocateWriteId(catName, dbName, tableName, txnId);
     addDeltaFile(table, null, writeId, writeId, 1);
 
     Set<String> expectedDirs = new HashSet<>();
@@ -1349,12 +1384,13 @@ public class TestCleaner extends CompactorTest {
   }
 
   private String createDeltasAndRunMajorCompaction(Table table, long minTxnId, int numberOfDeltas) throws Exception {
+    String catName = table.getCatName();
     String dbName = table.getDbName();
     String tableName = table.getTableName();
     for (int i = 0; i < numberOfDeltas; i++) {
       addDeltaFile(table, null, minTxnId + i, minTxnId + i, 1);
     }
-    burnThroughTransactions(dbName, tableName, numberOfDeltas, null, null);
+    burnThroughTransactions(catName, dbName, tableName, numberOfDeltas, null, null);
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
     long compactTxn = compactInTxn(rqst);
     long maxTxnId = minTxnId + numberOfDeltas - 1;

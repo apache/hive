@@ -171,6 +171,7 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
     }
   }
 
+  private final String catName;
   private final String dbName;
   private final String tableName;
   private final boolean ifNotExists;
@@ -179,12 +180,18 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
 
   private ReplicationSpec replicationSpec = null; // TODO: make replicationSpec final too
 
-  public AlterTableAddPartitionDesc(String dbName, String tableName, boolean ifNotExists,
+  public AlterTableAddPartitionDesc(String catName, String dbName, String tableName, boolean ifNotExists,
       List<PartitionDesc> partitions) {
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.ifNotExists = ifNotExists;
     this.partitions = partitions;
+  }
+
+  @Explain(displayName = "cat name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED})
+  public String getCatName() {
+    return catName;
   }
 
   @Explain(displayName = "db name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

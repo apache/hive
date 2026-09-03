@@ -32,7 +32,7 @@ public class JSONDeletePartitionColumnStatMessage extends DeletePartitionColumnS
   private Long timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, database, colName, partName;
+  private String server, servicePrincipal, catalog, database, colName, partName;
 
   @JsonProperty
   private List<String> partValues;
@@ -44,11 +44,12 @@ public class JSONDeletePartitionColumnStatMessage extends DeletePartitionColumnS
   }
 
   public JSONDeletePartitionColumnStatMessage(String server, String servicePrincipal, Long timestamp,
-                                              String dbName, String colName, String partName,
+                                              String catName, String dbName, String colName, String partName,
                                               List<String> partValues) {
     this.timestamp = timestamp;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.catalog = catName;
     this.database = dbName;
     this.partValues = partValues;
     this.partName = partName;
@@ -58,6 +59,11 @@ public class JSONDeletePartitionColumnStatMessage extends DeletePartitionColumnS
   @Override
   public Long getTimestamp() {
     return timestamp;
+  }
+
+  @Override
+  public String getCat() {
+    return catalog;
   }
 
   @Override

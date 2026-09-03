@@ -43,6 +43,11 @@ public class JSONDropCatalogMessage extends DropCatalogMessage {
   }
 
   @Override
+  public String getCat() {
+    return catalog;
+  }
+
+  @Override
   public String getDB() {
     return null;
   }

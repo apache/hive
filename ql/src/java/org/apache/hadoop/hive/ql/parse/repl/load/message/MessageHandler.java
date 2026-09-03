@@ -49,6 +49,7 @@ public interface MessageHandler {
 
   class Context {
     public String location;
+    public final String catName;
     public final String dbName;
     public final Task<?> precursor;
     public DumpMetaData dmd;
@@ -59,9 +60,10 @@ public interface MessageHandler {
     String dumpDirectory;
     private transient ReplicationMetricCollector metricCollector;
 
-    public Context(String dbName, String location,
+    public Context(String catName, String dbName, String location,
         Task<?> precursor, DumpMetaData dmd, HiveConf hiveConf,
         Hive db, org.apache.hadoop.hive.ql.Context nestedContext, Logger log) {
+      this.catName = catName;
       this.dbName = dbName;
       this.location = location;
       this.precursor = precursor;
@@ -72,10 +74,11 @@ public interface MessageHandler {
       this.log = log;
     }
 
-    public Context(String dbName, String location,
+    public Context(String catName, String dbName, String location,
                    Task<?> precursor, DumpMetaData dmd, HiveConf hiveConf,
                    Hive db, org.apache.hadoop.hive.ql.Context nestedContext, Logger log,
                    String dumpDirectory, ReplicationMetricCollector metricCollector) {
+      this.catName = catName;
       this.dbName = dbName;
       this.location = location;
       this.precursor = precursor;
@@ -88,7 +91,8 @@ public interface MessageHandler {
       this.metricCollector = metricCollector;
     }
 
-    public Context(Context other, String dbName) {
+    public Context(Context other, String catName, String dbName) {
+      this.catName = catName;
       this.dbName = dbName;
       this.location = other.location;
       this.precursor = other.precursor;
@@ -99,7 +103,8 @@ public interface MessageHandler {
       this.log = other.log;
     }
 
-    public Context(Context other, String dbName, String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    public Context(Context other, String catName, String dbName, String dumpDirectory, ReplicationMetricCollector metricCollector) {
+      this.catName = catName;
       this.dbName = dbName;
       this.location = other.location;
       this.precursor = other.precursor;
@@ -114,6 +119,10 @@ public interface MessageHandler {
 
     public boolean isDbNameEmpty() {
       return StringUtils.isEmpty(dbName);
+    }
+
+    public boolean isCatNameEmpty() {
+      return StringUtils.isEmpty(catName);
     }
 
     /**

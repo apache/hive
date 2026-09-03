@@ -99,11 +99,12 @@ public class FSTableEvent implements TableEvent {
    * and not {@link ImportTableDesc#tableType()} method.
    */
   @Override
-  public ImportTableDesc tableDesc(String dbName) throws SemanticException {
+  public ImportTableDesc tableDesc(String catName, String dbName) throws SemanticException {
     try {
       Table table = new Table(metadata.getTable());
       ImportTableDesc tableDesc
-              = new ImportTableDesc(StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
+              = new ImportTableDesc(StringUtils.isBlank(catName) ? table.getCatName() : catName,
+          StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
       if (TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
         tableDesc.setLocation(
             table.getDataLocation() == null ? null : table.getDataLocation().toString());
@@ -179,8 +180,8 @@ public class FSTableEvent implements TableEvent {
           sd.getNumBuckets(), sd.getCols(), sd.getSerdeInfo().getSerializationLib(), sd.getSerdeInfo().getParameters(),
           sd.getBucketCols(), sd.getSortCols(), columnStatistics, writeId);
 
-      AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(tblDesc.getDatabaseName(),
-          tblDesc.getTableName(), true, ImmutableList.of(partitionDesc));
+      AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(tblDesc.getCatName(),
+          tblDesc.getDatabaseName(), tblDesc.getTableName(), true, ImmutableList.of(partitionDesc));
       addPartitionDesc.setReplicationSpec(replicationSpec());
       return addPartitionDesc;
     } catch (Exception e) {

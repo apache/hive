@@ -18,6 +18,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField PARTITION_FIELD_DESC = new org.apache.thrift.protocol.TField("partition", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField TABLE_OBJ_FIELD_DESC = new org.apache.thrift.protocol.TField("tableObj", org.apache.thrift.protocol.TType.STRING, (short)6);
   private static final org.apache.thrift.protocol.TField PARTITION_OBJ_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionObj", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField CATALOG_FIELD_DESC = new org.apache.thrift.protocol.TField("catalog", org.apache.thrift.protocol.TType.STRING, (short)8);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new WriteEventInfoStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new WriteEventInfoTupleSchemeFactory();
@@ -29,6 +30,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String partition; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String tableObj; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String partitionObj; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catalog; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -38,7 +40,8 @@ package org.apache.hadoop.hive.metastore.api;
     FILES((short)4, "files"),
     PARTITION((short)5, "partition"),
     TABLE_OBJ((short)6, "tableObj"),
-    PARTITION_OBJ((short)7, "partitionObj");
+    PARTITION_OBJ((short)7, "partitionObj"),
+    CATALOG((short)8, "catalog");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -68,6 +71,8 @@ package org.apache.hadoop.hive.metastore.api;
           return TABLE_OBJ;
         case 7: // PARTITION_OBJ
           return PARTITION_OBJ;
+        case 8: // CATALOG
+          return CATALOG;
         default:
           return null;
       }
@@ -111,7 +116,7 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __WRITEID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITION,_Fields.TABLE_OBJ,_Fields.PARTITION_OBJ};
+  private static final _Fields optionals[] = {_Fields.PARTITION,_Fields.TABLE_OBJ,_Fields.PARTITION_OBJ,_Fields.CATALOG};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -129,11 +134,15 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PARTITION_OBJ, new org.apache.thrift.meta_data.FieldMetaData("partitionObj", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CATALOG, new org.apache.thrift.meta_data.FieldMetaData("catalog", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WriteEventInfo.class, metaDataMap);
   }
 
   public WriteEventInfo() {
+    this.catalog = "hive";
+
   }
 
   public WriteEventInfo(
@@ -174,6 +183,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetPartitionObj()) {
       this.partitionObj = other.partitionObj;
     }
+    if (other.isSetCatalog()) {
+      this.catalog = other.catalog;
+    }
   }
 
   public WriteEventInfo deepCopy() {
@@ -190,6 +202,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.partition = null;
     this.tableObj = null;
     this.partitionObj = null;
+    this.catalog = "hive";
+
   }
 
   public long getWriteId() {
@@ -358,6 +372,30 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatalog() {
+    return this.catalog;
+  }
+
+  public void setCatalog(@org.apache.thrift.annotation.Nullable java.lang.String catalog) {
+    this.catalog = catalog;
+  }
+
+  public void unsetCatalog() {
+    this.catalog = null;
+  }
+
+  /** Returns true if field catalog is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatalog() {
+    return this.catalog != null;
+  }
+
+  public void setCatalogIsSet(boolean value) {
+    if (!value) {
+      this.catalog = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case WRITE_ID:
@@ -416,6 +454,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case CATALOG:
+      if (value == null) {
+        unsetCatalog();
+      } else {
+        setCatalog((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -443,6 +489,9 @@ package org.apache.hadoop.hive.metastore.api;
     case PARTITION_OBJ:
       return getPartitionObj();
 
+    case CATALOG:
+      return getCatalog();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -468,6 +517,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetTableObj();
     case PARTITION_OBJ:
       return isSetPartitionObj();
+    case CATALOG:
+      return isSetCatalog();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -548,6 +599,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_catalog = true && this.isSetCatalog();
+    boolean that_present_catalog = true && that.isSetCatalog();
+    if (this_present_catalog || that_present_catalog) {
+      if (!(this_present_catalog && that_present_catalog))
+        return false;
+      if (!this.catalog.equals(that.catalog))
+        return false;
+    }
+
     return true;
   }
 
@@ -580,6 +640,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetPartitionObj()) ? 131071 : 524287);
     if (isSetPartitionObj())
       hashCode = hashCode * 8191 + partitionObj.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetCatalog()) ? 131071 : 524287);
+    if (isSetCatalog())
+      hashCode = hashCode * 8191 + catalog.hashCode();
 
     return hashCode;
   }
@@ -662,6 +726,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatalog(), other.isSetCatalog());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatalog()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catalog, other.catalog);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -737,6 +811,16 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         sb.append(this.partitionObj);
+      }
+      first = false;
+    }
+    if (isSetCatalog()) {
+      if (!first) sb.append(", ");
+      sb.append("catalog:");
+      if (this.catalog == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catalog);
       }
       first = false;
     }
@@ -857,6 +941,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // CATALOG
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catalog = iprot.readString();
+              struct.setCatalogIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -909,6 +1001,13 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.catalog != null) {
+        if (struct.isSetCatalog()) {
+          oprot.writeFieldBegin(CATALOG_FIELD_DESC);
+          oprot.writeString(struct.catalog);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -940,7 +1039,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPartitionObj()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetCatalog()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetPartition()) {
         oprot.writeString(struct.partition);
       }
@@ -949,6 +1051,9 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (struct.isSetPartitionObj()) {
         oprot.writeString(struct.partitionObj);
+      }
+      if (struct.isSetCatalog()) {
+        oprot.writeString(struct.catalog);
       }
     }
 
@@ -963,7 +1068,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTableIsSet(true);
       struct.files = iprot.readString();
       struct.setFilesIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.partition = iprot.readString();
         struct.setPartitionIsSet(true);
@@ -975,6 +1080,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(2)) {
         struct.partitionObj = iprot.readString();
         struct.setPartitionObjIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.catalog = iprot.readString();
+        struct.setCatalogIsSet(true);
       }
     }
   }

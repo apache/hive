@@ -48,6 +48,9 @@ public class JSONCommitCompactionMessage extends CommitCompactionMessage {
   private CompactionType type;
 
   @JsonProperty
+  private String catName;
+
+  @JsonProperty
   private String dbname;
 
   @JsonProperty
@@ -70,6 +73,7 @@ public class JSONCommitCompactionMessage extends CommitCompactionMessage {
     this.txnid = event.getTxnId();
     this.compactionId = event.getCompactionId();
     this.type = event.getType();
+    this.catName = event.getCatName();
     this.dbname = event.getDbname();
     this.tableName = event.getTableName();
     this.partName = event.getPartName();
@@ -88,6 +92,11 @@ public class JSONCommitCompactionMessage extends CommitCompactionMessage {
   @Override
   public String getServer() {
     return server;
+  }
+
+  @Override
+  public String getCat() {
+    return catName;
   }
 
   @Override

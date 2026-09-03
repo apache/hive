@@ -155,7 +155,7 @@ public class StatsWork implements Serializable {
   }
 
   public String getFullTableName() {
-    return table.getDbName() + "." + table.getTableName();
+    return table.getCatName() + "." + table.getDbName() + "." + table.getTableName();
   }
 
   public Task getSourceTask() {

@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -226,7 +227,7 @@ public class TestStreamingDynamicPartitioning {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("testing5")
       .withTable("store_sales")
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -319,7 +320,7 @@ public class TestStreamingDynamicPartitioning {
         .withFieldDelimiter(',')
         .build();
 
-      HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+      HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("testBucketing3")
         .withTable("streamedtable")
         .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -375,7 +376,7 @@ public class TestStreamingDynamicPartitioning {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -424,7 +425,7 @@ public class TestStreamingDynamicPartitioning {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -477,7 +478,7 @@ public class TestStreamingDynamicPartitioning {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -530,7 +531,7 @@ public class TestStreamingDynamicPartitioning {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -589,7 +590,7 @@ public class TestStreamingDynamicPartitioning {
       // if unspecified, default one or [\r\n] will be used for line break
       .withRegex(regex)
       .build();
-    StreamingConnection connection = HiveStreamingConnection.newBuilder()
+    StreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -624,7 +625,7 @@ public class TestStreamingDynamicPartitioning {
     StrictJsonWriter writer = StrictJsonWriter.newBuilder()
       .withLineDelimiterPattern("\\|")
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -663,7 +664,7 @@ public class TestStreamingDynamicPartitioning {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -721,7 +722,7 @@ public class TestStreamingDynamicPartitioning {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -793,7 +794,7 @@ public class TestStreamingDynamicPartitioning {
       .build();
     HiveStreamingConnection connection = null;
     try {
-      connection = HiveStreamingConnection.newBuilder()
+      connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("testBucketing3")
         .withTable("validation2")
         .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -809,7 +810,7 @@ public class TestStreamingDynamicPartitioning {
       }
     }
     try {
-      connection = HiveStreamingConnection.newBuilder()
+      connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("testBucketing3")
         .withTable("validation2")
         .withAgentInfo("UT_" + Thread.currentThread().getName())

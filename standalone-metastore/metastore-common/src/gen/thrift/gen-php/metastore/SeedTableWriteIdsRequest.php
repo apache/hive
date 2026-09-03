@@ -36,6 +36,11 @@ class SeedTableWriteIdsRequest
             'isRequired' => true,
             'type' => TType::I64,
         ),
+        4 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -50,6 +55,10 @@ class SeedTableWriteIdsRequest
      * @var int
      */
     public $seedWriteId = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -62,6 +71,9 @@ class SeedTableWriteIdsRequest
             }
             if (isset($vals['seedWriteId'])) {
                 $this->seedWriteId = $vals['seedWriteId'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -106,6 +118,13 @@ class SeedTableWriteIdsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 4:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -133,6 +152,11 @@ class SeedTableWriteIdsRequest
         if ($this->seedWriteId !== null) {
             $xfer += $output->writeFieldBegin('seedWriteId', TType::I64, 3);
             $xfer += $output->writeI64($this->seedWriteId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 4);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

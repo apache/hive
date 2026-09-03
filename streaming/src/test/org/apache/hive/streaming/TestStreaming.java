@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -312,7 +313,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("testing5")
       .withTable("store_sales")
       .withStaticPartitionValues(newPartVals)
@@ -357,7 +358,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter wr = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("Default")
       .withTable("streamingNoBuckets")
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -423,7 +424,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
         .withFieldDelimiter(',')
         .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase(dbName)
         .withTable(tblName)
         .withRecordWriter(writer)
@@ -448,7 +449,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter wr = StrictDelimitedInputWriter.newBuilder()
         .withFieldDelimiter(',')
         .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("Default")
         .withTable("keyvalue")
         .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -486,7 +487,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writerT = StrictDelimitedInputWriter.newBuilder()
         .withFieldDelimiter(',')
         .build();
-    HiveStreamingConnection transactionConnection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection transactionConnection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("Default")
         .withTable("writeidconnection")
         .withRecordWriter(writerT)
@@ -503,7 +504,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writerOne = StrictDelimitedInputWriter.newBuilder()
         .withFieldDelimiter(',')
         .build();
-    HiveStreamingConnection connectionOne = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connectionOne = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("Default")
         .withTable("writeidconnection")
         .withRecordWriter(writerOne)
@@ -516,7 +517,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writerTwo = StrictDelimitedInputWriter.newBuilder()
         .withFieldDelimiter(',')
         .build();
-    HiveStreamingConnection connectionTwo = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connectionTwo = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("Default")
         .withRecordWriter(writerTwo)
         .withHiveConf(conf)
@@ -584,7 +585,7 @@ public class TestStreaming {
       .withCollectionDelimiter(',')
       .withMapKeyDelimiter(':')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("default")
       .withTable("alltypes")
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -636,7 +637,7 @@ public class TestStreaming {
       .withMapKeyDelimiter(':')
       .withLineDelimiterPattern("\n")
       .build();
-    StreamingConnection connection = HiveStreamingConnection.newBuilder()
+    StreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("default")
       .withTable("alltypes")
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -688,7 +689,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter wr = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("default")
       .withTable("streamingnobuckets")
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -833,7 +834,7 @@ public class TestStreaming {
       StrictDelimitedInputWriter wr = StrictDelimitedInputWriter.newBuilder()
         .withFieldDelimiter(',')
         .build();
-      HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+      HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("testBucketing3")
         .withTable("streamedtable")
         .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -891,7 +892,7 @@ public class TestStreaming {
       .build();
     HiveStreamingConnection connection = null;
     try {
-      connection = HiveStreamingConnection.newBuilder()
+      connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("testBucketing3")
         .withTable("validation2")
         .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -907,7 +908,7 @@ public class TestStreaming {
       }
     }
     try {
-      connection = HiveStreamingConnection.newBuilder()
+      connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase("testBucketing3")
         .withTable("validation2")
         .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -993,7 +994,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1004,7 +1005,7 @@ public class TestStreaming {
     connection.close();
 
     // For unpartitioned table, partitionVals are not specified
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName2)
       .withTable(tblName2)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -1015,7 +1016,7 @@ public class TestStreaming {
 
     // For unpartitioned table, partition values are specified
     try {
-      connection = HiveStreamingConnection.newBuilder()
+      connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase(dbName2)
         .withTable(tblName2)
         .withStaticPartitionValues(partitionVals)
@@ -1041,7 +1042,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(newPartVals)
@@ -1071,7 +1072,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writerT = StrictDelimitedInputWriter.newBuilder()
         .withFieldDelimiter(',')
         .build();
-    HiveStreamingConnection transactionConnection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection transactionConnection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase(dbName)
         .withTable(tblName)
         .withStaticPartitionValues(newPartVals)
@@ -1089,7 +1090,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
         .withFieldDelimiter(',')
         .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase(dbName)
         .withTable(tblName)
         .withStaticPartitionValues(newPartVals)
@@ -1134,7 +1135,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writerT =
         StrictDelimitedInputWriter.newBuilder().withFieldDelimiter(',').build();
     HiveStreamingConnection transactionConnection =
-        HiveStreamingConnection.newBuilder().withDatabase("default")
+        HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME).withDatabase("default")
             .withTable("writeiddynamic").withRecordWriter(writerT)
             .withHiveConf(conf).connect();
     transactionConnection.beginTransaction();
@@ -1148,7 +1149,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writerOne =
         StrictDelimitedInputWriter.newBuilder().withFieldDelimiter(',').build();
     HiveStreamingConnection connectionOne =
-        HiveStreamingConnection.newBuilder().withDatabase("default")
+        HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME).withDatabase("default")
             .withTable("writeiddynamic").withRecordWriter(writerOne)
             .withHiveConf(conf).withWriteId(writeId).withStatementId(1)
             .withTableObject(tObject).connect();
@@ -1156,7 +1157,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writerTwo =
         StrictDelimitedInputWriter.newBuilder().withFieldDelimiter(',').build();
     HiveStreamingConnection connectionTwo =
-        HiveStreamingConnection.newBuilder().withDatabase("default")
+        HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME).withDatabase("default")
             .withTable("writeiddynamic")
             .withRecordWriter(writerTwo)
             .withHiveConf(conf).withWriteId(writeId).withStatementId(1)
@@ -1213,7 +1214,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1231,7 +1232,7 @@ public class TestStreaming {
     writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName2)
       .withTable(tblName2)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -1261,7 +1262,7 @@ public class TestStreaming {
         .build();
 
     try {
-      HiveStreamingConnection.newBuilder()
+      HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
           .withDatabase(dbName)
           .withTable(tblName)
           .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -1283,7 +1284,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName2)
       .withTable(tblName2)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -1307,7 +1308,7 @@ public class TestStreaming {
       Assert.assertTrue("Expected aborted transaction", e.getCause() instanceof TxnAbortedException);
     }
     connection.close();
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName2)
       .withTable(tblName2)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -1335,7 +1336,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName2)
       .withTable(tblName2)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -1380,7 +1381,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1399,7 +1400,7 @@ public class TestStreaming {
     writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName2)
       .withTable(tblName2)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -1420,7 +1421,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1470,7 +1471,7 @@ public class TestStreaming {
     writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName2)
       .withTable(tblName2)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -1495,7 +1496,7 @@ public class TestStreaming {
     StrictRegexWriter writer = StrictRegexWriter.newBuilder()
       .withRegex(regex)
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1545,7 +1546,7 @@ public class TestStreaming {
       .withRegex(regex)
       .build();
 
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName2)
       .withTable(tblName2)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -1572,7 +1573,7 @@ public class TestStreaming {
       // if unspecified, default one or [\r\n] will be used for line break
       .withRegex(regex)
       .build();
-    StreamingConnection connection = HiveStreamingConnection.newBuilder()
+    StreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1600,7 +1601,7 @@ public class TestStreaming {
   public void testTransactionBatchCommitJson() throws Exception {
     StrictJsonWriter writer = StrictJsonWriter.newBuilder()
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1638,7 +1639,7 @@ public class TestStreaming {
     StrictJsonWriter writer = StrictJsonWriter.newBuilder()
       .withLineDelimiterPattern("\\|")
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1669,7 +1670,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1700,7 +1701,7 @@ public class TestStreaming {
     Assert.assertEquals(HiveStreamingConnection.TxnState.INACTIVE,
         connection.getCurrentTransactionState());
 
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1738,7 +1739,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1771,7 +1772,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1790,7 +1791,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1834,7 +1835,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1861,7 +1862,7 @@ public class TestStreaming {
 
     connection.close();
 
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1902,7 +1903,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -1919,7 +1920,7 @@ public class TestStreaming {
     StrictDelimitedInputWriter writer2 = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
-    HiveStreamingConnection connection2 = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection2 = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName)
       .withTable(tblName)
       .withStaticPartitionValues(partitionVals)
@@ -2024,7 +2025,7 @@ public class TestStreaming {
       RecordWriter writer = StrictDelimitedInputWriter.newBuilder()
         .withFieldDelimiter(',')
         .build();
-      HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+      HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
         .withDatabase(dbName)
         .withTable(tblName)
         .withStaticPartitionValues(partitionVals)
@@ -2168,7 +2169,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName3)
       .withTable(tblName3)
       .withAgentInfo(agentInfo)
@@ -2188,7 +2189,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection2 = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection2 = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName4)
       .withTable(tblName4)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -2255,7 +2256,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName3)
       .withTable(tblName3)
       .withAgentInfo(agentInfo)
@@ -2291,7 +2292,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection2 = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection2 = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName4)
       .withTable(tblName4)
       .withAgentInfo(agentInfo)
@@ -2346,7 +2347,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName3)
       .withTable(tblName3)
       .withAgentInfo(agentInfo)
@@ -2419,7 +2420,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName3)
       .withTable(tblName3)
       .withAgentInfo(agentInfo)
@@ -2475,7 +2476,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName3)
       .withTable(tblName3)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -2599,7 +2600,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase(dbName3)
       .withTable(tblName3)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
@@ -2807,7 +2808,7 @@ public class TestStreaming {
       .withFieldDelimiter(',')
       .build();
 
-    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("testErrors")
       .withTable("T")
       .withAgentInfo(agentInfo)
@@ -2839,7 +2840,7 @@ public class TestStreaming {
     Assert.assertTrue("beginTransaction() should have failed",
       expectedEx != null && expectedEx.getMessage().contains("Streaming connection is closed already."));
 
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("testErrors")
       .withTable("T")
       .withAgentInfo(agentInfo)
@@ -2864,7 +2865,7 @@ public class TestStreaming {
     Assert.assertTrue("commitTransaction() should have failed",
       expectedEx != null && expectedEx.getMessage().equals("Transaction batch is null. Missing beginTransaction?"));
 
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("testErrors")
       .withTable("T")
       .withAgentInfo(agentInfo)
@@ -2923,7 +2924,7 @@ public class TestStreaming {
     connection.close();
 
     writer.disableErrors();
-    connection = HiveStreamingConnection.newBuilder()
+    connection = HiveStreamingConnection.newBuilder().withCatalog(Warehouse.DEFAULT_CATALOG_NAME)
       .withDatabase("testErrors")
       .withTable("T")
       .withAgentInfo(agentInfo)

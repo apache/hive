@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONDropFunctionMessage extends DropFunctionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, functionName;
+  String server, servicePrincipal, cat, db, functionName;
 
   @JsonProperty
   Long timestamp;
@@ -43,10 +43,16 @@ public class JSONDropFunctionMessage extends DropFunctionMessage {
   public JSONDropFunctionMessage(String server, String servicePrincipal, Function fn, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = fn.getCatName();
     this.db = fn.getDbName();
     this.functionName = fn.getFunctionName();
     this.timestamp = timestamp;
     checkValid();
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONCreateDatabaseMessage extends CreateDatabaseMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, dbJson;
+  String server, servicePrincipal, cat, db, dbJson;
 
   @JsonProperty
   Long timestamp;
@@ -46,6 +46,7 @@ public class JSONCreateDatabaseMessage extends CreateDatabaseMessage {
       Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = db.getCatalogName();
     this.db = db.getName();
     this.timestamp = timestamp;
     try {
@@ -59,6 +60,11 @@ public class JSONCreateDatabaseMessage extends CreateDatabaseMessage {
   @Override
   public Database getDatabaseObject() throws Exception {
     return (Database) MessageBuilder.getTObj(dbJson, Database.class);
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

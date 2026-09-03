@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
@@ -166,7 +167,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
     LOG.info("Current ReplScope: Set DB Name: {}", dbNameOrPattern);
     replScope.setDbName(dbNameOrPattern);
-
+    replScope.setCatName(HiveUtils.getCurrentCatalogOrDefault(conf));
     // Skip the first node, which is always required
     int childIdx = 1;
     while (childIdx < numChildren) {
@@ -255,6 +256,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (childNode.getToken().getType()) {
       case TOK_DBNAME:
         replScope.setDbName(PlanUtils.stripQuotes(childNode.getChild(0).getText()));
+        replScope.setCatName(HiveUtils.getCurrentCatalogOrDefault(conf));
         break;
       case TOK_REPL_CONFIG:
         setConfigs((ASTNode) childNode.getChild(0));
@@ -362,6 +364,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         ReplicationMetricCollector metricCollector = initReplicationLoadMetricCollector(loadPath.toString(), replScope.getDbName(), dmd);
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
+                replScope.getCatName(),
                 replScope.getDbName(),
                 dmd.getReplScope(),
                 queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),

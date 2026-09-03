@@ -38,7 +38,7 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
   private Long writeId, timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, database;
+  private String server, servicePrincipal, catalog, database;
 
   @JsonProperty
   private String colStatsJson;
@@ -66,6 +66,7 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.writeId = writeId;
+    this.catalog = colStats.getStatsDesc().getCatName();
     this.database = colStats.getStatsDesc().getDbName();
     this.partVals = partVals;
     try {
@@ -80,6 +81,11 @@ public class JSONUpdatePartitionColumnStatMessage extends UpdatePartitionColumnS
   @Override
   public Long getTimestamp() {
     return timestamp;
+  }
+
+  @Override
+  public String getCat() {
+    return catalog;
   }
 
   @Override

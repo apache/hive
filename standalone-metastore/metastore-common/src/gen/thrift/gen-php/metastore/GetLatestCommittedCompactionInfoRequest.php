@@ -45,6 +45,11 @@ class GetLatestCommittedCompactionInfoRequest
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        5 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -63,6 +68,10 @@ class GetLatestCommittedCompactionInfoRequest
      * @var int
      */
     public $lastCompactionId = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -78,6 +87,9 @@ class GetLatestCommittedCompactionInfoRequest
             }
             if (isset($vals['lastCompactionId'])) {
                 $this->lastCompactionId = $vals['lastCompactionId'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -138,6 +150,13 @@ class GetLatestCommittedCompactionInfoRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 5:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -177,6 +196,11 @@ class GetLatestCommittedCompactionInfoRequest
         if ($this->lastCompactionId !== null) {
             $xfer += $output->writeFieldBegin('lastCompactionId', TType::I64, 4);
             $xfer += $output->writeI64($this->lastCompactionId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 5);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
