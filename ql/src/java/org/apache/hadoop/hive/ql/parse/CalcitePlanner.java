@@ -636,37 +636,36 @@ public class CalcitePlanner extends SemanticAnalyzer {
           this.ctx.setCboInfo(getOptimizedByCboInfo());
           this.ctx.setCboSucceeded(true);
 
-          boolean needExplainPlan = this.ctx.isExplainPlan() || this.conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT);
-          if (needExplainPlan) {
-            // Enrich explain with information derived from CBO
-            // ensure the context gets a CBO plan if HIVE_LOG_EXPLAIN_OUTPUT is true
-            ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
-            if (explainConfig == null) {
-              explainConfig = new ExplainConfiguration();
-              explainConfig.setCbo(true);
-              explainConfig.setCboJoinCost(true);
-              explainConfig.setFormatted(true);
-            }
-
-            if (explainConfig.isCbo()) {
-              if (!explainConfig.isCboJoinCost()) {
-                // Include cost as provided by Calcite
-                newPlan.getCluster().invalidateMetadataQuery();
-                RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
-              }
-              if (explainConfig.isFormatted()) {
+          ExplainConfiguration explainConfig = this.getExplainConfiguration();
+          if (explainConfig != null) {
+            try {
+              if (explainConfig.isCbo()) {
+                if (!explainConfig.isCboJoinCost()) {
+                  // Include cost as provided by Calcite
+                  newPlan.getCluster().invalidateMetadataQuery();
+                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+                }
+                if (explainConfig.isFormatted()) {
+                  this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+                } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
+                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+                } else {
+                  // Do not include join cost
+                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
+                }
+              } else if (explainConfig.isFormatted()) {
                 this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-              } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
-                this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
-              } else {
-                // Do not include join cost
-                this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
+                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+              } else if (explainConfig.isExtended()) {
+                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
               }
-            } else if (explainConfig.isFormatted()) {
-              this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-              this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
-            } else if (explainConfig.isExtended()) {
-              this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+            } catch (RuntimeException ex) {
+              if (!this.ctx.isExplainPlan()) {
+                // logging the plan failed; log the exception instead
+                LOG.warn("Exception generating explain output: " + ex, ex);
+              } else {
+                throw ex;
+              }
             }
           }
           if (LOG.isTraceEnabled()) {
@@ -722,6 +721,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     return sinkOp;
+  }
+
+  private ExplainConfiguration getExplainConfiguration() {
+    if (this.ctx.isExplainPlan()) {
+      return this.ctx.getExplainConfig();
+    }
+    if (this.conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
+      ExplainConfiguration explainConfig = new ExplainConfiguration();
+      explainConfig.setCbo(true);
+      explainConfig.setCboJoinCost(true);
+      explainConfig.setFormatted(true);
+      return explainConfig;
+    }
+    return null;
   }
 
   protected ASTNode handlePostCboRewriteContext(PreCboCtx cboCtx, ASTNode newAST)
