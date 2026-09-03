@@ -51,7 +51,6 @@ stmt :
      | collect_stats_stmt
      | close_stmt
      | cmp_stmt
-     | copy_from_local_stmt
      | copy_stmt
      | commit_stmt
      | create_database_stmt
@@ -99,8 +98,6 @@ stmt :
      | while_stmt
      | unconditional_loop_stmt
      | label
-     | hive     
-     | host
      | null_stmt
      | expr_stmt     
      | semicolon_stmt      // Placed here to allow null statements ;;...          
@@ -642,17 +639,9 @@ cmp_stmt :              // CMP statement
 cmp_source :
       (table_name where_clause? | T_OPEN_P select_stmt T_CLOSE_P) (T_AT qident)?
      ;
-     
-copy_from_local_stmt :  // COPY FROM LOCAL statement
-       T_COPY T_FROM T_LOCAL copy_source (T_COMMA copy_source)* T_TO copy_target copy_file_option*
-     ;
-     
+
 copy_stmt :             // COPY statement
        T_COPY (table_name | T_OPEN_P select_stmt T_CLOSE_P) T_TO T_HDFS? copy_target copy_option*
-     ;
-     
-copy_source :
-       (file_name | expr) 
      ;
 
 copy_target :
@@ -666,12 +655,6 @@ copy_option :
      | T_SQLINSERT qident
      ;
 
-copy_file_option :
-       T_DELETE
-     | T_IGNORE
-     | T_OVERWRITE
-     ;
-     
 commit_stmt :           // COMMIT statement
        T_COMMIT T_WORK?
      ;
@@ -1195,30 +1178,7 @@ expr_file :
        file_name
      | expr
      ;
-      
-hive :
-       T_HIVE hive_item*
-     ;
 
-hive_item :
-       T_SUB qident expr
-     | T_SUB qident L_ID T_EQUAL expr
-     | T_SUB qident
-     ;  
-
-host :     
-       '!' host_cmd  ';'                   // OS command
-     | host_stmt
-     ;
-
-host_cmd :     
-       .*?          
-     ;
-     
-host_stmt :     
-       T_HOST expr          
-     ;
-     
 file_name :
        L_FILE | ('/' | '.' '/')? qident ('/' qident)*
      ;
@@ -1395,8 +1355,6 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_HASH
      | T_HAVING       
      | T_HDFS
-     | T_HIVE         
-     | T_HOST    
      | T_IDENTITY     
      | T_IF    
      | T_IGNORE     
@@ -1718,9 +1676,7 @@ T_GROUP           : G R O U P ;
 T_HANDLER         : H A N D L E R ;
 T_HASH            : H A S H ;
 T_HAVING          : H A V I N G ;
-T_HDFS            : H D F S ; 
-T_HIVE            : H I V E ;
-T_HOST            : H O S T ;
+T_HDFS            : H D F S ;
 T_IDENTITY        : I D E N T I T Y ; 
 T_IF              : I F ;
 T_IGNORE          : I G N O R E ; 

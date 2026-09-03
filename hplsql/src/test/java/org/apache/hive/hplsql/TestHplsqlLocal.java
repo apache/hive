@@ -334,11 +334,6 @@ public class TestHplsqlLocal {
   }
 
   @Test
-  public void testSetError() throws Exception {
-    run("seterror");
-  }
-
-  @Test
   public void testSub() throws Exception {
     run("sub");
   }

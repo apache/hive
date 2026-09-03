@@ -1412,14 +1412,6 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   public Integer visitCopy_stmt(HplsqlParser.Copy_stmtContext ctx) { 
     return new Copy(exec, queryExecutor).run(ctx);
   }
-
-  /**
-   * COPY FROM LOCAL statement
-   */
-  @Override 
-  public Integer visitCopy_from_local_stmt(HplsqlParser.Copy_from_local_stmtContext ctx) { 
-    return new Copy(exec, queryExecutor).runFromLocal(ctx);
-  }
   
   /**
    * DECLARE HANDLER statement
@@ -2282,101 +2274,6 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   @Override 
   public Integer visitMerge_stmt(HplsqlParser.Merge_stmtContext ctx) { 
     return stmt.merge(ctx); 
-  }
-    
-  /**
-   * Run a Hive command line
-   */
-  @Override 
-  public Integer visitHive(@NotNull HplsqlParser.HiveContext ctx) { 
-    trace(ctx, "HIVE");      
-    ArrayList<String> cmd = new ArrayList<>();
-    cmd.add("hive");    
-    Var params = new Var(Var.Type.STRINGLIST, cmd);
-    stackPush(params);
-    visitChildren(ctx);
-    stackPop();    
-    try { 
-      String[] cmdarr = new String[cmd.size()];
-      cmd.toArray(cmdarr);
-      if(trace) {
-        trace(ctx, "HIVE Parameters: " + Utils.toString(cmdarr, ' '));      
-      }     
-      if (!offline) {
-        Process p = Runtime.getRuntime().exec(cmdarr);      
-        new StreamGobbler(p.getInputStream(), console).start();
-        new StreamGobbler(p.getErrorStream(), console).start();
-        int rc = p.waitFor();      
-        if (trace) {
-          trace(ctx, "HIVE Process exit code: " + rc);      
-        } 
-      }
-    } catch (Exception e) {
-      setSqlCode(SqlCodes.ERROR);
-      signal(Signal.Type.SQLEXCEPTION, e.getMessage(), e);
-      return -1;
-    }    
-    return 0; 
-  }
-  
-  @Override 
-  @SuppressWarnings("unchecked")
-  public Integer visitHive_item(HplsqlParser.Hive_itemContext ctx) { 
-    Var params = stackPeek();
-    ArrayList<String> a = (ArrayList<String>)params.value;
-    String param = ctx.getChild(1).getText();
-    switch (param) {
-      case "e":
-        a.add("-e");
-        a.add(evalPop(ctx.expr()).toString());
-        break;
-      case "f":
-        a.add("-f");
-        a.add(evalPop(ctx.expr()).toString());
-        break;
-      case "hiveconf":
-        a.add("-hiveconf");
-        a.add(ctx.L_ID().toString() + "=" + evalPop(ctx.expr()).toString());
-        break;
-    }
-    return 0;
-  }
-  
-  /**
-   * Executing OS command
-   */
-  @Override 
-  public Integer visitHost_cmd(HplsqlParser.Host_cmdContext ctx) { 
-    trace(ctx, "HOST");      
-    execHost(ctx, ctx.start.getInputStream().getText(
-        new org.antlr.v4.runtime.misc.Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex())));                
-    return 0; 
-  }
-  
-  @Override 
-  public Integer visitHost_stmt(HplsqlParser.Host_stmtContext ctx) { 
-    trace(ctx, "HOST");      
-    execHost(ctx, evalPop(ctx.expr()).toString());                
-    return 0; 
-  }
-  
-  public void execHost(ParserRuleContext ctx, String cmd) { 
-    try { 
-      if (trace) {
-        trace(ctx, "HOST Command: " + cmd);      
-      } 
-      Process p = Runtime.getRuntime().exec(cmd);      
-      new StreamGobbler(p.getInputStream(), console).start();
-      new StreamGobbler(p.getErrorStream(), console).start();
-      int rc = p.waitFor();      
-      if (trace) {
-        trace(ctx, "HOST Process exit code: " + rc);      
-      }
-      setHostCode(rc);
-    } catch (Exception e) {
-      setHostCode(1);
-      signal(Signal.Type.SQLEXCEPTION);
-    }        
   }
   
   /**
