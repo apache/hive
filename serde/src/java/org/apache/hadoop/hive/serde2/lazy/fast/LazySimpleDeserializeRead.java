@@ -57,7 +57,7 @@ import org.apache.hive.common.util.TimestampParser;
 
 import com.google.common.base.Preconditions;
 
-/*
+/**
  * Directly deserialize with the caller reading field-by-field the LazySimple (text)
  * serialization format.
  *
@@ -221,17 +221,21 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   private int[] startPositions;
 
   private final byte[] separators;
-  // Multi-byte top-level field delimiter (e.g. MultiDelimitSerDe's `~|`).
-  // null in the common single-byte case, in which case `separators[0]` is used
-  // and the row-scan hot loop keeps its per-byte specialization. Non-null only
-  // when the caller (LLAP's VectorDeserializeOrcWriter for MultiDelimitSerDe)
-  // explicitly opted in via LazySerDeParameters.setFieldDelimMulti.
+  /*
+   * Multi-byte top-level field delimiter (e.g. MultiDelimitSerDe's `~|`).
+   * null in the common single-byte case, in which case `separators[0]` is used
+   * and the row-scan hot loop keeps its per-byte specialization. Non-null only
+   * when the caller (LLAP's VectorDeserializeOrcWriter for MultiDelimitSerDe)
+   * explicitly opted in via LazySerDeParameters.setFieldDelimMulti.
+   */
   private final byte[] fieldDelimMulti;
-  // Byte length "charged" to a top-level separator: 1 for the single-byte fast
-  // path, delim.length for multi-byte. Baked into (a) the Arrays.fill sentinel
-  // for missing/trailing fields and (b) the "length = next.start - this.start
-  // - sepLen" arithmetic in readField and getDetailedReadPositionString, so
-  // both paths share the same downstream code.
+  /*
+   * Byte length "charged" to a top-level separator: 1 for the single-byte fast
+   * path, delim.length for multi-byte. Baked into (a) the Arrays.fill sentinel
+   * for missing/trailing fields and (b) the "length = next.start - this.start
+   * - sepLen" arithmetic in readField and getDetailedReadPositionString, so
+   * both paths share the same downstream code.
+   */
   private final int topLevelSeparatorLen;
   private final boolean isEscaped;
   private final byte escapeChar;
@@ -479,130 +483,201 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
    *
    * This is an adapted version of the parse method in the LazyStruct class.
    * They should parse things the same way.
+   *
+   * <p>Structure: pick one of three parsing algorithms based on the (isEscaped,
+   * fieldDelimMulti) pair, run it to find each field's start position, then
+   * fill the trailing sentinel and record EOF. Each algorithm is a single-
+   * callsite private method — splitting them out is a readability move; the
+   * combined loops used to hide three flow-controls inside one big if/else.
+   *
+   * <p>The helpers write into {@link #startPositions} and (for the escape
+   * path) {@link #escapeCounts} directly, and stash the parse-stop cursor —
+   * how many fields they consumed, and where in the byte[] they stopped — on
+   * two instance fields {@link #parsedFieldCount} / {@link #parsedFieldByteEnd}.
+   * Bundling those into a return value would cost a heap allocation on every
+   * row, which we can't afford here.
    */
   private void topLevelParse() {
+    if (!isEscaped) {
+      if (fieldDelimMulti == null) {
+        parseSingleByteNoEscape();
+      } else {
+        parseMultiByteNoEscape();
+      }
+    } else {
+      parseSingleByteWithEscape();
+    }
 
-    int fieldId = 0;
-    int fieldByteBegin = start;
-    int fieldByteEnd = start;
+    final int fieldId = parsedFieldCount;
+    final int fieldByteEnd = parsedFieldByteEnd;
+    /*
+     * All fields have been parsed, or the row has been consumed. Fill
+     * startPositions[fieldId..end] with a sentinel so that the shared
+     * "length = next.start - this.start - sepLen" arithmetic used by
+     * readField yields a negative length for missing fields —
+     * uncheckedGetField turns those into SQL NULLs. Charge the actual
+     * separator width (1 byte for the single-byte fast path, delim.length
+     * for the multi-byte MultiDelimit path) so both paths share the same
+     * downstream code.
+     */
+    if (fieldId == fieldCount || fieldByteEnd == end) {
+      Arrays.fill(startPositions, fieldId, startPositions.length,
+          fieldByteEnd + topLevelSeparatorLen);
+    }
 
+    isEndOfInputReached = (fieldByteEnd == end);
+  }
+
+  /*
+   * Parse-stop cursor written by the three parseXxx helpers and consumed by
+   * topLevelParse() for its sentinel/EOF handling. Using fields instead of a
+   * multi-value return avoids per-row allocation on the hot path.
+   */
+  private int parsedFieldCount;
+  private int parsedFieldByteEnd;
+
+  /**
+   * Single-byte top-level FIELD_DELIM, no escape — the hot path on every row
+   * of a LazySimple table.
+   */
+  private void parseSingleByteNoEscape() {
     final byte separator = this.separators[0];
     final int fieldCount = this.fieldCount;
     final int[] startPositions = this.startPositions;
     final byte[] bytes = this.bytes;
     final int end = this.end;
 
-    /*
-     * Optimize the loops by pulling special end cases and global decisions like isEscaped out!
-     */
-    if (!isEscaped) {
-      if (fieldDelimMulti == null) {
-        // Single-byte fast path — hot on every row of a LazySimple table.
-        while (fieldByteEnd < end) {
-          if (bytes[fieldByteEnd] == separator) {
-            startPositions[fieldId++] = fieldByteBegin;
-            if (fieldId == fieldCount) {
-              break;
-            }
-            fieldByteBegin = ++fieldByteEnd;
-          } else {
-            fieldByteEnd++;
-          }
+    int fieldId = 0;
+    int fieldByteBegin = start;
+    int fieldByteEnd = start;
+    while (fieldByteEnd < end) {
+      if (bytes[fieldByteEnd] == separator) {
+        startPositions[fieldId++] = fieldByteBegin;
+        if (fieldId == fieldCount) {
+          break;
         }
-        // End serves as final separator.
-        if (fieldByteEnd == end && fieldId < fieldCount) {
-          startPositions[fieldId++] = fieldByteBegin;
+        fieldByteBegin = ++fieldByteEnd;
+      } else {
+        fieldByteEnd++;
+      }
+    }
+    // End serves as final separator.
+    if (fieldByteEnd == end && fieldId < fieldCount) {
+      startPositions[fieldId++] = fieldByteBegin;
+    }
+    parsedFieldCount = fieldId;
+    parsedFieldByteEnd = fieldByteEnd;
+  }
+
+  /**
+   * Multi-byte top-level FIELD_DELIM, no escape — MultiDelimitSerDe's fast
+   * path. We keep the "test the first byte, then verify the tail" idiom so
+   * the mismatching-byte case still costs a single load+compare — the tail
+   * memcmp only fires on a first-byte hit.
+   */
+  private void parseMultiByteNoEscape() {
+    final int fieldCount = this.fieldCount;
+    final int[] startPositions = this.startPositions;
+    final byte[] bytes = this.bytes;
+    final int end = this.end;
+    final byte[] delim = this.fieldDelimMulti;
+    final int dlen = delim.length;
+    final byte first = delim[0];
+    final int scanEnd = end - dlen;   // last index at which a full delim can start
+
+    int fieldId = 0;
+    int fieldByteBegin = start;
+    int fieldByteEnd = start;
+    while (fieldByteEnd <= scanEnd) {
+      if (bytes[fieldByteEnd] == first && matchesAt(bytes, fieldByteEnd, delim, dlen)) {
+        startPositions[fieldId++] = fieldByteBegin;
+        if (fieldId == fieldCount) {
+          // Malformed row with more delims than expected: leave fieldByteEnd
+          // where it is (matching single-byte-path semantics) and stop.
+          parsedFieldCount = fieldId;
+          parsedFieldByteEnd = fieldByteEnd;
+          return;
+        }
+        fieldByteEnd += dlen;
+        fieldByteBegin = fieldByteEnd;
+      } else {
+        fieldByteEnd++;
+      }
+    }
+    /*
+     * No trailing delim (single-byte parses "end as final separator" here).
+     * If we still owe a field, the remainder from fieldByteBegin..end is the
+     * last field; fast-forward fieldByteEnd so the Arrays.fill sentinel and
+     * isEndOfInputReached both see the row as fully consumed.
+     */
+    if (fieldId < fieldCount) {
+      fieldByteEnd = end;
+      startPositions[fieldId++] = fieldByteBegin;
+    }
+    parsedFieldCount = fieldId;
+    parsedFieldByteEnd = fieldByteEnd;
+  }
+
+  /**
+   * Single-byte top-level FIELD_DELIM with escape.delim — the escape byte
+   * "swallows" whatever byte follows it (including a delim byte), so we
+   * track how many escapes each field contains for the copy-out path.
+   */
+  private void parseSingleByteWithEscape() {
+    final byte separator = this.separators[0];
+    final byte escapeChar = this.escapeChar;
+    final int fieldCount = this.fieldCount;
+    final int[] startPositions = this.startPositions;
+    final int[] escapeCounts = this.escapeCounts;
+    final byte[] bytes = this.bytes;
+    final int end = this.end;
+    final int endLessOne = end - 1;
+
+    int fieldId = 0;
+    int fieldByteBegin = start;
+    int fieldByteEnd = start;
+    int escapeCount = 0;
+
+    // Process the bytes that can be escaped (the last one can't be).
+    while (fieldByteEnd < endLessOne) {
+      if (bytes[fieldByteEnd] == separator) {
+        escapeCounts[fieldId] = escapeCount;
+        escapeCount = 0;
+        startPositions[fieldId++] = fieldByteBegin;
+        if (fieldId == fieldCount) {
+          parsedFieldCount = fieldId;
+          parsedFieldByteEnd = fieldByteEnd;
+          return;
+        }
+        fieldByteBegin = ++fieldByteEnd;
+      } else if (bytes[fieldByteEnd] == escapeChar) {
+        // Ignore the char after escape_char
+        fieldByteEnd += 2;
+        escapeCount++;
+      } else {
+        fieldByteEnd++;
+      }
+    }
+    // Process the last byte if necessary.
+    if (fieldByteEnd == endLessOne && fieldId < fieldCount) {
+      if (bytes[fieldByteEnd] == separator) {
+        escapeCounts[fieldId] = escapeCount;
+        escapeCount = 0;
+        startPositions[fieldId++] = fieldByteBegin;
+        if (fieldId <= fieldCount) {
+          fieldByteBegin = ++fieldByteEnd;
         }
       } else {
-        // Multi-byte top-level delimiter (MultiDelimitSerDe path). We keep the
-        // "test the first byte, then verify the tail" idiom so the mismatching-
-        // byte case still costs a single load+compare — the tail memcmp only
-        // fires on a first-byte hit.
-        final byte[] delim = this.fieldDelimMulti;
-        final int dlen = delim.length;
-        final byte first = delim[0];
-        final int scanEnd = end - dlen;   // last index at which a full delim can start
-        while (fieldByteEnd <= scanEnd) {
-          if (bytes[fieldByteEnd] == first && matchesAt(bytes, fieldByteEnd, delim, dlen)) {
-            startPositions[fieldId++] = fieldByteBegin;
-            if (fieldId == fieldCount) {
-              // Malformed row with more delims than expected: leave fieldByteEnd
-              // where it is (matching single-byte-path semantics) and stop.
-              break;
-            }
-            fieldByteEnd += dlen;
-            fieldByteBegin = fieldByteEnd;
-          } else {
-            fieldByteEnd++;
-          }
-        }
-        // No trailing delim (single-byte parses "end as final separator" here).
-        // If we still owe fields, the remainder from fieldByteBegin..end is the
-        // last field; fast-forward fieldByteEnd so the Arrays.fill sentinel and
-        // isEndOfInputReached below both see the row as fully consumed.
-        if (fieldId < fieldCount) {
-          fieldByteEnd = end;
-          startPositions[fieldId++] = fieldByteBegin;
-        }
-      }
-    } else {
-      final byte escapeChar = this.escapeChar;
-      final int endLessOne = end - 1;
-      final int[] escapeCounts = this.escapeCounts;
-      int escapeCount = 0;
-      // Process the bytes that can be escaped (the last one can't be).
-      while (fieldByteEnd < endLessOne) {
-        if (bytes[fieldByteEnd] == separator) {
-          escapeCounts[fieldId] = escapeCount;
-          escapeCount = 0;
-          startPositions[fieldId++] = fieldByteBegin;
-          if (fieldId == fieldCount) {
-            break;
-          }
-          fieldByteBegin = ++fieldByteEnd;
-        } else if (bytes[fieldByteEnd] == escapeChar) {
-          // Ignore the char after escape_char
-          fieldByteEnd += 2;
-          escapeCount++;
-        } else {
-          fieldByteEnd++;
-        }
-      }
-      // Process the last byte if necessary.
-      if (fieldByteEnd == endLessOne && fieldId < fieldCount) {
-        if (bytes[fieldByteEnd] == separator) {
-          escapeCounts[fieldId] = escapeCount;
-          escapeCount = 0;
-          startPositions[fieldId++] = fieldByteBegin;
-          if (fieldId <= fieldCount) {
-            fieldByteBegin = ++fieldByteEnd;
-          }
-        } else {
-          fieldByteEnd++;
-        }
-      }
-      // End serves as final separator.
-      if (fieldByteEnd == end && fieldId < fieldCount) {
-        escapeCounts[fieldId] = escapeCount;
-        startPositions[fieldId++] = fieldByteBegin;
+        fieldByteEnd++;
       }
     }
-
-    if (fieldId == fieldCount || fieldByteEnd == end) {
-      // All fields have been parsed, or bytes have been parsed.
-      // We need to set the startPositions of fields.length to ensure we
-      // can use the same formula to calculate the length of each field.
-      // For missing fields, their starting positions will all be the same,
-      // which will make their lengths to be -1 and uncheckedGetField will
-      // return these fields as NULLs.
-      // Charge the actual separator width (1 byte for LazySimple, delim.length
-      // for the multi-byte MultiDelimit path) so the "length = next - this -
-      // sepLen" arithmetic used by readField comes out right in both cases.
-      Arrays.fill(startPositions, fieldId, startPositions.length,
-          fieldByteEnd + topLevelSeparatorLen);
+    // End serves as final separator.
+    if (fieldByteEnd == end && fieldId < fieldCount) {
+      escapeCounts[fieldId] = escapeCount;
+      startPositions[fieldId++] = fieldByteBegin;
     }
-
-    isEndOfInputReached = (fieldByteEnd == end);
+    parsedFieldCount = fieldId;
+    parsedFieldByteEnd = fieldByteEnd;
   }
 
   private int parseComplexField(int start, int end, int level) {

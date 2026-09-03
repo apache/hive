@@ -60,34 +60,6 @@ public class TestVectorDeserializeOrcWriter {
 
   private static final int TEST_NUM_COLS = 2;
 
-  private static Field reflectField(Class<?> classToReflect, String fieldNameValueToFetch) {
-    try {
-      Field reflectField = null;
-      Class<?> classForReflect = classToReflect;
-      do {
-        try {
-          reflectField = classForReflect.getDeclaredField(fieldNameValueToFetch);
-        } catch (NoSuchFieldException e) {
-          classForReflect = classForReflect.getSuperclass();
-        }
-      } while (reflectField == null || classForReflect == null);
-      reflectField.setAccessible(true);
-      return reflectField;
-    } catch (Exception e) {
-      fail("Failed to reflect " + fieldNameValueToFetch + " from " + classToReflect);
-    }
-    return null;
-  }
-
-  private static void reflectSetValue(Object objToReflect, String fieldNameToSet, Object valueToSet) {
-    try {
-      Field reflectField = reflectField(objToReflect.getClass(), fieldNameToSet);
-      reflectField.set(objToReflect, valueToSet);
-    } catch (Exception e) {
-      fail("Failed to reflectively set " + fieldNameToSet + "=" + valueToSet);
-    }
-  }
-
   @Test
   public void testConcurrencyIssueWhileWriting() throws Exception {
 
@@ -134,37 +106,7 @@ public class TestVectorDeserializeOrcWriter {
     assertEquals(newCvb, cvb);
   }
 
-  private static void createTestVectors(ColumnVectorBatch cvb, VectorizedRowBatch vrb) {
-    for (int i = 0; i < TEST_NUM_COLS; ++i) {
-      LongColumnVector cv = new LongColumnVector();
-      cv.fill(i);
-      cvb.cols[i] = cv;
-      vrb.cols[i] = cv;
-    }
-  }
-
-  private static VectorDeserializeOrcWriter createOrcWriter(
-          Queue<VectorDeserializeOrcWriter.WriteOperation> writeOpQueue, VectorizedRowBatch vrb) {
-    VectorDeserializeOrcWriter orcWriter = mock(VectorDeserializeOrcWriter.class,
-        withSettings().defaultAnswer(CALLS_REAL_METHODS));
-
-    reflectSetValue(orcWriter, "sourceBatch", vrb);
-    reflectSetValue(orcWriter, "destinationBatch", vrb);
-    reflectSetValue(orcWriter, "currentBatches", new ArrayList<VectorizedRowBatch>());
-    reflectSetValue(orcWriter, "queue", writeOpQueue);
-    reflectSetValue(orcWriter, "isAsync", true);
-    return orcWriter;
-  }
-
   // --- createSerdeParams: MultiDelimit routing → fieldDelimMulti wiring -----
-
-  private static LazySerDeParameters invokeCreateSerdeParams(Properties tblProps,
-      Deserializer serDe) throws Exception {
-    Method m = VectorDeserializeOrcWriter.class.getDeclaredMethod(
-        "createSerdeParams", Configuration.class, Properties.class, Deserializer.class);
-    m.setAccessible(true);
-    return (LazySerDeParameters) m.invoke(null, new Configuration(false), tblProps, serDe);
-  }
 
   /**
    * When routing sees a MultiDelimitSerDe with a multi-byte field.delim, the
@@ -218,6 +160,64 @@ public class TestVectorDeserializeOrcWriter {
 
     LazySerDeParameters params = invokeCreateSerdeParams(tblProps, new MultiDelimitSerDe());
     assertNull(params.getFieldDelimMulti());
+  }
+
+  private static Field reflectField(Class<?> classToReflect, String fieldNameValueToFetch) {
+    try {
+      Field reflectField = null;
+      Class<?> classForReflect = classToReflect;
+      do {
+        try {
+          reflectField = classForReflect.getDeclaredField(fieldNameValueToFetch);
+        } catch (NoSuchFieldException e) {
+          classForReflect = classForReflect.getSuperclass();
+        }
+      } while (reflectField == null || classForReflect == null);
+      reflectField.setAccessible(true);
+      return reflectField;
+    } catch (Exception e) {
+      fail("Failed to reflect " + fieldNameValueToFetch + " from " + classToReflect);
+    }
+    return null;
+  }
+
+  private static void reflectSetValue(Object objToReflect, String fieldNameToSet, Object valueToSet) {
+    try {
+      Field reflectField = reflectField(objToReflect.getClass(), fieldNameToSet);
+      reflectField.set(objToReflect, valueToSet);
+    } catch (Exception e) {
+      fail("Failed to reflectively set " + fieldNameToSet + "=" + valueToSet);
+    }
+  }
+
+  private static void createTestVectors(ColumnVectorBatch cvb, VectorizedRowBatch vrb) {
+    for (int i = 0; i < TEST_NUM_COLS; ++i) {
+      LongColumnVector cv = new LongColumnVector();
+      cv.fill(i);
+      cvb.cols[i] = cv;
+      vrb.cols[i] = cv;
+    }
+  }
+
+  private static VectorDeserializeOrcWriter createOrcWriter(
+          Queue<VectorDeserializeOrcWriter.WriteOperation> writeOpQueue, VectorizedRowBatch vrb) {
+    VectorDeserializeOrcWriter orcWriter = mock(VectorDeserializeOrcWriter.class,
+        withSettings().defaultAnswer(CALLS_REAL_METHODS));
+
+    reflectSetValue(orcWriter, "sourceBatch", vrb);
+    reflectSetValue(orcWriter, "destinationBatch", vrb);
+    reflectSetValue(orcWriter, "currentBatches", new ArrayList<VectorizedRowBatch>());
+    reflectSetValue(orcWriter, "queue", writeOpQueue);
+    reflectSetValue(orcWriter, "isAsync", true);
+    return orcWriter;
+  }
+
+  private static LazySerDeParameters invokeCreateSerdeParams(Properties tblProps,
+      Deserializer serDe) throws Exception {
+    Method m = VectorDeserializeOrcWriter.class.getDeclaredMethod(
+        "createSerdeParams", Configuration.class, Properties.class, Deserializer.class);
+    m.setAccessible(true);
+    return (LazySerDeParameters) m.invoke(null, new Configuration(false), tblProps, serDe);
   }
 
   private static EncodedDataConsumer createBlankEncodedDataConsumer() {
