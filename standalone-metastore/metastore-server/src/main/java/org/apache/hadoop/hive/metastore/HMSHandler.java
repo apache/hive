@@ -1905,84 +1905,22 @@ public class HMSHandler extends PrivilegeHandler {
   @Override
   public AlterTableResponse alter_table_req(AlterTableRequest req)
       throws InvalidOperationException, MetaException {
-    alter_table_core(req.getCatName(), req.getDbName(), req.getTableName(),
-        req.getTable(), req.getEnvironmentContext(), req.getValidWriteIdList(),
-        req.getProcessorCapabilities(), req.getProcessorIdentifier(),
-        req.getExpectedParameterKey(), req.getExpectedParameterValue());
-    return new AlterTableResponse();
-  }
-
-  private void alter_table_core(String catName, String dbname, String name, Table newTable,
-                                EnvironmentContext envContext, String validWriteIdList, List<String> processorCapabilities,
-                                String processorId, String expectedPropertyKey, String expectedPropertyValue)
-          throws InvalidOperationException, MetaException {
-    startFunction("alter_table", ": " + TableName.getQualified(catName, dbname, name)
-        + " newtbl=" + newTable.getTableName());
-    if (envContext == null) {
-      envContext = new EnvironmentContext();
-    }
-    // Set the values to the envContext, so we do not have to change the HiveAlterHandler API
-    if (expectedPropertyKey != null) {
-      envContext.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, expectedPropertyKey);
-    }
-    if (expectedPropertyValue != null) {
-      envContext.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, expectedPropertyValue);
-    }
-
-    if (catName == null) {
-      catName = getDefaultCatalog(conf);
-    }
-
-    // HIVE-25282: Drop/Alter table in REMOTE db should fail
-    try {
-      Database db = get_database_core(catName, dbname);
-      if (MetaStoreUtils.isDatabaseRemote(db)) {
-        throw new MetaException("Alter table in REMOTE database " + db.getName() + " is not allowed");
-      }
-    } catch (NoSuchObjectException e) {
-      throw new InvalidOperationException("Alter table in REMOTE database is not allowed");
-    }
-
-    // Update the time if it hasn't been specified.
-    if (newTable.getParameters() == null ||
-        newTable.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
-      newTable.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
-          .currentTimeMillis() / 1000));
-    }
-
-    // Adds the missing scheme/authority for the new table location
-    if (newTable.getSd() != null) {
-      String newLocation = newTable.getSd().getLocation();
-      if (org.apache.commons.lang3.StringUtils.isNotEmpty(newLocation)) {
-        Path tblPath = wh.getDnsPath(new Path(newLocation));
-        newTable.getSd().setLocation(tblPath.toString());
-      }
-    }
-    // Set the catalog name if it hasn't been set in the new table
-    if (!newTable.isSetCatName()) {
-      newTable.setCatName(catName);
-    }
-
-    boolean success = false;
+    String catName = req.isSetCatName() && req.getCatName() != null
+        ? req.getCatName() : getDefaultCatalog(conf);
+    startFunction("alter_table", ": " + TableName.getQualified(catName, req.getDbName(),
+        req.getTableName()) + " newtbl=" + req.getTable().getTableName());
     Exception ex = null;
+    boolean ret = false;
     try {
-      GetTableRequest request = new GetTableRequest(dbname, name);
-      request.setCatName(catName);
-      Table oldt = get_table_core(request);
-      if (transformer != null) {
-        newTable = transformer.transformAlterTable(oldt, newTable, processorCapabilities, processorId);
-      }
-      firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
-      alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
-          envContext, this, validWriteIdList);
-      success = true;
+      ret = AbstractRequestHandler.offer(this, req).success();
+      return new AlterTableResponse();
     } catch (Exception e) {
       ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, InvalidOperationException.class)
           .convertIfInstance(NoSuchObjectException.class, InvalidOperationException.class)
           .defaultMetaException();
     } finally {
-      endFunction("alter_table", success, ex, name);
+      endFunction("alter_table", ret, ex, req.getTableName());
     }
   }
 
