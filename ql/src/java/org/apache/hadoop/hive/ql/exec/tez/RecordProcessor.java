@@ -22,8 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
+import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -59,9 +62,32 @@ public abstract class RecordProcessor extends InterruptibleProcessing {
   protected PerfLogger perfLogger = SessionState.getPerfLogger();
   protected String CLASS_NAME = RecordProcessor.class.getName();
 
+  protected final String queryId;
+
+  /**
+   * Per-processor plan cache — no daemon-wide sharing. Sharing would race on
+   * per-fragment operator state that {@code initializeOp()} resets (HIVE-14433:
+   * {@code FileSinkOperator.fsp}, {@code VectorGroupByOperator.aggregator},
+   * {@code Operator.childOperatorsArray}, {@code VectorTopNKeyOperator} filter
+   * state, ...) and yields NPE / {@code FileAlreadyExistsException}.
+   */
+  protected final TrackedCache planCache;
+
+  /**
+   * Dynamic value cache. On LLAP this is the per-query daemon-wide
+   * {@link LlapObjectCache}, so dynamic values computed once (e.g. broadcast
+   * hash tables, DPP registries) are reused across fragments of the same query.
+   */
+  protected final TrackedCache dynamicValueCache;
+
   public RecordProcessor(JobConf jConf, ProcessorContext processorContext) {
     this.jconf = jConf;
     this.processorContext = processorContext;
+    this.queryId = HiveConf.getVar(jConf, HiveConf.ConfVars.HIVE_QUERY_ID);
+    this.planCache = new TrackedCache(
+        ObjectCacheFactory.getCache(jConf, queryId, true, false));
+    this.dynamicValueCache = new TrackedCache(
+        ObjectCacheFactory.getCache(jConf, queryId, false, true));
   }
 
   /**
@@ -98,26 +124,60 @@ public abstract class RecordProcessor extends InterruptibleProcessing {
     }
   }
 
-  public List<BaseWork> getMergeWorkList(final JobConf jconf, String key, String queryId,
-      ObjectCache cache, List<String> cacheKeys) throws HiveException {
+  /**
+   * Release every key retrieved through the plan and dynamic-value caches.
+   * A no-op for {@link LlapObjectCache} (which relies on soft references), but
+   * preserved for correctness against other {@link ObjectCache} implementations.
+   */
+  protected void releaseCache() {
+    planCache.releaseAll();
+    dynamicValueCache.releaseAll();
+  }
+
+  public List<BaseWork> getMergeWorkList(final JobConf jconf) throws HiveException {
     String prefixes = jconf.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
-    if (prefixes != null) {
-      List<BaseWork> mergeWorkList = new ArrayList<>();
-
-      for (final String prefix : prefixes.split(",")) {
-        if (prefix.isEmpty()) {
-          continue;
-        }
-
-        key = prefix;
-        cacheKeys.add(key);
-
-        mergeWorkList.add(cache.retrieve(key, () -> Utilities.getMergeWork(jconf, prefix)));
-      }
-
-      return mergeWorkList;
-    } else {
+    if (prefixes == null) {
       return null;
+    }
+    List<BaseWork> mergeWorkList = new ArrayList<>();
+    for (final String prefix : prefixes.split(",")) {
+      if (prefix.isEmpty()) {
+        continue;
+      }
+      mergeWorkList.add(planCache.retrieve(prefix, () -> Utilities.getMergeWork(jconf, prefix)));
+    }
+    return mergeWorkList;
+  }
+
+  /**
+   * An {@link ObjectCache} paired with the set of keys retrieved through it, so
+   * {@link #releaseAll()} releases exactly those keys at close time. All retrievals
+   * that need to be released should go through {@link #retrieve} — calling
+   * {@link ObjectCache#retrieve} directly on the underlying cache bypasses the
+   * tracking and leaks the key.
+   */
+  protected static final class TrackedCache {
+    private final ObjectCache cache;
+    private final List<String> keys = new ArrayList<>();
+
+    TrackedCache(ObjectCache cache) {
+      this.cache = cache;
+    }
+
+    /** Retrieve (or compute) the value for {@code key}, tracking it for release. */
+    <T> T retrieve(String key, Callable<T> fn) throws HiveException {
+      keys.add(key);
+      return cache.retrieve(key, fn);
+    }
+
+    /** Release every key retrieved through this wrapper. Null-safe on the underlying cache. */
+    void releaseAll() {
+      if (cache == null) {
+        return;
+      }
+      for (String k : keys) {
+        cache.release(k);
+      }
     }
   }
 }

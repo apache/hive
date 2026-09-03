@@ -25,9 +25,7 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -59,11 +57,9 @@ public class MergeFileRecordProcessor extends RecordProcessor {
   protected Operator<? extends OperatorDesc> mergeOp;
   private ExecMapperContext execContext = null;
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
-  private String cacheKey;
   private MergeFileWork mfWork;
   MRInputLegacy mrInput = null;
   private final Object[] row = new Object[2];
-  org.apache.hadoop.hive.ql.exec.ObjectCache cache;
 
   public MergeFileRecordProcessor(final JobConf jconf, final ProcessorContext context) {
     super(jconf, context);
@@ -94,20 +90,10 @@ public class MergeFileRecordProcessor extends RecordProcessor {
           .initialize();
     }
 
-    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVE_QUERY_ID);
-    cache = ObjectCacheFactory.getCache(jconf, queryId, true);
-
     try {
       execContext.setJc(jconf);
 
-      cacheKey = MAP_PLAN_KEY;
-
-      MapWork mapWork = (MapWork) cache.retrieve(cacheKey, new Callable<Object>() {
-        @Override
-        public Object call() {
-          return Utilities.getMapWork(jconf);
-        }
-      });
+      MapWork mapWork = (MapWork) planCache.retrieve(MAP_PLAN_KEY, (Callable<Object>) () -> Utilities.getMapWork(jconf));
       Utilities.setMapWork(jconf, mapWork);
 
       if (mapWork instanceof MergeFileWork) {
@@ -162,9 +148,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
   @Override
   void close() {
 
-    if (cache != null && cacheKey != null) {
-      cache.release(cacheKey);
-    }
+    releaseCache();
 
     // check if there are IOExceptions
     if (!isAborted()) {
