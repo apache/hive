@@ -19,11 +19,11 @@
 
 package org.apache.hive.jdbc;
 
-import java.util.Map;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.protocol.HttpContext;
 
-import org.apache.http.HttpRequest;
-import org.apache.http.client.CookieStore;
-import org.apache.http.protocol.HttpContext;
+import java.util.Map;
 
 /**
  * The class is instantiated with the username and password, it is then

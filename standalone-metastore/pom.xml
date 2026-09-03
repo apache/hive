@@ -99,8 +99,7 @@
     <junit.jupiter.version>5.13.3</junit.jupiter.version>
     <junit.vintage.version>5.13.3</junit.vintage.version>
     <junit.platform.version>1.13.3</junit.platform.version>
-    <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.16.0</libthrift.version>
+    <libthrift.version>0.24.0</libthrift.version>
     <log4j2.version>2.25.4</log4j2.version>
     <mockito-core.version>5.17.0</mockito-core.version>
     <orc.version>2.1.2</orc.version>
@@ -122,8 +121,8 @@
     <spotbugs.version>4.8.6</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
     <slf4j.version>1.7.30</slf4j.version>
-    <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
-    <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
+    <httpcomponents5.client.version>5.6.2</httpcomponents5.client.version>
+    <httpcomponents5.core.version>5.4.3</httpcomponents5.core.version>
     <pac4j-core.version>4.5.8</pac4j-core.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
     <jetty.version>9.4.57.v20241219</jetty.version>
@@ -332,14 +331,24 @@
         <version>${log4j2.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.thrift</groupId>
-        <artifactId>libfb303</artifactId>
-        <version>${libfb303.version}</version>
+        <groupId>org.apache.httpcomponents.client5</groupId>
+        <artifactId>httpclient5</artifactId>
+        <version>${httpcomponents5.client.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.thrift</groupId>
         <artifactId>libthrift</artifactId>
         <version>${libthrift.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.datanucleus</groupId>
@@ -446,9 +455,9 @@
         <scope>runtime</scope>
       </dependency>
       <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <version>${httpcomponents.core.version}</version>
+        <groupId>org.apache.httpcomponents.core5</groupId>
+        <artifactId>httpcore5</artifactId>
+        <version>${httpcomponents5.core.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>

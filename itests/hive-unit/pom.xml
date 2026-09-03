@@ -118,6 +118,11 @@
       <artifactId>tez-protobuf-history-plugin</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
+      <version>${httpcomponents5.client.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-tests</artifactId>
       <classifier>tests</classifier>
