@@ -112,6 +112,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private Path destPath;
   private boolean isHiveServerQuery;
   private boolean isMerge;
+  private Context.Operation statementOperation = Context.Operation.OTHER;
   private boolean isMmCtas;
 
   private Set<FileStatus> filesToFetch = null;
@@ -199,6 +200,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     ret.setStatsReliable(statsReliable);
     ret.setDpSortState(dpSortState);
     ret.setWriteType(writeType);
+    ret.setWriteOperation(writeOperation);
+    ret.setStatementOperation(statementOperation);
     ret.setTableWriteId(tableWriteId);
     ret.setStatementId(statementId);
     ret.setStatsTmpDir(statsTmpDir);
@@ -684,6 +687,14 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   public boolean isMmCtas() {
     return isMmCtas;
+  }
+
+  public void setStatementOperation(Context.Operation statementOperation) {
+    this.statementOperation = statementOperation;
+  }
+
+  public Context.Operation getStatementOperation() {
+    return statementOperation;
   }
 
   @Explain(displayName = "bucketingVersion", explainLevels = { Level.EXTENDED })

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setStatementOperation;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setMergeTaskEnabled;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperationIsSorted;
@@ -640,6 +641,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       jc = new JobConf(hconf);
       setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
+      setStatementOperation(jc, getConf().getTableInfo().getTableName(), getConf().getStatementOperation());
       setWriteOperationIsSorted(jc, getConf().getTableInfo().getTableName(),
               dpCtx != null && dpCtx.hasCustomPartitionOrSortExpression());
       setMergeTaskEnabled(jc, getConf().getTableInfo().getTableName(),
