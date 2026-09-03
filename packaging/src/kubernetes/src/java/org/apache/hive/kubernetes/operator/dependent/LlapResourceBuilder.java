@@ -532,9 +532,6 @@ public class LlapResourceBuilder
     int webPort = ConfigUtils.getInt(llap.configOverrides(),
         ConfigUtils.HIVE_LLAP_DAEMON_WEB_PORT_KEY, null,
         ConfigUtils.HIVE_LLAP_DAEMON_WEB_PORT_DEFAULT);
-    int outputPort = ConfigUtils.getInt(llap.configOverrides(),
-        ConfigUtils.HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_KEY, null,
-        ConfigUtils.HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_DEFAULT);
 
     List<ContainerPort> ports = new ArrayList<>();
     ports.add(new ContainerPortBuilder()
@@ -545,9 +542,6 @@ public class LlapResourceBuilder
         .withProtocol("TCP").build());
     ports.add(new ContainerPortBuilder()
         .withName("web").withContainerPort(webPort)
-        .withProtocol("TCP").build());
-    ports.add(new ContainerPortBuilder()
-        .withName("output").withContainerPort(outputPort)
         .withProtocol("TCP").build());
 
     Probe readinessProbe = buildTcpProbe(managementPort, llap.readinessProbe(), 15, 10, 3);

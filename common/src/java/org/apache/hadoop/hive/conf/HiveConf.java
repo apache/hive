@@ -130,12 +130,6 @@ public class HiveConf extends Configuration {
         public String toString() {
           return "RCfile";
         }
-    },
-    LLAP {
-      @Override
-        public String toString() {
-          return "Llap";
-        }
     };
 
     public static ResultFileFormat getInvalid() {
@@ -5367,48 +5361,6 @@ public class HiveConf extends Configuration {
     LLAP_VALIDATE_ACLS("hive.llap.validate.acls", true,
         "Whether LLAP should reject permissive ACLs in some cases (e.g. its own management\n" +
         "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),
-    LLAP_DAEMON_OUTPUT_SERVICE_PORT("hive.llap.daemon.output.service.port", 15003,
-        "LLAP daemon output service port"),
-    LLAP_DAEMON_OUTPUT_STREAM_TIMEOUT("hive.llap.daemon.output.stream.timeout", "120s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "The timeout for the client to connect to LLAP output service and start the fragment\n" +
-        "output after sending the fragment. The fragment will fail if its output is not claimed."),
-    LLAP_DAEMON_OUTPUT_SERVICE_SEND_BUFFER_SIZE("hive.llap.daemon.output.service.send.buffer.size",
-        128 * 1024, "Send buffer size to be used by LLAP daemon output service"),
-    LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES("hive.llap.daemon.output.service.max.pending.writes",
-        8, "Maximum number of queued writes allowed per connection when sending data\n" +
-        " via the LLAP output service to external clients."),
-    LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT("hive.llap.external.splits.temp.table.storage.format",
-        "orc", new StringSet("default", "text", "orc"),
-        "Storage format for temp tables created using LLAP external client"),
-    LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR("hive.llap.external.client.use.hybrid.calendar",
-        false,
-        "Whether to use hybrid calendar for parsing of data/timestamps."),
-
-    // ====== confs for llap-external-client cloud deployment ======
-    LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED(
-        "hive.llap.external.client.cloud.deployment.setup.enabled", false,
-        "Tells whether to enable additional RPC port, auth mechanism for llap external clients. This is meant"
-            + "for cloud based deployments. When true, it has following effects - \n"
-            + "1. Enables an extra RPC port on LLAP daemon to accept fragments from external clients. See"
-            + "hive.llap.external.client.cloud.rpc.port\n"
-            + "2. Uses external hostnames of LLAP in splits, so that clients can submit from outside of cloud. "
-            + "Env variable PUBLIC_HOSTNAME should be available on LLAP machines.\n"
-            + "3. Uses JWT based authentication for splits to be validated at LLAP. See "
-            + "hive.llap.external.client.cloud.jwt.shared.secret.provider"),
-    LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT("hive.llap.external.client.cloud.rpc.port", 30004,
-        "The LLAP daemon RPC port for external clients when llap is running in cloud environment."),
-    LLAP_EXTERNAL_CLIENT_CLOUD_OUTPUT_SERVICE_PORT("hive.llap.external.client.cloud.output.service.port", 30005,
-                "LLAP output service port when llap is running in cloud environment"),
-    LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET_PROVIDER(
-        "hive.llap.external.client.cloud.jwt.shared.secret.provider",
-        "org.apache.hadoop.hive.llap.security.DefaultJwtSharedSecretProvider",
-        "Shared secret provider to be used to sign JWT"),
-    LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET("hive.llap.external.client.cloud.jwt.shared.secret",
-        "",
-        "The LLAP daemon RPC port for external clients when llap is running in cloud environment. "
-            + "Length of the secret should be >= 32 bytes"),
-    // ====== confs for llap-external-client cloud deployment ======
 
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
         "Override if grace join should be allowed to run in llap."),

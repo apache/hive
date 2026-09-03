@@ -54,7 +54,6 @@
     <module>streaming</module>
     <module>llap-common</module>
     <module>llap-client</module>
-    <module>llap-ext-client</module>
     <module>llap-tez</module>
     <module>llap-server</module>
     <module>shims</module>
@@ -229,7 +228,6 @@
     <curator.version>5.7.1</curator.version>
     <jsr305.version>3.0.0</jsr305.version>
     <gson.version>2.9.0</gson.version>
-    <jjwt.version>0.10.5</jjwt.version>
     <re2j.version>1.2</re2j.version>
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.9.0</json-path.version>
@@ -451,21 +449,6 @@
         <groupId>org.graalvm.truffle</groupId>
         <artifactId>truffle-runtime</artifactId>
         <version>${graalvm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt-api</artifactId>
-        <version>${jjwt.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt-impl</artifactId>
-        <version>${jjwt.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt-jackson</artifactId>
-        <version>${jjwt.version}</version>
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>

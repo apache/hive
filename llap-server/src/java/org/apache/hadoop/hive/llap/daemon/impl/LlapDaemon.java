@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
-import org.apache.hadoop.hive.llap.LlapOutputFormatService;
 import org.apache.hadoop.hive.llap.LlapUgiManager;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
@@ -76,7 +75,6 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
-import org.apache.hadoop.hive.llap.security.LlapExtClientJwtHelper;
 import org.apache.hadoop.hive.llap.security.SecretManager;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.hive.ql.ServiceContext;
@@ -141,7 +139,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   public LlapDaemon(Configuration daemonConf, int numExecutors, long executorMemoryBytes,
     boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int srvPort,
-                    boolean externalClientCloudSetupEnabled, int externalClientsRpcPort,
       int mngPort, int shufflePort, int webPort, String appName) {
     super("LlapDaemon");
 
@@ -150,11 +147,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     Preconditions.checkArgument(numExecutors > 0);
     Preconditions.checkArgument(srvPort == 0 || (srvPort > 1024 && srvPort < 65536),
         "Server RPC Port must be between 1025 and 65535, or 0 automatic selection");
-    if (externalClientCloudSetupEnabled) {
-      Preconditions.checkArgument(
-          externalClientsRpcPort == 0 || (externalClientsRpcPort > 1024 && externalClientsRpcPort < 65536),
-          "Server RPC port for external clients must be between 1025 and 65535, or 0 automatic selection");
-    }
 
     Preconditions.checkArgument(mngPort == 0 || (mngPort > 1024 && mngPort < 65536),
         "Management RPC Port must be between 1025 and 65535, or 0 automatic selection");
@@ -162,10 +154,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         "Work dirs must be specified");
     Preconditions.checkArgument(shufflePort == 0 || (shufflePort > 1024 && shufflePort < 65536),
         "Shuffle Port must be between 1024 and 65535, or 0 for automatic selection");
-    int outputFormatServicePort = HiveConf.getIntVar(daemonConf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
-    Preconditions.checkArgument(outputFormatServicePort == 0
-        || (outputFormatServicePort > 1024 && outputFormatServicePort < 65536),
-        "OutputFormatService Port must be between 1024 and 65535, or 0 for automatic selection");
     String hosts = HiveConf.getTrimmedVar(daemonConf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     if (hosts.startsWith("@")) {
       String zkHosts = HiveConf.getTrimmedVar(daemonConf, ConfVars.HIVE_ZOOKEEPER_QUORUM);
@@ -241,11 +229,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       ", llapIoEnabled=" + ioEnabled +
       ", llapIoCacheIsDirect=" + isDirectCache +
       ", rpcListenerPort=" + srvPort +
-      ", externalClientCloudSetupEnabled=" + externalClientCloudSetupEnabled +
-      ", rpcListenerPortForExternalClients=" + externalClientsRpcPort +
       ", mngListenerPort=" + mngPort +
       ", webPort=" + webPort +
-      ", outputFormatSvcPort=" + outputFormatServicePort +
       ", workDirs=" + Arrays.toString(localDirs) +
       ", shufflePort=" + shufflePort +
       ", waitQueueSize= " + waitQueueSize +
@@ -340,7 +325,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.secretManager = sm;
     this.server = new LlapProtocolServerImpl(secretManager, numHandlers, this, srvAddress, mngAddress, srvPort,
-        externalClientsRpcPort, mngPort, daemonId, metrics).withTokenManager(this.llapTokenManager);
+        mngPort, daemonId, metrics).withTokenManager(this.llapTokenManager);
 
     LlapUgiManager llapUgiManager = LlapUgiManager.getInstance(daemonConf);
 
@@ -492,7 +477,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.shufflePort.set(ShuffleHandler.get().getPort());
     getConfig()
         .setInt(ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT.varname, ShuffleHandler.get().getPort());
-    LlapOutputFormatService.initializeAndStart(getConfig(), secretManager);
     super.serviceStart();
 
     // Setup the actual ports in the configuration.
@@ -500,16 +484,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     getConfig().setInt(ConfVars.LLAP_MANAGEMENT_RPC_PORT.varname, server.getManagementBindAddress().getPort());
     if (webServices != null) {
       getConfig().setInt(ConfVars.LLAP_DAEMON_WEB_PORT.varname, webServices.getPort());
-    }
-    getConfig().setInt(ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT.varname, LlapOutputFormatService.get().getPort());
-    if (LlapUtil.isCloudDeployment(getConfig())) {
-
-      // this invokes JWT secret provider and tries to get shared secret.
-      // meant to validate shared secret as well.
-      new LlapExtClientJwtHelper(getConfig());
-
-      getConfig().setInt(ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT.varname,
-          server.getExternalClientsRpcServerBindAddress().getPort());
     }
 
     // Ensure this is set in the config so that the AM can read it.
@@ -544,7 +518,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     super.serviceStop();
     ShuffleHandler.shutdown();
     shutdown();
-    LlapOutputFormatService.get().stop();
     LOG.info("LlapDaemon shutdown complete");
   }
 
@@ -624,8 +597,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       String[] localDirs = (localDirList == null || localDirList.isEmpty()) ?
           new String[0] : StringUtils.getTrimmedStrings(localDirList);
       int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
-      int externalClientCloudRpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT);
-      boolean externalClientCloudSetupEnabled = LlapUtil.isCloudDeployment(daemonConf);
       int mngPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
       int shufflePort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
       int webPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_WEB_PORT);
@@ -643,8 +614,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       LlapDaemon.initializeLogging(daemonConf);
       llapDaemon =
           new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo, isDirectCache,
-              ioMemoryBytes, localDirs, rpcPort, externalClientCloudSetupEnabled,
-              externalClientCloudRpcPort, mngPort, shufflePort, webPort, appName);
+              ioMemoryBytes, localDirs, rpcPort,
+              mngPort, shufflePort, webPort, appName);
 
       LOG.info("Adding shutdown hook for LlapDaemon");
       ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);
