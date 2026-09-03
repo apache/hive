@@ -1,6 +1,0 @@
-1|alpha\|inner|100
-2|beta|200
-3|gamma\|more\|pipes|300
-4|delta|400
-5||500
-6|epsilon|600
