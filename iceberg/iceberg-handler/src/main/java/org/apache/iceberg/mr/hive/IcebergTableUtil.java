@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -65,7 +67,9 @@ import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.TransformSpec.TransformType;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.util.Sets;
@@ -98,6 +102,7 @@ import org.apache.iceberg.TableScan;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.expressions.Binder;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
@@ -117,10 +122,12 @@ import org.apache.iceberg.transforms.Transform;
 import org.apache.iceberg.types.Comparators;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
+import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PartitionUtil;
+import org.apache.iceberg.util.SerializationUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
@@ -456,6 +463,96 @@ public class IcebergTableUtil {
       deleteFiles = deleteFiles.toBranch(HiveUtils.getTableSnapshotRef(branchName));
     }
     deleteFiles.deleteFromRowFilter(exp).commit();
+  }
+
+  /**
+   * Returns identity partition source column ids that should be included in a read schema.
+   */
+  public static Set<Integer> requiredIdentityPartitionSourceIds(Configuration conf, Schema tableSchema,
+      PartitionSpec spec, String[] selectedColumnNames) {
+    if (spec == null || spec.isUnpartitioned()) {
+      return Collections.emptySet();
+    }
+
+    Set<Integer> required = new LinkedHashSet<>();
+    if (selectedColumnNames != null) {
+      for (String name : selectedColumnNames) {
+        Types.NestedField field = tableSchema.findField(name);
+        if (field != null) {
+          required.add(field.fieldId());
+        }
+      }
+    }
+
+    Expression filter = filterExpressionFromConf(conf);
+    if (filter != null && filter != Expressions.alwaysTrue()) {
+      boolean caseSensitive = conf.getBoolean(
+          InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
+      required.addAll(Binder.boundReferences(tableSchema.asStruct(), Collections.singletonList(filter), caseSensitive));
+    }
+
+    Set<Integer> identitySourceIds = spec.identitySourceIds();
+    required.retainAll(identitySourceIds);
+    return required;
+  }
+
+  private static Expression filterExpressionFromConf(Configuration conf) {
+    String encodedFilter = conf.get(InputFormatConfig.FILTER_EXPRESSION);
+    if (encodedFilter != null) {
+      return SerializationUtil.deserializeFromBase64(encodedFilter);
+    }
+
+    String hiveFilter = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
+    if (hiveFilter != null) {
+      ExprNodeGenericFuncDesc exprNodeDesc =
+          SerializationUtilities.deserializeObject(hiveFilter, ExprNodeGenericFuncDesc.class);
+      return HiveIcebergInputFormat.getFilterExpr(conf, exprNodeDesc);
+    }
+
+    return null;
+  }
+
+  /**
+   * Include identity partition source columns in the schema so that partition constants can be injected even when the
+   * columns are omitted from the read projection.
+   */
+  public static Schema includeIdentityPartitionSourceColumns(Schema schema, Schema tableSchema, PartitionSpec spec,
+      Set<Integer> requiredSourceIds) {
+    if (spec == null || spec.isUnpartitioned() || requiredSourceIds == null || requiredSourceIds.isEmpty()) {
+      return schema;
+    }
+
+    Set<Integer> projectedIds = schema.columns().stream()
+        .map(Types.NestedField::fieldId)
+        .collect(Collectors.toSet());
+    Set<Integer> identitySourceIds = spec.identitySourceIds();
+    Set<Integer> sourceIdsToAdd = requiredSourceIds.stream()
+        .filter(identitySourceIds::contains)
+        .filter(id -> !projectedIds.contains(id))
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+    if (sourceIdsToAdd.isEmpty()) {
+      return schema;
+    }
+
+    Set<Integer> tableFieldIds = tableSchema.columns().stream()
+        .map(Types.NestedField::fieldId)
+        .collect(Collectors.toSet());
+    List<Types.NestedField> metaColumns = Lists.newArrayList();
+    Set<Integer> tableProjectionIds = new LinkedHashSet<>();
+    for (Types.NestedField field : schema.columns()) {
+      if (tableFieldIds.contains(field.fieldId())) {
+        tableProjectionIds.add(field.fieldId());
+      } else {
+        metaColumns.add(field);
+      }
+    }
+    tableProjectionIds.addAll(sourceIdsToAdd);
+
+    List<Types.NestedField> columns = Lists.newArrayListWithCapacity(
+        metaColumns.size() + tableProjectionIds.size());
+    columns.addAll(metaColumns);
+    columns.addAll(TypeUtil.select(tableSchema, tableProjectionIds).columns());
+    return new Schema(columns);
   }
 
   /**
