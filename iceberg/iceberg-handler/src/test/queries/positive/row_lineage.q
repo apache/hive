@@ -78,3 +78,59 @@ WHEN MATCHED THEN
 SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
 FROM ice_merge_cow
 ORDER BY ROW__LINEAGE__ID;
+
+-- cow delete
+CREATE TABLE ice_cow_delete (
+  id INT,
+  data STRING
+)
+STORED BY iceberg
+TBLPROPERTIES ('format-version'='3', 'write.delete.mode'='copy-on-write');
+
+INSERT INTO ice_cow_delete VALUES
+  (1, 'apple'),
+  (2, 'banana'),
+  (3, 'cherry');
+
+SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete
+ORDER BY id;
+
+DELETE FROM ice_cow_delete WHERE id = 2;
+
+SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete
+ORDER BY id;
+
+-- cow delete partitioned
+CREATE TABLE ice_cow_delete_part (
+  id INT,
+  data STRING
+)
+PARTITIONED BY (part STRING)
+STORED BY iceberg
+TBLPROPERTIES ('format-version'='3', 'write.delete.mode'='copy-on-write');
+
+-- Snapshot 1: Sequence 1
+INSERT INTO ice_cow_delete_part VALUES
+  (1, 'apple', 'p1'),
+  (2, 'banana', 'p1'),
+  (3, 'cherry', 'p2'),
+  (4, 'date', 'p2');
+
+-- Snapshot 2: Sequence 2 (Adding more data to partition p1 to mix sequence numbers)
+INSERT INTO ice_cow_delete_part VALUES
+  (5, 'elderberry', 'p1');
+
+SELECT id, data, part, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete_part
+ORDER BY id;
+
+-- Snapshot 3: Delete across partitions (Affects data files in both p1 and p2)
+DELETE FROM ice_cow_delete_part WHERE id = 2 OR id = 3;
+
+-- id=1 and id=4 should retain Sequence 1
+-- id=5 should retain Sequence 2
+SELECT id, data, part, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete_part
+ORDER BY id;
