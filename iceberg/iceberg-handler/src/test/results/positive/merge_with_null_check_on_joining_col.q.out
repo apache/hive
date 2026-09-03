@@ -155,7 +155,7 @@ HiveProject(t__partition__spec__id=[$0], t__partition__hash=[$1], t__file__path=
     HiveProject(t__partition__spec__id=[$0], t__partition__hash=[$1], t__file__path=[$2], t__row__position=[$3], t__a=[$4], t__b=[$5], t__c=[$6])
       HiveSemiJoin(condition=[=($2, $9)], joinType=[semi])
         HiveProject(t__partition__spec__id=[$0], t__partition__hash=[$1], t__file__path=[$2], t__row__position=[$3], t__a=[$4], t__b=[$5], t__c=[$6], a=[$7], b=[$8])
-          HiveFilter(condition=[OR(IS NULL(OR(IS NULL($4), AND(=($4, $7), =($5, $8), >($4, 10)), AND(IS NULL($4), IS NULL($5)))), AND(OR(<>($4, $7), <>($5, $8), <=($4, 10)), IS NOT NULL($4)))])
+          HiveFilter(condition=[OR(IS NULL(OR(IS NULL($4), AND(=($4, $7), =($5, $8), >($4, 10)))), AND(OR(<>($4, $7), <>($5, $8), <=($4, 10)), IS NOT NULL($4)))])
             HiveJoin(condition=[AND(=($4, $7), =($5, $8))], joinType=[left], algorithm=[none], cost=[not available])
               HiveProject(t__partition__spec__id=[$3], t__partition__hash=[$4], t__file__path=[$5], t__row__position=[$6], t__a=[$0], t__b=[$1], t__c=[$2])
                 HiveFilter(condition=[IS NOT NULL($5)])

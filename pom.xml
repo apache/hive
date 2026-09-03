@@ -118,7 +118,7 @@
     <awaitility.version>4.2.1</awaitility.version>
     <azure-storage-file-datalake.version>12.22.0</azure-storage-file-datalake.version>
     <bcprov-jdk18on.version>1.84</bcprov-jdk18on.version>
-    <calcite.version>1.42.0</calcite.version>
+    <calcite.version>1.43.0-SNAPSHOT</calcite.version>
     <datanucleus-api-jdo.version>6.0.5</datanucleus-api-jdo.version>
     <datanucleus-core.version>6.0.11</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
@@ -274,6 +274,20 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <!-- Just for testing Apache Calcite Snapshot (locally)
+    <repository>
+      <id>apache.snapshots</id>
+      <name>Apache Snapshots</name>
+      <url>https://repository.apache.org/content/repositories/snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+      </snapshots>
+    </repository>
+    -->
   </repositories>
   <dependencyManagement>
     <dependencies>
