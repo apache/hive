@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import org.apache.hadoop.hive.cli.S3Container;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.QTestSetup;
@@ -40,6 +41,7 @@ public final class QTestArguments {
   private boolean withLlapIo;
   private FsType fsType;
   private QTestSetup qtestSetup;
+  private S3Container.BucketSpec s3BucketSpec;
 
   private Map<HiveConf.ConfVars,String> customConfigValueMap;
 
@@ -122,6 +124,10 @@ public final class QTestArguments {
     this.customConfigValueMap = customConfigValueMap;
   }
 
+  public S3Container.BucketSpec getS3BucketSpec() {
+    return s3BucketSpec;
+  }
+
   public Map<HiveConf.ConfVars, String> getCustomConfs() {
     return this.customConfigValueMap;
   }
@@ -140,6 +146,7 @@ public final class QTestArguments {
     private boolean withLlapIo;
     private FsType fsType;
     private QTestSetup qtestSetup;
+    private S3Container.BucketSpec s3BucketSpec;
 
     private Map<HiveConf.ConfVars, String> customConfigValueMap;
 
@@ -200,6 +207,11 @@ public final class QTestArguments {
       return this;
     }
 
+    public QTestArgumentsBuilder withS3Bucket(S3Container.BucketSpec s3BucketSpec) {
+      this.s3BucketSpec = s3BucketSpec;
+      return this;
+    }
+
     public QTestArguments build() {
       QTestArguments testArguments = new QTestArguments();
       testArguments.setOutDir(outDir);
@@ -209,7 +221,7 @@ public final class QTestArguments {
       testArguments.setInitScript(initScript);
       testArguments.setCleanupScript(cleanupScript);
       testArguments.setWithLlapIo(withLlapIo);
-      
+      testArguments.s3BucketSpec = this.s3BucketSpec;
       testArguments.setFsType(
           fsType != null ? fsType : clusterType.getDefaultFsType());
 

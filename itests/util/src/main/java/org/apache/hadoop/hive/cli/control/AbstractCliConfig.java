@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.cli.S3Container;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
@@ -67,6 +68,7 @@ public abstract class AbstractCliConfig {
   private MiniClusterType clusterType;
   private FsType fsType;
   private String metastoreType;
+  private S3Container.BucketSpec bucketSpec;
 
   // FIXME: null value is treated differently on the other end..when those filter will be
   // moved...this may change
@@ -112,6 +114,10 @@ public abstract class AbstractCliConfig {
     }
   }
 
+  protected void setS3Bucket(S3Container.BucketSpec bucketSpec) {
+    this.bucketSpec = bucketSpec;
+  }
+
   protected void includeQuery(String qFile) {
     if (includeQueryFileNames == null) {
       includeQueryFileNames = new HashSet<>();
@@ -144,6 +150,10 @@ public abstract class AbstractCliConfig {
 
   private static final Splitter TEST_SPLITTER =
       Splitter.onPattern("[, ]").trimResults().omitEmptyStrings();
+
+  public S3Container.BucketSpec getS3BucketSpec() {
+    return this.bucketSpec;
+  }
 
   public static class IncludeFilter implements FileFilter {
 
