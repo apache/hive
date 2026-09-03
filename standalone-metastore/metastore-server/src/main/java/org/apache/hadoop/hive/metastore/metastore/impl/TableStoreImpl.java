@@ -90,9 +90,12 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metastore.GetHelper;
+import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.model.FetchGroups;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
@@ -112,9 +115,6 @@ import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
-import org.apache.hadoop.hive.metastore.metastore.GetHelper;
-import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
-import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -174,7 +174,9 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     MTable tbl = getMTable(catName, dbName, tableName);
     pm.retrieve(tbl);
     if (tbl != null) {
-      materializedView = TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType());
+      materializedView = TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())
+        || TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equals(tbl.getTableType());
+
       // first remove all the grants
       List<MTablePrivilege> tabGrants = listAllTableGrants(catName, dbName, tableName);
       if (CollectionUtils.isNotEmpty(tabGrants)) {
@@ -623,7 +625,13 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     MTable mtable = getMTable(catName, dbName, tableName);
     tbl = convertToTable(mtable);
     // Retrieve creation metadata if needed
-    if (tbl != null && TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
+    if (
+        tbl != null &&
+        (
+          TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType()) ||
+          TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equals(tbl.getTableType())
+        )
+    ) {
       tbl.setCreationMetadata(
           convertToCreationMetadata(getCreationMetadata(catName, dbName, tableName)));
     }
@@ -1255,7 +1263,9 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
         Table tbl = convertToTable((MTable) iter.next());
         // Retrieve creation metadata if needed
-        if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
+        if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType()) ||
+            TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equals(tbl.getTableType()))
+        {
           tbl.setCreationMetadata(
               convertToCreationMetadata(
                   getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
@@ -1271,6 +1281,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       throws MetaException, NoSuchObjectException {
     catName = normalizeIdentifier(catName);
     List<Object> params = new ArrayList<>(Arrays.asList(catName, TableType.MATERIALIZED_VIEW.toString(), true));
+    params.addAll(Arrays.asList(catName, TableType.EXTERNAL_MATERIALIZED_VIEW.toString(), true));
     if (dbName != null) {
       params.add(normalizeIdentifier(dbName));
     }
@@ -2754,6 +2765,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     query.declareParameters("java.lang.String catName, java.lang.String tt, boolean re");
     Collection<MTable> mTbls = (Collection<MTable>) query.executeWithArray(
         catName, TableType.MATERIALIZED_VIEW.toString(), true);
+    mTbls.addAll((Collection<MTable>) query.executeWithArray(
+        catName, TableType.EXTERNAL_MATERIALIZED_VIEW.toString(), true));
     for (MTable mTbl : mTbls) {
       Table tbl = convertToTable(mTbl);
       tbl.setCreationMetadata(
