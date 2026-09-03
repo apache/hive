@@ -46,7 +46,10 @@ public class ParsedOutputFileName {
       "^(.*?)?" + // any prefix
       "(\\(.*\\))?" + // taskId prefix
       "(\\d+)" + // taskId
-      "(?:_(\\d{1,6}))?" + // _<attemptId> (limited to 6 digits)
+      "(?:_(\\d{1,10}))?" + // _<attemptId>
+      // Cap raised from 6 to 10 digits so MoveTask.foldSubdirIntoAttemptId can
+      // encode a HIVE_UNION_SUBDIR_<N> index in the attempt-id namespace as
+      // `subdirIdx * 100000 + originalAttempt` without needing a copy suffix.
       "(?:_copy_(\\d{1,6}|[0-9a-fA-F]{16}))?" + // copy suffix: numeric counter, or 16-hex uniqueness tag
       "(\\..*)?$"); // any suffix/file extension
 
@@ -61,6 +64,9 @@ public class ParsedOutputFileName {
   private final String copyIndex;
   private final String suffix;
   private final CharSequence filePrefixForCopy;
+  // Everything before the taskId (group 1 + group 2, if any) — includes any
+  // "tmp_" style leading prefix that taskIdPrefix on its own would drop.
+  private final CharSequence preTaskIdPrefix;
 
   private ParsedOutputFileName(CharSequence fileName) {
     Matcher m = COPY_FILE_NAME_TO_TASK_ID_REGEX.matcher(fileName);
@@ -72,6 +78,7 @@ public class ParsedOutputFileName {
       copyIndex = m.group(5);
       suffix = m.group(6);
       filePrefixForCopy = m.end(4) >= 0 ? fileName.subSequence(0, m.end(4)) : null;
+      preTaskIdPrefix = fileName.subSequence(0, m.start(3));
     } else {
       taskIdPrefix = null;
       taskId = null;
@@ -79,6 +86,7 @@ public class ParsedOutputFileName {
       copyIndex = null;
       suffix = null;
       filePrefixForCopy = null;
+      preTaskIdPrefix = null;
     }
   }
 
@@ -138,6 +146,43 @@ public class ParsedOutputFileName {
       throw new HiveException("Not expected format for copying files.");
     }
     return filePrefixForCopy + "_copy_" + idx;
+  }
+
+  /**
+   * Return a new filename with the given {@code subdirIdx} folded into the attempt-id
+   * portion: {@code newAttempt = subdirIdx * 100000 + originalAttempt}. TaskId prefix
+   * and file-extension suffix are preserved; any {@code _copy_} suffix on the source
+   * is dropped (this is a flatten operation, not a copy).
+   *
+   * <p>Called by {@link org.apache.hadoop.hive.ql.exec.MoveTask#flattenUnionSubdirectories(org.apache.hadoop.fs.Path)}
+   * when hoisting leaves out of {@code HIVE_UNION_SUBDIR_<subdirIdx>/} into the parent
+   * directory. Folding into the writer-name namespace ({@code [0-9]+_[0-9]+}) keeps
+   * the flattened name out of the {@code _copy_<HIVE-28822 uniqueness tag>} namespace
+   * that {@link org.apache.hadoop.hive.ql.metadata.Hive#pickDestFilePath} may later
+   * add on a non-atomic-rename FS — so the two mechanisms compose cleanly.
+   *
+   * <p>Examples:
+   * <pre>
+   *   000000_0,      subdirIdx=1  -> 000000_100000
+   *   000000_2,      subdirIdx=23 -> 000000_2300002
+   *   000000_3.gz,   subdirIdx=5  -> 000000_500003.gz
+   *   000000,        subdirIdx=7  -> 000000_700000
+   * </pre>
+   *
+   * @param subdirIdx the {@code HIVE_UNION_SUBDIR_<N>} index to fold in
+   * @return the flattened name
+   * @throws HiveException if the source name is not in a recognized writer shape
+   */
+  public String withFoldedSubdirIndex(int subdirIdx) throws HiveException {
+    if (!matches || taskId == null) {
+      throw new HiveException("Cannot fold subdir into attempt id; unexpected filename shape.");
+    }
+    long originalAttempt = attemptId != null ? Long.parseLong(attemptId) : 0L;
+    long newAttempt = ((long) subdirIdx) * 100_000L + originalAttempt;
+    String s = suffix != null ? suffix : "";
+    // preTaskIdPrefix includes any leading "tmp_" AND the "(prefix)" wrapper, so the
+    // rebuilt name matches what makeFilenameWithCopyIndex preserves.
+    return preTaskIdPrefix + taskId + "_" + newAttempt + s;
   }
 
   public String toString() {

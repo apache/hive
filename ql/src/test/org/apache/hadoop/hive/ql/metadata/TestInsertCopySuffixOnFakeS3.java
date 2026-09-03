@@ -104,7 +104,7 @@ class TestInsertCopySuffixOnFakeS3 extends TxnCommandsBaseForTests {
   @AfterEach
   void dropAllTestTables() throws Exception {
     for (String t : new String[] {"insert_into_fakes3", "union_all_fakes3", "union_all_dyn_part_fakes3",
-        "insert_only_fakes3", "full_acid_fakes3", "union_src"}) {
+        "union_all_flatten_fakes3", "insert_only_fakes3", "full_acid_fakes3", "union_src"}) {
       try {
         runQuery("drop table if exists " + t);
       } catch (Exception ignore) {
@@ -259,6 +259,64 @@ class TestInsertCopySuffixOnFakeS3 extends TxnCommandsBaseForTests {
     assertRowCount(tbl, 3);
 
     convertToFullAcidAndAssertRowCount(tbl, 3);
+  }
+
+  /**
+   * {@code INSERT INTO ... UNION ALL ...} on a non-ACID external ORC table with
+   * {@code hive.tez.union.flatten.subdirectories=true}. Verifies the compositional
+   * guarantee: on a non-atomic-rename FS,
+   * MoveTask.flattenUnionSubdirectories folds the subdir index into the attempt-id
+   * portion of the writer name (out of the {@code _copy_} namespace), then
+   * {@link org.apache.hadoop.hive.ql.metadata.Hive#pickDestFilePath} freely appends
+   * its own {@code _copy_<HIVE-28822 uniqueness tag>} on top, producing a leaf
+   * shaped like {@code 000000_<N*100000>_copy_<16 hex>} — a single {@code _copy_}
+   * segment, matching {@link AcidUtils#ORIGINAL_PATTERN_COPY} exactly, and never
+   * living under a {@code HIVE_UNION_SUBDIR_*} directory.
+   */
+  @Test
+  void testUnionAllInsertWithFlattenOnFakeS3() throws Exception {
+    String tbl = "union_all_flatten_fakes3";
+    Path loc = fakeS3Path(tbl);
+
+    boolean previous = HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEZ_UNION_FLATTEN_SUBDIRECTORIES);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEZ_UNION_FLATTEN_SUBDIRECTORIES, true);
+    try {
+      runQuery(
+          "create external table " + tbl + " (a int, b int) stored as orc "
+          + "location '" + fakeS3Location(tbl) + "' "
+          + "tblproperties ('transactional'='false','external.table.purge'='true')");
+
+      createUnionSrc();
+      runQuery(
+          "insert into " + tbl + " "
+          + "select k as a, sum(v) as b from union_src where k = 1 group by k union all "
+          + "select k as a, sum(v) as b from union_src where k = 2 group by k union all "
+          + "select k as a, sum(v) as b from union_src where k = 3 group by k");
+
+      List<String> files = listFilesRelative(loc);
+      assertFalse(files.isEmpty(), "flatten+union insert produced no files under " + loc);
+
+      Set<String> distinctNames = new HashSet<>();
+      for (String rel : files) {
+        assertFalse(rel.contains(AbstractFileMergeOperator.UNION_SUDBIR_PREFIX),
+            "flatten=true must hoist the leaves out of HIVE_UNION_SUBDIR_*: " + rel);
+        String name = rel.substring(rel.lastIndexOf('/') + 1);
+        assertHas16HexUniquenessTag(name);
+        int firstCopy = name.indexOf(org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD);
+        int lastCopy = name.lastIndexOf(org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD);
+        assertEquals(firstCopy, lastCopy,
+            "flattened name must carry exactly one _copy_ segment (no double-append): " + name);
+        distinctNames.add(name);
+      }
+      assertEquals(files.size(), distinctNames.size(),
+          "flattened+tagged leaves must all have distinct names: " + files);
+
+      assertRowCount(tbl, 3);
+
+      convertToFullAcidAndAssertRowCount(tbl, 3);
+    } finally {
+      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEZ_UNION_FLATTEN_SUBDIRECTORIES, previous);
+    }
   }
 
   /**

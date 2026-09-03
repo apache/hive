@@ -297,13 +297,17 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
   //
   // hive.tez.union.flatten.subdirectories=true asks MoveTask to hoist the
   // HIVE_UNION_SUBDIR_<N>/000000_0 leaves into the target directory at write
-  // time. MoveTask.flattenUnionSubdirectories folds the source subdir index
-  // into the filename so that:
-  //   HIVE_UNION_SUBDIR_<N>/000000_0 -> 000000_0_copy_<N>
-  // That name matches the metastore's ORIGINAL_PATTERN_COPY
-  // ([0-9]+_[0-9]+_copy_[0-9]+), so a subsequent ACID conversion (either
-  // CONVERT TO ACID or the SET TBLPROPERTIES flip) is accepted by
-  // TransactionalValidationListener.validateTableStructureForPath.
+  // time. MoveTask.flattenUnionSubdirectories folds the subdir index into the
+  // attempt-id portion of the writer-name — NOT the _copy_ suffix — so:
+  //   HIVE_UNION_SUBDIR_<N>/000000_<A> -> 000000_<N*100000+A>
+  //     e.g. HIVE_UNION_SUBDIR_1/000000_0  -> 000000_100000
+  //          HIVE_UNION_SUBDIR_23/000000_2 -> 000000_2300002
+  // That name matches the metastore's ORIGINAL_PATTERN ([0-9]+_[0-9]+), so a
+  // subsequent ACID conversion (either CONVERT TO ACID or the SET TBLPROPERTIES
+  // flip) is accepted by TransactionalValidationListener.validateTableStructureForPath.
+  // Keeping the fold out of the _copy_ namespace also means a subsequent
+  // Hive.pickDestFilePath on a non-atomic-rename FS composes cleanly on top,
+  // appending its own _copy_<HIVE-28822 uniqueness tag> without collision.
   // ---------------------------------------------------------------------------
 
   /**
@@ -327,10 +331,10 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
 
   /**
    * flatten=true + unpartitioned + CONVERT TO ACID. MoveTask hoists the
-   * union-subdir leaves into {@code 000000_0_copy_<N>} files at the table
-   * root — a name that matches ORIGINAL_PATTERN_COPY, so the subsequent
-   * metadata-only CONVERT TO ACID is accepted and the SELECT returns all
-   * rows.
+   * union-subdir leaves into {@code 000000_<N*100000>} files at the table
+   * root — a plain-writer name that matches ORIGINAL_PATTERN, so the
+   * subsequent metadata-only CONVERT TO ACID is accepted and the SELECT
+   * returns all rows.
    */
   @Test
   void testUnionAllInsertWithFlattenThenConvertToAcid() throws Exception {
@@ -342,9 +346,9 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
       insertUnionAllInto(tbl);
 
       List<String> expectedLayout = List.of(
-          "/union_all_repro/000000_0_copy_1",
-          "/union_all_repro/000000_0_copy_2",
-          "/union_all_repro/000000_0_copy_3");
+          "/union_all_repro/000000_100000",
+          "/union_all_repro/000000_200000",
+          "/union_all_repro/000000_300000");
       assertEquals(expectedLayout, layoutOf(tbl), "pre-conversion layout (write-time flatten on)");
 
       runQuery("alter table " + tbl + " convert to acid");
@@ -360,8 +364,8 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
 
   /**
    * flatten=true + unpartitioned + SET TBLPROPERTIES ACID conversion. Same
-   * shape as the CONVERT TO ACID variant: {@code 000000_0_copy_<N>} matches
-   * ORIGINAL_PATTERN_COPY, so the conversion succeeds.
+   * shape as the CONVERT TO ACID variant: {@code 000000_<N*100000>} matches
+   * ORIGINAL_PATTERN, so the conversion succeeds.
    */
   @Test
   void testUnionAllInsertWithFlattenThenSetTblpropertiesAcid() throws Exception {
@@ -373,9 +377,9 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
       insertUnionAllInto(tbl);
 
       List<String> expectedLayout = List.of(
-          "/union_all_repro_setprops/000000_0_copy_1",
-          "/union_all_repro_setprops/000000_0_copy_2",
-          "/union_all_repro_setprops/000000_0_copy_3");
+          "/union_all_repro_setprops/000000_100000",
+          "/union_all_repro_setprops/000000_200000",
+          "/union_all_repro_setprops/000000_300000");
       assertEquals(expectedLayout, layoutOf(tbl), "pre-conversion layout (write-time flatten on)");
 
       runQuery("alter table " + tbl + " set tblproperties ('transactional'='true')");
@@ -404,9 +408,9 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
       insertUnionAllIntoPartition(tbl, "x");
 
       List<String> expectedLayout = List.of(
-          "/union_all_repro_part/p=x/000000_0_copy_1",
-          "/union_all_repro_part/p=x/000000_0_copy_2",
-          "/union_all_repro_part/p=x/000000_0_copy_3");
+          "/union_all_repro_part/p=x/000000_100000",
+          "/union_all_repro_part/p=x/000000_200000",
+          "/union_all_repro_part/p=x/000000_300000");
       assertEquals(expectedLayout, layoutOf(tbl), "pre-conversion layout (write-time flatten on)");
 
       runQuery("alter table " + tbl + " convert to acid");
@@ -433,9 +437,9 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
       insertUnionAllIntoPartition(tbl, "x");
 
       List<String> expectedLayout = List.of(
-          "/union_all_repro_part_setprops/p=x/000000_0_copy_1",
-          "/union_all_repro_part_setprops/p=x/000000_0_copy_2",
-          "/union_all_repro_part_setprops/p=x/000000_0_copy_3");
+          "/union_all_repro_part_setprops/p=x/000000_100000",
+          "/union_all_repro_part_setprops/p=x/000000_200000",
+          "/union_all_repro_part_setprops/p=x/000000_300000");
       assertEquals(expectedLayout, layoutOf(tbl), "pre-conversion layout (write-time flatten on)");
 
       runQuery("alter table " + tbl + " set tblproperties ('transactional'='true')");
