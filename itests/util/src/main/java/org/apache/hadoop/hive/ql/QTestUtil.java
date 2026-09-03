@@ -300,6 +300,10 @@ public class QTestUtil {
     return scriptsDir;
   }
 
+  public QTestDatabaseHandler getDatabaseHandler() {
+    return (QTestDatabaseHandler) dispatcher.getHandler("database");
+  }
+
   public void shutdown() throws Exception {
     if (System.getenv(QTEST_LEAVE_FILES) == null) {
       cleanUp();

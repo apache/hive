@@ -48,6 +48,10 @@ public class QTestOptionDispatcher {
     handlers.put(prefix, datasetHandler);
   }
 
+  public QTestOptionHandler getHandler(String prefix) {
+    return handlers.get(prefix);
+  }
+
   public void process(File file) {
     synchronized (QTestUtil.class) {
       parse(file);
