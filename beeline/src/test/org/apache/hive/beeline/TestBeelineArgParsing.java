@@ -110,13 +110,14 @@ public class TestBeelineArgParsing {
     extraContent.put(new File("META-INF/services/java.sql.Driver"), dummyDriverClazzName);
     File jarFile = HiveTestUtils.genLocalJarForTest(u, dummyDriverClazzName, extraContent);
     String pathToDummyDriver = jarFile.getAbsolutePath();
+    String postgresVersion = System.getProperty("postgres.version");
     String pathToPostgresJar = System.getProperty("maven.local.repository")
         + File.separator + "org"
         + File.separator + "postgresql"
         + File.separator + "postgresql"
-        + File.separator + "42.7.3"
+        + File.separator + postgresVersion
         + File.separator
-        + "postgresql-42.7.3.jar";
+        + "postgresql-" + postgresVersion + ".jar";
     return Arrays.asList(new Object[][] {
         { "jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver", pathToPostgresJar, true },
         { "jdbc:dummy://host:5432/testdb", dummyDriverClazzName, pathToDummyDriver, false } });
