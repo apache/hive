@@ -938,7 +938,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     boolean isToTxn = isTxn && !TxnUtils.isTransactionalTable(oldt.getParameters());
     if (!isToTxn && isTxn && areTxnStatsSupported) {
       // Transactional table is altered without a txn. Make sure there are no changes to the flag.
-      String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(name, dbname), oldt.getParameters(),
+      String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name), oldt.getParameters(),
           newTable.getParameters(), newTable.getWriteId(), queryValidWriteIds, false);
       if (errorMsg != null) {
         throw new MetaException(errorMsg);
@@ -1846,25 +1846,17 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     String dbname = normalizeIdentifier(tableName.getDb());
     String name = normalizeIdentifier(tableName.getTable());
     AtomicReference<MColumnDescriptor> oldCd = new AtomicReference<>();
-    Partition result = alterPartitionNoTxn(catName, dbname, name, part_vals, new_part, queryValidWriteIds, oldCd);
+    MTable table = this.getMTable(new_part.getCatName(), new_part.getDbName(), new_part.getTableName());
+    MPartition oldp = getMPartition(catName, dbname, name, part_vals, table);
+    Partition result = alterPartitionNoTxn(catName, dbname, name, oldp, new_part, queryValidWriteIds, oldCd, table);
     removeUnusedColumnDescriptor(oldCd.get());
     return result;
   }
 
   /**
    * Alters an existing partition. Initiates copy of SD. Returns the old CD.
-   * @param part_vals Partition values (of the original partition instance)
    * @param newPart Partition object containing new information
    */
-  private Partition alterPartitionNoTxn(String catName, String dbname, String name,
-      List<String> part_vals, Partition newPart, String validWriteIds, AtomicReference<MColumnDescriptor> oldCd)
-      throws InvalidObjectException, MetaException {
-    MTable table = this.getMTable(newPart.getCatName(), newPart.getDbName(), newPart.getTableName());
-    MPartition oldp = getMPartition(catName, dbname, name, part_vals, table);
-    return alterPartitionNoTxn(catName, dbname, name, oldp, newPart,
-        validWriteIds, oldCd, table);
-  }
-
   private Partition alterPartitionNoTxn(String catName, String dbname,
       String name, MPartition oldp, Partition newPart,
       String validWriteIds,
@@ -1873,14 +1865,14 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
+    if (oldp == null) {
+      throw new InvalidObjectException("partition does not exist.");
+    }
     MPartition newp = convertToMPart(newPart, table);
     MColumnDescriptor oldCD = null;
     MStorageDescriptor oldSD = oldp.getSd();
     if (oldSD != null) {
       oldCD = oldSD.getCD();
-    }
-    if (newp == null) {
-      throw new InvalidObjectException("partition does not exist.");
     }
     oldp.setValues(newp.getValues());
     oldp.setPartitionName(newp.getPartitionName());
@@ -1969,7 +1961,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
         throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
       }
       if (!tmpPart.getTableName().equalsIgnoreCase(tblName)) {
-        throw new MetaException("Invalid table name : " + tmpPart.getDbName());
+        throw new MetaException("Invalid table name : " + tmpPart.getTableName());
       }
     }
     return new GetListHelper<TableName, Partition>(this, null) {
@@ -2004,8 +1996,9 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       mPartitionList = (List<MPartition>) query.executeWithArray(tblName, dbName, partNames, catName);
       pm.retrieveAll(mPartitionList);
 
-      if (mPartitionList.size() > newParts.size()) {
-        throw new MetaException("Expecting only one partition but more than one partitions are found.");
+      if (mPartitionList.size() != newParts.size()) {
+        throw new MetaException("Expected " + newParts.size() + " partitions but found "
+            + mPartitionList.size());
       }
 
       Map<List<String>, MPartition> mPartsMap = new HashMap();
@@ -2017,8 +2010,9 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       AtomicReference<MColumnDescriptor> oldCdRef = new AtomicReference<>();
       for (Partition tmpPart : newParts) {
         oldCdRef.set(null);
+        MPartition mPart = mPartsMap.get(tmpPart.getValues());
         Partition result = alterPartitionNoTxn(catName, dbName, tblName,
-            mPartsMap.get(tmpPart.getValues()), tmpPart, queryWriteIdList, oldCdRef, table);
+            mPart, tmpPart, queryWriteIdList, oldCdRef, table);
         results.add(result);
         if (oldCdRef.get() != null) {
           oldCds.add(oldCdRef.get());
