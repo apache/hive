@@ -22,7 +22,6 @@ package org.apache.iceberg.mr.mapreduce;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +55,6 @@ import org.apache.iceberg.TableScan;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.io.CloseableIterable;
-import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -157,16 +155,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   @Override
   public List<InputSplit> getSplits(JobContext context) {
     Configuration conf = context.getConfiguration();
-    Table table = Optional
-        .ofNullable(HiveTableUtil.deserializeTable(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
-        .orElseGet(() -> {
-          Table tbl = Catalogs.loadTable(conf);
-          conf.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.name());
-          // planning-local conf only (never shipped): for credential-vending catalogs the loaded
-          // table's FileIO carries secrets, which must not reach a serialized job configuration
-          conf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tbl.name(), SerializationUtil.serializeToBase64(tbl));
-          return tbl;
-        });
+    String tableIdentifier = conf.get(InputFormatConfig.TABLE_IDENTIFIER);
+    Table table = HiveTableUtil.resolveTableForScanPlanning(conf, tableIdentifier);
+    if (tableIdentifier == null) {
+      conf.set(InputFormatConfig.TABLE_IDENTIFIER, table.name());
+      // planning-local conf only (never shipped): for credential-vending catalogs the loaded
+      // table's FileIO carries secrets, which must not reach a serialized job configuration
+      conf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + table.name(), SerializationUtil.serializeToBase64(table));
+    }
     final ExecutorService workerPool =
         ThreadPools.newFixedThreadPool("iceberg-plan-worker-pool",
             conf.getInt(SystemConfigs.WORKER_THREAD_POOL_SIZE.propertyKey(), ThreadPools.WORKER_THREAD_POOL_SIZE));
