@@ -3888,8 +3888,26 @@ public class HiveConf extends Configuration {
       "hs2ActivePassiveHA",
       "When HiveServer2 Active/Passive High Availability is enabled, uses this namespace for registering HS2\n" +
         "instances with zookeeper"),
-    HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT("hive.server2.active.passive.ha.healthcheck.port", 11002, 
+    HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT("hive.server2.active.passive.ha.healthcheck.port", 11002,
         "The port the HiveServer2 ha-healthcheck web app will listen on"),
+
+    // Persistable session state store configs
+    HIVE_SERVER2_SESSION_STATE_STORE_CLASS("hive.server2.session.state.store.class",
+        "",
+        "Implementation class for the session state store. Empty means disabled. Options:\n" +
+        "  org.apache.hive.service.cli.session.store.ZooKeeperSessionStateStore\n" +
+        "  org.apache.hive.service.cli.session.store.RedisSessionStateStore"),
+    HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY("hive.server2.session.state.store.fetch.strategy",
+        "NEVER",
+        new StringSet("NEVER", "ALWAYS", "FETCH_WHEN_MISSING"),
+        "Session fetch strategy from shared store:\n" +
+        "  NEVER - only use local session state\n" +
+        "  ALWAYS - on every access, compare local lastAccessTime with remote; if remote is newer, re-hydrate\n" +
+        "  FETCH_WHEN_MISSING - fetch from store only when session not found locally"),
+    HIVE_SERVER2_SESSION_STATE_STORE_TTL("hive.server2.session.state.store.ttl", "24h",
+        new TimeValidator(TimeUnit.SECONDS),
+        "TTL for session snapshots in the state store. Abandoned sessions auto-expire after this duration."),
+
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
         "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
         "workload management is enabled and used for these sessions."),
