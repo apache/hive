@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.metastore.metastore;
 import com.codahale.metrics.Counter;
 import com.google.common.annotations.VisibleForTesting;
 
+import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
 import javax.jdo.PersistenceManager;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.List;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.ExceptionHandler;
+import org.apache.hadoop.hive.metastore.HMSHandlerContext;
 import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -60,6 +62,7 @@ public abstract class GetHelper<A, T> {
   protected final List<String> partitionFields;
   protected final A argument;
   private boolean success = false;
+  private boolean storeInvalidated = false;
   protected T results = null;
 
   public GetHelper(RawStoreBundle rsb, A args) throws MetaException {
@@ -149,6 +152,14 @@ public abstract class GetHelper<A, T> {
   }
 
   private void handleDirectSqlError(Exception ex, String savePoint) throws MetaException, NoSuchObjectException {
+    if (DatabaseProduct.isConnectionException(ex)) {
+      LOG.warn("Direct SQL failed because the metastore database connection is not usable", ex);
+      directSqlErrors.inc();
+      invalidateRawStore(ex);
+      throw ExceptionHandler.newMetaException(new JDODataStoreException(
+          "Direct SQL failed because the metastore database connection is not usable", ex));
+    }
+
     String message = null;
     try {
       message = generateShorterMessage(ex);
@@ -194,6 +205,18 @@ public abstract class GetHelper<A, T> {
 
     directSqlErrors.inc();
     doUseDirectSql = false;
+  }
+
+  private void invalidateRawStore(Exception originalException) {
+    storeInvalidated = true;
+    try {
+      if (!HMSHandlerContext.invalidateRawStore()) {
+        baseStore.shutdown();
+      }
+    } catch (Exception cleanupException) {
+      originalException.addSuppressed(cleanupException);
+      LOG.warn("Failed to shut down RawStore after a Direct SQL connection error", cleanupException);
+    }
   }
 
   public void setTransactionSavePoint(String savePoint) {
@@ -253,7 +276,7 @@ public abstract class GetHelper<A, T> {
   }
 
   private void close() {
-    if (!success) {
+    if (!success && !storeInvalidated) {
       baseStore.rollbackTransaction();
     }
   }

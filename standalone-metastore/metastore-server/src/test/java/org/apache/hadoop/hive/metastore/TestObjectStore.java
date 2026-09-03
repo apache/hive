@@ -101,6 +101,7 @@ import org.mockito.ArgumentMatchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jdo.JDODataStoreException;
 import javax.jdo.Query;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -1425,6 +1426,47 @@ public class TestObjectStore {
     Assert.assertEquals(1, directSqlErrors.getCount());
   }
 
+  @Test
+  public void testDirectSqlConnectionErrorInvalidatesRawStore() throws Exception {
+    AtomicBoolean runJdo = new AtomicBoolean(false);
+    MetaException directSqlFailure = null;
+    objectStore.openTransaction();
+    HMSHandlerContext.setRawStore(objectStore);
+    try {
+      new GetHelper<DatabaseName, Database>(objectStore.createRawStoreBundle(),
+          new DatabaseName(DEFAULT_CATALOG_NAME, "foo")) {
+        @Override
+        protected Database getSqlResult() throws MetaException {
+          MetaException ex = new MetaException("Direct SQL connection failure");
+          ex.initCause(new SQLException("Communication link failure", "08S01"));
+          throw ex;
+        }
+
+        @Override
+        protected String describeResult() {
+          return "";
+        }
+
+        @Override
+        protected Database getJdoResult() {
+          runJdo.set(true);
+          return null;
+        }
+      }.run(false);
+      Assert.fail("Expected a connection-level Direct SQL failure");
+    } catch (MetaException ex) {
+      directSqlFailure = ex;
+      Assert.assertFalse(HMSHandlerContext.getRawStore().isPresent());
+    } finally {
+      // Handlers that own an outer transaction still execute this cleanup after GetHelper fails.
+      objectStore.rollbackTransaction();
+      HMSHandlerContext.clear();
+    }
+
+    Assert.assertTrue(directSqlFailure.getCause() instanceof JDODataStoreException);
+    Assert.assertFalse(runJdo.get());
+  }
+
   @Test(expected = MetaException.class)
   public void testLockDbTableThrowsExceptionWhenTableIsNotAllowedToLock() throws Exception {
     MetaStoreDirectSql metaStoreDirectSql = new MetaStoreDirectSql(objectStore.getPersistenceManager(), conf, null);
@@ -2196,4 +2238,3 @@ public class TestObjectStore {
     };
   }
 }
-
