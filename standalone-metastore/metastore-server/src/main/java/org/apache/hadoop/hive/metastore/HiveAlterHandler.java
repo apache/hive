@@ -589,6 +589,7 @@ public class HiveAlterHandler implements AlterHandler {
               "Unable to alter partition because table or database does not exist.");
         }
         oldPart = msdb.getPartition(catName, dbname, name, new_part.getValues());
+        preservePartitionCreateTime(oldPart, new_part);
         if (MetaStoreServerUtils.requireCalStats(oldPart, new_part, tbl, environmentContext)) {
           // if stats are same, no need to update
           if (MetaStoreServerUtils.isFastStatsSame(oldPart, new_part)) {
@@ -667,6 +668,7 @@ public class HiveAlterHandler implements AlterHandler {
         throw new InvalidObjectException(
             "Unable to rename partition because old partition does not exist");
       }
+      preservePartitionCreateTime(oldPart, new_part);
 
       // when renaming a partition, we should update
       // 1) partition SD Location
@@ -849,6 +851,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
 
         Partition oldTmpPart = oldPartMap.get(tmpPart.getValues());
+        preservePartitionCreateTime(oldTmpPart, tmpPart);
         oldParts.add(oldTmpPart);
         partValsList.add(tmpPart.getValues());
 
@@ -896,6 +899,13 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     return oldParts;
+  }
+
+  private static void preservePartitionCreateTime(Partition oldPart, Partition newPart) {
+    if ((!newPart.isSetCreateTime() || newPart.getCreateTime() <= 0)
+        && oldPart.isSetCreateTime()) {
+      newPart.setCreateTime(oldPart.getCreateTime());
+    }
   }
 
   // Validate changes to partition's location to protect against errors on migration during
