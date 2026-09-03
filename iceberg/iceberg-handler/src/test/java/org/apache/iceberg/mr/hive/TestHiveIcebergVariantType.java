@@ -339,21 +339,31 @@ public class TestHiveIcebergVariantType extends HiveIcebergStorageHandlerWithEng
   private static void assertVectorizedParquetRowGroupsPruned(Path parquetPath, Expression filter) {
     assertParquetRowGroupsPruned(
         parquetPath, filter,
-        (parquetMetadata, fileSchema, expr) ->
-            // Simulate what HiveVectorizedReader.parquetRecordReader() does
-            VariantParquetFilters
-                .pruneVariantRowGroups(parquetMetadata, fileSchema, expr)
-                .getBlocks()
-                .size());
+        (parquetMetadata, fileSchema, expr) -> {
+          // Simulate what HiveVectorizedReader.parquetRecordReader() does: the footer stays whole and the
+          // row groups to read are named separately
+          boolean[] mayMatch = VariantParquetFilters
+              .pickRowGroups(fileSchema, expr, parquetMetadata.getBlocks());
+          if (mayMatch == null) {
+            return parquetMetadata.getBlocks().size();
+          }
+          int matching = 0;
+          for (boolean match : mayMatch) {
+            if (match) {
+              matching++;
+            }
+          }
+          return matching;
+        });
   }
 
   private static void assertNonVectorizedParquetRowGroupsPruned(Path parquetPath, Expression filter) {
     assertParquetRowGroupsPruned(
         parquetPath, filter,
         (parquetMetadata, fileSchema, expr) -> {
-          // Simulate what ReadConf does - uses variantRowGroupMayMatch to compute shouldSkip array
+          // Simulate what ReadConf does - uses pickRowGroups to compute shouldSkip array
           boolean[] mayMatch = VariantParquetFilters
-              .variantRowGroupMayMatch(fileSchema, expr, parquetMetadata.getBlocks());
+              .pickRowGroups(fileSchema, expr, parquetMetadata.getBlocks());
           int matching = 0;
           for (boolean match : mayMatch) {
             if (match) {
