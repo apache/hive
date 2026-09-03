@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -50,11 +51,13 @@ import java.util.Optional;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getWriteId;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMustPurge;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isIcebergTable;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.throwMetaException;
 
 
 /**
- * It handles cleanup of dropped partition/table/database in ACID related metastore tables
+ * It handles cleanup of dropped partition/table/database in ACID related metastore tables,
+ * and compaction related metastore tables cleanup for Iceberg tables.
  */
 public class AcidEventListener extends TransactionalMetaStoreEventListener {
 
@@ -104,43 +107,51 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
           }
         }
       }
+    } else if (isIcebergTable(table.getParameters())) {
+      txnHandler = getTxnHandler();
+      txnHandler.cleanupRecords(HiveObjectType.TABLE, null, table, null);
     }
   }
 
   @Override
   public void onDropPartition(DropPartitionEvent partitionEvent)  throws MetaException {
+    if (!TxnUtils.isTransactionalTable(partitionEvent.getTable())) {
+      return;
+    }
     Table table = partitionEvent.getTable();
     EnvironmentContext context = partitionEvent.getEnvironmentContext();
 
-    if (TxnUtils.isTransactionalTable(table)) {
-      txnHandler = getTxnHandler();
-      txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, table, partitionEvent.getPartitionIterator());
+    txnHandler = getTxnHandler();
+    List<FieldSchema> partCols = table.getPartitionKeys();
+    List<String> partNames = new ArrayList<>();
+    Iterator<Partition> partitionIterator = partitionEvent.getPartitionIterator();
+    while (partitionIterator.hasNext()) {
+      Partition partition = partitionIterator.next();
+      partNames.add(Warehouse.makePartName(partCols, partition.getValues()));
+    }
+    txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, table, partNames.iterator());
 
-      if (!partitionEvent.getDeleteData()) {
-        long currentTxn = getTxnId(context);
-        
-        if (currentTxn > 0) {
-          long writeId = getWriteId(context);
-          try {
-            CompactionRequest rqst = new CompactionRequest(
+    if (!partitionEvent.getDeleteData()) {
+      long currentTxn = getTxnId(context);
+
+      if (currentTxn > 0) {
+        long writeId = getWriteId(context);
+        try {
+          CompactionRequest rqst = new CompactionRequest(
               table.getDbName(), table.getTableName(), CompactionType.MAJOR);
-            rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
-            rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(context, table)));
+          rqst.setRunas(TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf));
+          rqst.putToProperties("ifPurge", Boolean.toString(isMustPurge(context, table)));
 
-            Iterator<Partition> partitionIterator = partitionEvent.getPartitionIterator();
-            while (partitionIterator.hasNext()) {
-              Partition p = partitionIterator.next();
+          partitionIterator = partitionEvent.getPartitionIterator();
+          while (partitionIterator.hasNext()) {
+            Partition p = partitionIterator.next();
+            rqst.setPartitionname(Warehouse.makePartName(partCols, p.getValues()));
+            rqst.putToProperties("location", p.getSd().getLocation());
 
-              List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
-              List<String> partVals = p.getValues();
-              rqst.setPartitionname(Warehouse.makePartName(partCols, partVals));
-              rqst.putToProperties("location", p.getSd().getLocation());
-
-              txnHandler.submitForCleanup(rqst, writeId, currentTxn);
-            }
-          } catch (InterruptedException | IOException e) {
-            throwMetaException(e);
+            txnHandler.submitForCleanup(rqst, writeId, currentTxn);
           }
+        } catch (InterruptedException | IOException e) {
+          throwMetaException(e);
         }
       }
     }
@@ -148,7 +159,8 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
 
   @Override
   public void onAlterTable(AlterTableEvent tableEvent) throws MetaException {
-    if (!TxnUtils.isTransactionalTable(tableEvent.getNewTable())) {
+    if (!TxnUtils.isTransactionalTable(tableEvent.getNewTable()) &&
+        !isIcebergTable(tableEvent.getNewTable().getParameters())) {
       return;
     }
     Table oldTable = tableEvent.getOldTable();

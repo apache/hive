@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
 import org.apache.hadoop.hive.metastore.api.ReplayedTxnsForPolicyResult;
 import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
@@ -530,28 +529,37 @@ public interface TxnStore extends Configurable {
    * @param type Hive object type
    * @param db database object
    * @param table table object
-   * @param partitionIterator partition iterator
+   * @param partNamesIterator partition name iterator
    * @throws MetaException
    */
   @SqlRetry
   @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
-  default void cleanupRecords(HiveObjectType type, Database db, Table table, 
-      Iterator<Partition> partitionIterator) throws MetaException {
-    cleanupRecords(type, db, table, partitionIterator, false);
+  default void cleanupRecords(HiveObjectType type, Database db, Table table,
+      Iterator<String> partNamesIterator) throws MetaException {
+    cleanupRecords(type, db, table, partNamesIterator, false);
   }
 
   @SqlRetry
   @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
-  void cleanupRecords(HiveObjectType type, Database db, Table table, 
-      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
+  void cleanupRecords(HiveObjectType type, Database db, Table table,
+      Iterator<String> partNamesIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
 
   @SqlRetry
   @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void cleanupRecords(HiveObjectType type, Database db, Table table,
-      Iterator<Partition> partitionIterator, long txnId) throws MetaException;
+      Iterator<String> partNamesIterator, long txnId) throws MetaException;
+
+  /**
+   * Clean compaction related records for the given table partitions.
+   * Used for non-transactional tables (e.g. Iceberg) where partition lifecycle is managed outside HMS.
+   */
+  @SqlRetry
+  @Transactional(POOL_TX)
+  @RetrySemantics.Idempotent
+  void cleanupCompactionRecords(Table table, List<String> partitionNames) throws MetaException;
 
   @SqlRetry
   @Transactional(POOL_TX)
