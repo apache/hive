@@ -88,7 +88,7 @@ public class TestHiveMetaToolCommandLine {
   @Test
   public void testNoTask() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs, -metadataSummary must be set");
+    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs, -metadataSummary, -dedupColumns must be set");
 
     new HiveMetaToolCommandLine(new String[] {});
   }
@@ -96,7 +96,7 @@ public class TestHiveMetaToolCommandLine {
   @Test
   public void testMultipleTask() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs, -metadataSummary must be set");
+    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs, -metadataSummary, -dedupColumns must be set");
 
     new HiveMetaToolCommandLine(new String[] {"-listFSRoot", "-executeJDOQL", "select a from b"});
   }
@@ -132,15 +132,39 @@ public class TestHiveMetaToolCommandLine {
   @Test
   public void testDryRunNotAllowed() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("-dryRun, -serdePropKey, -tablePropKey may be used only for the -updateLocation command");
+    exception.expectMessage("-dryRun may be used only for the -updateLocation or -dedupColumns commands");
 
     new HiveMetaToolCommandLine(new String[] {"-listFSRoot", "-dryRun"});
   }
 
   @Test
+  public void testParseDedupColumns() throws ParseException {
+    HiveMetaToolCommandLine cl = new HiveMetaToolCommandLine(
+        new String[] {"-dedupColumns", "hive", "default", "person", "-dryRun", "-verbose"});
+    assertTrue(cl.isDedupColumns());
+    assertTrue(cl.isDryRun());
+    assertTrue(cl.isVerbose());
+    assertEquals("hive", cl.getDedupColumnsParams()[0]);
+    assertEquals("default", cl.getDedupColumnsParams()[1]);
+    assertEquals("person", cl.getDedupColumnsParams()[2]);
+
+    cl = new HiveMetaToolCommandLine(new String[] {"-dedupColumns"});
+    assertTrue(cl.isDedupColumns());
+    assertEquals(0, cl.getDedupColumnsParams().length);
+  }
+
+  @Test
+  public void testVerboseNotAllowed() throws ParseException {
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("-verbose may be used only for the -dedupColumns command");
+
+    new HiveMetaToolCommandLine(new String[] {"-listFSRoot", "-verbose"});
+  }
+
+  @Test
   public void testSerdePropKeyNotAllowed() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("-dryRun, -serdePropKey, -tablePropKey may be used only for the -updateLocation command");
+    exception.expectMessage("-serdePropKey, -tablePropKey may be used only for the -updateLocation command");
 
     new HiveMetaToolCommandLine(new String[] {"-listFSRoot", "-serdePropKey", "abc"});
   }
@@ -148,7 +172,7 @@ public class TestHiveMetaToolCommandLine {
   @Test
   public void testTablePropKeyNotAllowed() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("-dryRun, -serdePropKey, -tablePropKey may be used only for the -updateLocation command");
+    exception.expectMessage("-serdePropKey, -tablePropKey may be used only for the -updateLocation command");
 
     new HiveMetaToolCommandLine(new String[] {"-executeJDOQL", "select a from b", "-tablePropKey", "abc"});
   }
