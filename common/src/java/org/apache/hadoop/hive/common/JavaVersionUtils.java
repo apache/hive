@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.common;
 
+import org.apache.hadoop.conf.Configuration;
+
 public class JavaVersionUtils {
   private JavaVersionUtils() {
     throw new IllegalStateException("Utility class");
@@ -49,5 +51,20 @@ public class JavaVersionUtils {
         " --add-opens=java.base/java.util.regex=ALL-UNNAMED" +
         " --add-opens=java.base/java.security=ALL-UNNAMED" +
         " --add-opens=java.base/sun.security.provider=ALL-UNNAMED";
+  }
+
+  /**
+   * Appends the --add-opens flags to the AM, map and reduce JVM options of an MR job
+   * that is about to be submitted, keeping whatever is already configured. Every code
+   * path that submits an MR job on Hive's behalf has to call this before creating the
+   * JobClient: ExecDriver, MergeFileTask, ColumnTruncateTask and MRCompactor.
+   */
+  public static void addOpensFlags(Configuration job) {
+    String addOpens = getAddOpensFlags();
+    for (String key : new String[] {"mapreduce.map.java.opts",
+        "mapreduce.reduce.java.opts", "yarn.app.mapreduce.am.command-opts"}) {
+      String current = job.get(key);
+      job.set(key, (current == null ? "" : current) + addOpens);
+    }
   }
 }
