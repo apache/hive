@@ -1,0 +1,159 @@
+PREHOOK: query: drop table if exists iceberg_select_ppd_repro
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists iceberg_select_ppd_repro
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table iceberg_select_ppd_repro (
+  index int,
+  string_col string,
+  boolean_col boolean,
+  str_col string,
+  tinyint_col int
+) partitioned by spec(str_col, tinyint_col)
+stored by iceberg
+tblproperties ('write.update.mode'='copy-on-write')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_select_ppd_repro
+POSTHOOK: query: create external table iceberg_select_ppd_repro (
+  index int,
+  string_col string,
+  boolean_col boolean,
+  str_col string,
+  tinyint_col int
+) partitioned by spec(str_col, tinyint_col)
+stored by iceberg
+tblproperties ('write.update.mode'='copy-on-write')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_select_ppd_repro
+PREHOOK: query: insert into iceberg_select_ppd_repro partition (str_col, tinyint_col)
+  values (1, 'a', true, null, 0),
+  (2, 'b', false, null, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_select_ppd_repro
+POSTHOOK: query: insert into iceberg_select_ppd_repro partition (str_col, tinyint_col)
+  values (1, 'a', true, null, 0),
+  (2, 'b', false, null, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_select_ppd_repro
+PREHOOK: query: update iceberg_select_ppd_repro set str_col = 'UPDATEDNULLS' where index = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: default@iceberg_select_ppd_repro
+POSTHOOK: query: update iceberg_select_ppd_repro set str_col = 'UPDATEDNULLS' where index = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: default@iceberg_select_ppd_repro
+PREHOOK: query: select * from iceberg_select_ppd_repro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_select_ppd_repro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	b	false	NULL	1
+1	a	true	UPDATEDNULLS	0
+PREHOOK: query: explain select * from iceberg_select_ppd_repro where str_col = 'UPDATEDNULLS'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select * from iceberg_select_ppd_repro where str_col = 'UPDATEDNULLS'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0","_col1","_col2","_col3","_col4"]
+      TableScan [TS_0]
+        Output:["index","string_col","boolean_col","tinyint_col"]
+
+PREHOOK: query: select * from iceberg_select_ppd_repro where str_col = 'UPDATEDNULLS'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_select_ppd_repro where str_col = 'UPDATEDNULLS'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	true	UPDATEDNULLS	0
+PREHOOK: query: select count(*) from iceberg_select_ppd_repro where str_col = 'UPDATEDNULLS'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from iceberg_select_ppd_repro where str_col = 'UPDATEDNULLS'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: select count(*) from iceberg_select_ppd_repro where tinyint_col = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from iceberg_select_ppd_repro where tinyint_col = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: update iceberg_select_ppd_repro set tinyint_col = 2 where index = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: default@iceberg_select_ppd_repro
+POSTHOOK: query: update iceberg_select_ppd_repro set tinyint_col = 2 where index = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: default@iceberg_select_ppd_repro
+PREHOOK: query: select * from iceberg_select_ppd_repro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_select_ppd_repro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	b	false	NULL	2
+1	a	true	UPDATEDNULLS	0
+PREHOOK: query: explain select * from iceberg_select_ppd_repro where tinyint_col = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select * from iceberg_select_ppd_repro where tinyint_col = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0","_col1","_col2","_col3","_col4"]
+      TableScan [TS_0]
+        Output:["index","string_col","boolean_col","str_col"]
+
+PREHOOK: query: select * from iceberg_select_ppd_repro where tinyint_col = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_select_ppd_repro where tinyint_col = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	b	false	NULL	2
+PREHOOK: query: select count(*) from iceberg_select_ppd_repro where tinyint_col = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_select_ppd_repro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from iceberg_select_ppd_repro where tinyint_col = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_select_ppd_repro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1

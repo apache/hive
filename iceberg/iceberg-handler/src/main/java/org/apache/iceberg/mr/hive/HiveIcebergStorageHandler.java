@@ -422,7 +422,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public DecomposedPredicate decomposePredicate(JobConf jobConf, Deserializer deserializer, ExprNodeDesc exprNodeDesc) {
     DecomposedPredicate predicate = new DecomposedPredicate();
-    predicate.residualPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
     ExprNodeDesc pushedPredicate = exprNodeDesc.clone();
 
     List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
@@ -441,6 +440,13 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
     }
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;
+    // When the full filter is pushed to Iceberg, do not keep a duplicate residual filter.
+    // PCR would re-evaluate partition predicates against HMS and can incorrectly fold them to false.
+    if (pushedPredicate != null && pushedPredicate.getExprString().equals(exprNodeDesc.getExprString())) {
+      predicate.residualPredicate = null;
+    } else {
+      predicate.residualPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
+    }
 
     if (pushedPredicate != null) {
       SessionStateUtil.setConflictDetectionFilter(conf, jobConf.get(Catalogs.NAME), pushedPredicate);
