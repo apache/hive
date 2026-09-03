@@ -3651,10 +3651,10 @@ public class HiveConf extends Configuration {
         "Deprecated, use HIVE_CODAHALE_METRICS_REPORTER_CLASSES instead. This configuration will be"
             + " overridden by HIVE_CODAHALE_METRICS_REPORTER_CLASSES if present. " +
             "Comma separated list of JMX, CONSOLE, JSON_FILE, HADOOP2"),
-    HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "/tmp/report.json",
+    HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "/tmp/hs2-report.json",
         "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of local JSON metrics file.  " +
         "This file will get overwritten at every interval."),
-    HIVE_METRICS_JSON_FILE_INTERVAL("hive.service.metrics.file.frequency", "5000ms",
+    HIVE_METRICS_JSON_FILE_INTERVAL("hive.service.metrics.file.frequency", "60000ms",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "For metric class org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter, " +
         "the frequency of updating JSON metrics file."),
