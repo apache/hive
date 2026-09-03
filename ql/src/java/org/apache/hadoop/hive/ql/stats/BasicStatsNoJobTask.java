@@ -460,7 +460,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       ImmutableList<StatCollector> values = collectorsByTable.get(partName);
 
       if (values == null) {
-        throw new RuntimeException("very intresting");
+        throw new RuntimeException("very interesting");
       }
 
       if (values.get(0).result instanceof Table) {

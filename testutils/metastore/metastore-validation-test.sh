@@ -207,7 +207,7 @@ fi
 
 
 FCOUNT=0
-# function to count the number of occurances of a string within another string
+# function to count the number of occurrences of a string within another string
 num_occurances() {
   fulltext="$1"
   searchChars="$2"
@@ -294,28 +294,28 @@ put() {
 }
 
 # function to retrieve an entry from the map.
-# arg1 is name of the map to retrive from.
+# arg1 is name of the map to retrieve from.
 # arg2 is the key for entry
 get() {
   grep "^$2=" /tmp/hashmap.$1 | cut -d'=' -f2
 }
 
 # function that returns the size of the map (aka number if entries)
-# arg1 is name of the map to retrive from.
+# arg1 is name of the map to retrieve from.
 size() {
   echo `cat /tmp/hashmap.$1 | wc -l`
 }
 
 # function that returns the key for the first entry in the map.
 # maps to the key of the first line in the file on disk.
-# arg1 is name of the map to retrive from.
+# arg1 is name of the map to retrieve from.
 firstKey() {
   head -n 1 /tmp/hashmap.$1 | cut -d'=' -f1
 }
 
 # function that returns the value of the first entry in the map.
 # maps to the value of the first line in the file on disk.
-# arg1 is name of the map to retrive from.
+# arg1 is name of the map to retrieve from.
 firstValue() {
   head -n 1 /tmp/hashmap.$1 | cut -d'=' -f2
 }
@@ -324,7 +324,7 @@ firstValue() {
 # arg1 is name of the map to retrieve from.
 # arg2 key to be found in the map.
 containsKey() {
-  # find a line that contains the key value at the begining of line.
+  # find a line that contains the key value at the beginning of line.
   ret=$(grep "^$2=" /tmp/hashmap.$1 | cut -d'=' -f1)
   if [[ "$2" = "$ret" ]]
   then
@@ -713,7 +713,7 @@ parse_schema() {
   done < "$1";
 }
 
-# function to detemine if an argument is a number. This is used to determine the
+# function to determine if an argument is a number. This is used to determine the
 # length of the column values that are to be generated.
 is_int() {
   return $(test "$@" -eq "$@" > /dev/null 2>&1);
@@ -889,7 +889,7 @@ localize_colname() {
 }
 
 # extracts the name of the table from a create statement from the parsed SQL.
-# Assumes that the thrid SPACE-separated token is the name of the table.
+# Assumes that the third SPACE-separated token is the name of the table.
 # ex: CREATE TABLE DBS ( DB_ID bigint(20) );
 extract_tablename() {
   if [[ "$DB_SERVER" = "derby" ]]
@@ -916,7 +916,7 @@ insert_column_names() {
 }
 
 # extracts the name of the table in its native form from a create statement from the parsed SQL.
-# Assumes that the thrid SPACE-separated token is the name of the table. if there are quotes around it will 
+# Assumes that the third SPACE-separated token is the name of the table. if there are quotes around it will 
 # return the quotes too.
 # ex: CREATE TABLE DBS ( DB_ID bigint(20) );
 extract_raw_tablename() {
