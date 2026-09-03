@@ -114,7 +114,13 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     sqlGenerator.append("FROM\n");
     sqlGenerator.append("(SELECT ");
     sqlGenerator.appendAcidSelectColumns(Operation.MERGE);
-    sqlGenerator.appendAllColsOfTargetTable();
+    if (sqlGenerator.getTargetTable().hasNonNativePartitionSupport()) {
+      // non-native partition columns are ordinary data columns of the row schema
+      sqlGenerator.appendAllColsOfTargetTable();
+    } else {
+      // native partition columns were already emitted by appendAcidSelectColumns above
+      sqlGenerator.appendNonPartitionColsOfTargetTable();
+    }
     addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, "", conf);
     sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
     sqlGenerator.appendSubQueryAlias();

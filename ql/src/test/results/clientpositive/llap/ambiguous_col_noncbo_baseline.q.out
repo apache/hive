@@ -1,0 +1,44 @@
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in t
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in c1
+FAILED: SemanticException [Error 10007]: Ambiguous column reference key in subq
+PREHOOK: query: create table wj3 (k int, v int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wj3
+POSTHOOK: query: create table wj3 (k int, v int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wj3
+PREHOOK: query: create table wj4 (k int, w int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wj4
+POSTHOOK: query: create table wj4 (k int, w int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wj4
+FAILED: SemanticException [Error 10007]: Ambiguous column reference k in t
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in a
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in sq_1
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in sq_1
+FAILED: SemanticException [Error 10007]: Ambiguous column reference key in a
+PREHOOK: query: create table t1nc (c1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1nc
+POSTHOOK: query: create table t1nc (c1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1nc
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c1 in t
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in bse
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in __u1-subquery1
+PREHOOK: query: create table t1gnc (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1gnc
+POSTHOOK: query: create table t1gnc (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1gnc
+FAILED: SemanticException [Error 10007]: Ambiguous column reference a in s

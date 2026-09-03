@@ -170,6 +170,15 @@ public abstract class MultiInsertSqlGenerator {
   public void appendAllColsOfTargetTable() {
     appendCols(targetTable.getAllCols(), FieldSchema::getName);
   }
+
+  /**
+   * Appends the target table's non-partition columns. For a natively partitioned MERGE target
+   * the partition columns are already emitted by appendAcidSelectColumns; emitting them again
+   * would give the rewritten projection duplicate column names (HIVE-29580).
+   */
+  public void appendNonPartitionColsOfTargetTable() {
+    appendCols(targetTable.getCols(), FieldSchema::getName);
+  }
   
   public <T> void appendCols(List<T> columns, Function<T, String> stringConverter) {
     appendCols(columns, null, null, stringConverter);

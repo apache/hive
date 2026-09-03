@@ -1,0 +1,9 @@
+PREHOOK: query: create table lv_dup_alias (c int, arr array<int>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lv_dup_alias
+POSTHOOK: query: create table lv_dup_alias (c int, arr array<int>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lv_dup_alias
+FAILED: SemanticException Ambiguous column reference: t.c
