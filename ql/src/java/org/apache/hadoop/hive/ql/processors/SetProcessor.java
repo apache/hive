@@ -38,8 +38,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.orc.OrcConf;
 import org.slf4j.Logger;
@@ -77,6 +81,12 @@ public class SetProcessor implements CommandProcessor {
 
   private static final Pattern TIME_ZONE_PATTERN =
       Pattern.compile("^time(\\s)+zone\\s", Pattern.CASE_INSENSITIVE);
+
+  private static final Set<String> EMBEDDED_MS_STATS_FETCH_KEYS = Sets.newHashSet(
+      MetastoreConf.ConfVars.STATS_FETCH_KLL.getVarname(),
+      MetastoreConf.ConfVars.STATS_FETCH_KLL.getHiveName(),
+      MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR.getVarname(),
+      MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR.getHiveName());
 
   public static boolean getBoolean(String value) {
     if (value.equals("on") || value.equals("true")) {
@@ -274,7 +284,26 @@ public class SetProcessor implements CommandProcessor {
     if (register) {
       ss.getOverriddenConfigurations().put(key, value);
     }
+    syncEmbeddedMetastoreConfIfNeeded(conf, key);
     return result;
+  }
+
+  /**
+   * Session SET updates HiveConf in place, but embedded ObjectStore may still read a stale
+   * Configuration reference. Rebind handler and ObjectStore when stats fetch flags change.
+   */
+  private static void syncEmbeddedMetastoreConfIfNeeded(HiveConf conf, String key) {
+    if (!EMBEDDED_MS_STATS_FETCH_KEYS.contains(key)) {
+      return;
+    }
+    try {
+      IMetaStoreClient msc = Hive.get(conf).getMSC();
+      if (msc.isLocalMetaStore()) {
+        msc.syncEmbeddedHandlerConf(conf);
+      }
+    } catch (HiveException | MetaException e) {
+      LOG.warn("Failed to sync embedded metastore configuration for {}", key, e);
+    }
   }
 
   private SortedMap<String,String> propertiesToSortedMap(Properties p){
