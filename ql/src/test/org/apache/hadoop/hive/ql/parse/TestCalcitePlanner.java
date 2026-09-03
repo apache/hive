@@ -30,6 +30,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.function.Consumer;
+
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -62,10 +65,16 @@ public class TestCalcitePlanner {
   }
 
   private Context getContext(String sql) throws ParseException, SemanticException {
+    return getContext(sql, ctx -> {
+    });
+  }
+
+  private Context getContext(String sql, Consumer<Context> prepare) throws ParseException, SemanticException {
     ASTNode ast = parse(sql);
     Context ctx = new Context(queryState.getConf());
     planner.init(false);
     planner.initCtx(ctx);
+    prepare.accept(ctx);
     SemanticAnalyzer.PlannerContext pctx = new CalcitePlanner.PreCboCtx();
     planner.genResolvedParseTree(ast, pctx);
     Operator<?> operator = planner.genOPTree(ast, pctx);
@@ -79,11 +88,49 @@ public class TestCalcitePlanner {
   @Test
   public void testCBOLogExplainEnabled() throws ParseException, SemanticException {
     queryState.getConf().setBoolVar(HiveConf.ConfVars.HIVE_LOG_EXPLAIN_OUTPUT, true);
-    Context ctx = getContext("select 1");
-    String calcitePlan = ctx.getCalcitePlan();
+    Context context = getContext("select 1");
+    String calcitePlan = context.getCalcitePlan();
     assertNotNull(calcitePlan);
     assertTrue("Expected a RelNode plan containing \"HiveProject\", but was:\n" + calcitePlan,
         calcitePlan.contains("HiveProject"));
+  }
+
+  /**
+   * The planner shall not overwrite the explain configuration.
+   */
+  @Test
+  public void testCBOLogExplainEnabledExplainFormatted() throws ParseException, SemanticException {
+    queryState.getConf().setBoolVar(HiveConf.ConfVars.HIVE_LOG_EXPLAIN_OUTPUT, true);
+    Context context = getContext("explain formatted cbo select 1", ctx -> {
+      ExplainConfiguration explConf = new ExplainConfiguration();
+      explConf.setFormatted(true);
+      explConf.setCbo(true);
+      explConf.setCboJoinCost(false);
+      ctx.setExplainConfig(explConf);
+      ctx.setExplainPlan(true);
+    });
+    String calcitePlan = context.getCalcitePlan();
+    assertNotNull(calcitePlan);
+    assertTrue("Expected a JSON plan, but was\n" + calcitePlan, calcitePlan.trim().startsWith("{"));
+  }
+
+  /**
+   * The planner shall not overwrite the explain configuration.
+   */
+  @Test
+  public void testCBOLogExplainEnabledExplainNotFormatted() throws ParseException, SemanticException {
+    queryState.getConf().setBoolVar(HiveConf.ConfVars.HIVE_LOG_EXPLAIN_OUTPUT, true);
+    Context context = getContext("explain cbo select 1", ctx -> {
+      ExplainConfiguration explConf = new ExplainConfiguration();
+      explConf.setFormatted(false);
+      explConf.setCbo(true);
+      explConf.setCboJoinCost(false);
+      ctx.setExplainConfig(explConf);
+      ctx.setExplainPlan(true);
+    });
+    String calcitePlan = context.getCalcitePlan();
+    assertNotNull(calcitePlan);
+    assertFalse("Expected a non-JSON plan, but was\n" + calcitePlan, calcitePlan.trim().startsWith("{"));
   }
 
   /**
@@ -92,8 +139,8 @@ public class TestCalcitePlanner {
   @Test
   public void testCBOLogExplainDisabled() throws ParseException, SemanticException {
     queryState.getConf().setBoolVar(HiveConf.ConfVars.HIVE_LOG_EXPLAIN_OUTPUT, false);
-    Context ctx = getContext("select 1");
-    String calcitePlan = ctx.getCalcitePlan();
+    Context context = getContext("select 1");
+    String calcitePlan = context.getCalcitePlan();
     assertNull(calcitePlan);
   }
 }
