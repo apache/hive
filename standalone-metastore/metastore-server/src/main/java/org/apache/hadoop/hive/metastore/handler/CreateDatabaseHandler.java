@@ -76,6 +76,11 @@ public class CreateDatabaseHandler
     Map<String, String> transactionalListenersResponses = Collections.emptyMap();
     Path dbExtPath = new Path(db.getLocationUri());
     Path dbMgdPath = db.getManagedLocationUri() != null ? new Path(db.getManagedLocationUri()) : null;
+
+    // HIVE-28820: create the default managed database directory even when MANAGEDLOCATION
+    // is not explicitly specified. Do not persist this default path into Database.managedLocationUri.
+    Path managedPathToCreate = dbMgdPath != null ? dbMgdPath : wh.getDefaultDatabasePath(db.getName(), false);
+    boolean explicitManagedLocation = dbMgdPath != null;
     boolean isInTest = MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST);
     try {
       Database authDb = new Database(db);
@@ -97,53 +102,20 @@ public class CreateDatabaseHandler
           madeExternalDir = true;
         }
       } else {
-        if (dbMgdPath != null) {
-          try {
-            // Since this may be done as random user (if doAs=true) he may not have access
-            // to the managed directory. We run this as an admin user
-            madeManagedDir = UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Boolean>) () -> {
-              if (!wh.isDir(dbMgdPath)) {
-                LOG.info("Creating database path in managed directory {}", dbMgdPath);
-                if (!wh.mkdirs(dbMgdPath)) {
-                  throw new MetaException("Unable to create database managed path " + dbMgdPath +
-                      ", failed to create database " + db.getName());
-                }
-                return true;
-              }
-              return false;
-            });
-            if (madeManagedDir) {
-              LOG.info("Created database path in managed directory {}", dbMgdPath);
-            } else if (!isInTest || !isDbReplicationTarget(db)) { // Hive replication tests doesn't drop the db after each test
-              throw new MetaException("Unable to create database managed directory " + dbMgdPath +
-                  ", failed to create database " + db.getName());
-            }
-          } catch (IOException | InterruptedException e) {
-            throw new MetaException(
-                "Unable to create database managed directory " + dbMgdPath + ", failed to create database " +
-                    db.getName() + ":" + e.getMessage());
-          }
+        madeManagedDir = createDbDirectory(managedPathToCreate, true, "managed", true);
+        if (madeManagedDir) {
+          LOG.info("Created database path in managed directory {}", managedPathToCreate);
+        } else if (explicitManagedLocation && (!isInTest || !isDbReplicationTarget(db))) {
+          throw new MetaException("Unable to create database managed directory " + managedPathToCreate +
+              ", failed to create database " + db.getName());
         }
-        try {
-          madeExternalDir = UserGroupInformation.getCurrentUser().doAs((PrivilegedExceptionAction<Boolean>) () -> {
-            if (!wh.isDir(dbExtPath)) {
-              LOG.info("Creating database path in external directory {}", dbExtPath);
-              return wh.mkdirs(dbExtPath);
-            }
-            return false;
-          });
-          if (madeExternalDir) {
-            LOG.info("Created database path in external directory {}", dbExtPath);
-          } else {
-            LOG.warn(
-                "Failed to create external path {} for database {}. " +
-                    "This may result in access not being allowed if the StorageBasedAuthorizationProvider is enabled",
-                dbExtPath, db.getName());
-          }
-        } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-          throw new MetaException("Failed to create external path " + dbExtPath + " for database " + db.getName() +
-                  ". This may result in access not being allowed if the " +
-              "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
+        madeExternalDir = createDbDirectory(dbExtPath, false, "external", false);
+        if (madeExternalDir) {
+          LOG.info("Created database path in external directory {}", dbExtPath);
+        } else {
+          LOG.warn("Failed to create external path {} for database {}. " +
+                  "This may result in access not being allowed if the StorageBasedAuthorizationProvider is enabled",
+              dbExtPath, db.getName());
         }
       }
 
@@ -166,15 +138,15 @@ public class CreateDatabaseHandler
             wh.deleteDir(dbMgdPath, true, db);
           }
         } else {
-          if (madeManagedDir && dbMgdPath != null) {
+          if (madeManagedDir) {
             try {
               UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Void>) () -> {
-                wh.deleteDir(dbMgdPath, true, db);
+                wh.deleteDir(managedPathToCreate, true, db);
                 return null;
               });
             } catch (IOException | InterruptedException e) {
               LOG.error("Couldn't delete managed directory {} after it was created for database {} {}",
-                  dbMgdPath, db.getName(), e.getMessage());
+                  managedPathToCreate, db.getName(), e.getMessage());
             }
           }
 
@@ -269,4 +241,44 @@ public class CreateDatabaseHandler
                                      Map<String, String> transactionalListenersResponses) implements Result {
 
   }
+
+  /**
+   * Creates the given database directory (managed or external) as the given user,
+   * running the actual mkdir as an admin (login) or current user depending on runAsLoginUser.
+   *
+   * @param path the directory path to create
+   * @param runAsLoginUser true to run as the login (admin) user (used for managed dir,
+   *                        since the calling user may not have access to it),
+   *                        false to run as the current user (used for external dir)
+   * @param dirLabel a short label ("managed"/"external") used only for log/error messages
+   * @param throwOnMkdirFailure true to throw the exception about create database dir
+   * @return true if the directory was created by this call, false if it already existed
+   * @throws MetaException if directory creation fails
+   */
+  private boolean createDbDirectory(Path path, boolean runAsLoginUser, String dirLabel,
+                                    boolean throwOnMkdirFailure) throws MetaException {
+    try {
+      UserGroupInformation ugi = runAsLoginUser
+          ? UserGroupInformation.getLoginUser()
+          : UserGroupInformation.getCurrentUser();
+      return ugi.doAs((PrivilegedExceptionAction<Boolean>) () -> {
+        if (!wh.isDir(path)) {
+          LOG.info("Creating database path in {} directory {}", dirLabel, path);
+          if (!wh.mkdirs(path)) {
+            if (throwOnMkdirFailure) {
+              throw new MetaException("Unable to create database " + dirLabel + " path " + path +
+                  ", failed to create database " + db.getName());
+            }
+            return false;
+          }
+          return true;
+        }
+        return false;
+      });
+    } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+      throw new MetaException("Unable to create database " + dirLabel + " directory " + path +
+          ", failed to create database " + db.getName() + ": " + e.getMessage());
+    }
+  }
+
 }
