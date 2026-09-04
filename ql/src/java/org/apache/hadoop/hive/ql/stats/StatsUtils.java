@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -392,6 +393,49 @@ public class StatsUtils {
       }
 
       if (needColStats) {
+
+        if (table.isNonNative() && !isPartitionStats(table, conf)) {
+          // the table maintains table-level column statistics only: serve them over the pruned
+          // set, on top of the partition-derived basic statistics
+          List<ColStatistics> colStats =
+              computeAggrColumnStats(table, neededColumns, partList, conf, fetchColStats);
+          if (colStats.size() < neededColumns.size()) {
+            // the pruned set answers for the columns it can - a type whose bounds are not read
+            // states nothing there - and the table's own statistics answer for the rest, which
+            // are measurements rather than an estimate of them
+            Set<String> served = colStats.stream().map(ColStatistics::getColumnName).collect(Collectors.toSet());
+            List<String> unserved = neededColumns.stream().filter(col -> !served.contains(col)).toList();
+            colStats = new ArrayList<>(colStats);
+            colStats.addAll(getTableColumnStats(table, unserved, colStatsCache, fetchColStats));
+          }
+          if (estimateStats) {
+            colStats = estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
+          }
+          // we should have stats for all columns (estimated or actual)
+          if (neededColumns.size() == colStats.size()) {
+            long betterDS = getDataSizeFromColumnStats(nr, colStats);
+            stats.setDataSize((betterDS < 1 || colStats.isEmpty()) ? ds : betterDS);
+          }
+          stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
+          // nothing pruned the list and nothing in it is unknown, so these counts and the row
+          // count above are of the same rows
+          boolean coversEveryPartition =
+              partList.getReferredPartCols().isEmpty() && !partList.hasUnknownPartitions();
+          if (coversEveryPartition) {
+            // infer if any column can be primary key based on column statistics
+            inferAndSetPrimaryKey(stats.getNumRows(), colStats);
+          } else {
+            stats.updateColumnStatsState(State.PARTIAL);
+          }
+          stats.addToColumnStats(colStats);
+
+          if (partStats.isEmpty()) {
+            // all partitions are filtered by partition pruning
+            stats.setBasicStatsState(State.COMPLETE);
+          }
+          return stats;
+        }
+
         List<String> partitionCols = getPartitionColumns(schema, neededColumns, referencedColumns);
 
         // We will retrieve stats from the metastore only for columns that are not cached
@@ -1084,6 +1128,28 @@ public class StatsUtils {
       }
     }
     return stats;
+  }
+
+  /**
+   * What the storage itself records about the partitions a scan reads, computed rather than
+   * gathered. They describe those partitions rather than every one, which the whole table's do
+   * not, and the caller leaves the state partial as it does for any scan of part of a table.
+   * Whether a storage answers at all is the storage's own to decide.
+   */
+  private static List<ColStatistics> computeAggrColumnStats(Table table, List<String> neededColumns,
+      PrunedPartitionList partList, HiveConf conf, boolean fetchColStats) {
+    if (!fetchColStats || partList == null || partList.getReferredPartCols().isEmpty() ||
+        partList.hasUnknownPartitions()) {
+      return Collections.emptyList();
+    }
+    List<String> partNames = partList.getNotDeniedPartns().stream()
+        .map(Partition::getName)
+        .toList();
+    if (partNames.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return convertColStats(
+        table.getStorageHandler().computeAggrColStatsFor(table, neededColumns, partNames));
   }
 
   private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats) {
@@ -1995,8 +2061,20 @@ public class StatsUtils {
   }
 
   public static boolean isPartitionStats(Table table, HiveConf conf) {
-    return conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && table.isPartitioned()
-        && (!table.isNonNative() || table.getStorageHandler().canSetColStatistics(table));
+    return table.isPartitioned() && isPartitionStatsEnabled(table, conf);
+  }
+
+  /**
+   * Whether this table's statistics are kept per partition, leaving aside whether it has any. A
+   * CREATE has to ask this way, since the table it is about to write does not exist to be asked.
+   */
+  public static boolean isPartitionStatsEnabled(Table table, HiveConf conf) {
+    // the metastore keeps a single row of column statistics per table, with nowhere to put a
+    // partition's, so a table partitioned outside it can only keep them per partition itself
+    if (table.isNonNative()) {
+      return table.getStorageHandler().canSetColStatistics(table, true);
+    }
+    return conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS);
   }
 
   public static boolean checkCanProvideStats(Table table) {

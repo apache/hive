@@ -285,7 +285,9 @@ public class Table implements Serializable {
     // check for validity
     validateName(conf);
 
-    if (getCols().isEmpty()) {
+    if (getCols().isEmpty() && !hasNonNativePartitionSupport()) {
+      // a non-native table's data-column view excludes the handler partition columns and is
+      // legitimately empty when every column is a partition transform source
       throw new HiveException("at least one column must be specified for the table");
     }
     validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
