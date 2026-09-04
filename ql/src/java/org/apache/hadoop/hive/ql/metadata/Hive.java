@@ -6310,6 +6310,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
         return tbl.getStorageHandler().getColStatistics(tbl, colNames);
       }
+      if (tbl.isNonNative() && (tbl.getStorageHandler().canSetColStatistics(tbl)
+          || !tbl.getQualifier().isEmpty())) {
+        // the handler owns the table's statistics, or the read is qualified by a branch, a
+        // point in time or a metadata table: the metastore's single set describes none of them
+        return Collections.emptyList();
+      }
       if (checkTransactional) {
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         retv = getMSC().getTableColumnStatistics(tbl.getDbName(), tbl.getTableName(), colNames, 
@@ -6364,6 +6370,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
         return tbl.getStorageHandler().getAggrColStatsFor(tbl, colNames, partName);
       }
+      if (tbl.isNonNative() && (tbl.getStorageHandler().canSetColStatistics(tbl)
+          || !tbl.getQualifier().isEmpty())) {
+        // the handler owns the table's statistics, or the read is qualified by a branch, a
+        // point in time or a metadata table: the metastore's single set describes none of them
+        return new AggrStats(new ArrayList<>(), 0);
+      }
       if (checkTransactional) {
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
@@ -6377,7 +6389,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS, "HS2-cache");
     }
   }
-  
+
   public void deleteColumnStatistics(TableName tableName) throws HiveException {
     DeleteColumnStatisticsRequest request = 
         new DeleteColumnStatisticsRequest(tableName.getDb(), tableName.getTable());

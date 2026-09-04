@@ -171,7 +171,7 @@ CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time
 #Masked#	default	srcbucket_big	key_bucket_8=0	MINOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	srcbucket_big	key_bucket_8=3	MINOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	srcbucket_big	key_bucket_8=4	MINOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	srcbucket_big	key_bucket_8=null	MINOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	srcbucket_big	key_bucket_8=__HIVE_DEFAULT_PARTITION__	MINOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	srcbucket_big	 --- 	MINOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 PREHOOK: query: desc formatted default.srcbucket_big
 PREHOOK: type: DESCTABLE

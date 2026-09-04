@@ -43,6 +43,10 @@ public class DummyPartition extends Partition {
    */
   public static final String VOID = "__NO_PARTITION__";
 
+  /**
+   * Whether the name is the synthetic partition's. No statement can name that partition, so
+   * listings shown to users skip it, while planning and statistics keep counting its rows.
+   */
   public static boolean isVoid(String partName) {
     return VOID.equals(partName);
   }

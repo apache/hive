@@ -1,0 +1,423 @@
+PREHOOK: query: create external table ice_folded (id int, amount int, p string) partitioned by spec (p)
+stored by iceberg stored as parquet tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_folded
+POSTHOOK: query: create external table ice_folded (id int, amount int, p string) partitioned by spec (p)
+stored by iceberg stored as parquet tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_folded
+PREHOOK: query: insert into ice_folded values (1, 10, 'a'), (5, 50, 'a'), (9, 90, 'b'), (3, 30, 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_folded
+POSTHOOK: query: insert into ice_folded values (1, 10, 'a'), (5, 50, 'a'), (9, 90, 'b'), (3, 30, 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_folded
+PREHOOK: query: analyze table ice_folded compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_folded
+PREHOOK: Output: default@ice_folded
+PREHOOK: Output: default@ice_folded@p=a
+PREHOOK: Output: default@ice_folded@p=b
+PREHOOK: Output: default@ice_folded@p=c
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_folded compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_folded
+POSTHOOK: Output: default@ice_folded
+POSTHOOK: Output: default@ice_folded@p=a
+POSTHOOK: Output: default@ice_folded@p=b
+POSTHOOK: Output: default@ice_folded@p=c
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: describe formatted ice_folded id
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_folded
+POSTHOOK: query: describe formatted ice_folded id
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_folded
+col_name            	id                  
+data_type           	int                 
+min                 	1                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"amount\":\"true\",\"id\":\"true\",\"p\":\"true\"}}
+PREHOOK: query: explain select count(*) from ice_folded where id > 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_folded
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(*) from ice_folded where id > 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_folded
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_folded
+                  filterExpr: (id > 4) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 4) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.6666666
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(*) from ice_folded where p = 'a' and id > 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_folded
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(*) from ice_folded where p = 'a' and id > 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_folded
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_folded
+                  filterExpr: ((id > 4) and (p = 'a')) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 4) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into ice_folded values (7, 70, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_folded
+POSTHOOK: query: insert into ice_folded values (7, 70, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_folded
+PREHOOK: query: analyze table ice_folded partition (p='b') compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_folded
+PREHOOK: Output: default@ice_folded
+PREHOOK: Output: default@ice_folded@p=b
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_folded partition (p='b') compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_folded
+POSTHOOK: Output: default@ice_folded
+POSTHOOK: Output: default@ice_folded@p=b
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: describe formatted ice_folded id
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_folded
+POSTHOOK: query: describe formatted ice_folded id
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_folded
+col_name            	id                  
+data_type           	int                 
+min                 	1                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	5                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"amount\":\"true\",\"id\":\"true\",\"p\":\"true\"}}
+PREHOOK: query: explain select count(*) from ice_folded where id > 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_folded
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(*) from ice_folded where id > 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_folded
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_folded
+                  filterExpr: (id > 4) (type: boolean)
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 4) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.6666666
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table ice_folded
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_folded
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_folded
+POSTHOOK: query: drop table ice_folded
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_folded
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_folded
+PREHOOK: query: create external table ice_folded_bucket (id int, p int) partitioned by spec (bucket(4, p))
+stored by iceberg stored as parquet tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_folded_bucket
+POSTHOOK: query: create external table ice_folded_bucket (id int, p int) partitioned by spec (bucket(4, p))
+stored by iceberg stored as parquet tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_folded_bucket
+PREHOOK: query: insert into ice_folded_bucket values (10, 1), (20, 2), (30, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_folded_bucket
+POSTHOOK: query: insert into ice_folded_bucket values (10, 1), (20, 2), (30, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_folded_bucket
+PREHOOK: query: analyze table ice_folded_bucket compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_folded_bucket
+PREHOOK: Output: default@ice_folded_bucket
+PREHOOK: Output: default@ice_folded_bucket@p_bucket=0
+PREHOOK: Output: default@ice_folded_bucket@p_bucket=3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_folded_bucket compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_folded_bucket
+POSTHOOK: Output: default@ice_folded_bucket
+POSTHOOK: Output: default@ice_folded_bucket@p_bucket=0
+POSTHOOK: Output: default@ice_folded_bucket@p_bucket=3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: describe formatted ice_folded_bucket id
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_folded_bucket
+POSTHOOK: query: describe formatted ice_folded_bucket id
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_folded_bucket
+col_name            	id                  
+data_type           	int                 
+min                 	10                  
+max                 	30                  
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"p\":\"true\"}}
+PREHOOK: query: explain select count(*) from ice_folded_bucket where id > 15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_folded_bucket
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(*) from ice_folded_bucket where id > 15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_folded_bucket
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_folded_bucket
+                  filterExpr: (id > 15) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 15) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.5
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table ice_folded_bucket
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_folded_bucket
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_folded_bucket
+POSTHOOK: query: drop table ice_folded_bucket
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_folded_bucket
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_folded_bucket

@@ -176,8 +176,8 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       try {
         Table table = partish.getTable();
         if (partish.getPartition() != null) {
-          // the storage handler maintains the statistics of all partitions as a whole; a partition-scoped
-          // ANALYZE is rejected at compile time (ErrorMsg.ANALYZE_PARTITION_NON_NATIVE)
+          // the storage handler maintains basic statistics for the table as a whole, so no
+          // statement produces a partition partish for it here
           throw new IllegalStateException("Partition-scoped statistics collection is not supported for "
               + table.getFullyQualifiedName());
         }
@@ -464,8 +464,11 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
 
       if (values.get(0).result instanceof Table) {
-        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext, true);
-        LOG.debug("Updated stats for {}.", tableFullName);
+        // the metastore keeps one set of counts, and they describe the table, not a branch
+        if (table.getSnapshotRef() == null) {
+          db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext, true);
+          LOG.debug("Updated stats for {}.", tableFullName);
+        }
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, StatCollector.EXTRACT_RESULT_FUNCTION);
