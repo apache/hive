@@ -1,0 +1,555 @@
+PREHOOK: query: create external table ice_evo (id bigint, p string)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_evo
+POSTHOOK: query: create external table ice_evo (id bigint, p string)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_evo
+PREHOOK: query: insert into ice_evo values (1, 'a'), (100, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_evo
+POSTHOOK: query: insert into ice_evo values (1, 'a'), (100, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_evo
+PREHOOK: query: alter table ice_evo set partition spec (p)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_evo
+POSTHOOK: query: alter table ice_evo set partition spec (p)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: default@ice_evo
+PREHOOK: query: insert into ice_evo values (5, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_evo
+POSTHOOK: query: insert into ice_evo values (5, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_evo
+PREHOOK: query: analyze table ice_evo compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_evo
+PREHOOK: Output: default@ice_evo
+PREHOOK: Output: default@ice_evo@__NO_PARTITION__
+PREHOOK: Output: default@ice_evo@p=a
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_evo compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: default@ice_evo
+POSTHOOK: Output: default@ice_evo@__NO_PARTITION__
+POSTHOOK: Output: default@ice_evo@p=a
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain select id from ice_evo where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_evo where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_evo
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select min(id), max(id) from ice_evo
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select min(id), max(id) from ice_evo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	100
+PREHOOK: query: insert into ice_evo values (7, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_evo
+POSTHOOK: query: insert into ice_evo values (7, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_evo
+PREHOOK: query: explain select id from ice_evo where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_evo where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_evo
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select min(id), max(id) from ice_evo
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select min(id), max(id) from ice_evo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	100
+PREHOOK: query: analyze table ice_evo partition (p='a') compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_evo
+PREHOOK: Output: default@ice_evo
+PREHOOK: Output: default@ice_evo@__NO_PARTITION__
+PREHOOK: Output: default@ice_evo@p=a
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_evo partition (p='a') compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: default@ice_evo
+POSTHOOK: Output: default@ice_evo@__NO_PARTITION__
+POSTHOOK: Output: default@ice_evo@p=a
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain select id from ice_evo where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_evo where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_evo
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select min(id), max(id) from ice_evo
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select min(id), max(id) from ice_evo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	100
+PREHOOK: query: drop table ice_evo
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_evo
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_evo
+POSTHOOK: query: drop table ice_evo
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_evo
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_evo
+PREHOOK: query: create external table ice_evo2 (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_evo2
+POSTHOOK: query: create external table ice_evo2 (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_evo2
+PREHOOK: query: insert into ice_evo2 values (1, 'a'), (7, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_evo2
+POSTHOOK: query: insert into ice_evo2 values (1, 'a'), (7, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_evo2
+PREHOOK: query: analyze table ice_evo2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: default@ice_evo2
+PREHOOK: Output: default@ice_evo2@p=a
+PREHOOK: Output: default@ice_evo2@p=b
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_evo2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: default@ice_evo2
+POSTHOOK: Output: default@ice_evo2@p=a
+POSTHOOK: Output: default@ice_evo2@p=b
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain select id from ice_evo2 where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_evo2 where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_evo2
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select min(id), max(id) from ice_evo2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select min(id), max(id) from ice_evo2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	7
+PREHOOK: query: alter table ice_evo2 set partition spec (p, truncate(1, p))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_evo2
+POSTHOOK: query: alter table ice_evo2 set partition spec (p, truncate(1, p))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: default@ice_evo2
+PREHOOK: query: insert into ice_evo2 values (9, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_evo2
+POSTHOOK: query: insert into ice_evo2 values (9, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_evo2
+PREHOOK: query: explain select id from ice_evo2 where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_evo2 where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_evo2
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select min(id), max(id) from ice_evo2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select min(id), max(id) from ice_evo2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	9
+PREHOOK: query: show partitions ice_evo2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ice_evo2
+POSTHOOK: query: show partitions ice_evo2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ice_evo2
+p=a
+p=a/p_trunc_1=a
+p=b
+PREHOOK: query: analyze table ice_evo2 partition (p='a') compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: default@ice_evo2
+PREHOOK: Output: default@ice_evo2@p=a
+PREHOOK: Output: default@ice_evo2@p=a/p_trunc_1=a
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_evo2 partition (p='a') compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: default@ice_evo2
+POSTHOOK: Output: default@ice_evo2@p=a
+POSTHOOK: Output: default@ice_evo2@p=a/p_trunc_1=a
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain select id from ice_evo2 where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_evo2 where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_evo2
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select min(id), max(id) from ice_evo2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select min(id), max(id) from ice_evo2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	9
+PREHOOK: query: analyze table ice_evo2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: default@ice_evo2
+PREHOOK: Output: default@ice_evo2@p=a
+PREHOOK: Output: default@ice_evo2@p=a/p_trunc_1=a
+PREHOOK: Output: default@ice_evo2@p=b
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_evo2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: default@ice_evo2
+POSTHOOK: Output: default@ice_evo2@p=a
+POSTHOOK: Output: default@ice_evo2@p=a/p_trunc_1=a
+POSTHOOK: Output: default@ice_evo2@p=b
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain select id from ice_evo2 where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_evo2 where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_evo2
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select min(id), max(id) from ice_evo2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select min(id), max(id) from ice_evo2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	9
+PREHOOK: query: drop table ice_evo2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_evo2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_evo2
+POSTHOOK: query: drop table ice_evo2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_evo2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_evo2

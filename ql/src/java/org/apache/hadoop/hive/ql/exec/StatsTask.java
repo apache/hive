@@ -126,7 +126,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   }
 
   private Table getTable(Hive db) throws SemanticException, HiveException {
-    return db.getTable(work.getFullTableName());
+    Table table = db.getTable(work.getFullTableName());
+    // a lookup by name carries no snapshot ref: restore the one the write targeted
+    table.setSnapshotRef(work.getTable().getSnapshotRef());
+    return table;
   }
 
   @Override
