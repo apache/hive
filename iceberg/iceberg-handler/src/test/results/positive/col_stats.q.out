@@ -147,7 +147,7 @@ avg_col_len         	3.4444444444444446
 max_col_len         	5                   
 num_trues           	                    
 num_falses          	                    
-bit_vector          	                    
+bit_vector          	HL                  
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: update tbl_ice_puffin
@@ -321,25 +321,9 @@ POSTHOOK: Input: default@tbl_ice_puffin
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 Plan optimized by CBO.
 
-Vertex dependency in root stage
-Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-
 Stage-0
   Fetch Operator
-    limit:-1
-    Stage-1
-      Reducer 2 vectorized
-      File Output Operator [FS_11]
-        Group By Operator [GBY_10] (rows=1 width=8)
-          Output:["_col0","_col1"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"]
-        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-          PARTITION_ONLY_SHUFFLE [RS_9]
-            Group By Operator [GBY_8] (rows=1 width=8)
-              Output:["_col0","_col1"],aggregations:["min(a)","max(c)"]
-              Select Operator [SEL_7] (rows=5 width=8)
-                Output:["a","c"]
-                TableScan [TS_0] (rows=5 width=8)
-                  default@tbl_ice_puffin,tbl_ice_puffin,Tbl:COMPLETE,Col:COMPLETE,Output:["a","c"]
+    limit:1
 
 PREHOOK: query: desc formatted tbl_ice_puffin C
 PREHOOK: type: DESCTABLE

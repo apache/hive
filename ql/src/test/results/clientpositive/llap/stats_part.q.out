@@ -134,6 +134,33 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: explain select max(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select max(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: select max(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+NULL
 PREHOOK: query: desc formatted stats_part
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats_part

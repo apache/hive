@@ -281,6 +281,11 @@ public class StatsSetupConst {
     return stats.basicStats;
   }
 
+  /** Whether the stored column statistics are up to date for every column asked. */
+  public static boolean areColumnStatsUptoDate(Map<String, String> params, List<String> colNames) {
+    return colNames.stream().allMatch(colName -> areColumnStatsUptoDate(params, colName));
+  }
+
   public static boolean areColumnStatsUptoDate(Map<String, String> params, String colName) {
     if (params == null) {
       return false;
