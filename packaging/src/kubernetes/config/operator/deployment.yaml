@@ -35,11 +35,6 @@ spec:
         - name: hive-operator
           image: apache/hive:operator-${HIVE_VERSION}
           imagePullPolicy: IfNotPresent
-          env:
-            - name: OPERATOR_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
           resources:
             requests:
               cpu: 200m

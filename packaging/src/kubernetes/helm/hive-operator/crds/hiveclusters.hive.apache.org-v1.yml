@@ -79,6 +79,11 @@ spec:
               hiveServer2:
                 description: HiveServer2 component configuration
                 properties:
+                  affinity:
+                    description: Affinity override; replaces the default spread anti-affinity
+                      when set
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   autoscaling:
                     description: "Autoscaling configuration (operator-driven, no external\
                       \ dependencies)"
@@ -154,6 +159,13 @@ spec:
                       type: string
                     description: Additional configuration overrides as key-value pairs
                     type: object
+                  envVars:
+                    description: "Component-scoped env vars, appended after the cluster-wide\
+                      \ envVars"
+                    items:
+                      type: object
+                    type: array
+                    x-kubernetes-preserve-unknown-fields: true
                   externalJars:
                     description: 'List of URIs to external JARs to download and add
                       to HS2 classpath '
@@ -224,28 +236,24 @@ spec:
                     description: Number of replicas
                     type: integer
                   resources:
+                    default:
+                      requests:
+                        cpu: 500m
+                        memory: 1Gi
                     description: Resource requirements for pods
-                    properties:
-                      limitsCpu:
-                        description: "CPU limit (e.g. 2, 1000m)"
-                        type: string
-                      limitsMemory:
-                        description: "Memory limit (e.g. 2Gi, 1024Mi)"
-                        type: string
-                      requestsCpu:
-                        default: 500m
-                        description: "CPU request (e.g. 500m, 1)"
-                        type: string
-                      requestsMemory:
-                        default: 1Gi
-                        description: "Memory request (e.g. 1Gi, 512Mi)"
-                        type: string
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   serviceType:
                     default: ClusterIP
                     description: "Kubernetes Service type: ClusterIP, LoadBalancer,\
                       \ or NodePort"
                     type: string
+                  tolerations:
+                    description: Tolerations for scheduling onto tainted nodes
+                    items:
+                      type: object
+                    type: array
+                    x-kubernetes-preserve-unknown-fields: true
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               image:
@@ -267,6 +275,11 @@ spec:
                   \ in their session."
                 items:
                   properties:
+                    affinity:
+                      description: Affinity override; replaces the default spread
+                        anti-affinity when set
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     autoscaling:
                       description: "Autoscaling configuration (operator-driven, no\
                         \ external dependencies)"
@@ -402,23 +415,13 @@ spec:
                       description: Number of replicas
                       type: integer
                     resources:
+                      default:
+                        requests:
+                          cpu: 500m
+                          memory: 1Gi
                       description: Resource requirements for pods
-                      properties:
-                        limitsCpu:
-                          description: "CPU limit (e.g. 2, 1000m)"
-                          type: string
-                        limitsMemory:
-                          description: "Memory limit (e.g. 2Gi, 1024Mi)"
-                          type: string
-                        requestsCpu:
-                          default: 500m
-                          description: "CPU request (e.g. 500m, 1)"
-                          type: string
-                        requestsMemory:
-                          default: 1Gi
-                          description: "Memory request (e.g. 1Gi, 512Mi)"
-                          type: string
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     serviceHosts:
                       description: "LLAP service hosts identifier for ZooKeeper registration.\
                         \ Defaults to @{name} (e.g. @llap0)."
@@ -427,6 +430,12 @@ spec:
                       description: Per-LLAP TezAM configuration. Each LLAP cluster
                         gets its own TezAM with independent replica count and autoscaling.
                       properties:
+                        affinity:
+                          description: "Affinity for this LLAP cluster's TezAM, overriding\
+                            \ spec.tezAm.affinity. Set it with more than one LLAP\
+                            \ cluster."
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         autoscaling:
                           description: Autoscaling configuration for this LLAP cluster's
                             TezAM
@@ -504,7 +513,21 @@ spec:
                           description: Max number of TezAM replicas for this LLAP
                             cluster
                           type: integer
+                        tolerations:
+                          description: "Tolerations for this LLAP cluster's TezAM,\
+                            \ overriding spec.tezAm.tolerations"
+                          items:
+                            type: object
+                          type: array
+                          x-kubernetes-preserve-unknown-fields: true
                       type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    tolerations:
+                      description: Tolerations for scheduling onto tainted nodes
+                      items:
+                        type: object
+                      type: array
+                      x-kubernetes-preserve-unknown-fields: true
                   required:
                   - name
                   type: object
@@ -513,6 +536,11 @@ spec:
               metastore:
                 description: Metastore component configuration
                 properties:
+                  affinity:
+                    description: Affinity override; replaces the default spread anti-affinity
+                      when set
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   autoscaling:
                     description: "Autoscaling configuration (operator-driven, no external\
                       \ dependencies)"
@@ -625,6 +653,13 @@ spec:
                     default: true
                     description: Whether the operator should deploy and manage a Metastore
                     type: boolean
+                  envVars:
+                    description: "Component-scoped env vars, appended after the cluster-wide\
+                      \ envVars"
+                    items:
+                      type: object
+                    type: array
+                    x-kubernetes-preserve-unknown-fields: true
                   externalUri:
                     description: Thrift URI of the external Metastore (if enabled
                       is false)
@@ -693,23 +728,19 @@ spec:
                     description: Number of replicas
                     type: integer
                   resources:
+                    default:
+                      requests:
+                        cpu: 500m
+                        memory: 1Gi
                     description: Resource requirements for pods
-                    properties:
-                      limitsCpu:
-                        description: "CPU limit (e.g. 2, 1000m)"
-                        type: string
-                      limitsMemory:
-                        description: "Memory limit (e.g. 2Gi, 1024Mi)"
-                        type: string
-                      requestsCpu:
-                        default: 500m
-                        description: "CPU request (e.g. 500m, 1)"
-                        type: string
-                      requestsMemory:
-                        default: 1Gi
-                        description: "Memory request (e.g. 1Gi, 512Mi)"
-                        type: string
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  tolerations:
+                    description: Tolerations for scheduling onto tainted nodes
+                    items:
+                      type: object
+                    type: array
+                    x-kubernetes-preserve-unknown-fields: true
                   warehouseDir:
                     default: /hive/warehouse
                     description: Warehouse directory path
@@ -727,6 +758,11 @@ spec:
               tezAm:
                 description: Tez Application Master configuration. Enabled by default.
                 properties:
+                  affinity:
+                    description: Affinity override; replaces the default spread anti-affinity
+                      when set
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   autoscaling:
                     description: "Autoscaling configuration (operator-driven, no external\
                       \ dependencies)"
@@ -806,6 +842,13 @@ spec:
                     default: true
                     description: Whether Tez AM is enabled
                     type: boolean
+                  envVars:
+                    description: "Component-scoped env vars, appended after the cluster-wide\
+                      \ envVars"
+                    items:
+                      type: object
+                    type: array
+                    x-kubernetes-preserve-unknown-fields: true
                   extraVolumeMounts:
                     description: Additional volume mounts for the container
                     items:
@@ -824,23 +867,13 @@ spec:
                     description: Number of replicas
                     type: integer
                   resources:
+                    default:
+                      requests:
+                        cpu: 500m
+                        memory: 1Gi
                     description: Resource requirements for pods
-                    properties:
-                      limitsCpu:
-                        description: "CPU limit (e.g. 2, 1000m)"
-                        type: string
-                      limitsMemory:
-                        description: "Memory limit (e.g. 2Gi, 1024Mi)"
-                        type: string
-                      requestsCpu:
-                        default: 500m
-                        description: "CPU request (e.g. 500m, 1)"
-                        type: string
-                      requestsMemory:
-                        default: 1Gi
-                        description: "Memory request (e.g. 1Gi, 512Mi)"
-                        type: string
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   scratchStorageClassName:
                     description: "StorageClass for the shared scratch PVC. Must support\
                       \ ReadWriteMany access. If null, uses cluster default."
@@ -850,6 +883,12 @@ spec:
                     description: Storage size for the shared scratch PVC (ReadWriteMany)
                       mounted on HS2 and TezAM at /opt/hive/scratch
                     type: string
+                  tolerations:
+                    description: Tolerations for scheduling onto tainted nodes
+                    items:
+                      type: object
+                    type: array
+                    x-kubernetes-preserve-unknown-fields: true
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               volumeMounts:

@@ -51,7 +51,6 @@ public class HiveServer2DeploymentDependent
     extends HiveDependentResource<Deployment, HiveCluster> {
 
   public static final String COMPONENT = ConfigUtils.COMPONENT_HIVESERVER2;
-  private static final String SCRATCH_MOUNT_PATH = "/opt/hive/scratch";
 
   public HiveServer2DeploymentDependent() {
     super(Deployment.class);
@@ -86,6 +85,7 @@ public class HiveServer2DeploymentDependent
     if (spec.envVars() != null) {
       envVars.addAll(spec.envVars());
     }
+    envVars.addAll(hs2.envVars());
 
     // Env vars consumed by the Hive Docker entrypoint.sh to
     // configure Tez execution mode at container startup.
@@ -185,10 +185,10 @@ public class HiveServer2DeploymentDependent
     if (tezAmEnabled) {
       volumeMounts.add(
           new io.fabric8.kubernetes.api.model.VolumeMountBuilder()
-              .withName("scratch")
-              .withMountPath(SCRATCH_MOUNT_PATH).build());
+              .withName(ScratchPvcDependent.COMPONENT)
+              .withMountPath(ConfigUtils.HIVE_LOCAL_SCRATCH_DIR_DEFAULT).build());
       volumes.add(new io.fabric8.kubernetes.api.model.VolumeBuilder()
-          .withName("scratch")
+          .withName(ScratchPvcDependent.COMPONENT)
           .withNewPersistentVolumeClaim()
             .withClaimName(ScratchPvcDependent.resourceName(hiveCluster))
           .endPersistentVolumeClaim()
@@ -262,7 +262,7 @@ public class HiveServer2DeploymentDependent
                 .withPorts(ports)
                 .withReadinessProbe(readinessProbe)
                 .withLivenessProbe(livenessProbe)
-                .withResources(buildResources(hs2.resources()))
+                .withResources(hs2.resources())
                 .withVolumeMounts(volumeMounts)
               .endContainer()
               .withVolumes(volumes)
@@ -271,8 +271,12 @@ public class HiveServer2DeploymentDependent
         .endSpec()
         .build();
 
+    applyAffinityOverride(
+        deployment.getSpec().getTemplate().getSpec(), hs2.affinity());
     applySpreadAffinityIfAbsent(
         deployment.getSpec().getTemplate().getSpec(), selectorLabels);
+    applyTolerations(
+        deployment.getSpec().getTemplate().getSpec(), hs2.tolerations());
 
     // Graceful scale-down: deregister from ZK, then poll JMX Exporter for sessions.
     if (autoscaling.isEnabled()) {

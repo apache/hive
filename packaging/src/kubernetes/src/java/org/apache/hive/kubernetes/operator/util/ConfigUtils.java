@@ -76,6 +76,12 @@ public final class ConfigUtils {
 
   public static final String HIVE_LOCAL_SCRATCH_DIR_KEY = "hive.exec.local.scratchdir";
 
+  /**
+   * Where the scratch PVC is mounted, and therefore the only valid value for
+   * {@link #HIVE_LOCAL_SCRATCH_DIR_KEY}: the directory has to sit on that volume.
+   */
+  public static final String HIVE_LOCAL_SCRATCH_DIR_DEFAULT = "/opt/hive/scratch";
+
   public static final String HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY = "hive.server2.tez.use.external.sessions";
 
   public static final String HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS_KEY =

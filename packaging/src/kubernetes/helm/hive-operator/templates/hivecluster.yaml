@@ -70,6 +70,18 @@ spec:
     extraVolumeMounts:
       {{- toYaml .Values.cluster.metastore.extraVolumeMounts | nindent 6 }}
     {{- end }}
+    {{- if .Values.cluster.metastore.tolerations }}
+    tolerations:
+      {{- toYaml .Values.cluster.metastore.tolerations | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.metastore.affinity }}
+    affinity:
+      {{- toYaml .Values.cluster.metastore.affinity | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.metastore.envVars }}
+    envVars:
+      {{- toYaml .Values.cluster.metastore.envVars | nindent 6 }}
+    {{- end }}
     {{- if and .Values.cluster.metastore.autoscaling .Values.cluster.metastore.autoscaling.enabled }}
     autoscaling:
       enabled: true
@@ -102,6 +114,18 @@ spec:
     {{- if .Values.cluster.hiveServer2.externalJars }}
     externalJars:
       {{- toYaml .Values.cluster.hiveServer2.externalJars | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.hiveServer2.tolerations }}
+    tolerations:
+      {{- toYaml .Values.cluster.hiveServer2.tolerations | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.hiveServer2.affinity }}
+    affinity:
+      {{- toYaml .Values.cluster.hiveServer2.affinity | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.hiveServer2.envVars }}
+    envVars:
+      {{- toYaml .Values.cluster.hiveServer2.envVars | nindent 6 }}
     {{- end }}
     {{- if .Values.cluster.hiveServer2.extraVolumes }}
     extraVolumes:
@@ -152,6 +176,14 @@ spec:
     extraVolumeMounts:
       {{- toYaml .extraVolumeMounts | nindent 6 }}
     {{- end }}
+    {{- if .tolerations }}
+    tolerations:
+      {{- toYaml .tolerations | nindent 6 }}
+    {{- end }}
+    {{- if .affinity }}
+    affinity:
+      {{- toYaml .affinity | nindent 6 }}
+    {{- end }}
     {{- if and .autoscaling .autoscaling.enabled }}
     autoscaling:
       enabled: true
@@ -166,6 +198,14 @@ spec:
     {{- if .tezAm }}
     tezAm:
       replicas: {{ .tezAm.replicas | default 1 }}
+      {{- if .tezAm.affinity }}
+      affinity:
+        {{- toYaml .tezAm.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .tezAm.tolerations }}
+      tolerations:
+        {{- toYaml .tezAm.tolerations | nindent 8 }}
+      {{- end }}
       {{- if and .tezAm.autoscaling .tezAm.autoscaling.enabled }}
       autoscaling:
         enabled: true
@@ -201,6 +241,18 @@ spec:
     {{- if .Values.cluster.tezAm.extraVolumeMounts }}
     extraVolumeMounts:
       {{- toYaml .Values.cluster.tezAm.extraVolumeMounts | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.tezAm.tolerations }}
+    tolerations:
+      {{- toYaml .Values.cluster.tezAm.tolerations | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.tezAm.affinity }}
+    affinity:
+      {{- toYaml .Values.cluster.tezAm.affinity | nindent 6 }}
+    {{- end }}
+    {{- if .Values.cluster.tezAm.envVars }}
+    envVars:
+      {{- toYaml .Values.cluster.tezAm.envVars | nindent 6 }}
     {{- end }}
     {{- if and .Values.cluster.tezAm.autoscaling .Values.cluster.tezAm.autoscaling.enabled }}
     autoscaling:
@@ -251,5 +303,5 @@ spec:
     {{- end }}
   {{- end }}
 
-  suspend: false
+  suspend: {{ .Values.cluster.suspend | default false }}
 {{- end }}

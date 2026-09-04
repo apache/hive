@@ -50,6 +50,7 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 public class ScratchPvcDependent
     extends HiveDependentResource<PersistentVolumeClaim, HiveCluster> {
 
+  /** Component label value, and the name of the pod volume backed by this PVC. */
   public static final String COMPONENT = "scratch";
 
   public ScratchPvcDependent() {
