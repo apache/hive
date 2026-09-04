@@ -146,12 +146,23 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           Path path = i.next().getPath();
           Path parent = path.getParent();
           if (parent.getName().startsWith(prefix)) {
-            // We do rename by including the name of parent directory into the filename so that there are no clashes
-            // when we move the files to the parent directory. Ex. HIVE_UNION_SUBDIR_1/000000_0 -> 1_000000_0
+            // Fold the subdir index into the *attempt-id* portion of the filename — not
+            // the _copy_ suffix — so there are no clashes when the files are moved to the
+            // parent directory, and so that the flattened name still lives in the plain
+            // writer-name namespace that ORIGINAL_PATTERN ([0-9]+_[0-9]+) accepts and
+            // that both the ACID reader and the metastore's non-ACID→ACID validator
+            // recognize. Keeping this out of the _copy_ namespace also means it composes
+            // cleanly with the HIVE-28822 uniqueness tag: a subsequent Hive.pickDestFilePath
+            // on a non-atomic-rename FS can freely append its own _copy_<queryTag> on top
+            // without a double-copy or a shape collision.
+            //   newAttemptId = subdirIdx * 100000 + originalAttempt
+            //   HIVE_UNION_SUBDIR_1/000000_0  -> 000000_100000
+            //   HIVE_UNION_SUBDIR_23/000000_2 -> 000000_2300002
             String parentOfParent = parent.getParent().toString();
-            String parentNameSuffix = parent.getName().substring(prefix.length());
+            int subdirIdx = Integer.parseInt(parent.getName().substring(prefix.length()));
+            String flattenedName = ParsedOutputFileName.parse(path.getName()).withFoldedSubdirIndex(subdirIdx);
 
-            fs.rename(path, new Path(parentOfParent + "/" + parentNameSuffix + "_" + path.getName()));
+            fs.rename(path, new Path(parentOfParent + "/" + flattenedName));
 
             unionSubdirs.add(parent);
           }
