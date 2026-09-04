@@ -41,11 +41,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -70,6 +65,7 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${standalone-metastore.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <!--
@@ -133,11 +129,46 @@
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
         </exclusion>
+        <!-- kerby/kerberos auth chain pulled in transitively via hadoop-auth; beeline
+             does not exercise hadoop-common's Kerberos/UGI code paths -->
+        <exclusion>
+          <groupId>org.apache.kerby</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <!-- avro is only used by hadoop-common's optional SequenceFile/serialization
+             helpers, not by Configuration/FileSystem/Path/IOUtils/ExitUtil -->
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </exclusion>
+        <!-- ZooKeeper client (curator) is unused; beeline does not talk to ZK
+             through hadoop-common -->
+        <exclusion>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <!-- htrace tracing hooks; not exercised by beeline's thin usage -->
+        <exclusion>
+          <groupId>org.apache.htrace</groupId>
+          <artifactId>htrace-core4</artifactId>
+        </exclusion>
+        <!-- jsch (SFTP/SSH) backs hadoop-common's SFTPFileSystem, which beeline
+             never instantiates -->
+        <exclusion>
+          <groupId>com.jcraft</groupId>
+          <artifactId>jsch</artifactId>
+        </exclusion>
+        <!-- commons-net (FTP client) backs hadoop-common's FTPFileSystem, unused -->
+        <exclusion>
+          <groupId>commons-net</groupId>
+          <artifactId>commons-net</artifactId>
+        </exclusion>
+        <!-- re2j is only used by hadoop-common's optional regex path matching -->
+        <exclusion>
+          <groupId>com.google.re2j</groupId>
+          <artifactId>re2j</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libthrift</artifactId>
     </dependency>
     <dependency>
       <groupId>net.sf.supercsv</groupId>
@@ -243,7 +274,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <optional>true</optional>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <profiles>
@@ -294,6 +325,11 @@
                       <!-- Output: arch-specific subdirectory so x64 and arm64 coexist -->
                       <arg value="--dest"/>
                       <arg value="${project.build.directory}/apache-hive-beeline-${project.version}/${installer.arch}"/>
+                      <!-- Reduces the size of the output artifact -->
+                      <arg value="--add-modules"/>
+                      <arg value="java.base,java.compiler,java.desktop,java.instrument,java.prefs,java.rmi,java.scripting,java.security.jgss,java.security.sasl,java.sql.rowset,jdk.httpserver,jdk.jfr,jdk.management,jdk.security.auth,jdk.unsupported"/>
+                      <arg value="--jlink-options"/>
+                      <arg value="--strip-debug --no-man-pages --no-header-files --strip-native-commands --compress=zip-9"/>
                       <arg line="${jpackage.platform.args}"/>
                       <!--
                         jpackage picks the native format automatically:
