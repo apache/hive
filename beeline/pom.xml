@@ -133,31 +133,7 @@
              does not exercise hadoop-common's Kerberos/UGI code paths -->
         <exclusion>
           <groupId>org.apache.kerby</groupId>
-          <artifactId>kerb-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.kerby</groupId>
-          <artifactId>kerb-util</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.kerby</groupId>
-          <artifactId>kerby-config</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.kerby</groupId>
-          <artifactId>kerb-crypto</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.kerby</groupId>
-          <artifactId>kerby-pkix</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.kerby</groupId>
-          <artifactId>kerby-asn1</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.kerby</groupId>
-          <artifactId>kerby-util</artifactId>
+          <artifactId>*</artifactId>
         </exclusion>
         <!-- avro is only used by hadoop-common's optional SequenceFile/serialization
              helpers, not by Configuration/FileSystem/Path/IOUtils/ExitUtil -->
@@ -169,15 +145,7 @@
              through hadoop-common -->
         <exclusion>
           <groupId>org.apache.curator</groupId>
-          <artifactId>curator-client</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.curator</groupId>
-          <artifactId>curator-recipes</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.curator</groupId>
-          <artifactId>curator-framework</artifactId>
+          <artifactId>*</artifactId>
         </exclusion>
         <!-- htrace tracing hooks; not exercised by beeline's thin usage -->
         <exclusion>
