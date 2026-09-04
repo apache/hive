@@ -658,6 +658,23 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         fieldByteEnd++;
       }
     }
+    finalizeSingleByteWithEscape(separator, endLessOne, fieldId, fieldByteBegin,
+        fieldByteEnd, escapeCount);
+  }
+
+  /**
+   * Tail of {@link #parseSingleByteWithEscape()} — handles the last byte (which
+   * can't be escaped) plus the "end-of-row acts as a final separator" case, and
+   * commits the parsed cursor state.
+   */
+  private void finalizeSingleByteWithEscape(byte separator, int endLessOne, int fieldId,
+      int fieldByteBegin, int fieldByteEnd, int escapeCount) {
+    final byte[] bytes = this.bytes;
+    final int end = this.end;
+    final int fieldCount = this.fieldCount;
+    final int[] startPositions = this.startPositions;
+    final int[] escapeCounts = this.escapeCounts;
+
     // Process the last byte if necessary.
     if (fieldByteEnd == endLessOne && fieldId < fieldCount) {
       if (bytes[fieldByteEnd] == separator) {

@@ -152,15 +152,13 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
         return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
       }
     }
-    LlapIoImpl.LOG.info("Creating VectorDeserializeOrcWriter for " + path);
+    LlapIoImpl.LOG.info("Creating VectorDeserializeOrcWriter for {}", path);
     return new VectorDeserializeOrcWriter(
-        jobConf, tblProps, sourceOi, sourceIncludes, cacheIncludes, allocSize, encodeExecutor,
-        serDe);
+        jobConf, tblProps, sourceOi, sourceIncludes, cacheIncludes, allocSize, encodeExecutor);
   }
 
   private VectorDeserializeOrcWriter(Configuration conf, Properties tblProps, StructObjectInspector sourceOi,
-      List<Integer> sourceIncludes, boolean[] cacheIncludes, int allocSize, ExecutorService encodeExecutor,
-      Deserializer serDe)
+      List<Integer> sourceIncludes, boolean[] cacheIncludes, int allocSize, ExecutorService encodeExecutor)
       throws IOException {
     super(sourceOi, allocSize);
     // See also: the usage of VectorDeserializeType, for binary. For now, we only want text.
@@ -170,7 +168,7 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     this.sourceBatch = vrbCtx.createVectorizedRowBatch();
     deserializeRead = new LazySimpleDeserializeRead(vrbCtx.getRowColumnTypeInfos(),
       vrbCtx.getRowdataTypePhysicalVariations(), /* useExternalBuffer */ true,
-      createSerdeParams(conf, tblProps, serDe));
+      createSerdeParams(conf, tblProps));
     vectorDeserializeRow = new VectorDeserializeRow<LazySimpleDeserializeRead>(deserializeRead);
     int colCount = vrbCtx.getRowColumnTypeInfos().length;
     boolean[] includes = null;
@@ -273,7 +271,7 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
   }
 
   private static LazySerDeParameters createSerdeParams(
-      Configuration conf, Properties tblProps, Deserializer serDe) throws IOException {
+      Configuration conf, Properties tblProps) throws IOException {
     try {
       LazySerDeParameters params =
           new LazySerDeParameters(conf, tblProps, LazySimpleSerDe.class.getName());
@@ -282,9 +280,11 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
        * the reader into its multi-byte scan branch. LazySerDeParameters
        * silently ignores single-byte values here, so misconfigured MultiDelim
        * tables (e.g. FIELD_DELIM=",") still take the specialized single-byte
-       * fast path via separators[0].
+       * fast path via separators[0]. The SerDe class is read from tblProps
+       * (same source of truth used by createVrbCtx above).
        */
-      if (serDe instanceof MultiDelimitSerDe) {
+      String serdeClass = tblProps.getProperty(serdeConstants.SERIALIZATION_LIB);
+      if (MultiDelimitSerDe.class.getName().equals(serdeClass)) {
         String rawDelim = tblProps.getProperty(serdeConstants.FIELD_DELIM);
         if (rawDelim != null && rawDelim.length() > 1) {
           params.setFieldDelimMulti(rawDelim.getBytes(StandardCharsets.UTF_8));
