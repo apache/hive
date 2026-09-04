@@ -178,7 +178,7 @@ public class ParsedOutputFileName {
       throw new HiveException("Cannot fold subdir into attempt id; unexpected filename shape.");
     }
     long originalAttempt = attemptId != null ? Long.parseLong(attemptId) : 0L;
-    long newAttempt = ((long) subdirIdx) * 100_000L + originalAttempt;
+    long newAttempt = subdirIdx * 100_000L + originalAttempt;
     String s = suffix != null ? suffix : "";
     // preTaskIdPrefix includes any leading "tmp_" AND the "(prefix)" wrapper, so the
     // rebuilt name matches what makeFilenameWithCopyIndex preserves.

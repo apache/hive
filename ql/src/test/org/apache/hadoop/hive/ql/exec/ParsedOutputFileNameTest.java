@@ -231,11 +231,8 @@ public class ParsedOutputFileNameTest {
   public void testWithFoldedSubdirIndexOnUnparseableThrows() {
     ParsedOutputFileName p = ParsedOutputFileName.parse("ZfsLke");
     Assert.assertFalse(p.matches());
-    try {
-      p.withFoldedSubdirIndex(1);
-      Assert.fail("Expected HiveException on unparseable filename");
-    } catch (HiveException expected) {
-    }
+    // Unparseable filenames must be rejected rather than folded silently.
+    Assert.assertThrows(HiveException.class, () -> p.withFoldedSubdirIndex(1));
   }
 
   /**
