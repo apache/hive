@@ -214,10 +214,15 @@ public class TestVectorDeserializeOrcWriter {
 
   private static LazySerDeParameters invokeCreateSerdeParams(Properties tblProps,
       Deserializer serDe) throws Exception {
+    // createSerdeParams no longer takes a Deserializer — it reads the SerDe class
+    // from tblProps' SERIALIZATION_LIB (matches createVrbCtx's own routing). We
+    // set that key here so the test keeps its "give me a MultiDelimit vs a
+    // LazySimple table" API.
+    tblProps.setProperty(serdeConstants.SERIALIZATION_LIB, serDe.getClass().getName());
     Method m = VectorDeserializeOrcWriter.class.getDeclaredMethod(
-        "createSerdeParams", Configuration.class, Properties.class, Deserializer.class);
+        "createSerdeParams", Configuration.class, Properties.class);
     m.setAccessible(true);
-    return (LazySerDeParameters) m.invoke(null, new Configuration(false), tblProps, serDe);
+    return (LazySerDeParameters) m.invoke(null, new Configuration(false), tblProps);
   }
 
   private static EncodedDataConsumer createBlankEncodedDataConsumer() {
