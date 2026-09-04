@@ -32,12 +32,12 @@ import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.Quantity;
-import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
-import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
+import io.fabric8.kubernetes.api.model.PodSpec;
+import io.fabric8.kubernetes.api.model.Affinity;
+import io.fabric8.kubernetes.api.model.Toleration;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -50,7 +50,6 @@ import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
-import org.apache.hive.kubernetes.operator.model.spec.ResourceRequirementsSpec;
 
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
 import org.apache.hive.kubernetes.operator.model.spec.ProbeSpec;
@@ -452,27 +451,6 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         HiveConfigMapDependent.Hadoop.resourceName(hiveCluster)));
   }
 
-  /** Builds Kubernetes ResourceRequirements from the operator's spec. */
-  protected static ResourceRequirements buildResources(ResourceRequirementsSpec spec) {
-    if (spec == null) {
-      return new ResourceRequirements();
-    }
-    ResourceRequirementsBuilder builder = new ResourceRequirementsBuilder();
-    if (spec.requestsCpu() != null) {
-      builder.addToRequests("cpu", new Quantity(spec.requestsCpu()));
-    }
-    if (spec.requestsMemory() != null) {
-      builder.addToRequests("memory", new Quantity(spec.requestsMemory()));
-    }
-    if (spec.limitsCpu() != null) {
-      builder.addToLimits("cpu", new Quantity(spec.limitsCpu()));
-    }
-    if (spec.limitsMemory() != null) {
-      builder.addToLimits("memory", new Quantity(spec.limitsMemory()));
-    }
-    return builder.build();
-  }
-
   /**
    * Sets a preferred pod anti-affinity on the pod spec if no affinity is
    * already defined. This spreads replicas across nodes while allowing
@@ -497,6 +475,24 @@ public abstract class HiveDependentResource<R extends HasMetadata,
           .endPreferredDuringSchedulingIgnoredDuringExecution()
         .endPodAntiAffinity()
         .build());
+  }
+
+  /**
+   * Sets the user-provided affinity override, if any. Must run before
+   * {@link #applySpreadAffinityIfAbsent}, which only sets its default when
+   * the pod spec has no affinity yet.
+   */
+  protected static void applyAffinityOverride(PodSpec podSpec, Affinity affinity) {
+    if (affinity != null) {
+      podSpec.setAffinity(affinity);
+    }
+  }
+
+  /** Sets the given tolerations on the pod spec, if any. */
+  protected static void applyTolerations(PodSpec podSpec, List<Toleration> tolerations) {
+    if (tolerations != null && !tolerations.isEmpty()) {
+      podSpec.setTolerations(tolerations);
+    }
   }
 
   /**

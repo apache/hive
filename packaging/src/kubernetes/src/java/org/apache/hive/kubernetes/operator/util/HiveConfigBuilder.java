@@ -79,7 +79,7 @@ public final class HiveConfigBuilder {
     props.put(ConfigUtils.HIVE_USER_INSTALL_DIR_KEY, "/tmp");
     if (tezAmEnabled) {
       props.put(ConfigUtils.HIVE_LOCAL_SCRATCH_DIR_KEY,
-          "/opt/hive/scratch");
+          ConfigUtils.HIVE_LOCAL_SCRATCH_DIR_DEFAULT);
     }
 
     if (tezAmEnabled) {
