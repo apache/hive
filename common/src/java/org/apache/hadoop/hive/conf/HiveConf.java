@@ -2130,6 +2130,22 @@ public class HiveConf extends Configuration {
         "Whether to use codec pool in ORC. Disable if there are bugs with codec reuse."),
     HIVE_ICEBERG_STATS_SOURCE("hive.iceberg.stats.source", "iceberg",
         "Use stats from iceberg table snapshot for query planning. This has two values metastore and iceberg"),
+    HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL("hive.iceberg.stats.collect.partlevel", false,
+        "Whether column statistics of a partitioned Iceberg table are kept per partition, letting\n" +
+        "the planner estimate from the partitions a query scans. ANALYZE writes the partitions it\n" +
+        "reads, CTAS and INSERT OVERWRITE write the partitions they replace, and a major\n" +
+        "compaction of one current-spec partition refreshes it. Plain INSERT maintains no\n" +
+        "partition-level statistics: its partitions read as stale until recomputed. After changing\n" +
+        "this, statistics of the other granularity are ignored until recomputed.\n" +
+        "A scan reads a partition's statistics whole, so what it moves is the partitions it reads\n" +
+        "times the width of the table, whatever columns it asked about. That pays where a query\n" +
+        "prunes hard, which is what these are for, and stops paying where it does not: a scan\n" +
+        "reading every partition of a wide table moves more than the table-level statistics would,\n" +
+        "however few columns it wants."),
+    HIVE_ICEBERG_STATS_MAX_SNAPSHOT_LOOKBACK("hive.iceberg.stats.max.snapshot.lookback", 20,
+        "How many snapshots a read of per partition column statistics walks back through to tell\n" +
+        "which partitions the writes since have changed. Each one costs reading the manifests it\n" +
+        "wrote, so a file further back than this cannot be judged and is not served."),
     HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS("hive.iceberg.expire.snapshot.numthreads", 4,
         "The number of threads to be used for deleting files during expire snapshot. If set to 0 or below it uses the" +
             " default DirectExecutorService"),
