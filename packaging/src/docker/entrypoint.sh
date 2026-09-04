@@ -177,7 +177,8 @@ if [ -d "${HIVE_CUSTOM_CONF_DIR:-}" ]; then
   export TEZ_CONF_DIR=$HIVE_CONF_DIR
 fi
 
-export HADOOP_CLIENT_OPTS="${HADOOP_CLIENT_OPTS:-} -Xmx1G ${SERVICE_OPTS:-}"
+# default heap first so user-provided -Xmx wins (last one applies)
+export HADOOP_CLIENT_OPTS="-Xmx1G ${HADOOP_CLIENT_OPTS:-} ${SERVICE_OPTS:-}"
 if [[ "${SKIP_SCHEMA_INIT}" == "false" && ( "${SERVICE_NAME}" == "hiveserver2" || "${SERVICE_NAME}" == "metastore" ) ]]; then
   # handles schema initialization
   initialize_hive

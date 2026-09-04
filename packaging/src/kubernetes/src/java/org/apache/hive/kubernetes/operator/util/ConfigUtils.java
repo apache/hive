@@ -74,7 +74,12 @@ public final class ConfigUtils {
 
   public static final String HIVE_USER_INSTALL_DIR_KEY = "hive.user.install.directory";
 
-  public static final String HIVE_LOCAL_SCRATCH_DIR_KEY = "hive.exec.local.scratchdir";
+  public static final String HIVE_SCRATCH_DIR_KEY = "hive.exec.scratchdir";
+
+  public static final String MAPREDUCE_FRAMEWORK_NAME_KEY = "mapreduce.framework.name";
+
+  /** Mount path of the shared scratch PVC on HS2, TezAM and LLAP. */
+  public static final String SCRATCH_MOUNT_PATH = "/opt/hive/scratch";
 
   public static final String HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY = "hive.server2.tez.use.external.sessions";
 

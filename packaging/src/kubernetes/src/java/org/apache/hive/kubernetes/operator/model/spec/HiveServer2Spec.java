@@ -26,6 +26,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
 import io.fabric8.generator.annotation.Default;
+import io.fabric8.kubernetes.api.model.Affinity;
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.ResourceRequirements;
+import io.fabric8.kubernetes.api.model.Toleration;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
@@ -35,7 +39,9 @@ public record HiveServer2Spec(
     @Default("1")
     Integer replicas,
     @JsonPropertyDescription("Resource requirements for pods")
-    ResourceRequirementsSpec resources,
+    @Default("{\"requests\": {\"cpu\": \"500m\", \"memory\": \"1Gi\"}}")
+    @SchemaFrom(type = Object.class) @PreserveUnknownFields
+    ResourceRequirements resources,
     @JsonPropertyDescription("Additional configuration overrides as key-value pairs")
     Map<String, String> configOverrides,
     @JsonPropertyDescription("Additional volumes to attach to the pod (e.g., for keytabs or truststores)")
@@ -44,6 +50,15 @@ public record HiveServer2Spec(
     @JsonPropertyDescription("Additional volume mounts for the container")
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
     List<VolumeMount> extraVolumeMounts,
+    @JsonPropertyDescription("Tolerations for scheduling onto tainted nodes")
+    @SchemaFrom(type = Object[].class) @PreserveUnknownFields
+    List<Toleration> tolerations,
+    @JsonPropertyDescription("Affinity override; replaces the default spread anti-affinity when set")
+    @SchemaFrom(type = Object.class) @PreserveUnknownFields
+    Affinity affinity,
+    @JsonPropertyDescription("Component-scoped env vars, appended after the cluster-wide envVars")
+    @SchemaFrom(type = Object[].class) @PreserveUnknownFields
+    List<EnvVar> envVars,
     @JsonPropertyDescription("Kubernetes Service type: ClusterIP, LoadBalancer, or NodePort")
     @Default("ClusterIP")
     String serviceType,
@@ -61,6 +76,8 @@ public record HiveServer2Spec(
     serviceType = serviceType != null ? serviceType : "ClusterIP";
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
+    tolerations = tolerations != null ? tolerations : List.of();
+    envVars = envVars != null ? envVars : List.of();
     externalJars = externalJars != null ? externalJars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 1, 80, 0, 60, 600, 300, 10, 90, 30, null);

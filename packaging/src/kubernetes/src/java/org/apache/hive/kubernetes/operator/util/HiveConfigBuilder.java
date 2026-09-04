@@ -78,11 +78,11 @@ public final class HiveConfigBuilder {
     props.put(ConfigUtils.HIVE_JAR_DIRECTORY_KEY, "/tmp");
     props.put(ConfigUtils.HIVE_USER_INSTALL_DIR_KEY, "/tmp");
     if (tezAmEnabled) {
-      props.put(ConfigUtils.HIVE_LOCAL_SCRATCH_DIR_KEY,
-          "/opt/hive/scratch");
-    }
-
-    if (tezAmEnabled) {
+      // "yarn-tez" is Tez's own framework name (YarnTezClientProtocolProvider). The default,
+      // "local", would send staging to the local scratch dir, which the TezAM pod cannot
+      // read. file:// because a bare path resolves against fs.defaultFS.
+      props.put(ConfigUtils.MAPREDUCE_FRAMEWORK_NAME_KEY, "yarn-tez");
+      props.put(ConfigUtils.HIVE_SCRATCH_DIR_KEY, "file://" + ConfigUtils.SCRATCH_MOUNT_PATH);
       props.put(ConfigUtils.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY, "true");
       // Default external sessions namespace points to first LLAP cluster's TezAM.
       // Client routes to other clusters by overriding both properties in JDBC URL:
@@ -114,7 +114,7 @@ public final class HiveConfigBuilder {
       props.put(ConfigUtils.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY, "false");
       props.put(ConfigUtils.TEZ_LOCAL_MODE_KEY, "true");
       props.put(ConfigUtils.TEZ_AM_FRAMEWORK_MODE_KEY, "LOCAL");
-      props.put("mapreduce.framework.name", "local");
+      props.put(ConfigUtils.MAPREDUCE_FRAMEWORK_NAME_KEY, "local");
     }
 
     // Server-side LLAP cluster routing: emit per-cluster definitions and routing rules.
