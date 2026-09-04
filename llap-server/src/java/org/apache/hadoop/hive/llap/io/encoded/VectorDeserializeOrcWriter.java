@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -55,6 +56,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.MultiDelimitSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
@@ -102,33 +104,55 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
       Configuration daemonConf, Configuration jobConf, Path splitPath, StructObjectInspector sourceOi,
       List<Integer> sourceIncludes, boolean[] cacheIncludes, int allocSize, ExecutorService encodeExecutor)
       throws IOException {
-    // Vector SerDe can be disabled both on client and server side.
+    /*
+     * Vector SerDe can be disabled both on client and server side.
+     * MultiDelimitSerDe is accepted alongside LazySimpleSerDe: it's the same
+     * text-row shape, only its top-level FIELD_DELIM can span multiple bytes.
+     * The reader (LazySimpleDeserializeRead) picks the multi-byte scanner
+     * when LazySerDeParameters.setFieldDelimMulti has been called below —
+     * otherwise the specialized single-byte hot loop runs unchanged.
+     */
+    final boolean isTextInput = sourceIf instanceof TextInputFormat;
+    final boolean isLazySimple = serDe instanceof LazySimpleSerDe;
+    final boolean isMultiDelim = serDe instanceof MultiDelimitSerDe;
     if (!HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED)
         || !HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED)
-        || !(sourceIf instanceof TextInputFormat) || !(serDe instanceof LazySimpleSerDe)) {
+        || !isTextInput || !(isLazySimple || isMultiDelim)) {
       return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
     }
     Path path = splitPath.getFileSystem(jobConf).makeQualified(splitPath);
     PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
     if (partDesc == null) {
-      LlapIoImpl.LOG.info("Not using VertorDeserializeOrcWriter: no partition desc for " + path);
+      LlapIoImpl.LOG.info("Not using VectorDeserializeOrcWriter: no partition desc for {}", path);
       return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
     }
     Properties tblProps = partDesc.getTableDesc().getProperties();
     if ("true".equalsIgnoreCase(tblProps.getProperty(
         serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST))) {
-      LlapIoImpl.LOG.info("Not using VertorDeserializeOrcWriter due to "
-        + serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
+      LlapIoImpl.LOG.info("Not using VectorDeserializeOrcWriter due to {}",
+          serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
+      return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
+    }
+    /*
+     * MultiDelimitSerDe's own row parser (LazyStruct.parseMultiDelimit) does
+     * NOT honour escape.delim for the top-level delimiter. Combining a
+     * multi-byte field delim with an escape char in the fast path would let
+     * it silently diverge from the slow path, so bail to DeserializerOrcWriter
+     * whenever both are configured on a MultiDelimit table.
+     */
+    if (isMultiDelim && tblProps.getProperty(serdeConstants.ESCAPE_CHAR) != null) {
+      LlapIoImpl.LOG.info("Not using VectorDeserializeOrcWriter: MultiDelimitSerDe with {} "
+          + "is not supported by the vectorized fast path", serdeConstants.ESCAPE_CHAR);
       return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
     }
     for (StructField sf : sourceOi.getAllStructFieldRefs()) {
       Category c = sf.getFieldObjectInspector().getCategory();
       if (c != Category.PRIMITIVE) {
-        LlapIoImpl.LOG.info("Not using VertorDeserializeOrcWriter: " + c + " is not supported");
+        LlapIoImpl.LOG.info("Not using VectorDeserializeOrcWriter: {} is not supported", c);
         return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
       }
     }
-    LlapIoImpl.LOG.info("Creating VertorDeserializeOrcWriter for " + path);
+    LlapIoImpl.LOG.info("Creating VectorDeserializeOrcWriter for {}", path);
     return new VectorDeserializeOrcWriter(
         jobConf, tblProps, sourceOi, sourceIncludes, cacheIncludes, allocSize, encodeExecutor);
   }
@@ -143,7 +167,8 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
     this.cacheIncludes = cacheIncludes;
     this.sourceBatch = vrbCtx.createVectorizedRowBatch();
     deserializeRead = new LazySimpleDeserializeRead(vrbCtx.getRowColumnTypeInfos(),
-      vrbCtx.getRowdataTypePhysicalVariations(),/* useExternalBuffer */ true, createSerdeParams(conf, tblProps));
+      vrbCtx.getRowdataTypePhysicalVariations(), /* useExternalBuffer */ true,
+      createSerdeParams(conf, tblProps));
     vectorDeserializeRow = new VectorDeserializeRow<LazySimpleDeserializeRead>(deserializeRead);
     int colCount = vrbCtx.getRowColumnTypeInfos().length;
     boolean[] includes = null;
@@ -212,8 +237,9 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
       .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
     final String serde = tblProps.getProperty(serdeConstants.SERIALIZATION_LIB);
     final String inputFormat = tblProps.getProperty(hive_metastoreConstants.FILE_INPUT_FORMAT);
-    final boolean isTextFormat = inputFormat != null && inputFormat.equals(TextInputFormat.class.getName()) &&
-      serde != null && serde.equals(LazySimpleSerDe.class.getName());
+    final boolean isTextFormat = TextInputFormat.class.getName().equals(inputFormat)
+        && (LazySimpleSerDe.class.getName().equals(serde)
+          || MultiDelimitSerDe.class.getName().equals(serde));
     List<DataTypePhysicalVariation> dataTypePhysicalVariations = new ArrayList<>();
     if (isTextFormat) {
       StructTypeInfo structTypeInfo = (StructTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(oi);
@@ -247,7 +273,24 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
   private static LazySerDeParameters createSerdeParams(
       Configuration conf, Properties tblProps) throws IOException {
     try {
-      return new LazySerDeParameters(conf, tblProps, LazySimpleSerDe.class.getName());
+      LazySerDeParameters params =
+          new LazySerDeParameters(conf, tblProps, LazySimpleSerDe.class.getName());
+      /*
+       * For MultiDelimitSerDe tables, if the field delimiter is > 1 byte, opt
+       * the reader into its multi-byte scan branch. LazySerDeParameters
+       * silently ignores single-byte values here, so misconfigured MultiDelim
+       * tables (e.g. FIELD_DELIM=",") still take the specialized single-byte
+       * fast path via separators[0]. The SerDe class is read from tblProps
+       * (same source of truth used by createVrbCtx above).
+       */
+      String serdeClass = tblProps.getProperty(serdeConstants.SERIALIZATION_LIB);
+      if (MultiDelimitSerDe.class.getName().equals(serdeClass)) {
+        String rawDelim = tblProps.getProperty(serdeConstants.FIELD_DELIM);
+        if (rawDelim != null && rawDelim.length() > 1) {
+          params.setFieldDelimMulti(rawDelim.getBytes(StandardCharsets.UTF_8));
+        }
+      }
+      return params;
     } catch (SerDeException e) {
       throw new IOException(e);
     }
