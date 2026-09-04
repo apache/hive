@@ -488,7 +488,7 @@ public class HMSCatalogAdapter implements Closeable {
   }
 
   private LoadTableResponse withVendedCredentials(TableIdentifier ident, LoadTableResponse response) {
-    final var credentials = credentialProvider.vend(ident, response.tableMetadata().location());
+    final var credentials = credentialProvider.vend(catalogName, ident, response.tableMetadata());
     return LoadTableResponse.builder()
         .withTableMetadata(response.tableMetadata())
         .addAllConfig(response.config())

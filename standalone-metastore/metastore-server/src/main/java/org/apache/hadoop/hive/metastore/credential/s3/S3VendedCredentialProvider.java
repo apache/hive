@@ -100,7 +100,7 @@ public class S3VendedCredentialProvider implements VendedCredentialProvider {
 
   @Override
   public boolean supports(StorageAccessRequest request) {
-    final var optionalLocation = S3Location.create(roleArn.partition(), request.location().toUri());
+    final var optionalLocation = S3Location.create(roleArn.partition(), request.location());
     if (optionalLocation.isEmpty()) {
       return false;
     }
@@ -170,7 +170,7 @@ public class S3VendedCredentialProvider implements VendedCredentialProvider {
 
     requests.forEach(request -> {
       Preconditions.checkArgument(supports(request));
-      final var s3Location = S3Location.create(roleArn.partition(), request.location().toUri()).orElseThrow();
+      final var s3Location = S3Location.create(roleArn.partition(), request.location()).orElseThrow();
       final var bucketArn = s3Location.getBucketArn().toString();
       final var wildCardArn = s3Location.getWildCardArn().toString();
       bucketLocationBuilder.computeIfAbsent(bucketArn,

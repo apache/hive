@@ -18,18 +18,17 @@
 
 package org.apache.hadoop.hive.metastore.credential.s3;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.net.URI;
-
 @Category(MetastoreUnitTest.class)
 public class TestS3Location {
   @Test
   public void test() {
-    var location = S3Location.create("aws", URI.create("s3://bucket/warehouse/tbl")).orElseThrow();
+    var location = S3Location.create("aws", new Path("s3://bucket/warehouse/tbl")).orElseThrow();
     Assert.assertEquals("arn:aws:s3:::bucket", location.getBucketArn().toString());
     Assert.assertEquals("arn:aws:s3:::bucket/warehouse/tbl/*", location.getWildCardArn().toString());
     Assert.assertEquals("warehouse/tbl/*", location.getWildCardPath());
@@ -37,15 +36,26 @@ public class TestS3Location {
 
   @Test
   public void testTrailingSlash() {
-    var location = S3Location.create("aws", URI.create("s3://bucket/warehouse/tbl/")).orElseThrow();
+    var location = S3Location.create("aws", new Path("s3://bucket/warehouse/tbl/")).orElseThrow();
     Assert.assertEquals("arn:aws:s3:::bucket", location.getBucketArn().toString());
     Assert.assertEquals("arn:aws:s3:::bucket/warehouse/tbl/*", location.getWildCardArn().toString());
     Assert.assertEquals("warehouse/tbl/*", location.getWildCardPath());
   }
 
   @Test
+  public void testSpecialCharacters() {
+    var location = S3Location.create("aws", new Path("s3://bucket/warehouse//ns*?$/tb$?*")).orElseThrow();
+    Assert.assertEquals("arn:aws:s3:::bucket", location.getBucketArn().toString());
+    Assert.assertEquals(
+        "arn:aws:s3:::bucket/warehouse/ns${*}${?}${$}/tb${$}${?}${*}/*",
+        location.getWildCardArn().toString()
+    );
+    Assert.assertEquals("warehouse/ns${*}${?}${$}/tb${$}${?}${*}/*", location.getWildCardPath());
+  }
+
+  @Test
   public void testRoot() {
-    var location = S3Location.create("aws", URI.create("s3://bucket")).orElseThrow();
+    var location = S3Location.create("aws", new Path("s3://bucket")).orElseThrow();
     Assert.assertEquals("arn:aws:s3:::bucket", location.getBucketArn().toString());
     Assert.assertEquals("arn:aws:s3:::bucket/*", location.getWildCardArn().toString());
     Assert.assertEquals("*", location.getWildCardPath());
@@ -53,7 +63,7 @@ public class TestS3Location {
 
   @Test
   public void testRootWithTrailingSlash() {
-    var location = S3Location.create("aws", URI.create("s3://bucket/")).orElseThrow();
+    var location = S3Location.create("aws", new Path("s3://bucket/")).orElseThrow();
     Assert.assertEquals("arn:aws:s3:::bucket", location.getBucketArn().toString());
     Assert.assertEquals("arn:aws:s3:::bucket/*", location.getWildCardArn().toString());
     Assert.assertEquals("*", location.getWildCardPath());
@@ -61,7 +71,7 @@ public class TestS3Location {
 
   @Test
   public void testS3A() {
-    var location = S3Location.create("aws", URI.create("s3a://bucket/warehouse/tbl")).orElseThrow();
+    var location = S3Location.create("aws", new Path("s3a://bucket/warehouse/tbl")).orElseThrow();
     Assert.assertEquals("arn:aws:s3:::bucket", location.getBucketArn().toString());
     Assert.assertEquals("arn:aws:s3:::bucket/warehouse/tbl/*", location.getWildCardArn().toString());
     Assert.assertEquals("warehouse/tbl/*", location.getWildCardPath());
@@ -69,7 +79,7 @@ public class TestS3Location {
 
   @Test
   public void testS3N() {
-    var location = S3Location.create("aws", URI.create("s3n://bucket/warehouse/tbl")).orElseThrow();
+    var location = S3Location.create("aws", new Path("s3n://bucket/warehouse/tbl")).orElseThrow();
     Assert.assertEquals("arn:aws:s3:::bucket", location.getBucketArn().toString());
     Assert.assertEquals("arn:aws:s3:::bucket/warehouse/tbl/*", location.getWildCardArn().toString());
     Assert.assertEquals("warehouse/tbl/*", location.getWildCardPath());
@@ -77,7 +87,7 @@ public class TestS3Location {
 
   @Test
   public void testPartition() {
-    var location = S3Location.create("aws-us-gov", URI.create("s3://bucket/warehouse/tbl")).orElseThrow();
+    var location = S3Location.create("aws-us-gov", new Path("s3://bucket/warehouse/tbl")).orElseThrow();
     Assert.assertEquals("arn:aws-us-gov:s3:::bucket", location.getBucketArn().toString());
     Assert.assertEquals("arn:aws-us-gov:s3:::bucket/warehouse/tbl/*", location.getWildCardArn().toString());
     Assert.assertEquals("warehouse/tbl/*", location.getWildCardPath());
@@ -85,7 +95,7 @@ public class TestS3Location {
 
   @Test
   public void testMatchesArnPrefix() {
-    var location = S3Location.create("aws", URI.create("s3://bucket/warehouse/tbl")).orElseThrow();
+    var location = S3Location.create("aws", new Path("s3://bucket/warehouse/tbl")).orElseThrow();
 
     Assert.assertTrue(location.matches("arn:aws:s3:::bucket"));
     Assert.assertTrue(location.matches("arn:aws:s3:::bucket/warehouse/"));
@@ -94,7 +104,7 @@ public class TestS3Location {
 
   @Test
   public void testMatchesBucketPrefix() {
-    var location = S3Location.create("aws", URI.create("s3://bucket/warehouse/tbl")).orElseThrow();
+    var location = S3Location.create("aws", new Path("s3://bucket/warehouse/tbl")).orElseThrow();
 
     Assert.assertTrue(location.matches("bucket"));
     Assert.assertTrue(location.matches("bucket/warehouse/"));
@@ -103,9 +113,8 @@ public class TestS3Location {
 
   @Test
   public void testUnsupportedPaths() {
-    Assert.assertTrue(S3Location.create("aws", URI.create("/bucket/warehouse/tbl")).isEmpty());
-    Assert.assertTrue(S3Location.create("aws", URI.create("s3b://bucket/warehouse/tbl")).isEmpty());
-    Assert.assertTrue(S3Location.create("aws", URI.create("s3:///warehouse/tbl")).isEmpty());
-    Assert.assertTrue(S3Location.create("aws", URI.create("s3:bucket")).isEmpty());
+    Assert.assertTrue(S3Location.create("aws", new Path("/bucket/warehouse/tbl")).isEmpty());
+    Assert.assertTrue(S3Location.create("aws", new Path("s3b://bucket/warehouse/tbl")).isEmpty());
+    Assert.assertTrue(S3Location.create("aws", new Path("s3:///warehouse/tbl")).isEmpty());
   }
 }

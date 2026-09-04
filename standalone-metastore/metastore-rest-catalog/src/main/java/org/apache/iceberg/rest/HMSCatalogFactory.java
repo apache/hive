@@ -119,7 +119,7 @@ public class HMSCatalogFactory {
     IcebergAuthorizer icebergAuthorizer = new IcebergAuthorizer(configuration);
     IcebergVendedCredentialProvider vendedCredentialProvider = null;
     if (MetastoreConf.getBoolVar(configuration, ConfVars.ICEBERG_CATALOG_VENDED_CREDENTIALS_ENABLED)) {
-      vendedCredentialProvider = new IcebergVendedCredentialProvider(configuration);
+      vendedCredentialProvider = new IcebergVendedCredentialProvider(icebergAuthorizer, configuration);
     }
     List<IcebergMetricsReporter> reporters = createReporters();
     var adapter = new HMSCatalogAdapter(catalogName, catalog, icebergAuthorizer, vendedCredentialProvider, reporters);

@@ -24,17 +24,22 @@ import static org.apache.iceberg.hive.HiveCatalog.HMS_TABLE_OWNER;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.credential.StorageOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -45,6 +50,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizer;
 import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.hive.HiveHadoopUtil;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
@@ -159,6 +165,110 @@ class IcebergAuthorizer {
       throw new ForbiddenException(e, e.getMessage());
     } catch (HiveAuthzPluginException e) {
       throw new IllegalStateException("Failed to check privileges stage-create", e);
+    }
+  }
+
+  /**
+   * Translates Hive privileges into storage operations.
+   *
+   * @param catalogName the catalog name
+   * @param identifier the table identifier
+   * @param columnNames the column names
+   * @return a set of acceptable storage operations
+   * @throws IllegalStateException if the authorization plugin fails
+   */
+  Set<StorageOperation> resolveAllowedStorageOperations(String catalogName, TableIdentifier identifier,
+      List<String> columnNames) {
+    Preconditions.checkArgument(identifier.namespace().levels().length == 1);
+    final var database = identifier.namespace().level(0);
+    final var table = identifier.name();
+
+    final var authorizer = authorizerSupplier.get();
+    if (authorizer == null) {
+      LOG.info("No pre-event listener is configured, skipping credential-vending authorization");
+      return EnumSet.allOf(StorageOperation.class);
+    }
+    if (!isReadable(authorizer, catalogName, database, table, columnNames)) {
+      // Can we accept the write-only user?
+      // I guess no because the write operation requires to read the current metadata.
+      return EnumSet.noneOf(StorageOperation.class);
+    }
+    return isWritable(authorizer, catalogName, database, table)
+        ? EnumSet.allOf(StorageOperation.class)
+        : EnumSet.of(StorageOperation.LIST, StorageOperation.READ);
+  }
+
+  /**
+   * Apply a similar permission check to the following event.
+   * {@link org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.ReadTableEvent}
+   */
+  private boolean isReadable(HiveAuthorizer authorizer, String catalog, String database, String table,
+      List<String> columns) {
+    // We may add the owner and owner type in the future. It requires an extra metastore request.
+    final var readPrivileges = Collections.singletonList(
+        new HivePrivilegeObject(
+            HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW,
+            catalog,
+            database,
+            table,
+            null,
+            columns
+        )
+    );
+    final var builder = new HiveAuthzContext.Builder();
+    builder.setCommandString("read");
+    final var context = builder.build();
+    if (!isAllowed(authorizer, readPrivileges, Collections.emptyList(), context)) {
+      return false;
+    }
+
+    if (!authorizer.needTransform()) {
+      return true;
+    }
+
+    final List<HivePrivilegeObject> rewritePrivileges;
+    try {
+      rewritePrivileges = authorizer.applyRowFilterAndColumnMasking(context, readPrivileges);
+    } catch (SemanticException e) {
+      LOG.error("Failed to confirm the row filter and column masking", e);
+      return false;
+    }
+
+    if (CollectionUtils.isNotEmpty(rewritePrivileges)) {
+      LOG.info("The current Iceberg REST API can't enforce fine-grained access control");
+      return false;
+    }
+
+    return true;
+  }
+
+  // Check if the user has the INSERT INTO permission
+  private boolean isWritable(HiveAuthorizer authorizer, String catalog, String database, String table) {
+    final var object = new HivePrivilegeObject(
+        HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW,
+        catalog,
+        database,
+        table,
+        null,
+        null,
+        HivePrivilegeObject.HivePrivObjectActionType.INSERT,
+        null
+    );
+    final var builder = new HiveAuthzContext.Builder();
+    builder.setCommandString("write");
+    final var context = builder.build();
+    return isAllowed(authorizer, Collections.emptyList(), Collections.singletonList(object), context);
+  }
+
+  private boolean isAllowed(HiveAuthorizer authorizer, List<HivePrivilegeObject> input,
+      List<HivePrivilegeObject> output, HiveAuthzContext context) {
+    try {
+      authorizer.checkPrivileges(HiveOperationType.QUERY, input, output, context);
+      return true;
+    } catch (HiveAccessControlException e) {
+      return false;
+    } catch (HiveAuthzPluginException e) {
+      throw new IllegalStateException("Failed to check privileges for Iceberg credential vending", e);
     }
   }
 }

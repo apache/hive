@@ -256,6 +256,135 @@ public class TestS3VendedCredentialProvider {
   }
 
   @Test
+  public void testVendWithSpecialCharacters() throws Exception {
+    var stsClient = Mockito.mock(StsClient.class);
+    var requestCaptor = ArgumentCaptor.forClass(AssumeRoleRequest.class);
+    var accessKey = "dummy-access-key";
+    var secretKey = "dummy-secret-key";
+    var sessionToken = "dummy-session-token";
+    var expiration = Instant.parse("2026-04-26T12:00:00Z");
+    Mockito.when(stsClient.assumeRole(requestCaptor.capture())).thenReturn(
+        AssumeRoleResponse.builder().credentials(
+                Credentials.builder()
+                    .accessKeyId(accessKey)
+                    .secretAccessKey(secretKey)
+                    .sessionToken(sessionToken)
+                    .expiration(expiration)
+                    .build())
+            .build());
+
+    var provider = new S3VendedCredentialProvider(
+        Arn.fromString("arn:aws-us-gov:iam::123456789012:role/test-role"),
+        "external-id",
+        Collections.emptyList(),
+        1200,
+        stsClient);
+    var credentials = provider.vend(
+        "User Name+1@example.com",
+        List.of(
+            new StorageAccessRequest(
+                new Path("s3://bucket-realtime/warehouse*?$/table"),
+                EnumSet.of(StorageOperation.LIST, StorageOperation.READ, StorageOperation.CREATE,
+                    StorageOperation.DELETE)),
+            new StorageAccessRequest(
+                new Path("s3n://bucket-archive/warehouse*?$/table"),
+                EnumSet.of(StorageOperation.LIST, StorageOperation.READ))
+        )
+    );
+
+    var expected = List.of(
+        new VendedStorageCredential(
+            new Path("s3://bucket-realtime/warehouse*?$/table"),
+            Map.of(
+                "s3.access-key-id", accessKey,
+                "s3.secret-access-key", secretKey,
+                "s3.session-token", sessionToken,
+                "s3.session-token-expires-at-ms", "1777204800000"
+            ),
+            expiration
+        ),
+        new VendedStorageCredential(
+            new Path("s3n://bucket-archive/warehouse*?$/table"),
+            Map.of(
+                "s3.access-key-id", accessKey,
+                "s3.secret-access-key", secretKey,
+                "s3.session-token", sessionToken,
+                "s3.session-token-expires-at-ms", "1777204800000"
+            ),
+            expiration
+        )
+    );
+    Assert.assertEquals(expected, credentials);
+
+    var request = requestCaptor.getValue();
+    Assert.assertEquals("arn:aws-us-gov:iam::123456789012:role/test-role", request.roleArn());
+    Assert.assertEquals("external-id", request.externalId());
+    Assert.assertEquals(Integer.valueOf(1200), request.durationSeconds());
+    Assert.assertEquals("hms_User-Name-1@example.com", request.roleSessionName());
+
+    Assert.assertEquals(
+        MAPPER.readTree("""
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": "s3:GetBucketLocation",
+                "Resource": "arn:aws-us-gov:s3:::bucket-archive"
+              },
+              {
+                "Effect": "Allow",
+                "Action": "s3:GetBucketLocation",
+                "Resource": "arn:aws-us-gov:s3:::bucket-realtime"
+              },
+              {
+                "Effect": "Allow",
+                "Action": "s3:ListBucket",
+                "Resource": "arn:aws-us-gov:s3:::bucket-archive",
+                "Condition": {
+                  "StringLike": {
+                    "s3:prefix": "warehouse${*}${?}${$}/table/*"
+                  }
+                }
+              },
+              {
+                "Effect": "Allow",
+                "Action": "s3:ListBucket",
+                "Resource": "arn:aws-us-gov:s3:::bucket-realtime",
+                "Condition": {
+                  "StringLike": {
+                    "s3:prefix": "warehouse${*}${?}${$}/table/*"
+                  }
+                }
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:GetObjectVersion"
+                ],
+                "Resource": [
+                  "arn:aws-us-gov:s3:::bucket-realtime/warehouse${*}${?}${$}/table/*",
+                  "arn:aws-us-gov:s3:::bucket-archive/warehouse${*}${?}${$}/table/*"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": "s3:PutObject",
+                "Resource": "arn:aws-us-gov:s3:::bucket-realtime/warehouse${*}${?}${$}/table/*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": "s3:DeleteObject",
+                "Resource": "arn:aws-us-gov:s3:::bucket-realtime/warehouse${*}${?}${$}/table/*"
+              }
+            ]
+          }
+          """),
+        MAPPER.readTree(request.policy()));
+  }
+
+  @Test
   public void testVendWithoutExpiration() throws Exception {
     var stsClient = Mockito.mock(StsClient.class);
     var requestCaptor = ArgumentCaptor.forClass(AssumeRoleRequest.class);

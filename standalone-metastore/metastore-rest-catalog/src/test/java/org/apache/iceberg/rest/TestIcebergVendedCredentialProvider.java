@@ -24,157 +24,97 @@ import org.apache.hadoop.hive.metastore.credential.StorageAccessRequest;
 import org.apache.hadoop.hive.metastore.credential.StorageOperation;
 import org.apache.hadoop.hive.metastore.credential.VendedCredentialProvider;
 import org.apache.hadoop.hive.metastore.credential.VendedStorageCredential;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.Schema;
+import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.rest.credentials.Credential;
 import org.apache.iceberg.rest.credentials.ImmutableCredential;
+import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.security.PrivilegedAction;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import java.util.Set;
 
 @Category(MetastoreUnitTest.class)
 public class TestIcebergVendedCredentialProvider {
   private static final String CATALOG = "catalog";
   private static final String DATABASE = "database";
   private static final String TABLE = "tbl";
-  private static final HivePrivilegeObject INPUT_OBJECT = new HivePrivilegeObject(
-      HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, CATALOG, DATABASE, TABLE
-  );
-  private static final HivePrivilegeObject OUTPUT_OBJECT = new HivePrivilegeObject(
-      HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, CATALOG, DATABASE, TABLE,
-      null,
-      null,
-      HivePrivilegeObject.HivePrivObjectActionType.INSERT,
-      null
-  );
-
-  private static void assertPrivilegeObjects(List<HivePrivilegeObject> expected, List<?> actual) {
-    Assert.assertEquals(expected.size(), actual.size());
-    var actualObjects = new ArrayList<HivePrivilegeObject>(actual.size());
-    actual.forEach(object -> actualObjects.add((HivePrivilegeObject) object));
-    for (int index = 0; index < expected.size(); index++) {
-      assertPrivilegeObject(expected.get(index), actualObjects.get(index));
-    }
-  }
-
-  private static void assertPrivilegeObject(HivePrivilegeObject expected, HivePrivilegeObject actual) {
-    Assert.assertEquals(expected.getType(), actual.getType());
-    Assert.assertEquals(expected.getCatName(), actual.getCatName());
-    Assert.assertEquals(expected.getDbname(), actual.getDbname());
-    Assert.assertEquals(expected.getObjectName(), actual.getObjectName());
-    Assert.assertEquals(expected.getActionType(), actual.getActionType());
-  }
+  private static final TableIdentifier TABLE_IDENTIFIER = TableIdentifier.of(DATABASE, TABLE);
 
   @Test
-  @SuppressWarnings("unchecked")
-  public void testVendWithWritableUser() throws HiveAccessControlException, HiveAuthzPluginException {
-    var authorizer = Mockito.mock(HiveAuthorizer.class);
-    var delegate = Mockito.mock(VendedCredentialProvider.class);
-    var username = "writable";
-    var operations = EnumSet.of(StorageOperation.LIST, StorageOperation.READ, StorageOperation.CREATE,
-        StorageOperation.DELETE);
-    var path = new Path("s3a://bucket/path");
-    var requests = List.of(new StorageAccessRequest(path, operations));
-    var credential = List.of(new VendedStorageCredential(path, Map.of("key", "k1"), Instant.MAX));
-    Mockito.when(delegate.vend(username, requests)).thenReturn(credential);
-    var provider = new IcebergVendedCredentialProvider(CATALOG, delegate, () -> authorizer);
-    var result = UserGroupInformation.createRemoteUser(username).doAs((PrivilegedAction<List<Credential>>) () ->
-        provider.vend(TableIdentifier.of(DATABASE, TABLE), path.toString()));
-    var expected = ImmutableCredential.builder().prefix(path.toString()).config(Map.of("key", "k1")).build();
-    Assert.assertEquals(List.of(expected), result);
-
-    var inputCaptor = ArgumentCaptor.forClass(List.class);
-    var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(authorizer, Mockito.times(2)).checkPrivileges(
-        eq(HiveOperationType.QUERY),
-        inputCaptor.capture(),
-        outputCaptor.capture(),
-        any(HiveAuthzContext.class)
-    );
-    assertPrivilegeObjects(List.of(INPUT_OBJECT), inputCaptor.getAllValues().getFirst());
-    assertPrivilegeObjects(List.of(), inputCaptor.getAllValues().getLast());
-    assertPrivilegeObjects(List.of(), outputCaptor.getAllValues().getFirst());
-    assertPrivilegeObjects(List.of(OUTPUT_OBJECT), outputCaptor.getAllValues().getLast());
-    Mockito.verifyNoMoreInteractions(authorizer);
-    Mockito.verify(delegate).vend(username, requests);
-    Mockito.verifyNoMoreInteractions(delegate);
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
-  public void testVendWithReadOnlyUser() throws HiveAccessControlException, HiveAuthzPluginException {
-    var authorizer = Mockito.mock(HiveAuthorizer.class);
-    var delegate = Mockito.mock(VendedCredentialProvider.class);
-    var username = "readonly";
+  public void testVend() {
+    var authorizer = Mockito.mock(IcebergAuthorizer.class);
     var operations = EnumSet.of(StorageOperation.LIST, StorageOperation.READ);
+    var schema = new Schema(
+        Types.NestedField.required(1, "id", Types.LongType.get()),
+        Types.NestedField.required(2, "to_be_deleted", Types.StringType.get()),
+        Types.NestedField.required(3, "to_be_renamed", Types.BinaryType.get())
+    );
+    var updaetdSchema = new Schema(
+        Types.NestedField.required(1, "id", Types.LongType.get()),
+        Types.NestedField.required(3, "renamed", Types.BinaryType.get())
+    );
+    var columns = List.of("id", "renamed", "to_be_deleted", "to_be_renamed");
+    Mockito.when(authorizer.resolveAllowedStorageOperations(CATALOG, TABLE_IDENTIFIER, columns)).thenReturn(operations);
+
     var path = new Path("s3a://bucket/path");
     var requests = List.of(new StorageAccessRequest(path, operations));
     var credential = List.of(new VendedStorageCredential(path, Map.of("key", "k1"), Instant.MAX));
-    Mockito.when(delegate.vend(username, requests)).thenReturn(credential);
-    Mockito.doAnswer(invocation -> {
-      if (!((List<?>) invocation.getArgument(2)).isEmpty()) {
-        throw new HiveAccessControlException("write denied");
-      }
-      return null;
-    }).when(authorizer).checkPrivileges(any(), any(), any(), any());
 
-    var provider = new IcebergVendedCredentialProvider(CATALOG, delegate, () -> authorizer);
+    var username = "writable";
+    var delegate = Mockito.mock(VendedCredentialProvider.class);
+    Mockito.when(delegate.vend(username, requests)).thenReturn(credential);
+
+    var provider = new IcebergVendedCredentialProvider(authorizer, delegate);
+    var metadata = TableMetadata.newTableMetadata(
+        schema,
+        PartitionSpec.unpartitioned(),
+        path.toString(),
+        Map.of()
+    ).updateSchema(updaetdSchema);
     var result = UserGroupInformation.createRemoteUser(username).doAs((PrivilegedAction<List<Credential>>) () ->
-        provider.vend(TableIdentifier.of(DATABASE, TABLE), path.toString()));
+        provider.vend(CATALOG, TableIdentifier.of(DATABASE, TABLE), metadata));
     var expected = ImmutableCredential.builder().prefix(path.toString()).config(Map.of("key", "k1")).build();
     Assert.assertEquals(List.of(expected), result);
 
-    var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
-    var inputCaptor = ArgumentCaptor.forClass(List.class);
-    var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(authorizer, Mockito.times(2)).checkPrivileges(
-        operationCaptor.capture(),
-        inputCaptor.capture(),
-        outputCaptor.capture(),
-        any(HiveAuthzContext.class)
-    );
-    Assert.assertEquals(List.of(HiveOperationType.QUERY, HiveOperationType.QUERY), operationCaptor.getAllValues());
-    assertPrivilegeObjects(List.of(INPUT_OBJECT), inputCaptor.getAllValues().getFirst());
-    assertPrivilegeObjects(List.of(), inputCaptor.getAllValues().getLast());
-    assertPrivilegeObjects(List.of(), outputCaptor.getAllValues().getFirst());
-    assertPrivilegeObjects(List.of(OUTPUT_OBJECT), outputCaptor.getAllValues().getLast());
+    Mockito.verify(authorizer).resolveAllowedStorageOperations(CATALOG, TABLE_IDENTIFIER, columns);
     Mockito.verifyNoMoreInteractions(authorizer);
     Mockito.verify(delegate).vend(username, requests);
     Mockito.verifyNoMoreInteractions(delegate);
   }
 
   @Test
-  public void testVendWithoutPrivileges() throws HiveAccessControlException, HiveAuthzPluginException {
-    var authorizer = Mockito.mock(HiveAuthorizer.class);
-    var delegate = Mockito.mock(VendedCredentialProvider.class);
-    var username = "denied";
-    Mockito.doThrow(new HiveAccessControlException("denied"))
-        .when(authorizer).checkPrivileges(any(), any(), any(), any());
+  public void testVendWithoutPrivileges() {
+    var authorizer = Mockito.mock(IcebergAuthorizer.class);
+    var schema = new Schema(Types.NestedField.required(1, "id", Types.LongType.get()));
+    var columns = List.of("id");
+    Mockito.when(authorizer.resolveAllowedStorageOperations(CATALOG, TABLE_IDENTIFIER, columns)).thenReturn(Set.of());
 
-    var provider = new IcebergVendedCredentialProvider(CATALOG, delegate, () -> authorizer);
+    var username = "denied";
+    var delegate = Mockito.mock(VendedCredentialProvider.class);
+
+    var provider = new IcebergVendedCredentialProvider(authorizer, delegate);
+    var metadata = TableMetadata.newTableMetadata(
+        schema,
+        PartitionSpec.unpartitioned(),
+        "s3a://bucket/path",
+        Map.of()
+    );
     var result = UserGroupInformation.createRemoteUser(username).doAs((PrivilegedAction<List<Credential>>) () ->
-        provider.vend(TableIdentifier.of(DATABASE, TABLE), "s3a://bucket/path"));
+        provider.vend(CATALOG, TableIdentifier.of(DATABASE, TABLE), metadata));
 
     Assert.assertEquals(List.of(), result);
-    Mockito.verify(authorizer, Mockito.times(2)).checkPrivileges(any(), any(), any(), any());
+    Mockito.verify(authorizer).resolveAllowedStorageOperations(CATALOG, TABLE_IDENTIFIER, columns);
     Mockito.verifyNoMoreInteractions(authorizer);
     Mockito.verifyNoInteractions(delegate);
   }

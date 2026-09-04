@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.metastore.credential.s3;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.fs.Path;
 import software.amazon.awssdk.arns.Arn;
 
-import java.net.URI;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,14 +34,35 @@ final class S3Location {
   private final String partition;
   private final String bucket;
   private final String path;
+  private final String escapedPath;
 
   private S3Location(String partition, String bucket, String path) {
     this.partition = partition;
     this.bucket = bucket;
+    Preconditions.checkArgument(path.endsWith(Path.SEPARATOR));
     this.path = path;
+    this.escapedPath = escapeIamGlobLiteral(path);
   }
 
-  static Optional<S3Location> create(String partition, URI uri) {
+  // Note that this is critical for the security.
+  // https://nvd.nist.gov/vuln/detail/cve-2026-42810
+  // https://github.com/apache/polaris/blob/apache-polaris-1.7.0/polaris-core/src/main/java/org/apache/polaris/core/storage/aws/AwsCredentialsStorageIntegration.java#L531-L548
+  private static String escapeIamGlobLiteral(String value) {
+    final var escaped = new StringBuilder(value.length() + 8);
+    for (int i = 0; i < value.length(); i++) {
+      char c = value.charAt(i);
+      switch (c) {
+      case '*' -> escaped.append("${*}");
+      case '?' -> escaped.append("${?}");
+      case '$' -> escaped.append("${$}");
+      default -> escaped.append(c);
+      }
+    }
+    return escaped.toString();
+  }
+
+  static Optional<S3Location> create(String partition, Path path) {
+    final var uri = path.toUri();
     final var scheme = uri.getScheme();
     if (scheme == null) {
       return Optional.empty();
@@ -57,8 +78,8 @@ final class S3Location {
     if (rawPath == null) {
       return Optional.empty();
     }
-    final var path = rawPath.endsWith(Path.SEPARATOR) ? rawPath : rawPath + Path.SEPARATOR;
-    return Optional.of(new S3Location(partition, bucket, path));
+    final var dirPath = rawPath.endsWith(Path.SEPARATOR) ? rawPath : rawPath + Path.SEPARATOR;
+    return Optional.of(new S3Location(partition, bucket, dirPath));
   }
 
   Arn getBucketArn() {
@@ -66,11 +87,11 @@ final class S3Location {
   }
 
   Arn getWildCardArn() {
-    return Arn.builder().partition(partition).service("s3").resource("%s%s*".formatted(bucket, path)).build();
+    return Arn.builder().partition(partition).service("s3").resource("%s%s*".formatted(bucket, escapedPath)).build();
   }
 
   String getWildCardPath() {
-    return path.substring(1) + "*";
+    return escapedPath.substring(1) + "*";
   }
 
   boolean matches(String prefix) {
