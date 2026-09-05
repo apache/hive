@@ -27,6 +27,8 @@ import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
@@ -88,6 +90,8 @@ import org.slf4j.LoggerFactory;
 public class HMSCatalogAdapter implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
   private static final Splitter SLASH = Splitter.on('/');
+  private static final String PAGE_TOKEN = "pageToken";
+  private static final String PAGE_SIZE = "pageSize";
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
       ImmutableMap.<Class<? extends Exception>, Integer>builder()
@@ -234,6 +238,19 @@ public class HMSCatalogAdapter implements Closeable {
     return castResponse(ConfigResponse.class, ConfigResponse.builder().withEndpoints(endpoints).build());
   }
 
+  private <T extends RESTResponse> T executePaginated(
+      Map<String, String> properties,
+      Class<T> responseType,
+      Supplier<Object> unpaginatedTask,
+      BiFunction<String, String, Object> paginatedTask) {
+    String pageToken = PropertyUtil.propertyAsString(properties, PAGE_TOKEN, null);
+    String pageSize = PropertyUtil.propertyAsString(properties, PAGE_SIZE, null);
+
+    return castResponse(
+        responseType,
+        pageSize != null ? paginatedTask.apply(pageToken, pageSize) : unpaginatedTask.get());
+  }
+
   private ListNamespacesResponse listNamespaces(Map<String, String> vars) {
     Namespace namespace;
     if (vars.containsKey("parent")) {
@@ -241,7 +258,12 @@ public class HMSCatalogAdapter implements Closeable {
     } else {
       namespace = Namespace.empty();
     }
-    return castResponse(ListNamespacesResponse.class, CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace));
+    return executePaginated(
+        vars,
+        ListNamespacesResponse.class,
+        () -> CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace),
+        (pageToken, pageSize) ->
+            CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace, pageToken, pageSize));
   }
 
   private CreateNamespaceResponse createNamespace(Object body) {
@@ -278,7 +300,12 @@ public class HMSCatalogAdapter implements Closeable {
 
   private ListTablesResponse listTables(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
-    return castResponse(ListTablesResponse.class, CatalogHandlers.listTables(catalog, namespace));
+    return executePaginated(
+        vars,
+        ListTablesResponse.class,
+        () -> CatalogHandlers.listTables(catalog, namespace),
+        (pageToken, pageSize) ->
+            CatalogHandlers.listTables(catalog, namespace, pageToken, pageSize));
   }
 
   private LoadTableResponse createTable(Map<String, String> vars, Object body) {
@@ -351,16 +378,12 @@ public class HMSCatalogAdapter implements Closeable {
 
   private ListTablesResponse listViews(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
-    String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
-    String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
-    if (pageSize != null) {
-      return castResponse(
-          ListTablesResponse.class,
-          CatalogHandlers.listViews(asViewCatalog, namespace, pageToken, pageSize));
-    } else {
-      return castResponse(
-          ListTablesResponse.class, CatalogHandlers.listViews(asViewCatalog, namespace));
-    }
+    return executePaginated(
+        vars,
+        ListTablesResponse.class,
+        () -> CatalogHandlers.listViews(asViewCatalog, namespace),
+        (pageToken, pageSize) ->
+            CatalogHandlers.listViews(asViewCatalog, namespace, pageToken, pageSize));
   }
 
   private LoadViewResponse createView(Map<String, String> vars, Object body) {
