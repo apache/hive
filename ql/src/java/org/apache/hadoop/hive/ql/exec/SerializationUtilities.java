@@ -303,7 +303,8 @@ public class SerializationUtilities {
   /**
    * Classes that are never acceptable in an untrusted payload even though they pass the package allowlist.
    * GenericUDFReflect, GenericUDFReflect2, and GenericUDFInFile are typically disallowed in a secure environment.
-   * {@link org.apache.hadoop.hive.ql.security.authorization.plugin.SettableConfigUpdater}
+   * This set should be in sync with the denylist in
+   * {@link org.apache.hadoop.hive.ql.security.authorization.plugin.SettableConfigUpdater}.
    */
   private static final Set<String> UNTRUSTED_DENIED_CLASS_NAMES = new HashSet<>(Arrays.asList(
       "org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect",
