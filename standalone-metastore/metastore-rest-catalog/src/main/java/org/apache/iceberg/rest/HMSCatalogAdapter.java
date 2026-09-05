@@ -27,6 +27,10 @@ import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
@@ -88,6 +92,9 @@ import org.slf4j.LoggerFactory;
 public class HMSCatalogAdapter implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
   private static final Splitter SLASH = Splitter.on('/').omitEmptyStrings();
+
+  private static final String PAGE_TOKEN = "pageToken";
+  private static final String PAGE_SIZE = "pageSize";
 
   private static final String PREFIX_VAR = "prefix";
   private static final String PREFIX_PLACEHOLDER = "{" + PREFIX_VAR + "}";
@@ -278,6 +285,19 @@ public class HMSCatalogAdapter implements Closeable {
     return castResponse(ConfigResponse.class, ConfigResponse.builder().withEndpoints(endpoints).build());
   }
 
+  /** Paging parameters of a list request; present only when the client sent pageSize. */
+  private record PageRequest(String token, String size) {
+    static Optional<PageRequest> from(Map<String, String> vars) {
+      return Optional.ofNullable(vars.get(PAGE_SIZE))
+          .map(size -> new PageRequest(vars.get(PAGE_TOKEN), size));
+    }
+  }
+
+  private static <R> R paginateIfRequested(
+      Map<String, String> vars, Supplier<R> fullList, Function<PageRequest, R> page) {
+    return PageRequest.from(vars).map(page).orElseGet(fullList);
+  }
+
   private ListNamespacesResponse listNamespaces(Map<String, String> vars) {
     Namespace namespace;
     if (vars.containsKey("parent")) {
@@ -285,17 +305,10 @@ public class HMSCatalogAdapter implements Closeable {
     } else {
       namespace = Namespace.empty();
     }
-    String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
-    String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
-    if (pageSize != null) {
-      return castResponse(
-          ListNamespacesResponse.class,
-          CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace, pageToken, pageSize));
-    } else {
-      return castResponse(
-          ListNamespacesResponse.class,
-          CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace));
-    }
+    return paginateIfRequested(
+        vars,
+        () -> CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace),
+        p -> CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace, p.token(), p.size()));
   }
 
   private CreateNamespaceResponse createNamespace(Object body) {
@@ -332,15 +345,10 @@ public class HMSCatalogAdapter implements Closeable {
 
   private ListTablesResponse listTables(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
-    String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
-    String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
-    if (pageSize != null) {
-      return castResponse(
-          ListTablesResponse.class,
-          CatalogHandlers.listTables(catalog, namespace, pageToken, pageSize));
-    } else {
-      return castResponse(ListTablesResponse.class, CatalogHandlers.listTables(catalog, namespace));
-    }
+    return paginateIfRequested(
+        vars,
+        () -> CatalogHandlers.listTables(catalog, namespace),
+        p -> CatalogHandlers.listTables(catalog, namespace, p.token(), p.size()));
   }
 
   private LoadTableResponse createTable(Map<String, String> vars, Object body) {
@@ -413,16 +421,10 @@ public class HMSCatalogAdapter implements Closeable {
 
   private ListTablesResponse listViews(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
-    String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
-    String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
-    if (pageSize != null) {
-      return castResponse(
-          ListTablesResponse.class,
-          CatalogHandlers.listViews(asViewCatalog, namespace, pageToken, pageSize));
-    } else {
-      return castResponse(
-          ListTablesResponse.class, CatalogHandlers.listViews(asViewCatalog, namespace));
-    }
+    return paginateIfRequested(
+        vars,
+        () -> CatalogHandlers.listViews(asViewCatalog, namespace),
+        p -> CatalogHandlers.listViews(asViewCatalog, namespace, p.token(), p.size()));
   }
 
   private LoadViewResponse createView(Map<String, String> vars, Object body) {
