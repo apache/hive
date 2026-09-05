@@ -61,6 +61,18 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
    */
   private ParquetProbeFilter probeFilter;
 
+  /**
+   * When {@code false}, the PLAIN-path helpers ignore the filter and materialise every row,
+   * relying on downstream {@code batch.selected[]} for filtering. Controlled by
+   * {@code hive.optimize.scan.probedecode.parquet.plain.filter.enabled}. The dictionary path
+   * is unaffected and always honours the filter (its bulk-skip fast-path is uniformly a win).
+   *
+   * <p>Marked {@code final} so the JIT can constant-fold the check away in {@link
+   * #isFilteredOutPlain} when disabled -- there should be zero residual cost on the hot path
+   * when the config is off.
+   */
+  private final boolean plainFilterEnabled;
+
   public VectorizedPrimitiveColumnReader(
       ColumnDescriptor descriptor,
       PageReader pageReader,
@@ -69,10 +81,12 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       boolean skipProlepticConversion,
       boolean legacyConversionEnabled,
       Type type,
-      TypeInfo hiveType)
+      TypeInfo hiveType,
+      boolean plainFilterEnabled)
       throws IOException {
     super(descriptor, pageReader, skipTimestampConversion, writerTimezone, skipProlepticConversion,
         legacyConversionEnabled, type, hiveType);
+    this.plainFilterEnabled = plainFilterEnabled;
   }
 
   @Override
@@ -90,12 +104,25 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
   }
 
   /**
-   * @return {@code true} when a {@link ParquetProbeFilter} is active and marks row {@code rowId}
-   *         as filtered-out (i.e. the hash-table probe did not match this row). Returns
-   *         {@code false} otherwise, including when no filter is active.
+   * Dict-path filter check. Always honours an active filter -- filtered dict-ids feed into the
+   * {@code pendingSkip} coalescing loop that reaches {@code DictionaryValuesReader.skip(int)} ->
+   * {@code RunLengthBitPackingHybridDecoder.skipInts}, which drops whole reject runs in O(runs).
+   * This win is uniform across selectivities, so no config gates it.
    */
-  private boolean isFilteredOut(int rowId) {
+  private boolean isFilteredOutDict(int rowId) {
     return probeFilter != null && !probeFilter.isSelected(rowId);
+  }
+
+  /**
+   * PLAIN-path filter check. Gated by {@link #plainFilterEnabled}: when the config is off, the
+   * JIT constant-folds this to always return {@code false} and the surrounding {@code if/else}
+   * in every {@code readXxx} helper collapses to just the materialise branch. The trade-off is
+   * that filtered PLAIN rows will then be materialised into the column vector (downstream
+   * {@code batch.selected[]} still filters them out for the query result, but callers reading
+   * the vector directly will see decoded values in those slots).
+   */
+  private boolean isFilteredOutPlain(int rowId) {
+    return plainFilterEnabled && probeFilter != null && !probeFilter.isSelected(rowId);
   }
 
   @Override
@@ -209,7 +236,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutDict(rowId)) {
           pendingSkip++;
           setNullValue(c, rowId);
         } else {
@@ -242,7 +269,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -268,7 +295,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -294,7 +321,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -320,7 +347,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -346,7 +373,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -369,7 +396,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -395,7 +422,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -424,7 +451,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -450,7 +477,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           // Avoids the per-row byte-array allocation + copy into BytesColumnVector for filtered
           // rows. The underlying BinaryPlainValuesReader.skip() only reads the length prefix
           // and advances the buffer by that many bytes.
@@ -475,7 +502,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -497,7 +524,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -519,7 +546,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -542,7 +569,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -570,7 +597,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {
@@ -840,7 +867,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOut(rowId)) {
+        if (isFilteredOutPlain(rowId)) {
           dataColumn.skip();
           setNullValue(c, rowId);
         } else {

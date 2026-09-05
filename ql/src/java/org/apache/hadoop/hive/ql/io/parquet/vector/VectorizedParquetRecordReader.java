@@ -165,6 +165,14 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private ParquetProbeDecodeState probeState = ParquetProbeDecodeState.disabled();
   private boolean probeStateResolved = false;
 
+  /**
+   * Snapshot of {@link HiveConf.ConfVars#HIVE_OPTIMIZE_SCAN_PROBEDECODE_PARQUET_PLAIN_FILTER} at
+   * reader construction time. Threaded through into every {@link VectorizedPrimitiveColumnReader}
+   * so the JIT can constant-fold the PLAIN-path filter check when it's off. Only affects PLAIN
+   * pages; the dictionary path always honours the filter via its bulk-skip fast-path.
+   */
+  private final boolean plainFilterEnabled;
+
   public VectorizedParquetRecordReader(InputSplit oldInputSplit, JobConf conf) throws IOException {
     this(oldInputSplit, conf, null, null, null);
   }
@@ -173,6 +181,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       DataCache dataCache, Configuration cacheConf, ParquetMetadata parquetMetadata,
       Map<String, Object> initialDefaults) throws IOException {
     super(conf, oldInputSplit);
+    this.plainFilterEnabled = HiveConf.getBoolVar(
+        conf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE_PARQUET_PLAIN_FILTER);
     try {
       this.metadataCache = metadataCache;
       this.cache = dataCache;
@@ -437,10 +447,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       // column list. Failing here is fine -- state stays disabled and we run the plain path.
       probeState = ParquetProbeDecodeState.of(jobConf, Utilities.getMapWork(jobConf), columnNamesList);
       probeStateResolved = true;
-      if (probeState.isEnabled()) {
-        LOG.info("ProbeDecode enabled for VectorizedParquetRecordReader: keyColIdx={}",
-            probeState.getKeyColumnIndex());
-      }
     }
 
     int num = (int) Math.min(VectorizedRowBatch.DEFAULT_SIZE, totalCountLoadedSoFar - rowsReturned);
@@ -648,7 +654,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
         return new VectorizedPrimitiveColumnReader(descriptors.get(0),
             pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone, skipProlepticConversion,
-            legacyConversionEnabled, type, typeInfo);
+            legacyConversionEnabled, type, typeInfo, plainFilterEnabled);
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
       List<VectorizedColumnReader> fieldReaders = new ArrayList<>();
