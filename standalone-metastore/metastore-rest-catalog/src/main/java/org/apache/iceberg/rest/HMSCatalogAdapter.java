@@ -88,6 +88,7 @@ import org.slf4j.LoggerFactory;
 public class HMSCatalogAdapter implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
   private static final Splitter SLASH = Splitter.on('/');
+  private static final String PREFIX = "{prefix}";
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
       ImmutableMap.<Class<? extends Exception>, Integer>builder()
@@ -162,7 +163,7 @@ public class HMSCatalogAdapter implements Closeable {
     private final Map<Integer, String> variables;
     private final Class<? extends RESTRequest> requestClass;
     private final String resourcePath;
-    private final boolean hasPrefix;
+    private final boolean withPrefix;
 
     Route(HTTPMethod method, String pattern) {
       this(method, pattern, null);
@@ -174,11 +175,11 @@ public class HMSCatalogAdapter implements Closeable {
         Class<? extends RESTRequest> requestClass) {
       this.method = method;
       this.resourcePath = pattern;
-      this.hasPrefix = pattern.contains("{prefix}");
+      this.withPrefix = pattern.contains(PREFIX);
 
       // parse the pattern into requirements and variables
       List<String> parts =
-          SLASH.splitToList(pattern.replaceFirst("/v1/", "v1/").replace("/{prefix}", ""));
+          SLASH.splitToList(pattern.replaceFirst("/v1/", "v1/").replace("/" + PREFIX, ""));
       ImmutableMap.Builder<Integer, String> requirementsBuilder = ImmutableMap.builder();
       ImmutableMap.Builder<Integer, String> variablesBuilder = ImmutableMap.builder();
       for (int pos = 0; pos < parts.size(); pos += 1) {
@@ -214,7 +215,7 @@ public class HMSCatalogAdapter implements Closeable {
       int offset = size - requiredLength;
 
       // If the path is too short, or too long but the route doesn't support a prefix, reject.
-      if (offset < 0 || (offset > 0 && !hasPrefix)) {
+      if (offset < 0 || (offset > 0 && !withPrefix)) {
         return false;
       }
 
