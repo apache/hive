@@ -20,10 +20,14 @@
 package org.apache.hadoop.hive.ql.io.parquet.vector.probe;
 
 import java.util.List;
+import java.util.Set;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator.ProbeDecodeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
@@ -91,35 +95,49 @@ public final class ParquetProbeDecodeState {
     if (keyIdx < 0) {
       // The probe key column isn't in the projected schema for this reader -- e.g. because
       // column pruning already dropped it. Nothing to probe against; run un-probed.
-      LOG.debug("ProbeDecode: probe key column {} not in projected columns {}", keyCol, projectedColumns);
+      LOG.debug("ProbeDecode: probe key column {} not in projected columns {}",
+          keyCol, projectedColumns);
       return DISABLED;
     }
 
     String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
     try {
       ObjectCache cache = ObjectCacheFactory.getCache(conf, queryId, false);
-      Object cached = cache.retrieve(ctx.getMjSmallTableCacheKey());
+      // MapJoinOperator.initializeOp stores the hash table under either the raw MapJoinDesc cache
+      // key (when conf's cacheKey was null at compile time) or `cacheKey + "_" + concreteOpClass`
+      // (when Shared Work Optimization / ProbeDecode compilation set the cache key upfront). The
+      // ProbeDecodeContext only carries the raw key -- resolve the concrete-class suffix by
+      // matching the MapJoinOperator in the MapWork tree, mirroring the loader's key exactly.
+      String actualKey = resolveActualCacheKey(mapWork, ctx.getMjSmallTableCacheKey());
+      Object cached = cache.retrieve(actualKey);
       if (cached == null) {
-        LOG.debug("ProbeDecode: no cached hash table for key {}", ctx.getMjSmallTableCacheKey());
+        LOG.debug("ProbeDecode: no cached hash table for key {} (base {})",
+            actualKey, ctx.getMjSmallTableCacheKey());
+        return DISABLED;
+      }
+      // MapJoinOperator caches the loaded hash tables as a
+      // `Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>` -- unwrap and pick the
+      // small-table container by its position.
+      MapJoinTableContainer container = unwrapContainer(cached, ctx.getMjSmallTablePos());
+      if (container == null) {
+        LOG.debug("ProbeDecode: could not extract small-table container from cached {} (pos {})",
+            cached.getClass().getName(), ctx.getMjSmallTablePos());
         return DISABLED;
       }
       VectorMapJoinHashTable ht;
-      if (cached instanceof VectorMapJoinTableContainer) {
-        ht = ((VectorMapJoinTableContainer) cached).vectorMapJoinHashTable();
-      } else if (cached instanceof VectorMapJoinHashTable) {
-        ht = (VectorMapJoinHashTable) cached;
-      } else if (cached instanceof MapJoinTableContainer) {
+      if (container instanceof VectorMapJoinTableContainer) {
+        ht = ((VectorMapJoinTableContainer) container).vectorMapJoinHashTable();
+      } else {
         // Non-vectorized container -- probe-decode has no dictionary-of-keys to intersect with,
         // so bail out and let the plain decode path run.
         LOG.debug("ProbeDecode: cached container is non-vectorized ({}); skipping probe",
-            cached.getClass().getName());
-        return DISABLED;
-      } else {
-        LOG.debug("ProbeDecode: unexpected cached object type {}", cached.getClass().getName());
+            container.getClass().getName());
         return DISABLED;
       }
 
       if (ht instanceof VectorMapJoinLongHashTable) {
+        LOG.info("ProbeDecode: enabled for key column {} (idx {}) via {}",
+            keyCol, keyIdx, ht.getClass().getSimpleName());
         return new ParquetProbeDecodeState(keyIdx, ParquetProbeLongHashTable.of(ht));
       }
       // TODO: bytes-key + multi-key variants when the corresponding ParquetProbeHashTable
@@ -130,6 +148,60 @@ public final class ParquetProbeDecodeState {
       LOG.warn("ProbeDecode: hash-table resolution failed, falling back to plain decode", e);
       return DISABLED;
     }
+  }
+
+  /**
+   * Peel a cached hash-table entry stored by {@link MapJoinOperator#loadHashTable} back to the
+   * small-side container. The op caches a {@code Pair<MapJoinTableContainer[], ...>}; some code
+   * paths (older tests, refactored fixtures) store a bare container or a bare hash table -- keep
+   * those working too.
+   */
+  private static MapJoinTableContainer unwrapContainer(Object cached, byte smallPos) {
+    if (cached instanceof Pair) {
+      Object left = ((Pair<?, ?>) cached).getLeft();
+      if (left instanceof MapJoinTableContainer[]) {
+        MapJoinTableContainer[] tables = (MapJoinTableContainer[]) left;
+        if (smallPos >= 0 && smallPos < tables.length && tables[smallPos] != null) {
+          return tables[smallPos];
+        }
+        // Fall back to the first non-null entry -- some plans leave big-table slots null.
+        for (MapJoinTableContainer t : tables) {
+          if (t != null) {
+            return t;
+          }
+        }
+      }
+      return null;
+    }
+    if (cached instanceof MapJoinTableContainer) {
+      return (MapJoinTableContainer) cached;
+    }
+    return null;
+  }
+
+  /**
+   * Mirror {@code MapJoinOperator.initializeOp}'s cacheKey computation so our lookup finds the
+   * hash table the loader stored. When the ProbeDecodeContext's raw cacheKey is non-null, the
+   * operator appends {@code "_" + this.getClass().getName()} -- and the vectorizer has by now
+   * substituted the {@link MapJoinOperator} with a concrete {@code VectorMapJoin*Operator}
+   * subclass, so we read the class off the operator in the MapWork tree.
+   */
+  static String resolveActualCacheKey(MapWork mapWork, String baseCacheKey) {
+    if (baseCacheKey == null || mapWork == null) {
+      return baseCacheKey;
+    }
+    try {
+      Set<MapJoinOperator> mjs = OperatorUtils.findOperators(mapWork.getWorks(), MapJoinOperator.class);
+      for (MapJoinOperator mj : mjs) {
+        if (mj.getConf() != null && baseCacheKey.equals(mj.getConf().getCacheKey())) {
+          return baseCacheKey + "_" + mj.getClass().getName();
+        }
+      }
+    } catch (Exception e) {
+      LOG.debug("ProbeDecode: could not resolve concrete cacheKey suffix, falling back to raw key",
+          e);
+    }
+    return baseCacheKey;
   }
 
   public boolean isEnabled() {
