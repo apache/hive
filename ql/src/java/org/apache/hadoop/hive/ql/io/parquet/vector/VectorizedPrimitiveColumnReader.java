@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.ql.io.parquet.vector.probe.ParquetProbeFilter;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReader;
 import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
@@ -52,6 +53,26 @@ import java.time.ZoneId;
  */
 public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader {
 
+  /**
+   * Non-null while a ProbeDecode batch is being decoded. When set, per-row helpers below
+   * ({@link #readDictionaryIDs}, {@link #readIntegers}, {@link #readLongs}) call
+   * {@code dataColumn.skip()} on filtered-out rows instead of decoding, and leave the
+   * corresponding slot in the column vector marked null.
+   */
+  private ParquetProbeFilter probeFilter;
+
+  /**
+   * When {@code false}, the PLAIN-path helpers ignore the filter and materialise every row,
+   * relying on downstream {@code batch.selected[]} for filtering. Controlled by
+   * {@code hive.optimize.scan.probedecode.parquet.plain.filter.enabled}. The dictionary path
+   * is unaffected and always honours the filter (its bulk-skip fast-path is uniformly a win).
+   *
+   * <p>Marked {@code final} so the JIT can constant-fold the check away in {@link
+   * #isFilteredOutPlain} when disabled -- there should be zero residual cost on the hot path
+   * when the config is off.
+   */
+  private final boolean plainFilterEnabled;
+
   public VectorizedPrimitiveColumnReader(
       ColumnDescriptor descriptor,
       PageReader pageReader,
@@ -60,10 +81,48 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       boolean skipProlepticConversion,
       boolean legacyConversionEnabled,
       Type type,
-      TypeInfo hiveType)
+      TypeInfo hiveType,
+      boolean plainFilterEnabled)
       throws IOException {
     super(descriptor, pageReader, skipTimestampConversion, writerTimezone, skipProlepticConversion,
         legacyConversionEnabled, type, hiveType);
+    this.plainFilterEnabled = plainFilterEnabled;
+  }
+
+  @Override
+  public void readBatch(
+      int total,
+      ColumnVector column,
+      TypeInfo columnType,
+      ParquetProbeFilter probeFilter) throws IOException {
+    this.probeFilter = probeFilter;
+    try {
+      readBatch(total, column, columnType);
+    } finally {
+      this.probeFilter = null;
+    }
+  }
+
+  /**
+   * Dict-path filter check. Always honours an active filter -- filtered dict-ids feed into the
+   * {@code pendingSkip} coalescing loop that reaches {@code DictionaryValuesReader.skip(int)} ->
+   * {@code RunLengthBitPackingHybridDecoder.skipInts}, which drops whole reject runs in O(runs).
+   * This win is uniform across selectivities, so no config gates it.
+   */
+  private boolean isFilteredOutDict(int rowId) {
+    return probeFilter != null && !probeFilter.isSelected(rowId);
+  }
+
+  /**
+   * PLAIN-path filter check. Gated by {@link #plainFilterEnabled}: when the config is off, the
+   * JIT constant-folds this to always return {@code false} and the surrounding {@code if/else}
+   * in every {@code readXxx} helper collapses to just the materialise branch. The trade-off is
+   * that filtered PLAIN rows will then be materialised into the column vector (downstream
+   * {@code batch.selected[]} still filters them out for the query result, but callers reading
+   * the vector directly will see decoded values in those slots).
+   */
+  private boolean isFilteredOutPlain(int rowId) {
+    return plainFilterEnabled && probeFilter != null && !probeFilter.isSelected(rowId);
   }
 
   @Override
@@ -166,32 +225,62 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
 
   private void readDictionaryIDs(int total, LongColumnVector c, int rowId) {
     int left = total;
+    // Dictionary indices are always encoded RLE / bit-packed, so contiguous filtered-out rows
+    // (definitionLevel == maxDefLevel) can be coalesced into a single dataColumn.skip(n) at
+    // the run boundary. That reaches DictionaryValuesReader.skip(int) ->
+    // RunLengthBitPackingHybridDecoder.skipInts, which consumes a whole RLE run in O(1) by
+    // decrementing currentCount, so filtered rows cost O(runs) rather than O(filtered rows).
+    // This coalescing is not applied to readIntegers / readLongs because those handle non-dict
+    // pages whose values reader (PLAIN / DELTA_BINARY_PACKED) has no bulk-skip fast-path.
+    int pendingSkip = 0;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = dataColumn.readValueDictionaryId();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (isFilteredOutDict(rowId)) {
+          pendingSkip++;
+          setNullValue(c, rowId);
+        } else {
+          if (pendingSkip > 0) {
+            dataColumn.skip(pendingSkip);
+            pendingSkip = 0;
+          }
+          c.vector[rowId] = dataColumn.readValueDictionaryId();
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        }
       } else {
+        // Null-in-file row: no value on the page, so the skip counter is unaffected.
         setNullValue(c, rowId);
       }
       rowId++;
       left--;
     }
+    if (pendingSkip > 0) {
+      dataColumn.skip(pendingSkip);
+    }
   }
 
   private void readIntegers(int total, LongColumnVector c, int rowId) {
+    // Only reached for non-dict-encoded pages; dict-encoded INT columns go through
+    // readDictionaryIDs. The underlying PlainValuesReader / DeltaBinaryPackingValuesReader
+    // has no bulk-skip fast-path (PLAIN's per-row skip is one ByteBufferInputStream index
+    // bump; DELTA is O(n) by construction), so per-row dataColumn.skip() is fine.
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = dataColumn.readInteger();
-        if (dataColumn.isValid()) {
-          c.isNull[rowId] = false;
-          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-        } else {
-          c.vector[rowId] = 0;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
           setNullValue(c, rowId);
+        } else {
+          c.vector[rowId] = dataColumn.readInteger();
+          if (dataColumn.isValid()) {
+            c.isNull[rowId] = false;
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          } else {
+            c.vector[rowId] = 0;
+            setNullValue(c, rowId);
+          }
         }
       } else {
         setNullValue(c, rowId);
@@ -206,13 +295,18 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = dataColumn.readSmallInt();
-        if (dataColumn.isValid()) {
-          c.isNull[rowId] = false;
-          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-        } else {
-          c.vector[rowId] = 0;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
           setNullValue(c, rowId);
+        } else {
+          c.vector[rowId] = dataColumn.readSmallInt();
+          if (dataColumn.isValid()) {
+            c.isNull[rowId] = false;
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          } else {
+            c.vector[rowId] = 0;
+            setNullValue(c, rowId);
+          }
         }
       } else {
         setNullValue(c, rowId);
@@ -227,13 +321,18 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = dataColumn.readTinyInt();
-        if (dataColumn.isValid()) {
-          c.isNull[rowId] = false;
-          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-        } else {
-          c.vector[rowId] = 0;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
           setNullValue(c, rowId);
+        } else {
+          c.vector[rowId] = dataColumn.readTinyInt();
+          if (dataColumn.isValid()) {
+            c.isNull[rowId] = false;
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          } else {
+            c.vector[rowId] = 0;
+            setNullValue(c, rowId);
+          }
         }
       } else {
         setNullValue(c, rowId);
@@ -248,13 +347,18 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = dataColumn.readDouble();
-        if (dataColumn.isValid()) {
-          c.isNull[rowId] = false;
-          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-        } else {
-          c.vector[rowId] = 0;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
           setNullValue(c, rowId);
+        } else {
+          c.vector[rowId] = dataColumn.readDouble();
+          if (dataColumn.isValid()) {
+            c.isNull[rowId] = false;
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          } else {
+            c.vector[rowId] = 0;
+            setNullValue(c, rowId);
+          }
         }
       } else {
         setNullValue(c, rowId);
@@ -269,9 +373,14 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = dataColumn.readBoolean() ? 1 : 0;
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
+          setNullValue(c, rowId);
+        } else {
+          c.vector[rowId] = dataColumn.readBoolean() ? 1 : 0;
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        }
       } else {
         setNullValue(c, rowId);
       }
@@ -281,17 +390,24 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
   }
 
   private void readLongs(int total, LongColumnVector c, int rowId) {
+    // See readIntegers -- same argument: only reached for non-dict pages, no bulk-skip fast-path
+    // is available in the underlying values reader, so per-row dataColumn.skip() is optimal.
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = dataColumn.readLong();
-        if (dataColumn.isValid()) {
-          c.isNull[rowId] = false;
-          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-        } else {
-          c.vector[rowId] = 0;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
           setNullValue(c, rowId);
+        } else {
+          c.vector[rowId] = dataColumn.readLong();
+          if (dataColumn.isValid()) {
+            c.isNull[rowId] = false;
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          } else {
+            c.vector[rowId] = 0;
+            setNullValue(c, rowId);
+          }
         }
       } else {
         setNullValue(c, rowId);
@@ -306,13 +422,18 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = dataColumn.readFloat();
-        if (dataColumn.isValid()) {
-          c.isNull[rowId] = false;
-          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-        } else {
-          c.vector[rowId] = 0;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
           setNullValue(c, rowId);
+        } else {
+          c.vector[rowId] = dataColumn.readFloat();
+          if (dataColumn.isValid()) {
+            c.isNull[rowId] = false;
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          } else {
+            c.vector[rowId] = 0;
+            setNullValue(c, rowId);
+          }
         }
       } else {
         setNullValue(c, rowId);
@@ -330,13 +451,18 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        decimalData = dataColumn.readDecimal();
-        if (dataColumn.isValid()) {
-          c.vector[rowId].set(decimalData, c.scale);
-          c.isNull[rowId] = false;
-          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-        } else {
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
           setNullValue(c, rowId);
+        } else {
+          decimalData = dataColumn.readDecimal();
+          if (dataColumn.isValid()) {
+            c.vector[rowId].set(decimalData, c.scale);
+            c.isNull[rowId] = false;
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          } else {
+            setNullValue(c, rowId);
+          }
         }
       } else {
         setNullValue(c, rowId);
@@ -351,10 +477,18 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.setVal(rowId, dataColumn.readString());
-        c.isNull[rowId] = false;
-        // TODO figure out a better way to set repeat for Binary type
-        c.isRepeating = false;
+        if (isFilteredOutPlain(rowId)) {
+          // Avoids the per-row byte-array allocation + copy into BytesColumnVector for filtered
+          // rows. The underlying BinaryPlainValuesReader.skip() only reads the length prefix
+          // and advances the buffer by that many bytes.
+          dataColumn.skip();
+          setNullValue(c, rowId);
+        } else {
+          c.setVal(rowId, dataColumn.readString());
+          c.isNull[rowId] = false;
+          // TODO figure out a better way to set repeat for Binary type
+          c.isRepeating = false;
+        }
       } else {
         setNullValue(c, rowId);
       }
@@ -368,10 +502,15 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.setVal(rowId, dataColumn.readChar());
-        c.isNull[rowId] = false;
-        // TODO figure out a better way to set repeat for Binary type
-        c.isRepeating = false;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
+          setNullValue(c, rowId);
+        } else {
+          c.setVal(rowId, dataColumn.readChar());
+          c.isNull[rowId] = false;
+          // TODO figure out a better way to set repeat for Binary type
+          c.isRepeating = false;
+        }
       } else {
         setNullValue(c, rowId);
       }
@@ -385,10 +524,15 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.setVal(rowId, dataColumn.readVarchar());
-        c.isNull[rowId] = false;
-        // TODO figure out a better way to set repeat for Binary type
-        c.isRepeating = false;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
+          setNullValue(c, rowId);
+        } else {
+          c.setVal(rowId, dataColumn.readVarchar());
+          c.isNull[rowId] = false;
+          // TODO figure out a better way to set repeat for Binary type
+          c.isRepeating = false;
+        }
       } else {
         setNullValue(c, rowId);
       }
@@ -402,10 +546,15 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.setVal(rowId, dataColumn.readBytes());
-        c.isNull[rowId] = false;
-        // TODO figure out a better way to set repeat for Binary type
-        c.isRepeating = false;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
+          setNullValue(c, rowId);
+        } else {
+          c.setVal(rowId, dataColumn.readBytes());
+          c.isNull[rowId] = false;
+          // TODO figure out a better way to set repeat for Binary type
+          c.isRepeating = false;
+        }
       } else {
         setNullValue(c, rowId);
       }
@@ -420,14 +569,19 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        c.vector[rowId] = skipProlepticConversion ?
-            dataColumn.readLong() : CalendarUtils.convertDateToProleptic((int) dataColumn.readLong());
-        if (dataColumn.isValid()) {
-          c.isNull[rowId] = false;
-          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-        } else {
-          c.vector[rowId] = 0;
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
           setNullValue(c, rowId);
+        } else {
+          c.vector[rowId] = skipProlepticConversion ?
+              dataColumn.readLong() : CalendarUtils.convertDateToProleptic((int) dataColumn.readLong());
+          if (dataColumn.isValid()) {
+            c.isNull[rowId] = false;
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          } else {
+            c.vector[rowId] = 0;
+            setNullValue(c, rowId);
+          }
         }
       } else {
         setNullValue(c, rowId);
@@ -443,21 +597,26 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        switch (descriptor.getType()) {
-        //INT64 is not yet supported
-        case INT96:
-          c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
-          break;
-        case INT64:
-          c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
-          break;
-        default:
-          throw new IOException(
-              "Unsupported parquet logical type: " + type.getLogicalTypeAnnotation().toString() + " for timestamp");
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
+          setNullValue(c, rowId);
+        } else {
+          switch (descriptor.getType()) {
+          //INT64 is not yet supported
+          case INT96:
+            c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
+            break;
+          case INT64:
+            c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
+            break;
+          default:
+            throw new IOException(
+                "Unsupported parquet logical type: " + type.getLogicalTypeAnnotation().toString() + " for timestamp");
+          }
+          c.isNull[rowId] = false;
+          c.isRepeating =
+              c.isRepeating && ((c.time[0] == c.time[rowId]) && (c.nanos[0] == c.nanos[rowId]));
         }
-        c.isNull[rowId] = false;
-        c.isRepeating =
-            c.isRepeating && ((c.time[0] == c.time[rowId]) && (c.nanos[0] == c.nanos[rowId]));
       } else {
         setNullValue(c, rowId);
       }
@@ -708,9 +867,14 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        setDecimal64Value(c, rowId, fast, dataColumn, -1, valueScale);
-        if (!c.isNull[rowId]) {
-          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (isFilteredOutPlain(rowId)) {
+          dataColumn.skip();
+          setNullValue(c, rowId);
+        } else {
+          setDecimal64Value(c, rowId, fast, dataColumn, -1, valueScale);
+          if (!c.isNull[rowId]) {
+            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+          }
         }
       } else {
         setNullValue(c, rowId);

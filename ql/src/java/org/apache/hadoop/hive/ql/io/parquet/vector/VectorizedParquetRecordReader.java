@@ -43,6 +43,8 @@ import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
+import org.apache.hadoop.hive.ql.io.parquet.vector.probe.ParquetProbeDecodeState;
+import org.apache.hadoop.hive.ql.io.parquet.vector.probe.ParquetProbeFilter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -153,6 +155,24 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private Object cacheKey = null;
   private CacheTag cacheTag = null;
 
+  /**
+   * ProbeDecode state: resolved lazily on the first {@link #nextBatch} call because {@link MapWork}
+   * carries the small-side hash-table cache key set by the planner. If probe-decode isn't enabled
+   * for this scan (no {@code ProbeDecodeContext}, key column pruned, or the small hash table isn't
+   * populated yet) this stays at {@link ParquetProbeDecodeState#disabled()} and the reader runs
+   * the plain decode path.
+   */
+  private ParquetProbeDecodeState probeState = ParquetProbeDecodeState.disabled();
+  private boolean probeStateResolved = false;
+
+  /**
+   * Snapshot of {@link HiveConf.ConfVars#HIVE_OPTIMIZE_SCAN_PROBEDECODE_PARQUET_PLAIN_FILTER} at
+   * reader construction time. Threaded through into every {@link VectorizedPrimitiveColumnReader}
+   * so the JIT can constant-fold the PLAIN-path filter check when it's off. Only affects PLAIN
+   * pages; the dictionary path always honours the filter via its bulk-skip fast-path.
+   */
+  private final boolean plainFilterEnabled;
+
   public VectorizedParquetRecordReader(InputSplit oldInputSplit, JobConf conf) throws IOException {
     this(oldInputSplit, conf, null, null, null);
   }
@@ -161,6 +181,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       DataCache dataCache, Configuration cacheConf, ParquetMetadata parquetMetadata,
       Map<String, Object> initialDefaults) throws IOException {
     super(conf, oldInputSplit);
+    this.plainFilterEnabled = HiveConf.getBoolVar(
+        conf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE_PARQUET_PLAIN_FILTER);
     try {
       this.metadataCache = metadataCache;
       this.cache = dataCache;
@@ -420,8 +442,61 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     }
     checkEndOfRowGroup();
 
+    if (!probeStateResolved) {
+      // Resolve ProbeDecode state once we've read the first row group and know the projected
+      // column list. Failing here is fine -- state stays disabled and we run the plain path.
+      probeState = ParquetProbeDecodeState.of(jobConf, Utilities.getMapWork(jobConf), columnNamesList);
+      probeStateResolved = true;
+    }
+
     int num = (int) Math.min(VectorizedRowBatch.DEFAULT_SIZE, totalCountLoadedSoFar - rowsReturned);
-    if (colsToInclude.size() > 0) {
+    if (!colsToInclude.isEmpty()) {
+      ParquetProbeFilter probeFilter;
+      int probeReaderIdx = -1;
+      if (probeState.isEnabled()) {
+        // Find which reader index corresponds to the probe key column. columnReaders[i] renders
+        // into columnarBatch.cols[colsToInclude.get(i)], so we match on the projected slot.
+        int keyColSlot = probeState.getKeyColumnIndex();
+        for (int i = 0; i < columnReaders.length; ++i) {
+          if (columnReaders[i] != null && colsToInclude.get(i) == keyColSlot) {
+            probeReaderIdx = i;
+            break;
+          }
+        }
+      }
+
+      if (probeReaderIdx >= 0) {
+        // Probe-decode path: decode the key column, run the hash-table probe to build a filter,
+        // then decode the remaining columns with the filter so unmatched rows skip decode /
+        // conversion work.
+        columnarBatch.cols[colsToInclude.get(probeReaderIdx)].isRepeating = true;
+        columnReaders[probeReaderIdx].readBatch(num, columnarBatch.cols[colsToInclude.get(probeReaderIdx)],
+            columnTypesList.get(colsToInclude.get(probeReaderIdx)));
+        try {
+          probeFilter = probeState.getProbe().probe(
+              columnarBatch.cols[colsToInclude.get(probeReaderIdx)], num);
+        } catch (IOException e) {
+          throw e;
+        } catch (Exception e) {
+          LOG.warn("ProbeDecode probe failed, falling back to unfiltered decode", e);
+          probeFilter = null;
+        }
+        for (int i = 0; i < columnReaders.length; ++i) {
+          if (i == probeReaderIdx || columnReaders[i] == null) {
+            continue;
+          }
+          columnarBatch.cols[colsToInclude.get(i)].isRepeating = true;
+          columnReaders[i].readBatch(num, columnarBatch.cols[colsToInclude.get(i)],
+              columnTypesList.get(colsToInclude.get(i)), probeFilter);
+        }
+        // Physical decode consumed `num` rows; filtered logical size becomes the batch size.
+        int filteredSize = applyProbeFilterToBatch(columnarBatch, probeFilter, num);
+        lastReturnedRowCount = num;
+        rowsReturned += num;
+        columnarBatch.size = filteredSize;
+        return true;
+      }
+      // else: fallthrough to the plain decode path below.
       for (int i = 0; i < columnReaders.length; ++i) {
         if (columnReaders[i] == null) {
           continue;
@@ -431,10 +506,40 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
             columnTypesList.get(colsToInclude.get(i)));
       }
     }
+    // Plain path: no probe filter, so no compacted selected[] to hand downstream.
+    columnarBatch.selectedInUse = false;
     lastReturnedRowCount = num;
     rowsReturned += num;
     columnarBatch.size = num;
     return true;
+  }
+
+  /**
+   * Set {@code batch.selected} / {@code selectedInUse} so downstream operators see only the rows
+   * that survived the probe. Filtered-out rows are already null in every column (their decode
+   * path skipped materialisation), so the batch is safe to hand over either way -- populating
+   * {@code selected[]} avoids re-testing the same rows in the join operator.
+   *
+   * @return the surviving row count, matching Hive's convention that {@code batch.size} is the
+   *         number of rows that qualify (i.e. after filtering)
+   */
+  private static int applyProbeFilterToBatch(VectorizedRowBatch batch, ParquetProbeFilter filter,
+      int batchSize) {
+    if (filter == null) {
+      return batchSize;
+    }
+    ParquetProbeFilter compact = filter.compact(batchSize);
+    int[] selected = compact.getSelected();
+    int size = compact.getSelectedSize();
+    if (selected == null) {
+      return batchSize;
+    }
+    if (batch.selected == null || batch.selected.length < selected.length) {
+      batch.selected = new int[selected.length];
+    }
+    System.arraycopy(selected, 0, batch.selected, 0, size);
+    batch.selectedInUse = size < batchSize;
+    return size;
   }
 
   private void checkEndOfRowGroup() throws IOException {
@@ -549,7 +654,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
         return new VectorizedPrimitiveColumnReader(descriptors.get(0),
             pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone, skipProlepticConversion,
-            legacyConversionEnabled, type, typeInfo);
+            legacyConversionEnabled, type, typeInfo, plainFilterEnabled);
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
       List<VectorizedColumnReader> fieldReaders = new ArrayList<>();
