@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.mapreduce;
 
+import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
@@ -67,18 +68,23 @@ public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, 
 
   private static Schema readSchema(Configuration conf, Table table, boolean caseSensitive) {
     Schema readSchema = InputFormatConfig.readSchema(conf);
+    String[] selectedColumns = InputFormatConfig.selectedColumns(conf);
+    Set<Integer> requiredSourceIds = requiredIdentityPartitionSourceIds(conf, table, selectedColumns);
 
     if (readSchema != null) {
-      return readSchema;
+      return IcebergTableUtil.includeIdentityPartitionSourceColumns(
+          readSchema, table.schema(), table.spec(), requiredSourceIds);
     }
 
-    String[] selectedColumns = InputFormatConfig.selectedColumns(conf);
     readSchema = table.schema();
 
     if (selectedColumns != null) {
       readSchema = caseSensitive ?
           readSchema.select(selectedColumns) : readSchema.caseInsensitiveSelect(selectedColumns);
     }
+
+    readSchema = IcebergTableUtil.includeIdentityPartitionSourceColumns(
+        readSchema, table.schema(), table.spec(), requiredSourceIds);
 
     if (InputFormatConfig.fetchVirtualColumns(conf)) {
       readSchema = IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns());
@@ -88,6 +94,20 @@ public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, 
     }
 
     return readSchema;
+  }
+
+  /**
+   * For explicit READ_SCHEMA (Iceberg InputFormat API / unit tests), only expand for columns
+   * referenced by the scan filter. For Hive execution (column names pushed via SELECTED_COLUMNS),
+   * include all identity partition source columns to match HiveIcebergSerDe.
+   */
+  private static Set<Integer> requiredIdentityPartitionSourceIds(Configuration conf, Table table,
+      String[] selectedColumns) {
+    if (InputFormatConfig.readSchema(conf) != null) {
+      return IcebergTableUtil.requiredIdentityPartitionSourceIds(
+          conf, table.schema(), table.spec(), selectedColumns);
+    }
+    return table.spec().identitySourceIds();
   }
 
   CloseableIterable<T> applyResidualFiltering(CloseableIterable<T> iter, Expression residual,

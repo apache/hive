@@ -22,9 +22,12 @@ package org.apache.iceberg.mr.hive.vector;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.LongStream;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
@@ -101,10 +104,18 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
         if (partitionColIndices != null) {
           for (int i = 0; i < partitionColIndices.length; ++i) {
             int colIdx = partitionColIndices[i];
-            // The partition column might not be part of the current projection - in which case no CV is inited
-            if (batch.cols[colIdx] != null) {
-              vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], partitionValues[i], partitionColIndices[i]);
+            ColumnVector partitionColVector = batch.cols[colIdx];
+            // The partition column might not be part of the current projection - allocate a CV and inject constants.
+            if (partitionColVector == null) {
+              DataTypePhysicalVariation[] variations = vrbCtx.getRowdataTypePhysicalVariations();
+              DataTypePhysicalVariation variation = variations != null ?
+                  variations[colIdx] : DataTypePhysicalVariation.NONE;
+              partitionColVector = VectorizedBatchUtil.createColumnVector(
+                  vrbCtx.getRowColumnTypeInfos()[colIdx], variation);
+              partitionColVector.init();
+              batch.cols[colIdx] = partitionColVector;
             }
+            vrbCtx.addPartitionColsToBatch(partitionColVector, partitionValues[i], colIdx);
           }
         }
         // Fill virtual columns

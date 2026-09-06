@@ -93,11 +93,14 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     // executor, but serDeProperties are populated by HiveIcebergStorageHandler.configureInputJobProperties() and
     // the resulting properties are serialized and distributed to the executors
 
+    PartitionSpec partitionSpec = PartitionSpec.unpartitioned();
+
     if (serDeProperties.get(InputFormatConfig.TABLE_SCHEMA) != null) {
       this.tableSchema = SchemaParser.fromJson(serDeProperties.getProperty(InputFormatConfig.TABLE_SCHEMA));
       if (serDeProperties.get(InputFormatConfig.PARTITION_SPEC) != null) {
         PartitionSpec spec =
             PartitionSpecParser.fromJson(tableSchema, serDeProperties.getProperty(InputFormatConfig.PARTITION_SPEC));
+        partitionSpec = spec;
         this.partitionColumns = spec.fields().stream().map(PartitionField::name).collect(Collectors.toList());
       } else {
         this.partitionColumns = ImmutableList.of();
@@ -107,6 +110,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         Table table = IcebergTableUtil.getTable(conf, serDeProperties);
         // always prefer the original table schema if there is one
         this.tableSchema = table.schema();
+        partitionSpec = table.spec();
         this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
         LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));
       } catch (Exception e) {
@@ -119,6 +123,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
           try (FileIO fileIO = new HadoopFileIO(conf)) {
             TableMetadata metadata = TableMetadataParser.read(fileIO, serDeProperties.getProperty("metadata_location"));
             this.tableSchema = metadata.schema();
+            partitionSpec = metadata.spec();
             this.partitionColumns =
                 metadata.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
             // Validate no schema is provided via create command
@@ -140,7 +145,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     }
 
-    this.projectedSchema = projectedSchema(conf, serDeProperties, tableSchema, jobConf);
+    this.projectedSchema =
+        projectedSchema(conf, serDeProperties, tableSchema, partitionSpec, jobConf);
 
     if (!IcebergTableUtil.isFanoutEnabled(serDeProperties::getProperty)) {
       // ClusteredWriter requires that records are ordered by partition keys.
@@ -156,7 +162,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   }
 
   private static Schema projectedSchema(Configuration conf, Properties serDeProperties,
-      Schema tableSchema, Map<String, String> jobConf) {
+      Schema tableSchema, PartitionSpec partitionSpec, Map<String, String> jobConf) {
     String tableName = serDeProperties.getProperty(Catalogs.NAME);
     Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(conf::get, tableName);
 
@@ -176,7 +182,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
             MetadataColumns.schemaWithRowLineage(tableSchema) :
             tableSchema;
       } else {
-        return projectedSchema;
+        return IcebergTableUtil.includeIdentityPartitionSourceColumns(
+            projectedSchema, tableSchema, partitionSpec, partitionSpec.identitySourceIds());
       }
     }
     boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, conf::get);
