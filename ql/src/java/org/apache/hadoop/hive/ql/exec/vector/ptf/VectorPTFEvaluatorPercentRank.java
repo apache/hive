@@ -56,8 +56,7 @@ public class VectorPTFEvaluatorPercentRank extends VectorPTFEvaluatorBase {
 
   @Override
   public void addStreamingGroupResults(List<Integer> groupRowCounts) {
-    // Rank is advanced during batch forward; partition size alone is needed up
-    // front.
+    // No-op: percent_rank only needs the partition size and the current rank.
   }
 
   @Override

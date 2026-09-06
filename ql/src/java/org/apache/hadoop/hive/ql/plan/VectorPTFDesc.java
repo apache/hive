@@ -137,10 +137,13 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     supportedFunctionNames.addAll(treeSet);
   }
 
-  // functions that don't care about input columns.
-  public static final Set<SupportedFunctionType> COLUMN_AGNOSTIC_FUNCTIONS = 
-    EnumSet.of(SupportedFunctionType.RANK, SupportedFunctionType.DENSE_RANK,
-      SupportedFunctionType.PERCENT_RANK, SupportedFunctionType.CUME_DIST);
+  // Functions that do not depend on input columns.
+  public static final Set<SupportedFunctionType> COLUMN_AGNOSTIC_FUNCTIONS =
+      EnumSet.of(
+          SupportedFunctionType.RANK,
+          SupportedFunctionType.DENSE_RANK,
+          SupportedFunctionType.PERCENT_RANK,
+          SupportedFunctionType.CUME_DIST);
 
   private TypeInfo[] reducerBatchTypeInfos;
   private DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations;
