@@ -1,0 +1,559 @@
+PREHOOK: query: create table stats_t1(
+  c_double double,
+  c_float float,
+  c_str string)
+partitioned by (p int)
+STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_t1
+POSTHOOK: query: create table stats_t1(
+  c_double double,
+  c_float float,
+  c_str string)
+partitioned by (p int)
+STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_t1
+PREHOOK: query: insert into table stats_t1 partition(p=1) values
+  (cast('Infinity' as double), cast('Infinity' as float), 'row1'),
+  (cast('-Infinity' as double), cast('-Infinity' as float), 'row2'),
+  (cast('NAN' as double), cast('NaN' as float), 'row3'),
+  (cast(1234 as double), 123.456, 'row4')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_t1@p=1
+POSTHOOK: query: insert into table stats_t1 partition(p=1) values
+  (cast('Infinity' as double), cast('Infinity' as float), 'row1'),
+  (cast('-Infinity' as double), cast('-Infinity' as float), 'row2'),
+  (cast('NAN' as double), cast('NaN' as float), 'row3'),
+  (cast(1234 as double), 123.456, 'row4')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_t1@p=1
+POSTHOOK: Lineage: stats_t1 PARTITION(p=1).c_double SCRIPT []
+POSTHOOK: Lineage: stats_t1 PARTITION(p=1).c_float SCRIPT []
+POSTHOOK: Lineage: stats_t1 PARTITION(p=1).c_str SCRIPT []
+PREHOOK: query: describe formatted stats_t1 partition(p=1) c_double
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t1
+POSTHOOK: query: describe formatted stats_t1 partition(p=1) c_double
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t1
+col_name            	c_double            
+data_type           	double              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+PREHOOK: query: describe formatted stats_t1 partition(p=1) c_float
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t1
+POSTHOOK: query: describe formatted stats_t1 partition(p=1) c_float
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t1
+col_name            	c_float             
+data_type           	float               
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+PREHOOK: query: describe formatted stats_t1 partition(p=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t1
+POSTHOOK: query: describe formatted stats_t1 partition(p=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t1
+# col_name            	data_type           	comment             
+c_double            	double              	                    
+c_float             	float               	                    
+c_str               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	stats_t1            	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_str\":\"true\"}}
+	numFiles            	1                   
+	numRows             	4                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: create table stats_t2(
+  c_double double,
+  c_float float,
+  c_str string)
+stored as ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_t2
+POSTHOOK: query: create table stats_t2(
+  c_double double,
+  c_float float,
+  c_str string)
+stored as ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_t2
+PREHOOK: query: insert into table stats_t2 values
+  (cast('Infinity' as double), cast('Infinity' as float), 'row1'),
+  (cast('-Infinity' as double), cast('-Infinity' as float), 'row2'),
+  (cast('NAN' as double), cast('NaN' as float), 'row3'),
+  (cast(1234 as double), 123.456, 'row4')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_t2
+POSTHOOK: query: insert into table stats_t2 values
+  (cast('Infinity' as double), cast('Infinity' as float), 'row1'),
+  (cast('-Infinity' as double), cast('-Infinity' as float), 'row2'),
+  (cast('NAN' as double), cast('NaN' as float), 'row3'),
+  (cast(1234 as double), 123.456, 'row4')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_t2
+POSTHOOK: Lineage: stats_t2.c_double SCRIPT []
+POSTHOOK: Lineage: stats_t2.c_float SCRIPT []
+POSTHOOK: Lineage: stats_t2.c_str SCRIPT []
+PREHOOK: query: analyze table stats_t2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@stats_t2
+PREHOOK: Output: default@stats_t2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table stats_t2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@stats_t2
+POSTHOOK: Output: default@stats_t2
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted stats_t2  c_double
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t2
+POSTHOOK: query: describe formatted stats_t2  c_double
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t2
+col_name            	c_double            
+data_type           	double              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_str\":\"true\"}}
+PREHOOK: query: describe formatted stats_t2 c_float
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t2
+POSTHOOK: query: describe formatted stats_t2 c_float
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t2
+col_name            	c_float             
+data_type           	float               
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_str\":\"true\"}}
+PREHOOK: query: describe formatted stats_t2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t2
+POSTHOOK: query: describe formatted stats_t2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t2
+# col_name            	data_type           	comment             
+c_double            	double              	                    
+c_float             	float               	                    
+c_str               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_str\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	4                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: create table stats_t3(
+  a double,
+  b float)
+partitioned by (p int)
+stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_t3
+POSTHOOK: query: create table stats_t3(
+  a double,
+  b float)
+partitioned by (p int)
+stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_t3
+PREHOOK: query: insert into table stats_t3 partition(p=1) values
+  (cast('Infinity' as double), cast('Infinity' as float)),
+  (cast('-Infinity' as double), cast('-Infinity' as float)),
+  (cast('NaN' as double), cast('NaN' as float))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_t3@p=1
+POSTHOOK: query: insert into table stats_t3 partition(p=1) values
+  (cast('Infinity' as double), cast('Infinity' as float)),
+  (cast('-Infinity' as double), cast('-Infinity' as float)),
+  (cast('NaN' as double), cast('NaN' as float))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_t3@p=1
+POSTHOOK: Lineage: stats_t3 PARTITION(p=1).a SCRIPT []
+POSTHOOK: Lineage: stats_t3 PARTITION(p=1).b SCRIPT []
+PREHOOK: query: describe formatted stats_t3 partition(p=1) a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t3
+POSTHOOK: query: describe formatted stats_t3 partition(p=1) a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t3
+col_name            	a                   
+data_type           	double              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+PREHOOK: query: describe formatted stats_t3 partition(p=1) b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t3
+POSTHOOK: query: describe formatted stats_t3 partition(p=1) b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t3
+col_name            	b                   
+data_type           	float               
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+PREHOOK: query: describe formatted stats_t3 partition(p=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t3
+POSTHOOK: query: describe formatted stats_t3 partition(p=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t3
+# col_name            	data_type           	comment             
+a                   	double              	                    
+b                   	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	stats_t3            	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	36                  
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table stats_t4(
+  a double,
+  b float)
+partitioned by (p int)
+stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_t4
+POSTHOOK: query: create table stats_t4(
+  a double,
+  b float)
+partitioned by (p int)
+stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_t4
+PREHOOK: query: insert into table stats_t4 partition(p=1) values
+  (cast('Infinity' as double), 3.14),
+  (cast('-Infinity' as double), 2.72),
+  (cast('NaN' as double), 1.618)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_t4@p=1
+POSTHOOK: query: insert into table stats_t4 partition(p=1) values
+  (cast('Infinity' as double), 3.14),
+  (cast('-Infinity' as double), 2.72),
+  (cast('NaN' as double), 1.618)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_t4@p=1
+POSTHOOK: Lineage: stats_t4 PARTITION(p=1).a SCRIPT []
+POSTHOOK: Lineage: stats_t4 PARTITION(p=1).b SCRIPT []
+PREHOOK: query: insert into table stats_t4 partition(p=2) values
+  (42.0, cast('Infinity' as float)),
+  (17.3, cast('-Infinity' as float)),
+  (5.4, cast('NaN' as float))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_t4@p=2
+POSTHOOK: query: insert into table stats_t4 partition(p=2) values
+  (42.0, cast('Infinity' as float)),
+  (17.3, cast('-Infinity' as float)),
+  (5.4, cast('NaN' as float))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_t4@p=2
+POSTHOOK: Lineage: stats_t4 PARTITION(p=2).a SCRIPT []
+POSTHOOK: Lineage: stats_t4 PARTITION(p=2).b SCRIPT []
+PREHOOK: query: insert into table stats_t4 partition(p=3) values
+  (cast('Infinity' as double), cast('-Infinity' as float)),
+  (cast('-Infinity' as double), cast('Infinity' as float)),
+  (cast('NaN' as double), cast('NaN' as float))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_t4@p=3
+POSTHOOK: query: insert into table stats_t4 partition(p=3) values
+  (cast('Infinity' as double), cast('-Infinity' as float)),
+  (cast('-Infinity' as double), cast('Infinity' as float)),
+  (cast('NaN' as double), cast('NaN' as float))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_t4@p=3
+POSTHOOK: Lineage: stats_t4 PARTITION(p=3).a SCRIPT []
+POSTHOOK: Lineage: stats_t4 PARTITION(p=3).b SCRIPT []
+PREHOOK: query: insert into table stats_t4 partition(p=4) values
+  (1.0, 2.0),
+  (3.0, 4.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_t4@p=4
+POSTHOOK: query: insert into table stats_t4 partition(p=4) values
+  (1.0, 2.0),
+  (3.0, 4.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_t4@p=4
+POSTHOOK: Lineage: stats_t4 PARTITION(p=4).a SCRIPT []
+POSTHOOK: Lineage: stats_t4 PARTITION(p=4).b SCRIPT []
+PREHOOK: query: describe formatted stats_t4 partition(p=1)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t4
+POSTHOOK: query: describe formatted stats_t4 partition(p=1)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t4
+# col_name            	data_type           	comment             
+a                   	double              	                    
+b                   	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[1]                 	 
+Database:           	default             	 
+Table:              	stats_t4            	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\"}}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	36                  
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted stats_t4 partition(p=2)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t4
+POSTHOOK: query: describe formatted stats_t4 partition(p=2)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t4
+# col_name            	data_type           	comment             
+a                   	double              	                    
+b                   	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2]                 	 
+Database:           	default             	 
+Table:              	stats_t4            	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	36                  
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted stats_t4 partition(p=3)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t4
+POSTHOOK: query: describe formatted stats_t4 partition(p=3)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t4
+# col_name            	data_type           	comment             
+a                   	double              	                    
+b                   	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[3]                 	 
+Database:           	default             	 
+Table:              	stats_t4            	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	36                  
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted stats_t4 partition(p=4)
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_t4
+POSTHOOK: query: describe formatted stats_t4 partition(p=4)
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_t4
+# col_name            	data_type           	comment             
+a                   	double              	                    
+b                   	float               	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[4]                 	 
+Database:           	default             	 
+Table:              	stats_t4            	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	24                  
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
