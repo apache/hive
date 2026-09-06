@@ -73,6 +73,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
    */
   private final boolean plainFilterEnabled;
 
+  @SuppressWarnings("java:S107") // Mirrors BaseVectorizedColumnReader's 8-arg ctor + probe-decode toggle
   public VectorizedPrimitiveColumnReader(
       ColumnDescriptor descriptor,
       PageReader pageReader,
@@ -568,26 +569,30 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
-      if (definitionLevel >= maxDefLevel) {
-        if (isFilteredOutPlain(rowId)) {
-          dataColumn.skip();
-          setNullValue(c, rowId);
-        } else {
-          c.vector[rowId] = skipProlepticConversion ?
-              dataColumn.readLong() : CalendarUtils.convertDateToProleptic((int) dataColumn.readLong());
-          if (dataColumn.isValid()) {
-            c.isNull[rowId] = false;
-            c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-          } else {
-            c.vector[rowId] = 0;
-            setNullValue(c, rowId);
-          }
-        }
-      } else {
-        setNullValue(c, rowId);
-      }
+      readDateValue(c, rowId);
       rowId++;
       left--;
+    }
+  }
+
+  private void readDateValue(DateColumnVector c, int rowId) {
+    if (definitionLevel < maxDefLevel) {
+      setNullValue(c, rowId);
+      return;
+    }
+    if (isFilteredOutPlain(rowId)) {
+      dataColumn.skip();
+      setNullValue(c, rowId);
+      return;
+    }
+    c.vector[rowId] = skipProlepticConversion ?
+        dataColumn.readLong() : CalendarUtils.convertDateToProleptic((int) dataColumn.readLong());
+    if (dataColumn.isValid()) {
+      c.isNull[rowId] = false;
+      c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+    } else {
+      c.vector[rowId] = 0;
+      setNullValue(c, rowId);
     }
   }
 

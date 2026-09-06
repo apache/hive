@@ -67,16 +67,14 @@ public final class ParquetProbeLongHashTable implements ParquetProbeHashTable {
   private final VectorMapJoinHashSetResult setResult;
 
   public static ParquetProbeLongHashTable of(VectorMapJoinHashTable ht) {
-    if (ht instanceof VectorMapJoinLongHashMap) {
-      return new ParquetProbeLongHashTable(Kind.MAP, (VectorMapJoinLongHashTable) ht);
-    }
-    if (ht instanceof VectorMapJoinLongHashMultiSet) {
-      return new ParquetProbeLongHashTable(Kind.MULTISET, (VectorMapJoinLongHashTable) ht);
-    }
-    if (ht instanceof VectorMapJoinLongHashSet) {
-      return new ParquetProbeLongHashTable(Kind.SET, (VectorMapJoinLongHashTable) ht);
-    }
-    throw new IllegalArgumentException("Not a long-key hash table: " + ht.getClass().getName());
+    Kind kind = switch (ht) {
+      case VectorMapJoinLongHashMap m -> Kind.MAP;
+      case VectorMapJoinLongHashMultiSet ms -> Kind.MULTISET;
+      case VectorMapJoinLongHashSet s -> Kind.SET;
+      default -> throw new IllegalArgumentException(
+          "Not a long-key hash table: " + ht.getClass().getName());
+    };
+    return new ParquetProbeLongHashTable(kind, (VectorMapJoinLongHashTable) ht);
   }
 
   private ParquetProbeLongHashTable(Kind kind, VectorMapJoinLongHashTable longHT) {
@@ -130,14 +128,16 @@ public final class ParquetProbeLongHashTable implements ParquetProbeHashTable {
     }
 
     for (int i = 0; i < batchSize; i++) {
-      if (!v.noNulls && v.isNull[i]) {
-        continue; // NULL keys never match
+      // Skip NULL keys (never match Hive's join semantics) and keys the small-table min/max
+      // window excludes -- both are cheap short-circuits that avoid a hash-table touch.
+      boolean nullKey = !v.noNulls && v.isNull[i];
+      if (!nullKey) {
+        long key = v.vector[i];
+        boolean outOfRange = useMinMax && (key < min || key > max);
+        if (!outOfRange) {
+          bitmap[i] = probeOne(key);
+        }
       }
-      long key = v.vector[i];
-      if (useMinMax && (key < min || key > max)) {
-        continue; // small-table min/max exclusion -- pure arithmetic, no hash-table touch
-      }
-      bitmap[i] = probeOne(key);
     }
     return ParquetProbeFilter.newBitmap(bitmap);
   }

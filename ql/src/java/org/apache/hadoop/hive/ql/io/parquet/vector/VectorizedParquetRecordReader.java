@@ -451,60 +451,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
 
     int num = (int) Math.min(VectorizedRowBatch.DEFAULT_SIZE, totalCountLoadedSoFar - rowsReturned);
     if (!colsToInclude.isEmpty()) {
-      ParquetProbeFilter probeFilter;
-      int probeReaderIdx = -1;
-      if (probeState.isEnabled()) {
-        // Find which reader index corresponds to the probe key column. columnReaders[i] renders
-        // into columnarBatch.cols[colsToInclude.get(i)], so we match on the projected slot.
-        int keyColSlot = probeState.getKeyColumnIndex();
-        for (int i = 0; i < columnReaders.length; ++i) {
-          if (columnReaders[i] != null && colsToInclude.get(i) == keyColSlot) {
-            probeReaderIdx = i;
-            break;
-          }
-        }
-      }
-
+      int probeReaderIdx = findProbeReaderIdx();
       if (probeReaderIdx >= 0) {
-        // Probe-decode path: decode the key column, run the hash-table probe to build a filter,
-        // then decode the remaining columns with the filter so unmatched rows skip decode /
-        // conversion work.
-        columnarBatch.cols[colsToInclude.get(probeReaderIdx)].isRepeating = true;
-        columnReaders[probeReaderIdx].readBatch(num, columnarBatch.cols[colsToInclude.get(probeReaderIdx)],
-            columnTypesList.get(colsToInclude.get(probeReaderIdx)));
-        try {
-          probeFilter = probeState.getProbe().probe(
-              columnarBatch.cols[colsToInclude.get(probeReaderIdx)], num);
-        } catch (IOException e) {
-          throw e;
-        } catch (Exception e) {
-          LOG.warn("ProbeDecode probe failed, falling back to unfiltered decode", e);
-          probeFilter = null;
-        }
-        for (int i = 0; i < columnReaders.length; ++i) {
-          if (i == probeReaderIdx || columnReaders[i] == null) {
-            continue;
-          }
-          columnarBatch.cols[colsToInclude.get(i)].isRepeating = true;
-          columnReaders[i].readBatch(num, columnarBatch.cols[colsToInclude.get(i)],
-              columnTypesList.get(colsToInclude.get(i)), probeFilter);
-        }
-        // Physical decode consumed `num` rows; filtered logical size becomes the batch size.
-        int filteredSize = applyProbeFilterToBatch(columnarBatch, probeFilter, num);
-        lastReturnedRowCount = num;
-        rowsReturned += num;
-        columnarBatch.size = filteredSize;
-        return true;
+        return readBatchWithProbeDecode(columnarBatch, num, probeReaderIdx);
       }
-      // else: fallthrough to the plain decode path below.
-      for (int i = 0; i < columnReaders.length; ++i) {
-        if (columnReaders[i] == null) {
-          continue;
-        }
-        columnarBatch.cols[colsToInclude.get(i)].isRepeating = true;
-        columnReaders[i].readBatch(num, columnarBatch.cols[colsToInclude.get(i)],
-            columnTypesList.get(colsToInclude.get(i)));
-      }
+      readBatchColumnsPlain(columnarBatch, num);
     }
     // Plain path: no probe filter, so no compacted selected[] to hand downstream.
     columnarBatch.selectedInUse = false;
@@ -512,6 +463,73 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     rowsReturned += num;
     columnarBatch.size = num;
     return true;
+  }
+
+  /**
+   * Locate the column reader that produces the probe key column, or {@code -1} when probe-decode
+   * is disabled / the key column isn't projected. {@code columnReaders[i]} renders into
+   * {@code columnarBatch.cols[colsToInclude.get(i)]}, so we match on the projected slot index.
+   */
+  private int findProbeReaderIdx() {
+    if (!probeState.isEnabled()) {
+      return -1;
+    }
+    int keyColSlot = probeState.getKeyColumnIndex();
+    for (int i = 0; i < columnReaders.length; ++i) {
+      if (columnReaders[i] != null && colsToInclude.get(i) == keyColSlot) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Probe-decode path: decode the key column, run the hash-table probe to build a filter, then
+   * decode the remaining columns with the filter so unmatched rows skip decode / conversion work.
+   */
+  private boolean readBatchWithProbeDecode(VectorizedRowBatch columnarBatch, int num,
+      int probeReaderIdx) throws IOException {
+    int keySlot = colsToInclude.get(probeReaderIdx);
+    columnarBatch.cols[keySlot].isRepeating = true;
+    columnReaders[probeReaderIdx].readBatch(num, columnarBatch.cols[keySlot],
+        columnTypesList.get(keySlot));
+
+    ParquetProbeFilter probeFilter;
+    try {
+      probeFilter = probeState.getProbe().probe(columnarBatch.cols[keySlot], num);
+    } catch (IOException e) {
+      throw e;
+    } catch (Exception e) {
+      LOG.warn("ProbeDecode probe failed, falling back to unfiltered decode", e);
+      probeFilter = null;
+    }
+    for (int i = 0; i < columnReaders.length; ++i) {
+      if (i == probeReaderIdx || columnReaders[i] == null) {
+        continue;
+      }
+      int slot = colsToInclude.get(i);
+      columnarBatch.cols[slot].isRepeating = true;
+      columnReaders[i].readBatch(num, columnarBatch.cols[slot], columnTypesList.get(slot),
+          probeFilter);
+    }
+    // Physical decode consumed `num` rows; filtered logical size becomes the batch size.
+    int filteredSize = applyProbeFilterToBatch(columnarBatch, probeFilter, num);
+    lastReturnedRowCount = num;
+    rowsReturned += num;
+    columnarBatch.size = filteredSize;
+    return true;
+  }
+
+  /** Plain decode of every projected column -- no probe filter. */
+  private void readBatchColumnsPlain(VectorizedRowBatch columnarBatch, int num) throws IOException {
+    for (int i = 0; i < columnReaders.length; ++i) {
+      if (columnReaders[i] == null) {
+        continue;
+      }
+      int slot = colsToInclude.get(i);
+      columnarBatch.cols[slot].isRepeating = true;
+      columnReaders[i].readBatch(num, columnarBatch.cols[slot], columnTypesList.get(slot));
+    }
   }
 
   /**

@@ -2669,12 +2669,13 @@ public class HiveConf extends Configuration {
 
     HIVE_OPTIMIZE_SCAN_PROBEDECODE_PARQUET_PLAIN_FILTER(
         "hive.optimize.scan.probedecode.parquet.plain.filter.enabled", true,
-        "When ProbeDecode is on, gates the per-row filter check applied to Parquet PLAIN-encoded pages. \n"
-            + "The check trades a small per-row overhead for skipping the value decode + null-set on filtered rows; \n"
-            + "at very selective join hit rates (~5-15%, common in TPC-DS) it wins by ~2-3%, at inclusive hit rates \n"
-            + "(>50%) it can regress the read path by 2-4%. The dictionary-encoded path is unaffected and always \n"
-            + "honours the filter via the bulk-skip fast-path. Disable this only on workloads where PLAIN-encoded \n"
-            + "fact columns dominate and hash-join hit rates are typically high; see HIVE-30019 for the crossover data."),
+        """
+            When ProbeDecode is on, gates the per-row filter check applied to Parquet PLAIN-encoded pages.
+            The check trades a small per-row overhead for skipping the value decode + null-set on filtered rows;
+            at very selective join hit rates (~5-15%, common in TPC-DS) it wins by ~2-3%, at inclusive hit rates
+            (>50%) it can regress the read path by 2-4%. The dictionary-encoded path is unaffected and always
+            honours the filter via the bulk-skip fast-path. Disable this only on workloads where PLAIN-encoded
+            fact columns dominate and hash-join hit rates are typically high; see HIVE-30019 for the crossover data."""),
 
     HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED("hive.optimize.metadata.query.cache.enabled", true,
         "This property enables caching metadata for repetitive requests on a per-query basis"),

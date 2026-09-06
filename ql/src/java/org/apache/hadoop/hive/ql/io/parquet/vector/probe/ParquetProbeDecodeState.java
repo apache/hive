@@ -125,8 +125,8 @@ public final class ParquetProbeDecodeState {
         return DISABLED;
       }
       VectorMapJoinHashTable ht;
-      if (container instanceof VectorMapJoinTableContainer) {
-        ht = ((VectorMapJoinTableContainer) container).vectorMapJoinHashTable();
+      if (container instanceof VectorMapJoinTableContainer vectorContainer) {
+        ht = vectorContainer.vectorMapJoinHashTable();
       } else {
         // Non-vectorized container -- probe-decode has no dictionary-of-keys to intersect with,
         // so bail out and let the plain decode path run.
@@ -140,8 +140,8 @@ public final class ParquetProbeDecodeState {
             keyCol, keyIdx, ht.getClass().getSimpleName());
         return new ParquetProbeDecodeState(keyIdx, ParquetProbeLongHashTable.of(ht));
       }
-      // TODO: bytes-key + multi-key variants when the corresponding ParquetProbeHashTable
-      // implementations land.
+      // Bytes-key and multi-key variants will plug in here once the corresponding
+      // ParquetProbeHashTable implementations land (see HIVE-30019 follow-ups).
       LOG.debug("ProbeDecode: no ParquetProbeHashTable for key type {}", ht.getClass().getName());
       return DISABLED;
     } catch (Exception e) {
@@ -157,10 +157,9 @@ public final class ParquetProbeDecodeState {
    * those working too.
    */
   private static MapJoinTableContainer unwrapContainer(Object cached, byte smallPos) {
-    if (cached instanceof Pair) {
-      Object left = ((Pair<?, ?>) cached).getLeft();
-      if (left instanceof MapJoinTableContainer[]) {
-        MapJoinTableContainer[] tables = (MapJoinTableContainer[]) left;
+    if (cached instanceof Pair<?, ?> pair) {
+      Object left = pair.getLeft();
+      if (left instanceof MapJoinTableContainer[] tables) {
         if (smallPos >= 0 && smallPos < tables.length && tables[smallPos] != null) {
           return tables[smallPos];
         }
@@ -173,8 +172,8 @@ public final class ParquetProbeDecodeState {
       }
       return null;
     }
-    if (cached instanceof MapJoinTableContainer) {
-      return (MapJoinTableContainer) cached;
+    if (cached instanceof MapJoinTableContainer mapJoinContainer) {
+      return mapJoinContainer;
     }
     return null;
   }

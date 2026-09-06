@@ -20,6 +20,7 @@
 package org.apache.hive.benchmark.vectorization.parquet;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.parquet.example.data.Group;
 import org.apache.parquet.example.data.simple.SimpleGroupFactory;
 import org.apache.parquet.hadoop.ParquetInputFormat;
@@ -136,7 +138,7 @@ public class VectorizedParquetReadBench {
           + "}");
 
   @Param({"dict", "plain"})
-  public String encoding;
+  String encoding;
 
   /**
    * Selectivity sweep. {@code none} = call the 3-arg readBatch (baseline / pre-patch shape);
@@ -148,7 +150,7 @@ public class VectorizedParquetReadBench {
    * "worst-case" note in the class javadoc).
    */
   @Param({"none", "10", "50", "90"})
-  public String filter;
+  String filter;
 
   /**
    * Toggles {@code hive.optimize.scan.probedecode.parquet.plain.filter.enabled}. When
@@ -162,7 +164,7 @@ public class VectorizedParquetReadBench {
    * the sweep matrix.
    */
   @Param({"on", "off"})
-  public String plainFilter;
+  String plainFilter;
 
   private File dataDir;
   private Path dataFile;
@@ -185,7 +187,9 @@ public class VectorizedParquetReadBench {
   private ParquetProbeFilter probeFilter;
 
   @Setup(Level.Trial)
-  public void setUp() throws Exception {
+  @SuppressWarnings("java:S5443") // JMH bench-only scratch dir, created and torn down per trial
+  public void setUp() throws IOException, InterruptedException,
+      org.apache.hadoop.hive.ql.metadata.HiveException {
     dataDir = Files.createTempDirectory("pd-read-").toFile();
     dataFile = new Path(new File(dataDir, "data.parquet").toURI());
 
@@ -255,7 +259,7 @@ public class VectorizedParquetReadBench {
     return ParquetProbeFilter.newBitmap(bits);
   }
 
-  private JobConf buildJobConf() throws Exception {
+  private JobConf buildJobConf() throws IOException, org.apache.hadoop.hive.ql.metadata.HiveException {
     Configuration conf = new Configuration();
     conf.set(IOConstants.COLUMNS, "int_col,long_col,dbl_col,str_col");
     conf.set(IOConstants.COLUMNS_TYPES, "int,bigint,double,string");
@@ -279,13 +283,13 @@ public class VectorizedParquetReadBench {
     Utilities.setMapWork(conf, mapWork);
 
     Job job = new Job(conf, "pd-read");
-    ParquetInputFormat.setInputPaths(job, dataFile);
+    FileInputFormat.setInputPaths(job, dataFile);
     return new JobConf(conf);
   }
 
-  private VectorizedParquetRecordReader openReader() throws Exception {
+  private VectorizedParquetRecordReader openReader() throws IOException, InterruptedException {
     Job job = new Job(jobConf, "pd-read-split");
-    ParquetInputFormat.setInputPaths(job, dataFile);
+    FileInputFormat.setInputPaths(job, dataFile);
     ParquetInputFormat<?> pif = new ParquetInputFormat<>(
         org.apache.parquet.hadoop.example.GroupReadSupport.class);
     org.apache.hadoop.mapreduce.InputSplit inputSplit = pif.getSplits(job).get(0);
@@ -294,8 +298,9 @@ public class VectorizedParquetReadBench {
     return new VectorizedParquetRecordReader(fs, jobConf);
   }
 
-  @SuppressWarnings("unchecked")
-  private VectorizedColumnReader[] primeReaders(VectorizedParquetRecordReader r) throws Exception {
+  @SuppressWarnings({"unchecked", "java:S3011"}) // Reflection into JMH-only bench harness; no API alternative
+  private VectorizedColumnReader[] primeReaders(VectorizedParquetRecordReader r)
+      throws ReflectiveOperationException {
     Method m = VectorizedParquetRecordReader.class.getDeclaredMethod("checkEndOfRowGroup");
     m.setAccessible(true);
     m.invoke(r);
@@ -316,13 +321,11 @@ public class VectorizedParquetReadBench {
   }
 
   @TearDown(Level.Trial)
-  public void tearDown() {
-    File f = new File(dataFile.toUri());
-    if (f.exists()) {
-      f.delete();
-    }
-    if (dataDir != null && dataDir.exists()) {
-      dataDir.delete();
+  public void tearDown() throws IOException {
+    java.nio.file.Path parquet = new File(dataFile.toUri()).toPath();
+    Files.deleteIfExists(parquet);
+    if (dataDir != null) {
+      Files.deleteIfExists(dataDir.toPath());
     }
   }
 
@@ -339,7 +342,7 @@ public class VectorizedParquetReadBench {
    * the isFilteredOut / skip fast-path signal is not diluted by setup.
    */
   @Benchmark
-  public void readBatch(Blackhole bh) throws Exception {
+  public void readBatch(Blackhole bh) throws IOException, InterruptedException, ReflectiveOperationException {
     try (VectorizedParquetRecordReader r = openReader()) {
       VectorizedColumnReader[] readers = primeReaders(r);
       int n = VectorizedRowBatch.DEFAULT_SIZE;
@@ -376,7 +379,7 @@ public class VectorizedParquetReadBench {
     bh.consume(strVec.isNull);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws org.openjdk.jmh.runner.RunnerException {
     Options opt = new OptionsBuilder()
         .include(VectorizedParquetReadBench.class.getSimpleName())
         .build();

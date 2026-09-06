@@ -59,10 +59,10 @@ public interface VectorizedColumnReader {
    * @param probeFilter selected-row bitmap for this batch, or {@code null} to decode every row
    */
   default void readBatch(
-    int total,
-    ColumnVector column,
-    TypeInfo columnType,
-    ParquetProbeFilter probeFilter) throws IOException {
+      int total,
+      ColumnVector column,
+      TypeInfo columnType,
+      ParquetProbeFilter probeFilter) throws IOException {
     readBatch(total, column, columnType);
   }
 

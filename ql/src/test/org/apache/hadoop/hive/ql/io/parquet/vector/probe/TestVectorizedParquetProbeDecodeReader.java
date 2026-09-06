@@ -175,10 +175,21 @@ public class TestVectorizedParquetProbeDecodeReader extends VectorizedColumnRead
    * Expected value at row {@code i} for the given column and encoding, matching what
    * {@link #writeFile} wrote.
    */
-  private static long expectedInt(int i, boolean dict)  { return dict ? (i % 4) : i; }
-  private static long expectedLong(int i, boolean dict) { return dict ? (i % 4) : (long) i; }
-  private static double expectedDbl(int i, boolean dict) { return dict ? (i % 4) : (double) i; }
-  private static String expectedStr(int i, boolean dict) { return dict ? ("v" + (i % 4)) : ("v" + i); }
+  private static long expectedInt(int i, boolean dict) {
+    return dict ? (i % 4) : i;
+  }
+
+  private static long expectedLong(int i, boolean dict) {
+    return dict ? (i % 4) : (long) i;
+  }
+
+  private static double expectedDbl(int i, boolean dict) {
+    return dict ? (i % 4) : (double) i;
+  }
+
+  private static String expectedStr(int i, boolean dict) {
+    return dict ? ("v" + (i % 4)) : ("v" + i);
+  }
 
   private void runFilterHonoringTest(boolean dictionary) throws Exception {
     writeFile(dictionary);
@@ -196,7 +207,7 @@ public class TestVectorizedParquetProbeDecodeReader extends VectorizedColumnRead
       LongColumnVector longVec = new LongColumnVector(batchSize);
       DoubleColumnVector dblVec = new DoubleColumnVector(batchSize);
       BytesColumnVector strVec = new BytesColumnVector(batchSize);
-      for (ColumnVector v : new ColumnVector[] { intVec, longVec, dblVec, strVec }) {
+      for (ColumnVector v : new ColumnVector[] {intVec, longVec, dblVec, strVec}) {
         v.init();
       }
       // Vectors start with noNulls=true; every column reader clears that when it hits a
@@ -271,8 +282,6 @@ public class TestVectorizedParquetProbeDecodeReader extends VectorizedColumnRead
       ParquetProbeFilter allPass = ParquetProbeFilter.newBitmap(allTrue);
 
       TypeInfo intType = TypeInfoFactory.getPrimitiveTypeInfo("int");
-      TypeInfo longType = TypeInfoFactory.getPrimitiveTypeInfo("bigint");
-      TypeInfo dblType = TypeInfoFactory.getPrimitiveTypeInfo("double");
       TypeInfo strType = TypeInfoFactory.getPrimitiveTypeInfo("string");
 
       LongColumnVector baseInt = new LongColumnVector(batchSize);

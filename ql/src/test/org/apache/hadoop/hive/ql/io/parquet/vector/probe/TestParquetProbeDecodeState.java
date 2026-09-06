@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -182,7 +183,7 @@ public class TestParquetProbeDecodeState {
 
   private static MapWork mapWorkWith(MapJoinOperator mj) {
     MapWork mapWork = new MapWork();
-    LinkedHashMap<String, Operator<? extends OperatorDesc>> aliasToWork = new LinkedHashMap<>();
+    Map<String, Operator<? extends OperatorDesc>> aliasToWork = new LinkedHashMap<>();
     // OperatorUtils#findOperators walks child operators from each entry in aliasToWork, and also
     // checks the entry itself -- putting the MapJoinOperator directly in the map is enough for
     // the resolver, and avoids the full TS → RS → MJ chain a real plan would carry.
