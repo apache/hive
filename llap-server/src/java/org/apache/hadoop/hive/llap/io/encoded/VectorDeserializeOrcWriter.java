@@ -112,12 +112,13 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
      * when LazySerDeParameters.setFieldDelimMulti has been called below —
      * otherwise the specialized single-byte hot loop runs unchanged.
      */
-    final boolean isTextInput = sourceIf instanceof TextInputFormat;
-    final boolean isLazySimple = serDe instanceof LazySimpleSerDe;
+    final boolean vectorSerdeEnabled =
+        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED)
+            && HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED);
     final boolean isMultiDelim = serDe instanceof MultiDelimitSerDe;
-    if (!HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED)
-        || !HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED)
-        || !isTextInput || !(isLazySimple || isMultiDelim)) {
+    if (!vectorSerdeEnabled
+        || !(sourceIf instanceof TextInputFormat)
+        || (!(serDe instanceof LazySimpleSerDe) && !isMultiDelim)) {
       return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
     }
     Path path = splitPath.getFileSystem(jobConf).makeQualified(splitPath);

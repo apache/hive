@@ -462,16 +462,14 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   }
 
   /**
-   * Bytes at {@code buf[off..off+dlen)} equal to {@code delim[0..dlen)}?
-   *
-   * Caller has already checked {@code buf[off] == delim[0]}, so we start at
-   * index 1 — this is only ever invoked when the first byte matched, which
-   * keeps the multi-byte hot loop from paying for a tail compare on every
-   * mismatching input byte.
+   * True if {@code bytes[off..off+delim.length)} equals the top-level field
+   * delimiter. Callers have already verified the first byte matches, so this
+   * only compares the tail — the mismatching-byte case in the multi-byte hot
+   * loop still costs a single load+compare.
    */
-  private static boolean matchesAt(byte[] buf, int off, byte[] delim, int dlen) {
+  private static boolean delimiterTailMatchesAt(byte[] bytes, int off, byte[] delim, int dlen) {
     for (int i = 1; i < dlen; i++) {
-      if (buf[off + i] != delim[i]) {
+      if (bytes[off + i] != delim[i]) {
         return false;
       }
     }
@@ -498,14 +496,12 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
    * row, which we can't afford here.
    */
   private void topLevelParse() {
-    if (!isEscaped) {
-      if (fieldDelimMulti == null) {
-        parseSingleByteNoEscape();
-      } else {
-        parseMultiByteNoEscape();
-      }
+    if (isEscaped) {
+      parseTopLevelSingleByteWithEscape();
+    } else if (fieldDelimMulti != null) {
+      parseTopLevelMultiByteNoEscape();
     } else {
-      parseSingleByteWithEscape();
+      parseTopLevelSingleByteNoEscape();
     }
 
     final int fieldId = parsedFieldCount;
@@ -529,8 +525,8 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   }
 
   /*
-   * Parse-stop cursor written by the three parseXxx helpers and consumed by
-   * topLevelParse() for its sentinel/EOF handling. Using fields instead of a
+   * Parse-stop cursor written by the three parseTopLevelXxx helpers and consumed
+   * by topLevelParse() for its sentinel/EOF handling. Using fields instead of a
    * multi-value return avoids per-row allocation on the hot path.
    */
   private int parsedFieldCount;
@@ -540,12 +536,8 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
    * Single-byte top-level FIELD_DELIM, no escape — the hot path on every row
    * of a LazySimple table.
    */
-  private void parseSingleByteNoEscape() {
-    final byte separator = this.separators[0];
-    final int fieldCount = this.fieldCount;
-    final int[] startPositions = this.startPositions;
-    final byte[] bytes = this.bytes;
-    final int end = this.end;
+  private void parseTopLevelSingleByteNoEscape() {
+    final byte separator = separators[0];
 
     int fieldId = 0;
     int fieldByteBegin = start;
@@ -575,12 +567,8 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
    * the mismatching-byte case still costs a single load+compare — the tail
    * memcmp only fires on a first-byte hit.
    */
-  private void parseMultiByteNoEscape() {
-    final int fieldCount = this.fieldCount;
-    final int[] startPositions = this.startPositions;
-    final byte[] bytes = this.bytes;
-    final int end = this.end;
-    final byte[] delim = this.fieldDelimMulti;
+  private void parseTopLevelMultiByteNoEscape() {
+    final byte[] delim = fieldDelimMulti;
     final int dlen = delim.length;
     final byte first = delim[0];
     final int scanEnd = end - dlen;   // last index at which a full delim can start
@@ -589,7 +577,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     int fieldByteBegin = start;
     int fieldByteEnd = start;
     while (fieldByteEnd <= scanEnd) {
-      if (bytes[fieldByteEnd] == first && matchesAt(bytes, fieldByteEnd, delim, dlen)) {
+      if (bytes[fieldByteEnd] == first && delimiterTailMatchesAt(bytes, fieldByteEnd, delim, dlen)) {
         startPositions[fieldId++] = fieldByteBegin;
         if (fieldId == fieldCount) {
           // Malformed row with more delims than expected: leave fieldByteEnd
@@ -623,14 +611,8 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
    * "swallows" whatever byte follows it (including a delim byte), so we
    * track how many escapes each field contains for the copy-out path.
    */
-  private void parseSingleByteWithEscape() {
-    final byte separator = this.separators[0];
-    final byte escapeChar = this.escapeChar;
-    final int fieldCount = this.fieldCount;
-    final int[] startPositions = this.startPositions;
-    final int[] escapeCounts = this.escapeCounts;
-    final byte[] bytes = this.bytes;
-    final int end = this.end;
+  private void parseTopLevelSingleByteWithEscape() {
+    final byte separator = separators[0];
     final int endLessOne = end - 1;
 
     int fieldId = 0;
@@ -658,23 +640,17 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         fieldByteEnd++;
       }
     }
-    finalizeSingleByteWithEscape(separator, endLessOne, fieldId, fieldByteBegin,
+    finalizeTopLevelSingleByteWithEscape(separator, endLessOne, fieldId, fieldByteBegin,
         fieldByteEnd, escapeCount);
   }
 
   /**
-   * Tail of {@link #parseSingleByteWithEscape()} — handles the last byte (which
-   * can't be escaped) plus the "end-of-row acts as a final separator" case, and
-   * commits the parsed cursor state.
+   * Tail of {@link #parseTopLevelSingleByteWithEscape()} — handles the last byte
+   * (which can't be escaped) plus the "end-of-row acts as a final separator"
+   * case, and commits the parsed cursor state.
    */
-  private void finalizeSingleByteWithEscape(byte separator, int endLessOne, int fieldId,
+  private void finalizeTopLevelSingleByteWithEscape(byte separator, int endLessOne, int fieldId,
       int fieldByteBegin, int fieldByteEnd, int escapeCount) {
-    final byte[] bytes = this.bytes;
-    final int end = this.end;
-    final int fieldCount = this.fieldCount;
-    final int[] startPositions = this.startPositions;
-    final int[] escapeCounts = this.escapeCounts;
-
     // Process the last byte if necessary.
     if (fieldByteEnd == endLessOne && fieldId < fieldCount) {
       if (bytes[fieldByteEnd] == separator) {
