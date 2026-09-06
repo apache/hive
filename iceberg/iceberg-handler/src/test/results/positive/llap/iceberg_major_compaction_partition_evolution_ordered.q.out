@@ -69,6 +69,46 @@ POSTHOOK: query: insert into ice_orc VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn81','ln81', 2, 20, 101)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn81','ln81', 2, 20, 101)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn82','ln82', 2, 20, 101)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn82','ln82', 2, 20, 101)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn83','ln83', 2, 20, 101)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn83','ln83', 2, 20, 101)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn84','ln84', 2, 20, 101)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn84','ln84', 2, 20, 101)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn85','ln85', 2, 20, 101)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn85','ln85', 2, 20, 101)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
 PREHOOK: query: insert into ice_orc VALUES 
 ('fn9', 'ln9',  3, 20, 101),
 ('fn10','ln10', 3, 20, 101),
@@ -109,6 +149,11 @@ fn5	ln5	2	20	101
 fn6	ln6	2	20	101
 fn7	ln7	2	20	101
 fn8	ln8	2	20	101
+fn81	ln81	2	20	101
+fn82	ln82	2	20	101
+fn83	ln83	2	20	101
+fn84	ln84	2	20	101
+fn85	ln85	2	20	101
 PREHOOK: query: select * from ice_orc where dept_id = 3 order by first_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
@@ -154,19 +199,19 @@ Table Parameters:
 	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"manifests-created\":\"1\",\"manifests-kept\":\"3\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"4\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"manifests-created\":\"1\",\"manifests-kept\":\"8\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"4\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"17\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"9\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
 #### A masked pattern was here ####
-	numFiles            	4                   
+	numFiles            	9                   
 	numPartitions       	3                   
-	numRows             	12                  
+	numRows             	17                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	4                   
+	snapshot-count      	9                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -253,6 +298,11 @@ POSTHOOK: query: select * from ice_orc where dept_id = 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
+fn85	ln85	2	20	101
+fn84	ln84	2	20	101
+fn83	ln83	2	20	101
+fn82	ln82	2	20	101
+fn81	ln81	2	20	101
 fn8	ln8	2	20	101
 fn7	ln7	2	20	101
 fn6	ln6	2	20	101
@@ -302,19 +352,19 @@ Table Parameters:
 	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"manifests-created\":\"3\",\"manifests-kept\":\"2\",\"manifests-replaced\":\"2\",\"added-data-files\":\"1\",\"deleted-data-files\":\"2\",\"added-records\":\"4\",\"deleted-records\":\"4\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"3\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"manifests-created\":\"8\",\"manifests-kept\":\"2\",\"manifests-replaced\":\"7\",\"added-data-files\":\"1\",\"deleted-data-files\":\"7\",\"added-records\":\"9\",\"deleted-records\":\"9\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"17\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"3\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
 #### A masked pattern was here ####
 	numFiles            	3                   
 	numPartitions       	3                   
-	numRows             	12                  
+	numRows             	17                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	5                   
+	snapshot-count      	10                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#

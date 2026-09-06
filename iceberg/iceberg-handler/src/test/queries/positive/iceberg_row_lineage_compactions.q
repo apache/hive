@@ -74,6 +74,8 @@ alter table part_tbl set tblproperties ('compactor.threshold.target.size'='8000'
 alter table part_tbl set partition spec(dept_id, id);
 
 insert into part_tbl values (5,'p5', 10);
+insert into part_tbl values (5,'p5', 10);
+insert into part_tbl values (6,'p6', 20);
 insert into part_tbl values (6,'p6', 20);
 
 SELECT *, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
