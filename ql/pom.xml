@@ -110,6 +110,11 @@
       <artifactId>commons-configuration</artifactId>
       <version>${commons-configuration.version}</version>
     </dependency>
+    <!-- Staged for a future migration off the unmaintained commons-configuration 1.x line.
+         Not wired into any call site yet: the only two consumers (AtlasRestClientBuilder and
+         TestAtlasDumpTask) feed org.apache.atlas.ApplicationProperties.set(Configuration), and
+         Atlas 2.4.0's API (pinned above) hardcodes commons-configuration 1.x's Configuration type.
+         Migrating those call sites needs an Atlas client upgrade first, which is out of scope here. -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-configuration2</artifactId>
