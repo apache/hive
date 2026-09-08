@@ -102,10 +102,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  filterExpr: (ROW__ID.writeid > 1L) (type: boolean)
+                  filterExpr: (ROW__ID.writeid <= 1L) is not true (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ROW__ID.writeid > 1L) (type: boolean)
+                    predicate: (ROW__ID.writeid <= 1L) is not true (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), b (type: varchar(256)), c (type: char(100)), d (type: int)
