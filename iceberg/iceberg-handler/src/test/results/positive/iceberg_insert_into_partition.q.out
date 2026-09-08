@@ -267,7 +267,7 @@ STAGE PLANS:
                 TableScan
                   alias: ice_parquet_int
                   filterExpr: (pcol = 2) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: strcol (type: string), intcol (type: int), 3 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -374,7 +374,7 @@ STAGE PLANS:
                 TableScan
                   alias: ice_parquet_int
                   filterExpr: (pcol = 2) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: strcol (type: string), intcol (type: int), 4 (type: int)
                     outputColumnNames: _col0, _col1, _col2
