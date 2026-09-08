@@ -54,7 +54,9 @@ public class PuffinStatisticsSummary extends IcebergSummaryRetriever {
       StatisticsFile statsFile = statsFiles.get(0);
       List<BlobMetadata> blobMetadatas = statsFile.blobMetadata();
       if (blobMetadatas != null) {
-        builder.add(PUFFIN_STATS_BLOB, blobMetadatas.stream().map(BlobMetadata::type)
+        // a type repeats once per blob - per column, or per partition - and a partition-level
+        // file also holds the aggregate under a second type, so the kinds are listed once each
+        builder.add(PUFFIN_STATS_BLOB, blobMetadatas.stream().map(BlobMetadata::type).distinct()
             .collect(Collectors.joining(",")));
       }
     }

@@ -68,9 +68,10 @@ public class ColumnStatsAutoGatherContext {
   private final List<FieldSchema> partitionColumns;
   private boolean isInsertInto;
   private Table tbl;
-  private List<TransformSpec> partTransformSpec;
   private Map<String, String> partSpec;
   private Context origCtx;
+
+  private boolean isTableLevel = true;
   
   public ColumnStatsAutoGatherContext(SemanticAnalyzer sa, HiveConf conf,
       Operator<? extends OperatorDesc> op, Table tbl, Map<String, String> partSpec,
@@ -124,18 +125,22 @@ public class ColumnStatsAutoGatherContext {
    */
   public void insertTableValuesAnalyzePipeline() throws SemanticException {
     // Instead of starting from analyze statement, we just generate the Select plan
-    boolean isPartitionStats = StatsUtils.isPartitionStats(tbl, conf);
-    if (isPartitionStats) {
+    // the table is not created yet, so only the CREATE statement says how it partitions its rows
+    List<TransformSpec> partTransformSpec = tbl.hasNonNativePartitionSupport() ?
+        TransformSpec.fromQueryState(conf) : null;
+
+    boolean isPartitionStats = partTransformSpec != null ?
+        StatsUtils.isPartitionStatsEnabled(tbl, conf) : StatsUtils.isPartitionStats(tbl, conf);
+
+    if (isPartitionStats && partTransformSpec == null) {
       partSpec = new HashMap<>();
       List<String> partKeys = Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys());
       partKeys.forEach(k -> partSpec.put(k, null));
-
-      if (tbl.hasNonNativePartitionSupport()) {
-        partTransformSpec = tbl.getStorageHandler().getPartitionTransformSpec(tbl);
-      }
     }
-    String command = ColumnStatsSemanticAnalyzer.genRewrittenQuery(
-        tbl, conf, partTransformSpec, partSpec, isPartitionStats);
+    isTableLevel = !isPartitionStats;
+
+    String command = ColumnStatsSemanticAnalyzer.genRewrittenQuery(tbl, conf,
+        partTransformSpec, partSpec, isPartitionStats);
     insertAnalyzePipeline(command, true);
   }
 
@@ -177,6 +182,9 @@ public class ColumnStatsAutoGatherContext {
     if (rewritten) {
       // Create the context object that is needed to store the column stats
       this.analyzeRewrite = ColumnStatsSemanticAnalyzer.genAnalyzeRewriteContext(conf, tbl);
+      // a table the CREATE has yet to make cannot be asked how it partitions its rows, so the
+      // scope the statement was written for is the one that holds
+      this.analyzeRewrite.setTblLvl(isTableLevel);
 
       // The analyze statement has already been rewritten, we just need to create the AST
       // and the corresponding semantic analyzer

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -66,6 +67,8 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
     } else {
       parts = context.getDb().getPartitionNames(tbl, desc.getLimit());
     }
+
+    parts = parts.stream().filter(name -> !DummyPartition.isVoid(name)).toList();
 
     // write the results in the file
     try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {

@@ -139,8 +139,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       this.followedColStats1 = followedColStats2;
       
       Table table = partish.getTable();
-      // table scope only: a partition-scoped ANALYZE is rejected at compile time for tables with
-      // non-native partitioning (ErrorMsg.ANALYZE_PARTITION_NON_NATIVE)
+      // a non-native table without native partition support reaches this task with partitions,
+      // which the handler's table-level statistics do not describe
       if (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()
           && partish.getPartition() == null) {
         this.providedBasicStats = table.getStorageHandler().computeBasicStatistics(table);
@@ -160,7 +160,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       // and then if it is not followed by column stats, we should clean
       // column stats
       // FIXME: move this to ColStat related part
-      if (!work.isExplicitAnalyze() && !followedColStats1) {
+      if (!work.isExplicitAnalyze() && !followedColStats1 && !rewritesWithoutChangingRows()) {
         StatsSetupConst.clearColumnStatsState(parameters);
       }
 
@@ -216,6 +216,15 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
 
       return p.getOutput();
+    }
+
+    /**
+     * Whether this write rewrites files without changing a row, as a compaction does: what it did
+     * not gather still describes the table. A compaction that is meant to refresh the statistics
+     * recomputes them, here or in the worker that ran it.
+     */
+    private boolean rewritesWithoutChangingRows() {
+      return SessionState.get() != null && SessionState.get().isCompaction();
     }
 
     public void collectFileStatus(Warehouse wh, HiveConf conf) throws MetaException, IOException {
@@ -315,7 +324,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         }
       }
 
-      List<Partition> partitions = getPartitionsList(db);
+      List<Partition> partitions = getPartitionsList(db, tbl);
 
       String tableFullName = table.getDbName() + "." + table.getTableName();
 
@@ -328,7 +337,10 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         if (res == null) {
           return 0;
         }
-        db.alterTable(tableFullName, res, environmentContext, true);
+        // the metastore keeps one set of counts, and they describe the table, not a branch
+        if (table.getSnapshotRef() == null) {
+          db.alterTable(tableFullName, res, environmentContext, true);
+        }
 
         TransactionalStatsProcessor transactionalStatsProcessor = new TransactionalStatsProcessor(db, p);
         transactionalStatsProcessor.process(statsAggregator);
@@ -509,9 +521,14 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
    * @return a list of partitions that need to update statistics.
    * @throws HiveException
    */
-  private List<Partition> getPartitionsList(Hive db) throws HiveException {
+  private List<Partition> getPartitionsList(Hive db, Table tbl) throws HiveException {
     if (work.getLoadFileDesc() != null) {
       return null; //we are in CTAS, so we know there are no partitions
+    }
+
+    // the handler keeps this table's partitions: return before the branches replace the task's table
+    if (tbl.hasNonNativePartitionSupport()) {
+      return null;
     }
 
     if (work.getTableSpecs() != null) {
@@ -519,7 +536,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       // ANALYZE command
       TableSpec tblSpec = work.getTableSpecs();
       table = tblSpec.tableHandle;
-      if (!table.isPartitioned() || table.hasNonNativePartitionSupport()) {
+      if (!table.isPartitioned()) {
         return null;
       }
       // get all partitions that match with the partition spec
@@ -529,7 +546,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       // INSERT OVERWRITE command
       LoadTableDesc tbd = work.getLoadTableDesc();
       table = db.getTable(tbd.getTable().getTableName());
-      if (!table.isPartitioned() || table.hasNonNativePartitionSupport()) {
+      if (!table.isPartitioned()) {
         return null;
       }
       DynamicPartitionCtx dpCtx = tbd.getDPCtx();

@@ -72,15 +72,18 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
 
 /**
  * HiveStorageHandler defines a pluggable interface for adding
@@ -328,13 +331,16 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Set column stats for non-native tables
+   * Persists the column statistics a gather computed. They are pulled batch by batch, so the whole
+   * of a large table's statistics is never held at once.
    * @param table table object
-   * @param colStats list of ColumnStatistics objects
-   * @return true if operation is successful                 
+   * @param colStats the computed statistics, one entry for the table or one per partition
+   * @return whether the stored statistics now describe the table
    */
-  default boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table, List<ColumnStatistics> colStats) {
-    return false;
+  default boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table table,
+      Iterator<ColumnStatistics> colStats) {
+    throw new UnsupportedOperationException(
+        this.getClass().getName() + " does not support column statistics");
   }
 
   /**
@@ -352,6 +358,17 @@ public interface HiveStorageHandler extends Configurable {
    * @return true if the storage handler can set the col statistics
    */
   default boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return false;
+  }
+
+  /**
+   * Check if the storage handler can set col statistics of the given granularity. A handler keeps
+   * them either per partition or for the table as a whole, and one that keeps any says which.
+   * @param table table object
+   * @param partitionLevel whether the statistics asked about are the per partition ones
+   * @return true if the storage handler can set col statistics of that granularity
+   */
+  default boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table table, boolean partitionLevel) {
     return false;
   }
 
@@ -604,8 +621,17 @@ public interface HiveStorageHandler extends Configurable {
     return null;
   }
 
-  default Map<Integer,List<TransformSpec>> getPartitionTransformSpecs(org.apache.hadoop.hive.ql.metadata.Table table) {
-    return null;
+  /**
+   * Returns a function naming the partition a row belongs to. Statistics join on this name, so a
+   * handler must derive it the way it derives the names of the partitions it writes. Deriving one
+   * may cost as much as writing a row, so the function is asked for once for all the rows an
+   * inspector reads, and is neither reentrant nor thread-safe.
+   * @param table the HMS table, must be non-null
+   * @param inspector the inspector of a row holding the columns the partitioning is derived from
+   */
+  default Function<Object, String> partitionNameResolver(
+      org.apache.hadoop.hive.ql.metadata.Table table, StructObjectInspector inspector) {
+    throw new UnsupportedOperationException(getClass().getName() + " does not name partitions");
   }
 
   /**
