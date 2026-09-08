@@ -1903,7 +1903,7 @@
             <!-- required by a few tests to find the derby jar -->
             <derby.version>${derby.version}</derby.version>
             <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
-            <!-- required by TestBeelineArgParsing to find the postgresql jar -->
+            <!-- required by tests to find the postgresql jar -->
             <postgres.version>${postgres.version}</postgres.version>
             <derby.system.durability>test</derby.system.durability>
             <hadoop.bin.path>${hadoop.bin.path}</hadoop.bin.path>
