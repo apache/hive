@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context.Operation;
@@ -160,7 +159,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       Schema tableSchema, Map<String, String> jobConf) {
     String tableName = serDeProperties.getProperty(Catalogs.NAME);
     Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(conf::get, tableName);
-    Operation statementOperation = HiveCustomStorageHandlerUtils.getStatementOperation(conf::get, tableName);
+    boolean isCopyOnWrite = HiveCustomStorageHandlerUtils.isCopyOnWrite(conf::get, tableName);
 
     if (operation == null) {
       jobConf.put(InputFormatConfig.CASE_SENSITIVE, "false");
@@ -181,12 +180,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         return projectedSchema;
       }
     }
-    // 'statementOperation' represents the operation determined during query compilation (e.g. MERGE)
-    // 'operation' represents the local execution branch (e.g. INSERT or DELETE)
-    // We must use the top-level statement to correctly resolve table properties (e.g. write.merge.mode)
-    Operation op = ObjectUtils.defaultIfNull(statementOperation, operation);
-    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(op, conf::get);
-    if (isCOW) {
+    if (isCopyOnWrite) {
       return getSchemaWithRowLineage(
           IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns(), false), conf);
     }

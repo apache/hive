@@ -73,7 +73,7 @@ public class WriterBuilder {
   private TaskAttemptID attemptID;
   private String queryId;
   private Operation operation;
-  private final Operation statementOperation;
+  private final boolean isCopyOnWrite;
 
   // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
   private static AtomicInteger operationNum = new AtomicInteger(0);
@@ -88,7 +88,7 @@ public class WriterBuilder {
     this.tableName = ops.apply(Catalogs.NAME);
     this.context = new Context(table.properties(), ops, tableName);
     this.operation = HiveCustomStorageHandlerUtils.getWriteOperation(ops, tableName);
-    this.statementOperation = HiveCustomStorageHandlerUtils.getStatementOperation(ops, tableName);
+    this.isCopyOnWrite = HiveCustomStorageHandlerUtils.isCopyOnWrite(ops, tableName);
     this.rewritableDeletes = () -> rewritableDeletes(ops);
   }
 
@@ -138,13 +138,7 @@ public class WriterBuilder {
         .build();
 
     HiveIcebergWriter writer;
-    // 'statementOperation' represents the operation determined during query compilation (e.g. MERGE)
-    // 'operation' represents the local execution branch (e.g. INSERT or DELETE)
-    // We must use the top-level statement to correctly resolve table properties (e.g. write.merge.mode)
-    Operation op = ObjectUtils.defaultIfNull(statementOperation, operation);
-    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(op, table.properties()::getOrDefault);
-
-    if (isCOW) {
+    if (isCopyOnWrite) {
       writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory, shouldAddRowLineageColumns,
           context);
     } else {

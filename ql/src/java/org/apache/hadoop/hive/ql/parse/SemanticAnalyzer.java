@@ -8661,7 +8661,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     fileSinkDesc.setWriteOperation(writeOperation);
-    fileSinkDesc.setStatementOperation(ctx.getOperation());
+    if (writeOperation != Context.Operation.OTHER
+        && dest_tab != null
+        && dest_tab.getStorageHandler() != null) {
+      boolean isCopyOnWrite =
+          dest_tab.getStorageHandler().shouldOverwrite(dest_tab, ctx.getOperation());
+      fileSinkDesc.setIsCopyOnWrite(isCopyOnWrite);
+    }
 
     fileSinkDesc.setTemporary(destTableIsTemporary);
     fileSinkDesc.setMaterialization(destTableIsMaterialization);
