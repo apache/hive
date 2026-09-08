@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.Transaction;
 
 import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
@@ -395,6 +396,98 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     }
 
   }
+
+  /**
+   * Simulates the HA scenario where MScheduledExecution#scheduledExecutionId values (assigned by
+   * DataNucleus's per-instance pre-allocated "native" id blocks) do not correlate with true
+   * completion order (tracked by endTime).
+   *
+   * Three executions are created for a single scheduled query with ids assigned in natural,
+   * increasing creation order (exec1 &lt; exec2 &lt; exec3). exec1's and exec2's endTime are then
+   * rewritten directly (through the same PersistenceManager machinery ObjectStore itself uses) so
+   * their completion order is the reverse of their id order -- exactly the symptom of the HA id
+   * pre-allocation bug -- without needing an actual multi-instance cluster.
+   *
+   * With autoDisableCount=2, skipCount=0 (lastN=2):
+   * - Ordering by id descending (the old, buggy behavior) picks {exec3 FAILED, exec2 FAILED} as
+   *   the "last 2 executions" -&gt; 2 consecutive failures -&gt; incorrectly disabled.
+   * - Ordering by endTime (the fix) picks {exec1 FINISHED, exec3 FAILED} as the "last 2
+   *   executions" -&gt; the FINISHED row breaks the failure streak -&gt; correctly NOT disabled.
+   *
+   * This test asserts the correct outcome, so it fails against the unfixed
+   * ObjectStore#processScheduledQueryPolicies and passes once its ordering uses endTime instead
+   * of scheduledExecutionId.
+   */
+  @Test
+  public void testDisablePolicyUsesEndTimeNotExecutionIdForOrdering() throws Exception {
+    String testNamespace = "haorderskew";
+    metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT.getVarname(), "2");
+    metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_SKIP_OPPORTUNITIES_AFTER_FAILURES.getVarname(),
+        "0");
+    client.close();
+    client = metaStore.getClient();
+
+    ScheduledQueryKey schqKey = new ScheduledQueryKey("q1", testNamespace);
+    createEverySecondSchq(schqKey);
+
+    // exec1: finishes successfully; naturally gets the smallest id of the three.
+    long exec1Id = pollAndGetExecutionId(testNamespace);
+    client.scheduledQueryProgress(
+        new ScheduledQueryProgressInfo(exec1Id, QueryState.FINISHED, "executor-query-id"));
+
+    // exec2: fails; naturally gets a bigger id than exec1.
+    long exec2Id = pollAndGetExecutionId(testNamespace);
+    ScheduledQueryProgressInfo exec2Info =
+        new ScheduledQueryProgressInfo(exec2Id, QueryState.FAILED, "executor-query-id");
+    exec2Info.setErrorMessage("some issue happened");
+    client.scheduledQueryProgress(exec2Info);
+
+    // Simulate HA id/endTime skew: rewrite endTime directly (through the same JDO machinery
+    // ObjectStore itself uses) so exec1 (lowest id) looks like it completed most recently, and
+    // exec2 (higher id) looks like it completed long ago.
+    int skewedRecentEndTime = getEpochSeconds();
+    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
+      Transaction tx = pm.currentTransaction();
+      tx.begin();
+      MScheduledExecution exec1 = pm.getObjectById(MScheduledExecution.class, exec1Id);
+      exec1.setEndTime(skewedRecentEndTime);
+      MScheduledExecution exec2 = pm.getObjectById(MScheduledExecution.class, exec2Id);
+      exec2.setEndTime(1);
+      tx.commit();
+    }
+
+    // exec3: fails; naturally gets the biggest id. Its real endTime (captured inside
+    // scheduledQueryProgress at report time, below) is >= skewedRecentEndTime, since real epoch
+    // time only moves forward from the point it was captured above.
+    long exec3Id = pollAndGetExecutionId(testNamespace);
+    ScheduledQueryProgressInfo exec3Info =
+        new ScheduledQueryProgressInfo(exec3Id, QueryState.FAILED, "executor-query-id");
+    exec3Info.setErrorMessage("some issue happened");
+    client.scheduledQueryProgress(exec3Info);
+
+    // Correct (endTime-ordered) last-2-executions are {exec1 FINISHED, exec3 FAILED}: only 1
+    // consecutive failure -> must NOT be disabled. (Buggy id-ordering would instead see
+    // {exec3 FAILED, exec2 FAILED}: 2 consecutive failures -> incorrectly disabled.)
+    ScheduledQuery schq = client.getScheduledQuery(schqKey);
+    assertTrue("Scheduled query must remain enabled: true completion order has only 1 "
+        + "consecutive failure, despite exec2 (an older failure by real completion time) "
+        + "having a numerically higher id than exec1", schq.isEnabled());
+  }
+
+  private long pollAndGetExecutionId(String testNamespace) throws Exception {
+    ScheduledQueryPollRequest request = new ScheduledQueryPollRequest(testNamespace);
+    ScheduledQueryPollResponse pollResult = null;
+    for (int i = 0; i < 30; i++) {
+      pollResult = client.scheduledQueryPoll(request);
+      if (pollResult.isSetQuery()) {
+        break;
+      }
+      Thread.sleep(100);
+    }
+    assertTrue("expected a scheduled query execution to become available", pollResult.isSetQuery());
+    return pollResult.getExecutionId();
+  }
+
   /**
    * Simulates some schq failure scenario.
    *
