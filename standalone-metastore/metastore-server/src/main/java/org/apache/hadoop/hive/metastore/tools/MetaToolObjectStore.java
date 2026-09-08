@@ -673,7 +673,8 @@ public class MetaToolObjectStore extends ObjectStore {
     return metadataTableSummaryList;
   }
 
-  private void collectPartitionSummary(Map<Long, MetadataTableSummary> summaries,  Set<Long> partedTabs,
+  private void collectPartitionSummary(Map<Long, MetadataTableSummary> summaries,
+      Set<Long> partedTabs,
       Set<Long> nonPartedTabs) throws MetaException {
     String queryText0 = "select \"TBL_ID\", count(1) from \"PARTITION_KEYS\" where \"TBL_ID\" in (";
     runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
@@ -725,7 +726,8 @@ public class MetaToolObjectStore extends ObjectStore {
   private void collectColumnSummary(Map<Long, MetadataTableSummary> summaries) throws MetaException {
     String queryText0 = "select \"TBL_ID\", count(*), sum(CASE WHEN \"TYPE_NAME\" like 'array%' THEN 1 ELSE 0 END)," +
         " sum(CASE WHEN \"TYPE_NAME\" like 'struct%' THEN 1 ELSE 0 END), sum(CASE WHEN \"TYPE_NAME\" like 'map%' THEN 1 ELSE 0 END)" +
-        " from \"TBLS\" t join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" join \"CDS\" c on s.\"CD_ID\" = c.\"CD_ID\" join \"COLUMNS_V2\" v on c.\"CD_ID\" = v.\"CD_ID\"" +
+        " from \"TBLS\" t join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" join \"CDS\" c" +
+        " on s.\"CD_ID\" = c.\"CD_ID\" join \"COLUMNS_V2\" v on c.\"CD_ID\" = v.\"CD_ID\"" +
         " where \"TBL_ID\" in (";
     runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
       @Override
@@ -751,7 +753,8 @@ public class MetaToolObjectStore extends ObjectStore {
   }
 
   private void collectTabFormatSummary(Map<Long, MetadataTableSummary> summaries) throws MetaException {
-    String queryText0 = "select t.\"TBL_ID\", d.\"SLIB\", s.\"IS_COMPRESSED\" from \"TBLS\" t left join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" left join \"SERDES\" d on d.\"SERDE_ID\" = s.\"SERDE_ID\"" +
+    String queryText0 = "select t.\"TBL_ID\", d.\"SLIB\", s.\"IS_COMPRESSED\" from \"TBLS\" t left join \"SDS\" s" +
+        " on t.\"SD_ID\" = s.\"SD_ID\" left join \"SERDES\" d on d.\"SERDE_ID\" = s.\"SERDE_ID\"" +
         " where t.\"TBL_ID\" in (";
     String queryText1 = "select p.\"TBL_ID\", " + dbType.toVarChar("p.\"PARAM_VALUE\"") + " from \"TABLE_PARAMS\" p " +
         " where p.\"PARAM_KEY\" = 'transactional_properties' and p.\"TBL_ID\" in (";
@@ -844,8 +847,10 @@ public class MetaToolObjectStore extends ObjectStore {
 
   private void collectBasicStats(Map<Long, MetadataTableSummary> summaries, Set<Long> nonPartedTabs,
       Set<Long> partedTabs) throws MetaException {
-    String queryText0 = "select \"TBL_ID\", \"PARAM_KEY\", CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0)) from \"TABLE_PARAMS\" where \"PARAM_KEY\" " +
-        "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and \"TBL_ID\" in (";
+    String queryText0 = "select \"TBL_ID\", \"PARAM_KEY\", CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") +
+        " AS decimal(21,0)) from \"TABLE_PARAMS\" where \"PARAM_KEY\"" +
+        " in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" +
+        StatsSetupConst.ROW_COUNT + "') and \"TBL_ID\" in (";
     runBatched(batchSize, new ArrayList<>(nonPartedTabs), new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
@@ -854,9 +859,11 @@ public class MetaToolObjectStore extends ObjectStore {
       }
     });
 
-   String queryText1 = "select \"TBL_ID\", \"PARAM_KEY\", sum(CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0))) from \"PARTITIONS\" t " +
-       "join \"PARTITION_PARAMS\" p on p.\"PART_ID\" = t.\"PART_ID\" where \"PARAM_KEY\" " +
-       "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and t.\"TBL_ID\" in (";
+   String queryText1 = "select \"TBL_ID\", \"PARAM_KEY\", sum(CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") +
+       " AS decimal(21,0))) from \"PARTITIONS\" t" +
+       " join \"PARTITION_PARAMS\" p on p.\"PART_ID\" = t.\"PART_ID\" where \"PARAM_KEY\"" +
+       " in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" +
+       StatsSetupConst.ROW_COUNT + "') and t.\"TBL_ID\" in (";
    runBatched(batchSize, new ArrayList<>(partedTabs), new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
@@ -928,7 +935,8 @@ public class MetaToolObjectStore extends ObjectStore {
         int size = input.size();
         String queryText =
             "\"TBL_ID\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" = 'current-snapshot-timestamp-ms' "
-                + (lastUpdatedDays != null ? (" and CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0)) > " + (System.currentTimeMillis() - lastUpdatedDays * 24 * 3600000L)) : "")
+                + (lastUpdatedDays != null ? (" and CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0)) > "
+                + (System.currentTimeMillis() - lastUpdatedDays * 24 * 3600000L)) : "")
                 + " and \"TBL_ID\" in (" +  (size == 0 ? "" : repeat(",?", size).substring(1)) + ") "
                 + " order by CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0)) DESC";
         if (tablesLimit != null && tablesLimit >= 0) {
