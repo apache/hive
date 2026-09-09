@@ -26,6 +26,8 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.hep.HepMatchOrder;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelVisitor;
+import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -314,6 +316,20 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         return calcitePreMVRewritingPlan;
       }
 
+      // For a rebuild, the rewritten plan must still reference at least one source table.
+      // A trivial view-only rewrite where the entire plan collapses to a scan of the target MV
+      // is incorrect for a rebuild statement because it would produce
+      // "INSERT OVERWRITE mv SELECT * FROM mv", dropping any delta accumulated in the source
+      // tables since the last rebuild. Fall back to the un-rewritten (full-rebuild) plan.
+      if (getTablesUsed(basePlan).stream().noneMatch(tablesUsedQuery::contains)) {
+        // MV preparation (HiveAugmentSnapshotMaterializationRule) may have set a
+        // versionIntervalFrom on the source Table objects to make MV rewriting produce a
+        // delta-only scan. Since we are falling back to a full rebuild here, clear that
+        // scan-time filter so the pre-rewriting plan scans all source rows.
+        clearSourceSnapshotFilters(calcitePreMVRewritingPlan);
+        return calcitePreMVRewritingPlan;
+      }
+
       try {
         if (!HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(materializedViewsUsedAfterRewrite)) {
           // if materialized views do not have appropriate privileges, we shouldn't be using them
@@ -348,6 +364,19 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
       // Now we trigger some needed optimization rules again
       return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+    }
+
+    private void clearSourceSnapshotFilters(RelNode plan) {
+      new RelVisitor() {
+        @Override
+        public void visit(RelNode node, int ordinal, RelNode parent) {
+          if (node instanceof TableScan) {
+            Table table = ((RelOptHiveTable) node.getTable()).getHiveTableMD();
+            table.setVersionIntervalFrom(null);
+          }
+          super.visit(node, ordinal, parent);
+        }
+      }.go(plan);
     }
 
     private RelNode applyRecordIncrementalRebuildPlan(
