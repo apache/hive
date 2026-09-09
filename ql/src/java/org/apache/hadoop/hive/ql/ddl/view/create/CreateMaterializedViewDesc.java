@@ -233,7 +233,9 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
 
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
 
-    if (storageHandler != null && storageHandler.getClass().getName().equals("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler")){
+    if (storageHandler != null && storageHandler.getClass().getName().equals("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler") &&
+        "iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION))
+    ){
       tbl.setTableType(TableType.EXTERNAL_MATERIALIZED_VIEW);
     }
 
