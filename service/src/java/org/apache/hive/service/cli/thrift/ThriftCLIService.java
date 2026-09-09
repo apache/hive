@@ -550,7 +550,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       throws HiveSQLException, IOException {
     final String ipAddress = getIpAddress();
 
-    LOG.info("Creating Hive session handle for user [{}] from IP {}", req.getUsername(), ipAddress);
+    LOG.info("Creating Hive session handle for user [{}] from IP {}", userName, ipAddress);
 
     TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION,
         req.getClient_protocol());
