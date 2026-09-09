@@ -501,15 +501,28 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       handleIOWOperation(jobContexts, table, snapshotId, startTime, filesForCommit, branchName);
     } else {
       handleNonIOWOperation(
-          jobContexts,
-          operation,
-          filesForCommit,
-          table,
-          branchName,
-          snapshotId,
-          startTime,
-          filterExpr);
+            jobContexts,
+            operation,
+            filesForCommit,
+            table,
+            branchName,
+            snapshotId,
+            startTime,
+            filterExpr);
     }
+  }
+
+  private static @NotNull Integer calculateNumberOfTasks(JobContext jobContext, JobConf conf, String name) {
+    return SessionStateUtil.getCommitInfo(conf, name)
+        .map(info -> info.get(jobContext.getJobID().toString()))
+        .map(SessionStateUtil.CommitInfo::getTaskNum).orElseGet(() -> {
+          // Fallback logic, if number of tasks are not available in the config
+          // If there are reducers, then every reducer will generate a result file.
+          // If this is a map only task, then every mapper will generate a result file.
+          LOG.info("Number of tasks not available in session state for jobID: {}, table: {}. " +
+              "Falling back to jobConf numReduceTasks/numMapTasks", jobContext.getJobID(), name);
+          return conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
+        });
   }
 
   private void handleNonIOWOperation(
@@ -545,11 +558,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
         .orElse(RewritePolicy.DEFAULT.name()));
 
-      if (rewritePolicy != RewritePolicy.DEFAULT) {
-        String partitionName = jobContexts.stream()
-            .findAny()
-            .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_NAME))
-            .orElse(null);
+    if (rewritePolicy != RewritePolicy.DEFAULT) {
+      String partitionName = jobContexts.stream()
+          .findAny()
+          .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_NAME))
+          .orElse(null);
 
       long fileSizeThreshold = jobContexts.stream()
           .findAny()
@@ -557,10 +570,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .map(Long::parseLong)
           .orElse(-1L);
 
-        commitCompaction(table, snapshotId, startTime, filesForCommit, partitionName, fileSizeThreshold);
-      } else {
-        commitOverwrite(table, branchName, snapshotId, startTime, filesForCommit);
-      }
+      commitCompaction(table, snapshotId, startTime, filesForCommit, partitionName, fileSizeThreshold);
+    } else {
+      commitOverwrite(table, branchName, snapshotId, startTime, filesForCommit);
     }
   }
 
