@@ -49,11 +49,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -1112,6 +1117,119 @@ public class TestInitiator extends CompactorTest {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(2, compacts.size());
     Mockito.verify(initiator, times(2)).resolvePartition(Mockito.any());
+  }
+
+  @Test
+  public void testCompactionInitWithSmallFetchSize() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_FETCH_SIZE, 2);
+    Set<String> compactedTables = new HashSet<>();
+    Map<String, Table> tables = new HashMap<>();
+    String[] tableNames = {"testtablea", "testtableb", "testtablec", "testtabled"};
+    for (int i = 0; i < 4; i++) {
+      Table t = newTable("default", tableNames[i], false);
+      tables.put(t.getTableName(), t);
+      prepareTable(t, true, 1L);
+    }
+
+    startInitiator();
+    startWorker();
+    startWorker();
+    startCleaner();
+    startCleaner();
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    compactedTables.addAll(rsp.getCompacts().stream().map(c -> c.getTablename()).collect(Collectors.toSet()));
+
+    for (String tableName: compactedTables) {
+      prepareTable(tables.get(tableName), false, 5L);
+    }
+
+    startInitiator();
+    startWorker();
+    startWorker();
+    startCleaner();
+    startCleaner();
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    compactedTables.addAll(rsp.getCompacts().stream().map(c -> c.getTablename()).collect(Collectors.toSet()));
+
+    Assert.assertEquals(4, compactedTables.size());
+    for (String tableName: tableNames) {
+      assertTrue(tableName + " isn't scheduled for compaction", compactedTables.contains(tableName));
+    }
+  }
+
+  @Test
+  public void testCompactionInitWithSmallFetchSizeWithAbortedTxn() throws Exception{
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_FETCH_SIZE, 2);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, false);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 2);
+
+    Set<String> compactedTables = new HashSet<>();
+    String[] tableNames = {"testtablea", "testtableb", "testtablec", "testtabled"};
+    List<Table> tables = new ArrayList<>();
+    for (int i = 0; i < 2; i++) {
+      Table t = newTable("default", tableNames[i], false);
+      tables.add(t);
+      prepareTable(t, true, 1L);
+    }
+    long txnId = 10L;
+    for (int i = 2; i < 4; i++) {
+      Table t = newTable("default", tableNames[i], false);
+      tables.add(t);
+      Set<Long> abortedTxns = new HashSet<>();
+      for (int j = 1; j < 6; j++) {
+        abortedTxns.add(txnId + j);
+      }
+      prepareTable(t, true, 1L, abortedTxns);
+      txnId = 15L;
+    }
+
+    startInitiator();
+    startWorker();
+    startWorker();
+    startCleaner();
+    startCleaner();
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    compactedTables.addAll(rsp.getCompacts().stream().map(c -> c.getTablename()).collect(Collectors.toSet()));
+
+    for (int i = 0; i < 2; i++) {
+      prepareTable(tables.get(i), false, 5L);
+    }
+
+    startInitiator();
+    startWorker();
+    startWorker();
+    startCleaner();
+    startCleaner();
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    compactedTables.addAll(rsp.getCompacts().stream().map(c -> c.getTablename()).collect(Collectors.toSet()));
+
+    Assert.assertEquals(4, compactedTables.size());
+    for (String tableName: tableNames) {
+      assertTrue(tableName + " isn't scheduled for compaction", compactedTables.contains(tableName));
+    }
+  }
+
+  private void prepareTable(Table table, boolean addBase, long writeId) throws Exception {
+    prepareTable(table, addBase, writeId, null);
+  }
+
+  private void prepareTable(Table table, boolean addBase, long writeId, Set<Long> abortedTxns) throws Exception {
+    int txnNum = 0;
+    if (addBase) {
+      addBaseFile(table, null, writeId, 20);
+      txnNum++;
+    }
+    for (int i = 1; i < 5; i++) {
+      addDeltaFile(table, null, writeId + i, writeId + i, 2);
+      txnNum++;
+    }
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, table.getDbName());
+    comp.setTablename(table.getTableName());
+    comp.setOperationType(DataOperationType.INSERT);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    burnThroughTransactions(table.getDbName(), table.getTableName(), txnNum, null, abortedTxns, req);
   }
 
   private static FindNextCompactRequest aFindNextCompactRequest(String workerId, String workerVersion) {

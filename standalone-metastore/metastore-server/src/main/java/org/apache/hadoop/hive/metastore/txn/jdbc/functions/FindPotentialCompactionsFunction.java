@@ -48,11 +48,12 @@ public class FindPotentialCompactionsFunction implements TransactionalFunction<S
 
   @Override
   public Set<CompactionInfo> execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
+    // Each source gets its own fetchSize budget instead of sharing a single pool.
+    // Sharing the pool starved aborted-txn cleanup whenever there were >= fetchSize committed candidates.
     Set<CompactionInfo> candidates = new HashSet<>(jdbcResource.execute(
         new CompactionCandidateHandler(lastChecked, fetchSize)));
-    int remaining = fetchSize - candidates.size();
-    if (collectAbortedTxns && remaining > 0) {
-      candidates.addAll(jdbcResource.execute(new AbortedTxnHandler(abortedTimeThreshold, abortedThreshold, remaining)));
+    if (collectAbortedTxns) {
+      candidates.addAll(jdbcResource.execute(new AbortedTxnHandler(abortedTimeThreshold, abortedThreshold, fetchSize)));
     }
     return candidates;
   }
