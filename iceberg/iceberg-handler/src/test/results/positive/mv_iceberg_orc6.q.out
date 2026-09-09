@@ -122,19 +122,17 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
 PREHOOK: query: alter materialized view mat1 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
-PREHOOK: Input: default@mat1
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_ice_v2
 PREHOOK: Output: default@mat1
 POSTHOOK: query: alter materialized view mat1 rebuild
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
-POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@mat1
-POSTHOOK: Lineage: mat1._c2 EXPRESSION [(tbl_ice_v2)tbl_ice_v2.FieldSchema(name:f, type:int, comment:null), (mat1)default.mat1.FieldSchema(name:_c2, type:bigint, comment:null), ]
-POSTHOOK: Lineage: mat1.b EXPRESSION [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), (mat1)default.mat1.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: mat1.c EXPRESSION [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), (mat1)default.mat1.FieldSchema(name:c, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1._c2 EXPRESSION [(tbl_ice_v2)tbl_ice_v2.FieldSchema(name:f, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat1.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
 PREHOOK: query: select * from mat1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
