@@ -85,7 +85,7 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
     });
     String exceptionMessage = expectedException.getMessage();
     // Verify the Thrift library is enforcing the limit
-    assertTrue(exceptionMessage.contains("MaxMessageSize reached"));
+    assertTrue(exceptionMessage.contains("Message size exceeds limit"));
     limitedClient.close();
 
     // test default client (with a default THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE)

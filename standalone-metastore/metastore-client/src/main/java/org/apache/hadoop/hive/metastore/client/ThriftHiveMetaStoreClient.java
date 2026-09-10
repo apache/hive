@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.security.TMessageSizeTransport;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -48,12 +49,8 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
@@ -532,6 +529,20 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     return transport;
   }
 
+  private TTransport wrapWithMessageSizeTransport(TTransport transport) {
+    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(
+        conf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
+    if (maxThriftMessageSize > 0) {
+      try {
+        return new TMessageSizeTransport(transport);
+      } catch (TTransportException e) {
+        LOG.warn("Failed to wrap transport {} with TMessageSizeTransport, max message size may not be enforced",
+            transport.getClass().getName(), e);
+      }
+    }
+    return transport;
+  }
+
   private Map<String, String> getAdditionalHeaders() {
     Map<String, String> headers = new HashMap<>();
     String keyValuePairs = MetastoreConf.getVar(conf,
@@ -611,16 +622,13 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         throw new MetaException("For auth mode JWT, valid signed jwt token must be provided in the "
             + "environment variable HMS_JWT");
       }
-      httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
-        @Override
-        public void process(HttpRequest httpRequest, HttpContext httpContext)
-            throws HttpException, IOException {
+      httpClientBuilder.addRequestInterceptorFirst(
+        (httpRequest, entity, httpContext) -> {
           httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
           for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
             httpRequest.addHeader(entry.getKey(), entry.getValue());
           }
-        }
-      });
+        });
     } else {
       String user = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
       if (user == null || user.equals("")) {
@@ -631,14 +639,10 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         }
       }
       final String httpUser = user;
-      httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
-        @Override
-        public void process(HttpRequest httpRequest, HttpContext httpContext)
-            throws HttpException, IOException {
-          httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
-          for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
-            httpRequest.addHeader(entry.getKey(), entry.getValue());
-          }
+      httpClientBuilder.addRequestInterceptorFirst((httpRequest, entity, httpContext) -> {
+        httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
+        for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+          httpRequest.addHeader(entry.getKey(), entry.getValue());
         }
       });
     }
@@ -684,7 +688,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       }
     }
     LOG.debug("Created thrift binary client for URI: " + store);
-    return configureThriftMaxMessageSize(binaryTransport);
+    return wrapWithMessageSizeTransport(configureThriftMaxMessageSize(binaryTransport));
   }
 
   private void open() throws MetaException {
