@@ -2418,10 +2418,10 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void aWholeTableReadTakesNoPerPartitionFile() throws Exception {
-    // statistics are served at the granularity the session keeps them at. A file holding
-    // partitions states them, and what it folds from them states the table only while it holds
-    // every one - so a whole-table read passes it by rather than answer from part of a table
+  public void aWholeTableReadTakesAFullPerPartitionGatherStates() throws Exception {
+    // a file holding partitions states them; what it aggregates from them answers a whole-table
+    // read too, but only while the file states the table - which a gather over every partition
+    // marks, whatever granularity a later read is kept at
     assumeParquetHiveCatalogIceberg();
 
     TableIdentifier identifier = TableIdentifier.of("default", "orders_two_granularities");
@@ -2440,8 +2440,9 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
 
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
-    Assert.assertTrue("a whole-table read is not answered from the partitions of a later gather",
+    Assert.assertFalse("a whole-table read is answered from the aggregates a full gather states",
         storageHandler().getColStatistics(hmsTable(identifier), ImmutableList.of("id")).isEmpty());
+    checkColStatMinMaxValue(identifier.name(), "id", 1, 9);
 
     // and the partitions still answer for themselves, at the granularity they were kept at
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
@@ -2471,6 +2472,99 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
     Assert.assertTrue("the partition it measured does not state the table",
         storageHandler().getColStatistics(hmsTable(identifier), ImmutableList.of("id")).isEmpty());
+  }
+
+  @Test
+  public void testATableLevelReadServesTheAggregatesAPartitionLevelGatherStatesForTheTable() {
+    // a gather over every partition states the table on its file; a session reading at table
+    // level takes those aggregates rather than finding nothing at its own granularity
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_lenient_read");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('external.table.purge'='true')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'a'), (900, 'b')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
+    checkColStatMinMaxValue(identifier.name(), "id", 1, 900);
+  }
+
+  @Test
+  public void testANewerFullPartitionGatherAnswersATableReadOverAnOlderTableLevelFile() {
+    // s1 states the table at table level; a write moves the snapshot; s2 is a full gather at
+    // partition level that also states the table. The table-level read walks back from the
+    // current snapshot, takes the newer s2, and answers from its aggregates - not stale s1
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_two_snapshots");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('external.table.purge'='true')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'a'), (7, 'b')");
+    // s1: whole-table gather
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    checkColStatMinMaxValue(identifier.name(), "id", 1, 7);
+
+    // a write moves the snapshot, then s2: a full gather at partition level, over every partition
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (900, 'c')");
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    // a table-level read takes the newer s2 and answers from its aggregates - the 900 proves it
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
+    checkColStatMinMaxValue(identifier.name(), "id", 1, 900);
+  }
+
+  @Test
+  public void testAFullGatherThatStatesTheTableIsStillRefusedOnceANewPartitionArrives() {
+    // states-the-table marks what a write covered, never overrides freshness: a full gather of a
+    // one-partition table states the table, but an insert that adds a partition moves the snapshot,
+    // and the whole-table read stops at that change rather than serve the now-incomplete aggregates
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_states_then_grows");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('external.table.purge'='true')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'a'), (7, 'a')");
+    // a full gather of the one partition states the table
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
+    checkColStatMinMaxValue(identifier.name(), "id", 1, 7);
+
+    // a new partition arrives with no re-analyze: the stored aggregates no longer describe the table
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (900, 'b')");
+    Assert.assertTrue("the stated-table file is refused once a partition it never saw exists",
+        storageHandler().getColStatistics(hmsTable(identifier), ImmutableList.of("id")).isEmpty());
+  }
+
+  @Test
+  public void testAMergeStatesTheTableWhileTheFileItCarriedFromDid() {
+    // an increment merged into a file that states the table leaves one that still does; the
+    // marker rides the merge, not the granularity of the write that happened to refresh it
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_lenient_merge");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('external.table.purge'='true')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'a'), (900, 'b')");
+    // a whole-table gather states the table, then a partition-scoped gather merges into it
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " PARTITION (p='a') COMPUTE STATISTICS FOR COLUMNS");
+
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
+    checkColStatMinMaxValue(identifier.name(), "id", 1, 900);
   }
 
   @Test

@@ -140,9 +140,9 @@ public final class IcebergStoredStats {
    * The file whose blobs are Hive's own - Iceberg keeps statistics of its own in the same format -
    * at the asked-for granularity: a blob describing one partition names it in its metadata.
    *
-   * <p>A file that holds any partition is a per partition one, whatever else it holds. The entries
-   * it aggregates from them state the table only while it holds every partition, which a gather of some
-   * of them does not, so a whole-table read passes it by and takes the file gathered as one.
+   * <p>A file that holds any partition is a per partition one, whatever else it holds. Its
+   * aggregates serve a whole-table read only while the file states the table - what a gather over
+   * every partition marked on it, and a gather of some of them did not.
    */
   private static boolean holdsHiveColStats(StatisticsFile stats, boolean partitionLevel) {
     boolean holdsPartitions = stats.blobMetadata().stream()
@@ -151,9 +151,29 @@ public final class IcebergStoredStats {
       return holdsPartitions && stats.blobMetadata().stream().anyMatch(
           metadata -> IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type()));
     }
-    return !holdsPartitions && stats.blobMetadata().stream().anyMatch(
+    if (holdsPartitions) {
+      return statesTable(stats);
+    }
+    return stats.blobMetadata().stream().anyMatch(
         metadata -> IcebergColStatsWriter.HIVE_COL_STATS_BLOB_V1.equals(metadata.type()) ||
             IcebergColStatsWriter.LEGACY_COL_STATS_BLOB.equals(metadata.type()));
+  }
+
+  /** Whether the file's aggregates answer for the whole table: its registered entry says so. */
+  static boolean statesTable(StatisticsFile stats) {
+    return stats != null && stats.blobMetadata().stream().anyMatch(
+        metadata -> "true".equals(metadata.properties().get(IcebergColStatsWriter.STATES_TABLE_FIELD)));
+  }
+
+  /**
+   * The stored table-level file, taken as it was gathered: a write merges only into a file
+   * gathered as one, where a read may also take a partition-level file's aggregates.
+   */
+  public static StatisticsFile getTableGatheredColStats(Table table, long snapshotId) {
+    StatisticsFile stats = getColStatsFile(table, snapshotId, false);
+    return stats == null || stats.blobMetadata().stream()
+        .anyMatch(metadata -> metadata.properties().containsKey(IcebergColStatsWriter.PARTITION_FIELD)) ?
+        null : stats;
   }
 
   /**
@@ -191,8 +211,12 @@ public final class IcebergStoredStats {
       return hit;
     }
     StatisticsFile statsFile = getColStatsFile(table, snapshot.snapshotId(), partitionLevel);
+    // a table-level ask counts the fields the aggregates state: the partition entry names every
+    // field any partition stated, which a column not every partition holds would ride into
     Set<Integer> fields = statsFile == null ? Set.of() :
         statsFile.blobMetadata().stream()
+            .filter(metadata -> partitionLevel ||
+                !metadata.properties().containsKey(IcebergColStatsWriter.PARTITION_FIELD))
             .flatMap(metadata -> metadata.fields().stream())
             .collect(Collectors.toSet());
     SessionStateUtil.addResource(conf, cacheKey, fields);
