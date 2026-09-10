@@ -8664,9 +8664,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (writeOperation != Context.Operation.OTHER
         && dest_tab != null
         && dest_tab.getStorageHandler() != null) {
-      boolean isCopyOnWrite =
+      boolean copyOnWrite =
           dest_tab.getStorageHandler().shouldOverwrite(dest_tab, ctx.getOperation());
-      fileSinkDesc.setIsCopyOnWrite(isCopyOnWrite);
+      fileSinkDesc.setCopyOnWrite(copyOnWrite);
     }
 
     fileSinkDesc.setTemporary(destTableIsTemporary);

@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED;
-import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setIsCopyOnWrite;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setCopyOnWrite;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setMergeTaskEnabled;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperationIsSorted;
@@ -641,7 +641,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       jc = new JobConf(hconf);
       setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
-      setIsCopyOnWrite(jc, getConf().getTableInfo().getTableName(), getConf().isCopyOnWrite());
+      setCopyOnWrite(jc, getConf().getTableInfo().getTableName(), getConf().isCopyOnWrite());
       setWriteOperationIsSorted(jc, getConf().getTableInfo().getTableName(),
               dpCtx != null && dpCtx.hasCustomPartitionOrSortExpression());
       setMergeTaskEnabled(jc, getConf().getTableInfo().getTableName(),

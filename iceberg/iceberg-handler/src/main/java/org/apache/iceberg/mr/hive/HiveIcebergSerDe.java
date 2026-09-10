@@ -159,7 +159,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       Schema tableSchema, Map<String, String> jobConf) {
     String tableName = serDeProperties.getProperty(Catalogs.NAME);
     Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(conf::get, tableName);
-    boolean isCopyOnWrite = HiveCustomStorageHandlerUtils.isCopyOnWrite(conf::get, tableName);
+    boolean copyOnWrite = HiveCustomStorageHandlerUtils.isCopyOnWrite(conf::get, tableName);
 
     if (operation == null) {
       jobConf.put(InputFormatConfig.CASE_SENSITIVE, "false");
@@ -180,7 +180,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         return projectedSchema;
       }
     }
-    if (isCopyOnWrite) {
+    if (copyOnWrite) {
       return getSchemaWithRowLineage(
           IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns(), false), conf);
     }

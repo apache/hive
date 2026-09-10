@@ -112,7 +112,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private Path destPath;
   private boolean isHiveServerQuery;
   private boolean isMerge;
-  private boolean isCopyOnWrite = false;
+  private boolean copyOnWrite = false;
   private boolean isMmCtas;
 
   private Set<FileStatus> filesToFetch = null;
@@ -201,7 +201,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     ret.setDpSortState(dpSortState);
     ret.setWriteType(writeType);
     ret.setWriteOperation(writeOperation);
-    ret.setIsCopyOnWrite(isCopyOnWrite);
+    ret.setCopyOnWrite(copyOnWrite);
     ret.setTableWriteId(tableWriteId);
     ret.setStatementId(statementId);
     ret.setStatsTmpDir(statsTmpDir);
@@ -689,12 +689,12 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     return isMmCtas;
   }
 
-  public void setIsCopyOnWrite(boolean isCopyOnWrite) {
-    this.isCopyOnWrite = isCopyOnWrite;
+  public void setCopyOnWrite(boolean copyOnWrite) {
+    this.copyOnWrite = copyOnWrite;
   }
 
   public boolean isCopyOnWrite() {
-    return isCopyOnWrite;
+    return copyOnWrite;
   }
 
   @Explain(displayName = "bucketingVersion", explainLevels = { Level.EXTENDED })

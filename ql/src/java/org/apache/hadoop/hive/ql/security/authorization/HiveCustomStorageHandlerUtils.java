@@ -98,11 +98,11 @@ public class HiveCustomStorageHandlerUtils {
     return Boolean.parseBoolean(operation);
   }
 
-  public static void setIsCopyOnWrite(Configuration conf, String tableName, boolean isCopyOnWrite) {
+  public static void setCopyOnWrite(Configuration conf, String tableName, boolean copyOnWrite) {
     if (conf == null || tableName == null) {
       return;
     }
-    conf.setBoolean(IS_COPY_ON_WRITE_CONFIG_PREFIX + tableName, isCopyOnWrite);
+    conf.setBoolean(IS_COPY_ON_WRITE_CONFIG_PREFIX + tableName, copyOnWrite);
   }
 
   public static boolean isCopyOnWrite(UnaryOperator<String> ops, String tableName) {
