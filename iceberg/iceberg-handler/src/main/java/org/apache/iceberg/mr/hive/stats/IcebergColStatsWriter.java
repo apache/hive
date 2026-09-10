@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
@@ -95,9 +96,16 @@ public final class IcebergColStatsWriter {
    */
   public static final String HIVE_PART_COL_STATS_BLOB_V1 = "hive-partition-column-statistics-v1";
   /** What a blob describing one partition names it under, in the metadata that stands for it. */
-  public static final String PARTITION_FIELD = "partition";
+  public static final String PARTITION_PROP = "partition";
   /** How many partitions the file describes, stated on its registered entry. */
-  public static final String NUM_PARTITIONS_FIELD = "numPartitions";
+  public static final String NUM_PARTITIONS_PROP = "numPartitions";
+  /**
+   * Whether the file's aggregates answer for the whole table, stated on its registered entry: a
+   * gather over every partition does, and a merge does while the file it carried from did and
+   * this gather measured every partition changed since it. A partition-scoped gather with nothing
+   * to carry describes its partition alone, however the granularity of a later read.
+   */
+  public static final String FULL_TABLE_AGGR_PROP = "fullTableAggr";
   /**
    * What a table-level entry is named now that it holds a Thrift struct rather than a serialized
    * Java object. A reader that knows neither name reads it as absent, and one that knows both
@@ -163,8 +171,10 @@ public final class IcebergColStatsWriter {
       // A write commits a snapshot of its own, so what it completes sits on the one before it. An
       // ANALYZE commits none, but replaces rather than merges, so it never asks.
       Long parentId = snapshot.parentId();
+      // merges only into a file gathered as one: the read side may serve a partition-level
+      // file's aggregates for a table-level ask, but a write never adds itself to them
       StatisticsFile statsOldSrc = parentId == null ? null :
-          IcebergStoredStats.getColStatsFile(tbl, parentId, false);
+          IcebergStoredStats.getTableOnlyColStatsFile(tbl, parentId);
       if (statsOldSrc == null) {
         // a table-level increment has nothing to add itself to
         return false;
@@ -201,7 +211,7 @@ public final class IcebergColStatsWriter {
             // the count travels in the metadata, where a read takes it without opening the file
             IcebergColStatsProperties.of(obj)));
       }
-      return List.of();
+      return new RegisteredStats(List.of(), false);
     });
   }
 
@@ -239,7 +249,7 @@ public final class IcebergColStatsWriter {
             snapshot.snapshotId(), snapshot.sequenceNumber(),
             encodePartBlob(stats.getStatsObj(), fieldIds),
             PuffinCompressionCodec.NONE,
-            Map.of(PARTITION_FIELD, partName)));
+            Map.of(PARTITION_PROP, partName)));
         written.add(partName);
         aggregate.addPartition(stats.getStatsObj());
       }
@@ -249,8 +259,26 @@ public final class IcebergColStatsWriter {
       // the table's own entries, aggregated from every partition the file comes to hold
       aggregate.write(writer, snapshot, schema);
 
-      return mergedFieldIds(List.copyOf(gatheredFieldIds), statsOldSrc, schema);
+      return new RegisteredStats(
+          mergedFieldIds(List.copyOf(gatheredFieldIds), statsOldSrc, schema),
+          hasFullTableAggr(tbl, snapshot, conf, policy, statsOldSrc, written));
     });
+  }
+
+  /**
+   * Whether what was written aggregates the full table, per {@link #FULL_TABLE_AGGR_PROP}: a
+   * partition changed since the carried file but not measured here is held by neither side. The
+   * walk is the one {@link #carryForward} already asked for, so this costs no manifest read.
+   */
+  private static boolean hasFullTableAggr(Table tbl, Snapshot snapshot, Configuration conf,
+      IcebergColStatsWritePolicy policy, StatisticsFile statsOldSrc, Set<String> written) {
+    if (policy != IcebergColStatsWritePolicy.MERGE) {
+      return !IcebergColStatsWritePolicy.isAnalyzePartition(conf);
+    }
+    Set<String> changed = statsOldSrc == null ? null : IcebergStoredStats.partitionsChangedSince(
+        tbl, snapshot, statsOldSrc.snapshotId(), conf, false);
+    return IcebergStoredStats.hasFullTableAggr(statsOldSrc) &&
+        changed != null && written.containsAll(changed);
   }
 
   /**
@@ -277,7 +305,7 @@ public final class IcebergColStatsWriter {
       List<BlobMetadata> carried = Lists.newArrayList();
 
       for (BlobMetadata metadata : reader.fileMetadata().blobs()) {
-        String partName = metadata.properties().get(PARTITION_FIELD);
+        String partName = metadata.properties().get(PARTITION_PROP);
         if (!HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type()) || partName == null) {
           continue;
         }
@@ -291,8 +319,12 @@ public final class IcebergColStatsWriter {
       // instead of being rebuilt by decoding every carried blob
       boolean seedFromStored = Sets.intersection(written, storedPartitions).isEmpty() &&
           carried.size() == storedPartitions.size();
+      // by field id, not name: a column dropped and added back keeps the name and takes a new
+      // field, and folding the dead field's entry in would answer for the live one
+      IntPredicate liveFields = IcebergColStatsReader.liveFieldsOf(tbl);
+
       if (seedFromStored) {
-        aggregate.seedFrom(reader, carried.size());
+        aggregate.seedFrom(reader, carried.size(), liveFields);
       }
       for (Pair<BlobMetadata, ByteBuffer> blob : reader.readAll(carried)) {
         ByteBuffer carriedBytes = blob.second();
@@ -300,7 +332,8 @@ public final class IcebergColStatsWriter {
         // travels on untouched
         try {
           if (!seedFromStored) {
-            aggregate.addPartition(IcebergColStatsReader.decodePartBlob(carriedBytes, null, true));
+            aggregate.addPartition(
+                IcebergColStatsReader.decodePartBlob(carriedBytes, null, true, liveFields));
           }
         } catch (InvalidObjectException e) {
           throw new IOException(e);
@@ -310,8 +343,8 @@ public final class IcebergColStatsWriter {
             snapshot.snapshotId(), snapshot.sequenceNumber(),
             carriedBytes,
             PuffinCompressionCodec.NONE,
-            Map.of(PARTITION_FIELD,
-                blob.first().properties().get(PARTITION_FIELD))));
+            Map.of(PARTITION_PROP,
+                blob.first().properties().get(PARTITION_PROP))));
       }
     }
   }
@@ -343,9 +376,11 @@ public final class IcebergColStatsWriter {
      * aggregating its partitions again would reach: an entry is written only when every partition
      * states the column, and what suppressed it then is carried unchanged now.
      */
-    private void seedFrom(PuffinReader reader, int carriedPartitions) throws IOException {
+    private void seedFrom(PuffinReader reader, int carriedPartitions, IntPredicate liveFields)
+        throws IOException {
       List<BlobMetadata> aggregateBlobs = reader.fileMetadata().blobs().stream()
           .filter(metadata -> HIVE_COL_STATS_BLOB_V1.equals(metadata.type()))
+          .filter(metadata -> liveFields.test(metadata.inputFields().getFirst()))
           .toList();
       List<ColumnStatisticsObj> entries = Lists.newArrayList();
       for (Pair<BlobMetadata, ByteBuffer> blob : reader.readAll(aggregateBlobs)) {
@@ -398,13 +433,18 @@ public final class IcebergColStatsWriter {
     }
   }
 
+  /**
+   * What a write leaves for the table metadata: the field ids the file names, empty where each blob
+   * names its own, and whether the registered partition entry carries the full-table mark - which a
+   * file with no partition entry never does, whatever its aggregates cover.
+   */
+  private record RegisteredStats(List<Integer> namedFields, boolean fullTableAggr) {
+  }
+
   @FunctionalInterface
   private interface BlobWriter {
-    /**
-     * Streams the blobs; returns the field ids the file names in the table metadata, empty where
-     * each blob names its own.
-     */
-    List<Integer> write(PuffinWriter writer) throws IOException, InvalidObjectException;
+    /** Streams the blobs; returns what the table metadata keeps of what was written. */
+    RegisteredStats write(PuffinWriter writer) throws IOException, InvalidObjectException;
   }
 
   /**
@@ -434,7 +474,8 @@ public final class IcebergColStatsWriter {
    * every commit.
    */
   private static List<org.apache.iceberg.BlobMetadata> registeredBlobs(
-      List<org.apache.iceberg.puffin.BlobMetadata> written, List<Integer> namedFields) {
+      List<org.apache.iceberg.puffin.BlobMetadata> written, List<Integer> namedFields,
+      boolean fullTableAggr) {
     long numPartitions = written.stream()
         .filter(blob -> HIVE_PART_COL_STATS_BLOB_V1.equals(blob.type()))
         .count();
@@ -447,13 +488,15 @@ public final class IcebergColStatsWriter {
         }
         fieldsNamed = true;
         // the count lets a read turn away an ask of another size without opening the file
-        Map<String, String> properties = ImmutableMap.<String, String>builder()
+        ImmutableMap.Builder<String, String> properties = ImmutableMap.<String, String>builder()
             .putAll(blob.properties())
-            .put(NUM_PARTITIONS_FIELD, String.valueOf(numPartitions))
-            .build();
+            .put(NUM_PARTITIONS_PROP, String.valueOf(numPartitions));
+        if (fullTableAggr) {
+          properties.put(FULL_TABLE_AGGR_PROP, "true");
+        }
         registered.add(GenericBlobMetadata.from(new org.apache.iceberg.puffin.BlobMetadata(
             blob.type(), namedFields, blob.snapshotId(), blob.sequenceNumber(),
-            blob.offset(), blob.length(), blob.compressionCodec(), properties)));
+            blob.offset(), blob.length(), blob.compressionCodec(), properties.build())));
         continue;
       }
       registered.add(GenericBlobMetadata.from(blob));
@@ -486,7 +529,7 @@ public final class IcebergColStatsWriter {
     try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(statsPath))
         .createdBy(Constants.HIVE_ENGINE)
         .build()) {
-      List<Integer> namedFields = blobs.write(writer);
+      RegisteredStats registeredStats = blobs.write(writer);
       if (writer.writtenBlobsMetadata().isEmpty()) {
         // committing this would register a file describing nothing, in place of one that may
         // describe something: a read resolves it, finds no statistics of ours in it, and the
@@ -501,7 +544,8 @@ public final class IcebergColStatsWriter {
           statsPath,
           writer.fileSize(),
           writer.footerSize(),
-          registeredBlobs(writer.writtenBlobsMetadata(), namedFields));
+          registeredBlobs(writer.writtenBlobsMetadata(),
+              registeredStats.namedFields(), registeredStats.fullTableAggr()));
     } catch (Exception e) {
       tbl.io().deleteFile(statsPath);
       if (!(e instanceof IOException)) {

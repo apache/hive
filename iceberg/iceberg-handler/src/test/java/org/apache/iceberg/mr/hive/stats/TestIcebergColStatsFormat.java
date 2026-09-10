@@ -194,7 +194,7 @@ public class TestIcebergColStatsFormat {
       System.arraycopy(blobs.get(i), 0, file, offsets.get(i).intValue(), blobs.get(i).length);
       meta.add(new BlobMetadata(IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1,
           List.of(1), 1L, 1L, offsets.get(i), blobs.get(i).length, null,
-          Map.of(IcebergColStatsWriter.PARTITION_FIELD, "p=" + i)));
+          Map.of(IcebergColStatsWriter.PARTITION_PROP, "p=" + i)));
     }
     return new RecordingStream(file);
   }

@@ -122,12 +122,12 @@ public final class IcebergColStatsReader {
         .withFooterSize(statsFile.fileFooterSizeInBytes())
         .build()) {
 
+      IntPredicate liveFields = liveFieldsOf(table);
+
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs().stream()
           .filter(IcebergColStatsReader::holdsColStats)
+          .filter(blob -> liveFields.test(blob.inputFields().getFirst()))
           .filter(holdsNeededColumn)
-          // a column dropped and added back is a different field: what was stored for the one it
-          // replaced describes rows the column of that name never held
-          .filter(blob -> table.schema().findField(blob.inputFields().getFirst()) != null)
           .toList();
 
       LOG.info("Using column stats from: {}", statsPath);
@@ -199,7 +199,7 @@ public final class IcebergColStatsReader {
     // the registered entry states how many partitions the file describes: an ask of another
     // size cannot be the exact set, and is turned away without opening the file
     for (var blob : statsFile.blobMetadata()) {
-      String numPartitions = blob.properties().get(IcebergColStatsWriter.NUM_PARTITIONS_FIELD);
+      String numPartitions = blob.properties().get(IcebergColStatsWriter.NUM_PARTITIONS_PROP);
       if (numPartitions != null && !numPartitions.equals(String.valueOf(asked.size()))) {
         return null;
       }
@@ -215,7 +215,7 @@ public final class IcebergColStatsReader {
       // what answers without opening the file, and this read is opening it anyway
       Set<String> described = Sets.newHashSet();
       for (BlobMetadata blob : reader.fileMetadata().blobs()) {
-        String partName = blob.properties().get(IcebergColStatsWriter.PARTITION_FIELD);
+        String partName = blob.properties().get(IcebergColStatsWriter.PARTITION_PROP);
         if (partName != null) {
           described.add(partName);
         }
@@ -225,11 +225,11 @@ public final class IcebergColStatsReader {
       if (described.isEmpty() || !described.equals(asked) || !described.stream().allMatch(upToDate)) {
         return null;
       }
+      // a dead field resolves to no name of its own, so blobsForColumns leaves its entry out
       Predicate<BlobMetadata> holdsNeededColumn = blobsForColumns(table, columns);
 
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs().stream()
           .filter(IcebergColStatsReader::holdsColStats)
-          .filter(blob -> table.schema().findField(blob.inputFields().getFirst()) != null)
           .filter(holdsNeededColumn)
           .toList();
 
@@ -272,7 +272,7 @@ public final class IcebergColStatsReader {
             if (!IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type())) {
               return false;
             }
-            String partName = metadata.properties().get(IcebergColStatsWriter.PARTITION_FIELD);
+            String partName = metadata.properties().get(IcebergColStatsWriter.PARTITION_PROP);
             return partName != null && (partitionFilter == null || partitionFilter.test(partName));
           })
           .toList();
@@ -345,7 +345,7 @@ public final class IcebergColStatsReader {
         ByteBuffer part = held.get(r).duplicate();
         part.position((int) (blob.offset() - start));
         part.limit((int) (blob.offset() - start + blob.length()));
-        result.put(blob.properties().get(IcebergColStatsWriter.PARTITION_FIELD),
+        result.put(blob.properties().get(IcebergColStatsWriter.PARTITION_PROP),
             decodePartBlob(part.slice(), columns, withVectors, fields));
       }
     }
@@ -453,17 +453,20 @@ public final class IcebergColStatsReader {
   }
 
   /**
-   * The fields the asked columns are, so a read can step over the entries of the rest. An entry
-   * answers by its field id, never by its name alone: a full ask filters by the schema's own
-   * fields, so an entry a dropped column left behind is stepped over even when a column added
-   * since carries its name.
+   * Whether the field is one the schema still has. An entry answers by its field id, never by its
+   * name alone: a column dropped and added back keeps the name and takes a new field, so an entry
+   * the dropped one left behind is stepped over even though a column of that name exists.
    */
+  static IntPredicate liveFieldsOf(Table table) {
+    return id -> table.schema().findField(id) != null;
+  }
+
+  /** The fields the asked columns are, so a read can step over the entries of the rest. */
   private static IntPredicate fieldsOf(Table table, Set<String> columns) {
-    Set<Integer> fields = Sets.newHashSet();
     if (columns == null) {
-      table.schema().columns().forEach(field -> fields.add(field.fieldId()));
-      return fields::contains;
+      return liveFieldsOf(table);
     }
+    Set<Integer> fields = Sets.newHashSet();
     for (String column : columns) {
       Types.NestedField field = table.schema().caseInsensitiveFindField(column);
       if (field != null) {
