@@ -5061,31 +5061,23 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
-    List<ExprNodeDesc> partitionOnlyExprs = new ArrayList<ExprNodeDesc>();
-    for (ExprNodeDesc partitionExpr : partitionExprNodeDescs) {
-      ExprNodeDescEqualityWrapper partitionWrapper =
-          new ExprNodeDescEqualityWrapper(partitionExpr);
-      boolean inOrder = false;
-
-      // Collect partition expressions that are not also ORDER BY expressions.
-      for (ExprNodeDesc orderExpr : orderExprNodeDescs) {
-        if (partitionWrapper.equals(new ExprNodeDescEqualityWrapper(orderExpr))) {
-          inOrder = true;
-          break;
-        }
-      }
-      if (!inOrder) {
-        partitionOnlyExprs.add(partitionExpr);
-      }
-    }
+    List<ExprNodeDesc> partitionOnlyExprs =
+        getPartitionOnlyExprs(partitionExprNodeDescs, orderExprNodeDescs);
     if (partitionOnlyExprs.isEmpty()) {
       return false;
     }
 
+    return evaluatorArgsReferencePartitionOnlyExprs(
+        evaluatorFunctionNames, evaluatorInputExprNodeDescLists, partitionOnlyExprs);
+  }
+
+  private static boolean evaluatorArgsReferencePartitionOnlyExprs(
+      String[] evaluatorFunctionNames,
+      List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists,
+      List<ExprNodeDesc> partitionOnlyExprs) {
     for (int i = 0; i < evaluatorFunctionNames.length; i++) {
-      String functionName = evaluatorFunctionNames[i].toLowerCase();
       SupportedFunctionType supportedFunctionType =
-          VectorPTFDesc.supportedFunctionsMap.get(functionName);
+          VectorPTFDesc.supportedFunctionsMap.get(evaluatorFunctionNames[i].toLowerCase());
       if (supportedFunctionType == null
           || VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType)) {
         continue;
@@ -5104,6 +5096,27 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
     return false;
+  }
+
+  private static List<ExprNodeDesc> getPartitionOnlyExprs(
+      ExprNodeDesc[] partitionExprNodeDescs, ExprNodeDesc[] orderExprNodeDescs) {
+    List<ExprNodeDesc> partitionOnlyExprs = new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc partitionExpr : partitionExprNodeDescs) {
+      // Collect partition expressions that are not also ORDER BY expressions.
+      ExprNodeDescEqualityWrapper partitionWrapper =
+          new ExprNodeDescEqualityWrapper(partitionExpr);
+      boolean inOrder = false;
+      for (ExprNodeDesc orderExpr : orderExprNodeDescs) {
+        if (partitionWrapper.equals(new ExprNodeDescEqualityWrapper(orderExpr))) {
+          inOrder = true;
+          break;
+        }
+      }
+      if (!inOrder) {
+        partitionOnlyExprs.add(partitionExpr);
+      }
+    }
+    return partitionOnlyExprs;
   }
 
   private static boolean containsExpr(ExprNodeDesc expr, List<ExprNodeDesc> targets) {
