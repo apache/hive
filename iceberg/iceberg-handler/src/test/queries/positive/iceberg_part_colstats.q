@@ -62,7 +62,7 @@ select count(id) from ice_part_stats where p = 'b';
 
 select count(id) from ice_part_stats where p = 'b';
 
--- a query spanning a written and an untouched partition cannot be answered from a subset
+-- both partitions now carry fresh statistics, so the span a stale subset could not answer is answered
 explain
 select max(id) from ice_part_stats where p in ('a', 'b');
 

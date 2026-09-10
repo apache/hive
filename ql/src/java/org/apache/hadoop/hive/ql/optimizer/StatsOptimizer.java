@@ -718,9 +718,9 @@ public class StatsOptimizer extends Transform {
     }
 
     /**
-     * The statistics of the columns a scan's aggregates read, fetched for every column when the
-     * first of them asks. An aggregate this rewrite cannot answer declines the query before
-     * asking, so a query holding one pays for nothing. Answers for a scan of a partitioned table.
+     * The statistics of the columns a scan's aggregates read, fetched once when the first
+     * aggregate needs them and shared by the rest. An aggregate this rewrite cannot answer leaves
+     * the query for execution, whole or not at all. Answers for a scan of a partitioned table.
      */
     private static final class ScanColStats {
       private final Hive hive;
