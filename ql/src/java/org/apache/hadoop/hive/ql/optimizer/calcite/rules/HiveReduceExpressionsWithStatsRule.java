@@ -318,10 +318,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
       if (columnOrigin != null) {
         RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
         if (table != null) {
-          if (StatsUtils.areBasicStatsUptoDateForQueryAnswering(table.getHiveTableMD(),
-              table.getHiveTableMD().getParameters())) {
-            return StatsUtils.getNumRows(table.getHiveTableMD());
-          }
+          return StatsUtils.getNumRowsForQueryAnswering(table.getHiveTableMD());
         }
       }
       return null;

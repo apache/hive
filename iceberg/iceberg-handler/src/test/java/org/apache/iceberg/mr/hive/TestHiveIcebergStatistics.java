@@ -2811,6 +2811,34 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void testIsNotNullIsNotFoldedFromABranchNullCountAgainstTheMainRowCount() {
+    // the null count comes from the branch the scan reads; the row count must come from the same
+    // branch. Main holds two rows and its stats are fresh, so its count is two; the branch column
+    // gains exactly two nulls among five rows. A branch null count read against the main row count
+    // would fold IS NOT NULL to false and drop the branch's three non-null rows
+    assumeParquetHiveCatalogIceberg();
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_OPTIMIZE_REDUCE_WITH_STATS.varname, true);
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_branch_isnull");
+    Schema schema = new Schema(
+        NestedField.optional(1, "id", Types.LongType.get()),
+        NestedField.optional(2, "c", Types.LongType.get()));
+    testTables.createTable(shell, identifier.name(), schema, PartitionSpec.unpartitioned(),
+        fileFormat, ImmutableList.of(), 2);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 10), (2, 20)");
+    // main's row count is fresh at two
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    shell.executeStatement("ALTER TABLE " + identifier + " CREATE BRANCH b1");
+    // db-qualified three-part name so the branch resolves as a table, not a database
+    shell.executeStatement("INSERT INTO " + identifier + ".branch_b1 VALUES (3, NULL), (4, NULL), (5, 50)");
+    shell.executeStatement("ANALYZE TABLE " + identifier + ".branch_b1 COMPUTE STATISTICS FOR COLUMNS");
+
+    List<Object[]> rows =
+        shell.executeStatement("SELECT id FROM " + identifier + ".branch_b1 WHERE c IS NOT NULL");
+    Assert.assertEquals("the branch's non-null rows are not folded away", 3, rows.size());
+  }
+
+  @Test
   public void testARecreatedColumnDoesNotAnswerFromItsNamesakesPartitionEntry() throws Exception {
     // a full ask decodes each partition blob whole; the entries still answer by field id, so what
     // a dropped column left behind is stepped over even though a column added since bears its name

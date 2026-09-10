@@ -2070,6 +2070,20 @@ public class StatsUtils {
   }
 
   /**
+   * The row count an answer may be folded against: a handler counts the snapshot the scan reads -
+   * a branch or as-of count, not the current table's - so it describes the same rows the column
+   * statistics served for query answering do. A native table's count comes from its metastore
+   * parameters, once they are up to date.
+   */
+  public static Long getNumRowsForQueryAnswering(Table table) {
+    if (table.isNonNative()) {
+      return table.getStorageHandler().canProvideBasicStatistics() ?
+          table.getStorageHandler().getRowCount(table) : null;
+    }
+    return areBasicStatsUptoDateForQueryAnswering(table, table.getParameters()) ? getNumRows(table) : null;
+  }
+
+  /**
    * Are the column stats for the table up-to-date for query planning.
    * Can run additional checks compared to the version in StatsSetupConst.
    */
