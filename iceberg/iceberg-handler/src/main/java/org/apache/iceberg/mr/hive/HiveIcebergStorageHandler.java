@@ -511,8 +511,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       stats = emptyStatsMap();
 
     } else if (!HiveMetaHook.ICEBERG.equals(getStatsSource()) && !quickStats &&
-        hmsTable.getSnapshotRef() == null) {
-      // the metastore parameters describe the table, not a branch: use the snapshot's counters
+        hmsTable.getQualifier().isEmpty()) {
+      // the metastore holds one unversioned set of parameters describing the current table, so a
+      // branch, a tag or a point in time is not answered from it - only a plain scan is
       stats = hmsTable.getParameters();
 
     } else {

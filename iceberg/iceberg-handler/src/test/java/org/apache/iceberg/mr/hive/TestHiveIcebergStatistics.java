@@ -2159,6 +2159,8 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
       asOf.setAsOfVersion(String.valueOf(oldSnapshot));
       Assert.assertEquals("the scan reads two rows, however the table now holds five",
           Long.valueOf(2), storageHandler().getRowCount(asOf));
+      Assert.assertEquals("and the basic statistics count the point in time, not the current row",
+          "2", storageHandler().getBasicStatistics(asOf).get(StatsSetupConst.ROW_COUNT));
       Assert.assertFalse("the metastore's row must not answer for a point in time",
           storageHandler().areColumnStatsUptoDate(asOf, List.of("id")));
     } finally {
