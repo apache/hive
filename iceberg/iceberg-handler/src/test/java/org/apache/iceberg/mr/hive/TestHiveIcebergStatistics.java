@@ -2689,6 +2689,63 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void testAFilterIsNotFoldedFromAPartitionSubsetsRange() {
+    // values aggregated from some of the scanned partitions estimate, but never answer: a filter
+    // probing a value the analyzed partition never held must still run, not fold to false
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_subset_fold");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_OPTIMIZE_REDUCE_WITH_STATS.varname, true);
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('external.table.purge'='true')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (100, 'a'), (900, 'b')");
+    shell.executeStatement(
+        "ANALYZE TABLE " + identifier + " PARTITION (p='a') COMPUTE STATISTICS FOR COLUMNS");
+
+    List<Object[]> served = shell.executeStatement("SELECT id FROM " + identifier + " WHERE id = 900");
+    Assert.assertEquals("the row outside the analyzed partition's range is found", 1, served.size());
+    Assert.assertEquals(900L, served.get(0)[0]);
+
+    // and where the statistics answer for every scanned partition, the fold still fires
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    List<Object[]> plan = shell.executeStatement("EXPLAIN SELECT id FROM " + identifier + " WHERE id = 5000");
+    boolean probes = plan.stream().map(row -> String.valueOf(row[0])).anyMatch(line -> line.contains("5000"));
+    Assert.assertFalse("a probe beyond every partition's range is folded away", probes);
+  }
+
+  @Test
+  public void testARecreatedColumnDoesNotAnswerFromItsNamesakesPartitionEntry() throws Exception {
+    // a full ask decodes each partition blob whole; the entries still answer by field id, so what
+    // a dropped column left behind is stepped over even though a column added since bears its name
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_readded_part");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, amount bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('external.table.purge'='true')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 100, 'a'), (2, 200, 'a')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    // moves no snapshot: the stored partition entries stay fresh, only the field behind the name changes
+    shell.executeStatement("ALTER TABLE " + identifier + " REPLACE COLUMNS (id bigint, p string)");
+    shell.executeStatement("ALTER TABLE " + identifier + " ADD COLUMNS (amount bigint)");
+
+    HiveIcebergStorageHandler handler = storageHandler();
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    AggrStats aggr = handler.getAggrColStatsFor(hmsTable,
+        List.of("id", "amount", "p"), partitionNames(handler, hmsTable));
+    Assert.assertEquals("a partition whose blob answers for a dropped field does not count as found",
+        0, aggr.getPartsFound());
+    Assert.assertTrue("and nothing is served under the recreated column's name",
+        aggr.getColStats().stream().noneMatch(statsObj -> "amount".equals(statsObj.getColName())));
+  }
+
+  @Test
   public void testTheTableMetadataRegistersOnePartitionEntryNamingEveryFieldAndThePartitionCount() {
     // a partition's statistics are addressed through the file's own footer: registering an entry
     // per partition would write that footer into the table metadata again, once per partition,
