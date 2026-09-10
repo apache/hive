@@ -303,8 +303,9 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
         if (table != null) {
           ColStatistics colStats =
               table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal()), false).get(0);
-          if (colStats != null && StatsUtils.areColumnStatsUptoDateForQueryAnswering(
-              table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
+          if (colStats != null && !colStats.isPartialAggregate() &&
+              StatsUtils.areColumnStatsUptoDateForQueryAnswering(
+                  table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
             return colStats;
           }
         }

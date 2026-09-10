@@ -464,9 +464,9 @@ public class StatsUtils {
 
           stats.addToColumnStats(columnStats);
         } else {
-          if (statsRetrieved) {
-            columnStats.addAll(convertColStats(aggrStats.getColStats()));
-          }
+          List<ColStatistics> aggregatedStats = statsRetrieved ?
+              convertColStats(aggrStats.getColStats()) : Collections.emptyList();
+          columnStats.addAll(aggregatedStats);
           int colStatsAvailable = neededColumns.size() + partitionCols.size() - partitionColsToRetrieve.size();
           if (columnStats.size() != colStatsAvailable) {
             LOG.debug("Column stats requested for : {} columns. Able to retrieve for {} columns",
@@ -491,6 +491,9 @@ public class StatsUtils {
           // Change if we could not retrieve for all partitions
           if (aggrStats != null && aggrStats.getPartsFound() != partNames.size() && stats.getColumnStatsState() != State.NONE) {
             stats.updateColumnStatsState(State.PARTIAL);
+            // values aggregated from a subset of the scanned partitions estimate, but never
+            // answer; a partition column's stats come from the pruned values and stay exact
+            aggregatedStats.forEach(colStats -> colStats.setPartialAggregate(true));
             LOG.debug("Column stats requested for : {} partitions. Able to retrieve for {} partitions",
                     partNames.size(), aggrStats.getPartsFound());
           }

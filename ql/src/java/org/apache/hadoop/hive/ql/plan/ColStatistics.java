@@ -31,6 +31,7 @@ public class ColStatistics {
   private Range range;
   private boolean isPrimaryKey;
   private boolean isEstimated;
+  private boolean partialAggregate;
   private boolean isFilteredColumn;
   private byte[] bitVectors;
   private byte[] histogram;
@@ -171,6 +172,7 @@ public class ColStatistics {
     clone.setHistogram(histogram);
     clone.setPrimaryKey(isPrimaryKey);
     clone.setIsEstimated(isEstimated);
+    clone.setPartialAggregate(partialAggregate);
     clone.setIsFilteredColumn(isFilteredColumn);
     if (range != null ) {
       clone.setRange(range.clone());
@@ -180,6 +182,15 @@ public class ColStatistics {
 
   public boolean isPrimaryKey() {
     return isPrimaryKey;
+  }
+
+  /** Whether these values were aggregated from only some of the partitions the scan reads. */
+  public boolean isPartialAggregate() {
+    return partialAggregate;
+  }
+
+  public void setPartialAggregate(boolean partialAggregate) {
+    this.partialAggregate = partialAggregate;
   }
 
   public void setPrimaryKey(boolean isPrimaryKey) {
