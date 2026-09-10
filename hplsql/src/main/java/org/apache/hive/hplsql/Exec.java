@@ -102,7 +102,6 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   public static final String ERRORCODE = "ERRORCODE";
   public static final String SQLCODE = "SQLCODE";
   public static final String SQLSTATE = "SQLSTATE";
-  public static final String HOSTCODE = "HOSTCODE";
 
   Exec exec;
   private IMetaStoreClient msc;
@@ -745,16 +744,6 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   public void setResultListener(ResultListener resultListener) {
     select.setResultListener(resultListener);
   }
-
-  /**
-   * Set HOSTCODE
-   */
-  public void setHostCode(int code) {
-    Var var = findVariable(HOSTCODE);
-    if (var != null) {
-      var.setValue(Long.valueOf(code));
-    }
-  }
   
   /**
    * Set successful execution for SQL
@@ -869,7 +858,6 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
     addVariable(new Var(ERRORCODE, Var.Type.BIGINT, 0L));
     addVariable(new Var(SQLCODE, Var.Type.BIGINT, 0L));
     addVariable(new Var(SQLSTATE, Var.Type.STRING, "00000"));
-    addVariable(new Var(HOSTCODE, Var.Type.BIGINT, 0L)); 
     for (Map.Entry<String, String> v : arguments.getVars().entrySet()) {
       addVariable(new Var(v.getKey(), Var.Type.STRING, v.getValue()));
     }
