@@ -1792,15 +1792,6 @@ public class StatsUtils {
   }
 
   /**
-   * Get number of rows of a give table
-   * @return number of rows
-   */
-  @Deprecated
-  public static long getNumRows(Table table) {
-    return getBasicStatForTable(table, StatsSetupConst.ROW_COUNT);
-  }
-
-  /**
    * Get total size of a give table
    * @return total size
    */
@@ -2067,6 +2058,21 @@ public class StatsUtils {
    */
   public static boolean areBasicStatsUptoDateForQueryAnswering(Table table, Map<String, String> params) {
     return checkCanProvideStats(table) && StatsSetupConst.areBasicStatsUptoDate(params);
+  }
+
+  /**
+   * The row count an answer may be folded against: a handler counts the snapshot the scan reads -
+   * a branch or as-of count, not the current table's - so it describes the same rows the column
+   * statistics served for query answering do. A native table's count comes from its metastore
+   * parameters, once they are up to date.
+   */
+  public static Long getRowCnt(Table table) {
+    if (table.isNonNative()) {
+      HiveStorageHandler handler = table.getStorageHandler();
+      return handler.canProvideBasicStatistics() ? handler.getRowCount(table) : null;
+    }
+    return areBasicStatsUptoDateForQueryAnswering(table, table.getParameters()) ?
+        getBasicStatForTable(table, StatsSetupConst.ROW_COUNT) : null;
   }
 
   /**
