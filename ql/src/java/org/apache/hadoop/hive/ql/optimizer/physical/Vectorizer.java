@@ -5078,13 +5078,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     for (int i = 0; i < evaluatorFunctionNames.length; i++) {
       SupportedFunctionType supportedFunctionType =
           VectorPTFDesc.supportedFunctionsMap.get(evaluatorFunctionNames[i].toLowerCase());
-      if (supportedFunctionType == null
-          || VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType)) {
-        continue;
-      }
-
       List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
-      if (exprNodeDescList == null) {
+      if (supportedFunctionType == null ||
+          VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType) ||
+          exprNodeDescList == null) {
         continue;
       }
 

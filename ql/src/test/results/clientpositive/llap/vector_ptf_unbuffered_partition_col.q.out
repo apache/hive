@@ -1,11 +1,11 @@
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: explain vectorization detail
 select key, sum(c_float) over(partition by c_float order by c_float) as s
 from cbo_t1 order by key, s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: explain vectorization detail
 select key, sum(c_float) over(partition by c_float order by c_float) as s
 from cbo_t1 order by key, s
 POSTHOOK: type: QUERY
@@ -217,14 +217,14 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1 	16.0
 NULL	NULL
 NULL	NULL
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: explain vectorization detail
 select key, sum(c_float) over(partition by c_float, key order by c_float, value) as s
 from cbo_t1 order by key, s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: explain vectorization detail
 select key, sum(c_float) over(partition by c_float, key order by c_float, value) as s
 from cbo_t1 order by key, s
 POSTHOOK: type: QUERY
@@ -435,14 +435,14 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1 	2.0
 NULL	NULL
 NULL	NULL
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: explain vectorization detail
 select key, sum(c_float) over(partition by c_float order by key) as s
 from cbo_t1 order by key, s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: explain vectorization detail
 select key, sum(c_float) over(partition by c_float order by key) as s
 from cbo_t1 order by key, s
 POSTHOOK: type: QUERY
@@ -618,14 +618,14 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1 	18.0
 NULL	NULL
 NULL	NULL
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+PREHOOK: query: explain vectorization detail
 select key, sum(c_float + 1) over(partition by c_float order by key) as s
 from cbo_t1 order by key, s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+POSTHOOK: query: explain vectorization detail
 select key, sum(c_float + 1) over(partition by c_float order by key) as s
 from cbo_t1 order by key, s
 POSTHOOK: type: QUERY
