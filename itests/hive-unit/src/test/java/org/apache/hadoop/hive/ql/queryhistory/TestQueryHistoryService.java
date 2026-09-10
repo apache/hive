@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hive.service.rpc.thrift.TOperationState;
 import org.apache.tez.common.counters.DAGCounter;
 import org.apache.tez.common.counters.TaskCounter;
 import org.apache.tez.common.counters.TezCounters;
@@ -90,7 +91,7 @@ public class TestQueryHistoryService {
     service.start();
 
     // prepare the source object from which the QueryHistoryService will obtain query information
-    QueryInfo queryInfo = spy(new QueryInfo(DummyRecord.QUERY_STATE, DummyRecord.END_USER,
+    QueryInfo queryInfo = spy(new QueryInfo(TOperationState.INITIALIZED_STATE, DummyRecord.END_USER,
         DummyRecord.EXECUTION_ENGINE, DummyRecord.SESSION_ID,
         DummyRecord.OPERATION_ID));
     // elapsed time is calculated from System.currentTimeMillis(), let's mock it here for unit test convenience's sake
