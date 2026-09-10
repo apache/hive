@@ -153,15 +153,9 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   private void validateDeserializedExprNodeGenericFuncDesc(ExprNodeGenericFuncDesc expr) throws MetaException {
     GenericUDF genericUDF = expr.getGenericUDF();
     if (genericUDF instanceof GenericUDFBridge genericUDFBridge) {
-      String udfClassName = genericUDFBridge.getUdfClassName();
-      Class<?> udfClass;
-      try {
-        udfClass = Class.forName(udfClassName, false, Thread.currentThread().getContextClassLoader());
-      } catch (ClassNotFoundException | LinkageError e) {
-        throw new MetaException("Unknown UDF class in partition filter expression: " + udfClassName);
-      }
+      Class<? extends UDF> udfClass = genericUDFBridge.getUdfClass();
       if (!UDF.class.isAssignableFrom(udfClass)) {
-        throw new MetaException("Class in partition filter expression is not a UDF: " + udfClassName);
+        throw new MetaException("Class in partition filter expression is not a UDF: " + udfClass);
       }
     }
     if (genericUDF instanceof GenericUDFMacro genericUDFMacro) {
