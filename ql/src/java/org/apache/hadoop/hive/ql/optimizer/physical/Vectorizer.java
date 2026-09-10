@@ -2931,6 +2931,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
+    if (hasUnbufferedPartitionColumnInEvaluatorArgs(
+        vectorPTFDesc.getIsPartitionOrderBy(),
+        vectorPTFDesc.getPartitionExprNodeDescs(),
+        vectorPTFDesc.getOrderExprNodeDescs(),
+        vectorPTFDesc.getEvaluatorFunctionNames(),
+        vectorPTFDesc.getEvaluatorInputExprNodeDescLists())) {
+      setOperatorIssue(
+          "Window function argument references partition-only column not buffered in vector PTF");
+      return false;
+    }
+
     // Output columns ok?
     String[] outputColumnNames = vectorPTFDesc.getOutputColumnNames();
     TypeInfo[] outputTypeInfos = vectorPTFDesc.getOutputTypeInfos();
@@ -5034,6 +5045,81 @@ public class Vectorizer implements PhysicalPlanResolver {
       exprNodeDescs[i] = orderExpressions.get(i).getExprNode();
     }
     return exprNodeDescs;
+  }
+
+  // TODO: An evaluator that wants to handle a partition-only column in its calculation could
+  // opt in to vectorization here.
+  private static boolean hasUnbufferedPartitionColumnInEvaluatorArgs(
+      boolean isPartitionOrderBy,
+      ExprNodeDesc[] partitionExprNodeDescs,
+      ExprNodeDesc[] orderExprNodeDescs,
+      String[] evaluatorFunctionNames,
+      List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists) {
+
+    // PARTITION BY matches ORDER BY, so partition cols are buffered as order cols.
+    if (!isPartitionOrderBy) {
+      return false;
+    }
+
+    List<ExprNodeDesc> partitionOnlyExprs = new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc partitionExpr : partitionExprNodeDescs) {
+      ExprNodeDescEqualityWrapper partitionWrapper =
+          new ExprNodeDescEqualityWrapper(partitionExpr);
+      boolean inOrder = false;
+
+      // Collect partition expressions that are not also ORDER BY expressions.
+      for (ExprNodeDesc orderExpr : orderExprNodeDescs) {
+        if (partitionWrapper.equals(new ExprNodeDescEqualityWrapper(orderExpr))) {
+          inOrder = true;
+          break;
+        }
+      }
+      if (!inOrder) {
+        partitionOnlyExprs.add(partitionExpr);
+      }
+    }
+    if (partitionOnlyExprs.isEmpty()) {
+      return false;
+    }
+
+    for (int i = 0; i < evaluatorFunctionNames.length; i++) {
+      String functionName = evaluatorFunctionNames[i].toLowerCase();
+      SupportedFunctionType supportedFunctionType =
+          VectorPTFDesc.supportedFunctionsMap.get(functionName);
+      if (supportedFunctionType == null
+          || VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType)) {
+        continue;
+      }
+
+      List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
+      if (exprNodeDescList == null) {
+        continue;
+      }
+
+      // Check whether any evaluator argument references a partition-only column.
+      for (ExprNodeDesc exprNodeDesc : exprNodeDescList) {
+        if (containsExpr(exprNodeDesc, partitionOnlyExprs)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean containsExpr(ExprNodeDesc expr, List<ExprNodeDesc> targets) {
+    for (ExprNodeDesc target : targets) {
+      if (expr.isSame(target)) {
+        return true;
+      }
+    }
+    if (expr.getChildren() != null) {
+      for (ExprNodeDesc child : expr.getChildren()) {
+        if (containsExpr(child, targets)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /*
