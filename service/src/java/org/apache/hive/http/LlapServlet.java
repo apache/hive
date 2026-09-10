@@ -115,6 +115,7 @@ public class LlapServlet extends HttpServlet {
     } catch (Exception e) {
       LOG.error("Caught exception while processing llap status request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.setHeader(HttpConstants.CACHE_CONTROL, "no-store");
     }
   }
 }
