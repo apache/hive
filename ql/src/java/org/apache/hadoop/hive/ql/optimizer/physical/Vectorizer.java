@@ -2931,6 +2931,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
+    if (hasUnbufferedPartitionColumnInEvaluatorArgs(
+        vectorPTFDesc.getIsPartitionOrderBy(),
+        vectorPTFDesc.getPartitionExprNodeDescs(),
+        vectorPTFDesc.getOrderExprNodeDescs(),
+        vectorPTFDesc.getEvaluatorFunctionNames(),
+        vectorPTFDesc.getEvaluatorInputExprNodeDescLists())) {
+      setOperatorIssue(
+          "Window function argument references partition-only column not buffered in vector PTF");
+      return false;
+    }
+
     // Output columns ok?
     String[] outputColumnNames = vectorPTFDesc.getOutputColumnNames();
     TypeInfo[] outputTypeInfos = vectorPTFDesc.getOutputTypeInfos();
@@ -3005,10 +3016,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
       }
 
-      // RANK/DENSE_RANK/CUME_DIST don't care about columns.
-      if (supportedFunctionType != SupportedFunctionType.RANK &&
-          supportedFunctionType != SupportedFunctionType.DENSE_RANK &&
-          supportedFunctionType != SupportedFunctionType.CUME_DIST) {
+      if (!VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType)) {
 
         if (exprNodeDescList != null) {
           // LEAD and LAG now supports multiple arguments in vectorized mode
@@ -5037,6 +5045,88 @@ public class Vectorizer implements PhysicalPlanResolver {
       exprNodeDescs[i] = orderExpressions.get(i).getExprNode();
     }
     return exprNodeDescs;
+  }
+
+  // TODO: An evaluator that wants to handle an unbuffered partition-only column in its calculation could
+  // opt in to vectorization here.
+  private static boolean hasUnbufferedPartitionColumnInEvaluatorArgs(
+      boolean isPartitionOrderBy,
+      ExprNodeDesc[] partitionExprNodeDescs,
+      ExprNodeDesc[] orderExprNodeDescs,
+      String[] evaluatorFunctionNames,
+      List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists) {
+
+    // PARTITION BY matches ORDER BY, so partition cols are buffered as order cols.
+    if (!isPartitionOrderBy) {
+      return false;
+    }
+
+    List<ExprNodeDesc> partitionOnlyExprs =
+        getPartitionOnlyExprs(partitionExprNodeDescs, orderExprNodeDescs);
+    if (partitionOnlyExprs.isEmpty()) {
+      return false;
+    }
+
+    return evaluatorArgsReferencePartitionOnlyExprs(
+        evaluatorFunctionNames, evaluatorInputExprNodeDescLists, partitionOnlyExprs);
+  }
+
+  private static boolean evaluatorArgsReferencePartitionOnlyExprs(
+      String[] evaluatorFunctionNames,
+      List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists,
+      List<ExprNodeDesc> partitionOnlyExprs) {
+    for (int i = 0; i < evaluatorFunctionNames.length; i++) {
+      SupportedFunctionType supportedFunctionType =
+          VectorPTFDesc.supportedFunctionsMap.get(evaluatorFunctionNames[i].toLowerCase());
+      List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
+      if (supportedFunctionType == null ||
+          VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType) ||
+          exprNodeDescList == null) {
+        continue;
+      }
+
+      // Check whether a evaluator argument references a partition-only column.
+      for (ExprNodeDesc exprNodeDesc : exprNodeDescList) {
+        if (hasPartitionOnlyColumnArg(exprNodeDesc, partitionOnlyExprs)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasPartitionOnlyColumnArg(
+      ExprNodeDesc expr, List<ExprNodeDesc> partitionOnlyExprs) {
+    if (!(expr instanceof ExprNodeColumnDesc)) {
+      return false;
+    }
+    for (ExprNodeDesc partitionOnlyExpr : partitionOnlyExprs) {
+      if (expr.isSame(partitionOnlyExpr)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static List<ExprNodeDesc> getPartitionOnlyExprs(
+      ExprNodeDesc[] partitionExprNodeDescs, ExprNodeDesc[] orderExprNodeDescs) {
+    List<ExprNodeDesc> partitionOnlyExprs = new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc partitionExpr : partitionExprNodeDescs) {
+      // Collect partition expressions that are not also ORDER BY expressions.
+      ExprNodeDescEqualityWrapper partitionWrapper =
+          new ExprNodeDescEqualityWrapper(partitionExpr);
+      boolean inOrder = false;
+      for (ExprNodeDesc orderExpr : orderExprNodeDescs) {
+        if (partitionWrapper.equals(new ExprNodeDescEqualityWrapper(orderExpr))) {
+          inOrder = true;
+          break;
+        }
+      }
+      if (!inOrder) {
+        partitionOnlyExprs.add(partitionExpr);
+      }
+    }
+    return partitionOnlyExprs;
   }
 
   /*

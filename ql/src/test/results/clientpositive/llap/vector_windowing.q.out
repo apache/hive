@@ -3250,7 +3250,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                notVectorizedReason: PTF operator: percent_rank not in supported functions [avg, count, cume_dist, dense_rank, first_value, lag, last_value, lead, max, min, rank, row_number, sum]
+                notVectorizedReason: PTF operator: ntile not in supported functions [avg, count, cume_dist, dense_rank, first_value, lag, last_value, lead, max, min, percent_rank, rank, row_number, sum]
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
