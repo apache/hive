@@ -1394,14 +1394,6 @@ public class Exec extends HplsqlBaseVisitor<Integer> implements Closeable {
   }
   
   /**
-   * COPY statement
-   */
-  @Override 
-  public Integer visitCopy_stmt(HplsqlParser.Copy_stmtContext ctx) { 
-    return new Copy(exec, queryExecutor).run(ctx);
-  }
-  
-  /**
    * DECLARE HANDLER statement
    */
   @Override 

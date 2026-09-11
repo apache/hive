@@ -51,7 +51,6 @@ stmt :
      | collect_stats_stmt
      | close_stmt
      | cmp_stmt
-     | copy_stmt
      | commit_stmt
      | create_database_stmt
      | create_function_stmt
@@ -638,21 +637,6 @@ cmp_stmt :              // CMP statement
      
 cmp_source :
       (table_name where_clause? | T_OPEN_P select_stmt T_CLOSE_P) (T_AT qident)?
-     ;
-
-copy_stmt :             // COPY statement
-       T_COPY (table_name | T_OPEN_P select_stmt T_CLOSE_P) T_TO T_HDFS? copy_target copy_option*
-     ;
-
-copy_target :
-       (file_name | expr) 
-     ;
-    
-copy_option :
-       T_AT qident
-     | T_BATCHSIZE expr
-     | T_DELIMITER expr
-     | T_SQLINSERT qident
      ;
 
 commit_stmt :           // COMMIT statement
@@ -1267,8 +1251,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_COLUMN
      | T_COMMENT  
      | T_COMPRESS     
-     | T_CONSTANT     
-     | T_COPY
+     | T_CONSTANT
      | T_COMMIT
      | T_CONCAT
      | T_CONDITION
@@ -1602,7 +1585,6 @@ T_CONCAT          : C O N C A T;
 T_CONDITION       : C O N D I T I O N ;
 T_CONSTRAINT      : C O N S T R A I N T ; 
 T_CONTINUE        : C O N T I N U E ;
-T_COPY            : C O P Y ;
 T_COUNT           : C O U N T ;
 T_COUNT_BIG       : C O U N T '_' B I G;
 T_CREATE          : C R E A T E ;
