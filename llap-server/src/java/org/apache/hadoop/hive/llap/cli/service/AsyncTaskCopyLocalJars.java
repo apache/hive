@@ -68,9 +68,6 @@ class AsyncTaskCopyLocalJars implements Callable<Void> {
         io.netty.handler.codec.http.HttpObjectAggregator.class, // netty-all
         com.google.flatbuffers.Table.class, //flatbuffers
         com.carrotsearch.hppc.ByteArrayDeque.class, //hppc
-        io.jsonwebtoken.security.Keys.class, //jjwt-api
-        io.jsonwebtoken.impl.DefaultJws.class, //jjwt-impl
-        io.jsonwebtoken.io.JacksonSerializer.class, //jjwt-jackson
     };
 
     for (Class<?> c : dependencies) {

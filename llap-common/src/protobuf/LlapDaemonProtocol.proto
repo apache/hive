@@ -132,8 +132,11 @@ message SubmitWorkRequestProto {
   optional bytes initial_event_signature = 11;
 
   optional bool is_guaranteed = 12 [default = false];
-  optional string jwt = 13;
-  optional bool is_external_client_request = 14 [default = false];
+
+  // HIVE-28932: We used 13, 14, jwt, is_external_client_request to let external clients directly access LLAP daemons
+  // in a cloud environment.
+  reserved 13, 14;
+  reserved "jwt", "is_external_client_request";
 }
 
 message RegisterDagRequestProto {
