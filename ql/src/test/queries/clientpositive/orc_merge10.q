@@ -1,6 +1,7 @@
 --! qt:dataset:src
 --! qt:dataset:part
 --! qt:replace:/(File Version:)(.+)/$1#Masked#/
+--! qt:replace:/(File length:\s+)\S+(\s+bytes)/$1#Masked#$2/
 set hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
