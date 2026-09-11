@@ -75,6 +75,15 @@ public interface IMetaStoreClient extends AutoCloseable {
   }
 
   /**
+   * Rebind embedded metastore handler configuration after session-level SET.
+   * Default no-op; only embedded clients override this. 
+   * Remote metastore clients must not perform any work here.
+   */
+  @InterfaceAudience.Private
+  default void syncEmbeddedHandlerConf(Configuration conf) {
+  }
+
+  /**
    *  Tries to reconnect this MetaStoreClient to the MetaStore.
    */
   void reconnect() throws MetaException;
