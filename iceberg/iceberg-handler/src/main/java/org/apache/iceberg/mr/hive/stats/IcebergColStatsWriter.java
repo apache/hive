@@ -58,6 +58,7 @@ import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * Writes the column statistics an ANALYZE, or a write told to compute them, produced as the
  * table's statistics file, per the policy the write's facts resolve to: replacing the stored file,
@@ -97,6 +98,13 @@ public final class IcebergColStatsWriter {
   public static final String PARTITION_FIELD = "partition";
   /** How many partitions the file describes, stated on its registered entry. */
   public static final String NUM_PARTITIONS_FIELD = "numPartitions";
+  /**
+   * Whether the file's aggregates answer for the whole table, stated on its registered entry: a
+   * gather over every partition does, and a merge does while the file it carried from did. A
+   * partition-scoped gather with nothing to carry describes its partition alone, however the
+   * granularity of a later read.
+   */
+  public static final String STATES_TABLE_FIELD = "statesTable";
   /**
    * What a table-level entry is named now that it holds a Thrift struct rather than a serialized
    * Java object. A reader that knows neither name reads it as absent, and one that knows both
@@ -162,8 +170,10 @@ public final class IcebergColStatsWriter {
       // A write commits a snapshot of its own, so what it completes sits on the one before it. An
       // ANALYZE commits none, but replaces rather than merges, so it never asks.
       Long parentId = snapshot.parentId();
+      // merges only into a file gathered as one: the read side may serve a partition-level
+      // file's aggregates for a table-level ask, but a write never adds itself to them
       StatisticsFile statsOldSrc = parentId == null ? null :
-          IcebergStoredStats.getColStatsFile(tbl, parentId, false);
+          IcebergStoredStats.getTableGatheredColStats(tbl, parentId);
       if (statsOldSrc == null) {
         // a table-level increment has nothing to add itself to
         return false;
@@ -185,7 +195,7 @@ public final class IcebergColStatsWriter {
     // leave with it
     stats.getStatsObj().removeIf(obj -> schema.caseInsensitiveFindField(obj.getColName()) == null);
 
-    return commitFile(tbl, snapshot, writer -> {
+    return commitFile(tbl, snapshot, Map.of(), writer -> {
       for (ColumnStatisticsObj obj : stats.getStatsObj()) {
         // a column's statistics are one blob, vectors and all, as a partition's entries are one
         // entry: what a read wants of them it settles once they are in hand. The vector stays
@@ -213,8 +223,12 @@ public final class IcebergColStatsWriter {
     StatisticsFile statsOldSrc = policy == IcebergColStatsWritePolicy.MERGE ?
         IcebergStoredStats.findColStatsFile(tbl, snapshot.snapshotId(), true) : null;
     ColStatsAggregate aggregate = new ColStatsAggregate();
+    // a gather over every partition states the table, and a merge does while the file it
+    // carried from did; a partition-scoped gather describes its partition alone
+    boolean statesTable = policy == IcebergColStatsWritePolicy.MERGE ?
+        IcebergStoredStats.statesTable(statsOldSrc) : !IcebergColStatsWritePolicy.isAnalyzePartition(conf);
 
-    return commitFile(tbl, snapshot, writer -> {
+    return commitFile(tbl, snapshot, statesTable ? Map.of(STATES_TABLE_FIELD, "true") : Map.of(), writer -> {
       Set<Integer> gatheredFieldIds = Sets.newLinkedHashSet();
 
       while (colStats.hasNext()) {
@@ -265,8 +279,8 @@ public final class IcebergColStatsWriter {
       // was computed stands on its own
       return;
     }
-    Predicate<String> upToDate = IcebergStoredStats.upToDateColStats(tbl, snapshot, statsOldSrc, conf, false);
-
+    Predicate<String> upToDate =
+        IcebergStoredStats.upToDateColStats(tbl, snapshot, statsOldSrc, conf, false);
     try (PuffinReader reader = Puffin.read(tbl.io().newInputFile(statsOldSrc.path()))
         .withFileSize(statsOldSrc.fileSizeInBytes())
         .withFooterSize(statsOldSrc.fileFooterSizeInBytes())
@@ -433,7 +447,8 @@ public final class IcebergColStatsWriter {
    * every commit.
    */
   private static List<org.apache.iceberg.BlobMetadata> registeredBlobs(
-      List<org.apache.iceberg.puffin.BlobMetadata> written, List<Integer> namedFields) {
+      List<org.apache.iceberg.puffin.BlobMetadata> written, List<Integer> namedFields,
+      Map<String, String> censusProperties) {
     long numPartitions = written.stream()
         .filter(blob -> HIVE_PART_COL_STATS_BLOB_V1.equals(blob.type()))
         .count();
@@ -449,6 +464,7 @@ public final class IcebergColStatsWriter {
         Map<String, String> properties = ImmutableMap.<String, String>builder()
             .putAll(blob.properties())
             .put(NUM_PARTITIONS_FIELD, String.valueOf(numPartitions))
+            .putAll(censusProperties)
             .build();
         registered.add(GenericBlobMetadata.from(new org.apache.iceberg.puffin.BlobMetadata(
             blob.type(), namedFields, blob.snapshotId(), blob.sequenceNumber(),
@@ -476,7 +492,8 @@ public final class IcebergColStatsWriter {
    * the table. A file no blob was added to is left uncommitted, so the statistics standing for the
    * table stay standing; one that fails part-written is deleted rather than left behind.
    */
-  private static boolean commitFile(Table tbl, Snapshot snapshot, BlobWriter blobs)
+  private static boolean commitFile(Table tbl, Snapshot snapshot, Map<String, String> censusProperties,
+      BlobWriter blobs)
       throws IOException, InvalidObjectException {
     String statsPath = ((HasTableOperations) tbl).operations().metadataFileLocation(
         String.format(STATS_FILE, snapshot.snapshotId(), UUID.randomUUID()));
@@ -500,7 +517,7 @@ public final class IcebergColStatsWriter {
           statsPath,
           writer.fileSize(),
           writer.footerSize(),
-          registeredBlobs(writer.writtenBlobsMetadata(), namedFields));
+          registeredBlobs(writer.writtenBlobsMetadata(), namedFields, censusProperties));
     } catch (Exception e) {
       tbl.io().deleteFile(statsPath);
       if (!(e instanceof IOException)) {

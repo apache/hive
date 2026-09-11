@@ -464,9 +464,9 @@ public class StatsUtils {
 
           stats.addToColumnStats(columnStats);
         } else {
-          if (statsRetrieved) {
-            columnStats.addAll(convertColStats(aggrStats.getColStats()));
-          }
+          List<ColStatistics> aggregatedStats = statsRetrieved ?
+              convertColStats(aggrStats.getColStats()) : Collections.emptyList();
+          columnStats.addAll(aggregatedStats);
           int colStatsAvailable = neededColumns.size() + partitionCols.size() - partitionColsToRetrieve.size();
           if (columnStats.size() != colStatsAvailable) {
             LOG.debug("Column stats requested for : {} columns. Able to retrieve for {} columns",
@@ -491,6 +491,9 @@ public class StatsUtils {
           // Change if we could not retrieve for all partitions
           if (aggrStats != null && aggrStats.getPartsFound() != partNames.size() && stats.getColumnStatsState() != State.NONE) {
             stats.updateColumnStatsState(State.PARTIAL);
+            // values aggregated from a subset of the scanned partitions estimate, but never
+            // answer; a partition column's stats come from the pruned values and stay exact
+            aggregatedStats.forEach(colStats -> colStats.setPartialAggregate(true));
             LOG.debug("Column stats requested for : {} partitions. Able to retrieve for {} partitions",
                     partNames.size(), aggrStats.getPartsFound());
           }
@@ -2067,11 +2070,40 @@ public class StatsUtils {
   }
 
   /**
+   * The row count an answer may be folded against: a handler counts the snapshot the scan reads -
+   * a branch or as-of count, not the current table's - so it describes the same rows the column
+   * statistics served for query answering do. A native table's count comes from its metastore
+   * parameters, once they are up to date.
+   */
+  public static Long getNumRowsForQueryAnswering(Table table) {
+    if (table.isNonNative()) {
+      return table.getStorageHandler().canProvideBasicStatistics() ?
+          table.getStorageHandler().getRowCount(table) : null;
+    }
+    return areBasicStatsUptoDateForQueryAnswering(table, table.getParameters()) ? getNumRows(table) : null;
+  }
+
+  /**
    * Are the column stats for the table up-to-date for query planning.
    * Can run additional checks compared to the version in StatsSetupConst.
    */
-  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params, String colName) {
-    return checkCanProvideStats(table) && StatsSetupConst.areColumnStatsUptoDate(params, colName);
+  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params,
+      String colName) {
+    return areColumnStatsUptoDateForQueryAnswering(table, params, List.of(colName));
+  }
+
+  /**
+   * The same, asked of every column at once: a handler settles which of its statistics answer
+   * once, and that question is the same whatever column is asked about.
+   */
+  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params,
+      List<String> colNames) {
+    // a handler keeps its own statistics and knows what happened to them, including writes by
+    // other engines that never touched the metastore marker
+    return checkCanProvideStats(table) && (
+        table.isNonNative() ? table.getStorageHandler().areColumnStatsUptoDate(table, colNames) :
+            StatsSetupConst.areColumnStatsUptoDate(params, colNames)
+    );
   }
 
   /**
