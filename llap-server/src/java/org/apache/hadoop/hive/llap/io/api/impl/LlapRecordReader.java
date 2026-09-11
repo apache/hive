@@ -304,6 +304,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           break;
           //Timestamp column vector uses an int and long arrays
         case TIMESTAMP:
+        case TIMESTAMPLOCALTZ:
         case INTERVAL_DAY_TIME:
           colWeight = 2;
           break;
