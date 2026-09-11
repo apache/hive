@@ -1,0 +1,159 @@
+PREHOOK: query: DROP TABLE IF EXISTS llap_bloom_parquet PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS llap_bloom_parquet PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE llap_bloom_parquet (id bigint, name string)
+STORED BY ICEBERG STORED AS PARQUET
+TBLPROPERTIES ('format-version'='2', 'write.parquet.bloom-filter-enabled.column.id'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_bloom_parquet
+POSTHOOK: query: CREATE EXTERNAL TABLE llap_bloom_parquet (id bigint, name string)
+STORED BY ICEBERG STORED AS PARQUET
+TBLPROPERTIES ('format-version'='2', 'write.parquet.bloom-filter-enabled.column.id'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_bloom_parquet
+PREHOOK: query: INSERT INTO llap_bloom_parquet VALUES
+(2, 'two'), (4, 'four'), (6, 'six'), (8, 'eight'), (10, 'ten')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_bloom_parquet
+POSTHOOK: query: INSERT INTO llap_bloom_parquet VALUES
+(2, 'two'), (4, 'four'), (6, 'six'), (8, 'eight'), (10, 'ten')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_bloom_parquet
+PREHOOK: query: SELECT count(*) FROM llap_bloom_parquet WHERE id = 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_bloom_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_bloom_parquet WHERE id = 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_bloom_parquet
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT count(*) FROM llap_bloom_parquet WHERE id = 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_bloom_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_bloom_parquet WHERE id = 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_bloom_parquet
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT count(*) FROM llap_bloom_parquet WHERE id = 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_bloom_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_bloom_parquet WHERE id = 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_bloom_parquet
+#### A masked pattern was here ####
+1
+PREHOOK: query: DROP TABLE llap_bloom_parquet PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_bloom_parquet
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_bloom_parquet
+POSTHOOK: query: DROP TABLE llap_bloom_parquet PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_bloom_parquet
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_bloom_parquet
+PREHOOK: query: DROP TABLE IF EXISTS llap_bloom_multi PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS llap_bloom_multi PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE llap_bloom_multi (id bigint, name string)
+STORED BY ICEBERG STORED AS PARQUET
+TBLPROPERTIES ('format-version'='2', 'write.parquet.bloom-filter-enabled.column.id'='true',
+  'write.parquet.bloom-filter-max-bytes'='1024', 'write.parquet.row-group-size-bytes'='1024')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_bloom_multi
+POSTHOOK: query: CREATE EXTERNAL TABLE llap_bloom_multi (id bigint, name string)
+STORED BY ICEBERG STORED AS PARQUET
+TBLPROPERTIES ('format-version'='2', 'write.parquet.bloom-filter-enabled.column.id'='true',
+  'write.parquet.bloom-filter-max-bytes'='1024', 'write.parquet.row-group-size-bytes'='1024')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_bloom_multi
+PREHOOK: query: INSERT INTO llap_bloom_multi
+SELECT pos * 2, concat('n', pos) FROM (SELECT 1) x LATERAL VIEW posexplode(split(space(399), ' ')) e AS pos, val
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_bloom_multi
+POSTHOOK: query: INSERT INTO llap_bloom_multi
+SELECT pos * 2, concat('n', pos) FROM (SELECT 1) x LATERAL VIEW posexplode(split(space(399), ' ')) e AS pos, val
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_bloom_multi
+PREHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 51
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 51
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 651
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 651
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 51
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 51
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 651
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 651
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 700
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_bloom_multi WHERE id = 700
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_bloom_multi
+#### A masked pattern was here ####
+1
+PREHOOK: query: DROP TABLE llap_bloom_multi PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_bloom_multi
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_bloom_multi
+POSTHOOK: query: DROP TABLE llap_bloom_multi PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_bloom_multi
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_bloom_multi
