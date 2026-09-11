@@ -1043,6 +1043,12 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   @Override
+  public int performDeadlockDetection() throws MetaException {
+    Integer aborted = new DeadlockDetectionFunction(transactionalListeners).execute(jdbcResource);
+    return aborted == null ? 0 : aborted;
+  }
+
+  @Override
   public void countOpenTxns() throws MetaException {
     int openTxns = jdbcResource.execute(new CountOpenTxnsHandler());
     if (openTxns > -1) {
