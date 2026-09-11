@@ -1,0 +1,100 @@
+PREHOOK: query: CREATE EXTERNAL TABLE country_lower (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MSSQL",
+    "hive.sql.jdbc.driver" = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+    "hive.sql.jdbc.url" = "jdbc:sqlserver://localhost:1433;DatabaseName=worldcs;",
+    "hive.sql.dbcp.username" = "sa",
+    "hive.sql.dbcp.password" = "Its-a-s3cret",
+    "hive.sql.schema" = "bob",
+    "hive.sql.table" = "country")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_lower
+POSTHOOK: query: CREATE EXTERNAL TABLE country_lower (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MSSQL",
+    "hive.sql.jdbc.driver" = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+    "hive.sql.jdbc.url" = "jdbc:sqlserver://localhost:1433;DatabaseName=worldcs;",
+    "hive.sql.dbcp.username" = "sa",
+    "hive.sql.dbcp.password" = "Its-a-s3cret",
+    "hive.sql.schema" = "bob",
+    "hive.sql.table" = "country")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country_lower
+PREHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_lower
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_lower
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_lower
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_lower
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_c0=[$0])
+  HiveProject($f0=[$0])
+    HiveJdbcConverter(convention=[JDBC.MSSQL])
+      JdbcAggregate(group=[{}], agg#0=[count()])
+        JdbcHiveTableScan(table=[[default, country_lower]], table:alias=[country_lower])
+
+PREHOOK: query: SELECT COUNT(*) FROM country_lower
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_lower
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM country_lower
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_lower
+#### A masked pattern was here ####
+3
+PREHOOK: query: CREATE EXTERNAL TABLE country_mixed (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MSSQL",
+    "hive.sql.jdbc.driver" = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+    "hive.sql.jdbc.url" = "jdbc:sqlserver://localhost:1433;DatabaseName=worldcs;",
+    "hive.sql.dbcp.username" = "sa",
+    "hive.sql.dbcp.password" = "Its-a-s3cret",
+    "hive.sql.schema" = "bob",
+    "hive.sql.table" = "[Country]")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_mixed
+POSTHOOK: query: CREATE EXTERNAL TABLE country_mixed (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MSSQL",
+    "hive.sql.jdbc.driver" = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+    "hive.sql.jdbc.url" = "jdbc:sqlserver://localhost:1433;DatabaseName=worldcs;",
+    "hive.sql.dbcp.username" = "sa",
+    "hive.sql.dbcp.password" = "Its-a-s3cret",
+    "hive.sql.schema" = "bob",
+    "hive.sql.table" = "[Country]")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country_mixed
+PREHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_mixed
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_mixed
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(_c0=[$0])
+  HiveProject($f0=[$0])
+    HiveJdbcConverter(convention=[JDBC.MSSQL])
+      JdbcAggregate(group=[{}], agg#0=[count()])
+        JdbcHiveTableScan(table=[[default, country_mixed]], table:alias=[country_mixed])
+
+PREHOOK: query: SELECT COUNT(*) FROM country_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_mixed
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM country_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_mixed
+#### A masked pattern was here ####
+2
