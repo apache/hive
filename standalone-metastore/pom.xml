@@ -38,7 +38,7 @@
     <module>packaging</module>
   </modules>
   <properties>
-    <hive.version>4.3.0-SNAPSHOT</hive.version>
+    <hive.version>${project.version}</hive.version>
     <hive.version.shortname>4.3.0</hive.version.shortname>
     <standalone.metastore.path.to.root>.</standalone.metastore.path.to.root>
     <!-- Build properties -->
