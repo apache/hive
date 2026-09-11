@@ -39,6 +39,7 @@ package org.apache.hive.service.rpc.thrift;
     COMPLEX_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.STRUCT_TYPE);
     COMPLEX_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.UNION_TYPE);
     COMPLEX_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.USER_DEFINED_TYPE);
+    COMPLEX_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.VARIANT_TYPE);
   }
 
   public static final java.util.Set<TTypeId> COLLECTION_TYPES = java.util.EnumSet.noneOf(TTypeId.class);
@@ -72,6 +73,7 @@ package org.apache.hive.service.rpc.thrift;
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.UNION_TYPE, "UNIONTYPE");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.UNKNOWN_TYPE, "UNKNOWN");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.VARCHAR_TYPE, "VARCHAR");
+    TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.VARIANT_TYPE, "VARIANT");
   }
 
   public static final java.lang.String CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";

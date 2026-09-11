@@ -84,7 +84,8 @@ int _kTTypeIdValues[] = {
   TTypeId::INTERVAL_YEAR_MONTH_TYPE,
   TTypeId::INTERVAL_DAY_TIME_TYPE,
   TTypeId::TIMESTAMPLOCALTZ_TYPE,
-  TTypeId::UNKNOWN_TYPE
+  TTypeId::UNKNOWN_TYPE,
+  TTypeId::VARIANT_TYPE
 };
 const char* _kTTypeIdNames[] = {
   "BOOLEAN_TYPE",
@@ -110,9 +111,10 @@ const char* _kTTypeIdNames[] = {
   "INTERVAL_YEAR_MONTH_TYPE",
   "INTERVAL_DAY_TIME_TYPE",
   "TIMESTAMPLOCALTZ_TYPE",
-  "UNKNOWN_TYPE"
+  "UNKNOWN_TYPE",
+  "VARIANT_TYPE"
 };
-const std::map<int, const char*> _TTypeId_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(24, _kTTypeIdValues, _kTTypeIdNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _TTypeId_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(25, _kTTypeIdValues, _kTTypeIdNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const TTypeId::type& val) {
   std::map<int, const char*>::const_iterator it = _TTypeId_VALUES_TO_NAMES.find(val);
