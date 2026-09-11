@@ -50,6 +50,7 @@ public class InputFormatConfig {
   public static final String TABLE_LOCATION = "iceberg.mr.table.location";
   public static final String TABLE_METADATA_LOCATION = "iceberg.mr.table.metadata.location";
   public static final String TABLE_SCHEMA = "iceberg.mr.table.schema";
+  public static final String TABLE_TYPE = "iceberg.mr.table.type";
   public static final String PARTITION_SPEC = "iceberg.mr.table.partition.spec";
   public static final String SERIALIZED_TABLE_PREFIX = "iceberg.mr.serialized.table.";
   public static final String TABLE_CATALOG_PREFIX = "iceberg.mr.table.catalog.";
