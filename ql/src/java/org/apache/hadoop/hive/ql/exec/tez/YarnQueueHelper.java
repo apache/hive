@@ -202,12 +202,12 @@ public class YarnQueueHelper {
     // TODO: handle 401 and return a new connection? nothing for now
     InputStream errorStream = connection.getErrorStream();
     String error = "Received " + statusCode + (errorStr == null ? "" : (" (" + errorStr + ")"));
-    if (errorStream != null) {
-      error += ": " + IOUtils.toString(errorStream);
-    } else {
+    if (errorStream == null) {
       errorStream = connection.getInputStream();
-      if (errorStream != null) {
-        error += ": " + IOUtils.toString(errorStream);
+    }
+    try (InputStream stream = errorStream) {
+      if (stream != null) {
+        error += ": " + IOUtils.toString(stream);
       }
     }
     return error;
