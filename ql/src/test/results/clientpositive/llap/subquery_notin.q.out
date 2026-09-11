@@ -3145,7 +3145,7 @@ STAGE PLANS:
                           Statistics: Num rows: 16 Data size: 1728 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint), _col2 (type: bigint)
                   Filter Operator
-                    predicate: (p_brand is not null and (UDFToDouble(p_type) + 2.0D) is not null) (type: boolean)
+                    predicate: (p_brand is not null and UDFToDouble(p_type) is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 5096 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (UDFToDouble(p_type) + 2.0D) (type: double), p_brand (type: string)

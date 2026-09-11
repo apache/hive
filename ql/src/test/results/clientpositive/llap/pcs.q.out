@@ -1407,7 +1407,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `ds` <> '2000-04-08' AND `key` = 3 OR (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2
+WHERE `key` = 2 OR `ds` <> '2000-04-08' AND `key` = 3
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1521,11 +1521,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-          filterExpr: (((ds <> '2000-04-08') and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
+          filterExpr: ((key = 2) or ((ds <> '2000-04-08') and (key = 3))) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: (((ds <> '2000-04-08') and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
+            predicate: ((key = 2) or ((ds <> '2000-04-08') and (key = 3))) (type: boolean)
             Select Operator
               expressions: ds (type: string)
               outputColumnNames: _col0
@@ -1564,7 +1564,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `key` = 3 OR ((`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND `key` = 3) AND `key` + 5 > 0
+WHERE `key` = 3 OR (`key` = 2 OR `ds` <> '2000-04-08' AND `key` = 3) AND `key` + 5 > 0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1678,11 +1678,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-          filterExpr: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0))) (type: boolean)
+          filterExpr: ((key = 3) or (((key = 2) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0))) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0))) (type: boolean)
+            predicate: ((key = 3) or (((key = 2) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0))) (type: boolean)
             Select Operator
               expressions: ds (type: string)
               outputColumnNames: _col0
