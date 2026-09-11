@@ -224,6 +224,7 @@ public class LlapStatusServiceDriver {
         return le.getExitCode();
       }
 
+      // Get the App report from YARN
       ApplicationReport appReport;
       try {
         appReport = getAppReport(appName, cl.getFindAppTimeoutMs());
@@ -232,6 +233,7 @@ public class LlapStatusServiceDriver {
         return e.getExitCode();
       }
 
+      // Process the report
       ExitCode ret;
       try {
         ret = processAppReport(appReport, appStatusBuilder);
@@ -242,34 +244,29 @@ public class LlapStatusServiceDriver {
 
       if (ret != ExitCode.SUCCESS) {
         return ret;
-      }
-
-      if (appStatusBuilder.getState() == State.APP_NOT_FOUND) {
+      } else if (appStatusBuilder.getState() == State.APP_NOT_FOUND
+          || NO_YARN_SERVICE_INFO_STATES.contains(appStatusBuilder.getState())) {
         return ExitCode.SUCCESS;
-      }
-
-      if (NO_YARN_SERVICE_INFO_STATES.contains(appStatusBuilder.getState())) {
-        return ExitCode.SUCCESS;
-      }
-
-      // Get information from YARN Service
-      try {
-        ret = populateAppStatusFromServiceStatus(appName, serviceClient, appStatusBuilder);
-      } catch (LlapStatusCliException e) {
-        // In case of failure, send back whatever is constructed so far - which would be from the AppReport
-        logError(e);
-        return e.getExitCode();
+      } else {
+        // Get information from YARN Service
+        try {
+          ret = populateAppStatusFromServiceStatus(appName, serviceClient, appStatusBuilder);
+        } catch (LlapStatusCliException e) {
+          // In case of failure, send back whatever is constructed so far - which would be from the AppReport
+          logError(e);
+          return e.getExitCode();
+        }
       }
 
       if (ret != ExitCode.SUCCESS) {
         return ret;
-      }
-
-      try {
-        ret = populateAppStatusFromLlapRegistry(appStatusBuilder, watchTimeoutMs, false);
-      } catch (LlapStatusCliException e) {
-        logError(e);
-        return e.getExitCode();
+      } else {
+        try {
+          ret = populateAppStatusFromLlapRegistry(appStatusBuilder, watchTimeoutMs, false);
+        } catch (LlapStatusCliException e) {
+          logError(e);
+          return e.getExitCode();
+        }
       }
       if (ret == ExitCode.SUCCESS) {
         updateRunningThresholdAchieved(appStatusBuilder, cl.getRunningNodesThreshold());
@@ -548,7 +545,7 @@ public class LlapStatusServiceDriver {
   }
 
   /**
-   * Non-YARN LLAP (e.g. Kubernetes, standalone Tez) uses the ZK registry for daemon discovery.
+   * Non-YARN LLAP (e.g. Kubernetes, standalone Tez) uses the LLAP registry for daemon discovery.
    * YARN Service LLAP uses the YARN APIs. Detection follows deployment config set by the operator.
    */
   static boolean usesRegistryBasedLlapStatus(Configuration conf) {
