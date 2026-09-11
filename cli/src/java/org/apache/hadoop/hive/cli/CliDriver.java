@@ -842,7 +842,7 @@ public class CliDriver {
       console.printInfo(HiveConf.generateMrDeprecationWarning());
     }
 
-    setupLineReader();
+    cli.setupLineReader();
 
     String line;
     CommandProcessorResponse response = new CommandProcessorResponse();
@@ -851,7 +851,7 @@ public class CliDriver {
     String curPrompt = prompt + curDB;
     String dbSpaces = spacesForString(curDB);
 
-    while ((line = reader.readLine(curPrompt + "> ")) != null) {
+    while ((line = cli.reader.readLine(curPrompt + "> ")) != null) {
       if (!prefix.toString().equals("")) {
         prefix.append('\n');
       }
