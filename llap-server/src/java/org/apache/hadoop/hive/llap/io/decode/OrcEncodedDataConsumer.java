@@ -266,6 +266,7 @@ public class OrcEncodedDataConsumer
       case VARCHAR:
         return new BytesColumnVector(batchSize);
       case TIMESTAMP:
+      case TIMESTAMP_INSTANT:
         return new TimestampColumnVector(batchSize);
       case DECIMAL:
         if (useDecimal64ColumnVectors && type.getPrecision() <= TypeDescription.MAX_DECIMAL64_PRECISION) {
