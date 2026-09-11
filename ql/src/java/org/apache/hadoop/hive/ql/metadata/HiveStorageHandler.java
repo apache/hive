@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
@@ -295,6 +296,26 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Column statistics for the partitions a scan reads, worked out from what the storage already
+   * records rather than read back from a gather. What a handler can answer it serves here; what
+   * it cannot, it leaves out.
+   *
+   * <p>{@link #computeBasicStatistics} works its answer out and stores it; this works its answer
+   * out and stores nothing, so what it returns is all it leaves behind. A caller treats the result
+   * as partial and answers no query from it, since the storage describes the rows it holds and not
+   * the rows a statement asked about.
+   *
+   * @param table table object
+   * @param colNames the columns asked about
+   * @param partNames the partitions the scan reads
+   * @return list of ColumnStatisticsObj objects, empty where the handler answers none
+   */
+  default List<ColumnStatisticsObj> computeAggrColStatsFor(org.apache.hadoop.hive.ql.metadata.Table table,
+      List<String> colNames, List<String> partNames) {
+    return Collections.emptyList();
+  }
+
+  /**
    * Returns column statistics (upper/lower bounds, number of Null/NaN values, NDVs, histogram).
    * @param table table object
    *
@@ -370,6 +391,18 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table table, boolean partitionLevel) {
     return false;
+  }
+
+  /**
+   * Whether the column statistics the handler holds still describe the table, so that a query may
+   * be answered from them rather than by reading the data. The metastore's accuracy marker only
+   * records what Hive itself wrote, while a handler's table may be written by other engines.
+   * @param table table object
+   * @param colNames the columns being asked about
+   * @return true if the statistics still describe the table for every column asked
+   */
+  default boolean areColumnStatsUptoDate(org.apache.hadoop.hive.ql.metadata.Table table, List<String> colNames) {
+    return StatsSetupConst.areColumnStatsUptoDate(table.getParameters(), colNames);
   }
 
   /**

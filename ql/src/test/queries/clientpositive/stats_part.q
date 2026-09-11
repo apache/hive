@@ -45,6 +45,9 @@ explain select count(key) from stats_part;
 --select count(*) from stats_part where p = 100;
 explain select count(key) from stats_part where p > 100;
 --select count(*) from stats_part where p > 100;
+-- no partitions yet, so no rows: count is zero but max has no greatest to name
+explain select max(key) from stats_part;
+select max(key) from stats_part;
 desc formatted stats_part;
 
 --explain insert into table stats_part partition(p=100) select distinct key, value from mysource where p == 100;

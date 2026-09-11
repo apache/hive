@@ -303,8 +303,9 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
         if (table != null) {
           ColStatistics colStats =
               table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal()), false).get(0);
-          if (colStats != null && StatsUtils.areColumnStatsUptoDateForQueryAnswering(
-              table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
+          if (colStats != null && !colStats.isPartialAggregate() &&
+              StatsUtils.areColumnStatsUptoDateForQueryAnswering(
+                  table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
             return colStats;
           }
         }
@@ -317,10 +318,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
       if (columnOrigin != null) {
         RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
         if (table != null) {
-          if (StatsUtils.areBasicStatsUptoDateForQueryAnswering(table.getHiveTableMD(),
-              table.getHiveTableMD().getParameters())) {
-            return StatsUtils.getNumRows(table.getHiveTableMD());
-          }
+          return StatsUtils.getNumRowsForQueryAnswering(table.getHiveTableMD());
         }
       }
       return null;

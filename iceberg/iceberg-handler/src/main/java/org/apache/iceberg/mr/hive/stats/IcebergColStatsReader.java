@@ -452,12 +452,18 @@ public final class IcebergColStatsReader {
     return Optional.empty();
   }
 
-  /** The fields the asked columns are, so a read can step over the entries of the rest. */
+  /**
+   * The fields the asked columns are, so a read can step over the entries of the rest. An entry
+   * answers by its field id, never by its name alone: a full ask filters by the schema's own
+   * fields, so an entry a dropped column left behind is stepped over even when a column added
+   * since carries its name.
+   */
   private static IntPredicate fieldsOf(Table table, Set<String> columns) {
-    if (columns == null) {
-      return null;
-    }
     Set<Integer> fields = Sets.newHashSet();
+    if (columns == null) {
+      table.schema().columns().forEach(field -> fields.add(field.fieldId()));
+      return fields::contains;
+    }
     for (String column : columns) {
       Types.NestedField field = table.schema().caseInsensitiveFindField(column);
       if (field != null) {
