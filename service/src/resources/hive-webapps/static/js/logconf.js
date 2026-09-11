@@ -15,56 +15,90 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Current logger name -> level, populated from the /conflog response and used to
+// pre-select the level of the logger chosen in the dropdown.
+var currentLoggers = {};
+
 $(document).ready(function () {
 
-    // init the table with the current loggers
+    // init the table and the logger dropdown with the current loggers
     loadLoggers();
 
+    // keep the level dropdown in sync with the selected logger
+    $("#logger-name").change(function () {
+        syncLevelToSelectedLogger();
+    });
+
     // set up event handler for submitting the form
-    $("#log-level-submit").click(function(e) {
-        setLoggersWithLevel(e);
+    $("#log-level-submit").click(function (e) {
+        setLoggerLevel(e);
     });
 });
 
-function setLoggersWithLevel(e) {
-    console.log("handler called");
-    var loggerName = sanitize($("#logger-name").val());
-    var logLevel = $("#log-level").val();
-    var data = JSON.stringify( { "loggers" : [ { "logger" : loggerName, "level" : logLevel } ] } );
-
-    $.post('conflog', data, function() {
-        loadLoggers();
-    });
+// Log4j2 uses the empty string as the name of the root logger; show it explicitly.
+function displayName(loggerName) {
+    return loggerName === "" ? "(root)" : loggerName;
 }
 
 function loadLoggers() {
-    // clear the current content
-    $("#current-logs").html("");
-
-    // load and render the new
     $.getJSON('conflog', function (data) {
-        var loggers = data.loggers;
-
-        $.each(loggers, function(i, logger) {
-            var logger_information = "<tr>\n" +
-                "                        <td>" + logger.logger + "</td>\n" +
-                "                        <td>" + logger.level + "</td>\n" +
-                "                    </tr>";
-            $("#current-logs").append(logger_information);
+        var loggers = (data.loggers || []).slice().sort(function (a, b) {
+            return a.logger.localeCompare(b.logger);
         });
 
+        currentLoggers = {};
+        var logsTable = $("#current-logs").empty();
+        var loggerSelect = $("#logger-name").empty();
+
+        $.each(loggers, function (i, logger) {
+            currentLoggers[logger.logger] = logger.level;
+
+            // Build the row with text() so logger names/levels can never inject markup.
+            var row = $("<tr>");
+            $("<td>").text(displayName(logger.logger)).appendTo(row);
+            $("<td>").text(logger.level).appendTo(row);
+            logsTable.append(row);
+
+            $("<option>").val(logger.logger).text(displayName(logger.logger)).appendTo(loggerSelect);
+        });
+
+        syncLevelToSelectedLogger();
     });
 }
 
-function sanitize(string) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;',
-        "/": '&#x2F;',
-    };
-    const reg = /[&<>"'/]/ig;
-    return string.replace(reg, (match)=>(map[match]));
+function syncLevelToSelectedLogger() {
+    var loggerName = $("#logger-name").val();
+    if (loggerName !== null && currentLoggers.hasOwnProperty(loggerName)) {
+        $("#log-level").val(currentLoggers[loggerName]);
+    }
+}
+
+function setLoggerLevel(e) {
+    var loggerName = $("#logger-name").val();
+    var logLevel = $("#log-level").val();
+    if (loggerName === null) {
+        return;
+    }
+    $("#logconf-error").hide();
+    var data = JSON.stringify({ "loggers": [ { "logger": loggerName, "level": logLevel } ] });
+
+    $.ajax({
+        url: 'conflog',
+        type: 'POST',
+        contentType: 'application/json',
+        // The endpoint replies 200 with an empty body; avoid jQuery trying to parse it as JSON.
+        dataType: 'text',
+        data: data
+    }).done(function () {
+        loadLoggers();
+    }).fail(function (jqXHR) {
+        showError(jqXHR);
+    });
+}
+
+function showError(jqXHR) {
+    var message = jqXHR.status === 401
+        ? "You are not authorized to configure logging."
+        : "Failed to update logger level (HTTP " + jqXHR.status + ").";
+    $("#logconf-error").text(message).show();
 }
