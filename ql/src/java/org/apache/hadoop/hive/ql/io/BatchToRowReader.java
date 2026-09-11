@@ -29,12 +29,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -56,12 +58,14 @@ import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -526,6 +530,28 @@ public abstract class BatchToRowReader<StructType, UnionType>
     }
   }
 
+  public static TimestampLocalTZWritable nextTimestampLocalTZ(ColumnVector vector,
+                                                  int row,
+                                                  ZoneId timeZone,
+                                                  Object previous) {
+    if (vector.isRepeating) {
+      row = 0;
+    }
+    if (vector.noNulls || !vector.isNull[row]) {
+      TimestampLocalTZWritable result;
+      if (previous == null || previous.getClass() != TimestampLocalTZWritable.class) {
+        result = new TimestampLocalTZWritable();
+      } else {
+        result = (TimestampLocalTZWritable) previous;
+      }
+      TimestampColumnVector tcv = (TimestampColumnVector) vector;
+      result.set(new TimestampTZ(tcv.time[row] / 1000, tcv.nanos[row], timeZone));
+      return result;
+    } else {
+      return null;
+    }
+  }
+
   public StructType nextStruct(
       ColumnVector vector, int row, StructTypeInfo schema, Object previous) {
     if (vector.isRepeating) {
@@ -674,6 +700,9 @@ public abstract class BatchToRowReader<StructType, UnionType>
           return nextDate(vector, row, previous);
         case TIMESTAMP:
           return nextTimestamp(vector, row, previous);
+        case TIMESTAMPLOCALTZ:
+          return nextTimestampLocalTZ(vector, row,
+              ((TimestampLocalTZTypeInfo) pschema).getTimeZone(), previous);
         default:
           throw new IllegalArgumentException("Unknown type " + schema);
         }
