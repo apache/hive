@@ -30,6 +30,7 @@ POSTHOOK: query: SELECT * FROM hf1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hf1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+x	y
 a	b
 c	d
 PREHOOK: query: DROP TABLE IF EXISTS hf2
@@ -65,6 +66,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hf2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 x	y
+a	b
+c	d
 PREHOOK: query: DROP TABLE IF EXISTS hf3
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -97,6 +100,9 @@ POSTHOOK: query: SELECT * FROM hf3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hf3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+x	y
+a	b
+c	d
 PREHOOK: query: DROP TABLE IF EXISTS hf4
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -129,3 +135,6 @@ POSTHOOK: query: SELECT * FROM hf4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hf4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+x	y
+a	b
+c	d
