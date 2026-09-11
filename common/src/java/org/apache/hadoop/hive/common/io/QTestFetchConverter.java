@@ -44,7 +44,34 @@ public class QTestFetchConverter extends SessionStream implements FetchCallback 
 
   @Override
   public void println(String str) {
-    inner.println(transformation.apply(str));
+    // PREHOOK/POSTHOOK may send multiple lines separated by \n in one println, mask each
+    // separately. Query fetch rows must stay intact so SORT_QUERY_RESULTS keeps row order.
+    if (str.indexOf('\n') >= 0 && shouldSplitMultiline()) {
+      int start = 0;
+      for (int i = 0; i < str.length(); i++) {
+        if (str.charAt(i) == '\n') {
+          writeTransformedLine(str.substring(start, i));
+          start = i + 1;
+        }
+      }
+      writeTransformedLine(str.substring(start));
+      return;
+    }
+    writeTransformedLine(str);
+  }
+
+  private boolean shouldSplitMultiline() {
+    if (inner instanceof FetchConverter fetchConverter) {
+      return !(fetchConverter.queryfound && fetchConverter.fetchStarted);
+    }
+    return true;
+  }
+
+  private void writeTransformedLine(String line) {
+    String transformed = transformation.apply(line);
+    if (transformed != null) {
+      inner.println(transformed);
+    }
   }
 
   @Override
