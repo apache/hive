@@ -314,6 +314,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!--
+            Each test class registers its own HiveRESTCatalogServerExtension, which starts a fresh
+            HMS + Derby in-memory database. Running two such classes in the same reused JVM leaves
+            JVM-static state behind (the metastore PersistenceManagerFactory and Iceberg's static
+            CachedClientPool), so a later class's in-process HiveCatalog access hits a stale/closed
+            transaction context. Forking a new JVM per test class keeps them isolated. This matches
+            the reuseForks=false setting used by the top-level Hive build.
+          -->
+          <reuseForks>false</reuseForks>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
