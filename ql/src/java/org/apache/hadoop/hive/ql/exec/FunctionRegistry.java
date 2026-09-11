@@ -658,8 +658,6 @@ public final class FunctionRegistry {
     system.registerGenericUDTF("parse_url_tuple", GenericUDTFParseUrlTuple.class);
     system.registerGenericUDTF("posexplode", GenericUDTFPosExplode.class);
     system.registerGenericUDTF("stack", GenericUDTFStack.class);
-    system.registerGenericUDTF("get_splits", GenericUDTFGetSplits.class);
-    system.registerGenericUDTF("get_llap_splits", GenericUDTFGetSplits2.class);
     system.registerGenericUDTF("get_sql_schema", GenericUDTFGetSQLSchema.class);
 
     //PTF declarations
