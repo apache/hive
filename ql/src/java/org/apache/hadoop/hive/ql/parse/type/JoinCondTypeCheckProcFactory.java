@@ -88,6 +88,7 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
       if (!qualifiedAccess) {
         colInfo = getColInfo(ctx, null, tableOrCol, expr);
         // It's a column.
+        checkAmbiguousName(colInfo);
         return exprFactory.createColumnRefExpr(colInfo, ctx.getInputRRList());
       } else if (hasTableAlias(ctx, tableOrCol, expr)) {
         return null;
@@ -180,6 +181,7 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
             ErrorMsg.INVALID_COLUMN.getMsg(), expr.getChild(1)), expr);
         return null;
       }
+      checkAmbiguousName(colInfo);
       ColumnInfo newColumnInfo = new ColumnInfo(colInfo);
       newColumnInfo.setTabAlias(tableAlias);
       List<RowResolver> listRR = new ArrayList<>(jctx.getInputRRList());

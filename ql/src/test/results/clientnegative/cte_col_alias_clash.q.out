@@ -6,4 +6,4 @@ POSTHOOK: query: create table t1(int_col int, bigint_col bigint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
-FAILED: SemanticException Ambiguous column reference: .a
+FAILED: SemanticException [Error 10007]: Ambiguous column reference a in cte1
