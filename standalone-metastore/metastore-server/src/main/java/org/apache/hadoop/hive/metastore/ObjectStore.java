@@ -378,9 +378,13 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void shutdown() {
     LOG.info("RawStore: {}, with PersistenceManager: {} will be shutdown", this, pm);
-    if (pm != null) {
-      pm.close();
-      pm = null;
+    PersistenceManager persistenceManager = pm;
+    pm = null;
+    currentTransaction = null;
+    openTrasactionCalls = 0;
+    transactionStatus = TXN_STATUS.NO_STATE;
+    if (persistenceManager != null) {
+      persistenceManager.close();
     }
   }
 
@@ -549,7 +553,9 @@ public class ObjectStore implements RawStore, Configurable {
       // remove all detached objects from the cache, since the transaction is
       // being rolled back they are no longer relevant, and this prevents them
       // from reattaching in future transactions
-      pm.evictAll();
+      if (pm != null) {
+        pm.evictAll();
+      }
     }
   }
 

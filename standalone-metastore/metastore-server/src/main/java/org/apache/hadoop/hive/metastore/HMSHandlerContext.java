@@ -156,6 +156,21 @@ public final class HMSHandlerContext {
     context.get().rawStore = rawStore;
   }
 
+  /**
+   * Remove and shut down the RawStore associated with the current handler thread.
+   *
+   * @return true if a RawStore was present
+   */
+  public static boolean invalidateRawStore() {
+    RawStore rawStore = context.get().rawStore;
+    context.get().rawStore = null;
+    if (rawStore == null) {
+      return false;
+    }
+    rawStore.shutdown();
+    return true;
+  }
+
   public static void setTxnStore(TxnStore txnStore) {
     context.get().txnStore = txnStore;
   }
