@@ -613,6 +613,14 @@
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
           </additionalClasspathElements>
+          <!-- MiniKafkaCliConfig (kafka_storage_handler.q) produces test data via
+               QTestMiniClusters#getAvroRows(), which resolves the generated
+               org.apache.hive.kafka.Wikipedia SpecificRecord fixture. Avro's
+               ClassSecurityValidator (introduced in 1.12.x) forbids that resolution
+               unless the class is explicitly trusted. -->
+          <systemPropertyVariables>
+            <org.apache.avro.SERIALIZABLE_CLASSES>org.apache.hive.kafka.Wikipedia</org.apache.avro.SERIALIZABLE_CLASSES>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>
