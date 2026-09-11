@@ -161,7 +161,7 @@
     <iceberg.version>1.11.0</iceberg.version>
     <immutables.version>2.9.2</immutables.version>
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
-    <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
+    <httpcomponents5.client.version>5.6.3</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
     <jackson.version>2.21.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
