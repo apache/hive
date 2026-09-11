@@ -43,6 +43,10 @@ public class HiveSessionProxy implements InvocationHandler {
     this.ugi = ugi;
   }
 
+  public HiveSession getBaseSession() {
+    return base;
+  }
+
   public static HiveSession getProxy(HiveSession hiveSession, UserGroupInformation ugi)
       throws IllegalArgumentException, HiveSQLException {
     return (HiveSession)Proxy.newProxyInstance(HiveSession.class.getClassLoader(),

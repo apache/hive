@@ -51,6 +51,7 @@
     <module>serde</module>
     <module>service-rpc</module>
     <module>service</module>
+    <module>service-session-store</module>
     <module>streaming</module>
     <module>llap-common</module>
     <module>llap-client</module>
@@ -248,6 +249,7 @@
     <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
     <keycloak.version>26.0.6</keycloak.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
+    <jedis.version>5.1.0</jedis.version>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
