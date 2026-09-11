@@ -55,7 +55,7 @@ import org.apache.thrift.TException;
 
 import com.google.common.collect.Lists;
 
-
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -168,6 +168,18 @@ public class TestMetastoreExpr {
           new byte[] { 'f', 'o', 'o' }, null, (short)-1, new ArrayList<Partition>());
       fail("Should have thrown IncompatibleMetastoreException");
     } catch (IMetaStoreClient.IncompatibleMetastoreException ignore) {
+    }
+
+    // Denied expression => throw the specific exception
+    try {
+      var expr = e.val("currentTimeMillis").val("java.lang.System").fn("reflect", TypeInfoFactory.intTypeInfo, 2).val(0)
+          .pred("=", 2).build();
+      checkExpr(-1, dbName, tblName, expr, tbl);
+      fail("Should have thrown");
+    } catch (IMetaStoreClient.IncompatibleMetastoreException ex) {
+      assertTrue(ex.getMessage().startsWith("SerializationUtilities#deserializeObjectWithTypeInformation: " +
+          "java.lang.UnsupportedOperationException: Deserialization of " +
+          "class org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect is not allowed from an untrusted payload"));
     }
 
     // Invalid expression => throw some exception, but not incompatible metastore.
