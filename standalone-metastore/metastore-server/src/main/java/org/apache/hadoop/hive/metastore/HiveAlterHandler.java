@@ -24,12 +24,11 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.AcidMetaDataFile.DataFormat;
-import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionsEvent;
-import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.handler.AlterTableHandler;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -52,7 +51,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.thrift.TException;
@@ -74,7 +72,6 @@ import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATIO
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.handler.TruncateTableHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.findStaleColumns;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -106,439 +103,9 @@ public class HiveAlterHandler implements AlterHandler {
       String name, Table newt, EnvironmentContext environmentContext,
       IHMSHandler handler, String writeIdList)
           throws InvalidOperationException, MetaException {
-    String catalogName = normalizeIdentifier(catName);
-    String tableName = normalizeIdentifier(name);
-    String databaseName = normalizeIdentifier(dbname);
-
-    final boolean cascade;
-    final boolean replDataLocationChanged;
-    final boolean isReplicated;
-    if ((environmentContext != null) && environmentContext.isSetProperties()) {
-      cascade = StatsSetupConst.TRUE.equals(environmentContext.getProperties().get(StatsSetupConst.CASCADE));
-      replDataLocationChanged = ReplConst.TRUE.equals(environmentContext.getProperties().get(ReplConst.REPL_DATA_LOCATION_CHANGED));
-    } else {
-      cascade = false;
-      replDataLocationChanged = false;
-    }
-
-    if (newt == null) {
-      throw new InvalidOperationException("New table is null");
-    }
-
-    String newTblName = newt.getTableName().toLowerCase();
-    String newDbName = newt.getDbName().toLowerCase();
-
-    if (!MetaStoreUtils.validateName(newTblName, handler.getConf())) {
-      throw new InvalidOperationException(newTblName + " is not a valid object name");
-    }
-    String validate = MetaStoreServerUtils.validateTblColumns(newt.getSd().getCols());
-    if (validate != null) {
-      throw new InvalidOperationException("Invalid column " + validate);
-    }
-
-    // Validate bucketedColumns in new table
-    List<String> bucketColumns = MetaStoreServerUtils.validateBucketColumns(newt.getSd());
-    if (CollectionUtils.isNotEmpty(bucketColumns)) {
-      String errMsg = "Bucket columns - " + bucketColumns + " doesn't match with any table columns";
-      LOG.error(errMsg);
-      throw new InvalidOperationException(errMsg);
-    }
-
-    Path srcPath = null;
-    FileSystem srcFs;
-    Path destPath = null;
-    FileSystem destFs = null;
-
-    boolean success = false;
-    boolean dataWasMoved = false;
-    boolean isPartitionedTable = false;
-
-    Database olddb = null;
-    Table oldt = null;
-
-    List<TransactionalMetaStoreEventListener> transactionalListeners = handler.getTransactionalListeners();
-    List<MetaStoreEventListener> listeners = handler.getListeners();
-    Map<String, String> txnAlterTableEventResponses = Collections.emptyMap();
-
-    try {
-      boolean rename = false;
-      List<Partition> parts;
-
-      // Switching tables between catalogs is not allowed.
-      if (!catalogName.equalsIgnoreCase(newt.getCatName())) {
-        throw new InvalidOperationException("Tables cannot be moved between catalogs, old catalog" +
-            catalogName + ", new catalog " + newt.getCatName());
-      }
-
-      // check if table with the new name already exists
-      if (!newTblName.equals(tableName) || !newDbName.equals(databaseName)) {
-        if (msdb.getTable(catalogName, newDbName, newTblName, null) != null) {
-          throw new InvalidOperationException("new table " + newDbName
-              + "." + newTblName + " already exists");
-        }
-        rename = true;
-      }
-
-      String expectedKey = environmentContext != null && environmentContext.getProperties() != null ?
-              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_KEY) : null;
-      String expectedValue = environmentContext != null && environmentContext.getProperties() != null ?
-              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE) : null;
-
-      msdb.openTransaction();
-      // get old table
-      // Note: we don't verify stats here; it's done below in alterTableUpdateTableColumnStats.
-      olddb = msdb.getDatabase(catalogName, databaseName);
-      oldt = msdb.getTable(catalogName, databaseName, tableName, null);
-      if (oldt == null) {
-        throw new InvalidOperationException("table " +
-            TableName.getQualified(catalogName, databaseName, tableName) + " doesn't exist");
-      }
-
-      if (expectedKey != null && expectedValue != null) {
-        String newValue = newt.getParameters().get(expectedKey);
-        if (newValue == null) {
-          throw new MetaException(String.format("New value for expected key %s is not set", expectedKey));
-        }
-        if (!expectedValue.equals(oldt.getParameters().get(expectedKey))) {
-          throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is '"
-              + oldt.getParameters().get(expectedKey) + "'. The expected was value was '" + expectedValue + "'");
-        }
-        long affectedRows = msdb.updateParameterWithExpectedValue(oldt, expectedKey, expectedValue, newValue);
-        if (affectedRows != 1) {
-          // make sure concurrent modification exception messages have the same prefix
-          throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is different");
-        }
-      }
-
-      validateTableChangesOnReplSource(olddb, oldt, newt, environmentContext);
-
-      // On a replica this alter table will be executed only if old and new both the databases are
-      // available and being replicated into. Otherwise, it will be either create or drop of table.
-      isReplicated = isDbReplicationTarget(olddb);
-      if (oldt.getPartitionKeysSize() != 0) {
-        isPartitionedTable = true;
-      }
-
-      // Throws InvalidOperationException if the new column types are not
-      // compatible with the current column types.
-      DefaultIncompatibleTableChangeHandler.get()
-          .allowChange(handler.getConf(), oldt, newt);
-
-      //check that partition keys have not changed, except for virtual views
-      //however, allow the partition comments to change
-      boolean partKeysPartiallyEqual = checkPartialPartKeysEqual(oldt.getPartitionKeys(),
-          newt.getPartitionKeys());
-
-      if (!oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())){
-        Map<String, String> properties = environmentContext.getProperties();
-        if (properties == null || !Boolean.parseBoolean(properties.getOrDefault(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE,
-                "false"))) {
-          if (!partKeysPartiallyEqual) {
-            throw new InvalidOperationException("partition keys can not be changed.");
-          }
-        }
-      }
-
-      // Two mutually exclusive flows possible.
-      // i) Partition locations needs update if replDataLocationChanged is true which means table's
-      // data location is changed with all partition sub-directories.
-      // ii) Rename needs change the data location and move the data to the new location corresponding
-      // to the new name if:
-      // 1) the table is not a virtual view, and
-      // 2) the table is not an external table, and
-      // 3) the user didn't change the default location (or new location is empty), and
-      // 4) the table was not initially created with a specified location
-      boolean renamedManagedTable = rename && !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())
-          && (oldt.getSd().getLocation().compareTo(newt.getSd().getLocation()) == 0
-              || StringUtils.isEmpty(newt.getSd().getLocation()))
-          && (!MetaStoreUtils.isExternalTable(oldt));
-
-      Database db = msdb.getDatabase(catalogName, newDbName);
-
-      boolean renamedTranslatedToExternalTable = rename && MetaStoreUtils.isTranslatedToExternalTable(oldt)
-          && MetaStoreUtils.isTranslatedToExternalTable(newt);
-      boolean renamedExternalTable = rename && MetaStoreUtils.isExternalTable(oldt)
-          && !MetaStoreUtils.isPropertyTrue(oldt.getParameters(), HiveMetaHook.TRANSLATED_TO_EXTERNAL);
-      boolean isRenameIcebergTable =
-          rename && MetaStoreUtils.isIcebergTable(newt.getParameters());
-
-      deleteTableColumnStats(msdb, oldt, newt);
-
-      if (!isRenameIcebergTable &&
-          (replDataLocationChanged || renamedManagedTable || renamedTranslatedToExternalTable ||
-              renamedExternalTable)) {
-        srcPath = new Path(oldt.getSd().getLocation());
-
-        if (replDataLocationChanged) {
-          // If data location is changed in replication flow, then new path was already set in
-          // the newt. Also, it is as good as the data is moved and set dataWasMoved=true so that
-          // location in partitions are also updated accordingly.
-          // No need to validate if the destPath exists as in replication flow, data gets replicated
-          // separately.
-          destPath = new Path(newt.getSd().getLocation());
-          dataWasMoved = true;
-        } else if (!renamedExternalTable) {
-          // Rename flow.
-          // If a table was created in a user specified location using the DDL like
-          // create table tbl ... location ...., it should be treated like an external table
-          // in the table rename, its data location should not be changed. We can check
-          // if the table directory was created directly under its database directory to tell
-          // if it is such a table
-          // Same applies to the ACID tables suffixed with the `txnId`, case with `lockless reads`.
-          String oldtRelativePath = wh.getDatabaseManagedPath(olddb).toUri()
-              .relativize(srcPath.toUri()).toString();
-          boolean tableInSpecifiedLoc = !oldtRelativePath.equalsIgnoreCase(tableName)
-                  && !oldtRelativePath.equalsIgnoreCase(tableName + Path.SEPARATOR);
-
-
-          if (renamedTranslatedToExternalTable || !tableInSpecifiedLoc) {
-            srcFs = wh.getFs(srcPath);
-
-            // get new location
-            assert(isReplicated == isDbReplicationTarget(db));
-            if (renamedTranslatedToExternalTable) {
-              if (!tableInSpecifiedLoc) {
-                destPath = new Path(newt.getSd().getLocation());
-              } else {
-                Path databasePath = constructRenamedPath(wh.getDatabaseExternalPath(db), srcPath);
-                destPath = new Path(databasePath, newTblName);
-                newt.getSd().setLocation(destPath.toString());
-              }
-            } else {
-              Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
-              destPath = new Path(databasePath, newTblName);
-              newt.getSd().setLocation(destPath.toString());
-            }
-
-            destFs = wh.getFs(destPath);
-
-            // check that destination does not exist otherwise we will be
-            // overwriting data
-            // check that src and dest are on the same file system
-            if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
-              throw new InvalidOperationException("table new location " + destPath
-                      + " is on a different file system than the old location "
-                      + srcPath + ". This operation is not supported");
-            }
-
-            try {
-              if (destFs.exists(destPath)) {
-                throw new InvalidOperationException("New location for this table " +
-                        TableName.getQualified(catalogName, newDbName, newTblName) +
-                        " already exists : " + destPath);
-              }
-              // check that src exists and also checks permissions necessary, rename src to dest
-              if (srcFs.exists(srcPath) && wh.renameDir(srcPath, destPath,
-                      ReplChangeManager.shouldEnableCm(olddb, oldt))) {
-                dataWasMoved = true;
-              }
-            } catch (IOException | MetaException e) {
-              LOG.error("Alter Table operation for " + databaseName + "." + tableName + " failed.", e);
-              throw new InvalidOperationException("Alter Table operation for " + databaseName + "." + tableName +
-                      " failed to move data due to: '" + getSimpleMessage(e)
-                      + "' See hive log file for details.");
-            }
-
-            if (!HiveMetaStore.isRenameAllowed(olddb, db)) {
-              LOG.error("Alter Table operation for " + TableName.getQualified(catalogName, databaseName, tableName) +
-                      "to new table = " + TableName.getQualified(catalogName, newDbName, newTblName) + " failed ");
-              throw new MetaException("Alter table not allowed for table " +
-                      TableName.getQualified(catalogName, databaseName, tableName) +
-                      "to new table = " + TableName.getQualified(catalogName, newDbName, newTblName));
-            }
-          }
-        }
-
-        if (isPartitionedTable) {
-          String oldTblLocPath = srcPath.toUri().getPath();
-          String newTblLocPath = dataWasMoved ? destPath.toUri().getPath() : null;
-
-          // Do not verify stats parameters on a partitioned table.
-          msdb.alterTable(catalogName, databaseName, tableName, newt, null);
-          int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
-              MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-
-          // alterPartition is only for changing the partition location in the table rename
-          if (dataWasMoved) {
-            PartitionsRequest req = new PartitionsRequest(newDbName, newTblName);
-            req.setCatName(catName);
-            req.setMaxParts((short) -1);
-            parts = handler.get_partitions_req(req).getPartitions();
-
-            for (Partition part : parts) {
-              String oldPartLoc = part.getSd().getLocation();
-              if (oldPartLoc.contains(oldTblLocPath)) {
-                URI oldUri = new Path(oldPartLoc).toUri();
-                String newPath = oldUri.getPath().replace(oldTblLocPath, newTblLocPath);
-                Path newPartLocPath = new Path(oldUri.getScheme(), oldUri.getAuthority(), newPath);
-                part.getSd().setLocation(newPartLocPath.toString());
-              }
-              part.setDbName(newDbName);
-              part.setTableName(newTblName);
-            }
-
-            Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
-              @Override
-              public List<Void> run(List<Partition> input) throws Exception {
-                msdb.alterPartitions(catalogName, newDbName, newTblName,
-                    input.stream().map(Partition::getValues).collect(Collectors.toList()),
-                    input, newt.getWriteId(), writeIdList);
-                return Collections.emptyList();
-              }
-            });
-          }
-          Deadline.checkTimeout();
-        } else {
-          msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);
-        }
-      } else {
-        // operations other than table rename
-        if (MetaStoreServerUtils.requireCalStats(null, null, newt, environmentContext) &&
-            !isPartitionedTable) {
-          assert(isReplicated == isDbReplicationTarget(db));
-          // Update table stats. For partitioned table, we update stats in alterPartition()
-          MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
-        }
-
-        if (isPartitionedTable) {
-          //Currently only column related changes can be cascaded in alter table
-          boolean runPartitionMetadataUpdate =
-              (cascade && !MetaStoreServerUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols()));
-          // we may skip the update entirely if there are only new columns added
-          runPartitionMetadataUpdate |=
-              !cascade && !MetaStoreServerUtils.arePrefixColumns(oldt.getSd().getCols(), newt.getSd().getCols());
-
-          boolean retainOnColRemoval =
-              MetastoreConf.getBoolVar(handler.getConf(), MetastoreConf.ConfVars.COLSTATS_RETAIN_ON_COLUMN_REMOVAL);
-
-          if (runPartitionMetadataUpdate) {
-            // Don't validate table-level stats for a partitoned table.
-            msdb.alterTable(catalogName, databaseName, tableName, newt, null);
-
-            if (cascade || retainOnColRemoval) {
-              PartitionsRequest req = new PartitionsRequest(dbname, name);
-              req.setCatName(catName);
-              req.setMaxParts((short) -1);
-              parts = handler.get_partitions_req(req).getPartitions();
-              Table table = oldt;
-              int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
-                  MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-              Map<List<String>, List<List<String>>> changedColsToPartNames = new HashMap<>();
-              Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
-                @Override
-                public List<Void> run(List<Partition> input) throws Exception {
-                  List<Partition> oldParts = new ArrayList<>(input.size());
-                  List<List<String>> partVals = input.stream().map(Partition::getValues).collect(Collectors.toList());
-                  for (Partition part : input) {
-                    Partition oldPart = new Partition(part);
-                    List<FieldSchema> oldCols = part.getSd().getCols();
-                    part.getSd().setCols(newt.getSd().getCols());
-                    List<String> deletedCols = new ArrayList<>();
-                    updateOrGetPartitionColumnStats(msdb, catalogName, databaseName,
-                        tableName, part.getValues(), oldCols, table, part, deletedCols);
-                    if (!deletedCols.isEmpty()) {
-                      changedColsToPartNames.compute(deletedCols, (k, v) -> {
-                        if (v == null) v = new ArrayList<>();
-                        v.add(part.getValues());
-                        return v;
-                      });
-                    }
-                    if (!cascade) {
-                      // update changed properties (stats)
-                      oldPart.setParameters(part.getParameters());
-                      oldParts.add(oldPart);
-                    }
-                  }
-                  Deadline.checkTimeout();
-                  msdb.alterPartitions(catalogName, databaseName, tableName,
-                      partVals, (cascade) ? input : oldParts, newt.getWriteId(), writeIdList);
-                  return Collections.emptyList();
-                }
-              });
-
-              for (Map.Entry<List<String>, List<List<String>>> entry : changedColsToPartNames.entrySet()) {
-                List<String> partNames = new ArrayList<>();
-                for (List<String> part_vals : entry.getValue()) {
-                  partNames.add(Warehouse.makePartName(table.getPartitionKeys(), part_vals));
-                }
-                msdb.deletePartitionColumnStatistics(catalogName, databaseName, tableName, partNames, entry.getKey(), null);
-              }
-            } else {
-              // clear all column stats to prevent incorract behaviour in case same column is reintroduced
-              msdb.deleteAllPartitionColumnStatistics(
-                  new TableName(catalogName, databaseName, tableName), writeIdList);
-            }
-          } else {
-            LOG.warn("Alter table not cascaded to partitions.");
-            msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);
-          }
-        } else {
-          msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);
-        }
-      }
-
-      if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-        txnAlterTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventMessage.EventType.ALTER_TABLE,
-                  new AlterTableEvent(oldt, newt, false, true,
-                          newt.getWriteId(), handler, isReplicated),
-                  environmentContext);
-      }
-      // commit the changes
-      success = msdb.commitTransaction();
-    } catch (InvalidOperationException | MetaException e) {
-      throw e;
-    } catch (TException e) {
-      LOG.debug("Failed to get object from Metastore ", e);
-      throw new InvalidOperationException(
-          "Unable to change partition or table."
-              + " Check metastore logs for detailed stack." + e.getMessage());
-    } finally {
-      if (success) {
-        // Txn was committed successfully.
-        // If data location is changed in replication flow, then need to delete the old path.
-        if (replDataLocationChanged) {
-          Path deleteOldDataLoc = new Path(oldt.getSd().getLocation());
-          boolean isSkipTrash = MetaStoreUtils.isSkipTrash(oldt.getParameters());
-          try {
-            wh.deleteDir(deleteOldDataLoc, isSkipTrash,
-                    ReplChangeManager.shouldEnableCm(olddb, oldt));
-            LOG.info("Deleted the old data location: {} for the table: {}",
-                    deleteOldDataLoc, databaseName + "." + tableName);
-          } catch (MetaException ex) {
-            // Eat the exception as it doesn't affect the state of existing tables.
-            // Expect, user to manually drop this path when exception and so logging a warning.
-            LOG.warn("Unable to delete the old data location: {} for the table: {}",
-                    deleteOldDataLoc, databaseName + "." + tableName);
-          }
-        }
-      } else {
-        LOG.error("Failed to alter table " + TableName.getQualified(catalogName, databaseName, tableName));
-        msdb.rollbackTransaction();
-        if (!replDataLocationChanged && dataWasMoved) {
-          try {
-            if (destFs.exists(destPath)) {
-              if (!destFs.rename(destPath, srcPath)) {
-                LOG.error("Failed to restore data from " + destPath + " to " + srcPath
-                    + " in alter table failure. Manual restore is needed.");
-              }
-            }
-          } catch (IOException e) {
-            LOG.error("Failed to restore data from " + destPath + " to " + srcPath
-                +  " in alter table failure. Manual restore is needed.");
-          }
-        }
-      }
-    }
-
-    if (!listeners.isEmpty()) {
-      // I don't think event notifications in case of failures are necessary, but other HMS operations
-      // make this call whether the event failed or succeeded. To make this behavior consistent,
-      // this call is made for failed events also.
-      MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_TABLE,
-          new AlterTableEvent(oldt, newt, false, success, newt.getWriteId(), handler, isReplicated),
-          environmentContext, txnAlterTableEventResponses, msdb);
-    }
+    AlterTableHandler.runDirectAlter(handler,
+        new AlterTableHandler.DirectAlterContext(msdb, wh, catName, dbname, name, newt,
+            environmentContext, writeIdList));
   }
 
   /**
@@ -547,7 +114,7 @@ public class HiveAlterHandler implements AlterHandler {
    * @param ex
    * @return
    */
-  String getSimpleMessage(Exception ex) {
+  public static String getSimpleMessage(Exception ex) {
     if(ex instanceof MetaException) {
       String msg = ex.getMessage();
       if(msg == null || !msg.contains("\n")) {
@@ -922,9 +489,8 @@ public class HiveAlterHandler implements AlterHandler {
   }
 
   // Validate changes to a table to protect against errors on migration during replication.
-  private void validateTableChangesOnReplSource(Database db, Table oldTbl, Table newTbl,
-                                                EnvironmentContext ec)
-          throws InvalidOperationException {
+  public static void validateTableChangesOnReplSource(Configuration conf, Database db, Table oldTbl,
+      Table newTbl, EnvironmentContext ec) throws InvalidOperationException {
     // If the database is not replication source, nothing to do
     if (!ReplChangeManager.isSourceOfReplication(db)) {
       return;
@@ -973,7 +539,7 @@ public class HiveAlterHandler implements AlterHandler {
     }
   }
 
-  private boolean checkPartialPartKeysEqual(List<FieldSchema> oldPartKeys,
+  public static boolean checkPartialPartKeysEqual(List<FieldSchema> oldPartKeys,
       List<FieldSchema> newPartKeys) {
     //return true if both are null, or false if one is null and the other isn't
     if (newPartKeys == null || oldPartKeys == null) {
@@ -1003,7 +569,7 @@ public class HiveAlterHandler implements AlterHandler {
    * Uses the scheme and authority of the object's current location and the path constructed
    * using the object's new name to construct a path for the object's new location.
    */
-  private Path constructRenamedPath(Path defaultNewPath, Path currentPath) {
+  public static Path constructRenamedPath(Path defaultNewPath, Path currentPath) {
     URI currentUri = currentPath.toUri();
 
     return new Path(currentUri.getScheme(), currentUri.getAuthority(),
@@ -1011,7 +577,7 @@ public class HiveAlterHandler implements AlterHandler {
   }
 
   @VisibleForTesting
-  public void deleteTableColumnStats(RawStore msdb, Table oldTable, Table newTable)
+  public static void deleteTableColumnStats(RawStore msdb, Table oldTable, Table newTable)
       throws InvalidObjectException, MetaException {
     try {
       String catName = normalizeIdentifier(oldTable.isSetCatName()
