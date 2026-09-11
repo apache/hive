@@ -5047,7 +5047,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return exprNodeDescs;
   }
 
-  // TODO: An evaluator that wants to handle a partition-only column in its calculation could
+  // TODO: An evaluator that wants to handle an unbuffered partition-only column in its calculation could
   // opt in to vectorization here.
   private static boolean hasUnbufferedPartitionColumnInEvaluatorArgs(
       boolean isPartitionOrderBy,
@@ -5085,11 +5085,24 @@ public class Vectorizer implements PhysicalPlanResolver {
         continue;
       }
 
-      // Check whether any evaluator argument references a partition-only column.
+      // Check whether a evaluator argument references a partition-only column.
       for (ExprNodeDesc exprNodeDesc : exprNodeDescList) {
-        if (containsExpr(exprNodeDesc, partitionOnlyExprs)) {
+        if (hasPartitionOnlyColumnArg(exprNodeDesc, partitionOnlyExprs)) {
           return true;
         }
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasPartitionOnlyColumnArg(
+      ExprNodeDesc expr, List<ExprNodeDesc> partitionOnlyExprs) {
+    if (!(expr instanceof ExprNodeColumnDesc)) {
+      return false;
+    }
+    for (ExprNodeDesc partitionOnlyExpr : partitionOnlyExprs) {
+      if (expr.isSame(partitionOnlyExpr)) {
+        return true;
       }
     }
     return false;
@@ -5114,22 +5127,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
     return partitionOnlyExprs;
-  }
-
-  private static boolean containsExpr(ExprNodeDesc expr, List<ExprNodeDesc> targets) {
-    for (ExprNodeDesc target : targets) {
-      if (expr.isSame(target)) {
-        return true;
-      }
-    }
-    if (expr.getChildren() != null) {
-      for (ExprNodeDesc child : expr.getChildren()) {
-        if (containsExpr(child, targets)) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   /*
