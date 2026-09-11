@@ -217,6 +217,7 @@ hash
 hex
 histogram_numeric
 hour
+iceberg_ancestors_of
 iceberg_bucket
 iceberg_day
 iceberg_hour
@@ -859,6 +860,7 @@ hash
 hex
 histogram_numeric
 hour
+iceberg_ancestors_of
 iceberg_bucket
 iceberg_day
 iceberg_hour
