@@ -187,6 +187,21 @@ public abstract class ParquetRecordReaderBase {
   }
 
   public FilterCompat.Filter setFilter(final JobConf conf, MessageType schema) {
+    FilterPredicate p = toFilterPredicate(conf, schema);
+    if (p != null) {
+      // Filter may have sensitive information. Do not send to debug.
+      LOG.debug("PARQUET predicate push down generated.");
+      ParquetInputFormat.setFilterPredicate(conf, p);
+      return FilterCompat.get(p);
+    } else {
+      // Filter may have sensitive information. Do not send to debug.
+      LOG.debug("No PARQUET predicate push down is generated.");
+      return null;
+    }
+  }
+
+  /** The pushed-down SARG as a Parquet predicate over the file's columns, or null if there is none. */
+  public static FilterPredicate toFilterPredicate(final JobConf conf, MessageType schema) {
     SearchArgument sarg = ConvertAstToSearchArg.createFromConf(conf);
     if (sarg == null) {
       return null;
@@ -204,20 +219,10 @@ public abstract class ParquetRecordReaderBase {
     // Create the Parquet FilterPredicate without including columns that do not exist
     // on the schema (such as partition columns).
     MessageType newSchema = getSchemaWithoutPartitionColumns(conf, schema);
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, newSchema, columns);
-    if (p != null) {
-      // Filter may have sensitive information. Do not send to debug.
-      LOG.debug("PARQUET predicate push down generated.");
-      ParquetInputFormat.setFilterPredicate(conf, p);
-      return FilterCompat.get(p);
-    } else {
-      // Filter may have sensitive information. Do not send to debug.
-      LOG.debug("No PARQUET predicate push down is generated.");
-      return null;
-    }
+    return ParquetFilterPredicateConverter.toFilterPredicate(sarg, newSchema, columns);
   }
 
-  private MessageType getSchemaWithoutPartitionColumns(JobConf conf, MessageType schema) {
+  private static MessageType getSchemaWithoutPartitionColumns(JobConf conf, MessageType schema) {
     List<String> partCols = Utilities.getPartitionColumnNames(conf);
     if (partCols.isEmpty()) {
       return schema;

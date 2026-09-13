@@ -48,7 +48,9 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.AvoidSplitCombination;
+import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat.NullRowsRecordReader;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
@@ -123,6 +125,9 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
           cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
       if (rr == null) {
         // Reader-specific incompatibility like SMB or schema evolution.
+        if (sourceInputFormat instanceof LlapCacheOnlyInputFormatInterface) {
+          LlapProxy.getIo().initCacheOnlyInputFormat(sourceInputFormat);
+        }
         return sourceInputFormat.getRecordReader(split, job, reporter);
       }
       // For non-vectorized operator case, wrap the reader if possible.

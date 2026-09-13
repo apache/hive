@@ -4976,6 +4976,9 @@ public class HiveConf extends Configuration {
     LLAP_IO_ENCODE_ENABLED("hive.llap.io.encode.enabled", true,
         "Whether LLAP should try to re-encode and cache data for non-ORC formats. This is used\n" +
         "on LLAP Server side to determine if the infrastructure for that is initialized."),
+    LLAP_IO_PARQUET_NATIVE_ENABLED("hive.llap.io.parquet.native.enabled", false,
+        "Whether LLAP IO caches Parquet column chunks and decodes them from the cache, like ORC.\n" +
+        "A projection that reaches into a nested type falls back to the vectorized Parquet reader."),
     LLAP_IO_ENCODE_FORMATS("hive.llap.io.encode.formats",
         "org.apache.hadoop.mapred.TextInputFormat,",
         "The table input formats for which LLAP IO should re-encode and cache data.\n" +
