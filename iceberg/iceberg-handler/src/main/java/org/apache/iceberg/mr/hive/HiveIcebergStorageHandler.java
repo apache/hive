@@ -84,7 +84,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
-import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
@@ -1913,7 +1912,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   /**
    * Vectorized reads of parquet files from columns with list or map type is only supported if the nested types are of
    * primitive type category
-   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details on nested types under lists
+   * check {@link org.apache.hadoop.hive.ql.io.parquet.vector.ParquetRowGroupDecoder#checkListColumnSupport} for
+   * details on nested types under lists
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
    * @return true if having nested types
