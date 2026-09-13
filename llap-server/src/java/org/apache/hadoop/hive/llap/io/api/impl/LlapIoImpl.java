@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -77,6 +78,8 @@ import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
+import org.apache.hadoop.hive.llap.io.decode.ParquetColumnVectorProducer;
+import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
@@ -87,11 +90,13 @@ import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -122,6 +127,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
   // TODO: later, we may have a map
   private final ColumnVectorProducer orcCvp, genericCvp;
+  private final ColumnVectorProducer parquetCvp;
   private final ExecutorService executor;
   private final ExecutorService encodeExecutor;
   private final LlapDaemonCacheMetrics cacheMetrics;
@@ -272,6 +278,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         metadataCache, dataCache, pathCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
         serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
+    // Native Parquet IO is gated per query by the job conf at the dispatch sites.
+    this.parquetCvp = dataCache != null
+        ? new ParquetColumnVectorProducer(dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics)
+        : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();
@@ -342,6 +352,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     ColumnVectorProducer cvp = genericCvp;
     if (sourceInputFormat instanceof OrcInputFormat) {
       cvp = orcCvp; // Special-case for ORC.
+    } else if (sourceInputFormat instanceof MapredParquetInputFormat && sourceSerDe == null) {
+      // Parquet arrives without a SerDe only from HiveInputFormat's native-cache dispatch; with one
+      // it is the encode.formats configuration, which keeps the re-encoding producer.
+      if (parquetCvp == null) {
+        return null;
+      }
+      cvp = parquetCvp;
     } else if (cvp == null) {
       LOG.warn("LLAP encode is disabled; cannot use for " + sourceInputFormat.getClass());
       return null;
@@ -466,6 +483,29 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       rr.setPartitionValues(null);
 
       // Triggers the IO thread pool to pick up this read job
+      rr.start();
+      return rr;
+    } catch (HiveException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedParquetReaderForPath(Object fileKey, Path path,
+      CacheTag tag, List<Integer> tableIncludedCols, JobConf conf, long offset, long length,
+      Map<String, Object> initialDefaults, Reporter reporter) throws IOException {
+    if (parquetCvp == null) {
+      return null;
+    }
+    FileSplit split = new FileSplit(path, offset, length, (String[]) null);
+    try {
+      LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, HiveStringUtils.getHostname(),
+          parquetCvp, executor, null, null, reporter, daemonConf);
+      if (rr == null) {
+        return null;
+      }
+      ((ParquetEncodedDataConsumer) rr.getReadPipeline()).setInitialDefaults(initialDefaults);
+      rr.setPartitionValues(null);
       rr.start();
       return rr;
     } catch (HiveException e) {
