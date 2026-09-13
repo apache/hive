@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -324,12 +323,6 @@ public class SerializationUtilities {
     String name = component.getName();
     if (UNTRUSTED_DENIED_CLASS_NAMES.contains(name)) {
       return false;
-    }
-    // Custom (temporary/permanent) UDFs live in user packages. The classes themselves were
-    // installed by an administrator, so allowing kryo to instantiate them is no worse than any
-    // query invoking them.
-    if (GenericUDF.class.isAssignableFrom(component) || UDF.class.isAssignableFrom(component)) {
-      return true;
     }
     for (String prefix : UNTRUSTED_ALLOWED_PACKAGE_PREFIXES) {
       if (name.startsWith(prefix)) {
