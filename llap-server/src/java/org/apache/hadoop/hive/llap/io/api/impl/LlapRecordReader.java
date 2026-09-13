@@ -135,6 +135,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     if (mapWork == null) return null; // No compatible MapWork.
     LlapRecordReader rr = new LlapRecordReader(mapWork, job, split, tableIncludedCols, hostName,
         cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
+    if (rr.rp == null) {
+      return null; // The producer declined the split; the caller uses the source reader.
+    }
     if (!rr.checkOrcSchemaEvolution()) {
       rr.close();
       throwIfCacheOnlyRead(HiveConf.getBoolVar(job, ConfVars.LLAP_IO_CACHE_ONLY));
@@ -350,6 +353,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
   private boolean checkOrcSchemaEvolution() {
     SchemaEvolution evolution = rp.getSchemaEvolution();
+    if (evolution == null) {
+      // No ORC-style schema evolution to validate (e.g. native parquet path);
+      // parquet handles its own column resolution. Nothing to check here.
+      return true;
+    }
 
     if (evolution.hasConversion() && !evolution.isOnlyImplicitConversion()) {
 
@@ -654,6 +662,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
   void setPartitionValues(Object[] partitionValues) {
     this.partitionValues = partitionValues;
+  }
+
+  ReadPipeline getReadPipeline() {
+    return rp;
   }
 
   /** This class encapsulates include-related logic for LLAP readers. It is not actually specific
