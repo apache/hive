@@ -18,6 +18,8 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.stream.LongStream;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
@@ -39,4 +41,22 @@ public interface HashTableLoader {
 
   void load(MapJoinTableContainer[] mapJoinTables, MapJoinTableContainerSerDe[] mapJoinTableSerdes)
       throws HiveException;
+
+  /**
+   * The key count to size a map join hash table for: the smaller of the optimizer's distinct-key
+   * estimate and the APPROXIMATE_INPUT_RECORDS counter. Either can be wrong, and the two errors
+   * cost differently: the slot arrays are allocated from this value before the first row is read,
+   * so sizing too high is resident memory the monitor only sees afterwards, while sizing too low
+   * is a rehash of the slot index as rows arrive. The counter counts rows, so it bounds the key
+   * count from above whenever it is accurate; it is never a floor on one.
+   *
+   * @param estKeyCount the optimizer's distinct-key estimate, non-positive when unavailable
+   * @param inputRecords the APPROXIMATE_INPUT_RECORDS counter, non-positive when unavailable
+   * @return the smallest positive signal, or -1 when there is none. Never 0:
+   *         {@link org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper#calculateTableSize}
+   *         honours 0 as a real size, which then fails validateCapacity in the fast tables.
+   */
+  static long keyCountForSizing(long estKeyCount, long inputRecords) {
+    return LongStream.of(estKeyCount, inputRecords).filter(count -> count > 0).min().orElse(-1);
+  }
 }
