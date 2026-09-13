@@ -148,6 +148,20 @@ public final class ConfigUtils {
 
   public static final String HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY = "hive.llap.task.scheduler.locality.delay";
 
+  /** Prefixes of the hive.* keys the Tez AM's LLAP plugins read from tez-site. */
+  private static final String[] TEZ_AM_PLUGIN_KEY_PREFIXES = {
+      "hive.llap.task.", "hive.llap.client.", "hive.llap.daemon.communicator."
+  };
+
+  public static boolean isTezAmPluginKey(String key) {
+    for (String prefix : TEZ_AM_PLUGIN_KEY_PREFIXES) {
+      if (key.startsWith(prefix)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static final String METASTORE_SERVER_TRANSPORT_MODE_KEY = "metastore.server.thrift.transport.mode";
   public static final String METASTORE_SERVER_TRANSPORT_MODE_DEFAULT = "http";
 

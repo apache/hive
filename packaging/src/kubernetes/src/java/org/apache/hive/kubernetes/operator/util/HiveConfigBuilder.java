@@ -201,6 +201,17 @@ public final class HiveConfigBuilder {
     tezProps.put(ConfigUtils.HIVE_LLAP_DAEMON_UMBILICAL_PORT_KEY,
         ConfigUtils.HIVE_LLAP_DAEMON_UMBILICAL_PORT_DEFAULT);
 
+    // A standalone AM's LLAP plugins -- task scheduler, task communicator, split location
+    // provider -- read tez-site, not hive-site. Users set these hive.llap keys in the
+    // HiveServer2 overrides, so copy them across; an explicit tezAm override below wins.
+    if (spec.hiveServer2().configOverrides() != null) {
+      spec.hiveServer2().configOverrides().forEach((key, value) -> {
+        if (ConfigUtils.isTezAmPluginKey(key)) {
+          tezProps.put(key, value);
+        }
+      });
+    }
+
     if (spec.tezAm().configOverrides() != null) {
       tezProps.putAll(spec.tezAm().configOverrides());
     }
