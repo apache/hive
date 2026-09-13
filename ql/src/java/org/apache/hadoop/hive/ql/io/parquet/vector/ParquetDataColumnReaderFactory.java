@@ -1508,7 +1508,7 @@ public final class ParquetDataColumnReaderFactory {
      * for file precision <= 18 (see isFastDecimal64), so a value conforming to that precision fits a
      * long; the leading bytes of a wider-than-8-byte array are sign extension and shift out losslessly.
      */
-    private static long binaryToUnscaledLong(Binary value) {
+    static long binaryToUnscaledLong(Binary value) {
       ByteBuffer buf = value.toByteBuffer();
       int pos = buf.position();
       int len = buf.remaining();
