@@ -113,6 +113,42 @@ import com.google.common.collect.Lists;
 
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
+/**
+ * LLAP IO source reader for input formats routed through the SerDe re-encode path
+ * (i.e. {@link org.apache.hadoop.hive.conf.HiveConf.ConfVars#LLAP_IO_ENCODE_FORMATS}) —
+ * the formats LLAP does not have a native columnar reader for. Instances are constructed
+ * from {@link org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer} once the
+ * daemon-side wrap in {@link org.apache.hadoop.hive.ql.io.HiveInputFormat#wrapForLlap}
+ * decides a split is SerDe-based.
+ *
+ * <p>The reader's job is to take the source {@link InputFormat}'s output and produce
+ * ORC-shaped {@link OrcEncodedColumnBatch}es for the LLAP cache. High level:
+ * <ol>
+ *   <li>{@link #startReadSplitFromFile} opens a source {@link RecordReader} via
+ *       {@code sourceInputFormat.getRecordReader(split, ...)}.</li>
+ *   <li>Rows are pulled one at a time through a {@link ReaderWithOffsets}
+ *       (see {@link PassThruOffsetReader} / {@link LineRrOffsetReader}), passed to a
+ *       {@link EncodingWriter} — either {@link VectorDeserializeOrcWriter} for
+ *       LazySimple-friendly text SerDes or {@link DeserializerOrcWriter} for everything
+ *       else — which deserializes each value and appends it to an in-memory ORC
+ *       writer.</li>
+ *   <li>The encoded ORC stripes are handed to {@link CacheWriter}, which
+ *       pushes them into the SerDe LLAP cache keyed by file path and (optionally)
+ *       stripe offsets, so subsequent reads for the same split are served from cache
+ *       and decoded through {@link org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer}.</li>
+ * </ol>
+ *
+ * <p>The whole flow is row-shaped: the encode loop calls
+ * {@link EncodingWriter#writeOneRow(Writable)} exactly once per source {@code next()}, so
+ * the source reader MUST return one row per {@code next()}. Input formats that would
+ * otherwise return a {@link org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch}
+ * per {@code next()} in their vectorized branch (notably
+ * {@link org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat}) are forced onto
+ * their non-vectorized branch by {@link #buildSourceReaderJobConf(JobConf)}, which sets
+ * {@link Utilities#VECTOR_MODE} and {@link ConfVars#HIVE_VECTORIZATION_ENABLED} to
+ * {@code false} on a {@link JobConf} clone. Downstream read-back stays vectorized —
+ * {@link OrcEncodedDataConsumer} decodes the cached ORC stripes into VRBs.
+ */
 public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     implements ConsumerFeedback<OrcEncodedColumnBatch>, TezCounterSource {
 
@@ -1430,12 +1466,40 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
+  /**
+   * The SerDe-based LLAP encode path is row-shaped: {@link PassThruOffsetReader} treats the
+   * source {@link RecordReader}'s value as a single {@link Writable} per {@code next()} call,
+   * and {@link DeserializerOrcWriter#writeOneRow} then does
+   * {@code sourceSerDe.deserialize(value)} plus a single {@code orcWriter.addRow(row)}.
+   *
+   * <p>{@link InputFormat}s whose vectorized branch returns a {@link VectorizedRowBatch} per
+   * {@code next()} (notably {@link org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat}
+   * when {@link Utilities#getIsVectorized(Configuration)} is {@code true}) break that
+   * contract: only the first row of each batch reaches ORC and the rest are silently dropped,
+   * so the LLAP cache ends up with far fewer rows than the file contains.
+   *
+   * <p>This method returns a {@link JobConf} clone with vectorization forced off, to be passed
+   * to {@code sourceInputFormat.getRecordReader(...)}. Downstream read-back stays vectorized
+   * because it goes through {@link OrcEncodedDataConsumer}, which emits VRBs from the cached
+   * ORC-encoded stripes.
+   */
+  static JobConf buildSourceReaderJobConf(JobConf jobConf) {
+    JobConf clone = new JobConf(jobConf);
+    HiveConf.setBoolVar(clone, ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    // Utilities.getIsVectorized short-circuits on VECTOR_MODE before falling through to
+    // HIVE_VECTORIZATION_ENABLED, so both must be set for MapredParquetInputFormat.getRecordReader
+    // to pick the row-mode ParquetRecordReaderWrapper branch.
+    clone.setBoolean(Utilities.VECTOR_MODE, false);
+    return clone;
+  }
+
   public void startReadSplitFromFile(
       FileSplit split, boolean[] splitIncludes, StripeData slice) throws IOException {
     boolean maySplitTheSplit = slice == null;
     ReaderWithOffsets offsetReader = null;
     @SuppressWarnings("rawtypes")
-    RecordReader sourceReader = sourceInputFormat.getRecordReader(split, jobConf, reporter);
+    RecordReader sourceReader = sourceInputFormat.getRecordReader(
+        split, buildSourceReaderJobConf(jobConf), reporter);
     Path path = split.getPath().getFileSystem(daemonConf).makeQualified(split.getPath());
     PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
     try {
