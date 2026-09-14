@@ -289,7 +289,7 @@ fi
       stage('Thrift validation') {
           sh '''#!/bin/bash -e
 set -x
-n=$(git diff -- '*/src/gen/thrift/*' | wc -l)
+n=$(git status -s -- '*/src/gen/thrift/*' | wc -l)
 if [ $n != 0 ]; then
   echo "ERROR: Thrift generated code is out of date!" >&2
   echo "The following files differ:" >&2
