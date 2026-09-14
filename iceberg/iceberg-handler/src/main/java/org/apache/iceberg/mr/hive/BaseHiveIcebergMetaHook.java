@@ -140,8 +140,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
     setTableTypeForNonHiveCatalogBasedTables(hmsTable);
-
-    storeViewTextInfoForMaterializedView(request, Enum.valueOf(TableType.class, hmsTable.getTableType()));
+    storeViewTextInfoForMaterializedView(request);
 
     if (!Catalogs.hiveCatalog(conf, tableProperties)) {
       if (Boolean.parseBoolean(this.tableProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
@@ -212,8 +211,12 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     setSortOrder(hmsTable, schema, tableProperties);
   }
 
-  private void storeViewTextInfoForMaterializedView(CreateTableRequest request, TableType tableType) {
-    if (TableType.EXTERNAL_MATERIALIZED_VIEW.equals(tableType)) {
+  private void storeViewTextInfoForMaterializedView(CreateTableRequest request) {
+    if (request.getTable().getTableType() == null) {
+      return;
+    }
+
+    if (TableType.EXTERNAL_MATERIALIZED_VIEW.equals(Enum.valueOf(TableType.class, request.getTable().getTableType()))) {
 
       org.apache.hadoop.hive.metastore.api.Table tbl = request.getTable();
       viewOriginalText = tbl.getViewOriginalText();
@@ -225,21 +228,23 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private static void setTableTypeForNonHiveCatalogBasedTables(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
-      case EXTERNAL_TABLE:
-      case MANAGED_TABLE:
-        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-                BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
-        break;
-      case VIRTUAL_VIEW:
-      case MATERIALIZED_VIEW:
-      case EXTERNAL_MATERIALIZED_VIEW:
-        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-                HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
-        break;
-      default:
-        throw new UnsupportedOperationException("The database object type " + hmsTable.getTableType() +
-                " is not supported as an Iceberg object type");
+    if (hmsTable.getTableType() != null) {
+      switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
+        case EXTERNAL_TABLE:
+        case MANAGED_TABLE:
+          hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+              BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+          break;
+        case VIRTUAL_VIEW:
+        case MATERIALIZED_VIEW:
+        case EXTERNAL_MATERIALIZED_VIEW:
+          hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+              HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
+          break;
+        default:
+          throw new UnsupportedOperationException("The database object type " + hmsTable.getTableType() +
+              " is not supported as an Iceberg object type");
+      }
     }
   }
 
