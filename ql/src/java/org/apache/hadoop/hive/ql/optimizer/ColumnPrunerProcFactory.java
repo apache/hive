@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -496,12 +498,82 @@ public final class ColumnPrunerProcFactory {
       }
 
       cols = cols == null ? new ArrayList<FieldNode>() : cols;
+      cols = includePartitionColumnsFromScanFilters(scanOp, cols);
 
       cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd, cols);
       RowSchema inputRS = scanOp.getSchema();
       setupNeededColumns(scanOp, inputRS, cols);
 
       return null;
+    }
+
+    /**
+     * For storage handlers with non-native partitions (Iceberg), keep identity partition source
+     * columns in the scan when they are referenced by pushed storage filters or filters above the
+     * scan in the local read pipeline. Without this, filters can reference partition columns that
+     * were pruned from the read projection.
+     */
+    private static List<FieldNode> includePartitionColumnsFromScanFilters(TableScanOperator scanOp,
+        List<FieldNode> cols) {
+      TableScanDesc desc = scanOp.getConf();
+      Table table = desc.getTableMetadata();
+      if (table == null || !table.hasNonNativePartitionSupport()) {
+        return cols;
+      }
+
+      ExprNodeGenericFuncDesc filterExpr = desc.getFilterExpr();
+      if (filterExpr != null) {
+        cols = mergeFieldNodesWithDesc(cols, filterExpr);
+      }
+
+      if (scanOp.getChildOperators() != null) {
+        for (Operator<? extends OperatorDesc> child : scanOp.getChildOperators()) {
+          cols = mergePartitionColumnsFromFiltersAboveScan(child, cols);
+        }
+      }
+      return cols;
+    }
+
+    /**
+     * Walks operators above a TableScan in the local read pipeline and merges columns referenced by
+     * Filter predicates. Traversal follows passthrough operators (Select, PTF, lateral view join,
+     * Limit), mirroring predicate pushdown boundaries in {@code OpProcFactory.SimpleFilterPPD}.
+     * Stops at shuffle, join, grouping and sink operators.
+     */
+    private static List<FieldNode> mergePartitionColumnsFromFiltersAboveScan(
+        Operator<? extends OperatorDesc> op, List<FieldNode> cols) {
+      if (isScanPipelineBoundary(op)) {
+        return cols;
+      }
+
+      if (op instanceof FilterOperator filterOperator) {
+        cols = mergeFieldNodesWithDesc(cols, filterOperator.getConf().getPredicate());
+      } else if (!isPassthroughOperatorAboveScan(op)) {
+        return cols;
+      }
+
+      if (op.getChildOperators() == null) {
+        return cols;
+      }
+      for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
+        cols = mergePartitionColumnsFromFiltersAboveScan(child, cols);
+      }
+      return cols;
+    }
+
+    private static boolean isPassthroughOperatorAboveScan(Operator<? extends OperatorDesc> op) {
+      return op instanceof SelectOperator
+          || op instanceof PTFOperator
+          || op instanceof LateralViewJoinOperator
+          || op instanceof LimitOperator;
+    }
+
+    private static boolean isScanPipelineBoundary(Operator<? extends OperatorDesc> op) {
+      return op instanceof ReduceSinkOperator
+          || op instanceof GroupByOperator
+          || op instanceof CommonJoinOperator
+          || op instanceof UnionOperator
+          || op instanceof FileSinkOperator;
     }
   }
 
