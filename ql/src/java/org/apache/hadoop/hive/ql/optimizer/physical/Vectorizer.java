@@ -2931,12 +2931,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
-    if (hasUnbufferedPartitionColumnInEvaluatorArgs(
-        vectorPTFDesc.getIsPartitionOrderBy(),
-        vectorPTFDesc.getPartitionExprNodeDescs(),
-        vectorPTFDesc.getOrderExprNodeDescs(),
-        vectorPTFDesc.getEvaluatorFunctionNames(),
-        vectorPTFDesc.getEvaluatorInputExprNodeDescLists())) {
+    if (hasUnbufferedPartitionColumnInEvaluatorArgs(vectorPTFDesc)) {
       setOperatorIssue(
           "Window function argument references partition-only column not buffered in vector PTF");
       return false;
@@ -5050,25 +5045,22 @@ public class Vectorizer implements PhysicalPlanResolver {
   // TODO: An evaluator that wants to handle an unbuffered partition-only column in its calculation could
   // opt in to vectorization here.
   private static boolean hasUnbufferedPartitionColumnInEvaluatorArgs(
-      boolean isPartitionOrderBy,
-      ExprNodeDesc[] partitionExprNodeDescs,
-      ExprNodeDesc[] orderExprNodeDescs,
-      String[] evaluatorFunctionNames,
-      List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists) {
+      VectorPTFDesc vectorPTFDesc) {
 
     // PARTITION BY matches ORDER BY, so partition cols are buffered as order cols.
-    if (!isPartitionOrderBy) {
+    if (!vectorPTFDesc.getIsPartitionOrderBy()) {
       return false;
     }
 
-    List<ExprNodeDesc> partitionOnlyExprs =
-        getPartitionOnlyExprs(partitionExprNodeDescs, orderExprNodeDescs);
+    List<ExprNodeDesc> partitionOnlyExprs = getPartitionOnlyExprs(vectorPTFDesc.getPartitionExprNodeDescs(),
+        vectorPTFDesc.getOrderExprNodeDescs());
     if (partitionOnlyExprs.isEmpty()) {
       return false;
     }
 
     return evaluatorArgsReferencePartitionOnlyExprs(
-        evaluatorFunctionNames, evaluatorInputExprNodeDescLists, partitionOnlyExprs);
+        vectorPTFDesc.getEvaluatorFunctionNames(), vectorPTFDesc.getEvaluatorInputExprNodeDescLists(),
+        partitionOnlyExprs);
   }
 
   private static boolean evaluatorArgsReferencePartitionOnlyExprs(
@@ -5113,11 +5105,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<ExprNodeDesc> partitionOnlyExprs = new ArrayList<ExprNodeDesc>();
     for (ExprNodeDesc partitionExpr : partitionExprNodeDescs) {
       // Collect partition expressions that are not also ORDER BY expressions.
-      ExprNodeDescEqualityWrapper partitionWrapper =
-          new ExprNodeDescEqualityWrapper(partitionExpr);
       boolean inOrder = false;
       for (ExprNodeDesc orderExpr : orderExprNodeDescs) {
-        if (partitionWrapper.equals(new ExprNodeDescEqualityWrapper(orderExpr))) {
+        if (partitionExpr.isSame(orderExpr)) {
           inOrder = true;
           break;
         }
