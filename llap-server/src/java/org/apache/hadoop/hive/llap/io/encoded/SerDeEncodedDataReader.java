@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -77,7 +78,10 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -332,6 +336,17 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     long getCurrentRowStartOffset();
     /** Gets the end offset of the current row, or -1 if unknown. */
     long getCurrentRowEndOffset();
+
+    /**
+     * Whether {@link #getCurrentRow()} returns a whole {@link VectorizedRowBatch}
+     * (batch-shaped) rather than a single-row {@link Writable} (row-shaped).
+     *
+     * <p>Batch-shaped readers must route to
+     * {@link EncodingWriter#writeBatch(VectorizedRowBatch)} in the encode loop
+     * rather than {@link EncodingWriter#writeOneRow(Writable)}. Default is
+     * {@code false} — the row-shaped contract every existing reader implements.
+     */
+    default boolean isBatchShaped() { return false; }
   }
 
   public static class CacheWriter implements PhysicalWriter {
@@ -569,6 +584,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         List<CacheOutputReceiver> streams = e.getValue();
         List<CacheStreamData> data = new ArrayList<>(streams.size());
         for (CacheOutputReceiver receiver : streams) {
+          // Trim the last buffer's limit to match actual bytes written before we hand the
+          // buffer list off to the cache. The read side (StreamUtils#createDiskRangeInfo)
+          // treats each MemoryBuffer's [position, limit) as stream bytes, so a rounded-up
+          // allocator slot tail would otherwise appear as valid trailing data.
+          receiver.finalizeCurrentBuffer();
           List<MemoryBuffer> buffers = receiver.buffers;
           if (buffers == null) {
             // This can happen e.g. for a data stream when all the values are null.
@@ -704,6 +724,13 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         bb = lastBuffer.getByteBufferRaw();
         int written = lastBufferPos - bb.position();
         if (bb.remaining() - written < size) {
+          // The current buffer is being abandoned mid-stream. Trim its limit to the actual
+          // end of data (lastBufferPos) so the read side, which walks each MemoryBuffer as
+          // [position, limit), does not treat the unwritten tail of the allocator slot as
+          // stream bytes. Without this, RLE-encoded integer streams whose true length is
+          // shorter than the rounded-up allocation slot decode phantom trailing runs and
+          // trip "Corruption in ORC data encountered" (or, worse, return wrong values).
+          bb.limit(lastBufferPos);
           lastBufferPos = -1;
           bb = null;
         }
@@ -723,6 +750,25 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       bb.put(buffer);
       lastBufferPos = bb.position();
       bb.position(pos);
+    }
+
+    /**
+     * Trim the current (last) buffer's limit to {@link #lastBufferPos} so its readable
+     * {@link ByteBuffer#remaining()} reflects the actual data written, not the rounded-up
+     * allocator slot size. Idempotent; safe to call after {@link #suppress()} or on a
+     * suppressed/empty receiver. Called from {@link CacheWriter#finalizeStripe} once the
+     * stream is complete.
+     */
+    public void finalizeCurrentBuffer() {
+      if (suppressed || lastBufferPos == -1 || buffers == null || buffers.isEmpty()) {
+        return;
+      }
+      MemoryBuffer lastBuffer = buffers.get(buffers.size() - 1);
+      ByteBuffer bb = lastBuffer.getByteBufferRaw();
+      // If the buffer was somehow already truncated, do not extend it back.
+      if (lastBufferPos < bb.limit()) {
+        bb.limit(lastBufferPos);
+      }
     }
 
     @Override
@@ -1386,6 +1432,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       if (offsetReader == null) {
         return null; // This means the reader has already been closed.
       }
+      final boolean batchShaped = offsetReader.isBatchShaped();
       try {
         while (offsetReader.next()) {
           hasAnyData = true;
@@ -1394,9 +1441,18 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           if (firstStartOffset == Long.MIN_VALUE) {
             firstStartOffset = lastStartOffset;
           }
-          writer.writeOneRow(value);
+          int rowsAdded;
+          if (batchShaped) {
+            VectorizedRowBatch batch = (VectorizedRowBatch) value;
+            writer.writeBatch(batch);
+            rowsAdded = batch.size;
+          } else {
+            writer.writeOneRow(value);
+            rowsAdded = 1;
+          }
+          rowsPerSlice += rowsAdded;
 
-          if (maySplitTheSplit && ++rowsPerSlice == targetSliceRowCount) {
+          if (maySplitTheSplit && rowsPerSlice >= targetSliceRowCount) {
             assert offsetReader.hasOffsets();
             writer.flushIntermediateData();
             long fileOffset = offsetReader.getCurrentRowEndOffset();
@@ -1496,14 +1552,23 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   public void startReadSplitFromFile(
       FileSplit split, boolean[] splitIncludes, StripeData slice) throws IOException {
     boolean maySplitTheSplit = slice == null;
+    StructObjectInspector originalOi = (StructObjectInspector) getOiFromSerDe();
+    final boolean batchShapedEncode = canEncodeVectorized(originalOi);
     ReaderWithOffsets offsetReader = null;
     @SuppressWarnings("rawtypes")
     RecordReader sourceReader = sourceInputFormat.getRecordReader(
-        split, buildSourceReaderJobConf(jobConf), reporter);
+        split, batchShapedEncode ? new JobConf(jobConf) : buildSourceReaderJobConf(jobConf),
+        reporter);
     Path path = split.getPath().getFileSystem(daemonConf).makeQualified(split.getPath());
     PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
     try {
-      offsetReader = createOffsetReader(sourceReader, partDesc.getTableDesc(), split);
+      if (batchShapedEncode) {
+        // Skip createOffsetReader (LineRrOffsetReader is text-only anyway) and wrap the
+        // vectorized RecordReader directly. header/footer are text-only concepts.
+        offsetReader = new PassThruBatchReader(sourceReader, jobConf, 0, 0);
+      } else {
+        offsetReader = createOffsetReader(sourceReader, partDesc.getTableDesc(), split);
+      }
       sourceReader = null;
     } finally {
       if (sourceReader != null) {
@@ -1514,16 +1579,25 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         }
       }
     }
+    // Batch-shaped readers don't expose per-row offsets: hasOffsets() is false so
+    // maySplitTheSplit collapses to false here, and the whole split becomes one stripe.
     maySplitTheSplit = maySplitTheSplit && offsetReader.hasOffsets();
 
     try {
-      StructObjectInspector originalOi = (StructObjectInspector)getOiFromSerDe();
       List<Integer> splitColumnIds = OrcInputFormat.genIncludedColumnsReverse(
           schema, splitIncludes, false);
       // fileread writes to the writer, which writes to orcWriter, which writes to cacheWriter
-      EncodingWriter writer = VectorDeserializeOrcWriter.create(
-          sourceInputFormat, sourceSerDe, parts, daemonConf, jobConf, split.getPath(), originalOi,
-          splitColumnIds, splitIncludes, allocSize, encodeExecutor);
+      EncodingWriter writer;
+      if (batchShapedEncode) {
+        // Pass splitColumnIds so the writer narrows its ORC schema + destination VRB to the
+        // projected columns -- MapredParquetInputFormat's vectorized reader only allocates
+        // ColumnVectors for the projected indices, and a full-width writer NPEs on the rest.
+        writer = new VectorSourceOrcWriter(originalOi, splitColumnIds, allocSize);
+      } else {
+        writer = VectorDeserializeOrcWriter.create(
+            sourceInputFormat, sourceSerDe, parts, daemonConf, jobConf, split.getPath(), originalOi,
+            splitColumnIds, splitIncludes, allocSize, encodeExecutor);
+      }
       // TODO: move this into ctor? EW would need to create CacheWriter then
       List<Integer> cwColIds = writer.isOnlyWritingIncludedColumns() ? splitColumnIds : columnIds;
       writer.init(new CacheWriter(bufferManager, cwColIds, splitIncludes,
@@ -1545,6 +1619,37 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         LlapIoImpl.LOG.error("Failed to close source reader", ex);
       }
     }
+  }
+
+  /**
+   * Whether the batch-shaped encode path
+   * ({@code hive.llap.io.encode.vector.parquet.enabled}, default on) applies to
+   * this reader's source InputFormat and SerDe.
+   *
+   * <p>Requires: (a) the flag is on in BOTH the daemon config and the caller's
+   * JobConf (matching {@link VectorDeserializeOrcWriter#create}'s sister flag
+   * so a session-level {@code SET ...=false} can opt back into the row-shape
+   * default), (b) source is {@link MapredParquetInputFormat} (whose vectorized
+   * branch returns a {@link VectorizedRowBatch} per {@code next()}), (c) the
+   * SerDe's {@link StructObjectInspector} is a flat struct of primitives —
+   * same primitive-only guard {@link VectorDeserializeOrcWriter#create} uses,
+   * since nested/complex types under the Parquet vectorized reader aren't
+   * supported by this path yet.
+   */
+  private boolean canEncodeVectorized(StructObjectInspector originalOi) {
+    if (!HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_ENCODE_VECTOR_PARQUET_ENABLED)
+        || !HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_ENCODE_VECTOR_PARQUET_ENABLED)) {
+      return false;
+    }
+    if (!(sourceInputFormat instanceof MapredParquetInputFormat)) {
+      return false;
+    }
+    for (StructField sf : originalOi.getAllStructFieldRefs()) {
+      if (sf.getFieldObjectInspector().getCategory() != Category.PRIMITIVE) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private class AsyncCacheDataCallback implements AsyncCallback {
@@ -1593,6 +1698,21 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     public abstract boolean isOnlyWritingIncludedColumns();
 
     public abstract void writeOneRow(Writable row) throws IOException;
+
+    /**
+     * Batch-aware analogue of {@link #writeOneRow(Writable)}: writes a whole
+     * {@link VectorizedRowBatch} to the underlying ORC writer in one shot.
+     *
+     * <p>Implemented by writers that expect a batch-shaped source reader (i.e.
+     * {@link ReaderWithOffsets#isBatchShaped()} returns {@code true}). The
+     * default throws so any accidental call on a row-shaped writer surfaces
+     * immediately instead of silently dropping rows.
+     */
+    public void writeBatch(VectorizedRowBatch batch) throws IOException {
+      throw new UnsupportedOperationException(
+          getClass().getSimpleName() + " does not implement writeBatch(VectorizedRowBatch)");
+    }
+
     public abstract void setCurrentStripeOffsets(long currentKnownTornStart,
         long firstStartOffset, long lastStartOffset, long fileOffset);
     public abstract void flushIntermediateData() throws IOException;
@@ -1675,6 +1795,142 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     @Override
     public List<VectorizedRowBatch> extractCurrentVrbs() {
       return null; // Doesn't support creating VRBs.
+    }
+  }
+
+  /**
+   * Batch-shaped {@link EncodingWriter} that pipes {@link VectorizedRowBatch}es
+   * from a vectorized source reader (e.g. {@code VectorizedParquetRecordReader})
+   * straight into the ORC cache writer via
+   * {@link org.apache.orc.Writer#addRowBatch(VectorizedRowBatch)}. Used when the
+   * {@code hive.llap.io.encode.vector.parquet.enabled} path is on (its default)
+   * and the source InputFormat can serve a VRB whose layout matches the SerDe's
+   * {@link StructObjectInspector} — see
+   * {@link #buildSourceReaderJobConf(JobConf)} for the row-shaped fallback used
+   * when the flag is set to {@code false}.
+   *
+   * <p>Skips the per-row {@code SerDe.deserialize} + {@code orcWriter.addRow}
+   * round-trip that {@link DeserializerOrcWriter} performs. Does not expose
+   * per-row offsets, so the encode path uses the whole split as a single stripe
+   * (no {@code maySplitTheSplit}).
+   *
+   * <p>Sparse-to-dense translation: {@code VectorizedRowBatchCtx.createVectorizedRowBatch}
+   * only allocates {@link org.apache.hadoop.hive.ql.exec.vector.ColumnVector}s
+   * for the projected column indices when a projection is set; unprojected
+   * {@code cols[i]} are {@code null}. Handing that sparse VRB straight to an
+   * ORC writer built against the full source schema NPEs at the first
+   * unprojected column, so this writer builds a dense destination schema and
+   * batch — same shape {@link VectorDeserializeOrcWriter} uses — that carries
+   * only the {@code sourceIncludes} columns. When no projection is set
+   * ({@code sourceIncludes} covers every column) the writer forwards the
+   * source batch unchanged.
+   */
+  static class VectorSourceOrcWriter extends EncodingWriter {
+    private final List<Integer> sourceIncludes;
+    private final boolean usesSourceIncludes;
+    /** Dense OI matching the sourceIncludes projection; null when no projection is set. */
+    private final StructObjectInspector destinationOi;
+    /** Dense VRB view whose cols[k] aliases source.cols[sourceIncludes.get(k)]; null when no projection is set. */
+    private VectorizedRowBatch destinationBatch;
+
+    public VectorSourceOrcWriter(StructObjectInspector sourceOi, List<Integer> sourceIncludes,
+        int allocSize) {
+      super(sourceOi, allocSize);
+      List<? extends StructField> sourceFields = sourceOi.getAllStructFieldRefs();
+      this.sourceIncludes = sourceIncludes;
+      this.usesSourceIncludes = sourceIncludes != null && sourceIncludes.size() < sourceFields.size();
+      if (usesSourceIncludes) {
+        List<String> childNames = new ArrayList<>(sourceIncludes.size());
+        List<ObjectInspector> childOis = new ArrayList<>(sourceIncludes.size());
+        for (Integer columnId : sourceIncludes) {
+          StructField sourceField = sourceFields.get(columnId);
+          childNames.add(sourceField.getFieldName());
+          childOis.add(sourceField.getFieldObjectInspector());
+        }
+        // Only the structural shape (names + child OIs) is consulted by the ORC writer;
+        // the LazySimpleStructObjectInspector's SerDe-parameters go unused, same as in
+        // VectorDeserializeOrcWriter above.
+        this.destinationOi = new LazySimpleStructObjectInspector(
+            childNames, childOis, null, (byte) 0, null);
+      } else {
+        this.destinationOi = null;
+      }
+    }
+
+    @Override
+    public void init(CacheWriter cacheWriter, Configuration conf, Path path) throws IOException {
+      // Build the ORC writer against the dense (projection-narrowed) OI when there IS a
+      // projection, so its StructTreeWriter has one child TreeWriter per included column.
+      // Without a projection, the source OI already matches the source batch layout.
+      StructObjectInspector writerOi = usesSourceIncludes ? destinationOi : sourceOi;
+      this.orcWriter = super.createOrcWriter(cacheWriter, conf, path, writerOi);
+      this.cacheWriter = cacheWriter;
+    }
+
+    @Override
+    public void writeOneRow(Writable row) {
+      throw new UnsupportedOperationException(
+          "VectorSourceOrcWriter is batch-shaped; use writeBatch(VectorizedRowBatch)");
+    }
+
+    @Override
+    public void writeBatch(VectorizedRowBatch batch) throws IOException {
+      if (!usesSourceIncludes) {
+        orcWriter.addRowBatch(batch);
+        return;
+      }
+      // Repack the sparse source VRB into a dense destination VRB (cols[k] pointing at
+      // source.cols[sourceIncludes.get(k)]). We lazy-build destinationBatch here rather
+      // than in the ctor because the source reader controls VRB allocation and column
+      // vectors don't exist yet when the writer is constructed. On subsequent calls we
+      // re-alias in case the source reader ever swaps ColumnVector instances between
+      // next() calls; in practice the Parquet reader reuses the same vectors, so this
+      // costs a handful of reference writes per batch.
+      if (destinationBatch == null) {
+        destinationBatch = new VectorizedRowBatch(sourceIncludes.size());
+      }
+      for (int k = 0; k < sourceIncludes.size(); k++) {
+        destinationBatch.cols[k] = batch.cols[sourceIncludes.get(k)];
+      }
+      destinationBatch.size = batch.size;
+      destinationBatch.selectedInUse = batch.selectedInUse;
+      destinationBatch.selected = batch.selected;
+      orcWriter.addRowBatch(destinationBatch);
+    }
+
+    @Override
+    public void flushIntermediateData() {
+      // No-op: the batch path writes each batch to ORC immediately.
+    }
+
+    @Override
+    public void writeIntermediateFooter() throws IOException {
+      orcWriter.writeIntermediateFooter();
+    }
+
+    @Override
+    public boolean isOnlyWritingIncludedColumns() {
+      // When a projection is set we've narrowed the ORC writer's schema to the included
+      // columns, so the CacheWriter must be told to index against splitColumnIds
+      // (not the full columnIds) -- same contract VectorDeserializeOrcWriter follows.
+      return usesSourceIncludes;
+    }
+
+    @Override
+    public void setCurrentStripeOffsets(long currentKnownTornStart,
+        long firstStartOffset, long lastStartOffset, long fileOffset) {
+      cacheWriter.setCurrentStripeOffsets(
+          currentKnownTornStart, firstStartOffset, lastStartOffset, fileOffset);
+    }
+
+    @Override
+    public List<VectorizedRowBatch> extractCurrentVrbs() {
+      return null;
+    }
+
+    @Override
+    public void close() throws IOException {
+      orcWriter.close();
     }
   }
 

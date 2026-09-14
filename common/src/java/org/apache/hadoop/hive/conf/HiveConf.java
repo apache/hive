@@ -4971,6 +4971,14 @@ public class HiveConf extends Configuration {
     LLAP_IO_ENCODE_VECTOR_SERDE_ASYNC_ENABLED("hive.llap.io.encode.vector.serde.async.enabled",
         true,
         "Whether LLAP should use async mode in vectorized SerDe reader to read text data."),
+    LLAP_IO_ENCODE_VECTOR_PARQUET_ENABLED("hive.llap.io.encode.vector.parquet.enabled", true,
+        "Whether the LLAP SerDe encode path should keep MapredParquetInputFormat's vectorized\n"
+        + "reader and feed VectorizedRowBatches straight into the ORC cache writer. When true\n"
+        + "(default), the vectorized ParquetRecordReader's VectorizedRowBatches are handed to\n"
+        + "the ORC cache writer via Writer.addRowBatch, skipping the per-row\n"
+        + "ParquetHiveSerDe.deserialize + orcWriter.addRow(Object) round-trip. When false, the\n"
+        + "reader is forced to its row-per-next() branch and each row is deserialized via\n"
+        + "ParquetHiveSerDe before being written to the ORC-shaped cache -- correct but slow."),
     LLAP_IO_ENCODE_SLICE_ROW_COUNT("hive.llap.io.encode.slice.row.count", 100000,
         "Row count to use to separate cache slices when reading encoded data from row-based\n" +
         "inputs into LLAP cache, if this feature is enabled."),
