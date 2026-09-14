@@ -1281,7 +1281,6 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       throws MetaException, NoSuchObjectException {
     catName = normalizeIdentifier(catName);
     List<Object> params = new ArrayList<>(Arrays.asList(catName, TableType.MATERIALIZED_VIEW.toString(), true));
-    params.addAll(Arrays.asList(catName, TableType.EXTERNAL_MATERIALIZED_VIEW.toString(), true));
     if (dbName != null) {
       params.add(normalizeIdentifier(dbName));
     }
