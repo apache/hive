@@ -75,12 +75,8 @@ public class CreateDatabaseHandler
     boolean isReplicated = isDbReplicationTarget(db);
     Map<String, String> transactionalListenersResponses = Collections.emptyMap();
     Path dbExtPath = new Path(db.getLocationUri());
-    Path dbMgdPath = db.getManagedLocationUri() != null ? new Path(db.getManagedLocationUri()) : null;
-
-    // HIVE-28820: create the default managed database directory even when MANAGEDLOCATION
-    // is not explicitly specified. Do not persist this default path into Database.managedLocationUri.
-    Path managedPathToCreate = dbMgdPath != null ? dbMgdPath : wh.getDefaultDatabasePath(db.getName(), false);
-    boolean explicitManagedLocation = dbMgdPath != null;
+    // beforeExecute() always persists a managed location (explicit or default) onto db
+    Path dbMgdPath = new Path(db.getManagedLocationUri());
     boolean isInTest = MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST);
     try {
       Database authDb = new Database(db);
@@ -102,11 +98,11 @@ public class CreateDatabaseHandler
           madeExternalDir = true;
         }
       } else {
-        madeManagedDir = createDbDirectory(managedPathToCreate, true, "managed", true);
+        madeManagedDir = createDbDirectory(dbMgdPath, true, "managed", true);
         if (madeManagedDir) {
-          LOG.info("Created database path in managed directory {}", managedPathToCreate);
-        } else if (explicitManagedLocation && (!isInTest || !isDbReplicationTarget(db))) {
-          throw new MetaException("Unable to create database managed directory " + managedPathToCreate +
+         LOG.info("Created database path in managed directory {}", dbMgdPath);
+        } else if (!isInTest || !isDbReplicationTarget(db)) {
+          throw new MetaException("Unable to create database managed directory " + dbMgdPath +
               ", failed to create database " + db.getName());
         }
         madeExternalDir = createDbDirectory(dbExtPath, false, "external", false);
@@ -134,19 +130,19 @@ public class CreateDatabaseHandler
       if (!success) {
         ms.rollbackTransaction();
         if (db.getCatalogName() != null && !db.getCatalogName().equals(Warehouse.DEFAULT_CATALOG_NAME)) {
-          if (madeManagedDir && dbMgdPath != null) {
+          if (madeManagedDir) {
             wh.deleteDir(dbMgdPath, true, db);
           }
         } else {
           if (madeManagedDir) {
             try {
               UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Void>) () -> {
-                wh.deleteDir(managedPathToCreate, true, db);
+                wh.deleteDir(dbMgdPath, true, db);
                 return null;
               });
             } catch (IOException | InterruptedException e) {
               LOG.error("Couldn't delete managed directory {} after it was created for database {} {}",
-                  managedPathToCreate, db.getName(), e.getMessage());
+                  dbMgdPath, db.getName(), e.getMessage());
             }
           }
 
@@ -202,16 +198,13 @@ public class CreateDatabaseHandler
     Path defaultDbMgdPath = wh.getDefaultDatabasePath(db.getName(), false);
     Path dbExtPath = (passedInURI != null) ?
         wh.getDnsPath(new Path(passedInURI)) : wh.determineDatabasePath(cat, db);
-    Path dbMgdPath = (passedInManagedURI != null) ? wh.getDnsPath(new Path(passedInManagedURI)) : null;
-
+    Path dbMgdPath = (passedInManagedURI != null) ?
+       wh.getDnsPath(new Path(passedInManagedURI)) : defaultDbMgdPath;
     skipAuthorization = ((passedInURI == null && passedInManagedURI == null) ||
-        (defaultDbExtPath.equals(dbExtPath) &&
-            (dbMgdPath == null || defaultDbMgdPath.equals(dbMgdPath))));
-
+       (defaultDbExtPath.equals(dbExtPath) && defaultDbMgdPath.equals(dbMgdPath)));
     db.setLocationUri(dbExtPath.toString());
-    if (dbMgdPath != null) {
-      db.setManagedLocationUri(dbMgdPath.toString());
-    }
+    //Database.managedLocationUri reflects the directory that will actually be created on disk.
+    db.setManagedLocationUri(dbMgdPath.toString());
 
     if (db.getOwnerName() == null){
       try {
@@ -276,8 +269,15 @@ public class CreateDatabaseHandler
         return false;
       });
     } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-      throw new MetaException("Unable to create database " + dirLabel + " directory " + path +
-          ", failed to create database " + db.getName() + ": " + e.getMessage());
+      Throwable cause = (e instanceof UndeclaredThrowableException) ? e.getCause() : e;
+      if (cause instanceof MetaException) {
+        throw (MetaException) cause;
+      }
+      String externalHint = "external".equals(dirLabel)
+         ? ". This may result in access not being allowed if the StorageBasedAuthorizationProvider is enabled"
+         : "";
+      throw new MetaException("Failed to create " + dirLabel + " path " + path + " for database " + db.getName() +
+                   externalHint + ": " + cause.getMessage());
     }
   }
 
