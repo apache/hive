@@ -562,23 +562,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     float min = minMaxRange.get().lowerEndpoint();
     float max = minMaxRange.get().upperEndpoint();
 
-    float lowerInfinite = Float.NEGATIVE_INFINITY;
-    float upperInfinite = Float.POSITIVE_INFINITY;
-    boolean isOneSidedUpper = Float.compare(boundaries.lowerEndpoint(), lowerInfinite) == 0
-        && Float.compare(boundaries.upperEndpoint(), upperInfinite) != 0;
-    boolean isOneSidedLower = Float.compare(boundaries.upperEndpoint(), upperInfinite) == 0
-        && Float.compare(boundaries.lowerEndpoint(), lowerInfinite) != 0;
-
-    double rawSelectivity;
-    if (isOneSidedUpper) {
-      rawSelectivity = computeOneSidedUniformSelectivity(min, max, boundaries.upperEndpoint(), true,
-          BoundType.CLOSED.equals(boundaries.upperBoundType()));
-    } else if (isOneSidedLower) {
-      rawSelectivity = computeOneSidedUniformSelectivity(min, max, boundaries.lowerEndpoint(), false,
-          BoundType.CLOSED.equals(boundaries.lowerBoundType()));
-    } else {
-      rawSelectivity = computeTwoSidedUniformSelectivity(min, max, boundaries, inverseBool, typeRange);
-    }
+    double rawSelectivity = computeUniformSelectivityFromRangeOverlap(min, max, boundaries, inverseBool, typeRange);
 
     if (rawSelectivity < 0 || Double.isNaN(rawSelectivity) || Double.isInfinite(rawSelectivity)) {
       return null;
@@ -587,45 +571,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   /**
-   * Mirrors {@code StatsRulesProcFactory.EvaluateComparatorWithRange} semantics for one-sided predicates.
+   * Estimates uniform selectivity by intersecting the column MIN/MAX domain with the predicate range.
+   * One-sided predicates ({@code <}, {@code <=}, {@code >}, {@code >=}) use semi-infinite Guava ranges
+   * and follow the same overlap/width formula as {@code BETWEEN}.
    */
-  private static double computeOneSidedUniformSelectivity(float min, float max, float value, boolean upperBound,
-      boolean closedBound) {
-    Optional<Double> earlyReturn = applyOneSidedEarlyReturn(min, max, value, upperBound, closedBound);
-    if (earlyReturn.isPresent()) {
-      return earlyReturn.get();
-    }
-    float domainWidth = max - min;
-    if (domainWidth <= 0) {
-      return 0;
-    }
-    if (upperBound) {
-      return (value - min) / domainWidth;
-    }
-    return (max - value) / domainWidth;
-  }
-
-  private static Optional<Double> applyOneSidedEarlyReturn(float min, float max, float value, boolean upperBound,
-      boolean closedBound) {
-    if (upperBound) {
-      if (max < value || (Float.compare(max, value) == 0 && closedBound)) {
-        return Optional.of(1.0);
-      }
-      if (min > value || (Float.compare(min, value) == 0 && !closedBound)) {
-        return Optional.of(0.0);
-      }
-    } else {
-      if (min > value || (Float.compare(min, value) == 0 && closedBound)) {
-        return Optional.of(1.0);
-      }
-      if (max < value || (Float.compare(max, value) == 0 && !closedBound)) {
-        return Optional.of(0.0);
-      }
-    }
-    return Optional.empty();
-  }
-
-  private static double computeTwoSidedUniformSelectivity(float min, float max, Range<Float> boundaries,
+  private static double computeUniformSelectivityFromRangeOverlap(float min, float max, Range<Float> boundaries,
       boolean inverseBool, Range<Float> typeRange) {
     if (Float.compare(min, max) == 0) {
       double betweenSelectivity = boundaries.contains(min) ? 1.0 : 0.0;
@@ -650,7 +600,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     float overlapWidth = rangeWidth(intersectRanges(domain, predicateRange));
-    float domainWidth = max - min;
+    float domainWidth = rangeWidth(domain);
     if (domainWidth <= 0) {
       return 0;
     }
