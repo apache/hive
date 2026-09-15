@@ -310,7 +310,7 @@ public final class IcebergColStatsReader {
         InputFile file = table.io().newInputFile(statsFile.path(), statsFile.fileSizeInBytes());
         try (SeekableInputStream in = file.newStream()) {
           // the asked columns are the same fields in every blob, so they are resolved once here
-          readBlobs(in, blobs, neededFields(schema, columns), withVectors, result, schema);
+          readPartEntries(in, blobs, neededFields(schema, columns), withVectors, result, schema);
         }
       }
     } catch (Exception e) {
@@ -330,7 +330,7 @@ public final class IcebergColStatsReader {
    * per round trip, which a file holding a blob per partition cannot afford. It leaves in favor
    * of Iceberg's reader once that one coalesces runs and takes them in one vectored call.
    */
-  static void readBlobs(SeekableInputStream in, List<BlobMetadata> blobs, IntPredicate needed,
+  static void readPartEntries(SeekableInputStream in, List<BlobMetadata> blobs, IntPredicate needed,
       boolean withVectors, Map<String, List<ColumnStatisticsObj>> result, Schema schema)
       throws IOException {
     List<BlobMetadata> ordered = blobs.stream()
@@ -371,7 +371,7 @@ public final class IcebergColStatsReader {
         part.position((int) (blob.offset() - start));
         part.limit((int) (blob.offset() - start + blob.length()));
         result.put(blob.properties().get(IcebergColStatsWriter.PARTITION_PROP),
-            decodePartBlob(part.slice(), needed, withVectors, schema));
+            decodePartEntries(part.slice(), needed, withVectors, schema));
       }
     }
   }
@@ -421,12 +421,12 @@ public final class IcebergColStatsReader {
    * scan did not ask about is stepped over rather than decoded, and one whose field the schema no
    * longer has is left behind - the name it carries may since have moved to another column.
    */
-  static List<ColumnStatisticsObj> decodePartBlob(ByteBuffer blob, IntPredicate needed,
+  static List<ColumnStatisticsObj> decodePartEntries(ByteBuffer blob, IntPredicate needed,
       boolean withVectors, Schema schema) {
-    List<IcebergColStatsCodec.FieldEntry> stored = IcebergColStatsCodec.decodeBlob(blob, needed);
+    List<IcebergColStatsCodec.EncodedStats> stored = IcebergColStatsCodec.decodePartBlob(blob, needed);
 
     List<ColumnStatisticsObj> entries = Lists.newArrayListWithCapacity(stored.size());
-    for (IcebergColStatsCodec.FieldEntry entry : stored) {
+    for (IcebergColStatsCodec.EncodedStats entry : stored) {
       ColumnStatisticsObj statsObj = IcebergColStatsCodec.decodeEntry(entry.bytes(), withVectors);
       statsObj.setColName(SchemaUtils.getColumnName(schema, entry.fieldId()));
       entries.add(statsObj);

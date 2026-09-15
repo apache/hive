@@ -246,7 +246,7 @@ public final class IcebergColStatsWriter {
         writer.add(new Blob(
             HIVE_PART_COL_STATS_BLOB_V1, List.of(),
             snapshot.snapshotId(), snapshot.sequenceNumber(),
-            encodePartBlob(stats.getStatsObj(), fieldIds),
+            IcebergColStatsCodec.encodePartBlob(stats.getStatsObj(), fieldIds),
             PuffinCompressionCodec.NONE,
             Map.of(PARTITION_PROP, partName)));
         written.add(partName);
@@ -335,7 +335,7 @@ public final class IcebergColStatsWriter {
         try {
           if (!seedFromStored) {
             aggregate.addPartition(
-                IcebergColStatsReader.decodePartBlob(carriedBytes, liveFields, true, schema));
+                IcebergColStatsReader.decodePartEntries(carriedBytes, liveFields, true, schema));
           }
         } catch (InvalidObjectException e) {
           throw new IOException(e);
@@ -501,17 +501,6 @@ public final class IcebergColStatsWriter {
       registered.add(GenericBlobMetadata.from(blob));
     }
     return registered;
-  }
-
-  static ByteBuffer encodePartBlob(List<ColumnStatisticsObj> statsObjs, List<Integer> fieldIds)
-      throws IOException {
-    List<byte[]> entries = Lists.newArrayListWithCapacity(statsObjs.size());
-    for (ColumnStatisticsObj obj : statsObjs) {
-      // vectors and histograms alike: what a read wants of them it settles once they are in hand
-      entries.add(IcebergColStatsCodec.encodeEntry(obj));
-    }
-    return ByteBuffer.wrap(
-        IcebergColStatsCodec.encodeBlob(entries, fieldIds));
   }
 
   /**

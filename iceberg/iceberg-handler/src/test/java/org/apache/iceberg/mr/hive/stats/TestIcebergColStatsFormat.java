@@ -35,6 +35,7 @@ import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,10 +51,10 @@ public class TestIcebergColStatsFormat {
     new Random(11).nextBytes(sketch);
     statsObj.getStatsData().getLongStats().setBitVectors(sketch);
 
-    ByteBuffer blob = IcebergColStatsWriter.encodePartBlob(List.of(statsObj), ids(1));
+    ByteBuffer blob = IcebergColStatsCodec.encodePartBlob(List.of(statsObj), ids(1));
 
     Assert.assertTrue("the sketch takes its own size in the blob", blob.remaining() > sketch.length);
-    Assert.assertEquals(List.of(statsObj), IcebergColStatsReader.decodePartBlob(blob, LIVE_FIELDS, true, SCHEMA));
+    Assert.assertEquals(List.of(statsObj), IcebergColStatsReader.decodePartEntries(blob, LIVE_FIELDS, true, SCHEMA));
   }
 
   @Test
@@ -63,17 +64,17 @@ public class TestIcebergColStatsFormat {
     ColumnStatisticsObj statsObj = columns(1).getFirst();
     statsObj.getStatsData().getLongStats().setBitVectors(new byte[] {1, 2, 3, 4});
     statsObj.getStatsData().getLongStats().setHistogram(new byte[] {5, 6, 7});
-    ByteBuffer blob = IcebergColStatsWriter.encodePartBlob(List.of(statsObj), ids(1));
+    ByteBuffer blob = IcebergColStatsCodec.encodePartBlob(List.of(statsObj), ids(1));
 
     ColumnStatisticsObj asked =
-        IcebergColStatsReader.decodePartBlob(blob, LIVE_FIELDS, true, SCHEMA).getFirst();
+        IcebergColStatsReader.decodePartEntries(blob, LIVE_FIELDS, true, SCHEMA).getFirst();
     Assert.assertArrayEquals("the vector is put back where it was taken from",
         new byte[] {1, 2, 3, 4}, asked.getStatsData().getLongStats().getBitVectors());
     Assert.assertArrayEquals("and so is the histogram",
         new byte[] {5, 6, 7}, asked.getStatsData().getLongStats().getHistogram());
 
     ColumnStatisticsObj unasked =
-        IcebergColStatsReader.decodePartBlob(blob, LIVE_FIELDS, false, SCHEMA).getFirst();
+        IcebergColStatsReader.decodePartEntries(blob, LIVE_FIELDS, false, SCHEMA).getFirst();
     Assert.assertFalse("a read that did not ask for the vector does not get it",
         unasked.getStatsData().getLongStats().isSetBitVectors());
     Assert.assertArrayEquals("the histogram comes back whatever was asked",
@@ -85,18 +86,39 @@ public class TestIcebergColStatsFormat {
 
   @Test
   public void aFrameFromAVersionThisReaderDoesNotKnowReadsAsAbsent() throws Exception {
-    ByteBuffer blob = IcebergColStatsWriter.encodePartBlob(columns(2), ids(2));
+    ByteBuffer blob = IcebergColStatsCodec.encodePartBlob(columns(2), ids(2));
     blob.putInt(0, IcebergColStatsCodec.BLOB_VERSION + 1);
 
-    Assert.assertTrue(IcebergColStatsReader.decodePartBlob(blob, LIVE_FIELDS, true, SCHEMA).isEmpty());
+    Assert.assertTrue(IcebergColStatsReader.decodePartEntries(blob, LIVE_FIELDS, true, SCHEMA).isEmpty());
+  }
+
+  @Test
+  public void aFrameStatingMoreThanItHoldsIsRefusedRatherThanRead() throws Exception {
+    // a blob the file cut short, or one a length was read out of that is not a count of entries:
+    // either is refused outright, so nothing is sized or stepped over from a number this far off
+    ByteBuffer blob = IcebergColStatsCodec.encodePartBlob(columns(2), ids(2));
+    blob.putInt(Integer.BYTES, Integer.MAX_VALUE);
+
+    Assert.assertThrows(IllegalArgumentException.class,
+        () -> IcebergColStatsReader.decodePartEntries(blob, LIVE_FIELDS, true, SCHEMA));
+  }
+
+  @Test
+  public void anEntryStatingMoreBytesThanTheFrameHasLeftIsRefused() throws Exception {
+    ByteBuffer blob = IcebergColStatsCodec.encodePartBlob(columns(2), ids(2));
+    // the length of the first entry, behind the version, the count and the field it is for
+    blob.putInt(3 * Integer.BYTES, blob.remaining());
+
+    Assert.assertThrows(IllegalArgumentException.class,
+        () -> IcebergColStatsReader.decodePartEntries(blob, LIVE_FIELDS, true, SCHEMA));
   }
 
   @Test
   public void aWideFrameStillYieldsOnlyTheAskedColumns() throws Exception {
     // 3000 columns push the header well past anything a single small read would hold
-    ByteBuffer blob = IcebergColStatsWriter.encodePartBlob(columns(3000), ids(3000));
+    ByteBuffer blob = IcebergColStatsCodec.encodePartBlob(columns(3000), ids(3000));
 
-    List<ColumnStatisticsObj> read = IcebergColStatsReader.decodePartBlob(
+    List<ColumnStatisticsObj> read = IcebergColStatsReader.decodePartEntries(
         blob, IcebergColStatsReader.neededFields(SCHEMA, Set.of("c0", "c1499", "c2999")), true, SCHEMA);
 
     Assert.assertEquals(List.of("c0", "c1499", "c2999"),
@@ -219,8 +241,8 @@ public class TestIcebergColStatsFormat {
   public void blobsLyingCloseTogetherAreTakenInOneRead() throws Exception {
     List<byte[]> blobs = Lists.newArrayList();
     for (int i = 0; i < 3; i++) {
-      blobs.add(IcebergColStatsCodec.encodeBlob(
-          List.of(IcebergColStatsCodec.encodeEntry(longColumn("c" + i, i))), List.of(i + 1)));
+      blobs.add(ByteBuffers.toByteArray(IcebergColStatsCodec.encodePartBlob(
+          List.of(longColumn("c" + i, i)), List.of(i + 1))));
     }
     // laid end to end, so no gap is worth a second request
     List<Long> offsets = List.of(0L, (long) blobs.get(0).length,
@@ -229,7 +251,7 @@ public class TestIcebergColStatsFormat {
     RecordingStream in = layOut(blobs, offsets, meta);
 
     Map<String, List<ColumnStatisticsObj>> read = Maps.newLinkedHashMap();
-    IcebergColStatsReader.readBlobs(in, meta, LIVE_FIELDS, true, read, SCHEMA);
+    IcebergColStatsReader.readPartEntries(in, meta, LIVE_FIELDS, true, read, SCHEMA);
 
     Assert.assertEquals("three adjacent blobs are one request", 1, in.reads.size());
     Assert.assertEquals(3, read.size());
@@ -244,8 +266,8 @@ public class TestIcebergColStatsFormat {
   public void aBlobBeyondTheSeekWorthMakingIsTakenOnItsOwn() throws Exception {
     List<byte[]> blobs = Lists.newArrayList();
     for (int i = 0; i < 2; i++) {
-      blobs.add(IcebergColStatsCodec.encodeBlob(
-          List.of(IcebergColStatsCodec.encodeEntry(longColumn("c" + i, i))), List.of(i + 1)));
+      blobs.add(ByteBuffers.toByteArray(IcebergColStatsCodec.encodePartBlob(
+          List.of(longColumn("c" + i, i)), List.of(i + 1))));
     }
     // a gap wider than any seek is worth crossing
     List<Long> offsets = List.of(0L, 8L * 1024 * 1024);
@@ -253,7 +275,7 @@ public class TestIcebergColStatsFormat {
     RecordingStream in = layOut(blobs, offsets, meta);
 
     Map<String, List<ColumnStatisticsObj>> read = Maps.newLinkedHashMap();
-    IcebergColStatsReader.readBlobs(in, meta, LIVE_FIELDS, true, read, SCHEMA);
+    IcebergColStatsReader.readPartEntries(in, meta, LIVE_FIELDS, true, read, SCHEMA);
 
     Assert.assertEquals("a wide gap costs a second request", 2, in.reads.size());
     Assert.assertEquals("c0", read.get("p=0").getFirst().getColName());
@@ -266,8 +288,8 @@ public class TestIcebergColStatsFormat {
     // readVectored instead of reading them one by one, and every partition still gets its own bytes
     List<byte[]> blobs = Lists.newArrayList();
     for (int i = 0; i < 3; i++) {
-      blobs.add(IcebergColStatsCodec.encodeBlob(
-          List.of(IcebergColStatsCodec.encodeEntry(longColumn("c" + i, i))), List.of(i + 1)));
+      blobs.add(ByteBuffers.toByteArray(IcebergColStatsCodec.encodePartBlob(
+          List.of(longColumn("c" + i, i)), List.of(i + 1))));
     }
     // the gap must beat minSeek (16K on both paths) so two runs, and so two ranges, reach the
     // vectored call - a narrower gap coalesces everything into one and the per-run math goes untried
@@ -276,7 +298,7 @@ public class TestIcebergColStatsFormat {
     List<BlobMetadata> meta = Lists.newArrayList();
     RecordingStream serial = layOut(blobs, offsets, meta);
     Map<String, List<ColumnStatisticsObj>> read = Maps.newLinkedHashMap();
-    IcebergColStatsReader.readBlobs(serial, meta, LIVE_FIELDS, true, read, SCHEMA);
+    IcebergColStatsReader.readPartEntries(serial, meta, LIVE_FIELDS, true, read, SCHEMA);
 
     java.nio.file.Path file = java.nio.file.Files.createTempFile("colstats", ".puffin");
     try {
@@ -286,7 +308,7 @@ public class TestIcebergColStatsFormat {
         Assert.assertTrue("the stream unwraps to Hadoop's, so the vectored call is the one tested",
             in instanceof org.apache.iceberg.io.DelegatingInputStream);
         Map<String, List<ColumnStatisticsObj>> vectored = Maps.newLinkedHashMap();
-        IcebergColStatsReader.readBlobs(in, meta, LIVE_FIELDS, true, vectored, SCHEMA);
+        IcebergColStatsReader.readPartEntries(in, meta, LIVE_FIELDS, true, vectored, SCHEMA);
         Assert.assertEquals(read, vectored);
       }
     } finally {
