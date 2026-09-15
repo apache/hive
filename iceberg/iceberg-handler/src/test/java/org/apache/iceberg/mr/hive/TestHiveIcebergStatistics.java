@@ -3007,7 +3007,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     Table icebergTable = testTables.loadTable(identifier);
     var registered = currentColStatsFile(icebergTable).blobMetadata();
     var partitionEntries = registered.stream()
-        .filter(blob -> blob.properties().containsKey(IcebergColStatsWriter.PARTITION_PROP))
+        .filter(blob -> IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(blob.type()))
         .toList();
     Assert.assertEquals("one entry stands for the partitions", 1, partitionEntries.size());
     var partitionEntry = partitionEntries.get(0);

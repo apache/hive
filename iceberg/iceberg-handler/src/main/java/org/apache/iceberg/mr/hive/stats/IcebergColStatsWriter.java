@@ -486,9 +486,9 @@ public final class IcebergColStatsWriter {
           continue;
         }
         fieldsNamed = true;
-        // the count lets a read turn away an ask of another size without opening the file
+        // this entry stands for every partition blob, so it keeps only what is true of all of
+        // them: the count, which turns away an ask of another size without opening the file
         ImmutableMap.Builder<String, String> properties = ImmutableMap.<String, String>builder()
-            .putAll(blob.properties())
             .put(NUM_PARTITIONS_PROP, String.valueOf(numPartitions));
         if (fullTableAggr) {
           properties.put(FULL_TABLE_AGGR_PROP, "true");

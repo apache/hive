@@ -138,7 +138,7 @@ public final class IcebergStoredStats {
 
   /**
    * The file whose blobs are Hive's own - Iceberg keeps statistics of its own in the same format -
-   * at the asked-for granularity: a blob describing one partition names it in its metadata.
+   * at the asked-for granularity: a blob describing one partition is of a type of its own.
    *
    * <p>A file that holds any partition is a per partition one, whatever else it holds. Its
    * aggregates serve a whole-table read only while they aggregate the full table - what a gather
@@ -146,10 +146,9 @@ public final class IcebergStoredStats {
    */
   private static boolean holdsHiveColStats(StatisticsFile stats, boolean partitionLevel) {
     boolean holdsPartitions = stats.blobMetadata().stream()
-        .anyMatch(metadata -> metadata.properties().containsKey(IcebergColStatsWriter.PARTITION_PROP));
+        .anyMatch(metadata -> IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type()));
     if (partitionLevel) {
-      return holdsPartitions && stats.blobMetadata().stream().anyMatch(
-          metadata -> IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type()));
+      return holdsPartitions;
     }
     if (holdsPartitions) {
       return hasFullTableAggr(stats);
@@ -172,7 +171,7 @@ public final class IcebergStoredStats {
   static StatisticsFile getTableOnlyColStatsFile(Table table, long snapshotId) {
     StatisticsFile stats = getColStatsFile(table, snapshotId, false);
     return stats == null || stats.blobMetadata().stream()
-        .anyMatch(metadata -> metadata.properties().containsKey(IcebergColStatsWriter.PARTITION_PROP)) ?
+        .anyMatch(metadata -> IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type())) ?
         null : stats;
   }
 
@@ -216,7 +215,7 @@ public final class IcebergStoredStats {
     Set<Integer> fields = statsFile == null ? Set.of() :
         statsFile.blobMetadata().stream()
             .filter(metadata -> partitionLevel ||
-                !metadata.properties().containsKey(IcebergColStatsWriter.PARTITION_PROP))
+                !IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type()))
             .flatMap(metadata -> metadata.fields().stream())
             .collect(Collectors.toSet());
     SessionStateUtil.addResource(conf, cacheKey, fields);
