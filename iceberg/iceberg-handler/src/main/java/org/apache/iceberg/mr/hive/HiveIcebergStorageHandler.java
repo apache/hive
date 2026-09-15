@@ -503,6 +503,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       boolean quickStats) {
     Map<String, String> stats;
 
+    if (hmsTable.getMetaTable() != null) {
+      return Map.of();
+    }
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
