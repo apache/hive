@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
 import org.apache.hadoop.hive.metastore.api.ReplayedTxnsForPolicyResult;
 import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
@@ -529,28 +530,28 @@ public interface TxnStore extends Configurable {
    * @param type Hive object type
    * @param db database object
    * @param table table object
-   * @param partNamesIterator partition name iterator
+   * @param partitionIterator partition iterator
    * @throws MetaException
    */
   @SqlRetry
   @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
-  default void cleanupRecords(HiveObjectType type, Database db, Table table,
-      Iterator<String> partNamesIterator) throws MetaException {
-    cleanupRecords(type, db, table, partNamesIterator, false);
+  default void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator) throws MetaException {
+    cleanupRecords(type, db, table, partitionIterator, false);
   }
 
   @SqlRetry
   @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
-  void cleanupRecords(HiveObjectType type, Database db, Table table,
-      Iterator<String> partNamesIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
+  void cleanupRecords(HiveObjectType type, Database db, Table table, 
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
 
   @SqlRetry
   @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
   void cleanupRecords(HiveObjectType type, Database db, Table table,
-      Iterator<String> partNamesIterator, long txnId) throws MetaException;
+      Iterator<Partition> partitionIterator, long txnId) throws MetaException;
 
   /**
    * Clean compaction related records for the given table partitions.

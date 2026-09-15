@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -34,20 +35,20 @@ public class ThrowingTxnHandler extends CompactionTxnHandler {
 
   @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-      Iterator<String> partNamesIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
     if (doThrow) {
       throw new RuntimeException("during transactional cleanup");
     }
-    super.cleanupRecords(type, db, table, partNamesIterator, keepTxnToWriteIdMetaData);
+    super.cleanupRecords(type, db, table, partitionIterator, keepTxnToWriteIdMetaData);
   }
 
   @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-      Iterator<String> partNamesIterator, long txnId) throws MetaException {
+      Iterator<Partition> partitionIterator, long txnId) throws MetaException {
     if (doThrow) {
       throw new RuntimeException("during transactional cleanup");
     }
-    super.cleanupRecords(type, db, table, partNamesIterator, txnId);
+    super.cleanupRecords(type, db, table, partitionIterator, txnId);
   }
   
   @Override

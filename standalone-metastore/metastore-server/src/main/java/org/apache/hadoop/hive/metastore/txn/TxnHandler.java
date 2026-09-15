@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
 import org.apache.hadoop.hive.metastore.api.ReplayedTxnsForPolicyResult;
 import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
@@ -985,15 +986,15 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-        Iterator<String> partNamesIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
-    new CleanupRecordsFunction(type, db, table, partNamesIterator, getDefaultCatalog(conf),
-        keepTxnToWriteIdMetaData, null).execute(jdbcResource);
+        Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
+    new CleanupRecordsFunction(type, db, table, partitionIterator, getDefaultCatalog(conf), keepTxnToWriteIdMetaData, null)
+        .execute(jdbcResource);
   }
 
   @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-        Iterator<String> partNamesIterator, long txnId) throws MetaException {
-    new CleanupRecordsFunction(type, db, table, partNamesIterator, getDefaultCatalog(conf), false, txnId)
+        Iterator<Partition> partitionIterator, long txnId) throws MetaException {
+    new CleanupRecordsFunction(type, db, table, partitionIterator, getDefaultCatalog(conf), false, txnId)
         .execute(jdbcResource);
   }
 
@@ -1002,8 +1003,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (CollectionUtils.isEmpty(partitionNames)) {
       return;
     }
-    new CleanupRecordsFunction(HiveObjectType.PARTITION, null, table, partitionNames.iterator(),
-        getDefaultCatalog(conf), false, null).execute(jdbcResource);
+    new CleanupRecordsFunction(table, partitionNames, getDefaultCatalog(conf)).execute(jdbcResource);
   }
 
   /**
