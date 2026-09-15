@@ -734,20 +734,27 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @VisibleForTesting static boolean stopCacheUpdateService(long timeout) {
-    synchronized (CACHE_UPDATE_SERVICE_LOCK) {
-      boolean tasksStoppedBeforeShutdown = false;
-      if (cacheUpdateMaster != null) {
-        LOG.info("CachedStore: shutting down cache update service");
-        try {
-          tasksStoppedBeforeShutdown = cacheUpdateMaster.awaitTermination(timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-          LOG.info("CachedStore: cache update service was interrupted while waiting for tasks to "
-              + "complete before shutting down. Will make a hard stop now.");
+    // The class monitor serializes shutdown with an in-flight prewarm/update (triggerPreWarm and
+    // triggerUpdateUsingEvent are static synchronized), preserving the pre-HIVE-30052 semantics:
+    // the executor is not torn down or nulled while its task may still be mutating the shared
+    // cache. Lock order is class monitor -> CACHE_UPDATE_SERVICE_LOCK; no path acquires them in
+    // the reverse order. This method is not on the request path, so blocking here is acceptable.
+    synchronized (CachedStore.class) {
+      synchronized (CACHE_UPDATE_SERVICE_LOCK) {
+        boolean tasksStoppedBeforeShutdown = false;
+        if (cacheUpdateMaster != null) {
+          LOG.info("CachedStore: shutting down cache update service");
+          try {
+            tasksStoppedBeforeShutdown = cacheUpdateMaster.awaitTermination(timeout, TimeUnit.MILLISECONDS);
+          } catch (InterruptedException e) {
+            LOG.info("CachedStore: cache update service was interrupted while waiting for tasks to "
+                + "complete before shutting down. Will make a hard stop now.");
+          }
+          cacheUpdateMaster.shutdownNow();
+          cacheUpdateMaster = null;
         }
-        cacheUpdateMaster.shutdownNow();
-        cacheUpdateMaster = null;
+        return tasksStoppedBeforeShutdown;
       }
-      return tasksStoppedBeforeShutdown;
     }
   }
 
