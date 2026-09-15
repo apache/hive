@@ -97,7 +97,13 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 public class CachedStore implements RawStore, Configurable {
 
-  private static ScheduledExecutorService cacheUpdateMaster = null;
+  // volatile: read without a lock on the startCacheUpdateService fast path
+  private static volatile ScheduledExecutorService cacheUpdateMaster = null;
+  // Guards cacheUpdateMaster init/shutdown. Must NOT be the CachedStore.class monitor:
+  // triggerPreWarm holds that monitor for the entire prewarm, and startCacheUpdateService
+  // is called from setConf on every new worker thread's RawStore construction; sharing
+  // the monitor would block all incoming RPCs until prewarm completes.
+  private static final Object CACHE_UPDATE_SERVICE_LOCK = new Object();
   private static List<Pattern> whitelistPatterns = null;
   private static List<Pattern> blacklistPatterns = null;
   // Default value set to 100 milliseconds for test purpose
@@ -691,49 +697,58 @@ public class CachedStore implements RawStore, Configurable {
    * @param conf
    * @param runOnlyOnce
    * @param shouldRunPrewarm
-   */ static synchronized void startCacheUpdateService(Configuration conf, boolean runOnlyOnce,
+   */ static void startCacheUpdateService(Configuration conf, boolean runOnlyOnce,
       boolean shouldRunPrewarm) {
-    if (cacheUpdateMaster == null) {
-      initBlackListWhiteList(conf);
-      if (!MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
-        cacheRefreshPeriodMS =
-            MetastoreConf.getTimeVar(conf, ConfVars.CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY, TimeUnit.MILLISECONDS);
-      }
-      LOG.info("CachedStore: starting cache update service (run every {} ms)", cacheRefreshPeriodMS);
-      cacheUpdateMaster = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-        @Override public Thread newThread(Runnable r) {
-          Thread t = Executors.defaultThreadFactory().newThread(r);
-          t.setName("CachedStore-CacheUpdateService: Thread-" + t.getId());
-          t.setDaemon(true);
-          return t;
-        }
-      });
-      if (!runOnlyOnce) {
-        cacheUpdateMaster
-            .scheduleAtFixedRate(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, cacheRefreshPeriodMS,
-                TimeUnit.MILLISECONDS);
-      }
+    // Fast path: after first initialization this is a per-worker-thread no-op (setConf
+    // calls it on every RawStore construction), so skip the lock entirely.
+    if (cacheUpdateMaster != null && !runOnlyOnce) {
+      return;
     }
-    if (runOnlyOnce) {
-      // Some tests control the execution of the background update thread
-      cacheUpdateMaster.schedule(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, TimeUnit.MILLISECONDS);
+    synchronized (CACHE_UPDATE_SERVICE_LOCK) {
+      if (cacheUpdateMaster == null) {
+        initBlackListWhiteList(conf);
+        if (!MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
+          cacheRefreshPeriodMS =
+              MetastoreConf.getTimeVar(conf, ConfVars.CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY, TimeUnit.MILLISECONDS);
+        }
+        LOG.info("CachedStore: starting cache update service (run every {} ms)", cacheRefreshPeriodMS);
+        cacheUpdateMaster = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+          @Override public Thread newThread(Runnable r) {
+            Thread t = Executors.defaultThreadFactory().newThread(r);
+            t.setName("CachedStore-CacheUpdateService: Thread-" + t.getId());
+            t.setDaemon(true);
+            return t;
+          }
+        });
+        if (!runOnlyOnce) {
+          cacheUpdateMaster
+              .scheduleAtFixedRate(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, cacheRefreshPeriodMS,
+                  TimeUnit.MILLISECONDS);
+        }
+      }
+      if (runOnlyOnce) {
+        // Some tests control the execution of the background update thread
+        cacheUpdateMaster.schedule(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, TimeUnit.MILLISECONDS);
+      }
     }
   }
 
-  @VisibleForTesting static synchronized boolean stopCacheUpdateService(long timeout) {
-    boolean tasksStoppedBeforeShutdown = false;
-    if (cacheUpdateMaster != null) {
-      LOG.info("CachedStore: shutting down cache update service");
-      try {
-        tasksStoppedBeforeShutdown = cacheUpdateMaster.awaitTermination(timeout, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {
-        LOG.info("CachedStore: cache update service was interrupted while waiting for tasks to "
-            + "complete before shutting down. Will make a hard stop now.");
+  @VisibleForTesting static boolean stopCacheUpdateService(long timeout) {
+    synchronized (CACHE_UPDATE_SERVICE_LOCK) {
+      boolean tasksStoppedBeforeShutdown = false;
+      if (cacheUpdateMaster != null) {
+        LOG.info("CachedStore: shutting down cache update service");
+        try {
+          tasksStoppedBeforeShutdown = cacheUpdateMaster.awaitTermination(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+          LOG.info("CachedStore: cache update service was interrupted while waiting for tasks to "
+              + "complete before shutting down. Will make a hard stop now.");
+        }
+        cacheUpdateMaster.shutdownNow();
+        cacheUpdateMaster = null;
       }
-      cacheUpdateMaster.shutdownNow();
-      cacheUpdateMaster = null;
+      return tasksStoppedBeforeShutdown;
     }
-    return tasksStoppedBeforeShutdown;
   }
 
   @VisibleForTesting static void setCacheRefreshPeriod(long time) {

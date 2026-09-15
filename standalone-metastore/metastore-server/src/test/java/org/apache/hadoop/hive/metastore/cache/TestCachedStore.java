@@ -25,8 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.Deadline;
@@ -2148,5 +2151,52 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       throw new Exception("Unable to update SharedCache in 100 attempts; possibly some bug");
     }
     CachedStore.stopCacheUpdateService(100);
+  }
+
+  /**
+   * Regression test for HIVE-30052. triggerPreWarm is static synchronized, so the background
+   * update thread holds the CachedStore class monitor for the entire duration of prewarm.
+   * startCacheUpdateService is called from setConf on every RawStore construction (once per new
+   * HMS worker thread), so it must not require that monitor: before the fix it was also static
+   * synchronized, and a cold-started HMS served no RPCs until prewarm completed because every
+   * worker thread blocked constructing its CachedStore.
+   */
+  @Test(timeout = 60000)
+  public void testStartCacheUpdateServiceNotBlockedByPrewarmMonitor() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    // Make sure this test performs the first-time initialization path, not the fast path
+    CachedStore.stopCacheUpdateService(100);
+
+    CountDownLatch monitorHeld = new CountDownLatch(1);
+    CountDownLatch releaseMonitor = new CountDownLatch(1);
+    // Simulates the background update thread inside triggerPreWarm: it owns the CachedStore
+    // class monitor for as long as prewarm runs
+    Thread prewarmMonitorHolder = new Thread(() -> {
+      synchronized (CachedStore.class) {
+        monitorHeld.countDown();
+        try {
+          releaseMonitor.await();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    });
+    prewarmMonitorHolder.start();
+    Assert.assertTrue("monitor holder thread did not start", monitorHeld.await(10, TimeUnit.SECONDS));
+
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    try {
+      Future<?> starter = executor.submit(() -> CachedStore.startCacheUpdateService(conf, false, false));
+      // Before the fix this timed out: entering startCacheUpdateService required acquiring the
+      // class monitor held by the thread above
+      starter.get(10, TimeUnit.SECONDS);
+    } finally {
+      releaseMonitor.countDown();
+      prewarmMonitorHolder.join();
+      executor.shutdownNow();
+      CachedStore.stopCacheUpdateService(100);
+    }
   }
 }
