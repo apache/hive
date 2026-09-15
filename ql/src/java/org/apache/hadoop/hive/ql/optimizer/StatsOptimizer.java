@@ -729,11 +729,14 @@ public class StatsOptimizer extends Transform {
             partStats.add(new ColumnStatistics(statsDesc, statsObjs));
           }
         });
+        if (partStats.size() != partNames.size()) {
+          // only an aggregate of every partition answers, so folding a subset is work for nothing
+          return null;
+        }
         HiveConf conf = hive.getConf();
         List<ColumnStatisticsObj> aggregated = MetaStoreServerUtils.aggrPartitionStats(partStats,
             MetaStoreUtils.getDefaultCatalog(conf), tbl.getDbName(), tbl.getTableName(),
-            partNames, colNames,
-            partStats.size() == partNames.size(),
+            partNames, colNames, true,
             MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_NDV_DENSITY_FUNCTION),
             MetastoreConf.getDoubleVar(conf, MetastoreConf.ConfVars.STATS_NDV_TUNER));
         return new AggrStats(aggregated, partStats.size());
