@@ -34,6 +34,7 @@ import javax.management.ObjectName;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
@@ -98,7 +99,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.common.util.FixedSizedObjectPool;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.orc.impl.OrcTail;
 import org.apache.parquet.bytes.BytesUtils;
 import org.apache.parquet.hadoop.ParquetFileWriter;
@@ -146,11 +146,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
     useLowLevelCache = LlapIoImpl.MODE_CACHE.equalsIgnoreCase(ioMode);
     LOG.info("Initializing LLAP IO in {} mode", useLowLevelCache ? LlapIoImpl.MODE_CACHE : "none");
-    String displayName = "LlapDaemonCacheMetrics-" + MetricsUtils.getHostName();
+    String displayName = "LlapDaemonCacheMetrics-" + ServerUtils.hostname();
     String sessionId = conf.get("llap.daemon.metrics.sessionid");
     this.cacheMetrics = LlapDaemonCacheMetrics.create(displayName, sessionId);
 
-    displayName = "LlapDaemonIOMetrics-" + MetricsUtils.getHostName();
+    displayName = "LlapDaemonIOMetrics-" + ServerUtils.hostname();
     String[] strIntervals = HiveConf.getTrimmedStringsVar(conf,
         HiveConf.ConfVars.LLAP_IO_DECODING_METRICS_PERCENTILE_INTERVALS);
     List<Integer> intervalList = new ArrayList<>();
@@ -454,7 +454,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     OrcSplit split = new OrcSplit(path, fileKey, offset, length, (String[]) null, tail, false, false,
         Lists.newArrayList(), 0, length, path.getParent(), null);
     try {
-      LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, HiveStringUtils.getHostname(),
+      LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, ServerUtils.hostname(),
           orcCvp, executor, null, null, reporter, daemonConf);
 
       // May happen when attempting with unsupported schema evolution between reader and file schemas

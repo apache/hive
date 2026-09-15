@@ -82,6 +82,7 @@ import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import com.google.common.annotations.VisibleForTesting;
@@ -343,7 +344,7 @@ public class HiveConnection implements java.sql.Connection {
       UserGroupInformation.setConfiguration(config);
 
       if (isEnableCanonicalHostnameCheck()) {
-        host = Utils.getCanonicalHostName(connParams.getHost());
+        host = ServerUtils.canonicalHostname(connParams.getHost());
       } else {
         host = connParams.getHost();
       }
@@ -432,7 +433,7 @@ public class HiveConnection implements java.sql.Connection {
             // Update with new values
             jdbcUriString = connParams.getJdbcUriString();
             if (isKerberosAuthMode() && isEnableCanonicalHostnameCheck()) {
-              host = Utils.getCanonicalHostName(connParams.getHost());
+              host = ServerUtils.canonicalHostname(connParams.getHost());
             } else {
               host = connParams.getHost();
             }

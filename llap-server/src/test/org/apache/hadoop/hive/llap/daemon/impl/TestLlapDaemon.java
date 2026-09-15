@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
@@ -56,8 +57,8 @@ public class TestLlapDaemon {
 
   private static final String[] METRICS_SOURCES = new String[]{
       "JvmMetrics",
-      "LlapDaemonExecutorMetrics-" + MetricsUtils.getHostName(),
-      "LlapDaemonJvmMetrics-" + MetricsUtils.getHostName(),
+      "LlapDaemonExecutorMetrics-" + ServerUtils.hostname(),
+      "LlapDaemonJvmMetrics-" + ServerUtils.hostname(),
       MetricsUtils.METRICS_PROCESS_NAME
   };
 
