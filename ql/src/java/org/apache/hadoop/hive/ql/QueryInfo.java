@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.service.rpc.thrift.TOperationState;
 
 /**
  * The class is synchronized, as WebUI may access information about a running query.
@@ -32,12 +33,13 @@ public class QueryInfo {
   private final String operationId;
   private Long runtime;  // tracks only running portion of the query.
   private Long endTime;
-  private String state;
+  private TOperationState state;
   private QueryDisplay queryDisplay;
 
   private String operationLogLocation;
 
-  public QueryInfo(String state, String userName, String executionEngine, String sessionId, String operationId) {
+  public QueryInfo(TOperationState state, String userName, String executionEngine, String sessionId,
+      String operationId) {
     this.state = state;
     this.userName = userName;
     this.executionEngine = executionEngine;
@@ -47,7 +49,7 @@ public class QueryInfo {
   }
 
   public static QueryInfo getFromConf(HiveConf conf) {
-    return new QueryInfo("INITIALIZED", conf.get(DriverContext.DEFAULT_USER_NAME_PROP),
+    return new QueryInfo(TOperationState.INITIALIZED_STATE, conf.get(DriverContext.DEFAULT_USER_NAME_PROP),
         conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE), HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SESSION_ID),
         conf.get(DriverContext.DEFAULT_OPERATION_ID_PROP));
   }
@@ -81,6 +83,10 @@ public class QueryInfo {
   }
 
   public synchronized String getState() {
+    return getDisplayState(state);
+  }
+
+  public synchronized TOperationState getOperationState() {
     return state;
   }
 
@@ -92,7 +98,7 @@ public class QueryInfo {
     return endTime;
   }
 
-  public synchronized void updateState(String state) {
+  public synchronized void updateState(TOperationState state) {
     this.state = state;
   }
 
@@ -122,5 +128,34 @@ public class QueryInfo {
 
   public void setOperationLogLocation(String operationLogLocation) {
     this.operationLogLocation = operationLogLocation;
+  }
+
+  private static String getDisplayState(TOperationState state) {
+    if (state == null) {
+      return "UNKNOWN";
+    }
+
+    switch (state) {
+    case INITIALIZED_STATE:
+      return "INITIALIZED";
+    case RUNNING_STATE:
+      return "RUNNING";
+    case FINISHED_STATE:
+      return "FINISHED";
+    case CANCELED_STATE:
+      return "CANCELED";
+    case CLOSED_STATE:
+      return "CLOSED";
+    case ERROR_STATE:
+      return "ERROR";
+    case UKNOWN_STATE:
+      return "UNKNOWN";
+    case PENDING_STATE:
+      return "PENDING";
+    case TIMEDOUT_STATE:
+      return "TIMEDOUT";
+    default:
+      return "UNKNOWN";
+    }
   }
 }
