@@ -34,6 +34,8 @@
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>5.2.0</iceberg.mockito-core.version>
     <iceberg.avro.version>1.12.0</iceberg.avro.version>
+    <!-- Must match parquet.version: the bundle embeds org.apache.parquet unrelocated. -->
+    <iceberg.parquet.version>${parquet.version}</iceberg.parquet.version>
     <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
     <google.errorprone.version>2.29.2</google.errorprone.version>
     <assertj.version>3.27.3</assertj.version>
@@ -93,6 +95,12 @@
         <groupId>org.apache.iceberg</groupId>
         <artifactId>iceberg-parquet</artifactId>
         <version>${iceberg.version}</version>
+      </dependency>
+      <!-- iceberg-data pulls parquet-avro, the root of the Parquet subtree the bundle embeds. -->
+      <dependency>
+        <groupId>org.apache.parquet</groupId>
+        <artifactId>parquet-avro</artifactId>
+        <version>${iceberg.parquet.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.iceberg</groupId>
