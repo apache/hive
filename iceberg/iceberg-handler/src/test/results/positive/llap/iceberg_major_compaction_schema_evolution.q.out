@@ -181,10 +181,12 @@ POSTHOOK: Output: default@ice_orc
 PREHOOK: query: delete from ice_orc where fname in ('fn1', 'fn3', 'fn7')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Output: default@ice_orc
 #### A masked pattern was here ####
 POSTHOOK: query: delete from ice_orc where fname in ('fn1', 'fn3', 'fn7')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: default@ice_orc
 #### A masked pattern was here ####
 PREHOOK: query: select * from ice_orc
 PREHOOK: type: QUERY

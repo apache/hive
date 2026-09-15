@@ -277,10 +277,12 @@ POSTHOOK: Output: default@tbl_ice_puffin
 PREHOOK: query: delete from tbl_ice_puffin where a <= 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice_puffin
+PREHOOK: Output: default@tbl_ice_puffin
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: delete from tbl_ice_puffin where a <= 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_puffin
+POSTHOOK: Output: default@tbl_ice_puffin
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table tbl_ice_puffin compute statistics for columns A, C
 PREHOOK: type: ANALYZE_TABLE
