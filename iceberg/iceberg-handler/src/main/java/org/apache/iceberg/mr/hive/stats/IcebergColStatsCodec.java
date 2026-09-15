@@ -94,33 +94,31 @@ final class IcebergColStatsCodec {
 
   /**
    * The entries the given places name, the rest skipped rather than copied. A scan of a wide table
-   * asks about a few of its columns, and an entry it does not want costs a read nothing beyond the
+   * asks about a few of its columns, and an entry it does not need costs a read nothing beyond the
    * length it steps over.
    */
-  static List<byte[]> decodeBlob(ByteBuffer buf, IntPredicate wanted) {
+  static List<FieldEntry> decodeBlob(ByteBuffer buf, IntPredicate needed) {
     ByteBuffer data = buf.duplicate().order(ByteOrder.BIG_ENDIAN);
     if (data.remaining() < Integer.BYTES || data.getInt() != BLOB_VERSION) {
       return List.of();
     }
     int count = data.getInt();
-    List<byte[]> parts = Lists.newArrayListWithCapacity(count);
+    List<FieldEntry> entries = Lists.newArrayListWithCapacity(count);
     for (int i = 0; i < count; i++) {
       int fieldId = data.getInt();
       int length = data.getInt();
-      if (wanted.test(fieldId)) {
+      if (needed.test(fieldId)) {
         byte[] part = new byte[length];
         data.get(part);
-        parts.add(part);
+        entries.add(new FieldEntry(fieldId, part));
       } else {
         data.position(data.position() + length);
       }
     }
-    return parts;
+    return entries;
   }
 
-  /** What the blob holds, or nothing where it was written in a shape this does not know. */
-  static List<byte[]> decodeBlob(ByteBuffer buf) {
-    return decodeBlob(buf, fieldId -> true);
+  record FieldEntry(int fieldId, byte[] bytes) {
   }
 
   /**

@@ -54,7 +54,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Types;
-import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -319,12 +318,15 @@ public final class IcebergColStatsWriter {
       // instead of being rebuilt by decoding every carried blob
       boolean seedFromStored = Sets.intersection(written, storedPartitions).isEmpty() &&
           carried.size() == storedPartitions.size();
-      // by field id, not name: a column dropped and added back keeps the name and takes a new
-      // field, and folding the dead field's entry in would answer for the live one
-      IntPredicate liveFields = IcebergColStatsReader.liveFieldsOf(tbl);
+      // entries fold into a map keyed by column name, so each is taken under the name the schema
+      // gives its field now: a rename moves a name to another column, and a column dropped and
+      // added back keeps its name while taking a new field
+      Schema schema = tbl.schema();
+      // a carry takes every column the blob holds, minus the fields the schema has since dropped
+      IntPredicate liveFields = IcebergColStatsReader.neededFields(schema, null);
 
       if (seedFromStored) {
-        aggregate.seedFrom(reader, carried.size(), liveFields);
+        aggregate.seedFrom(reader, carried.size(), schema);
       }
       for (Pair<BlobMetadata, ByteBuffer> blob : reader.readAll(carried)) {
         ByteBuffer carriedBytes = blob.second();
@@ -333,7 +335,7 @@ public final class IcebergColStatsWriter {
         try {
           if (!seedFromStored) {
             aggregate.addPartition(
-                IcebergColStatsReader.decodePartBlob(carriedBytes, null, true, liveFields));
+                IcebergColStatsReader.decodePartBlob(carriedBytes, liveFields, true, schema));
           }
         } catch (InvalidObjectException e) {
           throw new IOException(e);
@@ -376,17 +378,14 @@ public final class IcebergColStatsWriter {
      * aggregating its partitions again would reach: an entry is written only when every partition
      * states the column, and what suppressed it then is carried unchanged now.
      */
-    private void seedFrom(PuffinReader reader, int carriedPartitions, IntPredicate liveFields)
+    private void seedFrom(PuffinReader reader, int carriedPartitions, Schema schema)
         throws IOException {
       List<BlobMetadata> aggregateBlobs = reader.fileMetadata().blobs().stream()
           .filter(metadata -> HIVE_COL_STATS_BLOB_V1.equals(metadata.type()))
-          .filter(metadata -> liveFields.test(metadata.inputFields().getFirst()))
+          .filter(metadata -> schema.findField(metadata.inputFields().getFirst()) != null)
           .toList();
-      List<ColumnStatisticsObj> entries = Lists.newArrayList();
-      for (Pair<BlobMetadata, ByteBuffer> blob : reader.readAll(aggregateBlobs)) {
-        entries.add(IcebergColStatsCodec.decodeEntry(
-            ByteBuffers.toByteArray(blob.second()), true));
-      }
+      List<ColumnStatisticsObj> entries =
+          IcebergColStatsReader.readTableEntries(reader, aggregateBlobs, true, schema);
       try {
         addEntries(entries, carriedPartitions);
       } catch (InvalidObjectException e) {

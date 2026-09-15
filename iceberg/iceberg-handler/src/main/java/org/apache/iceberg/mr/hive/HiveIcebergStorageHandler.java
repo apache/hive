@@ -826,15 +826,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
     Set<String> columns = Sets.newHashSet(colNames);
     Map<String, List<ColumnStatisticsObj>> statsByPart = IcebergColStatsReader.readPart(table, statsFile,
-        partition -> partitions.contains(partition) && upToDate.test(partition),
-        // an ask as wide as the schema narrows nothing, so it reads each blob whole
-        columns.size() == table.schema().columns().size() ? null : columns, conf);
+        partition -> partitions.contains(partition) && upToDate.test(partition), columns, conf);
 
     List<ColumnStatistics> partStats = Lists.newArrayList();
     statsByPart.forEach((partition, statsObjs) -> {
-      // a whole-blob read decodes every stored entry, and a carried blob may hold entries under
-      // names the schema no longer has: only the asked columns may count toward the ask
-      statsObjs.removeIf(obj -> !columns.contains(obj.getColName()));
       // the metastore counts a partition as found only when it has every column asked about
       if (statsObjs.size() == colNames.size()) {
         ColumnStatisticsDesc statsDesc =

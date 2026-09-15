@@ -1720,6 +1720,11 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     List<String> partNames = ImmutableList.of("eventDate=2023-03-04", "eventDate=2024-06-01");
     Assert.assertEquals(partNames, colStatsPartNames(identifier));
     assertAggrColStatsRange(identifier, "id", partNames, 1, 2);
+    // an entry is stored, and a column asked about, under the name Hive lower cases it to, while
+    // the schema keeps the case the table was created with: a stored entry answers by the former
+    Assert.assertEquals("a mixed-case column answers under the name Hive asks by", 2,
+        storageHandler().getAggrColStatsFor(hmsTable(identifier), ImmutableList.of("eventdate"),
+            partNames).getPartsFound());
   }
 
   @Test
@@ -2334,10 +2339,10 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void testACarriedEntryOfARenamedColumnCannotAnswerForTheNewName() throws Exception {
+  public void testACarriedEntryOfARenamedColumnAnswersForTheNewName() throws Exception {
     // ANALYZE full table -> rename a column, which moves no snapshot -> ANALYZE one partition.
-    // The other partition's entry is carried under the old name and holds as many columns as
-    // the ask, so it must be refused by identity, not by count.
+    // A rename moves a name, not a field, and the rows it was measured from never moved: the
+    // carried entry is the renamed column's own, and answers for it.
     assumeParquetHiveCatalogIceberg();
 
     TableIdentifier identifier = TableIdentifier.of("default", "orders_renamed_column");
@@ -2357,14 +2362,15 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     AggrStats aggrStats = storageHandler().getAggrColStatsFor(
         hmsTable(identifier), ImmutableList.of("id", "val2", "p"), partNames);
-    Assert.assertEquals("the carried entry holds no column of the asked name", 1, aggrStats.getPartsFound());
+    Assert.assertEquals("the carried entry answers for the field it was measured from", 2,
+        aggrStats.getPartsFound());
   }
 
   @Test
   public void testTheFoldLeavesOutAColumnAPartitionDidNotState() throws Exception {
-    // a rename moves no snapshot, so the partitions this gather did not write stay named as they
-    // were. Folding what they hold under the new name would aggregate the full table from one,
-    // so the fold leaves such a column out and the whole-table question is declined
+    // a column added later takes a new field, which the partitions this gather did not write hold
+    // no entry for. Folding it would aggregate the full table from one partition, so the fold
+    // leaves such a column out and the whole-table question is declined
     assumeParquetHiveCatalogIceberg();
 
     TableIdentifier identifier = TableIdentifier.of("default", "orders_folded_rename");
@@ -2379,10 +2385,10 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         storageHandler().getAggrColStatsFor(hmsTable(identifier), ImmutableList.of("val"),
             everyPartition).getPartsFound());
 
-    shell.executeStatement("ALTER TABLE " + identifier + " CHANGE COLUMN val val2 bigint");
+    shell.executeStatement("ALTER TABLE " + identifier + " ADD COLUMNS (val2 bigint)");
     shell.executeStatement("ANALYZE TABLE " + identifier + " PARTITION (p = 'b') COMPUTE STATISTICS FOR COLUMNS");
 
-    Assert.assertEquals("only the partition just written states the new name, so the fold leaves it out",
+    Assert.assertEquals("only the partition just written states the new column, so the fold leaves it out",
         1, storageHandler().getAggrColStatsFor(hmsTable(identifier), ImmutableList.of("val2"),
             everyPartition).getPartsFound());
     Assert.assertEquals("a column every partition still states is folded as before", 2,
