@@ -19,6 +19,7 @@
 
 package org.apache.hive.kubernetes.operator.util;
 
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -143,23 +144,14 @@ public final class ConfigUtils {
   public static final String HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_KEY = "hive.llap.daemon.output.service.port";
   public static final int HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_DEFAULT = 15003;
 
-  public static final String HIVE_LLAP_DAEMON_UMBILICAL_PORT_KEY = "hive.llap.daemon.umbilical.port";
-  public static final String HIVE_LLAP_DAEMON_UMBILICAL_PORT_DEFAULT = "0";
-
   public static final String HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY = "hive.llap.task.scheduler.locality.delay";
 
-  /** Prefixes of the hive.* keys the Tez AM's LLAP plugins read from tez-site. */
-  private static final String[] TEZ_AM_PLUGIN_KEY_PREFIXES = {
-      "hive.llap.task.", "hive.llap.client.", "hive.llap.daemon.communicator."
-  };
+  /** Prefixes of the HiveServer2 hive.llap settings carried over to a standalone Tez AM. */
+  private static final List<String> TEZ_AM_LLAP_KEY_PREFIXES =
+      List.of("hive.llap.task.", "hive.llap.client.", "hive.llap.daemon.");
 
-  public static boolean isTezAmPluginKey(String key) {
-    for (String prefix : TEZ_AM_PLUGIN_KEY_PREFIXES) {
-      if (key.startsWith(prefix)) {
-        return true;
-      }
-    }
-    return false;
+  public static boolean isTezAmLlapKey(String key) {
+    return TEZ_AM_LLAP_KEY_PREFIXES.stream().anyMatch(key::startsWith);
   }
 
   public static final String METASTORE_SERVER_TRANSPORT_MODE_KEY = "metastore.server.thrift.transport.mode";

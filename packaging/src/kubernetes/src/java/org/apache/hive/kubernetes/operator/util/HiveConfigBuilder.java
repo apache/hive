@@ -195,21 +195,18 @@ public final class HiveConfigBuilder {
     if (llap != null) {
       tezProps.put(ConfigUtils.HIVE_LLAP_DAEMON_SERVICE_HOSTS_KEY,
           llap.serviceHosts());
-    }
 
-    // Required by LlapTaskCommunicator — Tez's Configuration doesn't get HiveConf defaults
-    tezProps.put(ConfigUtils.HIVE_LLAP_DAEMON_UMBILICAL_PORT_KEY,
-        ConfigUtils.HIVE_LLAP_DAEMON_UMBILICAL_PORT_DEFAULT);
-
-    // A standalone AM's LLAP plugins -- task scheduler, task communicator, split location
-    // provider -- read tez-site, not hive-site. Users set these hive.llap keys in the
-    // HiveServer2 overrides, so copy them across; an explicit tezAm override below wins.
-    if (spec.hiveServer2().configOverrides() != null) {
-      spec.hiveServer2().configOverrides().forEach((key, value) -> {
-        if (ConfigUtils.isTezAmPluginKey(key)) {
-          tezProps.put(key, value);
-        }
-      });
+      // A standalone Tez AM loads tez-site.xml, never hive-site.xml, so LLAP settings from
+      // the HiveServer2 overrides reach it only by being copied here, after the derived
+      // keys above so an explicit user setting wins.
+      Map<String, String> hs2Overrides = spec.hiveServer2().configOverrides();
+      if (hs2Overrides != null) {
+        hs2Overrides.forEach((key, value) -> {
+          if (ConfigUtils.isTezAmLlapKey(key)) {
+            tezProps.put(key, value);
+          }
+        });
+      }
     }
 
     if (spec.tezAm().configOverrides() != null) {
@@ -217,7 +214,7 @@ public final class HiveConfigBuilder {
     }
 
     // Disable Infinite locality Delay when LLAP Auto-scaling is enabled, as they are mutually exclusive.
-    if (llap != null && llap.isEnabled() && llap.autoscaling().isEnabled() &&
+    if (llap != null && llap.autoscaling().isEnabled() &&
         ConfigUtils.getTimeMs(tezProps, ConfigUtils.HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY, 0) == -1) {
       tezProps.put(ConfigUtils.HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY, "0ms");
     }
