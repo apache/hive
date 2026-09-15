@@ -64,6 +64,10 @@ import org.immutables.value.Value;
  *       will add "a.b.c" to the key, and so that configurations with different default catalog
  *       wouldn't share the same client pool. Multiple conf elements can be specified.
  * </ul>
+ *
+ * When user_name or ugi is configured and Hadoop security is enabled, pooled clients use
+ * metastore delegation tokens so Thrift connections authenticate as the current proxy
+ * user (for example the REST catalog end user) rather than only the catalog service principal.
  */
 public class CachedClientPool implements ClientPool<IMetaStoreClient, TException> {
 
@@ -74,7 +78,8 @@ public class CachedClientPool implements ClientPool<IMetaStoreClient, TException
   private final Configuration conf;
   private final int clientPoolSize;
   private final long evictionInterval;
-  private final Key key;
+  private final String cacheKeys;
+  private final Key fixedKey;
 
   public CachedClientPool(Configuration conf, Map<String, String> properties) {
     this.conf = conf;
@@ -84,13 +89,23 @@ public class CachedClientPool implements ClientPool<IMetaStoreClient, TException
     this.evictionInterval = PropertyUtil.propertyAsLong(properties,
             CatalogProperties.CLIENT_POOL_CACHE_EVICTION_INTERVAL_MS,
             CatalogProperties.CLIENT_POOL_CACHE_EVICTION_INTERVAL_MS_DEFAULT);
-    this.key = extractKey(properties.get(CatalogProperties.CLIENT_POOL_CACHE_KEYS), conf);
+    this.cacheKeys = properties.get(CatalogProperties.CLIENT_POOL_CACHE_KEYS);
+    // UGI / user_name must be resolved when the pool is used (per caller), not at catalog init time.
+    this.fixedKey = hasUserScopedKeyElement(cacheKeys) ? null : extractKey(cacheKeys, conf);
     init();
   }
 
   @VisibleForTesting
   HiveClientPool clientPool() {
-    return clientPoolCache.get(key, k -> new HiveClientPool(clientPoolSize, conf));
+    Key key = fixedKey != null ? fixedKey : extractKey(cacheKeys, conf);
+    return clientPoolCache.get(key, k -> createUnderlyingPool());
+  }
+
+  private HiveClientPool createUnderlyingPool() {
+    if (UserGroupInformation.isSecurityEnabled() && hasUserScopedKeyElement(cacheKeys)) {
+      return new TokenAuthHiveClientPool(clientPoolSize, conf);
+    }
+    return new HiveClientPool(clientPoolSize, conf);
   }
 
   private synchronized void init() {
@@ -122,6 +137,26 @@ public class CachedClientPool implements ClientPool<IMetaStoreClient, TException
   public <R> R run(Action<R, IMetaStoreClient, TException> action, boolean retry)
           throws TException, InterruptedException {
     return clientPool().run(action, retry);
+  }
+
+  private static boolean hasUserScopedKeyElement(String cacheKeysConfig) {
+    if (cacheKeysConfig == null || cacheKeysConfig.isEmpty()) {
+      return false;
+    }
+    for (String element : cacheKeysConfig.split(",", -1)) {
+      String trimmed = element.trim();
+      if (trimmed.isEmpty()) {
+        continue;
+      }
+      if (trimmed.toLowerCase(Locale.ROOT).startsWith(CONF_ELEMENT_PREFIX)) {
+        continue;
+      }
+      KeyElementType type = KeyElementType.valueOf(trimmed.toUpperCase(Locale.ROOT));
+      if (type == KeyElementType.UGI || type == KeyElementType.USER_NAME) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @VisibleForTesting
