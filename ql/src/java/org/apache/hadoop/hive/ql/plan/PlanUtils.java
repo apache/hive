@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -101,9 +100,6 @@ public final class PlanUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PlanUtils.class);
 
   private static long countForMapJoinDumpFilePrefix = 0;
-
-  public static final String LLAP_OUTPUT_FORMAT_KEY = "Llap";
-  private static final String LLAP_OF_SH_CLASS = "org.apache.hadoop.hive.llap.LlapStorageHandler";
 
   public static synchronized long getCountForMapJoinDumpFilePrefix() {
     return countForMapJoinDumpFilePrefix++;
@@ -286,11 +282,6 @@ public final class PlanUtils {
       inputFormat = RCFileInputFormat.class;
       outputFormat = RCFileOutputFormat.class;
       assert serdeClass == ColumnarSerDe.class;
-    } else if (LLAP_OUTPUT_FORMAT_KEY.equalsIgnoreCase(fileFormat)) {
-      inputFormat = TextInputFormat.class;
-      outputFormat = LlapOutputFormat.class;
-      properties.setProperty(
-          hive_metastoreConstants.META_TABLE_STORAGE, LLAP_OF_SH_CLASS);
     } else { // use TextFile by default
       inputFormat = TextInputFormat.class;
       outputFormat = IgnoreKeyTextOutputFormat.class;

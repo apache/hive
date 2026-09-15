@@ -38,10 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.AbstractMapOperator;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
@@ -102,22 +99,12 @@ public class MapRecordProcessor extends RecordProcessor {
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
     String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVE_QUERY_ID);
-    if (LlapProxy.isDaemon()) {
-      setLlapOfFragmentId(context);
-    }
     cache = ObjectCacheFactory.getCache(jconf, queryId, true);
     dynamicValueCache = ObjectCacheFactory.getCache(jconf, queryId, false, true);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     isInCompaction = CompactorUtil.COMPACTOR.equalsIgnoreCase(
         HiveConf.getVar(jconf, HiveConf.ConfVars.SPLIT_GROUPING_MODE));
-  }
-
-  private void setLlapOfFragmentId(final ProcessorContext context) {
-    // TODO: could we do this only if the OF is actually used?
-    String attemptId = Converters.createTaskAttemptId(context).toString();
-    LOG.debug("Setting the LLAP fragment ID for OF to {}", attemptId);
-    jconf.set(LlapOutputFormat.LLAP_OF_ID_KEY, attemptId);
   }
 
   @Override

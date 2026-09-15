@@ -41,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
@@ -99,7 +98,6 @@ public abstract class AbstractJdbcTriggersTest {
 
   @After
   public void tearDown() throws Exception {
-    LlapBaseInputFormat.closeAll();
     hs2Conn.close();
   }
 

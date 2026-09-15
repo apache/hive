@@ -184,8 +184,6 @@ public class TestProactiveEviction {
         RegistryTypeUtils.ipcEndpoint("shuffle", new InetSocketAddress("localhost", 4001)));
     serviceRecord.addInternalEndpoint(
         RegistryTypeUtils.ipcEndpoint("llapmng", new InetSocketAddress("localhost", 4002)));
-    serviceRecord.addInternalEndpoint(
-        RegistryTypeUtils.ipcEndpoint("llapoutputformat", new InetSocketAddress("localhost", 4003)));
     serviceRecord.addExternalEndpoint(
         RegistryTypeUtils.webEndpoint("services", new URI("http://localhost:4004")));
     serviceRecord.set(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS, "10");
