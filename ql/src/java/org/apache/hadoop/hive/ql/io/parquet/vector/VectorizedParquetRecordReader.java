@@ -310,7 +310,10 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       FileStatus stat = fs.getFileStatus(file);
       return readFooterFromFile(file, fs, stat, filter);
     } else {
-      MemoryBufferOrBuffers footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(file, configuration, cacheKey);
+      // Fallback path outside the native encoded reader: no per-fragment counters here, so the
+      // footer lookup doesn't contribute to META_HIT / META_MISS in the LLAP IO summary.
+      MemoryBufferOrBuffers footerData =
+          LlapProxy.getIo().getParquetFooterBuffersFromCache(file, configuration, cacheKey, null);
       return ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), filter);
     }
   }
