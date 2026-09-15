@@ -69,18 +69,17 @@ final class ColumnDeduplicator {
     this.isVerbose = isVerbose;
   }
 
-  MetaToolObjectStore.DedupColumnsResult run(String catalogFilter, String dbFilter, String tableFilter)
-      throws MetaException {
+  MetaToolObjectStore.DedupColumnsResult run(String catalogFilter, String dbFilter, String tableFilter) {
     List<TableInfo> tables = findPartitionedTables(catalogFilter, dbFilter, tableFilter);
     MetaToolObjectStore.DedupColumnsResult result = new MetaToolObjectStore.DedupColumnsResult(tables.size());
 
     long start = System.currentTimeMillis();
     for (int i = 0; i < tables.size() && result.getException() == null; i++) {
-      Deadline.checkTimeout();
       boolean committed = false;
       TableInfo table = tables.get(i);
       store.openTransaction();
       try {
+        Deadline.checkTimeout();
         deduplicateTable(table, result);
         committed = store.commitTransaction();
       } catch (Exception ex) {

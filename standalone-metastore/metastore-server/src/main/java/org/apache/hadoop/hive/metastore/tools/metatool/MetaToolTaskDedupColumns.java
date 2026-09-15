@@ -38,28 +38,10 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
     boolean isDryRun = getCl().isDryRun();
     boolean isVerbose = getCl().isVerbose();
     
-    final AtomicReference<String> progress = new AtomicReference<>();
-    AtomicBoolean stopped = new AtomicBoolean(false);
     Thread daemon = null;
-    if (isVerbose) {
-      daemon = new Thread(() -> {
-        while (!stopped.get()) {
-          try {
-            Thread.sleep(30 * 1000);
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            break;
-          }
-          String message = progress.get();
-          if (message != null) {
-            System.out.println(message);
-          }
-        }
-      });
-      daemon.setDaemon(true);
-      daemon.start();
-    }
     MetaToolObjectStore.DedupColumnsResult result = null;
+    AtomicReference<String> progress = new AtomicReference<>();
+    AtomicBoolean stopped = new AtomicBoolean(false);
     long timeoutMs = getCl().getDedupColumnsTimeoutSeconds() != null ?
         getCl().getDedupColumnsTimeoutSeconds() * 1000L :
         MetastoreConf.getTimeVar(getObjectStore().getConf(), MetastoreConf.ConfVars.DEDUP_COLUMNS_TIMEOUT,
@@ -68,10 +50,28 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
     boolean timerStarted = false;
     try {
       timerStarted = Deadline.startTimer("dedupColumns");
+      if (isVerbose) {
+        daemon = new Thread(() -> {
+          while (!stopped.get()) {
+            try {
+              Thread.sleep(30 * 1000);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              break;
+            }
+            String message = progress.get();
+            if (message != null) {
+              System.out.println(message);
+            }
+          }
+        });
+        daemon.setDaemon(true);
+        daemon.start();
+      }
       result = getObjectStore().dedupColumns(catalogFilter, dbFilter, tableFilter, progress, isDryRun, isVerbose);
-    } catch (MetaException ignored) {
-      // Deadline.check throws MetaException when timeout, ignore this exception so we can print
-      // the result has been done so far.
+    } catch (MetaException ex) {
+      // Deadline.startTimer throws MetaException, this shouldn't happen as the Deadline has been registered.
+      System.err.println(ex.getMessage());
     } finally {
       if (daemon != null) {
         stopped.set(true);
