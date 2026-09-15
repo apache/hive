@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.metastore.txn.jdbc.functions;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -45,7 +47,7 @@ import java.util.function.BiFunction;
 public class CleanupRecordsFunction implements TransactionalFunction<Void> {
 
   private static final Logger LOG = LoggerFactory.getLogger(CleanupRecordsFunction.class);
-  private static final EnumSet<HiveObjectType> HIVE_OBJECT_TYPES =
+  private static final EnumSet<HiveObjectType> HIVE_OBJECT_TYPES = 
       EnumSet.of(HiveObjectType.DATABASE, HiveObjectType.TABLE, HiveObjectType.PARTITION);
 
   @SuppressWarnings("squid:S3599")
@@ -100,20 +102,34 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
   private final HiveObjectType type;
   private final Database db;
   private final Table table;
-  private final Iterator<String> partNamesIterator;
+  private final Iterator<Partition> partitionIterator; // cleanupRecords path
+  private final Iterator<String> partNamesIterator; // cleanupCompactionRecords path
   private final String defaultCatalog;
   private final boolean keepTxnToWriteIdMetaData;
   private final Long txnId;
 
-  public CleanupRecordsFunction(HiveObjectType type, Database db, Table table, Iterator<String> partNamesIterator,
+  public CleanupRecordsFunction(HiveObjectType type, Database db, Table table, Iterator<Partition> partitionIterator,
                                 String defaultCatalog, boolean keepTxnToWriteIdMetaData, Long txnId) {
     this.type = type;
     this.db = db;
     this.table = table;
-    this.partNamesIterator = partNamesIterator;
+    this.partitionIterator = partitionIterator;
+    this.partNamesIterator = null;
     this.defaultCatalog = defaultCatalog;
     this.keepTxnToWriteIdMetaData = keepTxnToWriteIdMetaData;
     this.txnId = txnId;
+  }
+
+  /** Iceberg/non-transactional partition compaction cleanup only. */
+  public CleanupRecordsFunction(Table table, List<String> partitionNames, String defaultCatalog) {
+    this.type = HiveObjectType.PARTITION;
+    this.db = null;
+    this.table = table;
+    this.partitionIterator = null;
+    this.partNamesIterator = partitionNames.iterator();
+    this.defaultCatalog = defaultCatalog;
+    this.keepTxnToWriteIdMetaData = false;
+    this.txnId = null;
   }
 
   @Override
@@ -158,14 +174,25 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
               table.getCatName());
           return null;
         }
-        deleteTxnCommands = TxnUtils.isTransactionalTable(table);
-        while (partNamesIterator.hasNext()) {
-          paramSources.add(new MapSqlParameterSource()
-              .addValue("dbName", table.getDbName().toLowerCase())
-              .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
-              .addValue("partName", partNamesIterator.next(), Types.VARCHAR)
-              .addValue("txnId", null, Types.BIGINT)
-              .addValue("cType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
+        if (partitionIterator != null) {
+          deleteTxnCommands = true;
+          while (partitionIterator.hasNext()) {
+            Partition partition = partitionIterator.next();
+            paramSources.add(new MapSqlParameterSource()
+                .addValue("dbName", table.getDbName().toLowerCase())
+                .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
+                .addValue("partName",
+                    Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()), Types.VARCHAR)
+                .addValue("txnId", null, Types.BIGINT)
+                .addValue("cType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
+          }
+        } else if (partNamesIterator != null) {
+          while (partNamesIterator.hasNext()) {
+            paramSources.add(new MapSqlParameterSource()
+                .addValue("dbName", table.getDbName().toLowerCase())
+                .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
+                .addValue("partName", partNamesIterator.next(), Types.VARCHAR));
+          }
         }
       }
     }

@@ -174,9 +174,11 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   private AlterTableType currentAlterTableOp;
   private HiveLock commitLock;
   private List<SQLDefaultConstraint> sqlDefaultConstraints;
+  private final TxnStore txnHandler;
 
   public HiveIcebergMetaHook(Configuration conf) {
     super(conf);
+    txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @Override
@@ -991,8 +993,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
       deleteFiles.deleteFromRowFilter(partitionSetFilter);
       deleteFiles.commit();
-      cleanupCompactionRecords(hmsTable,
-          partitionList.stream().map(pSpec::partitionToPath).distinct().toList());
+      cleanupCompactionRecords(hmsTable, partitionList.stream().map(pSpec::partitionToPath).toList());
     } catch (IOException e) {
       throw new MetaException(String.format("Error while fetching the partitions due to: %s", e));
     }
@@ -1022,7 +1023,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     if (CollectionUtils.isEmpty(partitionNames)) {
       return;
     }
-    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.cleanupCompactionRecords(hmsTable, partitionNames);
   }
 
