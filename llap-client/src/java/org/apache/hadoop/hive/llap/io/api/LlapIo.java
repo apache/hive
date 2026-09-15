@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -75,11 +76,15 @@ public interface LlapIo<T> {
    * @param fileKey fileId of the Parquet file (either the Long fileId of HDFS or the SyntheticFileId).
    *                Optional, if it is not provided, it will be generated, see:
    *                org.apache.hadoop.hive.ql.io.HdfsUtils#getFileId()
+   * @param cacheHit optional out-parameter; when supplied, its {@code value} field is written
+   *                 with {@code true} on a cache hit and {@code false} on a miss, so the caller
+   *                 (which lives in llap-server and holds {@code QueryFragmentCounters}) can bump
+   *                 {@code METADATA_CACHE_HIT} / {@code METADATA_CACHE_MISS} for the LLAP IO summary.
    * @return
    * @throws IOException
    */
-  MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey)
-      throws IOException;
+  MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey,
+      @Nullable BooleanRef cacheHit) throws IOException;
 
   /**
    * Handles request to evict entities specified in the request object.

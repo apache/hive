@@ -363,6 +363,19 @@ public class TestParquetEncodedDataReader {
   }
 
   @Test
+  public void testFooterLookupBumpsMetadataCacheCounters() throws Exception {
+    // The footer cache is a @BeforeClass singleton, so any earlier test may have populated it;
+    // only the second read of this test is order-independent. That call finds the footer we just
+    // put in on the first read, so META_HIT is 1 and META_MISS is 0 whatever came before.
+    read(jobConf(COLUMNS, TYPES, 0), wholeFile()).assertClean();
+
+    Run second = read(jobConf(COLUMNS, TYPES, 0), wholeFile());
+    second.assertClean();
+    assertEquals(1, second.counter(LlapIOCounters.METADATA_CACHE_HIT));
+    assertEquals(0, second.counter(LlapIOCounters.METADATA_CACHE_MISS));
+  }
+
+  @Test
   public void testNextRowGroupIsRequestedBeforeCurrentDecodes() throws Exception {
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 

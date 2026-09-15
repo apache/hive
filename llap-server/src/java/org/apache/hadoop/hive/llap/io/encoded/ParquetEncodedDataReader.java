@@ -147,8 +147,13 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     }
     if (fileKey != null) {
       cacheTag = VectorizedParquetRecordReader.cacheTagOfParquetFile(path, daemonConf, jobConf);
+      // Bumps METADATA_CACHE_HIT / METADATA_CACHE_MISS so the LLAP IO summary accounts for the
+      // Parquet footer lookup the same way it does for ORC's file tail.
+      BooleanRef cacheHit = new BooleanRef();
       MemoryBufferOrBuffers footerData =
-          LlapProxy.getIo().getParquetFooterBuffersFromCache(path, jobConf, fileKey);
+          LlapProxy.getIo().getParquetFooterBuffersFromCache(path, jobConf, fileKey, cacheHit);
+      counters.incrCounter(cacheHit.value
+          ? LlapIOCounters.METADATA_CACHE_HIT : LlapIOCounters.METADATA_CACHE_MISS);
       footer = ParquetFileReader.readFooter(
           new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER);
     } else {

@@ -261,7 +261,9 @@ public class HiveVectorizedReader {
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null && LlapProxy.getIo().usingLowLevelCache()) {
       LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
-      footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId);
+      // No per-fragment counters on the Iceberg vectorized path yet; footer lookups are
+      // recorded as cache traffic but not as META hits/misses in the LLAP IO summary.
+      footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId, null);
     }
 
     ParquetMetadata parquetMetadata = HiveParquetUtil.readFooter(task.file(), io, job, footerData);

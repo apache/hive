@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
@@ -514,8 +515,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   }
 
   @Override
-  public MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey)
-      throws IOException {
+  public MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey,
+      @Nullable BooleanRef cacheHit) throws IOException {
 
     Preconditions.checkNotNull(fileMetadataCache, "Metadata cache must not be null");
 
@@ -524,6 +525,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     MemoryBufferOrBuffers footerData = (fileKey == null ) ? null
         : fileMetadataCache.getFileMetadata(fileKey);
+    if (cacheHit != null) {
+      cacheHit.value = footerData != null;
+    }
     if (footerData != null) {
       LOG.info("Found the footer in cache for " + fileKey);
       try {
