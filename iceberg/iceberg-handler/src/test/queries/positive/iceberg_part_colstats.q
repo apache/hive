@@ -70,6 +70,35 @@ select max(id) from ice_part_stats where p in ('a', 'b');
 
 drop table ice_part_stats;
 
+-- count(col) reads the column's null count, which a string keeps elsewhere in its entry than a
+-- number does, and sum of a constant reads the row count alone - a handler keeps no partition
+-- parameters for either of them to be read from
+create external table ice_count_stats (id bigint, s string, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2');
+
+insert into ice_count_stats values (1, 'x', 'a'), (2, null, 'a'), (3, 'y', 'b');
+analyze table ice_count_stats compute statistics for columns;
+
+-- p=a holds two rows, one of which states no s
+explain
+select count(s) from ice_count_stats where p = 'a';
+
+select count(s) from ice_count_stats where p = 'a';
+
+explain
+select sum(1) from ice_count_stats where p = 'a';
+
+select sum(1) from ice_count_stats where p = 'a';
+
+-- count(*) and count(1) read every row of the partition, count(null) none of them
+explain
+select count(*), count(1), count(null) from ice_count_stats where p = 'a';
+
+select count(*), count(1), count(null) from ice_count_stats where p = 'a';
+
+drop table ice_count_stats;
+
 -- an unpartitioned table keeps its statistics in the same file, which the metastore never holds:
 -- reaching them takes the handler, and only the accuracy check stands between a query and stale ones
 create external table ice_unpart (id bigint)
