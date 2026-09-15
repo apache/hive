@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -207,7 +208,7 @@ public class YarnQueueHelper {
     }
     try (InputStream stream = errorStream) {
       if (stream != null) {
-        error += ": " + IOUtils.toString(stream);
+        error += ": " + IOUtils.toString(stream, Charset.defaultCharset());
       }
     }
     return error;
