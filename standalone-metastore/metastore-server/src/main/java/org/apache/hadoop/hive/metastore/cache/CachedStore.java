@@ -553,7 +553,7 @@ public class CachedStore implements RawStore, Configurable {
           try {
             tblNames = rawStore.getAllTables(catName, dbName);
           } catch (MetaException e) {
-            LOG.warn("Failed to cache tables for database " + DatabaseName.getQualified(catName, dbName) + ", moving on");
+            LOG.warn("Failed to cache tables for database {}, moving on", DatabaseName.getQualified(catName, dbName));
             // Continue with next database
             continue;
           }
@@ -573,12 +573,12 @@ public class CachedStore implements RawStore, Configurable {
                 worker.get();
               } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.warn("Interrupted while waiting for prewarm workers on database " + dbName
-                    + "; completing prewarm with the metadata cached so far");
+                LOG.warn("Interrupted while waiting for prewarm workers on database {}; "
+                    + "completing prewarm with the metadata cached so far", dbName);
                 completePrewarm(startTime, false);
                 return;
               } catch (ExecutionException e) {
-                LOG.warn("Prewarm worker failed for database " + dbName + ", moving on", e);
+                LOG.warn("Prewarm worker failed for database {}, moving on", dbName, e);
               }
             }
           } else {
@@ -647,17 +647,16 @@ public class CachedStore implements RawStore, Configurable {
         // Another worker drained the remaining tables between our check and pop
         break;
       }
-      if (!shouldCacheTable(catName, dbName, tblName)) {
-        continue;
+      if (shouldCacheTable(catName, dbName, tblName)) {
+        if (!prewarmTable(rawStore, catName, dbName, tblName)) {
+          LOG.info("Unable to cache Database: {}'s Table: {}, since the cache memory is full. "
+              + "Will stop attempting to cache any more tables.", dbName, tblName);
+          cacheMemoryFull.set(true);
+          return;
+        }
+        LOG.debug("Processed database: {}'s table: {}. Cached {} / {}  tables so far.", dbName, tblName,
+            tablesCachedSoFar.incrementAndGet(), totalTablesToCache);
       }
-      if (!prewarmTable(rawStore, catName, dbName, tblName)) {
-        LOG.info("Unable to cache Database: {}'s Table: {}, since the cache memory is full. "
-            + "Will stop attempting to cache any more tables.", dbName, tblName);
-        cacheMemoryFull.set(true);
-        return;
-      }
-      LOG.debug("Processed database: {}'s table: {}. Cached {} / {}  tables so far.", dbName, tblName,
-          tablesCachedSoFar.incrementAndGet(), totalTablesToCache);
     }
   }
 
