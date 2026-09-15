@@ -39,6 +39,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -66,7 +67,6 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -1190,10 +1190,8 @@ public class TestFilterSelectivityEstimator {
   }
 
   private static RexLiteral literalDate(String date) {
-    GregorianCalendar calendar =
-        GregorianCalendar.from(LocalDate.parse(date).atStartOfDay(ZoneOffset.UTC));
-    return (RexLiteral) REX_BUILDER.makeLiteral(calendar,
-        REX_BUILDER.getTypeFactory().createSqlType(SqlTypeName.DATE), true);
+    return REX_BUILDER.makeDateLiteral(
+        DateString.fromDaysSinceEpoch((int) LocalDate.parse(date).toEpochDay()));
   }
 
   private RexNode literalFloat(float f) {

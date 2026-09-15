@@ -528,64 +528,39 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * Converts column MIN/MAX statistics into the same numeric space used by {@link #extractLiteral}.
    * DATE column stats from HMS are stored as days since epoch; literals use epoch seconds.
    */
-  private static Optional<float[]> convertColRangeToFloatBounds(ColStatistics cs, RelDataType columnType) {
+  private static Optional<Range<Float>> convertColRangeToFloatRange(ColStatistics cs, RelDataType columnType) {
     ColStatistics.Range range = cs.getRange();
     if (range == null || range.minValue == null || range.maxValue == null) {
       return Optional.empty();
     }
-    final float min;
-    final float max;
+    final Number minValue = range.minValue;
+    final Number maxValue = range.maxValue;
     switch (columnType.getSqlTypeName()) {
     case DATE:
-      min = range.minValue.longValue() * 86400L;
-      max = range.maxValue.longValue() * 86400L;
-      break;
-    case TIMESTAMP:
-      min = range.minValue.longValue();
-      max = range.maxValue.longValue();
-      break;
+      return Optional.of(Range.closed((float) (minValue.longValue() * 86400L),
+          (float) (maxValue.longValue() * 86400L)));
     case TINYINT:
-      min = range.minValue.byteValue();
-      max = range.maxValue.byteValue();
-      break;
     case SMALLINT:
-      min = range.minValue.shortValue();
-      max = range.maxValue.shortValue();
-      break;
     case INTEGER:
-      min = range.minValue.intValue();
-      max = range.maxValue.intValue();
-      break;
     case BIGINT:
-      min = range.minValue.longValue();
-      max = range.maxValue.longValue();
-      break;
     case FLOAT:
-      min = range.minValue.floatValue();
-      max = range.maxValue.floatValue();
-      break;
     case DOUBLE:
-      min = (float) range.minValue.doubleValue();
-      max = (float) range.maxValue.doubleValue();
-      break;
     case DECIMAL:
-      min = new BigDecimal(range.minValue.toString()).floatValue();
-      max = new BigDecimal(range.maxValue.toString()).floatValue();
-      break;
+    case TIMESTAMP:
+      return Optional.of(Range.closed(minValue.floatValue(), maxValue.floatValue()));
     default:
       return Optional.empty();
     }
-    return Optional.of(new float[] { min, max });
   }
 
   private Double computeUniformRangeSelectivity(ColStatistics cs, Range<Float> boundaries, HiveTableScan scan,
       boolean inverseBool, Range<Float> typeRange, RelDataType columnType) {
-    Optional<float[]> minMax = convertColRangeToFloatBounds(cs, columnType);
-    if (minMax.isEmpty()) {
+    Optional<Range<Float>> minMaxRange = convertColRangeToFloatRange(cs, columnType);
+    if (minMaxRange.isEmpty()) {
       return null;
     }
-    float min = minMax.get()[0];
-    float max = minMax.get()[1];
+    float min = minMaxRange.get().lowerEndpoint();
+    float max = minMaxRange.get().upperEndpoint();
 
     float lowerInfinite = Float.NEGATIVE_INFINITY;
     float upperInfinite = Float.POSITIVE_INFINITY;
@@ -653,7 +628,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private static double computeTwoSidedUniformSelectivity(float min, float max, Range<Float> boundaries,
       boolean inverseBool, Range<Float> typeRange) {
     if (Float.compare(min, max) == 0) {
-      double betweenSelectivity = isPointInClosedRange(boundaries, min) ? 1.0 : 0.0;
+      double betweenSelectivity = boundaries.contains(min) ? 1.0 : 0.0;
       return inverseBool ? 1.0 - betweenSelectivity : betweenSelectivity;
     }
 
@@ -664,22 +639,17 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       Range<Float> universe = domain;
       if (typeRange != null) {
         Range<Float> typeRangeClosedOpen = convertRangeToClosedOpen(typeRange);
-        universe = intersectClosedOpenRanges(domain, typeRangeClosedOpen);
-        if (universe == null) {
-          return 0;
-        }
+        universe = intersectRanges(domain, typeRangeClosedOpen);
       }
       float universeWidth = rangeWidth(universe);
       if (universeWidth <= 0) {
         return 0;
       }
-      Range<Float> betweenIntersect = intersectClosedOpenRanges(universe, predicateRange);
-      float betweenWidth = betweenIntersect == null ? 0 : rangeWidth(betweenIntersect);
+      float betweenWidth = rangeWidth(intersectRanges(universe, predicateRange));
       return 1.0 - betweenWidth / universeWidth;
     }
 
-    Range<Float> intersect = intersectClosedOpenRanges(domain, predicateRange);
-    float overlapWidth = intersect == null ? 0 : rangeWidth(intersect);
+    float overlapWidth = rangeWidth(intersectRanges(domain, predicateRange));
     float domainWidth = max - min;
     if (domainWidth <= 0) {
       return 0;
@@ -687,34 +657,19 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return overlapWidth / domainWidth;
   }
 
-  private static boolean isPointInClosedRange(Range<Float> boundaries, float point) {
-    if (boundaries.isEmpty()) {
-      return false;
-    }
-    float lower = boundaries.lowerEndpoint();
-    float upper = boundaries.upperEndpoint();
-    boolean lowerOk = BoundType.CLOSED.equals(boundaries.lowerBoundType())
-        ? Float.compare(point, lower) >= 0
-        : Float.compare(point, lower) > 0;
-    boolean upperOk = BoundType.CLOSED.equals(boundaries.upperBoundType())
-        ? Float.compare(point, upper) <= 0
-        : Float.compare(point, upper) < 0;
-    return lowerOk && upperOk;
-  }
-
-  private static Range<Float> intersectClosedOpenRanges(Range<Float> left, Range<Float> right) {
+  private static Range<Float> intersectRanges(Range<Float> left, Range<Float> right) {
     if (!left.isConnected(right)) {
-      return null;
+      return Range.closedOpen(0f, 0f);
     }
     Range<Float> intersection = left.intersection(right);
     if (intersection.isEmpty()) {
-      return null;
+      return Range.closedOpen(0f, 0f);
     }
     return intersection;
   }
 
   private static float rangeWidth(Range<Float> range) {
-    if (range == null || range.isEmpty()) {
+    if (range.isEmpty()) {
       return 0;
     }
     float width = range.upperEndpoint() - range.lowerEndpoint();
