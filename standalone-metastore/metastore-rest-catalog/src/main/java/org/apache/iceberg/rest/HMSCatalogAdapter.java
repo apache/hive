@@ -257,13 +257,14 @@ public class HMSCatalogAdapter implements Closeable {
 
     public static Pair<Route, Map<String, String>> from(HTTPMethod method, String path) {
       List<String> parts = SLASH.splitToList(path);
+      Route best = null;
       for (Route candidate : Route.values()) {
-        if (candidate.matches(method, parts)) {
-          return Pair.of(candidate, candidate.variables(parts));
+        if (candidate.matches(method, parts)
+            && (best == null || candidate.prefixLength(parts) < best.prefixLength(parts))) {
+          best = candidate;
         }
       }
-
-      return null;
+      return best == null ? null : Pair.of(best, best.variables(parts));
     }
 
     public Class<? extends RESTRequest> requestClass() {
