@@ -2095,7 +2095,7 @@ public class StatsUtils {
     return checkCanProvideStats(table) && (
         table.isNonNative() ? table.getStorageHandler().areColumnStatsUptoDate(table, colNames) :
             StatsSetupConst.areColumnStatsUptoDate(params, colNames)
-    );
+        );
   }
 
   /**

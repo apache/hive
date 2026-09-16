@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
@@ -93,6 +94,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.List;
@@ -472,38 +474,38 @@ public class StatsOptimizer extends Transform {
                 ((ExprNodeColumnDesc)aggr.getParameters().get(0)).getColumn());
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
+
             ColumnStatisticsData statData = scanColStats.statsFor(colName, type);
             if (statData == null) {
               return null; // logging inside
             }
             String name = colDesc.getTypeString().toUpperCase();
             boolean high = udaf instanceof GenericUDAFMax;
+
             switch (type) {
-              case Integer: {
+              case Integer -> {
                 LongColumnStatsData lstats = statData.getLongStats();
                 boolean isSet = high ? lstats.isSetHighValue() : lstats.isSetLowValue();
-                oneRow.add(isSet ? LongSubType.valueOf(name).cast(
-                    high ? lstats.getHighValue() : lstats.getLowValue()) : null);
-                break;
+                long bound = high ? lstats.getHighValue() : lstats.getLowValue();
+                oneRow.add(isSet ? LongSubType.valueOf(name).cast(bound) : null);
               }
-              case Double: {
+              case Double -> {
                 DoubleColumnStatsData dstats = statData.getDoubleStats();
                 boolean isSet = high ? dstats.isSetHighValue() : dstats.isSetLowValue();
-                oneRow.add(isSet ? DoubleSubType.valueOf(name).cast(
-                    high ? dstats.getHighValue() : dstats.getLowValue()) : null);
-                break;
+                double bound = high ? dstats.getHighValue() : dstats.getLowValue();
+                oneRow.add(isSet ? DoubleSubType.valueOf(name).cast(bound) : null);
               }
-              case Date: {
+              case Date -> {
                 DateColumnStatsData dstats = statData.getDateStats();
                 boolean isSet = high ? dstats.isSetHighValue() : dstats.isSetLowValue();
-                oneRow.add(isSet ? DateSubType.DAYS.cast((high ?
-                    dstats.getHighValue() : dstats.getLowValue()).getDaysSinceEpoch()) : null);
-                break;
+                Date bound = high ? dstats.getHighValue() : dstats.getLowValue();
+                oneRow.add(isSet ? DateSubType.DAYS.cast(bound.getDaysSinceEpoch()) : null);
               }
-              default:
+              default -> {
                 Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
                     "metadata optimizer for column : " + colName);
                 return null;
+              }
             }
           } else { // Unsupported aggregation.
             Logger.debug("Unsupported aggregation for metadata optimizer: "
@@ -592,15 +594,16 @@ public class StatsOptimizer extends Transform {
 
     /** The columns the aggregates read, which are the ones statistics have to be fetched for. */
     private static List<String> aggregateColumns(GroupByOperator pgbyOp, Map<String, ExprNodeDesc> exprMap) {
-      return pgbyOp.getConf().getAggregators().stream()
-          .filter(aggr -> !aggr.getParameters().isEmpty())
-          .map(aggr -> aggr.getParameters().get(0))
-          .filter(ExprNodeColumnDesc.class::isInstance)
-          .map(desc -> exprMap.get(((ExprNodeColumnDesc) desc).getColumn()))
-          .filter(ExprNodeColumnDesc.class::isInstance)
-          .map(desc -> ((ExprNodeColumnDesc) desc).getColumn())
-          .distinct()
-          .collect(Collectors.toList());
+      Set<String> columns = new LinkedHashSet<>();
+      for (AggregationDesc aggr : pgbyOp.getConf().getAggregators()) {
+        List<ExprNodeDesc> params = aggr.getParameters();
+        if (!params.isEmpty()
+            && params.getFirst() instanceof ExprNodeColumnDesc param
+            && exprMap.get(param.getColumn()) instanceof ExprNodeColumnDesc column) {
+          columns.add(column.getColumn());
+        }
+      }
+      return List.copyOf(columns);
     }
 
     /**

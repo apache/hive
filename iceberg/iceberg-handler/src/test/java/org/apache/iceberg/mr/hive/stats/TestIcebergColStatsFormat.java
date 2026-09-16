@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.IntPredicate;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -162,7 +161,7 @@ public class TestIcebergColStatsFormat {
   private static final Schema SCHEMA = new Schema(
       IntStream.rangeClosed(1, 3000)
           .mapToObj(id -> Types.NestedField.optional(id, "c" + (id - 1), Types.LongType.get()))
-          .collect(Collectors.toList()));
+          .toList());
 
   /** The fields the schema still has, which is what a read asking for no columns in particular takes. */
   private static final IntPredicate LIVE_FIELDS = IcebergColStatsReader.neededFields(SCHEMA, null);
