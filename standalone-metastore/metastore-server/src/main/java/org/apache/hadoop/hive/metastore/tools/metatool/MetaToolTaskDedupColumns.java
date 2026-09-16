@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.hive.metastore.Deadline;
+import org.apache.hadoop.hive.metastore.DeadlineException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
@@ -88,6 +89,11 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
     if (result != null) {
       printSummary(result, isDryRun, isVerbose);
       if (result.getException() != null) {
+        if (result.getException().getCause() instanceof DeadlineException deadline) {
+          // Just print the timeout message
+          System.err.println(deadline.getMessage());
+          return;
+        }
         throw new IllegalStateException("HiveMetaTool: failed to de-duplicate column descriptors for all tables",
             result.getException());
       }
