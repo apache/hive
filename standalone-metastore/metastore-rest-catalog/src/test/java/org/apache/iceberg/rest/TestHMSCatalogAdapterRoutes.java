@@ -28,44 +28,100 @@ import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 public class TestHMSCatalogAdapterRoutes {
 
   @Test
-  public void testPrefixRouting() {
-    // 1. Test standard (no prefix)
-    Pair<HMSCatalogAdapter.Route, Map<String, String>> noPrefix =
+  public void testNoPrefix() {
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> route =
         HMSCatalogAdapter.Route.from(HTTPMethod.GET, "v1/namespaces");
-    Assertions.assertNotNull(noPrefix, "Route should match");
-    Assertions.assertEquals(HMSCatalogAdapter.Route.LIST_NAMESPACES, noPrefix.first());
-    Assertions.assertNull(noPrefix.second().get("prefix"), "Should not have prefix");
+    Assertions.assertNotNull(route, "Route should match");
+    Assertions.assertEquals(HMSCatalogAdapter.Route.LIST_NAMESPACES, route.first());
+    Assertions.assertNull(route.second().get("prefix"), "Should not have prefix");
+  }
 
-    // 2. Test 1-segment prefix (e.g., Polaris)
-    Pair<HMSCatalogAdapter.Route, Map<String, String>> singlePrefix =
+  @Test
+  public void testSingleSegmentPrefix() {
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> route =
         HMSCatalogAdapter.Route.from(HTTPMethod.GET, "v1/my_catalog/namespaces/accounting/tables");
-    Assertions.assertNotNull(singlePrefix, "Route should match");
-    Assertions.assertEquals(HMSCatalogAdapter.Route.LIST_TABLES, singlePrefix.first());
-    Assertions.assertEquals("my_catalog", singlePrefix.second().get("prefix"));
-    Assertions.assertEquals("accounting", singlePrefix.second().get("namespace"));
+    Assertions.assertNotNull(route, "Route should match");
+    Assertions.assertEquals(HMSCatalogAdapter.Route.LIST_TABLES, route.first());
+    Assertions.assertEquals("my_catalog", route.second().get("prefix"));
+    Assertions.assertEquals("accounting", route.second().get("namespace"));
+  }
 
-    // 3. Test multi-segment prefix (e.g., Databricks Unity)
-    Pair<HMSCatalogAdapter.Route, Map<String, String>> multiPrefix =
+  @Test
+  public void testMultiSegmentPrefix() {
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> route =
         HMSCatalogAdapter.Route.from(
             HTTPMethod.GET, "v1/catalogs/sales/namespaces/accounting/tables/my_table");
-    Assertions.assertNotNull(multiPrefix, "Route should match");
-    Assertions.assertEquals(HMSCatalogAdapter.Route.LOAD_TABLE, multiPrefix.first());
-    Assertions.assertEquals("catalogs/sales", multiPrefix.second().get("prefix"));
-    Assertions.assertEquals("accounting", multiPrefix.second().get("namespace"));
-    Assertions.assertEquals("my_table", multiPrefix.second().get("table"));
+    Assertions.assertNotNull(route, "Route should match");
+    Assertions.assertEquals(HMSCatalogAdapter.Route.LOAD_TABLE, route.first());
+    Assertions.assertEquals("catalogs/sales", route.second().get("prefix"));
+    Assertions.assertEquals("accounting", route.second().get("namespace"));
+    Assertions.assertEquals("my_table", route.second().get("table"));
+  }
 
-    // 4. Test 3-segment prefix
-    Pair<HMSCatalogAdapter.Route, Map<String, String>> triplePrefix =
+  @Test
+  public void testTripleSegmentPrefix() {
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> route =
         HMSCatalogAdapter.Route.from(
             HTTPMethod.GET, "v1/us-east-1/prod/tenant_99/namespaces/accounting/tables");
-    Assertions.assertNotNull(triplePrefix, "Route should match");
-    Assertions.assertEquals(HMSCatalogAdapter.Route.LIST_TABLES, triplePrefix.first());
-    Assertions.assertEquals("us-east-1/prod/tenant_99", triplePrefix.second().get("prefix"));
-    Assertions.assertEquals("accounting", triplePrefix.second().get("namespace"));
+    Assertions.assertNotNull(route, "Route should match");
+    Assertions.assertEquals(HMSCatalogAdapter.Route.LIST_TABLES, route.first());
+    Assertions.assertEquals("us-east-1/prod/tenant_99", route.second().get("prefix"));
+    Assertions.assertEquals("accounting", route.second().get("namespace"));
+  }
 
-    // 5. Test bad request (wrong resource)
-    Pair<HMSCatalogAdapter.Route, Map<String, String>> badPath =
+  @Test
+  public void testNegativeCases() {
+    // 1. Wrong HTTP Method (POST instead of GET for LIST_NAMESPACES)
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> wrongMethod =
+        HMSCatalogAdapter.Route.from(HTTPMethod.POST, "v1/catalogs/sales/namespaces");
+    // Should match CREATE_NAMESPACE instead of LIST_NAMESPACES
+    Assertions.assertNotNull(wrongMethod, "Route should match CREATE_NAMESPACE");
+    Assertions.assertEquals(HMSCatalogAdapter.Route.CREATE_NAMESPACE, wrongMethod.first());
+
+    // 2. Bad path (wrong resource string)
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> badResource =
         HMSCatalogAdapter.Route.from(HTTPMethod.GET, "v1/catalogs/sales/views/accounting");
-    Assertions.assertNull(badPath, "Should not match");
+    Assertions.assertNull(badResource, "Should not match any known pattern");
+
+    // 3. Path too short (missing required anchors)
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> pathTooShort =
+        HMSCatalogAdapter.Route.from(HTTPMethod.GET, "v1/");
+    Assertions.assertNull(pathTooShort, "Should not match, missing namespaces anchor");
+
+    // 4. Path too long for a route without a prefix placeholder (config route)
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> configTooLong =
+        HMSCatalogAdapter.Route.from(HTTPMethod.GET, "v1/my_catalog/config");
+    Assertions.assertNull(configTooLong, "Should not match config route, doesn't accept prefix");
+  }
+
+  private Pair<HMSCatalogAdapter.Route, Map<String, String>> route(String path) {
+    return HMSCatalogAdapter.Route.from(HTTPMethod.GET, path);
+  }
+
+  @Test
+  public void testResourceNamedNamespacesIsNotTreatedAsPrefix() {
+    // Case 1: LOAD_NAMESPACE
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> loadNamespace =
+        route("v1/namespaces/namespaces");
+    Assertions.assertNotNull(loadNamespace, "Should match LOAD_NAMESPACE");
+    Assertions.assertEquals(HMSCatalogAdapter.Route.LOAD_NAMESPACE, loadNamespace.first());
+
+    // Case 2: LOAD_TABLE
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> loadTable =
+        route("v1/namespaces/db/tables/namespaces");
+    Assertions.assertNotNull(loadTable, "Should match LOAD_TABLE");
+    Assertions.assertEquals(HMSCatalogAdapter.Route.LOAD_TABLE, loadTable.first());
+
+    // Case 3: UPDATE_TABLE
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> updateTable =
+        HMSCatalogAdapter.Route.from(HTTPMethod.POST, "v1/namespaces/db/tables/namespaces");
+    Assertions.assertNotNull(updateTable, "Should match UPDATE_TABLE");
+    Assertions.assertEquals(HMSCatalogAdapter.Route.UPDATE_TABLE, updateTable.first());
+
+    // Case 4: LOAD_TABLE with prefix
+    Pair<HMSCatalogAdapter.Route, Map<String, String>> loadTableWithPrefix =
+        route("v1/catalogs/sales/namespaces/db/tables/namespaces");
+    Assertions.assertNotNull(loadTableWithPrefix, "Should match LOAD_TABLE with prefix");
+    Assertions.assertEquals(HMSCatalogAdapter.Route.LOAD_TABLE, loadTableWithPrefix.first());
   }
 }

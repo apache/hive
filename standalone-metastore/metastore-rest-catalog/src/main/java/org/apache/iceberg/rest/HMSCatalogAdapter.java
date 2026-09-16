@@ -25,6 +25,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
@@ -170,6 +171,11 @@ public class HMSCatalogAdapter implements Closeable {
     private final String pathTemplate;
     private final boolean acceptsPrefix;
 
+    private static final List<Route> SORTED_ROUTES =
+        Arrays.stream(Route.values())
+            .sorted(Comparator.comparingInt((Route r) -> r.requiredLength).reversed())
+            .toList();
+
     Route(HTTPMethod method, String pattern) {
       this(method, pattern, null);
     }
@@ -257,12 +263,11 @@ public class HMSCatalogAdapter implements Closeable {
 
     public static Pair<Route, Map<String, String>> from(HTTPMethod method, String path) {
       List<String> parts = SLASH.splitToList(path);
-      for (Route candidate : Route.values()) {
+      for (Route candidate : SORTED_ROUTES) {
         if (candidate.matches(method, parts)) {
           return Pair.of(candidate, candidate.variables(parts));
         }
       }
-
       return null;
     }
 
