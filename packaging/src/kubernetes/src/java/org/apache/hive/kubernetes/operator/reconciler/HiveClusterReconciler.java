@@ -594,18 +594,7 @@ public class HiveClusterReconciler
   private void patchReplicas(KubernetesClient client, HiveCluster resource,
       String component, int replicas) {
     String namespace = resource.getMetadata().getNamespace();
-    // Component keys use prefixes: "llap-{name}" → workload "{cluster}-{name}",
-    // "tezam-{name}" → workload "{cluster}-tezam-{name}".
-    String workloadName;
-    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
-      String llapName = component.substring(ConfigUtils.COMPONENT_LLAP.length() + 1);
-      workloadName = resource.getMetadata().getName() + "-" + llapName;
-    } else if (component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
-      String llapName = component.substring(ConfigUtils.COMPONENT_TEZAM.length() + 1);
-      workloadName = resource.getMetadata().getName() + "-tezam-" + llapName;
-    } else {
-      workloadName = resource.getMetadata().getName() + "-" + component;
-    }
+    String workloadName = Workloads.nameFor(resource, component);
     try {
       if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
         client.apps().statefulSets().inNamespace(namespace).withName(workloadName).scale(replicas);
@@ -714,7 +703,7 @@ public class HiveClusterReconciler
         client.services().inNamespace(ns)
             .resource(LlapResourceBuilder.buildTezAmService(resource, llapSpec))
             .serverSideApply();
-        String tezAmWorkload = clusterName + "-tezam-" + llapSpec.name();
+        String tezAmWorkload = LlapResourceBuilder.tezAmResourceName(resource, llapSpec);
         logReplicaChange(client, ns, tezAmWorkload, "tezam", tezAmReplicas, /*isStatefulSet=*/false);
         client.apps().deployments().inNamespace(ns)
             .resource(LlapResourceBuilder.buildTezAmDeployment(resource, llapSpec, tezAmReplicas))
@@ -939,8 +928,8 @@ public class HiveClusterReconciler
     if (spec.tezAm().isEnabled()) {
       for (var llap : spec.llapClusters()) {
         if (llap.isEnabled()
-            && !isAtMinReplicas(client, ns, name + "-tezam-" + llap.name(), false,
-                llap.tezAm().autoscaling().minReplicas())) {
+            && !isAtMinReplicas(client, ns, LlapResourceBuilder.tezAmResourceName(resource, llap),
+                false, llap.tezAm().autoscaling().minReplicas())) {
           return false;
         }
       }
