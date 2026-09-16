@@ -136,6 +136,7 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatem
     inputs = sem.getAllInputs();
     outputs = sem.getOutputs();
     outputs.add(new WriteEntity(table, WriteEntity.WriteType.DELETE));
+
     DDLWork ddlWork = createDDLWorkOfMetadataUpdate(tableName, sarg);
     rootTasks = Collections.singletonList(TaskFactory.get(ddlWork));
     updateOutputs(table);
