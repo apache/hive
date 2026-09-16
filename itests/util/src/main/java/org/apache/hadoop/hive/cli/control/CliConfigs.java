@@ -241,7 +241,7 @@ public class CliConfigs {
     }
 
     private static Map<HiveConf.ConfVars, String> createConfVarsStringMap() {
-      Map<HiveConf.ConfVars, String> conf = new HashMap<>();
+      Map<HiveConf.ConfVars, String> conf = new EnumMap<>(HiveConf.ConfVars.class);
       conf.put(HiveConf.ConfVars.PRE_EXEC_HOOKS, "");
       conf.put(HiveConf.ConfVars.POST_EXEC_HOOKS, "");
       conf.put(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, "-1");
