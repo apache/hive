@@ -82,13 +82,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
+ * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.11.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
-  private static final Splitter SLASH = Splitter.on('/');
-  private static final String PREFIX = "{prefix}";
+  private static final Splitter SLASH = Splitter.on('/').omitEmptyStrings();
+
+  private static final String PREFIX_VAR = "prefix";
+  private static final String PREFIX_PLACEHOLDER = "{" + PREFIX_VAR + "}";
+
+  /** Index of the first prefix segment, right after "v1". */
+  private static final int PREFIX_START = 1;
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
       ImmutableMap.<Class<? extends Exception>, Integer>builder()
@@ -162,8 +167,8 @@ public class HMSCatalogAdapter implements Closeable {
     private final Map<Integer, String> requirements;
     private final Map<Integer, String> variables;
     private final Class<? extends RESTRequest> requestClass;
-    private final String resourcePath;
-    private final boolean withPrefix;
+    private final String pathTemplate;
+    private final boolean acceptsPrefix;
 
     Route(HTTPMethod method, String pattern) {
       this(method, pattern, null);
@@ -174,12 +179,13 @@ public class HMSCatalogAdapter implements Closeable {
         String pattern,
         Class<? extends RESTRequest> requestClass) {
       this.method = method;
-      this.resourcePath = pattern;
-      this.withPrefix = pattern.contains(PREFIX);
+      this.pathTemplate = pattern;
+
+      List<String> segments = SLASH.splitToList(pattern);
+      this.acceptsPrefix = segments.contains(PREFIX_PLACEHOLDER);
 
       // parse the pattern into requirements and variables
-      List<String> parts =
-          SLASH.splitToList(pattern.replaceFirst("/v1/", "v1/").replace("/" + PREFIX, ""));
+      List<String> parts = segments.stream().filter(s -> !PREFIX_PLACEHOLDER.equals(s)).toList();
       ImmutableMap.Builder<Integer, String> requirementsBuilder = ImmutableMap.builder();
       ImmutableMap.Builder<Integer, String> variablesBuilder = ImmutableMap.builder();
       for (int pos = 0; pos < parts.size(); pos += 1) {
@@ -197,11 +203,14 @@ public class HMSCatalogAdapter implements Closeable {
       this.variables = variablesBuilder.build();
     }
 
-    /**
-     * Shift index to skip the prefix.
-     */
-    private int mappedIndex(int baseIndex, int offset) {
-      return (offset > 0 && baseIndex >= 1) ? baseIndex + offset : baseIndex;
+    /** Number of extra segments in the request, i.e. the prefix length. */
+    private int prefixLength(List<String> requestPath) {
+      return requestPath.size() - requiredLength;
+    }
+
+    /** Maps a template index to a request-path index, skipping prefix segments. */
+    private int mappedIndex(int templateIndex, int prefixLength) {
+      return templateIndex < PREFIX_START ? templateIndex : templateIndex + prefixLength;
     }
 
     private boolean matches(HTTPMethod requestMethod, List<String> requestPath) {
@@ -209,18 +218,17 @@ public class HMSCatalogAdapter implements Closeable {
         return false;
       }
 
-      int size = requestPath.size();
-      // Calculate the size of the optional prefix by checking how much the path expanded.
-      // For a multi-segment prefix like 'catalogs/my_catalog', offset will be 2.
-      int offset = size - requiredLength;
+      // A multi-segment prefix like "catalogs/my_catalog" gives prefixLength == 2
+      int prefixLength = prefixLength(requestPath);
 
       // If the path is too short, or too long but the route doesn't support a prefix, reject.
-      if (offset < 0 || (offset > 0 && !withPrefix)) {
+      if (prefixLength < 0 || (prefixLength > 0 && !acceptsPrefix)) {
         return false;
       }
 
       for (Map.Entry<Integer, String> requirement : requirements.entrySet()) {
-        if (!requirement.getValue().equalsIgnoreCase(requestPath.get(mappedIndex(requirement.getKey(), offset)))) {
+        String actual = requestPath.get(mappedIndex(requirement.getKey(), prefixLength));
+        if (!requirement.getValue().equalsIgnoreCase(actual)) {
           return false;
         }
       }
@@ -228,23 +236,21 @@ public class HMSCatalogAdapter implements Closeable {
     }
 
     private Map<String, String> variables(List<String> requestPath) {
+      int prefixLength = prefixLength(requestPath);
+
       ImmutableMap.Builder<String, String> vars = ImmutableMap.builder();
-      int offset = requestPath.size() - requiredLength;
       for (Map.Entry<Integer, String> var : variables.entrySet()) {
-        vars.put(var.getValue(), requestPath.get(mappedIndex(var.getKey(), offset)));
+        vars.put(var.getValue(), requestPath.get(mappedIndex(var.getKey(), prefixLength)));
       }
 
-      /*
-       * Rejoin the multi-segment prefix back into a single string.
-       *
-       * Note: The HMS backend currently ignores this 'prefix' variable (it relies on
-       * the single configured HiveCatalog). However, because the /v1/config endpoint
-       * advertises {prefix} in its routes, we must gracefully parse and absorb it here
-       * to prevent path length mismatches from strict Iceberg REST clients.
-       */
-      if (offset > 0) {
-        String prefixValue = String.join("/", requestPath.subList(1, 1 + offset));
-        vars.put("prefix", prefixValue);
+      if (prefixLength > 0) {
+        // Clients insert the configured prefix verbatim, so "catalogs/sales" arrives
+        // as two segments; rejoin them. An encoded %2F inside a prefix is not preserved.
+        String prefix = String.join("/",
+            requestPath.subList(PREFIX_START, PREFIX_START + prefixLength));
+        // The HMS backend serves a single HiveCatalog and does not scope by prefix yet.
+        LOG.debug("Ignoring request prefix '{}' for route {}", prefix, this);
+        vars.put(PREFIX_VAR, prefix);
       }
       return vars.build();
     }
@@ -267,7 +273,7 @@ public class HMSCatalogAdapter implements Closeable {
 
   private ConfigResponse config() {
     final List<Endpoint> endpoints = Arrays.stream(Route.values())
-        .map(r -> Endpoint.create(r.method.name(), r.resourcePath)).toList();
+        .map(r -> Endpoint.create(r.method.name(), r.pathTemplate)).toList();
     return castResponse(ConfigResponse.class, ConfigResponse.builder().withEndpoints(endpoints).build());
   }
 
