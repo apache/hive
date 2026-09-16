@@ -183,10 +183,10 @@ public class CachedStore implements RawStore, Configurable {
   // prewarm (in setConf via startCacheUpdateService, and in commitTransaction via
   // triggerUpdateUsingEvent when event based updates are enabled).
   private static void triggerPreWarm(RawStore rawStore) {
-    synchronized (EVENT_UPDATE_LOCK) {
-      // Bookmark the current event id before prewarm starts so no events are lost while it runs
-      lastEventId = rawStore.getCurrentNotificationEventId().getEventId();
-    }
+    // Bookmark the current event id before prewarm starts so no events are lost while it runs.
+    // No lock needed: event replays cannot run until isCachePrewarmed is set at the end of
+    // prewarm, and that volatile write/read publishes this value to them.
+    lastEventId = rawStore.getCurrentNotificationEventId().getEventId();
     prewarm(rawStore);
   }
 
@@ -749,25 +749,24 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @VisibleForTesting static boolean stopCacheUpdateService(long timeout) {
-    synchronized (CACHE_UPDATE_SERVICE_LOCK) {
-      boolean tasksStoppedBeforeShutdown = false;
-      if (cacheUpdateMaster != null) {
-        LOG.info("CachedStore: shutting down cache update service");
-        // Stop accepting new runs, then give an in-flight prewarm/update a bounded grace period
-        // to finish before it is interrupted and the executor reference is cleared
-        cacheUpdateMaster.shutdown();
-        try {
-          tasksStoppedBeforeShutdown = cacheUpdateMaster.awaitTermination(timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          LOG.info("CachedStore: cache update service was interrupted while waiting for tasks to "
-              + "complete before shutting down. Will make a hard stop now.");
-        }
-        cacheUpdateMaster.shutdownNow();
-        cacheUpdateMaster = null;
+    boolean tasksStoppedBeforeShutdown = false;
+    ScheduledExecutorService master = cacheUpdateMaster;
+    if (master != null) {
+      cacheUpdateMaster = null;
+      LOG.info("CachedStore: shutting down cache update service");
+      // Stop accepting new runs, then give an in-flight task a bounded grace period to finish
+      // before it is interrupted
+      master.shutdown();
+      try {
+        tasksStoppedBeforeShutdown = master.awaitTermination(timeout, TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        LOG.info("CachedStore: cache update service was interrupted while waiting for tasks to "
+            + "complete before shutting down. Will make a hard stop now.");
       }
-      return tasksStoppedBeforeShutdown;
+      master.shutdownNow();
     }
+    return tasksStoppedBeforeShutdown;
   }
 
   @VisibleForTesting static void setCacheRefreshPeriod(long time) {
