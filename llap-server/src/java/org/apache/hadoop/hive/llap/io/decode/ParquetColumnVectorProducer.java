@@ -61,6 +61,7 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
       SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) throws IOException {
     try {
+      cacheMetrics.incrCacheReadRequests();
       ParquetEncodedDataConsumer edc =
           new ParquetEncodedDataConsumer(consumer, includes, counters, ioMetrics, job);
       ParquetEncodedDataReader reader = new ParquetEncodedDataReader(
