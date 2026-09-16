@@ -19,3 +19,15 @@ insert into timestampltz_orc_format select * from timestampltz_formats;
 SELECT * FROM timestampltz_orc_format;
 
 SELECT * FROM timestampltz_orc_format ORDER BY formatid;
+
+CREATE TABLE timestampltz_parquet_format (
+  formatid string,
+  tsval timestamp with local time zone
+)
+stored as parquet;
+
+insert into timestampltz_parquet_format select * from timestampltz_formats;
+
+SELECT * FROM timestampltz_parquet_format;
+
+SELECT * FROM timestampltz_parquet_format ORDER BY formatid;

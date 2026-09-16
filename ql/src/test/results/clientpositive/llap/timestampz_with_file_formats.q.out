@@ -132,3 +132,85 @@ FORMAT1	NULL
 FORMAT1	NULL
 FORMAT2	NULL
 FORMAT2	NULL
+PREHOOK: query: CREATE TABLE timestampltz_parquet_format (
+  formatid string,
+  tsval timestamp with local time zone
+)
+stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestampltz_parquet_format
+POSTHOOK: query: CREATE TABLE timestampltz_parquet_format (
+  formatid string,
+  tsval timestamp with local time zone
+)
+stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestampltz_parquet_format
+PREHOOK: query: insert into timestampltz_parquet_format select * from timestampltz_formats
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestampltz_formats
+PREHOOK: Output: default@timestampltz_parquet_format
+POSTHOOK: query: insert into timestampltz_parquet_format select * from timestampltz_formats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestampltz_formats
+POSTHOOK: Output: default@timestampltz_parquet_format
+POSTHOOK: Lineage: timestampltz_parquet_format.formatid SIMPLE [(timestampltz_formats)timestampltz_formats.FieldSchema(name:formatid, type:string, comment:null), ]
+POSTHOOK: Lineage: timestampltz_parquet_format.tsval SIMPLE [(timestampltz_formats)timestampltz_formats.FieldSchema(name:tsval, type:timestamp with local time zone, comment:null), ]
+PREHOOK: query: SELECT * FROM timestampltz_parquet_format
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestampltz_parquet_format
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM timestampltz_parquet_format
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestampltz_parquet_format
+#### A masked pattern was here ####
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 12:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.1 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 00:00:00.0 US/Pacific
+FORMAT1	NULL
+FORMAT1	NULL
+FORMAT2	NULL
+FORMAT2	NULL
+PREHOOK: query: SELECT * FROM timestampltz_parquet_format ORDER BY formatid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestampltz_parquet_format
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM timestampltz_parquet_format ORDER BY formatid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestampltz_parquet_format
+#### A masked pattern was here ####
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 12:26:34.123456 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.1 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 00:00:00.0 US/Pacific
+FORMAT1	NULL
+FORMAT1	NULL
+FORMAT2	NULL
+FORMAT2	NULL

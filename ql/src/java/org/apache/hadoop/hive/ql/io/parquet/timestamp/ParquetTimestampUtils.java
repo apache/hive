@@ -23,6 +23,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit;
 
 public class ParquetTimestampUtils {
@@ -84,5 +85,58 @@ public class ParquetTimestampUtils {
     default:
       throw new IllegalArgumentException("Time unit not recognized");
     }
+  }
+
+  /**
+   * TIMESTAMP WITH LOCAL TIME ZONE is always stored as a genuine UTC instant (isAdjustedToUTC=true),
+   * unlike the zoneless TIMESTAMP handled by {@link #getInt64(Timestamp, TimeUnit)}, so no zone
+   * reinterpretation is applied here.
+   */
+  public static Long getInt64(TimestampTZ timestampTZ, TimeUnit timeUnit) {
+    switch (timeUnit) {
+    case NANOS:
+      try {
+        BigInteger nanos = BigInteger.valueOf(timestampTZ.getEpochSecond())
+            .multiply(BigInteger.valueOf(NANO))
+            .add(BigInteger.valueOf(timestampTZ.getNanos()));
+        return nanos.longValueExact();
+      } catch (ArithmeticException e) {
+        return null;
+      }
+    case MICROS:
+      long secondsInMicros = timestampTZ.getEpochSecond() * MICRO;
+      return secondsInMicros + timestampTZ.getNanos() / MILLI;
+    case MILLIS:
+      return timestampTZ.toEpochMilli();
+    default:
+      throw new IllegalArgumentException("Time unit not recognized");
+    }
+  }
+
+  /**
+   * Converts a raw UTC-instant int64 value (isAdjustedToUTC=true) back into a TimestampTZ,
+   * displayed using the given zone.
+   */
+  public static TimestampTZ getTimestampTZ(long value, TimeUnit timeUnit, ZoneId zone) {
+    long seconds;
+    int nanoseconds;
+
+    switch (timeUnit) {
+    case MILLIS:
+      seconds = Math.floorDiv(value, MILLI);
+      nanoseconds = (int) (Math.floorMod(value, MILLI) * MICRO);
+      break;
+    case MICROS:
+      seconds = Math.floorDiv(value, MICRO);
+      nanoseconds = (int) (Math.floorMod(value, MICRO) * MILLI);
+      break;
+    case NANOS:
+      seconds = Math.floorDiv(value, NANO);
+      nanoseconds = (int) Math.floorMod(value, NANO);
+      break;
+    default:
+      throw new IllegalArgumentException("Time unit not recognized");
+    }
+    return new TimestampTZ(seconds, nanoseconds, zone);
   }
 }
