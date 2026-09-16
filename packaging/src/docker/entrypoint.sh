@@ -110,6 +110,7 @@ function run_llap {
   export LLAP_DAEMON_LOG_DIR="${LLAP_DAEMON_LOG_DIR:-/tmp/llapDaemonLogs}"
   export LLAP_DAEMON_TMP_DIR="${LLAP_DAEMON_TMP_DIR:-/tmp/llapDaemonTmp}"
   export LOCAL_DIRS="${LOCAL_DIRS:-/tmp/llap-local}"
+  export LLAP_DAEMON_LD_PATH="${LLAP_DAEMON_LD_PATH:-$HADOOP_HOME/lib/native}"
   mkdir -p "${LLAP_DAEMON_LOG_DIR}" "${LLAP_DAEMON_TMP_DIR}" "${LOCAL_DIRS}"
 
   # runLlapDaemon.sh expects jars under ${LLAP_DAEMON_HOME}/lib.
