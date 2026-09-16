@@ -2154,12 +2154,13 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
   }
 
   /**
-   * Regression test for HIVE-30052. triggerPreWarm is static synchronized, so the background
-   * update thread holds the CachedStore class monitor for the entire duration of prewarm.
-   * startCacheUpdateService is called from setConf on every RawStore construction (once per new
-   * HMS worker thread), so it must not require that monitor: before the fix it was also static
-   * synchronized, and a cold-started HMS served no RPCs until prewarm completed because every
-   * worker thread blocked constructing its CachedStore.
+   * Regression test for HIVE-30052. Before the fix, triggerPreWarm and startCacheUpdateService
+   * were both static synchronized, so the background thread held the CachedStore class monitor
+   * for the entire duration of prewarm while startCacheUpdateService is called from setConf on
+   * every RawStore construction (once per new HMS worker thread): a cold-started HMS served no
+   * RPCs until prewarm completed because every worker thread blocked constructing its
+   * CachedStore. This test guards the invariant that startCacheUpdateService never requires the
+   * class monitor.
    */
   @Test(timeout = 60000)
   public void testStartCacheUpdateServiceNotBlockedByPrewarmMonitor() throws Exception {
@@ -2171,8 +2172,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
     CountDownLatch monitorHeld = new CountDownLatch(1);
     CountDownLatch releaseMonitor = new CountDownLatch(1);
-    // Simulates the background update thread inside triggerPreWarm: it owns the CachedStore
-    // class monitor for as long as prewarm runs
+    // Simulates a long-running holder of the CachedStore class monitor, as the pre-fix
+    // triggerPreWarm was for the whole duration of prewarm
     Thread prewarmMonitorHolder = new Thread(() -> {
       synchronized (CachedStore.class) {
         monitorHeld.countDown();
@@ -2183,18 +2184,19 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
         }
       }
     });
-    prewarmMonitorHolder.start();
-    Assert.assertTrue("monitor holder thread did not start", monitorHeld.await(10, TimeUnit.SECONDS));
-
+    prewarmMonitorHolder.setDaemon(true);
     ExecutorService executor = Executors.newSingleThreadExecutor();
     try {
+      prewarmMonitorHolder.start();
+      Assert.assertTrue("monitor holder thread did not start", monitorHeld.await(10, TimeUnit.SECONDS));
       Future<?> starter = executor.submit(() -> CachedStore.startCacheUpdateService(conf, false, false));
       // Before the fix this timed out: entering startCacheUpdateService required acquiring the
       // class monitor held by the thread above
       starter.get(10, TimeUnit.SECONDS);
     } finally {
+      // Always release the monitor holder, even when the setup assertion or the timed get fails
       releaseMonitor.countDown();
-      prewarmMonitorHolder.join();
+      prewarmMonitorHolder.join(TimeUnit.SECONDS.toMillis(10));
       executor.shutdownNow();
       CachedStore.stopCacheUpdateService(100);
     }

@@ -99,11 +99,15 @@ public class CachedStore implements RawStore, Configurable {
 
   // volatile: read without a lock on the startCacheUpdateService fast path
   private static volatile ScheduledExecutorService cacheUpdateMaster = null;
-  // Guards cacheUpdateMaster init/shutdown. Must NOT be the CachedStore.class monitor:
-  // triggerPreWarm holds that monitor for the entire prewarm, and startCacheUpdateService
-  // is called from setConf on every new worker thread's RawStore construction; sharing
-  // the monitor would block all incoming RPCs until prewarm completes.
+  // Guards cacheUpdateMaster init/shutdown. startCacheUpdateService is called from setConf on
+  // every new worker thread's RawStore construction, so this lock must never be held for a long
+  // time; in particular it must not be shared with the long-running prewarm (HIVE-30052).
   private static final Object CACHE_UPDATE_SERVICE_LOCK = new Object();
+  // Serializes notification-event replays and protects lastEventId: triggerUpdateUsingEvent is
+  // called both by the background update thread and, when metastore.cache.can.use.event is set,
+  // by every worker thread from commitTransaction, so replays must not interleave. Held only for
+  // the duration of one replay batch, never across prewarm (HIVE-30052).
+  private static final Object EVENT_UPDATE_LOCK = new Object();
   private static List<Pattern> whitelistPatterns = null;
   private static List<Pattern> blacklistPatterns = null;
   // Default value set to 100 milliseconds for test purpose
@@ -151,27 +155,38 @@ public class CachedStore implements RawStore, Configurable {
     initBlackListWhiteList(conf);
   }
 
-  private static synchronized void triggerUpdateUsingEvent(RawStore rawStore) {
+  private static void triggerUpdateUsingEvent(RawStore rawStore) {
     if (!isCachePrewarmed.get()) {
       LOG.error("cache update should be done only after prewarm");
       throw new RuntimeException("cache update should be done only after prewarm");
     }
-    long startTime = System.nanoTime();
-    long preEventId = lastEventId;
-    try {
-      lastEventId = updateUsingNotificationEvents(rawStore, lastEventId);
-    } catch (Exception e) {
-      LOG.error(" cache update failed for start event id " + lastEventId + " with error ", e);
-      throw new RuntimeException(e.getMessage());
-    } finally {
-      long endTime = System.nanoTime();
-      LOG.info("Time taken in updateUsingNotificationEvents for num events : " + (lastEventId - preEventId) + " = "
-          + (endTime - startTime) / 1000000 + "ms");
+    synchronized (EVENT_UPDATE_LOCK) {
+      long startTime = System.nanoTime();
+      long preEventId = lastEventId;
+      try {
+        lastEventId = updateUsingNotificationEvents(rawStore, lastEventId);
+      } catch (Exception e) {
+        LOG.error(" cache update failed for start event id " + lastEventId + " with error ", e);
+        throw new RuntimeException(e.getMessage());
+      } finally {
+        long endTime = System.nanoTime();
+        LOG.info("Time taken in updateUsingNotificationEvents for num events : " + (lastEventId - preEventId) + " = "
+            + (endTime - startTime) / 1000000 + "ms");
+      }
     }
   }
 
-  private static synchronized void triggerPreWarm(RawStore rawStore) {
-    lastEventId = rawStore.getCurrentNotificationEventId().getEventId();
+  // Deliberately not synchronized (HIVE-30052): the only caller is the first run of the
+  // single-threaded cacheUpdateMaster executor, and prewarm() is idempotent via isCachePrewarmed.
+  // Holding a monitor here for the entire prewarm would block every thread that needs the same
+  // monitor: previously the shared class monitor blocked all RPC worker threads for the whole
+  // prewarm (in setConf via startCacheUpdateService, and in commitTransaction via
+  // triggerUpdateUsingEvent when event based updates are enabled).
+  private static void triggerPreWarm(RawStore rawStore) {
+    synchronized (EVENT_UPDATE_LOCK) {
+      // Bookmark the current event id before prewarm starts so no events are lost while it runs
+      lastEventId = rawStore.getCurrentNotificationEventId().getEventId();
+    }
     prewarm(rawStore);
   }
 
@@ -734,27 +749,24 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @VisibleForTesting static boolean stopCacheUpdateService(long timeout) {
-    // The class monitor serializes shutdown with an in-flight prewarm/update (triggerPreWarm and
-    // triggerUpdateUsingEvent are static synchronized), preserving the pre-HIVE-30052 semantics:
-    // the executor is not torn down or nulled while its task may still be mutating the shared
-    // cache. Lock order is class monitor -> CACHE_UPDATE_SERVICE_LOCK; no path acquires them in
-    // the reverse order. This method is not on the request path, so blocking here is acceptable.
-    synchronized (CachedStore.class) {
-      synchronized (CACHE_UPDATE_SERVICE_LOCK) {
-        boolean tasksStoppedBeforeShutdown = false;
-        if (cacheUpdateMaster != null) {
-          LOG.info("CachedStore: shutting down cache update service");
-          try {
-            tasksStoppedBeforeShutdown = cacheUpdateMaster.awaitTermination(timeout, TimeUnit.MILLISECONDS);
-          } catch (InterruptedException e) {
-            LOG.info("CachedStore: cache update service was interrupted while waiting for tasks to "
-                + "complete before shutting down. Will make a hard stop now.");
-          }
-          cacheUpdateMaster.shutdownNow();
-          cacheUpdateMaster = null;
+    synchronized (CACHE_UPDATE_SERVICE_LOCK) {
+      boolean tasksStoppedBeforeShutdown = false;
+      if (cacheUpdateMaster != null) {
+        LOG.info("CachedStore: shutting down cache update service");
+        // Stop accepting new runs, then give an in-flight prewarm/update a bounded grace period
+        // to finish before it is interrupted and the executor reference is cleared
+        cacheUpdateMaster.shutdown();
+        try {
+          tasksStoppedBeforeShutdown = cacheUpdateMaster.awaitTermination(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          LOG.info("CachedStore: cache update service was interrupted while waiting for tasks to "
+              + "complete before shutting down. Will make a hard stop now.");
         }
-        return tasksStoppedBeforeShutdown;
+        cacheUpdateMaster.shutdownNow();
+        cacheUpdateMaster = null;
       }
+      return tasksStoppedBeforeShutdown;
     }
   }
 
