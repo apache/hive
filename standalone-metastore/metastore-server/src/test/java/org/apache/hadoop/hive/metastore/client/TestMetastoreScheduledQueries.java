@@ -389,8 +389,15 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   }
 
+  /**
+   * This test stimulates DataNucleus' id pre-allocation feature and creates id gaps between executions
+   * The test checks if auto disabling still works assuming the execution id generation doesn't generate strictly
+   * monotonous growing values
+   *
+   * @throws Exception
+   */
   @Test
-  public void testDisablePolicyUsesEndTime() throws Exception {
+  public void testAutoDisablePolicyUsesEndTime() throws Exception {
     String testNamespace = "endTimeNamespace";
     prepareMetastoreClientWithAutoDisable("2", "0");
 
@@ -447,7 +454,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     client = metaStore.getClient();
   }
 
-  private long pollAndGetExecutionId(String testNamespace) throws Exception {
+  private long pollAndGetExecutionId(String testNamespace) {
     ScheduledQueryPollRequest request = new ScheduledQueryPollRequest(testNamespace);
     AtomicReference<Long> executionId = new AtomicReference<>();
 
