@@ -59,7 +59,7 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
   public ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
       Includes includes, SearchArgument sarg, QueryFragmentCounters counters,
       SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
-      Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) throws IOException {
+      Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) {
     try {
       cacheMetrics.incrCacheReadRequests();
       ParquetEncodedDataConsumer edc =
