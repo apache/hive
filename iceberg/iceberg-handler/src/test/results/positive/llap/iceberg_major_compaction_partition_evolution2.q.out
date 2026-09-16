@@ -66,10 +66,12 @@ PREHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln4')
 PREHOOK: type: QUERY
 PREHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
+PREHOOK: Output: ice_comp@ice_orc
 POSTHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln4')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
+POSTHOOK: Output: ice_comp@ice_orc
 PREHOOK: query: alter table ice_orc set partition spec(dept_id)
 PREHOOK: type: ALTERTABLE_SETPARTSPEC
 PREHOOK: Input: ice_comp@ice_orc
@@ -113,10 +115,12 @@ PREHOOK: query: delete from ice_orc where last_name in ('ln7', 'ln8')
 PREHOOK: type: QUERY
 PREHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
+PREHOOK: Output: ice_comp@ice_orc
 POSTHOOK: query: delete from ice_orc where last_name in ('ln7', 'ln8')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
+POSTHOOK: Output: ice_comp@ice_orc
 PREHOOK: query: select * from ice_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: ice_comp@ice_orc
