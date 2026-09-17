@@ -5077,11 +5077,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         continue;
       }
 
-      // Check whether a evaluator argument references a partition-only column.
-      for (ExprNodeDesc exprNodeDesc : exprNodeDescList) {
-        if (hasPartitionOnlyColumnArg(exprNodeDesc, partitionOnlyExprs)) {
-          return true;
-        }
+      // Check whether an evaluator argument references a partition-only column.
+      if (exprNodeDescList.stream()
+          .anyMatch(expr -> hasPartitionOnlyColumnArg(expr, partitionOnlyExprs))) {
+        return true;
       }
     }
     return false;
@@ -5092,12 +5091,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (!(expr instanceof ExprNodeColumnDesc)) {
       return false;
     }
-    for (ExprNodeDesc partitionOnlyExpr : partitionOnlyExprs) {
-      if (expr.isSame(partitionOnlyExpr)) {
-        return true;
-      }
-    }
-    return false;
+    return partitionOnlyExprs.stream().anyMatch(expr::isSame);
   }
 
   private static List<ExprNodeDesc> getPartitionOnlyExprs(
@@ -5105,14 +5099,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<ExprNodeDesc> partitionOnlyExprs = new ArrayList<ExprNodeDesc>();
     for (ExprNodeDesc partitionExpr : partitionExprNodeDescs) {
       // Collect partition expressions that are not also ORDER BY expressions.
-      boolean inOrder = false;
-      for (ExprNodeDesc orderExpr : orderExprNodeDescs) {
-        if (partitionExpr.isSame(orderExpr)) {
-          inOrder = true;
-          break;
-        }
-      }
-      if (!inOrder) {
+      if (Arrays.stream(orderExprNodeDescs).noneMatch(partitionExpr::isSame)) {
         partitionOnlyExprs.add(partitionExpr);
       }
     }
