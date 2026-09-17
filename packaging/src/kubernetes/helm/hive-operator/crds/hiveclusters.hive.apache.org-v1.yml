@@ -648,6 +648,7 @@ spec:
                         default: derby
                         description: "Database type: derby, mysql, postgres, mssql,\
                           \ or oracle"
+                        pattern: ^(derby|mysql|postgres|mssql|oracle)$
                         type: string
                       url:
                         description: JDBC connection URL

@@ -178,9 +178,11 @@ public class HiveClusterReconciler
           ? 2 : getMinScrapeInterval(resource.getSpec());
     }
 
+    boolean workflowError = applyWorkflowDependentErrors(resource, context, newStatus, existingStatus);
+
     // --- Single exit point for status update ---
     boolean statusNowChanged = !statusEqualsIgnoringTimestamps(existingStatus, newStatus);
-    if (!statusNowChanged && rescheduleSeconds == 0) {
+    if (!statusNowChanged && rescheduleSeconds == 0 && !workflowError) {
       return UpdateControl.noUpdate();
     }
     resource.setStatus(newStatus);
@@ -385,6 +387,41 @@ public class HiveClusterReconciler
       cs.setPhase("Pending");
     }
     return cs;
+  }
+
+  /**
+   * When the managed workflow dependents incur failures, update the Ready
+   * condition with the incurred error, while preserving component conditions.
+   */
+  private boolean applyWorkflowDependentErrors(HiveCluster resource, Context<HiveCluster> context,
+      HiveClusterStatus newStatus, HiveClusterStatus existingStatus) {
+    var workflowResult = context.managedWorkflowAndDependentResourceContext().getWorkflowReconcileResult();
+    if (workflowResult.isEmpty() || !workflowResult.get().erroredDependentsExist()) {
+      return false;
+    }
+
+    Exception error = workflowResult.get().getErroredDependents().values().iterator().next();
+    String errorMessage = error.getMessage();
+    LOG.error("Error reconciling HiveCluster: {}/{} - {}", resource.getMetadata().getNamespace(),
+        resource.getMetadata().getName(), errorMessage, error);
+
+    List<Condition> existingConditions = existingStatus != null && existingStatus.getConditions() != null
+        ? existingStatus.getConditions() : Collections.emptyList();
+    boolean alreadyReported = existingConditions.stream()
+        .anyMatch(c -> "Ready".equals(c.getType())
+            && "False".equals(c.getStatus())
+            && "ReconciliationError".equals(c.getReason())
+            && errorMessage.equals(c.getMessage()));
+
+    List<Condition> conditions = newStatus.getConditions();
+    if (conditions == null) {
+      conditions = new ArrayList<>();
+      newStatus.setConditions(conditions);
+    }
+    conditions.removeIf(c -> "Ready".equals(c.getType()));
+    conditions.add(buildCondition("Ready", "False", "ReconciliationError",
+        errorMessage, existingConditions));
+    return !alreadyReported;
   }
 
   private Condition buildCondition(String type, String conditionStatus,
