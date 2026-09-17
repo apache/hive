@@ -376,6 +376,31 @@ public class TestParquetEncodedDataReader {
   }
 
   @Test
+  public void testFragmentCountersParityWithOrc() throws Exception {
+    // The LLAP IO summary is emitted from QueryFragmentCounters#toString(). ORC populates FILE,
+    // STRIPES, TOTAL_IO_TIME_NS and HDFS_TIME_NS for every fragment; the native Parquet reader
+    // should populate the same fields so a Parquet fragment shows up in the summary the same way.
+    // (TABLE is only set when LLAP_TRACK_CACHE_USAGE is on, which this test's fixture disables.)
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
+
+    run.assertClean();
+    assertEquals(ROW_GROUPS, run.counter(LlapIOCounters.SELECTED_ROWGROUPS));
+    assertTrue("TOTAL_IO_TIME_NS not recorded",
+        run.counter(LlapIOCounters.TOTAL_IO_TIME_NS) > 0);
+    assertTrue("HDFS_TIME_NS not recorded",
+        run.counter(LlapIOCounters.HDFS_TIME_NS) > 0);
+    assertEquals("exactly one of metadata hit/miss should be bumped per fragment", 1,
+        run.counter(LlapIOCounters.METADATA_CACHE_HIT)
+            + run.counter(LlapIOCounters.METADATA_CACHE_MISS));
+
+    String summary = run.fragmentCounters.toString();
+    assertTrue("FILE descriptor missing from summary: " + summary,
+        summary.contains(file.toString()));
+    assertTrue("STRIPES descriptor missing from summary: " + summary,
+        summary.contains("0," + ROW_GROUPS));
+  }
+
+  @Test
   public void testNextRowGroupIsRequestedBeforeCurrentDecodes() throws Exception {
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
@@ -721,7 +746,7 @@ public class TestParquetEncodedDataReader {
     edc.init(reader, reader);
     reader.loadFooter();
     reader.call();
-    return new Run(downstream, tezCounters, buffers, reads, ledger);
+    return new Run(downstream, counters, tezCounters, buffers, reads, ledger);
   }
 
 
@@ -930,18 +955,20 @@ public class TestParquetEncodedDataReader {
     final ColumnVector[] firstBatchCols;
     final boolean done;
     final Throwable error;
+    final QueryFragmentCounters fragmentCounters;
     final TezCounters counters;
     final List<MemoryBuffer> buffers;
     final List<long[]> reads;
     final Ledger ledger;
 
-    Run(CapturingConsumer c, TezCounters counters, List<MemoryBuffer> buffers, List<long[]> reads,
-        Ledger ledger) {
+    Run(CapturingConsumer c, QueryFragmentCounters fragmentCounters, TezCounters counters,
+        List<MemoryBuffer> buffers, List<long[]> reads, Ledger ledger) {
       this.rows = c.rows;
       this.batchSizes = c.batchSizes;
       this.firstBatchCols = c.firstBatchCols;
       this.done = c.done;
       this.error = c.error;
+      this.fragmentCounters = fragmentCounters;
       this.counters = counters;
       this.buffers = buffers;
       this.reads = reads;
