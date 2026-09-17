@@ -60,7 +60,7 @@ public class TestParquetRangeBuffers {
   }
 
   /** A stream that does nothing but answer whether its vectored-read buffers are slices. */
-  private static FSDataInputStream stream(boolean sliced) throws IOException {
+  private static FSDataInputStream stream(boolean sliced) {
     return new FSDataInputStream(new Inert()) {
       @Override
       public boolean hasCapability(String capability) {
@@ -70,12 +70,33 @@ public class TestParquetRangeBuffers {
   }
 
   private static final class Inert extends InputStream implements Seekable, PositionedReadable {
-    @Override public int read() { return -1; }
-    @Override public void seek(long pos) { }
-    @Override public long getPos() { return 0; }
-    @Override public boolean seekToNewSource(long targetPos) { return false; }
-    @Override public int read(long position, byte[] buffer, int offset, int length) { return -1; }
-    @Override public void readFully(long position, byte[] buffer, int offset, int length) { }
-    @Override public void readFully(long position, byte[] buffer) { }
+    @Override
+    public int read() {
+      return -1;
+    }
+    @Override
+    public void seek(long pos) {
+      // Test double: no state to seek.
+    }
+    @Override
+    public long getPos() {
+      return 0;
+    }
+    @Override
+    public boolean seekToNewSource(long targetPos) {
+      return false;
+    }
+    @Override
+    public int read(long position, byte[] buffer, int offset, int length) {
+      return -1;
+    }
+    @Override
+    public void readFully(long position, byte[] buffer, int offset, int length) {
+      // Test double: no bytes to fill.
+    }
+    @Override
+    public void readFully(long position, byte[] buffer) {
+      // Test double: no bytes to fill.
+    }
   }
 }

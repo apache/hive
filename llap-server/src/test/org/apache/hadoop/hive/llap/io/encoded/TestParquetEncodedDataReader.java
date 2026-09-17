@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.llap.io.encoded;
 
@@ -364,9 +365,10 @@ public class TestParquetEncodedDataReader {
 
   @Test
   public void testFooterLookupBumpsMetadataCacheCounters() throws Exception {
-    // The footer cache is a @BeforeClass singleton, so any earlier test may have populated it;
-    // only the second read of this test is order-independent. That call finds the footer we just
-    // put in on the first read, so META_HIT is 1 and META_MISS is 0 whatever came before.
+    // Footer cache is a @BeforeClass singleton, so an earlier test may have already populated it.
+    // We only assert on the *second* read here — its counters are order-independent because the
+    // second read always finds the footer that the first read of this test put in (META_HIT is 1
+    // and META_MISS is 0 regardless of prior state).
     read(jobConf(COLUMNS, TYPES, 0), wholeFile()).assertClean();
 
     Run second = read(jobConf(COLUMNS, TYPES, 0), wholeFile());
@@ -778,17 +780,17 @@ public class TestParquetEncodedDataReader {
     };
     edc.setInitialDefaults(initialDefaults);
     List<long[]> reads = new ArrayList<>();
-    ParquetEncodedDataReader reader = new ParquetEncodedDataReader(
-        ledger, ledger, readerDaemonConf, job, split, includes(projection), edc, counters) {
+    ParquetEncodedDataReader parquetReader = new ParquetEncodedDataReader(
+        ledger, ledger, readerDaemonConf, job, split, edc, counters) {
       @Override
       FSDataInputStream openFile(FileSystem fs) throws IOException {
         return new RecordingStream(super.openFile(fs), reads);
       }
     };
-    this.reader = reader;
-    edc.init(reader, reader);
-    reader.loadFooter();
-    reader.call();
+    this.reader = parquetReader;
+    edc.init(parquetReader, parquetReader);
+    parquetReader.loadFooter();
+    parquetReader.call();
     return new Run(downstream, counters, tezCounters, buffers, reads, ledger);
   }
 
@@ -818,7 +820,7 @@ public class TestParquetEncodedDataReader {
     @Override
     public void readVectored(List<? extends FileRange> ranges, IntFunction<ByteBuffer> allocate)
         throws IOException {
-      record(ranges);
+      recordRanges(ranges);
       super.readVectored(ranges, allocate);
       injectFailure(ranges);
     }
@@ -826,12 +828,12 @@ public class TestParquetEncodedDataReader {
     @Override
     public void readVectored(List<? extends FileRange> ranges, IntFunction<ByteBuffer> allocate,
         java.util.function.Consumer<ByteBuffer> release) throws IOException {
-      record(ranges);
+      recordRanges(ranges);
       super.readVectored(ranges, allocate, release);
       injectFailure(ranges);
     }
 
-    private void record(List<? extends FileRange> ranges) {
+    private void recordRanges(List<? extends FileRange> ranges) {
       for (FileRange range : ranges) {
         reads.add(new long[] {range.getOffset(), range.getLength()});
       }

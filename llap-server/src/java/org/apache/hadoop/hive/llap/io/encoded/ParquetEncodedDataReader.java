@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.llap.io.encoded;
 
@@ -56,7 +57,6 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
@@ -110,7 +110,6 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private final ParquetCacheLayout layout;
   private final JobConf jobConf;
   private final FileSplit split;
-  private final Includes includes;
   private final ParquetEncodedDataConsumer consumer;
   private final QueryFragmentCounters counters;
   private final UserGroupInformation ugi;
@@ -126,7 +125,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private final AtomicBoolean isStopped = new AtomicBoolean(false);
 
   public ParquetEncodedDataReader(LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
-      Configuration daemonConf, Configuration jobConf, FileSplit split, Includes includes,
+      Configuration daemonConf, Configuration jobConf, FileSplit split,
       ParquetEncodedDataConsumer consumer, QueryFragmentCounters counters) throws IOException {
     this.lowLevelCache = lowLevelCache;
     this.bufferManager = bufferManager;
@@ -134,7 +133,6 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     this.layout = new ParquetCacheLayout(bufferManager.getAllocator(), daemonConf);
     this.jobConf = (JobConf) jobConf;
     this.split = split;
-    this.includes = includes;
     this.consumer = consumer;
     this.counters = counters;
     this.path = split.getPath();
@@ -197,8 +195,13 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       try {
         performDataRead();
         consumer.setDone();
-      } catch (Throwable t) {
-        consumer.setError(t);
+      } catch (Exception e) {
+        // A shutdown-triggered InterruptedException must not be silently reported as an ordinary
+        // consumer error: preserve the interrupt on the thread so any caller sees it.
+        if (e instanceof InterruptedException) {
+          Thread.currentThread().interrupt();
+        }
+        consumer.setError(e);
       } finally {
         counters.incrWallClockCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
       }
@@ -220,8 +223,8 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     consumer.setFileMetadata(footer, requestedSchema, path);
 
     final Allocator allocator = bufferManager.getAllocator();
-    final int maxAlloc = allocator.getMaxAllocation();
-    final long splitStart = split.getStart(), splitEnd = splitStart + split.getLength();
+    final long splitStart = split.getStart();
+    final long splitEnd = splitStart + split.getLength();
     final List<BlockMetaData> blocks = footer.getBlocks();
     List<BlockMetaData> selected = new ArrayList<>();
     for (BlockMetaData block : blocks) {
@@ -250,13 +253,13 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       try {
         for (int i = 0; i < selected.size() && !isStopped.get(); ++i) {
           if (inFlight.isEmpty()) {
-            inFlight.add(startFetch(fileStream, buffers, allocator, maxAlloc, projected, selected.get(i),
+            inFlight.add(startFetch(fileStream, buffers, allocator, projected, selected.get(i),
                 rowGroupOf.get(selected.get(i))));
           }
           // The next row group's requests go out now so its transfer overlaps this one's decode.
           if (i + 1 < selected.size() && !isStopped.get()
               && bytes(inFlight.peek()) + bytes(projected, selected.get(i + 1)) <= lookaheadBudget) {
-            inFlight.add(startFetch(fileStream, buffers, allocator, maxAlloc, projected, selected.get(i + 1),
+            inFlight.add(startFetch(fileStream, buffers, allocator, projected, selected.get(i + 1),
                 rowGroupOf.get(selected.get(i + 1))));
           }
           finishFetch(allocator, buffers, inFlight.poll());
@@ -359,15 +362,13 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private static final class Part {
     private MemoryBuffer buffer;
     private final DiskRange range;
-    private final boolean miss;
     /** We hold one ref to release; until then a miss is a raw allocation to free. */
     private boolean owned;
 
-    Part(MemoryBuffer buffer, DiskRange range, boolean miss) {
+    Part(MemoryBuffer buffer, DiskRange range, boolean owned) {
       this.buffer = buffer;
       this.range = range;
-      this.miss = miss;
-      this.owned = !miss;
+      this.owned = owned;
     }
   }
 
@@ -380,7 +381,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private Fetch startFetch(FSDataInputStream fileStream, ParquetRangeBuffers buffers, Allocator allocator,
-      int maxAlloc, int[] projected, BlockMetaData block, int rg)
+      int[] projected, BlockMetaData block, int rg)
       throws IOException {
     Fetch fetch = new Fetch();
     ColumnChunkMetaData[] chunks = new ColumnChunkMetaData[projected.length];
@@ -392,16 +393,16 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       for (ColumnChunkMetaData chunk : chunks) {
         ColumnPlan column = new ColumnPlan();
         fetch.columns.add(column);
-        planColumnChunk(allocator, maxAlloc, chunk.getStartingPos(),
+        planColumnChunk(allocator, chunk.getStartingPos(),
             chunk.getStartingPos() + chunk.getTotalSize(), column, fetch.misses);
       }
       // The vectored dispatch is where non-async FS impls actually read; count it under HDFS_TIME.
       long hdfsStart = counters.startTimeCounter();
       requestMisses(fileStream, buffers, fetch, layout.maxRangeBytes());
       counters.recordHdfsTime(hdfsStart);
-    } catch (Throwable t) {
+    } catch (Exception e) {
       abandon(allocator, fetch);
-      throw t;
+      throw e;
     }
     return fetch;
   }
@@ -421,9 +422,9 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       }
       // consumeData returns the batch on success; after a throw it is still ours.
       consumer.consumeData(fetch.batch);
-    } catch (Throwable t) {
+    } catch (Exception e) {
       abandon(allocator, fetch);
-      throw t;
+      throw e;
     }
   }
 
@@ -450,8 +451,8 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
 
   /** Lets the allocator abandon a wait for memory once the fragment is cancelled. */
   private void allocateMultiple(Allocator allocator, MemoryBuffer[] dest, int size) {
-    if (allocator instanceof StoppableAllocator) {
-      ((StoppableAllocator) allocator).allocateMultiple(dest, size, DATA_BUFFER_FACTORY, isStopped);
+    if (allocator instanceof StoppableAllocator stoppable) {
+      stoppable.allocateMultiple(dest, size, DATA_BUFFER_FACTORY, isStopped);
     } else {
       allocator.allocateMultiple(dest, size, DATA_BUFFER_FACTORY);
     }
@@ -462,7 +463,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
    * hits as returned by getFileData, and freshly allocated power-of-two buffers for everything
    * missing. Misses are appended to {@code allMisses} so the whole row group can be read at once.
    */
-  private void planColumnChunk(Allocator allocator, int maxAlloc, long start, long end,
+  private void planColumnChunk(Allocator allocator, long start, long end,
       ColumnPlan column, List<Part> allMisses) throws IOException {
     DiskRangeList head = new DiskRangeList(start, end);
     if (fileKey != null) {
@@ -473,26 +474,12 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     try {
       for (; current != null; current = current.next) {
         if (current.hasData()) {
-          column.parts.add(new Part(((CacheChunk) current).getBuffer(), current, false));
-          continue;
-        }
-        LlapHiveUtils.throwIfCacheOnlyRead(cacheOnly);
-        int[] sizes = layout.bufferSizes(current.getEnd() - current.getOffset());
-        column.missRuns.add(new MissRun(column.parts.size(), sizes.length));
-        long partFrom = current.getOffset();
-        for (int size : sizes) {
-          MemoryBuffer[] one = new MemoryBuffer[1];
-          allocateMultiple(allocator, one, size);
-          // The cache accounts and serves the bytes up to the buffer's limit.
-          ByteBuffer raw = one[0].getByteBufferRaw();
-          raw.limit(raw.position() + size);
-          Part part = new Part(one[0], new DiskRange(partFrom, partFrom + size), true);
-          column.parts.add(part);
-          allMisses.add(part);
-          partFrom += size;
+          column.parts.add(new Part(((CacheChunk) current).getBuffer(), current, true));
+        } else {
+          planMissRun(allocator, current, column, allMisses);
         }
       }
-    } catch (Throwable t) {
+    } catch (Exception e) {
       // Hits past the failure point are still locked by getFileData; the caller only knows about
       // the parts already recorded.
       for (current = current.next; current != null; current = current.next) {
@@ -500,7 +487,30 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
           bufferManager.decRefBuffer(((CacheChunk) current).getBuffer());
         }
       }
-      throw t;
+      throw e;
+    }
+  }
+
+  /**
+   * Records one missing sub-range as a run of freshly allocated power-of-two buffers, and appends
+   * each part to {@code allMisses} so the caller can request them all in one vectored call.
+   */
+  private void planMissRun(Allocator allocator, DiskRangeList missing, ColumnPlan column,
+      List<Part> allMisses) throws IOException {
+    LlapHiveUtils.throwIfCacheOnlyRead(cacheOnly);
+    int[] sizes = layout.bufferSizes(missing.getEnd() - missing.getOffset());
+    column.missRuns.add(new MissRun(column.parts.size(), sizes.length));
+    long partFrom = missing.getOffset();
+    for (int size : sizes) {
+      MemoryBuffer[] one = new MemoryBuffer[1];
+      allocateMultiple(allocator, one, size);
+      // The cache accounts and serves the bytes up to the buffer's limit.
+      ByteBuffer raw = one[0].getByteBufferRaw();
+      raw.limit(raw.position() + size);
+      Part part = new Part(one[0], new DiskRange(partFrom, partFrom + size), false);
+      column.parts.add(part);
+      allMisses.add(part);
+      partFrom += size;
     }
   }
 
@@ -519,16 +529,18 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     }
     misses.sort(Comparator.comparingLong(part -> part.range.getOffset()));
     List<Run> runs = new ArrayList<>();
-    for (int i = 0; i < misses.size(); ) {
+    int i = 0;
+    while (i < misses.size()) {
       long from = misses.get(i).range.getOffset();
       long to = misses.get(i).range.getEnd();
       int j = i + 1;
-      for (; j < misses.size(); ++j) {
+      while (j < misses.size()) {
         DiskRange next = misses.get(j).range;
         if (next.getOffset() != to || next.getEnd() - from > maxRange) {
           break;
         }
         to = next.getEnd();
+        ++j;
       }
       runs.add(new Run(FileRange.createFileRange(from, (int) (to - from)), misses.subList(i, j)));
       i = j;
@@ -614,10 +626,13 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
 
   @Override
   public void pause() {
+    // The reader has no pausable state: the IO thread runs one row group at a time and yields on
+    // finishFetch() naturally. Kept to satisfy the ConsumerFeedback contract.
   }
 
   @Override
   public void unpause() {
+    // See pause(): no state to resume.
   }
 
   @Override

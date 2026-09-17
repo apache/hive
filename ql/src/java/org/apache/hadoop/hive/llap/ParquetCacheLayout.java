@@ -83,8 +83,10 @@ public final class ParquetCacheLayout {
    */
   public int[] bufferSizes(long length) {
     int count = 0;
-    for (long left = length; left > 0; ++count) {
-      left -= left < minBuffer ? left : Math.min(maxBuffer, Long.highestOneBit(left));
+    long remaining = length;
+    while (remaining > 0) {
+      remaining -= remaining < minBuffer ? remaining : Math.min(maxBuffer, Long.highestOneBit(remaining));
+      ++count;
     }
     int[] sizes = new int[count];
     long left = length;
