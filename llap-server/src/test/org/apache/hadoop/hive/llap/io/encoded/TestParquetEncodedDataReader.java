@@ -605,6 +605,48 @@ public class TestParquetEncodedDataReader {
     }
   }
 
+  @Test
+  public void testProjectedLeavesSkipsPrecedingNestedGroup() {
+    /*
+     * File schema: struct nested { a, b }, x. Column chunks are in leaf order — nested.a,
+     * nested.b, x — so x's top-level ordinal (1) diverges from its leaf ordinal (2); the
+     * method must return the leaf ordinal.
+     */
+    MessageType fileSchema = Types.buildMessage()
+        .requiredGroup()
+            .required(PrimitiveTypeName.INT32).named("a")
+            .required(PrimitiveTypeName.INT32).named("b")
+        .named("nested")
+        .required(PrimitiveTypeName.INT32).named("x")
+        .named("file_schema");
+    MessageType requested = Types.buildMessage()
+        .required(PrimitiveTypeName.INT32).named("x")
+        .named("requested");
+
+    int[] leaves = ParquetEncodedDataReader.projectedLeaves(requested, fileSchema);
+
+    // x sits at leaf index 2 (nested.a=0, nested.b=1, x=2), not at its top-level ordinal 1.
+    assertArrayEquals(new int[] { 2 }, leaves);
+  }
+
+  @Test
+  public void testProjectedLeavesMissingFieldSkipped() {
+    // File schema: a, b. Requested: a, missing. The method must resolve a and drop the
+    // unknown field silently rather than returning a placeholder or throwing.
+    MessageType fileSchema = Types.buildMessage()
+        .required(PrimitiveTypeName.INT32).named("a")
+        .required(PrimitiveTypeName.INT32).named("b")
+        .named("file_schema");
+    MessageType requested = Types.buildMessage()
+        .required(PrimitiveTypeName.INT32).named("a")
+        .required(PrimitiveTypeName.INT32).named("missing")
+        .named("requested");
+
+    // Only a is present in the file schema (leaf 0); "missing" contributes nothing.
+    assertArrayEquals(new int[] { 0 },
+        ParquetEncodedDataReader.projectedLeaves(requested, fileSchema));
+  }
+
   // ---- fixture ----
 
   private static void writeFile(Path path, Configuration conf) throws IOException {
