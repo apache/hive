@@ -157,8 +157,12 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       footer = ParquetFileReader.readFooter(
           new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER);
     } else {
+      // Fallback path: no cache key, so we read status + footer straight from HDFS. Time both
+      // under HDFS_TIME_NS to match how ORC accounts for cache-miss footer reads.
       final FileSystem fs = path.getFileSystem(jobConf);
+      long hdfsStart = counters.startTimeCounter();
       final FileStatus stat = fs.getFileStatus(path);
+      counters.recordHdfsTime(hdfsStart);
       InputFile inputFile = new InputFile() {
         @Override
         public SeekableInputStream newStream() throws IOException {
@@ -169,7 +173,9 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
           return stat.getLen();
         }
       };
+      hdfsStart = counters.startTimeCounter();
       footer = ParquetFileReader.readFooter(inputFile, ParquetMetadataConverter.NO_FILTER);
+      counters.recordHdfsTime(hdfsStart);
     }
     requestedSchema = DataWritableReadSupport.getRequestedSchema(
         jobConf.getBoolean(DataWritableReadSupport.PARQUET_COLUMN_INDEX_ACCESS, false),
@@ -182,17 +188,28 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   @Override
   protected Void callInternal() throws IOException, InterruptedException {
     return ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+      long startTime = counters.startTimeCounter();
       try {
         performDataRead();
         consumer.setDone();
       } catch (Throwable t) {
         consumer.setError(t);
+      } finally {
+        counters.incrWallClockCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
       }
       return null;
     });
   }
 
   private void performDataRead() throws IOException, InterruptedException {
+    // The LLAP IO summary keys off TABLE / FILE / STRIPES; set them the same way ORC does so a
+    // native Parquet fragment shows up in the summary with the same fields populated.
+    if (cacheTag != null) {
+      counters.setDesc(QueryFragmentCounters.Desc.TABLE, cacheTag.getTableName());
+    }
+    counters.setDesc(QueryFragmentCounters.Desc.FILE, path
+        + (fileKey == null ? "" : " (" + fileKey + ")"));
+
     MessageType fileSchema = footer.getFileMetaData().getSchema();
     int[] projected = projectedLeaves(requestedSchema, fileSchema);
     consumer.setFileMetadata(footer, requestedSchema, path);
@@ -216,6 +233,9 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     for (int i = 0; i < blocks.size(); ++i) {
       rowGroupOf.put(blocks.get(i), i);
     }
+    // STRIPES is the ORC term; for Parquet the analog is row groups. Reuse the same descriptor so
+    // the summary layout stays common and we don't have to teach the reporter about a new field.
+    counters.setDesc(QueryFragmentCounters.Desc.STRIPES, "0," + selected.size());
     counters.incrCounter(LlapIOCounters.SELECTED_ROWGROUPS, selected.size());
 
     FileSystem fs = path.getFileSystem(jobConf);
@@ -336,7 +356,10 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
         planColumnChunk(allocator, maxAlloc, chunk.getStartingPos(),
             chunk.getStartingPos() + chunk.getTotalSize(), column, fetch.misses);
       }
+      // The vectored dispatch is where non-async FS impls actually read; count it under HDFS_TIME.
+      long hdfsStart = counters.startTimeCounter();
       requestMisses(fileStream, buffers, fetch, layout.maxRangeBytes());
+      counters.recordHdfsTime(hdfsStart);
     } catch (Throwable t) {
       abandon(allocator, fetch);
       throw t;
@@ -347,7 +370,10 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private void finishFetch(Allocator allocator, ParquetRangeBuffers buffers, Fetch fetch)
       throws IOException, InterruptedException {
     try {
+      // Awaiting the vectored futures is where the miss bytes actually arrive from HDFS.
+      long hdfsStart = counters.startTimeCounter();
       receiveMisses(buffers, fetch);
+      counters.recordHdfsTime(hdfsStart);
       for (ColumnPlan column : fetch.columns) {
         putColumn(allocator, column);
       }
