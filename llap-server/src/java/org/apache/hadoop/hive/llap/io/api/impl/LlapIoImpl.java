@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.llap.cache.SimpleBufferManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
+import org.apache.hadoop.hive.llap.io.api.LlapParquetReadRequest;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
@@ -492,20 +493,19 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   }
 
   @Override
-  public RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedParquetReaderForPath(Object fileKey, Path path,
-      CacheTag tag, List<Integer> tableIncludedCols, JobConf conf, long offset, long length,
-      Map<String, Object> initialDefaults, Reporter reporter) throws IOException {
+  public RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedParquetReaderForPath(
+      LlapParquetReadRequest request, JobConf conf, Reporter reporter) throws IOException {
     if (parquetCvp == null) {
       return null;
     }
-    FileSplit split = new FileSplit(path, offset, length, (String[]) null);
+    FileSplit split = new FileSplit(request.path(), request.offset(), request.length(), (String[]) null);
     try {
-      LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, HiveStringUtils.getHostname(),
-          parquetCvp, executor, null, null, reporter, daemonConf);
-      if (rr == null) {
+      LlapRecordReader rr = LlapRecordReader.create(conf, split, request.tableIncludedCols(),
+          HiveStringUtils.getHostname(), parquetCvp, executor, null, null, reporter, daemonConf);
+      if (rr == null) {  // NOSONAR - S2583: create() has null-return paths Sonar's data-flow does not model.
         return null;
       }
-      ((ParquetEncodedDataConsumer) rr.getReadPipeline()).setInitialDefaults(initialDefaults);
+      ((ParquetEncodedDataConsumer) rr.getReadPipeline()).setInitialDefaults(request.initialDefaults());
       rr.setPartitionValues(null);
       rr.start();
       return rr;
