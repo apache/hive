@@ -138,7 +138,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     if (rr.rp == null) {
       return null; // The producer declined the split; the caller uses the source reader.
     }
-    if (!rr.checkOrcSchemaEvolution()) {
+    if (!rr.checkSchemaEvolution()) {
       rr.close();
       throwIfCacheOnlyRead(HiveConf.getBoolVar(job, ConfVars.LLAP_IO_CACHE_ONLY));
       return null;
@@ -351,11 +351,12 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     executor.submit(rp.getReadCallable());
   }
 
-  private boolean checkOrcSchemaEvolution() {
+  private boolean checkSchemaEvolution() {
     SchemaEvolution evolution = rp.getSchemaEvolution();
     if (evolution == null) {
-      // No ORC-style schema evolution to validate (e.g. native parquet path);
-      // parquet handles its own column resolution. Nothing to check here.
+      // Only the ORC pipeline hangs an ORC SchemaEvolution off the ReadPipeline; other formats
+      // (native Parquet today) handle column resolution themselves, so there is nothing to
+      // validate here.
       return true;
     }
 

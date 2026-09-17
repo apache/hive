@@ -75,14 +75,17 @@ class ParquetCachedPageReadStore implements PageReadStore {
 
   /** Slices of the cached buffers covering exactly the chunk's byte region, in file order. */
   private static List<ByteBuffer> chunkBuffers(ParquetEncodedColumnBatch batch, int pc) {
-    long start = batch.chunks[pc].getStartingPos(), end = start + batch.chunks[pc].getTotalSize();
+    long chunkStart = batch.chunks[pc].getStartingPos();
+    long chunkEnd = chunkStart + batch.chunks[pc].getTotalSize();
     List<ByteBuffer> slices = new ArrayList<>(batch.columnBuffers[pc].length);
     for (int i = 0; i < batch.columnBuffers[pc].length; ++i) {
-      long offset = batch.bufferOffsets[pc][i];
-      long from = Math.max(start, offset), to = Math.min(end, offset + batch.bufferLengths[pc][i]);
+      long bufferStart = batch.bufferOffsets[pc][i];
+      long bufferEnd = bufferStart + batch.bufferLengths[pc][i];
+      long sliceStart = Math.max(chunkStart, bufferStart);
+      long sliceEnd = Math.min(chunkEnd, bufferEnd);
       ByteBuffer bb = batch.columnBuffers[pc][i].getByteBufferDup();
-      bb.position(bb.position() + (int) (from - offset));
-      bb.limit(bb.position() + (int) (to - from));
+      bb.position(bb.position() + (int) (sliceStart - bufferStart));
+      bb.limit(bb.position() + (int) (sliceEnd - sliceStart));
       slices.add(bb.slice());
     }
     return slices;
