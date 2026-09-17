@@ -155,18 +155,22 @@ public class TestLlapRecordReader {
 
         @Override
         public void pause() {
+          // Scripted read pipeline: no state to pause.
         }
 
         @Override
         public void unpause() {
+          // Scripted read pipeline: no state to resume.
         }
 
         @Override
         public void stop() {
+          // Scripted read pipeline: no work in flight to stop.
         }
 
         @Override
         public void returnData(ColumnVectorBatch data) {
+          // Scripted read pipeline: batches are test-owned; nothing to reclaim.
         }
       };
     }
@@ -184,6 +188,7 @@ public class TestLlapRecordReader {
 
     @Override
     public void shutdown() {
+      // Test executor: no threads to interrupt.
     }
 
     @Override

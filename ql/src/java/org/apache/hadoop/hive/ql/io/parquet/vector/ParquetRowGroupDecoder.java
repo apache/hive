@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.io.parquet.vector;
@@ -104,7 +105,7 @@ public class ParquetRowGroupDecoder {
       }
     } else {
       for (int i = 0; i < types.size(); ++i) {
-        columnReaders[i] = buildVectorizedParquetReader( columnTypesList.get(i),
+        columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i),
             types.get(i), pages, requestedSchema.getColumns(), skipTimestampConversion,
             writerTimezone, skipProlepticConversion, legacyConversionEnabled, 0, 0);
       }
@@ -189,7 +190,7 @@ public class ParquetRowGroupDecoder {
       List<Type> types = type.asGroupType().getFields();
       for (int i = 0; i < fieldTypes.size(); i++) {
         VectorizedColumnReader r =
-            buildVectorizedParquetReader( fieldTypes.get(i), types.get(i), pages,
+            buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages,
                 descriptors, skipTimestampConversion, writerTimezone, skipProlepticConversion,
                 legacyConversionEnabled, depth + 1, typeDefLevel);
         if (r != null) {
