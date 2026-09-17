@@ -188,7 +188,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     final boolean
         decimal64Support =
-        HiveConf.getVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+        HiveConf.getVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+            .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     int
         limit =
         determineQueueLimit(bestEffortSize,
