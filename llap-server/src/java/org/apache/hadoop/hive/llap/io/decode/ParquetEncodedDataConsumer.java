@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.llap.io.decode;
 
@@ -174,9 +175,7 @@ public class ParquetEncodedDataConsumer
           if (columnReaders[i] == null) {
             continue;
           }
-          TypeInfo columnType = readAllColumns
-              ? columnTypesList.get(i)
-              : columnTypesList.get(colsToInclude.get(i));
+          TypeInfo columnType = columnTypesList.get(readAllColumns ? i : colsToInclude.get(i));
           ColumnVector cv = prepareColumnVector(cvb, i, columnType, batchSize);
           columnReaders[i].readBatch(batchSize, cv, columnType);
         }
@@ -194,8 +193,10 @@ public class ParquetEncodedDataConsumer
       LlapIoImpl.LOG.error("Parquet decodeBatch failed for rowGroup " + batch.rowGroupIx + " of " + path, e);
       downstreamConsumer.setError(e);
     } finally {
-      // Returns the pooled Hadoop decompressors after each row group; getDecompressor re-creates them.
-      codecFactory.release();
+      // Returns the pooled Hadoop decompressors after each row group; getDecompressor re-creates
+      // them. codecFactory is a per-consumer field with a per-batch release() (not close()) —
+      // try-with-resources would tie it to the outer decodeBatch scope, which is wrong here.
+      codecFactory.release(); // NOSONAR - see comment above (S2093 does not apply)
     }
   }
 
@@ -212,8 +213,8 @@ public class ParquetEncodedDataConsumer
   }
 
   private DataTypePhysicalVariation physicalVariation(TypeInfo columnType) {
-    if (useDecimal64ColumnVectors && columnType instanceof DecimalTypeInfo
-        && ((DecimalTypeInfo) columnType).precision() <= TypeDescription.MAX_DECIMAL64_PRECISION) {
+    if (useDecimal64ColumnVectors && columnType instanceof DecimalTypeInfo decimalType
+        && decimalType.precision() <= TypeDescription.MAX_DECIMAL64_PRECISION) {
       return DataTypePhysicalVariation.DECIMAL_64;
     }
     return DataTypePhysicalVariation.NONE;

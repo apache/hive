@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
@@ -451,23 +450,5 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     currentRowGroupIndex++;
 
     totalCountLoadedSoFar += pages.getRowCount();
-  }
-
-
-  /**
-   * Check if the element type in list is supported by vectorization read.
-   * Supported type: INT, BYTE, SHORT, DATE, INTERVAL_YEAR_MONTH, LONG, BOOLEAN, DOUBLE, BINARY, STRING, CHAR, VARCHAR,
-   *                 FLOAT, DECIMAL
-   */
-  private void checkListColumnSupport(TypeInfo elementType) {
-    if (elementType instanceof PrimitiveTypeInfo) {
-      switch (((PrimitiveTypeInfo)elementType).getPrimitiveCategory()) {
-        case INTERVAL_DAY_TIME:
-        case TIMESTAMP:
-          throw new RuntimeException("Unsupported primitive type used in list:: " + elementType);
-      }
-    } else {
-      throw new RuntimeException("Unsupported type used in list:" + elementType);
-    }
   }
 }

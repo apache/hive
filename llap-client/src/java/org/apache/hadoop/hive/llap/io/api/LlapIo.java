@@ -21,10 +21,8 @@ package org.apache.hadoop.hive.llap.io.api;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
@@ -116,12 +114,10 @@ public interface LlapIo<T> {
   /**
    * Parquet counterpart of {@link #llapVectorizedOrcReaderForPath}: reads the column chunks of the split through the
    * LLAP data cache. Returns null when the file cannot be served this way (native Parquet IO disabled, no MapWork,
-   * unsupported schema).
-   * @param initialDefaults - values for columns absent from the file, keyed by column name
+   * unsupported schema). See {@link LlapParquetReadRequest} for the identity / split / projection fields.
    */
-  RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedParquetReaderForPath(Object fileKey, Path path,
-      CacheTag tag, List<Integer> tableIncludedCols, JobConf conf, long offset, long length,
-      Map<String, Object> initialDefaults, Reporter reporter) throws IOException;
+  RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedParquetReaderForPath(
+      LlapParquetReadRequest request, JobConf conf, Reporter reporter) throws IOException;
 
   /**
    * Extract and return the cache content metadata.

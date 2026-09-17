@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.llap.io.encoded;
@@ -37,7 +38,10 @@ public class ParquetEncodedColumnBatch extends EncodedColumnBatch<Object> {
   public long[][] bufferOffsets;
   public int[][] bufferLengths;
 
-  public ParquetEncodedColumnBatch() {}
+  public ParquetEncodedColumnBatch() {
+    // No-arg constructor for pooling / reflection-based construction; fields are populated later
+    // by init(...). Left empty on purpose.
+  }
 
   /** fileKey is the cache key; rowGroupIx is the footer index of the block within the file. */
   public void init(Object fileKey, int rowGroupIx, ColumnChunkMetaData[] chunks) {
