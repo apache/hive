@@ -26,12 +26,15 @@ import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
@@ -439,6 +442,67 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
         .build();
     HiveIcebergTestUtils.validateData(expected,
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testCopyOnWriteUpdateReportsOnlyMatchedRowCount() throws IOException {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_update_count");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (a int, b string) " +
+        "STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(new Schema(
+            optional(1, "a", Types.IntegerType.get()),
+            optional(2, "b", Types.StringType.get()))) + "', " +
+        "'" + InputFormatConfig.PARTITION_SPEC + "'='" +
+        PartitionSpecParser.toJson(PartitionSpec.unpartitioned()) + "', " +
+        "'write.update.mode'='copy-on-write', " +
+        "'" + InputFormatConfig.EXTERNAL_TABLE_PURGE + "'='TRUE', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "UPDATE " + identifier + " SET b = 'changed' WHERE a IN (2, 4)");
+
+    Assert.assertEquals(2, numModifiedRows);
+  }
+
+  @Test
+  public void testCopyOnWriteMergeReportsOnlyMatchedUpdateRowCount() throws IOException {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_count");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (a int, b string) " +
+        "STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(new Schema(
+            optional(1, "a", Types.IntegerType.get()),
+            optional(2, "b", Types.StringType.get()))) + "', " +
+        "'" + InputFormatConfig.PARTITION_SPEC + "'='" +
+        PartitionSpecParser.toJson(PartitionSpec.unpartitioned()) + "', " +
+        "'write.merge.mode'='copy-on-write', " +
+        "'" + InputFormatConfig.EXTERNAL_TABLE_PURGE + "'='TRUE', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+
+    shell.executeStatement("CREATE TABLE cow_merge_count_source (a int, b string)");
+
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (1, 'a'), (2, 'b'), (111, 'del')");
+    shell.executeStatement("INSERT INTO cow_merge_count_source " +
+        "VALUES (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (111, 'del')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " AS t USING cow_merge_count_source src ON t.a = src.a " +
+            "WHEN MATCHED AND t.a = 111 THEN DELETE " +
+            "WHEN MATCHED THEN UPDATE SET b = 'merged' " +
+            "WHEN NOT MATCHED THEN INSERT VALUES (src.a, src.b)");
+
+    Assert.assertEquals(2, numModifiedRows);
   }
 
   @Test

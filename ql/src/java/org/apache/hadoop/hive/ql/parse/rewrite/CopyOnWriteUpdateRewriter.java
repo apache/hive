@@ -22,6 +22,7 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
@@ -112,6 +113,11 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
       }
     }
     RowLineageUtils.setRowLineageColumns(isRowLineageSupported, sqlGenerator, conf);
+    String matchedMarkerCol = HiveUtils.unparseIdentifier("cow_update_matched", conf);
+    if (whereClause != null) {
+      sqlGenerator.append(", true AS ").append(matchedMarkerCol);
+      conf.setBoolean(FileSinkOperator.HAS_COW_MATCHED_MARKER_CONF, true);
+    }
     sqlGenerator.append(" from ");
     sqlGenerator.appendTargetTableName();
 
@@ -123,6 +129,7 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
       sqlGenerator.appendAcidSelectColumns(Context.Operation.DELETE);
       sqlGenerator.removeLastChar();
       addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, "", conf);
+      sqlGenerator.append(", false AS ").append(matchedMarkerCol);
       sqlGenerator.append(" from ");
       sqlGenerator.appendTargetTableName();
       // Add the inverted where clause, since we want to hold the records which doesn't satisfy the condition.
@@ -133,7 +140,7 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
       sqlGenerator.append("AND ").append(filePathCol);
       sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from t )");
       sqlGenerator.append("\nunion all");
-      sqlGenerator.append("\nselect * from t");
+      sqlGenerator.append("\nselect *, false AS ").append(matchedMarkerCol).append(" from t");
     }
 
     ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
