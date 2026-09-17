@@ -178,7 +178,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     MetadataCache metadataCache = null;
     SerDeLowLevelCacheImpl serdeCache = null; // TODO: extract interface when needed
-    BufferUsageManager bufferManagerOrc = null, bufferManagerGeneric = null;
+    BufferUsageManager bufferManagerData = null, bufferManagerGeneric = null;
     boolean isEncodeEnabled = useLowLevelCache
         && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED);
     if (useLowLevelCache) {
@@ -226,7 +226,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       cachePolicyWrapper.setEvictionListener(e);
 
       cacheImpl.startThreads(); // Start the cache threads.
-      bufferManager = bufferManagerOrc = cacheImpl; // Cache also serves as buffer manager.
+      bufferManager = bufferManagerData = cacheImpl; // Cache also serves as buffer manager.
       bufferManagerGeneric = serdeCache;
       if (trackUsage) {
         debugDumpComponents.add(cachePolicyWrapper); // Cache contents tracker.
@@ -245,7 +245,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       this.allocator = new SimpleAllocator(conf);
       fileMetadataCache = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
-      bufferManager = bufferManagerOrc = bufferManagerGeneric = sbm;
+      bufferManager = bufferManagerData = bufferManagerGeneric = sbm;
       dataCache = sbm;
       this.memoryManager = null;
       debugDumpComponents.add(new LlapIoDebugDump() {
@@ -276,12 +276,12 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     // TODO: this should depends on input format and be in a map, or something.
     this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, dataCache, pathCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
+        metadataCache, dataCache, pathCache, bufferManagerData, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
         serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
     // Native Parquet IO is gated per query by the job conf at the dispatch sites.
     this.parquetCvp = dataCache != null
-        ? new ParquetColumnVectorProducer(dataCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics)
+        ? new ParquetColumnVectorProducer(dataCache, bufferManagerData, conf, cacheMetrics, ioMetrics)
         : null;
     LOG.info("LLAP IO initialized");
 
