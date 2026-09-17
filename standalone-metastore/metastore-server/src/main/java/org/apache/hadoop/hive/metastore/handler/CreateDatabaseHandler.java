@@ -98,17 +98,17 @@ public class CreateDatabaseHandler
           madeExternalDir = true;
         }
       } else {
-        madeManagedDir = createDbDirectory(dbMgdPath, true, "managed", true);
+        madeManagedDir = createDbDirectory(dbMgdPath, true, "managed");
         if (madeManagedDir) {
          LOG.info("Created database path in managed directory {}", dbMgdPath);
-        } else if (!isInTest || !isDbReplicationTarget(db)) {
+        } else if (!wh.isDir(dbMgdPath) && (!isInTest || !isDbReplicationTarget(db))) {
           throw new MetaException("Unable to create database managed directory " + dbMgdPath +
               ", failed to create database " + db.getName());
         }
-        madeExternalDir = createDbDirectory(dbExtPath, false, "external", false);
+        madeExternalDir = createDbDirectory(dbExtPath, false, "external");
         if (madeExternalDir) {
           LOG.info("Created database path in external directory {}", dbExtPath);
-        } else {
+        } else if (!wh.isDir(dbExtPath)) {
           LOG.warn("Failed to create external path {} for database {}. " +
                   "This may result in access not being allowed if the StorageBasedAuthorizationProvider is enabled",
               dbExtPath, db.getName());
@@ -244,12 +244,11 @@ public class CreateDatabaseHandler
    *                        since the calling user may not have access to it),
    *                        false to run as the current user (used for external dir)
    * @param dirLabel a short label ("managed"/"external") used only for log/error messages
-   * @param throwOnMkdirFailure true to throw the exception about create database dir
    * @return true if the directory was created by this call, false if it already existed
    * @throws MetaException if directory creation fails
    */
-  private boolean createDbDirectory(Path path, boolean runAsLoginUser, String dirLabel,
-                                    boolean throwOnMkdirFailure) throws MetaException {
+  private boolean createDbDirectory(Path path, boolean runAsLoginUser, String dirLabel)
+      throws MetaException {
     try {
       UserGroupInformation ugi = runAsLoginUser
           ? UserGroupInformation.getLoginUser()
@@ -257,27 +256,25 @@ public class CreateDatabaseHandler
       return ugi.doAs((PrivilegedExceptionAction<Boolean>) () -> {
         if (!wh.isDir(path)) {
           LOG.info("Creating database path in {} directory {}", dirLabel, path);
-          if (!wh.mkdirs(path)) {
-            if (throwOnMkdirFailure) {
-              throw new MetaException("Unable to create database " + dirLabel + " path " + path +
-                  ", failed to create database " + db.getName());
-            }
-            return false;
-          }
-          return true;
+          return wh.mkdirs(path);
         }
         return false;
       });
     } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-      Throwable cause = (e instanceof UndeclaredThrowableException) ? e.getCause() : e;
+      Throwable cause = (e instanceof UndeclaredThrowableException && e.getCause() != null)
+          ? e.getCause()
+          : e;
+
       if (cause instanceof MetaException) {
         throw (MetaException) cause;
       }
+
       String externalHint = "external".equals(dirLabel)
-         ? ". This may result in access not being allowed if the StorageBasedAuthorizationProvider is enabled"
-         : "";
+          ? ". This may result in access not being allowed if the StorageBasedAuthorizationProvider is enabled"
+          : "";
+
       throw new MetaException("Failed to create " + dirLabel + " path " + path + " for database " + db.getName() +
-                   externalHint + ": " + cause.getMessage());
+          externalHint + ": " + cause.getMessage());
     }
   }
 
