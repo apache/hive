@@ -119,6 +119,8 @@ public class CachedStore implements RawStore, Configurable {
   // Time after which metastore cache is updated from metastore DB by the background update thread
   private static long cacheRefreshPeriodMS = DEFAULT_CACHE_REFRESH_PERIOD;
   private static int MAX_RETRIES = 10;
+  // How long to wait for the prewarm workers to terminate before giving up on a clean shutdown
+  private static final long PREWARM_WORKER_SHUTDOWN_TIMEOUT_MS = 10000;
   // This is set to true only after prewarm is complete
   private static AtomicBoolean isCachePrewarmed = new AtomicBoolean(false);
   // This is set to true only if we were able to cache all the metadata.
@@ -544,6 +546,9 @@ public class CachedStore implements RawStore, Configurable {
           workerStores = new ArrayList<>();
         }
       }
+      // Completion is published only after the workers have terminated (see below), so that no
+      // worker can still be mutating the shared cache once isCachePrewarmed is set
+      boolean cachedAllMetadata = true;
       try {
         int numberOfDatabasesCachedSoFar = 0;
         for (Database db : databases) {
@@ -559,13 +564,13 @@ public class CachedStore implements RawStore, Configurable {
           }
           tblsPendingPrewarm.addTableNamesForPrewarming(tblNames);
           int totalTablesToCache = tblNames.size();
-          AtomicBoolean cacheMemoryFull = new AtomicBoolean(false);
+          AtomicBoolean stopPrewarm = new AtomicBoolean(false);
           AtomicInteger tablesCachedSoFar = new AtomicInteger();
           if (prewarmPool != null) {
             List<Future<?>> workers = new ArrayList<>(workerStores.size());
             for (RawStore workerStore : workerStores) {
               workers.add(prewarmPool.submit(
-                  () -> drainTablesPendingPrewarm(workerStore, catName, dbName, cacheMemoryFull, tablesCachedSoFar,
+                  () -> drainTablesPendingPrewarm(workerStore, catName, dbName, stopPrewarm, tablesCachedSoFar,
                       totalTablesToCache)));
             }
             for (Future<?> worker : workers) {
@@ -575,29 +580,34 @@ public class CachedStore implements RawStore, Configurable {
                 Thread.currentThread().interrupt();
                 LOG.warn("Interrupted while waiting for prewarm workers on database {}; "
                     + "completing prewarm with the metadata cached so far", dbName);
-                completePrewarm(startTime, false);
-                return;
+                // Tell the remaining workers to stop; they are awaited in the finally block
+                stopPrewarm.set(true);
+                cachedAllMetadata = false;
+                break;
               } catch (ExecutionException e) {
                 LOG.warn("Prewarm worker failed for database {}, moving on", dbName, e);
               }
             }
           } else {
-            drainTablesPendingPrewarm(rawStore, catName, dbName, cacheMemoryFull, tablesCachedSoFar,
-                totalTablesToCache);
+            drainTablesPendingPrewarm(rawStore, catName, dbName, stopPrewarm, tablesCachedSoFar, totalTablesToCache);
           }
-          if (cacheMemoryFull.get()) {
-            // The shared cache is full; stop prewarm and serve with whatever has been cached so far
-            completePrewarm(startTime, false);
-            return;
+          if (stopPrewarm.get()) {
+            // Either the cache is full or we were interrupted: stop here and serve with whatever
+            // has been cached so far
+            cachedAllMetadata = false;
+            break;
           }
           LOG.debug("Processed database: {}. Cached {} / {} databases so far.", dbName, ++numberOfDatabasesCachedSoFar,
               databases.size());
         }
       } finally {
+        // Waits for the workers to terminate before returning
         shutdownPrewarmWorkers(prewarmPool, workerStores);
       }
-      sharedCache.clearDirtyFlags();
-      completePrewarm(startTime, true);
+      if (cachedAllMetadata) {
+        sharedCache.clearDirtyFlags();
+      }
+      completePrewarm(startTime, cachedAllMetadata);
     }
   }
 
@@ -616,9 +626,22 @@ public class CachedStore implements RawStore, Configurable {
     }
   }
 
+  /**
+   * Stops the prewarm workers and waits for them to terminate before their RawStores are closed,
+   * so that no worker can still be reading from a closed store or writing to the shared cache
+   * once prewarm reports completion.
+   */
   private static void shutdownPrewarmWorkers(ExecutorService prewarmPool, List<RawStore> workerStores) {
     if (prewarmPool != null) {
       prewarmPool.shutdownNow();
+      try {
+        if (!prewarmPool.awaitTermination(PREWARM_WORKER_SHUTDOWN_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+          LOG.warn("Prewarm workers did not terminate within {} ms", PREWARM_WORKER_SHUTDOWN_TIMEOUT_MS);
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        LOG.warn("Interrupted while waiting for the prewarm workers to terminate");
+      }
     }
     for (RawStore workerStore : workerStores) {
       try {
@@ -636,10 +659,11 @@ public class CachedStore implements RawStore, Configurable {
    * and hot tables promoted by prioritizeTableForPrewarm are picked up by whichever worker pops next.
    */
   private static void drainTablesPendingPrewarm(RawStore rawStore, String catName, String dbName,
-      AtomicBoolean cacheMemoryFull, AtomicInteger tablesCachedSoFar, int totalTablesToCache) {
+      AtomicBoolean stopPrewarm, AtomicInteger tablesCachedSoFar, int totalTablesToCache) {
     // Deadline is thread local; register it for prewarm worker threads
     Deadline.registerIfNot(1000000);
-    while (!cacheMemoryFull.get() && tblsPendingPrewarm.hasMoreTablesToPrewarm()) {
+    while (!stopPrewarm.get() && !Thread.currentThread().isInterrupted()
+        && tblsPendingPrewarm.hasMoreTablesToPrewarm()) {
       String tblName;
       try {
         tblName = StringUtils.normalizeIdentifier(tblsPendingPrewarm.getNextTableNameToPrewarm());
@@ -651,7 +675,7 @@ public class CachedStore implements RawStore, Configurable {
         if (!prewarmTable(rawStore, catName, dbName, tblName)) {
           LOG.info("Unable to cache Database: {}'s Table: {}, since the cache memory is full. "
               + "Will stop attempting to cache any more tables.", dbName, tblName);
-          cacheMemoryFull.set(true);
+          stopPrewarm.set(true);
           return;
         }
         LOG.debug("Processed database: {}'s table: {}. Cached {} / {}  tables so far.", dbName, tblName,
