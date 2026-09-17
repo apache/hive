@@ -59,8 +59,8 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private final PathCache pathCache;
   private final BufferUsageManager bufferManager;
   private final Configuration conf;
-  private LlapDaemonCacheMetrics cacheMetrics;
-  private LlapDaemonIOMetrics ioMetrics;
+  private final LlapDaemonCacheMetrics cacheMetrics;
+  private final LlapDaemonIOMetrics ioMetrics;
   // TODO: if using in multiple places, e.g. SerDe cache, pass this in.
   // TODO: should this rather use a threadlocal for NUMA affinity?
   private final FixedSizedObjectPool<IoTrace> tracePool;
