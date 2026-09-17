@@ -66,6 +66,10 @@ import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
 import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -81,6 +85,7 @@ import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.HadoopStreams;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.SeekableInputStream;
+import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 import org.apache.tez.common.CallableWithNdc;
@@ -274,15 +279,49 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     return false;
   }
 
-  /** File-schema positions of the requested fields; column chunks follow the schema order. */
-  private static int[] projectedLeaves(MessageType requestedSchema, MessageType fileSchema) {
-    List<Integer> leaves = new ArrayList<>();
+  /**
+   * Whether the query needs row-lineage virtual columns ({@code ROW__LINEAGE__ID} /
+   * {@code LAST__UPDATED__SEQUENCE__NUMBER}) that the fallback reader augments the requested schema
+   * with via {@link RowLineageUtils#getRequestedSchemaWithRowLineageColumns}. The native pipeline
+   * doesn't propagate that augmentation through {@code Includes} yet, so we defer to the fallback
+   * reader instead of quietly emitting nulls in the lineage slots.
+   */
+  public boolean needsRowLineage() {
+    VectorizedRowBatchCtx rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
+    if (rbCtx == null) {
+      return false;
+    }
+    MessageType fileSchema = footer.getFileMetaData().getSchema();
+    return RowLineageUtils.isRowLineageColumnPresent(rbCtx, fileSchema, VirtualColumn.ROW_LINEAGE_ID)
+        || RowLineageUtils.isRowLineageColumnPresent(rbCtx, fileSchema,
+            VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
+  }
+
+  /**
+   * Leaf-column positions of the requested fields; {@code BlockMetaData.getColumns()} is a flat list
+   * of leaves in file-schema order, so a top-level primitive at ordinal {@code k} in the file schema
+   * may sit at a very different leaf index (e.g. a nested group of two leaves before it shifts it
+   * from {@code 1} to {@code 2}). We only reach this method when every requested field is a
+   * top-level primitive ({@link #projectsNestedTypes()} would have forced a fallback otherwise), so
+   * each requested field maps to exactly one leaf whose path is a single segment.
+   */
+  static int[] projectedLeaves(MessageType requestedSchema, MessageType fileSchema) {
+    List<ColumnDescriptor> allLeaves = fileSchema.getColumns();
+    List<Integer> selected = new ArrayList<>();
     for (Type field : requestedSchema.getFields()) {
-      if (fileSchema.containsField(field.getName())) {
-        leaves.add(fileSchema.getFieldIndex(field.getName()));
+      if (!fileSchema.containsField(field.getName())) {
+        continue;
+      }
+      for (int i = 0; i < allLeaves.size(); ++i) {
+        String[] path = allLeaves.get(i).getPath();
+        // Single-segment path == top-level primitive; skip leaves buried inside a group.
+        if (path.length == 1 && path[0].equals(field.getName())) {
+          selected.add(i);
+          break;
+        }
       }
     }
-    return leaves.stream().mapToInt(Integer::intValue).toArray();
+    return selected.stream().mapToInt(Integer::intValue).toArray();
   }
 
   private static long bytes(int[] projected, BlockMetaData block) {
@@ -525,25 +564,27 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       if (fileKey == null) {
         for (Part part : parts) {
           bufferManager.incRefBuffer(part.buffer);
+          part.owned = true;
         }
-      } else {
-        MemoryBuffer[] fresh = new MemoryBuffer[run.count];
-        MemoryBuffer[] cached = new MemoryBuffer[run.count];
-        DiskRange[] ranges = new DiskRange[run.count];
-        for (int i = 0; i < run.count; ++i) {
-          fresh[i] = cached[i] = parts.get(i).buffer;
-          ranges[i] = parts.get(i).range;
-        }
-        lowLevelCache.putFileData(fileKey, ranges, cached, 0, Priority.NORMAL, counters, cacheTag);
-        for (int i = 0; i < run.count; ++i) {
-          if (cached[i] != fresh[i]) {
-            // The cache kept its own buffer (locked for us) and unlocked ours without freeing it.
-            allocator.deallocate(fresh[i]);
-            parts.get(i).buffer = cached[i];
-          }
-        }
+        // No cache key => no putFileData; each part is already on the ref-counted side
+        // (incRefBuffer + owned=true), so cleanup will decRef rather than deallocate. Skip the
+        // cache-put loop.
+        continue;
       }
+      // One range at a time so a mid-run throw from putFileData (e.g. the length-mismatch guard
+      // in LowLevelCacheImpl) leaves ownership clean: parts already handled are marked owned so
+      // cleanup calls decRefBuffer on cache-owned memory, while the current and later ones stay
+      // raw allocations that cleanup can safely deallocate.
       for (Part part : parts) {
+        MemoryBuffer fresh = part.buffer;
+        MemoryBuffer[] pair = new MemoryBuffer[] { fresh };
+        DiskRange[] range = new DiskRange[] { part.range };
+        lowLevelCache.putFileData(fileKey, range, pair, 0, Priority.NORMAL, counters, cacheTag);
+        if (pair[0] != fresh) {
+          // The cache kept its own buffer (locked for us) and unlocked ours without freeing it.
+          allocator.deallocate(fresh);
+          part.buffer = pair[0];
+        }
         part.owned = true;
       }
     }
