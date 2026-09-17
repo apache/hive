@@ -689,7 +689,8 @@ public class TestParquetEncodedDataReader {
       ids.add(id);
     }
     ColumnProjectionUtils.setReadColumns(job, ids);
-    HiveConf.setVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED, "decimal_64");
+    HiveConf.setVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED,
+        HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     return job;
   }
 

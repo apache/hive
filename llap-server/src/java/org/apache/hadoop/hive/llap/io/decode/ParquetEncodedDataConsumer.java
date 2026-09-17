@@ -94,7 +94,8 @@ public class ParquetEncodedDataConsumer
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
     this.jobConf = jobConf;
     this.useDecimal64ColumnVectors = HiveConf.getVar(jobConf,
-        ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+        ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+        .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     ParquetReadOptions options = HadoopReadOptions.builder(jobConf).build();
     this.codecFactory = options.getCodecFactory();
     this.converter = new ParquetMetadataConverter(options);

@@ -97,7 +97,7 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
     this.inspector = opts.getInspector();
     boolean useDecimal64ColumnVectors = opts.getConfiguration() != null &&
       HiveConf.getVar(opts.getConfiguration(), HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
-        .equalsIgnoreCase("decimal_64");
+        .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     if (useDecimal64ColumnVectors) {
       this.internalBatch = opts.getSchema().createRowBatch(TypeDescription.RowBatchVersion.USE_DECIMAL64,
         opts.getBatchSize());
