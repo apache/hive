@@ -337,7 +337,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
 
   private static long bytes(Fetch fetch) {
     long total = 0;
-    for (ColumnChunkMetaData chunk : fetch.batch.chunks) {
+    for (ColumnChunkMetaData chunk : fetch.batch.chunks()) {
       total += chunk.getTotalSize();
     }
     return total;
@@ -589,8 +589,8 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       // raw allocations that cleanup can safely deallocate.
       for (Part part : parts) {
         MemoryBuffer fresh = part.buffer;
-        MemoryBuffer[] pair = new MemoryBuffer[] { fresh };
-        DiskRange[] range = new DiskRange[] { part.range };
+        MemoryBuffer[] pair = new MemoryBuffer[] {fresh};
+        DiskRange[] range = new DiskRange[] {part.range};
         lowLevelCache.putFileData(fileKey, range, pair, 0, Priority.NORMAL, counters, cacheTag);
         if (pair[0] != fresh) {
           // The cache kept its own buffer (locked for us) and unlocked ours without freeing it.
@@ -604,20 +604,23 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
 
   private static void assemble(ParquetEncodedColumnBatch batch, int pc, List<Part> parts) {
     int n = parts.size();
-    batch.columnBuffers[pc] = new MemoryBuffer[n];
-    batch.bufferOffsets[pc] = new long[n];
-    batch.bufferLengths[pc] = new int[n];
+    MemoryBuffer[] columnBuffers = new MemoryBuffer[n];
+    long[] bufferOffsets = new long[n];
+    int[] bufferLengths = new int[n];
+    batch.columnBuffers()[pc] = columnBuffers;
+    batch.bufferOffsets()[pc] = bufferOffsets;
+    batch.bufferLengths()[pc] = bufferLengths;
     for (int i = 0; i < n; ++i) {
       Part part = parts.get(i);
-      batch.columnBuffers[pc][i] = part.buffer;
-      batch.bufferOffsets[pc][i] = part.range.getOffset();
-      batch.bufferLengths[pc][i] = part.range.getLength();
+      columnBuffers[i] = part.buffer;
+      bufferOffsets[i] = part.range.getOffset();
+      bufferLengths[i] = part.range.getLength();
     }
   }
 
   @Override
   public void returnData(ParquetEncodedColumnBatch batch) {
-    for (MemoryBuffer[] column : batch.columnBuffers) {
+    for (MemoryBuffer[] column : batch.columnBuffers()) {
       for (MemoryBuffer buffer : column) {
         bufferManager.decRefBuffer(buffer);
       }
