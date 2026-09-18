@@ -762,15 +762,14 @@ public class TestSemanticAnalyzer {
     return null;
   }
 
-  @SuppressWarnings("rawtypes")
-  private static ReduceSinkOperator findReduceSink(Operator op) {
+  private static ReduceSinkOperator findReduceSink(Operator<?> op) {
     if (op instanceof ReduceSinkOperator) {
       return (ReduceSinkOperator) op;
     }
     if (op == null || op.getParentOperators() == null) {
       return null;
     }
-    for (Operator parent : op.getParentOperators()) {
+    for (Operator<?> parent : op.getParentOperators()) {
       ReduceSinkOperator found = findReduceSink(parent);
       if (found != null) {
         return found;
