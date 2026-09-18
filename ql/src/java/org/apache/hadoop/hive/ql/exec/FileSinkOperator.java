@@ -149,6 +149,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient String counterGroup;
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
   public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
+  public static final String HAS_COW_MATCHED_MARKER_CONF = "hive.filesink.cow.matched.marker";
+  private transient StructField cowMatchedMarkerField;
+  protected transient long matchedRowCount = 0;
   private transient Set<String> dynamicPartitionSpecs = new HashSet<>();
 
   /**
@@ -741,8 +744,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         bucketInspector = (IntObjectInspector)bucketField.getFieldObjectInspector();
       }
 
+      cowMatchedMarkerField = hconf.getBoolean(HAS_COW_MATCHED_MARKER_CONF, false) ?
+          lastStructField((StructObjectInspector) inputObjInspectors[0]) : null;
+
       numRows = 0;
       cntr = 1;
+      matchedRowCount = 0;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
       statsMap.put(getCounterName(Counter.RECORDS_OUT), row_count);
@@ -1184,6 +1191,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fpaths.addToStat(StatsSetupConst.ROW_COUNT, 1);
       }
 
+      if (cowMatchedMarkerField == null || isCowMatchedRow(row)) {
+        ++matchedRowCount;
+      }
+
       if ((++numRows == cntr) && LOG.isInfoEnabled()) {
         cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
         if (cntr < 0 || numRows < 0) {
@@ -1487,10 +1498,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     return FileUtils.makePartName(dpColNames, row);
   }
 
+  private static StructField lastStructField(StructObjectInspector rowInspector) {
+    List<? extends StructField> fields = rowInspector.getAllStructFieldRefs();
+    return fields.get(fields.size() - 1);
+  }
+
+  private boolean isCowMatchedRow(Object row) {
+    Object markerValue = ((StructObjectInspector) inputObjInspectors[0])
+        .getStructFieldData(row, cowMatchedMarkerField);
+    return markerValue != null && Boolean.parseBoolean(markerValue.toString());
+  }
+
   @Override
   public void closeOp(boolean abort) throws HiveException {
 
-    row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : numRows);
+    row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : matchedRowCount);
 
     LOG.info("{}: {} written - {}",
             this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
