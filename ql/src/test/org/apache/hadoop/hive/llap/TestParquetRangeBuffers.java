@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
@@ -36,7 +35,7 @@ import org.junit.Test;
 public class TestParquetRangeBuffers {
 
   @Test
-  public void anExclusiveStreamsBuffersAreReusedAndLimitedToTheRange() throws IOException {
+  public void anExclusiveStreamsBuffersAreReusedAndLimitedToTheRange() {
     ParquetRangeBuffers buffers = ParquetRangeBuffers.forStream(stream(false));
     ByteBuffer first = buffers.allocate(100);
     assertEquals(100, first.limit());
@@ -50,7 +49,7 @@ public class TestParquetRangeBuffers {
   }
 
   @Test
-  public void aSlicingStreamsBuffersAreNeverPooled() throws IOException {
+  public void aSlicingStreamsBuffersAreNeverPooled() {
     ParquetRangeBuffers buffers = ParquetRangeBuffers.forStream(stream(true));
     ByteBuffer first = buffers.allocate(100);
     buffers.release(first);

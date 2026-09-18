@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.parquet.ParquetRuntimeException;
@@ -52,6 +53,17 @@ public class ParquetRowGroupDecoder {
 
   private static final int MAP_DEFINITION_LEVEL_MAX = 3;
 
+  /**
+   * Bag of writer-timezone / proleptic / legacy conversion flags forwarded to every primitive
+   * column reader. Grouped so the reader-construction entry point stays under the parameter cap.
+   */
+  public record TimestampConversionOptions(
+      boolean skipTimestampConversion,
+      ZoneId writerTimezone,
+      boolean skipProlepticConversion,
+      boolean legacyConversionEnabled) {
+  }
+
   private final MessageType fileSchema;
   private final Map<String, Object> initialDefaults;
 
@@ -63,18 +75,15 @@ public class ParquetRowGroupDecoder {
   /**
    * Builds the per-(requested-)column {@link VectorizedColumnReader} array for a row group.
    *
-   * @param pages                  the row group's page store (from {@code reader.readRowGroup(..)}
-   *                               / {@code readNextRowGroup()})
-   * @param requestedSchema        the projected Parquet schema being read
-   * @param columnTypesList        the Hive type infos for ALL table columns (indexed by table col id)
-   * @param colsToInclude          the table column ids being read, in requested-schema field order;
-   *                               may be empty (e.g. {@code count(*)}), in which case all readers are
-   *                               null
-   * @param readAllColumns         whether projection is "read all columns"
-   * @param skipTimestampConversion see {@code VectorizedParquetRecordReader}
-   * @param writerTimezone           see {@code VectorizedParquetRecordReader}
-   * @param skipProlepticConversion  see {@code VectorizedParquetRecordReader}
-   * @param legacyConversionEnabled  see {@code VectorizedParquetRecordReader}
+   * @param pages           the row group's page store (from {@code reader.readRowGroup(..)}
+   *                        / {@code readNextRowGroup()})
+   * @param requestedSchema the projected Parquet schema being read
+   * @param columnTypesList the Hive type infos for ALL table columns (indexed by table col id)
+   * @param colsToInclude   the table column ids being read, in requested-schema field order;
+   *                        may be empty (e.g. {@code count(*)}), in which case all readers are null
+   * @param readAllColumns  whether projection is "read all columns"
+   * @param options         writer-timezone / proleptic / legacy conversion flags, see
+   *                        {@link TimestampConversionOptions}
    * @return one reader per requested-schema field (null entries where no reader is needed)
    */
   public VectorizedColumnReader[] buildColumnReaders(
@@ -83,10 +92,7 @@ public class ParquetRowGroupDecoder {
       List<TypeInfo> columnTypesList,
       List<Integer> colsToInclude,
       boolean readAllColumns,
-      boolean skipTimestampConversion,
-      ZoneId writerTimezone,
-      boolean skipProlepticConversion,
-      boolean legacyConversionEnabled) throws IOException {
+      TimestampConversionOptions options) throws IOException {
     List<Type> types = requestedSchema.getFields();
     VectorizedColumnReader[] columnReaders = new VectorizedColumnReader[types.size()];
 
@@ -99,15 +105,13 @@ public class ParquetRowGroupDecoder {
         for (int i = 0; i < types.size(); ++i) {
           columnReaders[i] = buildVectorizedParquetReader(
               columnTypesList.get(colsToInclude.get(i)), types.get(i), pages,
-              requestedSchema.getColumns(), skipTimestampConversion, writerTimezone,
-              skipProlepticConversion, legacyConversionEnabled, 0, 0);
+              requestedSchema.getColumns(), options, 0, 0);
         }
       }
     } else {
       for (int i = 0; i < types.size(); ++i) {
         columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i),
-            types.get(i), pages, requestedSchema.getColumns(), skipTimestampConversion,
-            writerTimezone, skipProlepticConversion, legacyConversionEnabled, 0, 0);
+            types.get(i), pages, requestedSchema.getColumns(), options, 0, 0);
       }
     }
     return columnReaders;
@@ -129,13 +133,14 @@ public class ParquetRowGroupDecoder {
     return res;
   }
 
-  // TODO support only non nested case
+  // Nested types are unsupported here on purpose; callers detect that in advance
+  // (ParquetEncodedDataReader.projectsNestedTypes) and route the query to the non-native reader.
   private static PrimitiveType getElementType(Type type) {
     if (type.isPrimitive()) {
       return type.asPrimitiveType();
     }
     if (type.asGroupType().getFields().size() > 1) {
-      throw new RuntimeException(
+      throw new UnsupportedOperationException(
           "Current Parquet Vectorization reader doesn't support nested type");
     }
 
@@ -155,10 +160,7 @@ public class ParquetRowGroupDecoder {
       Type type,
       PageReadStore pages,
       List<ColumnDescriptor> columnDescriptors,
-      boolean skipTimestampConversion,
-      ZoneId writerTimezone,
-      boolean skipProlepticConversion,
-      boolean legacyConversionEnabled,
+      TimestampConversionOptions options,
       int depth, int currentDefLevel) throws IOException {
     int typeDefLevel = currentDefLevel;
     if (type.isRepetition(Type.Repetition.OPTIONAL) || type.isRepetition(Type.Repetition.REPEATED)) {
@@ -177,12 +179,13 @@ public class ParquetRowGroupDecoder {
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
       if (columnDescriptors == null || columnDescriptors.isEmpty()) {
-        throw new RuntimeException(
+        throw new InvalidSchemaException(
             "Failed to find related Parquet column descriptor with type " + type);
       }
       return new VectorizedPrimitiveColumnReader(descriptors.get(0),
-          pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone,
-          skipProlepticConversion, legacyConversionEnabled, type, typeInfo);
+          pages.getPageReader(descriptors.get(0)), options.skipTimestampConversion(),
+          options.writerTimezone(), options.skipProlepticConversion(),
+          options.legacyConversionEnabled(), type, typeInfo);
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
       List<VectorizedColumnReader> fieldReaders = new ArrayList<>();
@@ -191,12 +194,11 @@ public class ParquetRowGroupDecoder {
       for (int i = 0; i < fieldTypes.size(); i++) {
         VectorizedColumnReader r =
             buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages,
-                descriptors, skipTimestampConversion, writerTimezone, skipProlepticConversion,
-                legacyConversionEnabled, depth + 1, typeDefLevel);
+                descriptors, options, depth + 1, typeDefLevel);
         if (r != null) {
           fieldReaders.add(r);
         } else {
-          throw new RuntimeException(
+          throw new IllegalStateException(
               "Fail to build Parquet vectorized reader based on Hive type " + fieldTypes.get(i)
                   .getTypeName() + " and Parquet type" + types.get(i).toString());
         }
@@ -205,52 +207,49 @@ public class ParquetRowGroupDecoder {
     case LIST:
       checkListColumnSupport(((ListTypeInfo) typeInfo).getListElementTypeInfo());
       if (columnDescriptors == null || columnDescriptors.isEmpty()) {
-        throw new RuntimeException(
+        throw new InvalidSchemaException(
             "Failed to find related Parquet column descriptor with type " + type);
       }
 
       return new VectorizedListColumnReader(descriptors.get(0),
-          pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone,
-          skipProlepticConversion, legacyConversionEnabled, getElementType(type), typeInfo);
+          pages.getPageReader(descriptors.get(0)), options.skipTimestampConversion(),
+          options.writerTimezone(), options.skipProlepticConversion(),
+          options.legacyConversionEnabled(), getElementType(type), typeInfo);
     case MAP:
       if (columnDescriptors == null || columnDescriptors.isEmpty()) {
-        throw new RuntimeException(
+        throw new InvalidSchemaException(
             "Failed to find related Parquet column descriptor with type " + type);
       }
 
-      // to handle the different Map definition in Parquet, eg:
-      // definition has 1 group:
-      //   repeated group map (MAP_KEY_VALUE)
-      //     {required binary key (UTF8); optional binary value (UTF8);}
-      // definition has 2 groups:
-      //   optional group m1 (MAP) {
-      //     repeated group map (MAP_KEY_VALUE)
-      //       {required binary key (UTF8); optional binary value (UTF8);}
-      //   }
+      // Parquet has more than one on-disk shape for MAP; walk down until we find the
+      // {key, value} group, tolerating up to MAP_DEFINITION_LEVEL_MAX wrapping groups.
+      // See parquet-format's LogicalTypes spec for the MAP annotation for the shapes.
       int nestGroup = 0;
       GroupType groupType = type.asGroupType();
       // if FieldCount == 2, get types for key & value,
       // otherwise, continue to get the group type until MAP_DEFINITION_LEVEL_MAX.
       while (groupType.getFieldCount() < 2) {
         if (nestGroup > MAP_DEFINITION_LEVEL_MAX) {
-          throw new RuntimeException(
-              "More than " + MAP_DEFINITION_LEVEL_MAX + " level is found in Map definition, " +
-                  "Failed to get the field types for Map with type " + type);
+          throw new InvalidSchemaException(
+              "More than " + MAP_DEFINITION_LEVEL_MAX + " level is found in Map definition, "
+                  + "Failed to get the field types for Map with type " + type);
         }
         groupType = groupType.getFields().get(0).asGroupType();
         nestGroup++;
       }
       List<Type> kvTypes = groupType.getFields();
       VectorizedListColumnReader keyListColumnReader = new VectorizedListColumnReader(
-          descriptors.get(0), pages.getPageReader(descriptors.get(0)), skipTimestampConversion,
-          writerTimezone, skipProlepticConversion, legacyConversionEnabled, kvTypes.get(0), typeInfo);
+          descriptors.get(0), pages.getPageReader(descriptors.get(0)), options.skipTimestampConversion(),
+          options.writerTimezone(), options.skipProlepticConversion(),
+          options.legacyConversionEnabled(), kvTypes.get(0), typeInfo);
       VectorizedListColumnReader valueListColumnReader = new VectorizedListColumnReader(
-          descriptors.get(1), pages.getPageReader(descriptors.get(1)), skipTimestampConversion,
-          writerTimezone, skipProlepticConversion, legacyConversionEnabled, kvTypes.get(1), typeInfo);
+          descriptors.get(1), pages.getPageReader(descriptors.get(1)), options.skipTimestampConversion(),
+          options.writerTimezone(), options.skipProlepticConversion(),
+          options.legacyConversionEnabled(), kvTypes.get(1), typeInfo);
       return new VectorizedMapColumnReader(keyListColumnReader, valueListColumnReader);
     case UNION:
     default:
-      throw new RuntimeException("Unsupported category " + typeInfo.getCategory().name());
+      throw new UnsupportedOperationException("Unsupported category " + typeInfo.getCategory().name());
     }
   }
 
@@ -260,17 +259,15 @@ public class ParquetRowGroupDecoder {
    *                 STRING, CHAR, VARCHAR, FLOAT, DECIMAL
    */
   private static void checkListColumnSupport(TypeInfo elementType) {
-    if (elementType instanceof org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo) {
-      switch (((org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo) elementType)
-          .getPrimitiveCategory()) {
-        case INTERVAL_DAY_TIME:
-        case TIMESTAMP:
-          throw new RuntimeException("Unsupported primitive type used in list:: " + elementType);
+    if (elementType instanceof PrimitiveTypeInfo primitiveTypeInfo) {
+      switch (primitiveTypeInfo.getPrimitiveCategory()) {
+        case INTERVAL_DAY_TIME, TIMESTAMP:
+          throw new UnsupportedOperationException("Unsupported primitive type used in list: " + elementType);
         default:
           // supported
       }
     } else {
-      throw new RuntimeException("Unsupported type used in list:" + elementType);
+      throw new UnsupportedOperationException("Unsupported type used in list: " + elementType);
     }
   }
 }

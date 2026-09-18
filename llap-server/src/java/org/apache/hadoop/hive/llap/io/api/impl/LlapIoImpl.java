@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -179,7 +178,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     MetadataCache metadataCache = null;
     SerDeLowLevelCacheImpl serdeCache = null; // TODO: extract interface when needed
-    BufferUsageManager bufferManagerData = null, bufferManagerGeneric = null;
+    BufferUsageManager bufferManagerData = null;
+    BufferUsageManager bufferManagerGeneric = null;
     boolean isEncodeEnabled = useLowLevelCache
         && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED);
     if (useLowLevelCache) {
@@ -227,7 +227,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       cachePolicyWrapper.setEvictionListener(e);
 
       cacheImpl.startThreads(); // Start the cache threads.
-      bufferManager = bufferManagerData = cacheImpl; // Cache also serves as buffer manager.
+      // Cache also serves as buffer manager for both data and generic (encoded/serde) paths.
+      bufferManagerData = cacheImpl;
+      bufferManager = cacheImpl;
       bufferManagerGeneric = serdeCache;
       if (trackUsage) {
         debugDumpComponents.add(cachePolicyWrapper); // Cache contents tracker.
@@ -246,7 +248,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       this.allocator = new SimpleAllocator(conf);
       fileMetadataCache = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
-      bufferManager = bufferManagerData = bufferManagerGeneric = sbm;
+      bufferManager = sbm;
+      bufferManagerData = sbm;
+      bufferManagerGeneric = sbm;
       dataCache = sbm;
       this.memoryManager = null;
       debugDumpComponents.add(new LlapIoDebugDump() {

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.io.encoded.ParquetEncodedColumnBatch;
 import org.apache.parquet.bytes.ByteBufferInputStream;
 import org.apache.parquet.bytes.BytesInput;
@@ -64,11 +65,12 @@ class ParquetCachedPageReadStore implements PageReadStore {
 
   ParquetCachedPageReadStore(ParquetMetadata footer, ParquetEncodedColumnBatch batch,
       CompressionCodecFactory codecFactory, ParquetMetadataConverter converter) throws IOException {
-    BlockMetaData block = footer.getBlocks().get(batch.rowGroupIx);
+    BlockMetaData block = footer.getBlocks().get(batch.rowGroupIx());
     this.rowCount = block.getRowCount();
     String createdBy = footer.getFileMetaData().getCreatedBy();
-    for (int pc = 0; pc < batch.chunks.length; ++pc) {
-      ColumnChunkMetaData chunk = batch.chunks[pc];
+    ColumnChunkMetaData[] chunks = batch.chunks();
+    for (int pc = 0; pc < chunks.length; ++pc) {
+      ColumnChunkMetaData chunk = chunks[pc];
       readers.put(chunk.getPath(), readAllPages(chunk, chunkBuffers(batch, pc), createdBy,
           codecFactory.getDecompressor(chunk.getCodec()), converter));
     }
@@ -76,15 +78,19 @@ class ParquetCachedPageReadStore implements PageReadStore {
 
   /** Slices of the cached buffers covering exactly the chunk's byte region, in file order. */
   private static List<ByteBuffer> chunkBuffers(ParquetEncodedColumnBatch batch, int pc) {
-    long chunkStart = batch.chunks[pc].getStartingPos();
-    long chunkEnd = chunkStart + batch.chunks[pc].getTotalSize();
-    List<ByteBuffer> slices = new ArrayList<>(batch.columnBuffers[pc].length);
-    for (int i = 0; i < batch.columnBuffers[pc].length; ++i) {
-      long bufferStart = batch.bufferOffsets[pc][i];
-      long bufferEnd = bufferStart + batch.bufferLengths[pc][i];
+    ColumnChunkMetaData chunk = batch.chunks()[pc];
+    long chunkStart = chunk.getStartingPos();
+    long chunkEnd = chunkStart + chunk.getTotalSize();
+    MemoryBuffer[] columnBuffers = batch.columnBuffers()[pc];
+    long[] bufferOffsets = batch.bufferOffsets()[pc];
+    int[] bufferLengths = batch.bufferLengths()[pc];
+    List<ByteBuffer> slices = new ArrayList<>(columnBuffers.length);
+    for (int i = 0; i < columnBuffers.length; ++i) {
+      long bufferStart = bufferOffsets[i];
+      long bufferEnd = bufferStart + bufferLengths[i];
       long sliceStart = Math.max(chunkStart, bufferStart);
       long sliceEnd = Math.min(chunkEnd, bufferEnd);
-      ByteBuffer bb = batch.columnBuffers[pc][i].getByteBufferDup();
+      ByteBuffer bb = columnBuffers[i].getByteBufferDup();
       bb.position(bb.position() + (int) (sliceStart - bufferStart));
       bb.limit(bb.position() + (int) (sliceEnd - sliceStart));
       slices.add(bb.slice());
