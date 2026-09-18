@@ -25,6 +25,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.cli.S3Container;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
@@ -400,7 +401,32 @@ public class CliConfigs {
       }
     }
   }
-  
+
+  public static class TPCDSIcebergS3CliConfig extends AbstractCliConfig {
+    public TPCDSIcebergS3CliConfig() {
+      super(CorePerfCliDriver.class);
+      setQueryDir("ql/src/test/queries/clientpositive/perf");
+      setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds10tb/iceberg");
+      setResultsDir("ql/src/test/results/clientpositive/perf/tpcds10tb/iceberg");
+
+      setInitScript("q_init_tpcds_iceberg.sql");
+      S3Container.Bucket bucket = new S3Container.Bucket(
+          "dw-team-bucket",
+          "data/warehouse/tablespace/external/hive/tpcds_partitioned_iceberg_parquet_10000.db/",
+          "https://github.com/zabetak/hive-test-datasets/releases/download/1.1/iceberg_s3_tpcds10tb.zip");
+      setS3Bucket(bucket);
+      setHiveConfDir("data/conf/llap");
+      // Restore hooks to their default values and remove noise from the out file
+      Map<HiveConf.ConfVars, String> conf = new EnumMap<>(HiveConf.ConfVars.class);
+      conf.put(HiveConf.ConfVars.PRE_EXEC_HOOKS, "");
+      conf.put(HiveConf.ConfVars.POST_EXEC_HOOKS, "");
+      // HIVE-30070: Conversion to Map join is very slow for Iceberg tables on S3
+      conf.put(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN, "false");
+      setCustomConfigValueMap(conf);
+      setClusterType(MiniClusterType.LLAP_LOCAL);
+      excludesFrom(testConfigProps, "tez.perf.disabled.query.files");
+    }
+  }
   public static class NegativeLlapLocalCliConfig extends AbstractCliConfig {
     public NegativeLlapLocalCliConfig() {
       super(CoreNegativeCliDriver.class);
