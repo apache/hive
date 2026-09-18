@@ -41,7 +41,7 @@ public final class QTestArguments {
   private boolean withLlapIo;
   private FsType fsType;
   private QTestSetup qtestSetup;
-  private S3Container.BucketSpec s3BucketSpec;
+  private S3Container.Bucket s3Bucket;
 
   private Map<HiveConf.ConfVars,String> customConfigValueMap;
 
@@ -124,8 +124,8 @@ public final class QTestArguments {
     this.customConfigValueMap = customConfigValueMap;
   }
 
-  public S3Container.BucketSpec getS3BucketSpec() {
-    return s3BucketSpec;
+  public S3Container.Bucket getS3Bucket() {
+    return s3Bucket;
   }
 
   public Map<HiveConf.ConfVars, String> getCustomConfs() {
@@ -146,7 +146,7 @@ public final class QTestArguments {
     private boolean withLlapIo;
     private FsType fsType;
     private QTestSetup qtestSetup;
-    private S3Container.BucketSpec s3BucketSpec;
+    private S3Container.Bucket s3Bucket;
 
     private Map<HiveConf.ConfVars, String> customConfigValueMap;
 
@@ -207,8 +207,8 @@ public final class QTestArguments {
       return this;
     }
 
-    public QTestArgumentsBuilder withS3Bucket(S3Container.BucketSpec s3BucketSpec) {
-      this.s3BucketSpec = s3BucketSpec;
+    public QTestArgumentsBuilder withS3Bucket(S3Container.Bucket s3Bucket) {
+      this.s3Bucket = s3Bucket;
       return this;
     }
 
@@ -221,7 +221,7 @@ public final class QTestArguments {
       testArguments.setInitScript(initScript);
       testArguments.setCleanupScript(cleanupScript);
       testArguments.setWithLlapIo(withLlapIo);
-      testArguments.s3BucketSpec = this.s3BucketSpec;
+      testArguments.s3Bucket = this.s3Bucket;
       testArguments.setFsType(
           fsType != null ? fsType : clusterType.getDefaultFsType());
 

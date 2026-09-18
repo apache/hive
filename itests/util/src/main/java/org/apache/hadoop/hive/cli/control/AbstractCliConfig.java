@@ -68,7 +68,7 @@ public abstract class AbstractCliConfig {
   private MiniClusterType clusterType;
   private FsType fsType;
   private String metastoreType;
-  private S3Container.BucketSpec bucketSpec;
+  private S3Container.Bucket bucket;
 
   // FIXME: null value is treated differently on the other end..when those filter will be
   // moved...this may change
@@ -114,8 +114,8 @@ public abstract class AbstractCliConfig {
     }
   }
 
-  protected void setS3Bucket(S3Container.BucketSpec bucketSpec) {
-    this.bucketSpec = bucketSpec;
+  protected void setS3Bucket(S3Container.Bucket bucket) {
+    this.bucket = bucket;
   }
 
   protected void includeQuery(String qFile) {
@@ -151,8 +151,8 @@ public abstract class AbstractCliConfig {
   private static final Splitter TEST_SPLITTER =
       Splitter.onPattern("[, ]").trimResults().omitEmptyStrings();
 
-  public S3Container.BucketSpec getS3BucketSpec() {
-    return this.bucketSpec;
+  public S3Container.Bucket getS3BucketSpec() {
+    return this.bucket;
   }
 
   public static class IncludeFilter implements FileFilter {
