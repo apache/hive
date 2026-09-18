@@ -700,6 +700,51 @@ public class TestSemanticAnalyzer {
             && analyzed.analyzer.getCboInfo().contains("Plan optimized by CBO"));
   }
 
+  @Test
+  public void testCboDeclinePreservesOutOfRangeGroupByConstant() throws Exception {
+    assertGroupByConstantSurvivesCboDecline("100");
+  }
+
+  @Test
+  public void testCboDeclinePreservesInRangeGroupByConstant() throws Exception {
+    assertGroupByConstantSurvivesCboDecline("2");
+  }
+
+  private void assertGroupByConstantSurvivesCboDecline(String constant) throws Exception {
+    boolean original = conf.getBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_POSITION_ALIAS);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_POSITION_ALIAS, true);
+    try {
+      AnalyzedQuery analyzed = analyzeQueryWithCbo("select " + constant
+          + " as k, count(*) as n from table1 tablesample (2 rows) group by 1 order by 1");
+      assertTrue(analyzed.analyzer.getCboInfo(),
+          analyzed.analyzer.getCboInfo() != null
+              && analyzed.analyzer.getCboInfo().contains("not optimized by CBO"));
+      ASTNode groupBy = findFirstNodeOfType(analyzed.ast, HiveParser.TOK_GROUPBY);
+      assertNotNull(groupBy);
+      assertEquals(HiveParser.Number, ((ASTNode) groupBy.getChild(0)).getType());
+      assertEquals(constant, groupBy.getChild(0).getText());
+      ASTNode orderByRef = findFirstOrderByRef(analyzed.ast);
+      assertNotNull(orderByRef);
+      assertEquals(HiveParser.Number, orderByRef.getType());
+      assertEquals(constant, orderByRef.getText());
+    } finally {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_POSITION_ALIAS, original);
+    }
+  }
+
+  private static ASTNode findFirstNodeOfType(ASTNode node, int type) {
+    if (node.getType() == type) {
+      return node;
+    }
+    for (int i = 0; i < node.getChildCount(); i++) {
+      ASTNode found = findFirstNodeOfType((ASTNode) node.getChild(i), type);
+      if (found != null) {
+        return found;
+      }
+    }
+    return null;
+  }
+
   private void assertOrderByOrdinalResolvedOnCboDecline(String query) throws Exception {
     AnalyzedQuery analyzed = analyzeQueryWithCbo(query);
     assertTrue(analyzed.analyzer.getCboInfo(),
