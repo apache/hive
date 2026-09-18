@@ -410,7 +410,6 @@ public class CliConfigs {
       setResultsDir("ql/src/test/results/clientpositive/perf/tpcds10tb/iceberg");
 
       setInitScript("q_init_tpcds_iceberg.sql");
-      setCleanupScript("q_test_cleanup_tez.sql");
       S3Container.Bucket bucket = new S3Container.Bucket(
           "dw-team-bucket",
           "data/warehouse/tablespace/external/hive/tpcds_partitioned_iceberg_parquet_10000.db/",
