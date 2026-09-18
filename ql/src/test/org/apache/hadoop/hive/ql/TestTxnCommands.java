@@ -1115,19 +1115,19 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         "`d?*de e` decimal(5,2)," +
         "vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + src + "(gh int, j decimal(5,2), k varchar(128))");
-    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=gh " +
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on `d/8`.i=`a/b`.gh " +
         "\nwhen matched and i > 5 then delete " +
         "\nwhen matched then update set vc='blah' " +
         "\nwhen not matched then insert values(1,2.1,'baz')");
-    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=gh " +
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on `d/8`.i=`a/b`.gh " +
         "\nwhen matched and i > 5 then delete " +
         "\nwhen matched then update set vc='blah',  `d?*de e` = current_timestamp()  " +
         "\nwhen not matched then insert values(1,2.1, concat('baz', current_timestamp()))");
-    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=gh " +
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on `d/8`.i=`a/b`.gh " +
         "\nwhen matched and i > 5 then delete " +
         "\nwhen matched then update set vc='blah' " +
         "\nwhen not matched then insert values(1,2.1,'a\\b')");
-    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=gh " +
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on `d/8`.i=`a/b`.gh " +
         "\nwhen matched and i > 5 then delete " +
         "\nwhen matched then update set vc='∆∋'" +
         "\nwhen not matched then insert values(`a/b`.gh,`a/b`.j,'c\\t')");
@@ -1142,11 +1142,11 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         "`d?*de e` decimal(5,2)," +
         "vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + src + "(`g/h` int, j decimal(5,2), k varchar(128))");
-    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=`g/h`" +
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on `d/8`.i=`a/b`.`g/h`" +
         "\nwhen matched and `g/h` > 5 then delete " +
         "\nwhen matched and `g/h` < 0 then update set vc='∆∋', `d?*de e` =  `d?*de e` * j + 1" +
         "\nwhen not matched and `d?*de e` <> 0 then insert values(`a/b`.`g/h`,`a/b`.j,`a/b`.k)");
-    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=`g/h`" +
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on `d/8`.i=`a/b`.`g/h`" +
         "\nwhen matched and `g/h` > 5 then delete" +
         "\n when matched and `g/h` < 0 then update set vc='∆∋'  , `d?*de e` =  `d?*de e` * j + 1  " +
         "\n when not matched and `d?*de e` <> 0 then insert values(`a/b`.`g/h`,`a/b`.j,`a/b`.k)");
