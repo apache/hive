@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.rest;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -53,6 +55,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests the two-level table caching behaviour of {@link HMSCachingCatalog}: L2 (Caffeine) hits
@@ -245,5 +248,47 @@ class TestHMSCachingCatalogCache {
     assertThat(first.location()).isEqualTo(created.location());
     // The second load is an authorized cache hit and returns the identical instance.
     assertThat(second).isSameAs(first);
+  }
+
+  @Test
+  void testTableExistsDeniedByAuthorizerReturnsFalse() throws Exception {
+    hiveCatalog.createTable(TABLE_ID, SCHEMA);
+
+    // A denying authorizer: the table-listing filter drops every candidate, mirroring a user with
+    // no SHOW TABLES privilege on it.
+    HiveAuthorizer hiveAuthorizer = mock(HiveAuthorizer.class);
+    when(hiveAuthorizer.filterListCmdObjects(anyList(), any())).thenReturn(List.of());
+    HMSCachingCatalog authzCatalog =
+        new HMSCachingCatalog(hiveCatalog, CACHE_EXPIRY_MS, new IcebergAuthorizer(() -> hiveAuthorizer));
+
+    // The table exists in HMS, but the authorizer must be consulted before the metadata-location
+    // check, so an unauthorized caller must not learn — via true/false — whether it exists.
+    assertThat(authzCatalog.tableExists(TABLE_ID)).isFalse();
+  }
+
+  @Test
+  void testTableExistsAllowedByAuthorizerChecksLocation() throws Exception {
+    hiveCatalog.createTable(TABLE_ID, SCHEMA);
+
+    // A permissive authorizer: the table-listing filter passes every candidate through unchanged,
+    // so the real check falls through to the metadata-location lookup.
+    HiveAuthorizer hiveAuthorizer = mock(HiveAuthorizer.class);
+    when(hiveAuthorizer.filterListCmdObjects(anyList(), any()))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    HMSCachingCatalog authzCatalog =
+        new HMSCachingCatalog(hiveCatalog, CACHE_EXPIRY_MS, new IcebergAuthorizer(() -> hiveAuthorizer));
+
+    assertThat(authzCatalog.tableExists(TABLE_ID)).isTrue();
+    assertThat(authzCatalog.tableExists(TableIdentifier.of(NAMESPACE, "does_not_exist"))).isFalse();
+  }
+
+  @Test
+  void testTableExistsWithoutAuthorizerChecksLocation() {
+    // No authorizer configured (2-arg constructor): tableExists must not NPE and must fall back to
+    // the plain metadata-location check.
+    assertThat(catalog.tableExists(TABLE_ID)).isFalse();
+
+    hiveCatalog.createTable(TABLE_ID, SCHEMA);
+    assertThat(catalog.tableExists(TABLE_ID)).isTrue();
   }
 }

@@ -564,7 +564,8 @@ public final class HMSCachingCatalog
 
   @Override
   public boolean tableExists(TableIdentifier identifier) {
-    if (authorizer.filterTables(hiveCatalog.name(), Collections.singletonList(identifier)).isEmpty()) {
+    if (authorizer != null
+        && authorizer.filterTables(hiveCatalog.name(), Collections.singletonList(identifier)).isEmpty()) {
       return false;
     }
     return metadataLocator.getLocation(identifier) != null;
