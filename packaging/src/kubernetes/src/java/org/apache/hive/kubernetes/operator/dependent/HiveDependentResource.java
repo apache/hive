@@ -54,6 +54,7 @@ import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
 import org.apache.hive.kubernetes.operator.model.spec.ProbeSpec;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
+import org.apache.hive.kubernetes.operator.util.Workloads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,6 +165,15 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    */
   protected Integer resolveReplicaCount(P primary, Context<P> context,
       AutoscalingSpec autoscaling, int staticReplicas, int initialReplicas) {
+    Optional<R> existing = getSecondaryResource(primary, context);
+    Integer resolved = computeReplicaCount(primary, existing, autoscaling,
+        staticReplicas, initialReplicas);
+    logReplicaChange(primary, existing, resolved);
+    return resolved;
+  }
+
+  private Integer computeReplicaCount(P primary, Optional<R> existing,
+      AutoscalingSpec autoscaling, int staticReplicas, int initialReplicas) {
     // Suspended cluster → 0 replicas (dependent resources natively respect suspend).
     // Exception: HMS stays running if includeMetastore=false in autoSuspend config.
     if (primary instanceof HiveCluster hc && hc.getSpec().suspend()) {
@@ -175,7 +185,6 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     if (autoscaling == null || !autoscaling.isEnabled()) {
       return staticReplicas;
     }
-    Optional<R> existing = getSecondaryResource(primary, context);
     if (existing.isPresent()) {
       // Check if the autoscaler has made a decision during this operator's lifecycle
       Integer managed = HiveClusterAutoscaler.getManagedReplicas(
@@ -186,19 +195,35 @@ public abstract class HiveDependentResource<R extends HasMetadata,
         return managed;
       }
       // Fallback: operator restarted and MANAGED_REPLICAS is empty — read current value
-      R resource = existing.get();
-      if (resource instanceof io.fabric8.kubernetes.api.model.apps.Deployment d) {
-        return d.getSpec() != null && d.getSpec().getReplicas() != null
-            ? d.getSpec().getReplicas() : initialReplicas;
-      }
-      if (resource instanceof io.fabric8.kubernetes.api.model.apps.StatefulSet s) {
-        return s.getSpec() != null && s.getSpec().getReplicas() != null
-            ? s.getSpec().getReplicas() : initialReplicas;
-      }
-      return initialReplicas;
+      Integer current = Workloads.replicas(existing.get());
+      return current != null ? current : initialReplicas;
     }
     // First creation: start at minReplicas.
     return initialReplicas;
+  }
+
+  /**
+   * Emits an INFO line when the SSA about to run will actually change the workload's replica
+   * count. Silence means the count already matches, so no scale is happening. Without this,
+   * every scale of an HS2/Metastore Deployment reached the cluster silently (only the imperative
+   * LLAP path and the autoscaler logged); a bare "Reconciled" line said nothing about the size.
+   * Uses the same "Scaling ... A -> B" shape the imperative LLAP path emits.
+   */
+  private void logReplicaChange(P primary, Optional<R> existing, Integer desired) {
+    String component = getComponentName();
+    if (component == null || desired == null) {
+      return;
+    }
+    String ns = primary.getMetadata().getNamespace();
+    String name = existing.map(r -> r.getMetadata().getName()).orElse(component);
+    if (existing.isEmpty()) {
+      LOG.info("Creating {} {}/{} with {} replicas", component, ns, name, desired);
+      return;
+    }
+    Integer current = Workloads.replicas(existing.get());
+    if (current != null && !current.equals(desired)) {
+      LOG.info("Scaling {} {}/{}: {} -> {} replicas", component, ns, name, current, desired);
+    }
   }
 
 

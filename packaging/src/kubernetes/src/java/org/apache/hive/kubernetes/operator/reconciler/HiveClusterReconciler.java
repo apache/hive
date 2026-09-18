@@ -59,6 +59,7 @@ import org.apache.hive.kubernetes.operator.model.status.AutoscalingStatus;
 import org.apache.hive.kubernetes.operator.model.status.ComponentStatus;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
+import org.apache.hive.kubernetes.operator.util.Workloads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -553,18 +554,7 @@ public class HiveClusterReconciler
   private void patchReplicas(KubernetesClient client, HiveCluster resource,
       String component, int replicas) {
     String namespace = resource.getMetadata().getNamespace();
-    // Component keys use prefixes: "llap-{name}" → workload "{cluster}-{name}",
-    // "tezam-{name}" → workload "{cluster}-tezam-{name}".
-    String workloadName;
-    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
-      String llapName = component.substring(ConfigUtils.COMPONENT_LLAP.length() + 1);
-      workloadName = resource.getMetadata().getName() + "-" + llapName;
-    } else if (component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
-      String llapName = component.substring(ConfigUtils.COMPONENT_TEZAM.length() + 1);
-      workloadName = resource.getMetadata().getName() + "-tezam-" + llapName;
-    } else {
-      workloadName = resource.getMetadata().getName() + "-" + component;
-    }
+    String workloadName = Workloads.nameFor(resource, component);
     try {
       if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
         client.apps().statefulSets().inNamespace(namespace).withName(workloadName).scale(replicas);
@@ -574,6 +564,30 @@ public class HiveClusterReconciler
       LOG.info("Scaled {}/{} to {} replicas", namespace, workloadName, replicas);
     } catch (Exception e) {
       LOG.debug("Could not scale {}/{}: {}", namespace, workloadName, e.getMessage());
+    }
+  }
+
+  /**
+   * Emits an INFO log when the reconciler's server-side apply is about to change the workload's
+   * replica count. Without this, an SSA-driven scale (a user editing spec.llapClusters[i].replicas,
+   * a helm upgrade rewriting it) reaches the StatefulSet/Deployment silently -- only the
+   * autoscaler path {@link #patchReplicas} logged its scales, so a plain scale looked like the
+   * operator was doing nothing. Read failures are swallowed at DEBUG: the SSA below runs either
+   * way, and a missing pre-scale line is not worth failing the reconcile over.
+   */
+  private void logReplicaChange(KubernetesClient client, String ns, String workloadName,
+      String kind, int desired, boolean isStatefulSet) {
+    try {
+      Integer current = Workloads.replicas(isStatefulSet
+          ? client.apps().statefulSets().inNamespace(ns).withName(workloadName).get()
+          : client.apps().deployments().inNamespace(ns).withName(workloadName).get());
+      if (current == null) {
+        LOG.info("Creating {} {}/{} with {} replicas", kind, ns, workloadName, desired);
+      } else if (current != desired) {
+        LOG.info("Scaling {} {}/{}: {} -> {} replicas", kind, ns, workloadName, current, desired);
+      }
+    } catch (Exception e) {
+      LOG.debug("Could not read current replicas for {}/{}: {}", ns, workloadName, e.getMessage());
     }
   }
 
@@ -627,6 +641,8 @@ public class HiveClusterReconciler
       // brief scale-up-then-down on first create (K8s defaults to 1 if omitted).
       // resolveLlapReplicaCount already reads the autoscaler's managed value,
       // so this is always the correct replica count.
+      String llapWorkload = clusterName + "-" + llapSpec.name();
+      logReplicaChange(client, ns, llapWorkload, "llap", replicas, /*isStatefulSet=*/true);
       client.apps().statefulSets().inNamespace(ns)
           .resource(LlapResourceBuilder.buildStatefulSet(resource, llapSpec, replicas))
           .forceConflicts()
@@ -646,6 +662,8 @@ public class HiveClusterReconciler
         client.services().inNamespace(ns)
             .resource(LlapResourceBuilder.buildTezAmService(resource, llapSpec))
             .serverSideApply();
+        String tezAmWorkload = LlapResourceBuilder.tezAmResourceName(resource, llapSpec);
+        logReplicaChange(client, ns, tezAmWorkload, "tezam", tezAmReplicas, /*isStatefulSet=*/false);
         client.apps().deployments().inNamespace(ns)
             .resource(LlapResourceBuilder.buildTezAmDeployment(resource, llapSpec, tezAmReplicas))
             .forceConflicts()
@@ -869,8 +887,8 @@ public class HiveClusterReconciler
     if (spec.tezAm().isEnabled()) {
       for (var llap : spec.llapClusters()) {
         if (llap.isEnabled()
-            && !isAtMinReplicas(client, ns, name + "-tezam-" + llap.name(), false,
-                llap.tezAm().autoscaling().minReplicas())) {
+            && !isAtMinReplicas(client, ns, LlapResourceBuilder.tezAmResourceName(resource, llap),
+                false, llap.tezAm().autoscaling().minReplicas())) {
           return false;
         }
       }
