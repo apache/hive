@@ -1149,6 +1149,7 @@
                   <include>com.github.luben:zstd-jni</include>
                   <include>org.locationtech.jts:jts-core</include>
                   <include>org.locationtech.jts.io:jts-io-common</include>
+                  <include>com.googlecode.json-simple:json-simple</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.apache.tez:tez-protobuf-history-plugin</include>
                 </includes>
