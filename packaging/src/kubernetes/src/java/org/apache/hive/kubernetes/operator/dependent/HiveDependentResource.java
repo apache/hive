@@ -385,9 +385,9 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   }
 
   private static void validateOptValue(String field, String value) {
-    if (containsUnsafeShellChars(value)) {
-      throw new IllegalArgumentException(field + " must not contain whitespace, quotes, backslashes or "
-          + "control characters");
+    if (containsUnsafeShellChars(value) || (value != null && value.contains("$("))) {
+      throw new IllegalArgumentException(field + " must not contain whitespace, quotes, backslashes, "
+          + "control characters or Kubernetes variable references");
     }
   }
 

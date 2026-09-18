@@ -411,7 +411,7 @@ public class HiveClusterReconciler
         .anyMatch(c -> "Ready".equals(c.getType())
             && "False".equals(c.getStatus())
             && "ReconciliationError".equals(c.getReason())
-            && errorMessage.equals(c.getMessage()));
+            && Objects.equals(errorMessage, c.getMessage()));
 
     List<Condition> conditions = newStatus.getConditions();
     if (conditions == null) {
