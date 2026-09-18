@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 
+/**
+ * Generic UDAF for the LEAD window function.
+ */
 @Description(
         name = "lead",
         value = "_FUNC_(expr, amt, default)")
