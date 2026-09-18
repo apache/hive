@@ -20,6 +20,9 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Comparator;
@@ -35,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -99,12 +103,14 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
+import org.apache.iceberg.mr.mapreduce.HiveIdentityPartitionConverters;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -596,6 +602,80 @@ public class IcebergTableUtil {
         !Types.StringType.get().equals(type);
     return isNullValue ?
         null : Conversions.fromPartitionString(type, value);
+  }
+
+  /**
+   * Formats a path-encoded partition name for user-facing display by URL-decoding each value
+   * component. Internal identity ({@link #toPartitionName}) stays path-encoded.
+   */
+  public static String formatPartitionNameForDisplay(String pathPartitionName) {
+    if (pathPartitionName == null || pathPartitionName.isEmpty() ||
+        DummyPartition.VOID.equals(pathPartitionName)) {
+      return pathPartitionName;
+    }
+    return formatPartitionNameSegments(pathPartitionName, IcebergTableUtil::decodePartitionPathLiteral);
+  }
+
+  /**
+   * Formats a display partition name back to the path-encoded form used for storage identity
+   * ({@link #toPartitionName}).
+   */
+  public static String formatPartitionNameForPath(String displayPartitionName) {
+    if (displayPartitionName == null || displayPartitionName.isEmpty() ||
+        DummyPartition.VOID.equals(displayPartitionName)) {
+      return displayPartitionName;
+    }
+    return formatPartitionNameSegments(displayPartitionName, IcebergTableUtil::encodePartitionPathLiteral);
+  }
+
+  private static String formatPartitionNameSegments(String partitionName, UnaryOperator<String> valueTransform) {
+    String[] segments = partitionName.split("/", -1);
+    String[] transformed = new String[segments.length];
+    for (int i = 0; i < segments.length; i++) {
+      String segment = segments[i];
+      int eq = segment.indexOf('=');
+      if (eq < 0) {
+        transformed[i] = segment;
+      } else {
+        transformed[i] = segment.substring(0, eq + 1) + valueTransform.apply(segment.substring(eq + 1));
+      }
+    }
+    return String.join("/", transformed);
+  }
+
+  /**
+   * Parses a path-encoded partition literal from {@link #toPartitionName} / {@code partitionToPath}
+   * for partition-column expression evaluation (PCR). Iceberg encodes via {@code URLEncoder.encode};
+   * timestamps use a human-readable form that {@link Conversions#fromPartitionString} does not parse.
+   */
+  public static Object parsePartitionLiteralFromPath(Type type, String pathEncodedValue) {
+    boolean isNullValue = NULL_VALUE.equalsIgnoreCase(pathEncodedValue) &&
+        !Types.StringType.get().equals(type);
+    if (isNullValue) {
+      return null;
+    }
+    String decoded = decodePartitionPathLiteral(pathEncodedValue);
+    switch (type.typeId()) {
+      case TIMESTAMP:
+      case TIMESTAMP_NANO:
+      case TIME:
+        Object icebergValue = Literal.of(decoded).to(type).value();
+        return HiveIdentityPartitionConverters.convertConstant(type, icebergValue);
+      default:
+        return parsePartitionValue(type, decoded);
+    }
+  }
+
+  private static String decodePartitionPathLiteral(String pathEncodedValue) {
+    try {
+      return URLDecoder.decode(pathEncodedValue, StandardCharsets.UTF_8);
+    } catch (IllegalArgumentException e) {
+      return pathEncodedValue;
+    }
+  }
+
+  private static String encodePartitionPathLiteral(String value) {
+    return URLEncoder.encode(value, StandardCharsets.UTF_8);
   }
 
   private static Expression buildFieldPredicate(Types.StructType partitionType,

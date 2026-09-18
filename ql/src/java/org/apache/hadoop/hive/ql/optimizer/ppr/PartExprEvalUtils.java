@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -91,6 +92,21 @@ public class PartExprEvalUtils {
       String partitionValue = entry.getValue();
       if (partitionValue.equals(defaultPartitionName)) {
         partValues.add(null); // Null for default partition.
+      } else if (DDLUtils.isIcebergTable(p.getTable())) {
+        FieldSchema partCol = p.getTable().getPartColByName(entry.getKey());
+        if (partCol == null) {
+          throw new HiveException("No partition column by the name: " + entry.getKey());
+        }
+        try {
+          Object javaValue = p.getTable().getStorageHandler().parsePartitionLiteralForExpr(
+              p.getTable(), partCol, partitionValue);
+          partValues.add(ObjectInspectorConverters.getConverter(
+              PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+                  TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i - 1])),
+              oi).convert(javaValue));
+        } catch (SemanticException e) {
+          throw new HiveException(e);
+        }
       } else {
         partValues.add(ObjectInspectorConverters.getConverter(
             PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi)

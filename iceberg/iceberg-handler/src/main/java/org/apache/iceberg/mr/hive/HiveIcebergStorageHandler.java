@@ -2373,6 +2373,27 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public Object parsePartitionLiteralForExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      FieldSchema partCol, String pathEncodedValue) throws SemanticException {
+    Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    Types.NestedField field = icebergTable.schema().findField(partCol.getName());
+    if (field == null) {
+      throw new SemanticException("No column by the name: " + partCol.getName());
+    }
+    return IcebergTableUtil.parsePartitionLiteralFromPath(field.type(), pathEncodedValue);
+  }
+
+  @Override
+  public String formatPartitionNameForDisplay(String pathPartitionName) {
+    return IcebergTableUtil.formatPartitionNameForDisplay(pathPartitionName);
+  }
+
+  @Override
+  public String formatPartitionNameForPath(String displayPartitionName) {
+    return IcebergTableUtil.formatPartitionNameForPath(displayPartitionName);
+  }
+
+  @Override
   public List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter,
       Boolean latestSpecOnly) throws SemanticException {
     Expression exp = HiveIcebergInputFormat.getFilterExpr(conf, (ExprNodeGenericFuncDesc) filter);

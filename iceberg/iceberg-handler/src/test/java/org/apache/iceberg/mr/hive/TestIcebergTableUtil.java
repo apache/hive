@@ -22,6 +22,8 @@ package org.apache.iceberg.mr.hive;
 import java.io.File;
 import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
@@ -38,8 +40,43 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class TestIcebergTableUtil {
+
+  @Test
+  public void testParsePartitionLiteralFromPathDecodesStringAndTimestamp() {
+    assertEquals("UPDATED NULLS",
+        IcebergTableUtil.parsePartitionLiteralFromPath(Types.StringType.get(), "UPDATED+NULLS"));
+    assertEquals("a b",
+        IcebergTableUtil.parsePartitionLiteralFromPath(Types.StringType.get(), "a+b"));
+
+    Object ts = IcebergTableUtil.parsePartitionLiteralFromPath(
+        Types.TimestampType.withoutZone(), "2024-08-09T14%3A08%3A26");
+    assertNotNull(ts);
+    assertEquals(Timestamp.valueOf("2024-08-09 14:08:26"), ts);
+  }
+
+  @Test
+  public void testFormatPartitionNameForDisplayDecodesPathValues() {
+    assertEquals("str_col=UPDATED NULLS",
+        IcebergTableUtil.formatPartitionNameForDisplay("str_col=UPDATED+NULLS"));
+    assertEquals("s=a b", IcebergTableUtil.formatPartitionNameForDisplay("s=a+b"));
+    assertEquals("s=a+b", IcebergTableUtil.formatPartitionNameForDisplay("s=a%2Bb"));
+    assertEquals("ts=2024-08-09T14:08:26",
+        IcebergTableUtil.formatPartitionNameForDisplay("ts=2024-08-09T14%3A08%3A26"));
+    assertEquals("s_trunc_2=tr/ts_month=2025-02",
+        IcebergTableUtil.formatPartitionNameForDisplay("s_trunc_2=tr/ts_month=2025-02"));
+    assertEquals(DummyPartition.VOID,
+        IcebergTableUtil.formatPartitionNameForDisplay(DummyPartition.VOID));
+    assertEquals("str_col=UPDATED+NULLS",
+        IcebergTableUtil.formatPartitionNameForPath("str_col=UPDATED NULLS"));
+    assertEquals("s=a+b", IcebergTableUtil.formatPartitionNameForPath("s=a b"));
+    assertEquals("s=a%2Bb", IcebergTableUtil.formatPartitionNameForPath("s=a+b"));
+    assertEquals("str_col=UPDATED+NULLS",
+        IcebergTableUtil.formatPartitionNameForPath(
+            IcebergTableUtil.formatPartitionNameForDisplay("str_col=UPDATED+NULLS")));
+  }
 
   private static final Schema SCHEMA = new Schema(
       Types.NestedField.optional(1, "first_name", Types.StringType.get()),
