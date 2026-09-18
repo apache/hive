@@ -42,6 +42,11 @@ alter table ice_orc create tag v1;
 
 alter table ice_orc set partition spec(company_id, dept_id);
 insert into ice_orc VALUES ('fn4','ln4', 1, 11, 100);
+insert into ice_orc VALUES ('fn41','ln41', 1, 11, 100);
+insert into ice_orc VALUES ('fn42','ln42', 1, 11, 100);
+insert into ice_orc VALUES ('fn43','ln43', 1, 11, 100);
+insert into ice_orc VALUES ('fn44','ln44', 1, 11, 100);
+insert into ice_orc VALUES ('fn45','ln45', 1, 11, 100);
 insert into ice_orc VALUES ('fn5','ln5', 2, 20, 100);
 insert into ice_orc VALUES ('fn6','ln6', 2, 20, 100);
 insert into ice_orc VALUES (null,null, null, null, null);
