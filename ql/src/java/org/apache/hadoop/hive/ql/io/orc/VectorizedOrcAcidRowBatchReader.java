@@ -706,7 +706,8 @@ public class VectorizedOrcAcidRowBatchReader
     return keyIntervalTmp;
   }
 
-  private static class ReaderData implements Closeable {
+  @VisibleForTesting
+  static class ReaderData implements Closeable {
     OrcTail orcTail;
     Reader reader;
 
@@ -728,12 +729,15 @@ public class VectorizedOrcAcidRowBatchReader
    * @return ReaderData object where the orcTail is not null. Reader can be null, but if we had to create
    * one we return that as well for further reuse.
    */
-  private static ReaderData getOrcReaderData(Path path, Configuration conf, CacheTag cacheTag, Object fileKey) throws IOException {
+  @VisibleForTesting
+  static ReaderData getOrcReaderData(Path path, Configuration conf, CacheTag cacheTag, Object fileKey)
+      throws IOException {
     ReaderData readerData = new ReaderData();
     if (shouldReadDeleteDeltasWithLlap(conf, true)) {
       try {
         readerData.orcTail = LlapProxy.getIo().getOrcTailFromCache(path, conf, cacheTag, fileKey);
         readerData.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).orcTail(readerData.orcTail));
+        return readerData;
       } catch (IllegalCacheConfigurationException icce) {
         throw new IOException("LLAP cache is not configured properly while delete delta caching is turned on", icce);
       }
