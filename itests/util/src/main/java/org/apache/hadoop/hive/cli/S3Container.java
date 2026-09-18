@@ -36,7 +36,6 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -60,20 +59,19 @@ public final class S3Container {
   private static final int DOWNLOAD_CONNECT_TIMEOUT_MS = 30_000;
   private static final int DOWNLOAD_READ_TIMEOUT_MS = 60_000;
   private GenericContainer<?> container;
-  private final BucketSpec bucketSpec;
+  private final Bucket bucket;
 
-  public S3Container(BucketSpec bucketSpec) {
-    this.bucketSpec = bucketSpec;
+  public S3Container(Bucket bucket) {
+    this.bucket = bucket;
   }
 
   @SuppressWarnings("resource")
   public void start() {
-    String bucket = bucketSpec.bucket();
     container = new GenericContainer<>(RUSTFS_IMAGE)
         .withExposedPorts(S3_PORT, 9001)
         .withCreateContainerCmdModifier(cmd ->
             cmd.withEntrypoint("/bin/sh", "-c",
-                "mkdir -p /data/" + bucket + " && exec /entrypoint.sh rustfs"))
+                "mkdir -p /data/" + bucket.name + " && exec /entrypoint.sh rustfs"))
         .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)))
         .withLogConsumer(outputFrame -> LOG.debug(outputFrame.getUtf8String().trim()));
     container.start();
@@ -85,9 +83,7 @@ public final class S3Container {
   private void uploadDataToS3() {
     Configuration conf = new Configuration();
     applyS3Settings(conf);
-    String bucket = bucketSpec.bucket();
-    String keyPrefix = bucketSpec.keyPrefix();
-    try (FileSystem fs = FileSystem.get(URI.create("s3a://" + bucket), conf)) {
+    try (FileSystem fs = FileSystem.get(URI.create("s3a://" + bucket.name), conf)) {
       int count = 0;
       try (ZipInputStream zis = new ZipInputStream(new FileInputStream(dataPath().toFile()))) {
         ZipEntry entry;
@@ -95,8 +91,8 @@ public final class S3Container {
           if (entry.isDirectory()) {
             continue;
           }
-          String key = keyPrefix.isEmpty() ? entry.getName() : keyPrefix + "/" + entry.getName();
-          Path s3Path = new Path("s3a://" + bucket + "/" + key);
+          String key = bucket.keyPrefix + entry.getName();
+          Path s3Path = new Path("s3a://" + bucket.name + "/" + key);
           try (OutputStream os = fs.create(s3Path, true)) {
             byte[] buf = new byte[8192];
             int len;
@@ -107,7 +103,7 @@ public final class S3Container {
           count++;
         }
       }
-      LOG.info("Uploaded {} files to s3a://{}", count, bucket);
+      LOG.info("Uploaded {} files to s3a://{}", count, bucket.name);
     } catch (IOException e) {
       throw new RuntimeException("Failed to upload data to S3 container", e);
     }
@@ -123,8 +119,8 @@ public final class S3Container {
         Files.createDirectories(file.getParent());
         java.nio.file.Path tmp = Files.createTempFile(file.getParent(), "download-", ".tmp");
         try {
-          LOG.info("Downloading data from {} to {}", bucketSpec.dataUrl, file);
-          FileUtils.copyURLToFile(bucketSpec.dataUrl, tmp.toFile(),
+          LOG.info("Downloading data from {} to {}", bucket.dataUrl, file);
+          FileUtils.copyURLToFile(bucket.dataUrl, tmp.toFile(),
               DOWNLOAD_CONNECT_TIMEOUT_MS, DOWNLOAD_READ_TIMEOUT_MS);
           Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
@@ -132,14 +128,14 @@ public final class S3Container {
           throw e;
         }
       }
-      LOG.info("Data from {} are available in {}", bucketSpec.dataUrl, file);
+      LOG.info("Data from {} are available in {}", bucket.dataUrl, file);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
   }
 
   private java.nio.file.Path dataPath() {
-    return CACHE.resolve(URLEncoder.encode(bucketSpec.dataUrl.toString(), StandardCharsets.UTF_8));
+    return CACHE.resolve(URLEncoder.encode(bucket.dataUrl.toString(), StandardCharsets.UTF_8));
   }
 
   public void stop() {
@@ -169,27 +165,18 @@ public final class S3Container {
     conf.set("fs.AbstractFileSystem.s3.impl", "org.apache.hadoop.fs.s3a.S3A");
   }
 
-  public static class BucketSpec {
-    String bucketName;
-    URL dataUrl;
+  public record Bucket(String name, String keyPrefix, URL dataUrl) {
 
-    public BucketSpec(String bucketName, String dataUrl) {
-      this.bucketName = bucketName;
+    public Bucket(String name, String keyPrefix, String dataUrl) {
+      this(name, keyPrefix, toUrl(dataUrl));
+    }
+
+    private static URL toUrl(String url) {
       try {
-        this.dataUrl = new URI(dataUrl).toURL();
-      } catch (MalformedURLException | URISyntaxException e) {
-        throw new IllegalArgumentException(e);
+        return URI.create(url).toURL();
+      } catch (MalformedURLException e) {
+        throw new IllegalArgumentException("Invalid URL: " + url, e);
       }
-    }
-
-    String bucket() {
-      int slash = bucketName.indexOf('/');
-      return slash > 0 ? bucketName.substring(0, slash) : bucketName;
-    }
-
-    String keyPrefix() {
-      int slash = bucketName.indexOf('/');
-      return slash > 0 ? bucketName.substring(slash + 1) : "";
     }
   }
 }

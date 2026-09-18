@@ -411,10 +411,11 @@ public class CliConfigs {
 
       setInitScript("q_init_tpcds_iceberg.sql");
       setCleanupScript("q_test_cleanup_tez.sql");
-      S3Container.BucketSpec bucketSpec = new S3Container.BucketSpec(
-          "dw-team-bucket/data/warehouse/tablespace/external/hive/tpcds_partitioned_iceberg_parquet_10000.db",
+      S3Container.Bucket bucket = new S3Container.Bucket(
+          "dw-team-bucket",
+          "data/warehouse/tablespace/external/hive/tpcds_partitioned_iceberg_parquet_10000.db/",
           "https://github.com/zabetak/hive-test-datasets/releases/download/1.1/iceberg_s3_tpcds10tb.zip");
-      setS3Bucket(bucketSpec);
+      setS3Bucket(bucket);
       setHiveConfDir("data/conf/llap");
       // Restore hooks to their default values and remove noise from the out file
       Map<HiveConf.ConfVars, String> conf = new EnumMap<>(HiveConf.ConfVars.class);

@@ -408,7 +408,7 @@ public class QTestMiniClusters {
   }
 
   private void setupS3(HiveConf conf) {
-    S3Container.BucketSpec bucket = testArgs.getS3BucketSpec();
+    S3Container.Bucket bucket = testArgs.getS3Bucket();
     if(bucket == null) {
       return;
     }
