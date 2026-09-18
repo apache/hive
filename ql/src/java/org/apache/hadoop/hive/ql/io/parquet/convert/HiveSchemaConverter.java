@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.parquet.schema.ConversionPatterns;
@@ -113,6 +114,19 @@ public class HiveSchemaConverter {
         } else {
           return Types.primitive(PrimitiveTypeName.INT96, repetition).named(name);
         }
+      } else if (typeInfo instanceof TimestampLocalTZTypeInfo) {
+        // Always written as INT64 isAdjustedToUTC=true: TIMESTAMP WITH LOCAL TIME ZONE is a
+        // genuine UTC instant and has no INT96 equivalent (INT96 carries no UTC-adjustment flag).
+        String timeUnitVal;
+        if (conf != null) {
+          timeUnitVal = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_TIME_UNIT);
+        } else { //use defaults
+          timeUnitVal = HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_TIME_UNIT.defaultStrVal;
+        }
+        LogicalTypeAnnotation.TimeUnit timeUnit =
+            LogicalTypeAnnotation.TimeUnit.valueOf(timeUnitVal.toUpperCase());
+        return Types.primitive(PrimitiveTypeName.INT64, repetition)
+            .as(LogicalTypeAnnotation.timestampType(true, timeUnit)).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.voidTypeInfo)) {
         throw new UnsupportedOperationException("Void type not implemented");
       } else if (typeInfo.getTypeName().toLowerCase().startsWith(

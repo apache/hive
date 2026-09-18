@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
@@ -163,6 +165,8 @@ public class DataWritableWriter {
           return new BinaryDataWriter((BinaryObjectInspector)inspector);
         case TIMESTAMP:
           return new TimestampDataWriter((TimestampObjectInspector)inspector);
+        case TIMESTAMPLOCALTZ:
+          return new TimestampLocalTZDataWriter((TimestampLocalTZObjectInspector)inspector);
         case DECIMAL:
           return new DecimalDataWriter((HiveDecimalObjectInspector) inspector,
               getSchemaDecimalTypeInfo(type, (HiveDecimalObjectInspector) inspector));
@@ -258,6 +262,9 @@ public class DataWritableWriter {
     private boolean isValidValue(Object fieldValue, DataWriter writer) {
       if (writer instanceof TimestampDataWriter) {
         return ((TimestampDataWriter) writer).isValidTimestamp(fieldValue);
+      }
+      if (writer instanceof TimestampLocalTZDataWriter) {
+        return ((TimestampLocalTZDataWriter) writer).isValidTimestamp(fieldValue);
       }
       return true;
     }
@@ -576,6 +583,37 @@ public class DataWritableWriter {
       if (useInt64 && timeUnit == LogicalTypeAnnotation.TimeUnit.NANOS) {
         Timestamp ts = inspector.getPrimitiveJavaObject(fieldValue);
         return ParquetTimestampUtils.getInt64(ts, timeUnit) != null;
+      }
+      return true;
+    }
+  }
+
+  private class TimestampLocalTZDataWriter implements DataWriter {
+    private TimestampLocalTZObjectInspector inspector;
+    LogicalTypeAnnotation.TimeUnit timeUnit;
+
+    public TimestampLocalTZDataWriter(TimestampLocalTZObjectInspector inspector) {
+      this.inspector = inspector;
+      String timeUnitVal;
+      if (conf != null) {
+        timeUnitVal = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_TIME_UNIT);
+      } else { //use defaults
+        timeUnitVal = HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_TIME_UNIT.defaultStrVal;
+      }
+      timeUnit = LogicalTypeAnnotation.TimeUnit.valueOf(timeUnitVal.toUpperCase());
+    }
+
+    @Override
+    public void write(Object value) {
+      TimestampTZ tstz = inspector.getPrimitiveJavaObject(value);
+      recordConsumer.addLong(ParquetTimestampUtils.getInt64(tstz, timeUnit));
+    }
+
+    boolean isValidTimestamp(Object fieldValue) {
+      // only check if time unit is nanos
+      if (timeUnit == LogicalTypeAnnotation.TimeUnit.NANOS) {
+        TimestampTZ tstz = inspector.getPrimitiveJavaObject(fieldValue);
+        return ParquetTimestampUtils.getInt64(tstz, timeUnit) != null;
       }
       return true;
     }

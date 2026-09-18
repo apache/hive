@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -112,6 +113,8 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return ParquetPrimitiveInspectorFactory.parquetStringInspector;
     }  else if (typeInfo instanceof DecimalTypeInfo) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo) typeInfo);
+    } else if (typeInfo instanceof TimestampLocalTZTypeInfo) {
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((TimestampLocalTZTypeInfo) typeInfo);
     } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
       return new ArrayWritableObjectInspector(false, (StructTypeInfo) typeInfo, (StructTypeInfo) prunedTypeInfo);
     } else if (typeInfo.getCategory().equals(Category.LIST)) {

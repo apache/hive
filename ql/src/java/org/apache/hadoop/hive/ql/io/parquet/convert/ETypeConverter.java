@@ -31,6 +31,7 @@ import java.util.TimeZone;
 import com.google.common.base.MoreObjects;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
@@ -44,11 +45,13 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -455,7 +458,6 @@ public enum ETypeConverter {
             }
           };
         case serdeConstants.TIMESTAMP_TYPE_NAME:
-        case serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME:
           if (type.getLogicalTypeAnnotation() instanceof TimestampLogicalTypeAnnotation) {
             TimestampLogicalTypeAnnotation logicalType =
                 (TimestampLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
@@ -465,6 +467,21 @@ public enum ETypeConverter {
                 Timestamp timestamp =
                     ParquetTimestampUtils.getTimestamp(value, logicalType.getUnit(), logicalType.isAdjustedToUTC());
                 parent.set(index, new TimestampWritableV2(timestamp));
+              }
+            };
+          }
+          throw new IllegalStateException("Cannot reliably convert INT64 value to timestamp without type annotation");
+        case serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME:
+          if (type.getLogicalTypeAnnotation() instanceof TimestampLogicalTypeAnnotation) {
+            TimestampLogicalTypeAnnotation logicalType =
+                (TimestampLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+            final ZoneId zoneId = ((TimestampLocalTZTypeInfo) hiveTypeInfo).getTimeZone();
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(final long value) {
+                TimestampTZ timestampTZ =
+                    ParquetTimestampUtils.getTimestampTZ(value, logicalType.getUnit(), zoneId);
+                parent.set(index, new TimestampLocalTZWritable(timestampTZ));
               }
             };
           }
