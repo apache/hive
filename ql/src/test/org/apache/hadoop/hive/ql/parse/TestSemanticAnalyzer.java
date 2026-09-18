@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -674,6 +675,117 @@ public class TestSemanticAnalyzer {
     }
     for (String query : tolerated) {
       assertNotNull(analyzeWithCbo(query, true));
+    }
+  }
+
+  // ==== HIVE-30037: ORDER BY ordinals when CBO declines the statement ====
+
+  @Test
+  public void testOrderByOrdinalResolvedWhenCboDeclinesTablesample() throws Exception {
+    assertOrderByOrdinalResolvedOnCboDecline(
+        "select key from table1 tablesample (2 rows) order by 1 desc");
+  }
+
+  @Test
+  public void testOrderByOrdinalResolvedWhenCboDeclinesSortByLimitSubquery() throws Exception {
+    assertOrderByOrdinalResolvedOnCboDecline(
+        "select key from (select key from table1 sort by key limit 5) s order by 1 desc");
+  }
+
+  @Test
+  public void testOrderByOrdinalStillSortedWhenCboHandlesStatement() throws Exception {
+    AnalyzedQuery analyzed = analyzeQueryWithCbo(
+        "select key from table1 order by 1 desc");
+    assertTrue(analyzed.analyzer.getCboInfo(),
+        analyzed.analyzer.getCboInfo().contains("Plan optimized by CBO"));
+    assertReduceSinkHasSortKeys(analyzed.analyzer);
+  }
+
+  private void assertOrderByOrdinalResolvedOnCboDecline(String query) throws Exception {
+    AnalyzedQuery analyzed = analyzeQueryWithCbo(query);
+    assertTrue(analyzed.analyzer.getCboInfo(),
+        analyzed.analyzer.getCboInfo() != null
+            && analyzed.analyzer.getCboInfo().contains("not optimized by CBO"));
+    ASTNode orderByRef = findFirstOrderByRef(analyzed.ast);
+    assertNotNull("expected an ORDER BY expression in " + query, orderByRef);
+    assertTrue("ORDER BY ordinal should be substituted, got token type="
+            + orderByRef.getType() + " text=" + orderByRef.getText()
+            + " cboInfo=" + analyzed.analyzer.getCboInfo(),
+        orderByRef.getType() != HiveParser.Number);
+    assertReduceSinkHasSortKeys(analyzed.analyzer);
+  }
+
+  private AnalyzedQuery analyzeQueryWithCbo(String query) throws Exception {
+    HiveConf cboConf = new HiveConf(conf);
+    cboConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
+    cboConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+    SessionState.start(cboConf);
+    Context ctx = new Context(cboConf);
+    ASTNode astNode = ParseUtils.parse(query, ctx);
+    QueryState queryState = new QueryState.Builder().withHiveConf(cboConf).build();
+    BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory.get(queryState, astNode);
+    analyzer.initCtx(ctx);
+    try {
+      analyzer.analyze(astNode, ctx);
+    } finally {
+      analyzer.endAnalysis(astNode);
+    }
+    return new AnalyzedQuery(analyzer, astNode);
+  }
+
+  private static void assertReduceSinkHasSortKeys(BaseSemanticAnalyzer analyzer) {
+    assertTrue("expected a SemanticAnalyzer with a sink op",
+        analyzer instanceof SemanticAnalyzer);
+    ReduceSinkOperator rs = findReduceSink(((SemanticAnalyzer) analyzer).getSinkOp());
+    assertNotNull("expected a ReduceSink for ORDER BY", rs);
+    assertFalse("ReduceSink should keep the ORDER BY key; empty keys mean the ordinal was dropped",
+        rs.getConf().getKeyCols() == null || rs.getConf().getKeyCols().isEmpty());
+  }
+
+  private static ASTNode findFirstOrderByRef(ASTNode node) {
+    if (node.getType() == HiveParser.TOK_ORDERBY && node.getChildCount() > 0
+        && node.getChild(0).getChildCount() > 0) {
+      ASTNode colNode = (ASTNode) node.getChild(0).getChild(0);
+      if (colNode != null && colNode.getChildCount() > 0) {
+        return (ASTNode) colNode.getChild(0);
+      }
+    }
+    if (node.getChildren() == null) {
+      return null;
+    }
+    for (int i = 0; i < node.getChildCount(); i++) {
+      ASTNode found = findFirstOrderByRef((ASTNode) node.getChild(i));
+      if (found != null) {
+        return found;
+      }
+    }
+    return null;
+  }
+
+  @SuppressWarnings("rawtypes")
+  private static ReduceSinkOperator findReduceSink(Operator op) {
+    if (op instanceof ReduceSinkOperator) {
+      return (ReduceSinkOperator) op;
+    }
+    if (op == null || op.getParentOperators() == null) {
+      return null;
+    }
+    for (Operator parent : op.getParentOperators()) {
+      ReduceSinkOperator found = findReduceSink(parent);
+      if (found != null) {
+        return found;
+      }
+    }
+    return null;
+  }
+
+  private static final class AnalyzedQuery {
+    final BaseSemanticAnalyzer analyzer;
+    final ASTNode ast;
+
+    AnalyzedQuery(BaseSemanticAnalyzer analyzer, ASTNode ast) {
+      this.analyzer = analyzer;
+      this.ast = ast;
     }
   }
 

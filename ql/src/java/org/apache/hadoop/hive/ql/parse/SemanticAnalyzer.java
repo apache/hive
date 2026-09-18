@@ -14239,6 +14239,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Process the position alias in GROUPBY and ORDERBY
   void processPositionAlias(ASTNode ast) throws SemanticException {
+    // When CBO is enabled, ORDER BY ordinals are resolved in CalcitePlanner.genSortByKey.
+    // If CBO later declines the statement, CalcitePlanner.genOPTree calls this again with
+    // processOrderByPositionAlias=true so the legacy planner does not compile the ordinal
+    // as a constant sort key (HIVE-30037).
+    processPositionAlias(ast, !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED));
+  }
+
+  void processPositionAlias(ASTNode ast, boolean processOrderByPositionAlias) throws SemanticException {
     boolean isBothByPos = HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS);
     boolean isGbyByPos = isBothByPos
         || HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_POSITION_ALIAS);
@@ -14301,10 +14309,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
 
-        // replace each of the position alias in ORDERBY with the actual column name,
-        // if cbo is enabled, orderby position will be processed in genPlan
-        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
-            && orderbyNode != null) {
+        // replace each of the position alias in ORDERBY with the actual column name.
+        // When CBO actually plans the statement, ordinals are resolved in genSortByKey.
+        if (processOrderByPositionAlias && orderbyNode != null) {
           isAllCol = false;
           for (int child_pos = 0; child_pos < selectNode.getChildCount(); ++child_pos) {
             ASTNode node = (ASTNode) selectNode.getChild(child_pos).getChild(0);
