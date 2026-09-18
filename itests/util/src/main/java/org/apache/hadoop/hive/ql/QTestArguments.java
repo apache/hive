@@ -124,6 +124,10 @@ public final class QTestArguments {
     this.customConfigValueMap = customConfigValueMap;
   }
 
+  private void setS3Bucket(S3Container.Bucket s3Bucket) {
+    this.s3Bucket = s3Bucket;
+  }
+
   public S3Container.Bucket getS3Bucket() {
     return s3Bucket;
   }
@@ -221,7 +225,7 @@ public final class QTestArguments {
       testArguments.setInitScript(initScript);
       testArguments.setCleanupScript(cleanupScript);
       testArguments.setWithLlapIo(withLlapIo);
-      testArguments.s3Bucket = this.s3Bucket;
+      testArguments.setS3Bucket(s3Bucket);
       testArguments.setFsType(
           fsType != null ? fsType : clusterType.getDefaultFsType());
 
