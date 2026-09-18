@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.ToIntFunction;
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -52,7 +54,8 @@ import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 
-final class ParquetVariantRecordReader implements RecordReader<NullWritable, VectorizedRowBatch> {
+final class ParquetVariantRecordReader
+    implements RecordReader<NullWritable, VectorizedRowBatch>, RowPositionAwareVectorizedRecordReader {
 
   private static final String INVALID_VARIANT_STRUCT = "Invalid Variant struct for column ";
 
@@ -137,11 +140,11 @@ final class ParquetVariantRecordReader implements RecordReader<NullWritable, Vec
     // If the underlying Hive Parquet reader already computed row-group filtering (e.g. from SARG),
     // we must use the exact same blocks to keep this reader aligned with the delegate.
     if (delegate instanceof ParquetRecordReaderBase parquetDelegate) {
+      // The delegate's answer is the whole answer, including when it holds none: an empty list means it
+      // filtered every row group out, and null means it found none to read at all. Falling back to the
+      // split's own row groups would read one the delegate has already ruled out.
       List<BlockMetaData> filteredBlocks = parquetDelegate.getFilteredBlocks();
-      // Treat an empty list as authoritative (delegate filtered out all row groups).
-      if (filteredBlocks != null) {
-        return filteredBlocks;
-      }
+      return filteredBlocks != null ? filteredBlocks : Collections.emptyList();
     }
     // Fallback: compute blocks from split boundaries
     List<BlockMetaData> splitBlocks = Lists.newArrayList();
@@ -152,6 +155,20 @@ final class ParquetVariantRecordReader implements RecordReader<NullWritable, Vec
       }
     }
     return splitBlocks;
+  }
+
+  /**
+   * Row positions come from the reader this wraps. Without this the wrapper hides the delegate's
+   * {@link RowPositionAwareVectorizedRecordReader}, and every row of a VARIANT table is handed the unknown
+   * position marker instead - which ROW__POSITION, row lineage and positional deletes all rely on.
+   */
+  @Override
+  public long getRowNumber() throws IOException {
+    if (delegate instanceof RowPositionAwareVectorizedRecordReader positionAware) {
+      return positionAware.getRowNumber();
+    }
+    throw new UnsupportedOperationException(
+        "The reader under " + delegate.getClass().getName() + " cannot report row positions");
   }
 
   @Override
