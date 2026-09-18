@@ -601,6 +601,8 @@ final public class OrcStruct implements Writable {
             TypeInfoFactory.getVarcharTypeInfo(type.getMaximumLength()));
       case TIMESTAMP:
         return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+      case TIMESTAMP_INSTANT:
+        return PrimitiveObjectInspectorFactory.writableTimestampTZObjectInspector;
       case DATE:
         return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
       case DECIMAL:
