@@ -118,15 +118,10 @@ public final class S3Container {
       if (!Files.exists(file)) {
         Files.createDirectories(file.getParent());
         java.nio.file.Path tmp = Files.createTempFile(file.getParent(), "download-", ".tmp");
-        try {
-          LOG.info("Downloading data from {} to {}", bucket.dataUrl, file);
-          FileUtils.copyURLToFile(bucket.dataUrl, tmp.toFile(),
-              DOWNLOAD_CONNECT_TIMEOUT_MS, DOWNLOAD_READ_TIMEOUT_MS);
-          Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException e) {
-          Files.deleteIfExists(tmp);
-          throw e;
-        }
+        LOG.info("Downloading data from {} to {}", bucket.dataUrl, file);
+        FileUtils.copyURLToFile(bucket.dataUrl, tmp.toFile(),
+            DOWNLOAD_CONNECT_TIMEOUT_MS, DOWNLOAD_READ_TIMEOUT_MS);
+        Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE);
       }
       LOG.info("Data from {} are available in {}", bucket.dataUrl, file);
     } catch (IOException e) {
