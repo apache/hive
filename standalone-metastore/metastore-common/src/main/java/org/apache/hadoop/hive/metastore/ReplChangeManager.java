@@ -590,6 +590,14 @@ public class ReplChangeManager {
       }
       if (encryptionZoneToCmrootMapping.containsKey(encryptionZonePath)) {
         cmroot = new Path(encryptionZoneToCmrootMapping.get(encryptionZonePath));
+        FileSystem cmFs = cmroot.getFileSystem(conf);
+        if (!cmFs.exists(cmroot)) {
+          synchronized (instance) {
+            if (!cmFs.exists(cmroot)) {
+              createCmRoot(cmroot);
+            }
+          }
+        }
       } else {
         cmroot = new Path(cmrootDir);
         synchronized (instance) {
