@@ -68,9 +68,12 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -294,6 +297,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     isFullOuterMapJoin = (condn.length == 1 && condn[0].getType() == JoinDesc.FULL_OUTER_JOIN);
     if (isFullOuterMapJoin) {
       fullOuterBigTableRetainSize = conf.getRetainList().get(posBigTable).size();
+      if (conf.isDynamicPartitionHashJoin()) {
+        correctSmallTableValueObjectInspectors();
+      }
     } else {
       fullOuterBigTableRetainSize = 0;
     }
@@ -725,6 +731,94 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         internalForward(standardCopyRow, outputObjInspector);
       }
     }
+  }
+
+  /**
+   * For a FULL OUTER MapJoin using a dynamic partitioned hash join, the small table's runtime
+   * value struct can have a filter-tag column appended after MapJoinDesc#getExprs() computed its
+   * cached ExprNodeColumnDesc column names, shifting the positions of the columns that follow it.
+   * Those cached names go stale relative to the shifted layout, so looking a column up by name can
+   * resolve to the wrong runtime field (and object inspector), producing a type mismatch such as a
+   * ClassCastException when the value is later read using that stale type.
+   *
+   * MapJoinDesc#getValueIndex(alias) is a positional accessor into that same runtime struct and is
+   * unaffected by the shift. Use it to correct the small table field types in
+   * joinValuesStandardObjectInspectors (and, transitively, outputObjInspector) once, during
+   * initializeOp, so every downstream operator's input-side evaluators see the corrected types too.
+   */
+  private void correctSmallTableValueObjectInspectors() {
+    if (joinValuesStandardObjectInspectors == null || order == null
+        || inputObjInspectors == null || !(outputObjInspector instanceof StructObjectInspector)) {
+      return;
+    }
+
+    boolean corrected = false;
+    for (Byte alias : order) {
+      int[] valueIndex = conf.getValueIndex(alias);
+      List<ObjectInspector> aliasOIs = joinValuesStandardObjectInspectors[alias];
+      if (valueIndex == null || aliasOIs == null
+          || alias >= inputObjInspectors.length
+          || !(inputObjInspectors[alias] instanceof StructObjectInspector)) {
+        continue;
+      }
+
+      StructObjectInspector aliasStructOI = (StructObjectInspector) inputObjInspectors[alias];
+      for (int i = 0; i < valueIndex.length && i < aliasOIs.size(); i++) {
+        final int index = valueIndex[i];
+        ObjectInspector correctFieldOI = (index >= 0)
+            ? getSmallTableStructFieldOI(aliasStructOI, Utilities.ReduceField.KEY.toString(), index)
+            : getSmallTableStructFieldOI(
+                aliasStructOI, Utilities.ReduceField.VALUE.toString(), -index - 1);
+        if (correctFieldOI != null) {
+          aliasOIs.set(i, correctFieldOI);
+          corrected = true;
+        }
+      }
+    }
+
+    if (!corrected) {
+      return;
+    }
+
+    List<ObjectInspector> flattenedFieldOIs = new ArrayList<>();
+    for (Byte alias : order) {
+      List<ObjectInspector> aliasOIs = getValueObjectInspectors(alias, joinValuesStandardObjectInspectors);
+      if (aliasOIs != null && !aliasOIs.isEmpty()) {
+        flattenedFieldOIs.addAll(aliasOIs);
+      }
+    }
+    outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
+        conf.getOutputColumnNames(), flattenedFieldOIs);
+  }
+
+  /**
+   * Looks up subStructFieldName (KEY or VALUE) in smallTableStructOI and returns the object
+   * inspector at the given position within that sub-struct, or null if smallTableStructOI isn't
+   * actually shaped as a ReduceSink KEY/VALUE struct (the field is absent, or present but not
+   * itself a struct) or the position is out of range.
+   *
+   * StructObjectInspector#getStructFieldRef throws instead of returning null when the field name
+   * isn't found, so field existence is checked explicitly first.
+   */
+  private ObjectInspector getSmallTableStructFieldOI(
+      StructObjectInspector smallTableStructOI, String subStructFieldName, int position) {
+    StructField subStructField = null;
+    for (StructField field : smallTableStructOI.getAllStructFieldRefs()) {
+      if (field.getFieldName().equalsIgnoreCase(subStructFieldName)) {
+        subStructField = field;
+        break;
+      }
+    }
+    if (subStructField == null
+        || !(subStructField.getFieldObjectInspector() instanceof StructObjectInspector)) {
+      return null;
+    }
+    List<? extends StructField> subFields =
+        ((StructObjectInspector) subStructField.getFieldObjectInspector()).getAllStructFieldRefs();
+    if (position < 0 || position >= subFields.size()) {
+      return null;
+    }
+    return subFields.get(position).getFieldObjectInspector();
   }
 
   @Override
