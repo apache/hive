@@ -196,9 +196,9 @@ public final class IcebergStoredStats {
   }
 
   /**
-   * The fields the stored statistics state for the snapshot. Which file answers is the same
-   * question for every column and costs a walk of the snapshot's parentage, so it is asked once
-   * for the query rather than once per column asked about.
+   * The fields the stored statistics describe for the snapshot. Finding the file that answers
+   * costs a walk of the snapshot's parentage and gives the same answer for every column, so the
+   * result is cached for the query rather than computed once per column.
    */
   private static Set<Integer> storedFieldIds(Table table, Snapshot snapshot, Configuration conf) {
     boolean partitionLevel = IcebergTableUtil.isPartitionStats(table, conf);

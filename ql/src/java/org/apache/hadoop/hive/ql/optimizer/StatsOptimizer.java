@@ -502,8 +502,8 @@ public class StatsOptimizer extends Transform {
                 oneRow.add(isSet ? DateSubType.DAYS.cast(bound.getDaysSinceEpoch()) : null);
               }
               default -> {
-                Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
-                    "metadata optimizer for column : " + colName);
+                Logger.debug("Unsupported type: {} encountered in metadata optimizer for column: {}",
+                    colDesc.getTypeString(), colName);
                 return null;
               }
             }
@@ -640,7 +640,7 @@ public class StatsOptimizer extends Transform {
         }
         ColumnStatisticsObj stat = colStatsByName == null ? null : colStatsByName.get(colName);
         if (stat == null) {
-          Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
+          Logger.debug("No stats for {} column {}", tbl.getTableName(), colName);
           return null;
         }
         return stat.getStatsData();
@@ -658,8 +658,7 @@ public class StatsOptimizer extends Transform {
       /** The table's own statistics, taken only while they still describe it. */
       private Map<String, ColumnStatisticsObj> tableColStats() throws HiveException {
         if (!StatsUtils.areColumnStatsUptoDateForQueryAnswering(tbl, tbl.getParameters(), colNames)) {
-          Logger.debug("Stats for table : " + tbl.getTableName() + " columns " + colNames
-              + " are not up to date.");
+          Logger.debug("Stats for table {} columns {} are not up to date.", tbl.getTableName(), colNames);
           return null;
         }
         return indexByColumnName(hive.getTableColumnStatistics(tbl, colNames, true));
@@ -674,7 +673,7 @@ public class StatsOptimizer extends Transform {
         // below, which is told the partitions this query pruned to
         if (tbl.isNonNative()) {
           if (!StatsUtils.checkCanProvideColumnStats(tbl)) {
-            Logger.debug("Table : " + tbl.getTableName() + " provides no column statistics.");
+            Logger.debug("Table {} provides no column statistics.", tbl.getTableName());
             return null;
           }
           if (answeredByTableStats()) {
@@ -685,8 +684,7 @@ public class StatsOptimizer extends Transform {
           for (Partition part : parts) {
             if (!StatsUtils.areColumnStatsUptoDateForQueryAnswering(
                 part.getTable(), part.getParameters(), colNames)) {
-              Logger.debug("Stats for part : " + part.getSpec() + " columns " + colNames
-                  + " are not up to date.");
+              Logger.debug("Stats for partition {} columns {} are not up to date.", part.getSpec(), colNames);
               return null;
             }
             partNames.add(part.getName());
@@ -704,12 +702,12 @@ public class StatsOptimizer extends Transform {
           throw new HiveException(e);
         }
         if (aggrStats == null || aggrStats.getColStats() == null) {
-          Logger.debug("No stats for " + tbl.getTableName() + " columns " + colNames);
+          Logger.debug("No stats for {} columns {}", tbl.getTableName(), colNames);
           return null;
         }
         if (aggrStats.getPartsFound() != parts.size()) {
           // a partition whose statistics are missing would leave the answer describing a subset
-          Logger.debug("Received " + aggrStats.getPartsFound() + " stats for " + parts.size() + " partitions");
+          Logger.debug("Received {} stats for {} partitions", aggrStats.getPartsFound(), parts.size());
           return null;
         }
         return indexByColumnName(aggrStats.getColStats());
@@ -783,8 +781,8 @@ public class StatsOptimizer extends Transform {
       }
       Long nullCnt = getNullCountFor(type, statData);
       if (nullCnt == null) {
-        Logger.debug("Unsupported type: " + desc.getTypeString() + " encountered in "
-            + "metadata optimizer for column : " + colName);
+        Logger.debug("Unsupported type: {} encountered in metadata optimizer for column: {}",
+            desc.getTypeString(), colName);
         return null;
       }
       return rowCnt - nullCnt;

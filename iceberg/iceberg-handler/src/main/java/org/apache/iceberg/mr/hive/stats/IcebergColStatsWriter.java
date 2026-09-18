@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
@@ -323,7 +322,7 @@ public final class IcebergColStatsWriter {
       // added back keeps its name while taking a new field
       Schema schema = tbl.schema();
       // a carry takes every column the blob holds, minus the fields the schema has since dropped
-      IntPredicate liveFields = IcebergColStatsReader.neededFields(schema, null);
+      Set<Integer> liveFields = IcebergColStatsReader.columnFieldIds(schema, null);
 
       if (seedFromStored) {
         aggregate.seedFrom(reader, carried.size(), schema);

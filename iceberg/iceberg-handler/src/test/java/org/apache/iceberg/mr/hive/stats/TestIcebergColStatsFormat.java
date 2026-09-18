@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -118,7 +117,7 @@ public class TestIcebergColStatsFormat {
     ByteBuffer blob = IcebergColStatsCodec.encodePartBlob(columns(3000), ids(3000));
 
     List<ColumnStatisticsObj> read = IcebergColStatsReader.decodePartEntries(
-        blob, IcebergColStatsReader.neededFields(SCHEMA, Set.of("c0", "c1499", "c2999")), true, SCHEMA);
+        blob, IcebergColStatsReader.columnFieldIds(SCHEMA, Set.of("c0", "c1499", "c2999")), true, SCHEMA);
 
     Assert.assertEquals(List.of("c0", "c1499", "c2999"),
         read.stream().map(ColumnStatisticsObj::getColName).toList());
@@ -164,7 +163,7 @@ public class TestIcebergColStatsFormat {
           .toList());
 
   /** The fields the schema still has, which is what a read asking for no columns in particular takes. */
-  private static final IntPredicate LIVE_FIELDS = IcebergColStatsReader.neededFields(SCHEMA, null);
+  private static final Set<Integer> LIVE_FIELDS = IcebergColStatsReader.columnFieldIds(SCHEMA, null);
 
   private static List<ColumnStatisticsObj> columns(int count) {
     return IntStream.range(0, count).mapToObj(i -> {

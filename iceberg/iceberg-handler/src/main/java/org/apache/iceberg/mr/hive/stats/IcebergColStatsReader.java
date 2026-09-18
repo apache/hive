@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -115,7 +114,7 @@ public final class IcebergColStatsReader {
       Collection<String> columns, boolean withVectors)
       throws IOException {
     Schema schema = table.schema();
-    IntPredicate needed = neededFields(schema, columns);
+    Set<Integer> needed = columnFieldIds(schema, columns);
     List<ColumnStatisticsObj> entries = Lists.newArrayList();
     String statsPath = statsFile.path();
 
@@ -126,7 +125,7 @@ public final class IcebergColStatsReader {
 
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs().stream()
           .filter(IcebergColStatsReader::holdsColStats)
-          .filter(blob -> needed.test(blob.inputFields().getFirst()))
+          .filter(blob -> needed.contains(blob.inputFields().getFirst()))
           .toList();
 
       LOG.info("Using column stats from: {}", statsPath);
@@ -191,13 +190,13 @@ public final class IcebergColStatsReader {
   }
 
   /**
-   * The fields the needed columns are, by the name the schema gives each now; a null column set
-   * asks for all of them. A field the schema no longer has is none of them: the name its entry
-   * was stored under may since have moved to another column.
+   * Returns the ids of the fields the given column names map to. Matching is case-insensitive,
+   * since Hive keeps a column name in lower case while the schema keeps the case the table was
+   * created with. A null column set asks for every field the schema has.
    */
-  static IntPredicate neededFields(Schema schema, Collection<String> columns) {
+  static Set<Integer> columnFieldIds(Schema schema, Collection<String> columns) {
     if (columns == null) {
-      return fieldId -> schema.findField(fieldId) != null;
+      return schema.idToName().keySet();
     }
     // the schema matches the asked name whatever case it keeps its own in, so an entry is chosen
     // by the field its column is now, never by the name it was stored under
@@ -208,7 +207,7 @@ public final class IcebergColStatsReader {
         fieldIds.add(field.fieldId());
       }
     }
-    return fieldIds::contains;
+    return fieldIds;
   }
 
   /**
@@ -254,11 +253,11 @@ public final class IcebergColStatsReader {
         return null;
       }
       Schema schema = table.schema();
-      IntPredicate needed = neededFields(schema, columns);
+      Set<Integer> needed = columnFieldIds(schema, columns);
 
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs().stream()
           .filter(IcebergColStatsReader::holdsColStats)
-          .filter(blob -> needed.test(blob.inputFields().getFirst()))
+          .filter(blob -> needed.contains(blob.inputFields().getFirst()))
           .toList();
 
       aggregated.addAll(
@@ -310,7 +309,7 @@ public final class IcebergColStatsReader {
         InputFile file = table.io().newInputFile(statsFile.path(), statsFile.fileSizeInBytes());
         try (SeekableInputStream in = file.newStream()) {
           // the asked columns are the same fields in every blob, so they are resolved once here
-          readPartEntries(in, blobs, neededFields(schema, columns), withVectors, result, schema);
+          readPartEntries(in, blobs, columnFieldIds(schema, columns), withVectors, result, schema);
         }
       }
     } catch (Exception e) {
@@ -330,7 +329,7 @@ public final class IcebergColStatsReader {
    * per round trip, which a file holding a blob per partition cannot afford. It leaves in favor
    * of Iceberg's reader once that one coalesces runs and takes them in one vectored call.
    */
-  static void readPartEntries(SeekableInputStream in, List<BlobMetadata> blobs, IntPredicate needed,
+  static void readPartEntries(SeekableInputStream in, List<BlobMetadata> blobs, Set<Integer> needed,
       boolean withVectors, Map<String, List<ColumnStatisticsObj>> result, Schema schema)
       throws IOException {
     List<BlobMetadata> ordered = blobs.stream()
@@ -421,9 +420,9 @@ public final class IcebergColStatsReader {
    * scan did not ask about is stepped over rather than decoded, and one whose field the schema no
    * longer has is left behind - the name it carries may since have moved to another column.
    */
-  static List<ColumnStatisticsObj> decodePartEntries(ByteBuffer blob, IntPredicate needed,
+  static List<ColumnStatisticsObj> decodePartEntries(ByteBuffer blob, Set<Integer> needed,
       boolean withVectors, Schema schema) {
-    List<IcebergColStatsCodec.EncodedStats> stored = IcebergColStatsCodec.decodePartBlob(blob, needed);
+    List<IcebergColStatsCodec.EncodedStats> stored = IcebergColStatsCodec.decodePartBlob(blob, needed::contains);
 
     List<ColumnStatisticsObj> entries = Lists.newArrayListWithCapacity(stored.size());
     for (IcebergColStatsCodec.EncodedStats entry : stored) {
