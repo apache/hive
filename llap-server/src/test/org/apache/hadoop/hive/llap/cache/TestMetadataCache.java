@@ -25,6 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
@@ -60,9 +62,11 @@ public class TestMetadataCache {
 
   private static class DummyCachePolicy implements LowLevelCachePolicy {
     int lockCount = 0, unlockCount = 0;
+    final List<Priority> priorities = new ArrayList<>();
 
     public void cache(LlapCacheableBuffer buffer, Priority pri) {
       ++lockCount;
+      priorities.add(pri);
     }
 
     public void notifyLock(LlapCacheableBuffer buffer) {
@@ -245,6 +249,61 @@ public class TestMetadataCache {
     // be force-discarded, so re-filling the whole arena succeeds only if nothing leaked.
     MemoryBuffer[] wholeArena = new MemoryBuffer[arenaSize / MAX_ALLOC];
     alloc.allocateMultiple(wholeArena, MAX_ALLOC);
+  }
+
+  /**
+   * A file's bloom filters are cached under a wrapper key while its footer keeps the bare file key.
+   * Eviction removes an entry by the key its buffers carry, so a bloom filter whose buffers carried the
+   * file key would take the footer's entry with it - and bloom filters, about a megabyte each against a
+   * footer of a few hundred bytes, are exactly what gets evicted.
+   */
+  @Test
+  public void testEvictingBloomFilterKeepsFooter() throws Exception {
+    MetadataCache cache = newMetadataCache();
+    Object fileKey = new Object();
+    byte[] footer = new byte[MAX_ALLOC - 1];
+    byte[] bloom = new byte[MAX_ALLOC - 1];
+    new Random(0).nextBytes(footer);
+    java.util.Arrays.fill(bloom, (byte) 7);
+
+    LlapBufferOrBuffers footerBuffers =
+        cache.putFileMetadata(fileKey, footer.length, new ByteArrayInputStream(footer), null, null);
+    cache.decRefBuffer(footerBuffers);
+    LlapBufferOrBuffers bloomBuffers = cache.putParquetBloomFilters(fileKey, 4096, bloom.length,
+        new ByteArrayInputStream(bloom), null, null);
+    cache.decRefBuffer(bloomBuffers);
+
+    cache.notifyEvicted((LlapMetadataBuffer<?>) bloomBuffers.getSingleBuffer());
+
+    LlapBufferOrBuffers footerAfter = cache.getFileMetadata(fileKey);
+    assertNotNull("evicting a bloom filter must not remove the file's footer", footerAfter);
+    cache.decRefBuffer(footerAfter);
+    assertNull("the evicted bloom filter must be gone", cache.getParquetBloomFilters(fileKey, 4096));
+  }
+
+  /**
+   * Each bloom filter of a file is cached on its own, so evicting one must leave the others alone.
+   */
+  @Test
+  public void testEvictingBloomFilterKeepsTheOthers() throws Exception {
+    MetadataCache cache = newMetadataCache();
+    Object fileKey = new Object();
+    byte[] bloom = new byte[MAX_ALLOC - 1];
+    java.util.Arrays.fill(bloom, (byte) 3);
+
+    LlapBufferOrBuffers first = cache.putParquetBloomFilters(fileKey, 1024, bloom.length,
+        new ByteArrayInputStream(bloom), null, null);
+    cache.decRefBuffer(first);
+    LlapBufferOrBuffers second = cache.putParquetBloomFilters(fileKey, 8192, bloom.length,
+        new ByteArrayInputStream(bloom), null, null);
+    cache.decRefBuffer(second);
+
+    cache.notifyEvicted((LlapMetadataBuffer<?>) first.getSingleBuffer());
+
+    assertNull(cache.getParquetBloomFilters(fileKey, 1024));
+    LlapBufferOrBuffers kept = cache.getParquetBloomFilters(fileKey, 8192);
+    assertNotNull("evicting one bloom filter must not remove another", kept);
+    cache.decRefBuffer(kept);
   }
 
   private MetadataCache newMetadataCache() {
@@ -459,5 +518,23 @@ public class TestMetadataCache {
       result = result.next;
     }
     assertNull(result);
+  }
+
+  @Test
+  public void testABloomFilterIsCachedBelowTheFooterItBelongsTo() throws Exception {
+    // a footer has to be read before anything else of the file can be, so it outranks a filter that
+    // only saves reading data
+    DummyCachePolicy policy = new DummyCachePolicy();
+    MetadataCache cache = newMetadataCache(MAX_ALLOC, policy);
+    Object fileKey = new Object();
+    byte[] bytes = new byte[MAX_ALLOC - 1];
+
+    cache.decRefBuffer(cache.putFileMetadata(fileKey, bytes.length,
+        new ByteArrayInputStream(bytes), null, null));
+    cache.decRefBuffer(cache.putParquetBloomFilters(fileKey, 4096, bytes.length,
+        new ByteArrayInputStream(bytes), null, null));
+
+    assertEquals("a footer is cached high and a bloom filter below it",
+        List.of(Priority.HIGH, Priority.NORMAL), policy.priorities);
   }
 }

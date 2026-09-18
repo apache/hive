@@ -185,6 +185,24 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     return getInternal(new StripeKey(stripeKey.fileKey, stripeKey.stripeIx));
   }
 
+  /**
+   * One bloom filter of a Parquet file, keyed by the offset the footer records for its column chunk.
+   */
+  public LlapBufferOrBuffers getParquetBloomFilters(Object fileKey, long offset) {
+    return getInternal(new ParquetBloomFilterKey(fileKey, offset));
+  }
+
+  /**
+   * Cached at NORMAL rather than the HIGH the footers use. A footer is a few hundred bytes and the file
+   * cannot be read without it, while a bloom filter runs to a megabyte and only saves work, so it does not
+   * deserve the priority boost that would have it evict column data.
+   */
+  public LlapBufferOrBuffers putParquetBloomFilters(Object fileKey, long offset, int length, InputStream is,
+      CacheTag tag, AtomicBoolean isStopped) throws IOException {
+    return putInternal(new ParquetBloomFilterKey(fileKey, offset), length, is, tag, isStopped,
+        Priority.NORMAL);
+  }
+
   private LlapBufferOrBuffers getInternal(Object key) {
     LlapBufferOrBuffers result = metadata.get(key);
     if (result == null) return null;
@@ -235,32 +253,41 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
   @Override
   public LlapBufferOrBuffers putFileMetadata(Object fileKey, int length, InputStream is,
       CacheTag tag, AtomicBoolean isStopped) throws IOException {
+    return putInternal(fileKey, length, is, tag, isStopped, Priority.HIGH);
+  }
+
+  /**
+   * @param key what the entry is stored under. The buffers carry it too, as eviction removes the entry by
+   *            the key its buffers hold.
+   */
+  private <T> LlapBufferOrBuffers putInternal(T key, int length, InputStream is,
+      CacheTag tag, AtomicBoolean isStopped, Priority priority) throws IOException {
     LlapBufferOrBuffers result = null;
     while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
-      LlapBufferOrBuffers oldVal = metadata.get(fileKey);
+      LlapBufferOrBuffers oldVal = metadata.get(key);
       if (oldVal == null) {
-        result = wrapBbForFile(result, fileKey, length, is, tag, isStopped);
+        result = wrapBbForFile(result, key, length, is, tag, isStopped);
         if (!lockBuffer(result, false)) {
           throw new AssertionError("Cannot lock a newly created value " + result);
         }
-        oldVal = metadata.putIfAbsent(fileKey, result);
+        oldVal = metadata.putIfAbsent(key, result);
         if (oldVal == null) {
-          cacheInPolicy(result); // Cached successfully, add to policy.
+          cacheInPolicy(result, priority); // Cached successfully, add to policy.
           return result;
         }
       }
-      if (lockOldVal(fileKey, result, oldVal)) {
+      if (lockOldVal(key, result, oldVal)) {
         return oldVal;
       }
       // We found some old value but couldn't incRef it; remove it.
-      metadata.remove(fileKey, oldVal);
+      metadata.remove(key, oldVal);
     }
   }
 
 
   @SuppressWarnings("unchecked")
   private LlapBufferOrBuffers wrapBbForFile(LlapBufferOrBuffers result,
-      Object fileKey, int length, InputStream stream, CacheTag tag, AtomicBoolean isStopped) throws IOException {
+      Object key, int length, InputStream stream, CacheTag tag, AtomicBoolean isStopped) throws IOException {
     if (result != null) {
       return result;
     }
@@ -269,7 +296,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     // allocated if a later read or allocation throws - otherwise it leaks (nothing else reclaims it).
     if (length <= maxAlloc) {
       // The whole footer fits in a single buffer - the overwhelmingly common case.
-      LlapMetadataBuffer<Object> buffer = new LlapMetadataBuffer<>(fileKey, tag);
+      LlapMetadataBuffer<Object> buffer = new LlapMetadataBuffer<>(key, tag);
       allocator.allocateMultiple(new MemoryBuffer[] { buffer }, length, null, isStopped);
       boolean done = false;
       try {
@@ -285,7 +312,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     // Larger footers are split across maxAlloc-sized chunks, the last one holding the remainder.
     LlapMetadataBuffer<Object>[] largeBuffers = new LlapMetadataBuffer[length / maxAlloc];
     for (int i = 0; i < largeBuffers.length; ++i) {
-      largeBuffers[i] = new LlapMetadataBuffer<>(fileKey, tag);
+      largeBuffers[i] = new LlapMetadataBuffer<>(key, tag);
     }
     // allocateMultiple is all-or-nothing: on success every chunk is allocated; on failure it
     // releases whatever it reserved.
@@ -303,7 +330,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
         return new LlapMetadataBuffers<>(largeBuffers);
       }
       // Allocate the remainder only; the last chunk is smaller than maxAlloc.
-      LlapMetadataBuffer<Object> remainder = new LlapMetadataBuffer<>(fileKey, tag);
+      LlapMetadataBuffer<Object> remainder = new LlapMetadataBuffer<>(key, tag);
       allocator.allocateMultiple(new MemoryBuffer[] { remainder }, smallSize, null, isStopped);
       smallBuffer = remainder; // Registered for cleanup only now that allocation succeeded.
       readIntoCacheBuffer(stream, smallSize, remainder);
@@ -358,7 +385,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
         result = wrapBb(result, key, tailBuffer, tag, isStopped);
         oldVal = metadata.putIfAbsent(key, result);
         if (oldVal == null) {
-          cacheInPolicy(result); // Cached successfully, add to policy.
+          cacheInPolicy(result, Priority.HIGH); // Cached successfully, add to policy.
           return result;
         }
       }
@@ -370,14 +397,14 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     }
   }
 
-  private void cacheInPolicy(LlapBufferOrBuffers buffers) {
+  private void cacheInPolicy(LlapBufferOrBuffers buffers, Priority priority) {
     LlapAllocatorBuffer singleBuffer = buffers.getSingleLlapBuffer();
     if (singleBuffer != null) {
-      policy.cache(singleBuffer, Priority.HIGH);
+      policy.cache(singleBuffer, priority);
       return;
     }
     for (LlapAllocatorBuffer buffer : buffers.getMultipleLlapBuffers()) {
-      policy.cache(buffer, Priority.HIGH);
+      policy.cache(buffer, priority);
     }
   }
 
@@ -547,6 +574,10 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
       }
     }
     metrics.decrCacheNumLockedBuffers();
+  }
+
+  /** Distinguishes a file's cached bloom filters from its footer, which uses the file key itself. */
+  private record ParquetBloomFilterKey(Object fileKey, long offset) {
   }
 
   private final static class StripeKey {
