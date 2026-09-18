@@ -267,12 +267,12 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 4245017503 Data size: 1001824130708 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: char(20)), _col0 (type: char(30)), _col2 (type: date)
+                  expressions: _col2 (type: date), _col1 (type: char(20)), _col0 (type: char(30))
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 4245017503 Data size: 1001824130708 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
-                    keys: _col1 (type: char(30)), _col0 (type: char(20)), _col2 (type: date)
+                    keys: _col2 (type: char(30)), _col1 (type: char(20)), _col0 (type: date)
                     mode: complete
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 4245017503 Data size: 1035784270732 Basic stats: COMPLETE Column stats: COMPLETE
@@ -325,12 +325,12 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 9486371806 Data size: 2238783746216 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: char(20)), _col0 (type: char(30)), _col2 (type: date)
+                  expressions: _col2 (type: date), _col1 (type: char(20)), _col0 (type: char(30))
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 9486371806 Data size: 2238783746216 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
-                    keys: _col1 (type: char(30)), _col0 (type: char(20)), _col2 (type: date)
+                    keys: _col2 (type: char(30)), _col1 (type: char(20)), _col0 (type: date)
                     mode: complete
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 9486371806 Data size: 2314674720664 Basic stats: COMPLETE Column stats: COMPLETE
@@ -427,12 +427,12 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 8374481746 Data size: 1976377692056 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: char(20)), _col0 (type: char(30)), _col2 (type: date)
+                  expressions: _col2 (type: date), _col1 (type: char(20)), _col0 (type: char(30))
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 8374481746 Data size: 1976377692056 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
-                    keys: _col1 (type: char(30)), _col0 (type: char(20)), _col2 (type: date)
+                    keys: _col2 (type: char(30)), _col1 (type: char(20)), _col0 (type: date)
                     mode: complete
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 8374481746 Data size: 2043373546024 Basic stats: COMPLETE Column stats: COMPLETE

@@ -484,19 +484,164 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     final List<ColStatistics> colStats = scan.getColStat(Collections.singletonList(inputRefIndex));
-    if (colStats.isEmpty() || !isHistogramAvailable(colStats.get(0))) {
+    if (colStats.isEmpty()) {
       return defaultSelectivity.get();
     }
 
-    final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
-    double rawSelectivity = rangedSelectivity(kll, boundaries);
-    if (inverseBool) {
-      // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
-      // if there's a cast, the inversion is with respect to its codomain (range of the values of the cast)
-      double typeRangeSelectivity = rangedSelectivity(kll, typeRange);
-      rawSelectivity = typeRangeSelectivity - rawSelectivity;
+    final ColStatistics cs = colStats.get(0);
+    if (isHistogramAvailable(cs)) {
+      final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(cs.getHistogram()));
+      double rawSelectivity = rangedSelectivity(kll, boundaries);
+      if (inverseBool) {
+        // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
+        // if there's a cast, the inversion is with respect to its codomain (range of the values of the cast)
+        double typeRangeSelectivity = rangedSelectivity(kll, typeRange);
+        rawSelectivity = typeRangeSelectivity - rawSelectivity;
+      }
+      return scaleSelectivityToNullableValues(kll, rawSelectivity, scan);
     }
-    return scaleSelectivityToNullableValues(kll, rawSelectivity, scan);
+
+    if (isUniformWithinRangeEnabled() && hasUsableMinMax(cs)) {
+      RelDataType columnType = scan.getRowType().getFieldList().get(inputRefIndex).getType();
+      Double uniformSelectivity = computeUniformRangeSelectivity(cs, boundaries, scan, inverseBool, typeRange,
+          columnType);
+      if (uniformSelectivity != null) {
+        return uniformSelectivity;
+      }
+    }
+
+    return defaultSelectivity.get();
+  }
+
+  private boolean isUniformWithinRangeEnabled() {
+    HiveConfPlannerContext ctx =
+        childRel.getCluster().getPlanner().getContext().unwrap(HiveConfPlannerContext.class);
+    return ctx == null || ctx.isUniformWithinRange();
+  }
+
+  private static boolean hasUsableMinMax(ColStatistics cs) {
+    ColStatistics.Range range = cs.getRange();
+    return range != null && range.minValue != null && range.maxValue != null;
+  }
+
+  /**
+   * Converts column MIN/MAX statistics into the same numeric space used by {@link #extractLiteral}.
+   * DATE column stats from HMS are stored as days since epoch; literals use epoch seconds.
+   */
+  private static Optional<Range<Float>> convertColRangeToFloatRange(ColStatistics cs, RelDataType columnType) {
+    ColStatistics.Range range = cs.getRange();
+    if (range == null || range.minValue == null || range.maxValue == null) {
+      return Optional.empty();
+    }
+    final Number minValue = range.minValue;
+    final Number maxValue = range.maxValue;
+    switch (columnType.getSqlTypeName()) {
+    case DATE:
+      return Optional.of(Range.closed((float) (minValue.longValue() * 86400L),
+          (float) (maxValue.longValue() * 86400L)));
+    case TINYINT:
+    case SMALLINT:
+    case INTEGER:
+    case BIGINT:
+    case FLOAT:
+    case DOUBLE:
+    case DECIMAL:
+    case TIMESTAMP:
+      return Optional.of(Range.closed(minValue.floatValue(), maxValue.floatValue()));
+    default:
+      return Optional.empty();
+    }
+  }
+
+  private Double computeUniformRangeSelectivity(ColStatistics cs, Range<Float> boundaries, HiveTableScan scan,
+      boolean inverseBool, Range<Float> typeRange, RelDataType columnType) {
+    Optional<Range<Float>> minMaxRange = convertColRangeToFloatRange(cs, columnType);
+    if (minMaxRange.isEmpty()) {
+      return null;
+    }
+    float min = minMaxRange.get().lowerEndpoint();
+    float max = minMaxRange.get().upperEndpoint();
+
+    double rawSelectivity = computeUniformSelectivityFromRangeOverlap(min, max, boundaries, inverseBool, typeRange);
+
+    if (rawSelectivity < 0 || Double.isNaN(rawSelectivity) || Double.isInfinite(rawSelectivity)) {
+      return null;
+    }
+    return scaleSelectivityForNulls(cs, Math.min(1.0, Math.max(0.0, rawSelectivity)), scan);
+  }
+
+  /**
+   * Estimates uniform selectivity by intersecting the column MIN/MAX domain with the predicate range.
+   * One-sided predicates ({@code <}, {@code <=}, {@code >}, {@code >=}) use semi-infinite Guava ranges
+   * and follow the same overlap/width formula as {@code BETWEEN}.
+   */
+  private static double computeUniformSelectivityFromRangeOverlap(float min, float max, Range<Float> boundaries,
+      boolean inverseBool, Range<Float> typeRange) {
+    if (Float.compare(min, max) == 0) {
+      double betweenSelectivity = boundaries.contains(min) ? 1.0 : 0.0;
+      return inverseBool ? 1.0 - betweenSelectivity : betweenSelectivity;
+    }
+
+    Range<Float> domain = Range.closedOpen(min, Math.nextUp(max));
+
+    if (inverseBool) {
+      Range<Float> universe = domain;
+      if (typeRange != null) {
+        universe = intersectRanges(domain, typeRange);
+      }
+      float universeWidth = rangeWidth(universe);
+      if (universeWidth <= 0) {
+        return 0;
+      }
+      float betweenWidth = rangeWidth(intersectRanges(universe, boundaries));
+      return 1.0 - betweenWidth / universeWidth;
+    }
+
+    float overlapWidth = rangeWidth(intersectRanges(domain, boundaries));
+    float domainWidth = rangeWidth(domain);
+    if (domainWidth <= 0) {
+      return 0;
+    }
+    return overlapWidth / domainWidth;
+  }
+
+  private static Range<Float> intersectRanges(Range<Float> left, Range<Float> right) {
+    if (!left.isConnected(right)) {
+      return Range.closedOpen(0f, 0f);
+    }
+    Range<Float> intersection = left.intersection(right);
+    if (intersection.isEmpty()) {
+      return Range.closedOpen(0f, 0f);
+    }
+    return intersection;
+  }
+
+  private static float rangeWidth(Range<Float> range) {
+    if (range.isEmpty()) {
+      return 0;
+    }
+    float width = range.upperEndpoint() - range.lowerEndpoint();
+    return Math.max(width, 0);
+  }
+
+  /**
+   * Adjust selectivity to account for NULL values, consistent with {@link #scaleSelectivityToNullableValues}.
+   * Unknown null count ({@code numNulls < 0}) is treated as zero nulls.
+   */
+  private static double scaleSelectivityForNulls(ColStatistics cs, double rawSelectivity, HiveTableScan scan) {
+    if (scan.getTable() == null) {
+      return rawSelectivity;
+    }
+    double rowCount = scan.getTable().getRowCount();
+    if (rowCount <= 0) {
+      return rawSelectivity;
+    }
+    long numNulls = cs.getNumNulls();
+    if (numNulls < 0) {
+      numNulls = 0;
+    }
+    double nonNullRows = Math.max(rowCount - numNulls, 0);
+    return nonNullRows * rawSelectivity / rowCount;
   }
 
   /**
