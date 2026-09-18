@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -36,12 +35,14 @@ import org.apache.hadoop.fs.FileRange;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.util.functional.FutureIO;
+import org.apache.iceberg.Schema;
 import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.io.DelegatingInputStream;
 import org.apache.iceberg.io.IOUtil;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.io.SeekableInputStream;
+import org.apache.iceberg.mr.hive.SchemaUtils;
 import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.puffin.Puffin;
 import org.apache.iceberg.puffin.PuffinReader;
@@ -112,8 +113,8 @@ public final class IcebergColStatsReader {
   static List<ColumnStatisticsObj> readOrThrow(Table table, StatisticsFile statsFile,
       Collection<String> columns, boolean withVectors)
       throws IOException {
-    Predicate<BlobMetadata> holdsNeededColumn =
-        columns != null ? blobsForColumns(table, columns) : blob -> true;
+    Schema schema = table.schema();
+    Set<Integer> needed = columnFieldIds(schema, columns);
     List<ColumnStatisticsObj> entries = Lists.newArrayList();
     String statsPath = statsFile.path();
 
@@ -124,18 +125,13 @@ public final class IcebergColStatsReader {
 
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs().stream()
           .filter(IcebergColStatsReader::holdsColStats)
-          .filter(holdsNeededColumn)
-          // a column dropped and added back is a different field: what was stored for the one it
-          // replaced describes rows the column of that name never held
-          .filter(blob -> table.schema().findField(blob.inputFields().getFirst()) != null)
+          .filter(blob -> needed.contains(blob.inputFields().getFirst()))
           .toList();
 
       LOG.info("Using column stats from: {}", statsPath);
 
-      for (Pair<BlobMetadata, ByteBuffer> blob : reader.readAll(blobMetadata)) {
-        byte[] raw = ByteBuffers.toByteArray(blob.second());
-        entries.add(decodeTableEntry(raw, blob.first().type(), withVectors));
-      }
+      entries.addAll(
+          readTableEntries(reader, blobMetadata, withVectors, schema));
     }
     return entries;
   }
@@ -150,7 +146,24 @@ public final class IcebergColStatsReader {
         IcebergColStatsWriter.LEGACY_COL_STATS_BLOB.equals(blob.type());
   }
 
-  /** An entry as the blob that names it was written: a Thrift struct, or a serialized Java object. */
+  /**
+   * The entries the given blobs hold, each under the name the schema gives its field now rather
+   * than the one it was stored under. The caller has already left behind the blobs of fields the
+   * schema no longer has, which have no name to take.
+   */
+  static List<ColumnStatisticsObj> readTableEntries(PuffinReader reader, List<BlobMetadata> blobs,
+      boolean withVectors, Schema schema) {
+    List<ColumnStatisticsObj> entries = Lists.newArrayListWithCapacity(blobs.size());
+    for (Pair<BlobMetadata, ByteBuffer> blob : reader.readAll(blobs)) {
+      ColumnStatisticsObj statsObj = decodeTableEntry(
+          ByteBuffers.toByteArray(blob.second()), blob.first().type(), withVectors);
+      statsObj.setColName(
+          SchemaUtils.getColumnName(schema, blob.first().inputFields().getFirst()));
+      entries.add(statsObj);
+    }
+    return entries;
+  }
+
   private static ColumnStatisticsObj decodeTableEntry(byte[] raw, String blobType, boolean withVectors) {
     if (IcebergColStatsWriter.HIVE_COL_STATS_BLOB_V1.equals(blobType)) {
       return IcebergColStatsCodec.decodeEntry(raw, withVectors);
@@ -176,11 +189,25 @@ public final class IcebergColStatsReader {
     return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
   }
 
-  /** The blobs naming any of the asked columns, by the name the table's schema gives the field now. */
-  private static Predicate<BlobMetadata> blobsForColumns(Table table, Collection<String> columns) {
-    return metadata -> metadata.inputFields().stream()
-        .map(fieldId -> table.schema().findColumnName(fieldId))
-        .anyMatch(columns::contains);
+  /**
+   * Returns the ids of the fields the given column names map to. Matching is case-insensitive,
+   * since Hive keeps a column name in lower case while the schema keeps the case the table was
+   * created with. A null column set asks for every field the schema has.
+   */
+  static Set<Integer> columnFieldIds(Schema schema, Collection<String> columns) {
+    if (columns == null) {
+      return schema.idToName().keySet();
+    }
+    // the schema matches the asked name whatever case it keeps its own in, so an entry is chosen
+    // by the field its column is now, never by the name it was stored under
+    Set<Integer> fieldIds = Sets.newHashSetWithExpectedSize(columns.size());
+    for (String column : columns) {
+      Types.NestedField field = schema.caseInsensitiveFindField(column);
+      if (field != null) {
+        fieldIds.add(field.fieldId());
+      }
+    }
+    return fieldIds;
   }
 
   /**
@@ -199,7 +226,7 @@ public final class IcebergColStatsReader {
     // the registered entry states how many partitions the file describes: an ask of another
     // size cannot be the exact set, and is turned away without opening the file
     for (var blob : statsFile.blobMetadata()) {
-      String numPartitions = blob.properties().get(IcebergColStatsWriter.NUM_PARTITIONS_FIELD);
+      String numPartitions = blob.properties().get(IcebergColStatsWriter.NUM_PARTITIONS_PROP);
       if (numPartitions != null && !numPartitions.equals(String.valueOf(asked.size()))) {
         return null;
       }
@@ -215,7 +242,7 @@ public final class IcebergColStatsReader {
       // what answers without opening the file, and this read is opening it anyway
       Set<String> described = Sets.newHashSet();
       for (BlobMetadata blob : reader.fileMetadata().blobs()) {
-        String partName = blob.properties().get(IcebergColStatsWriter.PARTITION_FIELD);
+        String partName = blob.properties().get(IcebergColStatsWriter.PARTITION_PROP);
         if (partName != null) {
           described.add(partName);
         }
@@ -225,26 +252,21 @@ public final class IcebergColStatsReader {
       if (described.isEmpty() || !described.equals(asked) || !described.stream().allMatch(upToDate)) {
         return null;
       }
-      Predicate<BlobMetadata> holdsNeededColumn = blobsForColumns(table, columns);
+      Schema schema = table.schema();
+      Set<Integer> needed = columnFieldIds(schema, columns);
 
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs().stream()
           .filter(IcebergColStatsReader::holdsColStats)
-          .filter(blob -> table.schema().findField(blob.inputFields().getFirst()) != null)
-          .filter(holdsNeededColumn)
+          .filter(blob -> needed.contains(blob.inputFields().getFirst()))
           .toList();
 
-      for (Pair<BlobMetadata, ByteBuffer> blob : reader.readAll(blobMetadata)) {
-        byte[] raw = ByteBuffers.toByteArray(blob.second());
-        aggregated.add(decodeTableEntry(raw, blob.first().type(), withVectors));
-      }
+      aggregated.addAll(
+          readTableEntries(reader, blobMetadata, withVectors, schema));
     } catch (Exception e) {
       // serving no stats degrades the planner to estimates - never wrong
       LOG.warn("Unable to read column stats: {}", e.getMessage());
       return null;
     }
-    // a rename keeps the field, so a blob written before it still names the field under the old
-    // column name: it answers for the field asked about but not for the column, and is left out
-    aggregated.removeIf(statsObj -> !columns.contains(statsObj.getColName()));
     return aggregated.size() == colNames.size() ? aggregated : null;
   }
 
@@ -272,7 +294,7 @@ public final class IcebergColStatsReader {
             if (!IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type())) {
               return false;
             }
-            String partName = metadata.properties().get(IcebergColStatsWriter.PARTITION_FIELD);
+            String partName = metadata.properties().get(IcebergColStatsWriter.PARTITION_PROP);
             return partName != null && (partitionFilter == null || partitionFilter.test(partName));
           })
           .toList();
@@ -283,9 +305,11 @@ public final class IcebergColStatsReader {
       // than the seek it saves. Reading each on its own is what makes a scan of many partitions
       // expensive.
       if (!blobs.isEmpty()) {
+        Schema schema = table.schema();
         InputFile file = table.io().newInputFile(statsFile.path(), statsFile.fileSizeInBytes());
         try (SeekableInputStream in = file.newStream()) {
-          readBlobs(in, blobs, columns, withVectors, result, fieldsOf(table, columns));
+          // the asked columns are the same fields in every blob, so they are resolved once here
+          readPartEntries(in, blobs, columnFieldIds(schema, columns), withVectors, result, schema);
         }
       }
     } catch (Exception e) {
@@ -305,8 +329,8 @@ public final class IcebergColStatsReader {
    * per round trip, which a file holding a blob per partition cannot afford. It leaves in favor
    * of Iceberg's reader once that one coalesces runs and takes them in one vectored call.
    */
-  static void readBlobs(SeekableInputStream in, List<BlobMetadata> blobs, Set<String> columns,
-      boolean withVectors, Map<String, List<ColumnStatisticsObj>> result, IntPredicate fields)
+  static void readPartEntries(SeekableInputStream in, List<BlobMetadata> blobs, Set<Integer> needed,
+      boolean withVectors, Map<String, List<ColumnStatisticsObj>> result, Schema schema)
       throws IOException {
     List<BlobMetadata> ordered = blobs.stream()
         .sorted(Comparator.comparingLong(BlobMetadata::offset))
@@ -345,8 +369,8 @@ public final class IcebergColStatsReader {
         ByteBuffer part = held.get(r).duplicate();
         part.position((int) (blob.offset() - start));
         part.limit((int) (blob.offset() - start + blob.length()));
-        result.put(blob.properties().get(IcebergColStatsWriter.PARTITION_FIELD),
-            decodePartBlob(part.slice(), columns, withVectors, fields));
+        result.put(blob.properties().get(IcebergColStatsWriter.PARTITION_PROP),
+            decodePartEntries(part.slice(), needed, withVectors, schema));
       }
     }
   }
@@ -392,30 +416,19 @@ public final class IcebergColStatsReader {
   }
 
   /**
-   * The asked columns of a partition, out of the entries the blob holds one after another. The
-   * name check behind the field-id skip is not the same filter twice: a rename keeps the field,
-   * so an entry can pass by id while naming the column as it was called when it was stored.
+   * The asked columns of a partition, each named as the schema names its field now. An entry the
+   * scan did not ask about is stepped over rather than decoded, and one whose field the schema no
+   * longer has is left behind - the name it carries may since have moved to another column.
    */
-  static List<ColumnStatisticsObj> decodePartBlob(ByteBuffer blob, Set<String> columns, boolean withVectors) {
-    return decodePartBlob(blob, columns, withVectors, null);
-  }
-
-  /**
-   * The asked columns of a partition. Every entry names the field it is for, so the ones a scan did
-   * not ask about are stepped over rather than decoded - and a blob a merge carried from another
-   * gather needs hold neither the same columns nor the same order for that to hold.
-   */
-  static List<ColumnStatisticsObj> decodePartBlob(ByteBuffer blob, Set<String> columns,
-      boolean withVectors, IntPredicate fields) {
-    List<byte[]> stored = fields == null ?
-        IcebergColStatsCodec.decodeBlob(blob) : IcebergColStatsCodec.decodeBlob(blob, fields);
+  static List<ColumnStatisticsObj> decodePartEntries(ByteBuffer blob, Set<Integer> needed,
+      boolean withVectors, Schema schema) {
+    List<IcebergColStatsCodec.EncodedStats> stored = IcebergColStatsCodec.decodePartBlob(blob, needed::contains);
 
     List<ColumnStatisticsObj> entries = Lists.newArrayListWithCapacity(stored.size());
-    for (byte[] entry : stored) {
-      ColumnStatisticsObj statsObj = IcebergColStatsCodec.decodeEntry(entry, withVectors);
-      if (columns == null || columns.contains(statsObj.getColName())) {
-        entries.add(statsObj);
-      }
+    for (IcebergColStatsCodec.EncodedStats entry : stored) {
+      ColumnStatisticsObj statsObj = IcebergColStatsCodec.decodeEntry(entry.bytes(), withVectors);
+      statsObj.setColName(SchemaUtils.getColumnName(schema, entry.fieldId()));
+      entries.add(statsObj);
     }
     return entries;
   }
@@ -452,18 +465,4 @@ public final class IcebergColStatsReader {
     return Optional.empty();
   }
 
-  /** The fields the asked columns are, so a read can step over the entries of the rest. */
-  private static IntPredicate fieldsOf(Table table, Set<String> columns) {
-    if (columns == null) {
-      return null;
-    }
-    Set<Integer> fields = Sets.newHashSet();
-    for (String column : columns) {
-      Types.NestedField field = table.schema().caseInsensitiveFindField(column);
-      if (field != null) {
-        fields.add(field.fieldId());
-      }
-    }
-    return fields::contains;
-  }
 }

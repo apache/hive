@@ -65,6 +65,7 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.HistoryEntry;
 import org.apache.iceberg.PartitionKey;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericAppenderFactory;
@@ -349,18 +350,30 @@ public class HiveIcebergTestUtils {
    */
   public static DeleteFile createEqualityDeleteFile(Table table, String deleteFilePath, List<String> equalityFields,
       FileFormat fileFormat, List<Record> rowsToDelete) throws IOException {
+    return createEqualityDeleteFile(table, table.spec(), deleteFilePath, equalityFields, fileFormat, rowsToDelete);
+  }
+
+  /**
+   * The spec-taking variant writes the delete under any of the table's specs: an older
+   * unpartitioned spec gives the global delete a foreign engine writes.
+   */
+  public static DeleteFile createEqualityDeleteFile(Table table, PartitionSpec spec, String deleteFilePath,
+      List<String> equalityFields, FileFormat fileFormat, List<Record> rowsToDelete) throws IOException {
     List<Integer> equalityFieldIds = equalityFields.stream()
         .map(id -> table.schema().findField(id).fieldId())
         .toList();
     Schema eqDeleteRowSchema = table.schema().select(equalityFields.toArray(new String[]{}));
 
-    FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),
+    FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), spec,
         ArrayUtil.toIntArray(equalityFieldIds), eqDeleteRowSchema, null);
     EncryptedOutputFile outputFile = table.encryption().encrypt(HadoopOutputFile.fromPath(
         new org.apache.hadoop.fs.Path(table.location(), deleteFilePath), new Configuration()));
 
-    PartitionKey part = new PartitionKey(table.spec(), eqDeleteRowSchema);
-    part.partition(rowsToDelete.get(0));
+    PartitionKey part = null;
+    if (spec.isPartitioned()) {
+      part = new PartitionKey(spec, eqDeleteRowSchema);
+      part.partition(rowsToDelete.get(0));
+    }
     EqualityDeleteWriter<Record> eqWriter = appenderFactory.newEqDeleteWriter(outputFile, fileFormat, part);
     try (EqualityDeleteWriter<Record> writer = eqWriter) {
       writer.write(rowsToDelete);

@@ -21,12 +21,15 @@ package org.apache.iceberg.mr.hive.stats;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.util.Sets;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataOperations;
@@ -39,6 +42,7 @@ import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
+import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +62,7 @@ public final class IcebergStoredStats {
 
   private static final Logger LOG = LoggerFactory.getLogger(IcebergStoredStats.class);
 
+  private static final String STORED_FIELD_IDS_KEY = "storedFieldIds.%s.%d.%s";
   private static final String CHANGED_PARTITIONS_KEY = "changedPartitions.%s.%d.%d.%d";
   /**
    * What changed between two snapshots is settled the moment the later one commits, so the answer
@@ -133,22 +138,88 @@ public final class IcebergStoredStats {
 
   /**
    * The file whose blobs are Hive's own - Iceberg keeps statistics of its own in the same format -
-   * at the asked-for granularity: a blob describing one partition names it in its metadata.
+   * at the asked-for granularity: a blob describing one partition is of a type of its own.
    *
-   * <p>A file that holds any partition is a per partition one, whatever else it holds. The entries
-   * it aggregates from them state the table only while it holds every partition, which a gather of some
-   * of them does not, so a whole-table read passes it by and takes the file gathered as one.
+   * <p>A file that holds any partition is a per partition one, whatever else it holds. Its
+   * aggregates serve a whole-table read only while they aggregate the full table - what a gather
+   * over every partition marked on it, and a gather of some of them did not.
    */
   private static boolean holdsHiveColStats(StatisticsFile stats, boolean partitionLevel) {
     boolean holdsPartitions = stats.blobMetadata().stream()
-        .anyMatch(metadata -> metadata.properties().containsKey(IcebergColStatsWriter.PARTITION_FIELD));
+        .anyMatch(metadata -> IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type()));
     if (partitionLevel) {
-      return holdsPartitions && stats.blobMetadata().stream().anyMatch(
-          metadata -> IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type()));
+      return holdsPartitions;
     }
-    return !holdsPartitions && stats.blobMetadata().stream().anyMatch(
+    if (holdsPartitions) {
+      return hasFullTableAggr(stats);
+    }
+    return stats.blobMetadata().stream().anyMatch(
         metadata -> IcebergColStatsWriter.HIVE_COL_STATS_BLOB_V1.equals(metadata.type()) ||
             IcebergColStatsWriter.LEGACY_COL_STATS_BLOB.equals(metadata.type()));
+  }
+
+  /** Whether the file's aggregates answer for the whole table: its registered entry says so. */
+  static boolean hasFullTableAggr(StatisticsFile stats) {
+    return stats != null && stats.blobMetadata().stream().anyMatch(
+        metadata -> "true".equals(metadata.properties().get(IcebergColStatsWriter.FULL_TABLE_AGGR_PROP)));
+  }
+
+  /**
+   * The stored table-level file, taken as it was gathered: a write merges only into a file
+   * gathered as one, where a read may also take a partition-level file's aggregates.
+   */
+  static StatisticsFile getTableOnlyColStatsFile(Table table, long snapshotId) {
+    StatisticsFile stats = getColStatsFile(table, snapshotId, false);
+    return stats == null || stats.blobMetadata().stream()
+        .anyMatch(metadata -> IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type())) ?
+        null : stats;
+  }
+
+  /**
+   * Whether the stored column statistics answer for the column: they still describe the snapshot
+   * the table names, and their file holds an entry for it. The footer names the measured columns -
+   * a table-level file on each blob, a partition-level file on its first, so a column the schema
+   * gained since the write, which moved no snapshot, is refused either way.
+   */
+  public static boolean colStatsAccurate(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      List<String> colNames, Configuration conf) {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
+    if (snapshot == null) {
+      return false;
+    }
+    Set<Integer> stored = storedFieldIds(table, snapshot, conf);
+    return colNames.stream().allMatch(colName -> {
+      Types.NestedField field = table.schema().caseInsensitiveFindField(colName);
+      return field != null && stored.contains(field.fieldId());
+    });
+  }
+
+  /**
+   * The fields the stored statistics describe for the snapshot. Finding the file that answers
+   * costs a walk of the snapshot's parentage and gives the same answer for every column, so the
+   * result is cached for the query rather than computed once per column.
+   */
+  private static Set<Integer> storedFieldIds(Table table, Snapshot snapshot, Configuration conf) {
+    boolean partitionLevel = IcebergTableUtil.isPartitionStats(table, conf);
+    String cacheKey = STORED_FIELD_IDS_KEY.formatted(table.name(), snapshot.snapshotId(), partitionLevel);
+    Optional<Object> cached = SessionStateUtil.getResource(conf, cacheKey);
+    if (cached.isPresent()) {
+      @SuppressWarnings("unchecked")
+      Set<Integer> hit = (Set<Integer>) cached.get();
+      return hit;
+    }
+    StatisticsFile statsFile = getColStatsFile(table, snapshot.snapshotId(), partitionLevel);
+    // a table-level ask counts the fields the aggregates state: the partition entry names every
+    // field any partition stated, which a column not every partition holds would ride into
+    Set<Integer> fields = statsFile == null ? Set.of() :
+        statsFile.blobMetadata().stream()
+            .filter(metadata -> partitionLevel ||
+                !IcebergColStatsWriter.HIVE_PART_COL_STATS_BLOB_V1.equals(metadata.type()))
+            .flatMap(metadata -> metadata.fields().stream())
+            .collect(Collectors.toSet());
+    SessionStateUtil.addResource(conf, cacheKey, fields);
+    return fields;
   }
 
   /**
@@ -171,10 +242,10 @@ public final class IcebergStoredStats {
    * changed. The bound is on manifests read, not on snapshots walked.
    */
   static Set<String> partitionsChangedSince(Table table, Snapshot snapshot, long sinceSnapshotId,
-      Configuration conf, boolean capped) {
+      Configuration conf, boolean bounded) {
     // the bound is what a read will wait for; a write settles its file for good, so it walks the
     // whole way. It keys the answer, since sessions may bound the same walk differently
-    int snapshotLookback = capped ?
+    int snapshotLookback = bounded ?
         HiveConf.getIntVar(conf, ConfVars.HIVE_ICEBERG_STATS_MAX_SNAPSHOT_LOOKBACK) : Integer.MAX_VALUE;
     // the walk reads manifests, and one query can ask it more than once: a table scanned twice
     // over, or a DESC that asks column by column
@@ -266,9 +337,9 @@ public final class IcebergStoredStats {
    * between cannot be traced.
    */
   public static Predicate<String> upToDateColStats(Table table, Snapshot snapshot,
-      StatisticsFile statsFile, Configuration conf, boolean capped) {
+      StatisticsFile statsFile, Configuration conf, boolean bounded) {
     Set<String> changed =
-        partitionsChangedSince(table, snapshot, statsFile.snapshotId(), conf, capped);
+        partitionsChangedSince(table, snapshot, statsFile.snapshotId(), conf, bounded);
     return partition -> changed != null && !changed.contains(partition);
   }
 
