@@ -583,23 +583,21 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     Range<Float> domain = Range.closedOpen(min, Math.nextUp(max));
-    Range<Float> predicateRange = convertRangeToClosedOpen(boundaries);
 
     if (inverseBool) {
       Range<Float> universe = domain;
       if (typeRange != null) {
-        Range<Float> typeRangeClosedOpen = convertRangeToClosedOpen(typeRange);
-        universe = intersectRanges(domain, typeRangeClosedOpen);
+        universe = intersectRanges(domain, typeRange);
       }
       float universeWidth = rangeWidth(universe);
       if (universeWidth <= 0) {
         return 0;
       }
-      float betweenWidth = rangeWidth(intersectRanges(universe, predicateRange));
+      float betweenWidth = rangeWidth(intersectRanges(universe, boundaries));
       return 1.0 - betweenWidth / universeWidth;
     }
 
-    float overlapWidth = rangeWidth(intersectRanges(domain, predicateRange));
+    float overlapWidth = rangeWidth(intersectRanges(domain, boundaries));
     float domainWidth = rangeWidth(domain);
     if (domainWidth <= 0) {
       return 0;
