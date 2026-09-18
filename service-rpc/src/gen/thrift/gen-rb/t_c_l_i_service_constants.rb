@@ -35,6 +35,7 @@ COMPLEX_TYPES = Set.new([
     12,
     13,
     14,
+    24,
 ])
 
 COLLECTION_TYPES = Set.new([
@@ -66,6 +67,7 @@ TYPE_NAMES = {
     13 => %q"UNIONTYPE",
     23 => %q"UNKNOWN",
     18 => %q"VARCHAR",
+    24 => %q"VARIANT",
 }
 
 CHARACTER_MAXIMUM_LENGTH = %q"characterMaximumLength"
