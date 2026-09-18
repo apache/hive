@@ -14241,12 +14241,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   void processPositionAlias(ASTNode ast) throws SemanticException {
     // When CBO is enabled, ORDER BY ordinals are resolved in CalcitePlanner.genSortByKey.
     // If CBO later declines the statement, CalcitePlanner.genOPTree calls this again with
-    // processOrderByPositionAlias=true so the legacy planner does not compile the ordinal
-    // as a constant sort key (HIVE-30037).
-    processPositionAlias(ast, !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED));
+    // only ORDER BY enabled; GROUP BY expressions have already been resolved and
+    // must not be interpreted as ordinals a second time (HIVE-30037).
+    processPositionAlias(ast, true, !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED));
   }
 
-  void processPositionAlias(ASTNode ast, boolean processOrderByPositionAlias) throws SemanticException {
+  void processPositionAlias(ASTNode ast, boolean processGroupByPositionAlias,
+      boolean processOrderByPositionAlias) throws SemanticException {
     boolean isBothByPos = HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS);
     boolean isGbyByPos = isBothByPos
         || HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_POSITION_ALIAS);
@@ -14286,7 +14287,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         int selectExpCnt = selectNode.getChildCount();
 
         // replace each of the position alias in GROUPBY with the actual column name
-        if (groupbyNode != null) {
+        if (processGroupByPositionAlias && groupbyNode != null) {
           for (int child_pos = 0; child_pos < groupbyNode.getChildCount(); ++child_pos) {
             ASTNode node = (ASTNode) groupbyNode.getChild(child_pos);
             if (node.getToken().getType() == HiveParser.Number) {

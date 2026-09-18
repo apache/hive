@@ -709,7 +709,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // hive.cbo.enable is still true, so analyzeInternal skipped ORDER BY ordinal
         // substitution. Resolve them before the legacy planner compiles the ordinal
         // as a constant (and then drops the sort entirely). See HIVE-30037.
-        processPositionAlias(ast, true);
+        processPositionAlias(ast, false, true);
         sinkOp = super.genOPTree(ast, plannerCtx);
       }
     }
