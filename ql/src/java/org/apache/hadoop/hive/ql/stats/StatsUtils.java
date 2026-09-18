@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -394,10 +395,19 @@ public class StatsUtils {
       if (needColStats) {
 
         if (table.isNonNative() && !isPartitionStats(table, conf)) {
-          // the table maintains table-level column statistics only, so they answer for a scan of
-          // any part of it, on top of the partition-derived basic statistics
+          // the table maintains table-level column statistics only: serve them over the pruned
+          // set, on top of the partition-derived basic statistics
           List<ColStatistics> colStats =
-              getTableColumnStats(table, neededColumns, colStatsCache, fetchColStats);
+              computeAggrColumnStats(table, neededColumns, partList, conf, fetchColStats);
+          if (colStats.size() < neededColumns.size()) {
+            // the pruned set answers for the columns it can - a type whose bounds are not read
+            // states nothing there - and the table's own statistics answer for the rest, which
+            // are measurements rather than an estimate of them
+            Set<String> served = colStats.stream().map(ColStatistics::getColumnName).collect(Collectors.toSet());
+            List<String> unserved = neededColumns.stream().filter(col -> !served.contains(col)).toList();
+            colStats = new ArrayList<>(colStats);
+            colStats.addAll(getTableColumnStats(table, unserved, colStatsCache, fetchColStats));
+          }
           if (estimateStats) {
             colStats = estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
           }
@@ -464,9 +474,9 @@ public class StatsUtils {
 
           stats.addToColumnStats(columnStats);
         } else {
-          if (statsRetrieved) {
-            columnStats.addAll(convertColStats(aggrStats.getColStats()));
-          }
+          List<ColStatistics> aggregatedStats = statsRetrieved ?
+              convertColStats(aggrStats.getColStats()) : Collections.emptyList();
+          columnStats.addAll(aggregatedStats);
           int colStatsAvailable = neededColumns.size() + partitionCols.size() - partitionColsToRetrieve.size();
           if (columnStats.size() != colStatsAvailable) {
             LOG.debug("Column stats requested for : {} columns. Able to retrieve for {} columns",
@@ -491,6 +501,9 @@ public class StatsUtils {
           // Change if we could not retrieve for all partitions
           if (aggrStats != null && aggrStats.getPartsFound() != partNames.size() && stats.getColumnStatsState() != State.NONE) {
             stats.updateColumnStatsState(State.PARTIAL);
+            // values aggregated from a subset of the scanned partitions estimate, but never
+            // answer; a partition column's stats come from the pruned values and stay exact
+            aggregatedStats.forEach(colStats -> colStats.setPartialAggregate(true));
             LOG.debug("Column stats requested for : {} partitions. Able to retrieve for {} partitions",
                     partNames.size(), aggrStats.getPartsFound());
           }
@@ -1118,6 +1131,28 @@ public class StatsUtils {
       }
     }
     return stats;
+  }
+
+  /**
+   * What the storage itself records about the partitions a scan reads, computed rather than
+   * gathered. They describe those partitions rather than every one, which the whole table's do
+   * not, and the caller leaves the state partial as it does for any scan of part of a table.
+   * Whether a storage answers at all is the storage's own to decide.
+   */
+  private static List<ColStatistics> computeAggrColumnStats(Table table, List<String> neededColumns,
+      PrunedPartitionList partList, HiveConf conf, boolean fetchColStats) {
+    if (!fetchColStats || partList == null || partList.getReferredPartCols().isEmpty() ||
+        partList.hasUnknownPartitions()) {
+      return Collections.emptyList();
+    }
+    List<String> partNames = partList.getNotDeniedPartns().stream()
+        .map(Partition::getName)
+        .toList();
+    if (partNames.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return convertColStats(
+        table.getStorageHandler().computeAggrColStatsFor(table, neededColumns, partNames));
   }
 
   private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats) {
@@ -2067,11 +2102,40 @@ public class StatsUtils {
   }
 
   /**
+   * The row count an answer may be folded against: a handler counts the snapshot the scan reads -
+   * a branch or as-of count, not the current table's - so it describes the same rows the column
+   * statistics served for query answering do. A native table's count comes from its metastore
+   * parameters, once they are up to date.
+   */
+  public static Long getNumRowsForQueryAnswering(Table table) {
+    if (table.isNonNative()) {
+      return table.getStorageHandler().canProvideBasicStatistics() ?
+          table.getStorageHandler().getRowCount(table) : null;
+    }
+    return areBasicStatsUptoDateForQueryAnswering(table, table.getParameters()) ? getNumRows(table) : null;
+  }
+
+  /**
    * Are the column stats for the table up-to-date for query planning.
    * Can run additional checks compared to the version in StatsSetupConst.
    */
-  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params, String colName) {
-    return checkCanProvideStats(table) && StatsSetupConst.areColumnStatsUptoDate(params, colName);
+  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params,
+      String colName) {
+    return areColumnStatsUptoDateForQueryAnswering(table, params, List.of(colName));
+  }
+
+  /**
+   * The same, asked of every column at once: a handler settles which of its statistics answer
+   * once, and that question is the same whatever column is asked about.
+   */
+  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params,
+      List<String> colNames) {
+    // a handler keeps its own statistics and knows what happened to them, including writes by
+    // other engines that never touched the metastore marker
+    return checkCanProvideStats(table) && (
+        table.isNonNative() ? table.getStorageHandler().areColumnStatsUptoDate(table, colNames) :
+            StatsSetupConst.areColumnStatsUptoDate(params, colNames)
+    );
   }
 
   /**

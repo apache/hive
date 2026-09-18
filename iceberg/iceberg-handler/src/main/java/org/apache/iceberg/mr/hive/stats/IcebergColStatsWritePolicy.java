@@ -198,7 +198,7 @@ public enum IcebergColStatsWritePolicy {
   }
 
   /** Whether the ANALYZE named the partitions it is for, leaving the rest of the table alone. */
-  private static boolean isAnalyzePartition(Configuration conf) {
+  static boolean isAnalyzePartition(Configuration conf) {
     return SessionStateUtil.getQueryState(conf).map(QueryState::isAnalyzePartition)
         .orElse(false);
   }
