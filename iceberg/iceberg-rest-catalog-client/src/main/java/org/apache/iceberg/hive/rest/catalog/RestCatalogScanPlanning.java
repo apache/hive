@@ -21,6 +21,7 @@ package org.apache.iceberg.hive.rest.catalog;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
@@ -35,8 +36,9 @@ import org.apache.iceberg.rest.RESTCatalogProperties;
  * {@code RESTTable} that delegates {@code planTasks()} to the server. Hive's
  * {@code IcebergInputFormat} calls {@code scan.planTasks()} via
  * {@link org.apache.iceberg.mr.hive.HiveTableUtil#resolveTableForScanPlanning}, which reloads the
- * live REST catalog table (instead of a serialized metadata snapshot) when server mode is enabled.
- * Operators can use this helper or set the property directly in {@code hive-site.xml}.
+ * live REST catalog table (instead of a serialized metadata snapshot) when server mode is enabled and
+ * {@link HiveConf.ConfVars#HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED} is true.
+ * Operators can use this helper or set catalog {@code scan-planning-mode} directly in {@code hive-site.xml}.
  *
  * <p>Tests: {@code TestRestCatalogScanPlanning} and {@code TestRestCatalogScanPlanningServerIT} in
  * {@code iceberg-rest-catalog-client}; {@code TestHiveIcebergServerSideScanPlanning} and
@@ -75,13 +77,23 @@ public final class RestCatalogScanPlanning {
   }
 
   /**
-   * Returns true when the catalog is configured for server-side scan planning.
+   * Returns true when Hive server-side REST scan planning is enabled in configuration.
+   */
+  public static boolean isHiveServerSideScanPlanningEnabled(Configuration conf) {
+    if (conf == null) {
+      return false;
+    }
+    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED);
+  }
+
+  /**
+   * Returns true when the catalog is configured for server-side scan planning and the Hive feature flag is on.
    */
   public static boolean requestsServerSidePlanning(String catalogName, Configuration conf) {
     if (conf == null || StringUtils.isEmpty(catalogName)) {
       return false;
     }
-    return isServerMode(conf, catalogName);
+    return isHiveServerSideScanPlanningEnabled(conf) && isServerMode(conf, catalogName);
   }
 
   /**
@@ -161,6 +173,10 @@ public final class RestCatalogScanPlanning {
     if (!shouldPropagateCatalogPropertiesToJob(resolvedCatalogName, sessionConf)) {
       return;
     }
+
+    consumer.accept(
+        HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED.varname,
+        String.valueOf(isHiveServerSideScanPlanningEnabled(sessionConf)));
 
     String sessionDefaultCatalog =
         MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.CATALOG_DEFAULT);

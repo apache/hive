@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
@@ -103,6 +104,8 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
     Configuration conf = new Configuration();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, CATALOG_NAME);
     RestCatalogScanPlanning.setScanPlanningMode(conf, CATALOG_NAME, "server");
+    HiveConf.setBoolVar(
+        conf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED, true);
     return IcebergCatalogProperties.getCatalogProperties(conf, CATALOG_NAME);
   }
 
@@ -188,6 +191,8 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
         IcebergCatalogProperties.catalogPropertyConfigKey(CATALOG_NAME, CatalogProperties.URI),
         httpServer.getURI().toString());
     RestCatalogScanPlanning.setScanPlanningMode(sessionConf, CATALOG_NAME, "server");
+    HiveConf.setBoolVar(
+        sessionConf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED, true);
     return sessionConf;
   }
 

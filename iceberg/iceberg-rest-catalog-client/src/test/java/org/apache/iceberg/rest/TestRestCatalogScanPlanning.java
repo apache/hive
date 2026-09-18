@@ -21,6 +21,7 @@ package org.apache.iceberg.rest;
 
 import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
@@ -51,8 +52,8 @@ public class TestRestCatalogScanPlanning {
   }
 
   /**
-   * {@code scan-planning-mode=server} in Hadoop {@link Configuration} enables server-side planning;
-   * default/unset mode does not.
+   * {@code scan-planning-mode=server} alone is not enough; {@link HiveConf.ConfVars
+   * #HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED} must also be true.
    */
   @Test
   void requestsServerSidePlanningFromConfiguration() {
@@ -60,8 +61,11 @@ public class TestRestCatalogScanPlanning {
     assertThat(RestCatalogScanPlanning.requestsServerSidePlanning("ice01", conf)).isFalse();
 
     RestCatalogScanPlanning.setScanPlanningMode(conf, "ice01", "server");
-    assertThat(RestCatalogScanPlanning.requestsServerSidePlanning("ice01", conf)).isTrue();
+    assertThat(RestCatalogScanPlanning.requestsServerSidePlanning("ice01", conf)).isFalse();
     assertThat(RestCatalogScanPlanning.isServerMode(conf, "ice01")).isTrue();
+
+    enableHiveServerSideScanPlanning(conf);
+    assertThat(RestCatalogScanPlanning.requestsServerSidePlanning("ice01", conf)).isTrue();
     assertThat(RestCatalogScanPlanning.getScanPlanningMode(conf, "ice01").modeName())
         .isEqualTo("server");
   }
@@ -91,6 +95,8 @@ public class TestRestCatalogScanPlanning {
     assertThat(RestCatalogScanPlanning.shouldPropagateCatalogPropertiesToJob("ice01", conf)).isFalse();
 
     RestCatalogScanPlanning.setScanPlanningMode(conf, "ice01", "server");
+    assertThat(RestCatalogScanPlanning.shouldPropagateCatalogPropertiesToJob("ice01", conf)).isFalse();
+    enableHiveServerSideScanPlanning(conf);
     assertThat(RestCatalogScanPlanning.shouldPropagateCatalogPropertiesToJob("ice01", conf)).isTrue();
 
     Configuration hiveConf = new Configuration();
@@ -98,6 +104,7 @@ public class TestRestCatalogScanPlanning {
         IcebergCatalogProperties.catalogPropertyConfigKey("ice01", CatalogUtil.ICEBERG_CATALOG_TYPE),
         CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE);
     RestCatalogScanPlanning.setScanPlanningMode(hiveConf, "ice01", "server");
+    enableHiveServerSideScanPlanning(hiveConf);
     assertThat(RestCatalogScanPlanning.shouldPropagateCatalogPropertiesToJob("ice01", hiveConf))
         .isFalse();
   }
@@ -116,6 +123,7 @@ public class TestRestCatalogScanPlanning {
     sessionConf.set(
         IcebergCatalogProperties.catalogPropertyConfigKey("ice01", "uri"), "http://localhost:8181");
     RestCatalogScanPlanning.setScanPlanningMode(sessionConf, "ice01", "server");
+    enableHiveServerSideScanPlanning(sessionConf);
     sessionConf.set("unrelated.key", "skip");
 
     Map<String, String> jobProperties = Maps.newHashMap();
@@ -128,6 +136,8 @@ public class TestRestCatalogScanPlanning {
         .containsEntry(
             IcebergCatalogProperties.catalogPropertyConfigKey("ice01", "uri"), "http://localhost:8181")
         .containsEntry(RestCatalogScanPlanning.catalogPropertyKey("ice01"), "server")
+        .containsEntry(
+            HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED.varname, "true")
         .doesNotContainKey("unrelated.key");
   }
 
@@ -145,6 +155,7 @@ public class TestRestCatalogScanPlanning {
     sessionConf.set(
         IcebergCatalogProperties.catalogPropertyConfigKey("ice01", "uri"), "http://localhost:8181");
     RestCatalogScanPlanning.setScanPlanningMode(sessionConf, "ice01", "server");
+    enableHiveServerSideScanPlanning(sessionConf);
 
     Configuration jobConf = new Configuration();
     RestCatalogScanPlanning.propagateCatalogPropertiesToJob(sessionConf, null, jobConf);
@@ -176,5 +187,10 @@ public class TestRestCatalogScanPlanning {
     RestCatalogScanPlanning.propagateCatalogPropertiesToJob(sessionConf, "ice01", jobProperties);
 
     assertThat(jobProperties).isEmpty();
+  }
+
+  private static void enableHiveServerSideScanPlanning(Configuration conf) {
+    HiveConf.setBoolVar(
+        conf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED, true);
   }
 }
