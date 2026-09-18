@@ -89,7 +89,6 @@ import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SubStructObjectInspector;
@@ -1507,9 +1506,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private boolean isCowMatchedRow(Object row) {
     Object markerValue = ((StructObjectInspector) inputObjInspectors[0])
         .getStructFieldData(row, cowMatchedMarkerField);
-    Boolean matched = (Boolean) ((PrimitiveObjectInspector) cowMatchedMarkerField.getFieldObjectInspector())
-        .getPrimitiveJavaObject(markerValue);
-    return Boolean.TRUE.equals(matched);
+    return markerValue != null && Boolean.parseBoolean(markerValue.toString());
   }
 
   @Override
