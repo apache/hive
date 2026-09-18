@@ -22,8 +22,17 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Collect;
+import org.apache.calcite.rel.core.Combine;
+import org.apache.calcite.rel.core.ConditionalCorrelate;
+import org.apache.calcite.rel.core.Sample;
+import org.apache.calcite.rel.core.Snapshot;
+import org.apache.calcite.rel.core.SortExchange;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.core.TableSpool;
+import org.apache.calcite.rel.core.Uncollect;
+import org.apache.calcite.rel.core.Window;
 import org.apache.calcite.rel.logical.LogicalAggregate;
 import org.apache.calcite.rel.logical.LogicalAsofJoin;
 import org.apache.calcite.rel.logical.LogicalCalc;
@@ -189,6 +198,51 @@ public class HiveRelShuttleImpl implements HiveRelShuttle {
     @Override
     public RelNode visit(LogicalRepeatUnion logicalRepeatUnion) {
         return visitChildren(logicalRepeatUnion);
+    }
+
+    @Override
+    public RelNode visit(Window window) {
+        return visitChildren(window);
+    }
+
+    @Override
+    public RelNode visit(Snapshot snapshot) {
+        return visitChildren(snapshot);
+    }
+
+    @Override
+    public RelNode visit(Collect collect) {
+        return visitChildren(collect);
+    }
+
+    @Override
+    public RelNode visit(Sample sample) {
+        return visitChildren(sample);
+    }
+
+    @Override
+    public RelNode visit(Uncollect uncollect) {
+        return visitChildren(uncollect);
+    }
+
+    @Override
+    public RelNode visit(Combine combine) {
+        return visitChildren(combine);
+    }
+
+    @Override
+    public RelNode visit(ConditionalCorrelate conditionalCorrelate) {
+        return visitChildren(conditionalCorrelate);
+    }
+
+    @Override
+    public RelNode visit(SortExchange sortExchange) {
+        return visitChildren(sortExchange);
+    }
+
+    @Override
+    public RelNode visit(TableSpool tableSpool) {
+        return visitChildren(tableSpool);
     }
 }
 
