@@ -126,13 +126,7 @@ class DefaultMetaCachePreWarm implements MetaCachePreWarm {
       Deadline.registerIfNot(1000000);
       Collection<String> catalogsToCache;
       try {
-        catalogsToCache = CachedStore.catalogsToCache(rawStore);
-        LOG.info("Going to cache catalogs: {}", org.apache.commons.lang3.StringUtils.join(catalogsToCache, ", "));
-        List<Catalog> catalogs = new ArrayList<>(catalogsToCache.size());
-        for (String catName : catalogsToCache) {
-          catalogs.add(rawStore.getCatalog(catName));
-        }
-        sharedCache.populateCatalogsInCache(catalogs);
+        catalogsToCache = preWarmCatalogs();
       } catch (MetaException | NoSuchObjectException e) {
         LOG.warn("Failed to populate catalogs in cache, going to try again", e);
         try {
@@ -147,27 +141,45 @@ class DefaultMetaCachePreWarm implements MetaCachePreWarm {
         continue;
       }
       LOG.info("Finished prewarming catalogs, starting on databases");
-      List<Database> databases = new ArrayList<>();
-      for (String catName : catalogsToCache) {
-        try {
-          List<String> dbNames = rawStore.getAllDatabases(catName);
-          LOG.info("Number of databases to prewarm in catalog {}: {}", catName, dbNames.size());
-          for (String dbName : dbNames) {
-            try {
-              databases.add(rawStore.getDatabase(catName, dbName));
-            } catch (NoSuchObjectException e) {
-              // Continue with next database
-              LOG.warn("Failed to cache database {}, moving on", DatabaseName.getQualified(catName, dbName), e);
-            }
-          }
-        } catch (MetaException e) {
-          LOG.warn("Failed to cache databases in catalog {}, moving on", catName, e);
-        }
-      }
+      List<Database> databases = listDatabases(catalogsToCache);
       sharedCache.populateDatabasesInCache(databases);
       LOG.info("Databases cache is now prewarmed. Now adding tables, partitions and statistics to the cache");
       return preWarmTables(databases);
     }
+  }
+
+  /** Caches all catalogs and returns their names. */
+  private Collection<String> preWarmCatalogs() throws MetaException, NoSuchObjectException {
+    Collection<String> catalogsToCache = CachedStore.catalogsToCache(rawStore);
+    LOG.info("Going to cache catalogs: {}", org.apache.commons.lang3.StringUtils.join(catalogsToCache, ", "));
+    List<Catalog> catalogs = new ArrayList<>(catalogsToCache.size());
+    for (String catName : catalogsToCache) {
+      catalogs.add(rawStore.getCatalog(catName));
+    }
+    sharedCache.populateCatalogsInCache(catalogs);
+    return catalogsToCache;
+  }
+
+  /** Lists the databases of the given catalogs, skipping the ones that cannot be read. */
+  private List<Database> listDatabases(Collection<String> catalogsToCache) {
+    List<Database> databases = new ArrayList<>();
+    for (String catName : catalogsToCache) {
+      try {
+        List<String> dbNames = rawStore.getAllDatabases(catName);
+        LOG.info("Number of databases to prewarm in catalog {}: {}", catName, dbNames.size());
+        for (String dbName : dbNames) {
+          try {
+            databases.add(rawStore.getDatabase(catName, dbName));
+          } catch (NoSuchObjectException e) {
+            // Continue with next database
+            LOG.warn("Failed to cache database {}, moving on", DatabaseName.getQualified(catName, dbName), e);
+          }
+        }
+      } catch (MetaException e) {
+        LOG.warn("Failed to cache databases in catalog {}, moving on", catName, e);
+      }
+    }
+    return databases;
   }
 
   /**
@@ -200,19 +212,8 @@ class DefaultMetaCachePreWarm implements MetaCachePreWarm {
               () -> drainTablesPendingPrewarm(workerStore, catName, dbName, stopPrewarm, tablesCachedSoFar,
                   totalTablesToCache)));
         }
-        for (Future<?> worker : workers) {
-          try {
-            worker.get();
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            LOG.warn("Interrupted while waiting for prewarm workers on database {}; "
-                + "completing prewarm with the metadata cached so far", dbName);
-            // Tell the remaining workers to stop; close() awaits their termination
-            stopPrewarm.set(true);
-            return false;
-          } catch (ExecutionException e) {
-            LOG.warn("Prewarm worker failed for database {}, moving on", dbName, e);
-          }
+        if (!awaitWorkers(workers, dbName, stopPrewarm)) {
+          return false;
         }
       } else {
         drainTablesPendingPrewarm(rawStore, catName, dbName, stopPrewarm, tablesCachedSoFar, totalTablesToCache);
@@ -223,6 +224,29 @@ class DefaultMetaCachePreWarm implements MetaCachePreWarm {
       }
       LOG.debug("Processed database: {}. Cached {} / {} databases so far.", dbName, ++numberOfDatabasesCachedSoFar,
           databases.size());
+    }
+    return true;
+  }
+
+  /**
+   * Waits for all the given workers to finish. On interruption, tells the remaining workers to
+   * stop (close() then awaits their termination) and returns false; a failed worker is only
+   * logged, the tables it could not cache are served from the raw store until the cache update
+   * service refreshes them.
+   */
+  private boolean awaitWorkers(List<Future<?>> workers, String dbName, AtomicBoolean stopPrewarm) {
+    for (Future<?> worker : workers) {
+      try {
+        worker.get();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        LOG.warn("Interrupted while waiting for prewarm workers on database {}; "
+            + "completing prewarm with the metadata cached so far", dbName);
+        stopPrewarm.set(true);
+        return false;
+      } catch (ExecutionException e) {
+        LOG.warn("Prewarm worker failed for database {}, moving on", dbName, e);
+      }
     }
     return true;
   }

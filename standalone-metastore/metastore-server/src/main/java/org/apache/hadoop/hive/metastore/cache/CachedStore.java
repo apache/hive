@@ -43,7 +43,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Deadline;
@@ -543,7 +542,7 @@ public class CachedStore implements RawStore, Configurable {
         MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_CACHED_OBJECTS_BLACKLIST));
   }
 
-  static Collection<String> catalogsToCache(RawStore rs) throws MetaException {
+  static Collection<String> catalogsToCache(RawStore rs) {
     Collection<String> confValue = MetastoreConf.getStringCollection(rs.getConf(), ConfVars.CATALOGS_TO_CACHE);
     if (confValue == null || confValue.isEmpty() || (confValue.size() == 1 && confValue.contains(""))) {
       return rs.getCatalogs();
