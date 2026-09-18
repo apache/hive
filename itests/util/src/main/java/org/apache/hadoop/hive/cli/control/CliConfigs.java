@@ -406,8 +406,8 @@ public class CliConfigs {
     public TPCDSIcebergS3CliConfig() {
       super(CorePerfCliDriver.class);
       setQueryDir("ql/src/test/queries/clientpositive/perf");
-      setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds1tb/iceberg");
-      setResultsDir("ql/src/test/results/clientpositive/perf/tpcds1tb/iceberg");
+      setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds10tb/iceberg");
+      setResultsDir("ql/src/test/results/clientpositive/perf/tpcds10tb/iceberg");
 
       setInitScript("q_init_tpcds_iceberg.sql");
       setCleanupScript("q_test_cleanup_tez.sql");
