@@ -53,8 +53,7 @@ import java.util.zip.ZipInputStream;
 public final class S3Container {
 
   private static final Logger LOG = LoggerFactory.getLogger(S3Container.class);
-  private static final DockerImageName RUSTFS_IMAGE =
-      DockerImageName.parse("rustfs/rustfs:v1.0.0-rc.5-glibc");
+  private static final DockerImageName RUSTFS_IMAGE = DockerImageName.parse("rustfs/rustfs:1.0.0");
   private static final String ACCESS_KEY = "rustfsadmin";
   private static final String SECRET_KEY = "rustfsadmin";
   private static final int S3_PORT = 9000;
