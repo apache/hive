@@ -174,6 +174,11 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
+  public AlterHandler getAlterHandler() {
+    return alterHandler;
+  }
+
+  @Override
   public MetaStoreFilterHook getMetaFilterHook() {
     return filterHook;
   }
