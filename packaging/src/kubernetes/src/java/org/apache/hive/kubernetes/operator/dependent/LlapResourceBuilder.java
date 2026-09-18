@@ -392,14 +392,15 @@ public class LlapResourceBuilder
     if (spec.envVars() != null) {
       envVars.addAll(spec.envVars());
     }
+    envVars.addAll(spec.tezAm().envVars());
 
     List<io.fabric8.kubernetes.api.model.VolumeMount> volumeMounts = new ArrayList<>();
     volumeMounts.add(new io.fabric8.kubernetes.api.model.VolumeMountBuilder()
         .withName(HIVE_CONFIG_VOLUME)
         .withMountPath(CONF_MOUNT_PATH).build());
     volumeMounts.add(new io.fabric8.kubernetes.api.model.VolumeMountBuilder()
-        .withName("scratch")
-        .withMountPath("/opt/hive/scratch").build());
+        .withName(ScratchPvcDependent.COMPONENT)
+        .withMountPath(ConfigUtils.SCRATCH_MOUNT_PATH).build());
 
     List<Volume> volumes = new ArrayList<>();
     // Projected volume: hive-site.xml from HS2 CM, tez-site.xml from per-LLAP CM, core-site.xml from Hadoop CM
@@ -408,7 +409,7 @@ public class LlapResourceBuilder
     String tezAmCmName = tezAmConfigMapName(hiveCluster, llap);
     volumes.add(buildProjectedConfigVolume(HIVE_CONFIG_VOLUME, hs2CmName, tezAmCmName, hadoopCmName));
     volumes.add(new io.fabric8.kubernetes.api.model.VolumeBuilder()
-        .withName("scratch")
+        .withName(ScratchPvcDependent.COMPONENT)
         .withNewPersistentVolumeClaim()
           .withClaimName(ScratchPvcDependent.resourceName(hiveCluster))
         .endPersistentVolumeClaim()
@@ -461,7 +462,7 @@ public class LlapResourceBuilder
                 .withImagePullPolicy(spec.imagePullPolicy())
                 .withEnv(envVars)
                 .withPorts(ports)
-                .withResources(buildResources(spec.tezAm().resources()))
+                .withResources(spec.tezAm().resources())
                 .withVolumeMounts(volumeMounts)
               .endContainer()
               .withVolumes(volumes)
@@ -470,8 +471,17 @@ public class LlapResourceBuilder
         .endSpec()
         .build();
 
+    // Per-cluster affinity, falling back to the global one: spec.tezAm's is a single block
+    // shared by every cluster's TezAM.
+    applyAffinityOverride(
+        deployment.getSpec().getTemplate().getSpec(),
+        llap.tezAm().affinity() != null ? llap.tezAm().affinity() : spec.tezAm().affinity());
     applySpreadAffinityIfAbsent(
         deployment.getSpec().getTemplate().getSpec(), selectorLabels);
+    applyTolerations(
+        deployment.getSpec().getTemplate().getSpec(),
+        llap.tezAm().tolerations() != null && !llap.tezAm().tolerations().isEmpty()
+            ? llap.tezAm().tolerations() : spec.tezAm().tolerations());
 
     appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),
@@ -522,6 +532,11 @@ public class LlapResourceBuilder
     if (spec.envVars() != null) {
       envVars.addAll(spec.envVars());
     }
+    // Component-scoped last, so a per-cluster value wins over the cluster-wide one -- the same
+    // order HiveServer2/Metastore/TezAm use. Without this LLAP was the one component with no
+    // scoped env vars, so LLAP_DAEMON_OPTS and LLAP_DAEMON_HEAPSIZE had to be set cluster-wide
+    // and were then present, unread, on every other pod.
+    envVars.addAll(llap.envVars());
 
     int managementPort = ConfigUtils.getInt(llap.configOverrides(),
         ConfigUtils.HIVE_LLAP_MANAGEMENT_RPC_PORT_KEY, null,
@@ -561,6 +576,19 @@ public class LlapResourceBuilder
     String cmName = configMapName(hiveCluster, llap);
     String hadoopCmName = HiveConfigMapDependent.Hadoop.resourceName(hiveCluster);
     volumes.add(buildProjectedConfigVolume(LLAP_CONFIG_VOLUME, cmName, hadoopCmName));
+
+    // The scratch PVC only exists when the TezAM does, so mount it on the same condition.
+    if (spec.tezAm().isEnabled()) {
+      volumeMounts.add(new io.fabric8.kubernetes.api.model.VolumeMountBuilder()
+          .withName(ScratchPvcDependent.COMPONENT)
+          .withMountPath(ConfigUtils.SCRATCH_MOUNT_PATH).build());
+      volumes.add(new io.fabric8.kubernetes.api.model.VolumeBuilder()
+          .withName(ScratchPvcDependent.COMPONENT)
+          .withNewPersistentVolumeClaim()
+            .withClaimName(ScratchPvcDependent.resourceName(hiveCluster))
+          .endPersistentVolumeClaim()
+          .build());
+    }
 
     List<Container> initContainers = new ArrayList<>();
     addExternalJars(spec.image(), spec.externalJars(),
@@ -609,7 +637,7 @@ public class LlapResourceBuilder
                 .withEnv(envVars)
                 .withPorts(ports)
                 .withReadinessProbe(readinessProbe)
-                .withResources(buildResources(llap.resources()))
+                .withResources(llap.resources())
                 .withVolumeMounts(volumeMounts)
               .endContainer()
               .withVolumes(volumes)
@@ -618,8 +646,12 @@ public class LlapResourceBuilder
         .endSpec()
         .build();
 
+    applyAffinityOverride(
+        statefulSet.getSpec().getTemplate().getSpec(), llap.affinity());
     applySpreadAffinityIfAbsent(
         statefulSet.getSpec().getTemplate().getSpec(), selectorLabels);
+    applyTolerations(
+        statefulSet.getSpec().getTemplate().getSpec(), llap.tolerations());
 
     if (autoscaling.isEnabled()) {
       String preStopScript = buildDualMetricDrainScript(

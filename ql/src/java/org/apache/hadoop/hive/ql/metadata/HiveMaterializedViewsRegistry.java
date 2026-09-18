@@ -388,7 +388,7 @@ public final class HiveMaterializedViewsRegistry {
 
     // 1. Create column schema
     final RowResolver rr = new RowResolver();
-    // 1.1 Add Column info for non partion cols (Object Inspector fields)
+    // 1.1 Add Column info for non partition cols (Object Inspector fields)
     StructObjectInspector rowObjectInspector;
     try {
       rowObjectInspector = (StructObjectInspector) viewTable.getDeserializer()

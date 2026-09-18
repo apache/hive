@@ -151,10 +151,12 @@ POSTHOOK: Output: default@ice_orc_wo_evo
 PREHOOK: query: delete from ice_orc_wo_evo where last_name in ('ln1a', 'ln2a', 'ln7a')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc_wo_evo
+PREHOOK: Output: default@ice_orc_wo_evo
 #### A masked pattern was here ####
 POSTHOOK: query: delete from ice_orc_wo_evo where last_name in ('ln1a', 'ln2a', 'ln7a')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc_wo_evo
+POSTHOOK: Output: default@ice_orc_wo_evo
 #### A masked pattern was here ####
 PREHOOK: query: select * from ice_orc_wo_evo
 PREHOOK: type: QUERY

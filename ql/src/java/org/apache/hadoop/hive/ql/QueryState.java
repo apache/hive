@@ -81,6 +81,8 @@ public class QueryState {
    */
   private long numModifiedRows = 0;
 
+  private boolean analyzePartition;
+
   static public final String USERID_TAG = "userid";
 
   /**
@@ -207,6 +209,15 @@ public class QueryState {
 
   public void setNumModifiedRows(long numModifiedRows) {
     this.numModifiedRows = numModifiedRows;
+  }
+
+  /** Whether an ANALYZE named the partitions it is for, leaving the rest of the table alone. */
+  public boolean isAnalyzePartition() {
+    return analyzePartition;
+  }
+
+  public void setAnalyzePartition(boolean analyzePartition) {
+    this.analyzePartition = analyzePartition;
   }
 
   public String getQueryTag() {

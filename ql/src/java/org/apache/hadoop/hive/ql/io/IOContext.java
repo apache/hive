@@ -51,12 +51,15 @@ public class IOContext {
   /**
    * supports {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#ROWID}
    */
-  private  RecordIdentifier ri;
+  private RecordIdentifier ri;
   private boolean isDeletedRecord;
   private PositionDeleteInfo pdi;
   private RowLineageInfo rowLineageInfo;
 
-  public static enum Comparison {
+  // the partition of the rows the reader currently serves
+  private String partitionName;
+
+  public enum Comparison {
     GREATER,
     LESS,
     EQUAL,
@@ -197,6 +200,14 @@ public class IOContext {
 
   public PositionDeleteInfo getPositionDeleteInfo() {
     return pdi;
+  }
+
+  public void setPartitionName(String partitionName) {
+    this.partitionName = partitionName;
+  }
+
+  public String getPartitionName() {
+    return partitionName;
   }
 
   public void parseRowLineageInfo(JobConf cconfiguration) {

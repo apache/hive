@@ -28,6 +28,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
+import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
@@ -60,6 +61,7 @@ import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.plan.RuleEventLogger;
 import org.apache.calcite.plan.hep.HepMatchOrder;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
@@ -91,6 +93,7 @@ import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
+import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rel.type.RelDataType;
@@ -164,15 +167,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggeste
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggesterFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSearchRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
@@ -1539,7 +1539,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
        * recreate cluster, so that it picks up the additional traitDef
        */
       RelOptPlanner planner = createPlanner(conf, statsSource, ctx.isExplainPlan());
-      final RexBuilder rexBuilder = new RexBuilder(new HiveTypeFactory());
+      final RexBuilder rexBuilder = cluster.getRexBuilder();
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
       this.cluster = optCluster;
@@ -1897,10 +1897,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               HiveRemoveEmptySingleRules.PROJECT_INSTANCE,
               HiveRemoveEmptySingleRules.FILTER_INSTANCE,
               HiveRemoveEmptySingleRules.JOIN_LEFT_INSTANCE,
-              HiveRemoveEmptySingleRules.SEMI_JOIN_LEFT_INSTANCE,
               HiveRemoveEmptySingleRules.JOIN_RIGHT_INSTANCE,
-              HiveRemoveEmptySingleRules.SEMI_JOIN_RIGHT_INSTANCE,
-              HiveRemoveEmptySingleRules.ANTI_JOIN_RIGHT_INSTANCE,
               HiveRemoveEmptySingleRules.SORT_INSTANCE,
               HiveRemoveEmptySingleRules.SORT_FETCH_ZERO_INSTANCE,
               HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
@@ -2213,7 +2210,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           rules.toArray(new RelOptRule[0]));
       // Join reordering
       generatePartialProgram(program, false, HepMatchOrder.BOTTOM_UP,
-          new JoinToMultiJoinRule(HiveJoin.class), HiveLoptOptimizeJoinRule.INSTANCE);
+          new JoinToMultiJoinRule(HiveJoin.class), new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
 
       RelNode calciteOptimizedPlan;
       try {
@@ -2952,7 +2949,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // NOTE: Table logical schema = Non Partition Cols + Partition Cols +
         // Virtual Cols
 
-        // 3.1 Add Column info for non partion cols (Object Inspector fields)
+        // 3.1 Add Column info for cols (Object Inspector fields)
         final Deserializer deserializer = tabMetaData.getDeserializer();
         StructObjectInspector rowObjectInspector = (StructObjectInspector) deserializer
             .getObjectInspector();
@@ -2960,42 +2957,64 @@ public class CalcitePlanner extends SemanticAnalyzer {
         deserializer.handleJobLevelConfiguration(conf);
 
         List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
-        ColumnInfo colInfo;
-        String colName;
-        ArrayList<ColumnInfo> cInfoLst = new ArrayList<>();
-
         final NotNullConstraint nnc = tabMetaData.getNotNullConstraint();
         final PrimaryKeyInfo pkc = tabMetaData.getPrimaryKeyInfo();
 
-        for (StructField structField : fields) {
-          colName = structField.getFieldName();
-          colInfo = new ColumnInfo(
-                  structField.getFieldName(),
-                  TypeInfoUtils.getTypeInfoFromObjectInspector(structField.getFieldObjectInspector()),
-                  isNullable(colName, nnc, pkc), tableAlias, false);
-          colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
-          rr.put(tableAlias, colName, colInfo);
-          cInfoLst.add(colInfo);
-        }
-        // TODO: Fix this
-        ArrayList<ColumnInfo> nonPartitionColumns = new ArrayList<ColumnInfo>(cInfoLst);
-        ArrayList<ColumnInfo> partitionColumns = new ArrayList<ColumnInfo>();
+        int allColCount = tabMetaData.getAllCols().size();
+        List<ColumnInfo> colInfoList = new ArrayList<>(Collections.nCopies(allColCount, null));
 
         // 3.2 Add column info corresponding to partition columns
+        // Normally, the column names in a schema should be unique, but in the case of Iceberg v1 tables,
+        // updating the partition spec doesn't remove the existing partition keys, so we can end up with a
+        // partition spec containing multiple columns with the same name.
+        Set<ColumnInfo> partitionColumnSet = LinkedHashSet.newLinkedHashSet(tabMetaData.getPartCols().size());
+        Set<String> nonIdentityPartitionColumnNames = Collections.emptySet();
+        if (tabMetaData.hasNonNativePartitionSupport()) {
+          nonIdentityPartitionColumnNames = tabMetaData.getStorageHandler().getPartitionTransformSpec(tabMetaData)
+              .stream()
+              .filter(transformSpec -> transformSpec.getTransformType() != TransformSpec.TransformType.IDENTITY)
+              .map(TransformSpec::getColumnName)
+              .collect(Collectors.toSet());
+        }
+        Set<String> partitionColNames = HashSet.newHashSet(
+            tabMetaData.getPartCols().size() - nonIdentityPartitionColumnNames.size());
+
         for (FieldSchema partCol : tabMetaData.getPartCols()) {
-          if (tabMetaData.hasNonNativePartitionSupport()) {
-            break;
+          String colName = partCol.getName();
+          if (nonIdentityPartitionColumnNames.contains(colName)) {
+            continue;
           }
-          colName = partCol.getName();
-          colInfo = new ColumnInfo(colName,
-                  TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()),
-                  isNullable(colName, nnc, pkc), tableAlias, true);
-          rr.put(tableAlias, colName, colInfo);
-          cInfoLst.add(colInfo);
-          partitionColumns.add(colInfo);
+
+          partitionColNames.add(colName);
+
+          ColumnInfo colInfo = new ColumnInfo(colName,
+              TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()),
+              isNullable(colName, nnc, pkc), tableAlias, true);
+          colInfoList.set(tabMetaData.getColumnIndexByName(colName), colInfo);
+          partitionColumnSet.add(colInfo);
         }
 
-        final TableType tableType = obtainTableType(tabMetaData);
+        List<ColumnInfo> partitionColumns = List.copyOf(partitionColumnSet);
+
+        List<ColumnInfo> nonPartitionColumns = new ArrayList<>(fields.size());
+        for (StructField structField : fields) {
+          String colName = structField.getFieldName();
+          if (partitionColNames.contains(colName)) {
+            continue;
+          }
+
+          ColumnInfo colInfo = new ColumnInfo(
+              structField.getFieldName(),
+              TypeInfoUtils.getTypeInfoFromObjectInspector(structField.getFieldObjectInspector()),
+              isNullable(colName, nnc, pkc), tableAlias, false);
+          colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
+          colInfoList.set(tabMetaData.getColumnIndexByName(colName), colInfo);
+          nonPartitionColumns.add(colInfo);
+        }
+
+        for (ColumnInfo colInfo : colInfoList) {
+          rr.put(tableAlias, colInfo.getInternalName(), colInfo);
+        }
 
         // 3.3 Add column info corresponding to virtual columns
         List<VirtualColumn> virtualCols = tabMetaData.getVirtualColumns();
@@ -3008,6 +3027,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             );
 
         // 4. Build operator
+        final TableType tableType = obtainTableType(tabMetaData);
         Map<String, String> tabPropsFromQuery = qb.getTabPropsForAlias(tableAlias);
         HiveTableScan.HiveTableScanTrait tableScanTrait = HiveTableScan.HiveTableScanTrait.from(tabPropsFromQuery);
         RelOptHiveTable optTable;
@@ -3610,6 +3630,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // SEL%SEL% rule.
       ASTNode selExprList = qb.getParseInfo().getSelForClause(destClauseName);
       SubQueryUtils.checkForTopLevelSubqueries(selExprList);
+      List<Integer> clearedAmbiguousPositions = new ArrayList<>();
+      List<ColumnInfo> clearedAmbiguousColumns = null;
       if (selExprList.getToken().getType() == HiveParser.TOK_SELECTDI
           && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
         ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
@@ -3617,6 +3639,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // As we said before, here we use genSelectLogicalPlan to rewrite AllColRef
           srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null, null, true).getKey();
           RowResolver rr = relToHiveRR.get(srcRel);
+          // Clear the HIVE-29580 ambiguity markers on this rewrite-private projection (its
+          // ColumnInfos are genColListRegex copies; the subquery's own RowResolver keeps its
+          // markers) so genSelectDIAST's synthesized by-name references type check; reapplied
+          // to the group by output below so that references crossing this boundary still fail.
+          clearedAmbiguousColumns = rr.getColumnInfos();
+          for (int i = 0; i < clearedAmbiguousColumns.size(); i++) {
+            if (clearedAmbiguousColumns.get(i).hasAmbiguousName()) {
+              clearedAmbiguousPositions.add(i);
+              clearedAmbiguousColumns.get(i).setAmbiguousName(false);
+            }
+          }
           qbp.setSelExprForClause(destClauseName, genSelectDIAST(rr));
         }
       }
@@ -3757,6 +3790,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
         groupByRel = genGBRelNode(groupByExpressions, aggregations, groupingSets, srcRel);
         relToHiveColNameCalcitePosMap.put(groupByRel, buildHiveToCalciteColumnMap(groupByOutputRowResolver));
         relToHiveRR.put(groupByRel, groupByOutputRowResolver);
+        // Reapply the markers cleared for the DISTINCT * rewrite above; its group by output is
+        // positionally one key per input column (no aggregations, no grouping sets). Copy the
+        // user-visible names too, so a rejection resolving against this exprResolver RR (e.g.
+        // a HAVING reference) reads "c in t" rather than the expression tree.
+        for (int position : clearedAmbiguousPositions) {
+          ColumnInfo gbColInfo = groupByOutputRowResolver.getColumnInfos().get(position);
+          gbColInfo.setAmbiguousName(true);
+          gbColInfo.setAlias(clearedAmbiguousColumns.get(position).getAlias());
+          gbColInfo.setTabAlias(clearedAmbiguousColumns.get(position).getTabAlias());
+        }
       }
 
       return groupByRel;
@@ -4367,8 +4410,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           // 6.4 Build ExprNode corresponding to colums
           if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
-            pos = genRexNodeRegex(".*",
-                expr.getChildCount() == 0 ? null : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
+            // Parse SELECT * EXCLUDE columns and pass them to the Calcite engine for exclusion
+            ExcludeResult excludeResult = processAllColRefAndExclude(expr, inputRR);
+            String starTabAlias = excludeResult.tableAlias();
+            excludedColumns.addAll(excludeResult.excludedColumns());
+            pos = genRexNodeRegex(".*", starTabAlias,
                 expr, columnList, excludedColumns, inputRR, starRR, pos, outputRR, qb.getAliases(), true);
           } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
                   && !hasAsClause
@@ -4429,6 +4475,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
                 TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo),
                 tabAlias, false);
+            if (expression instanceof RexInputRef inputRef) {
+              // Carry the HIVE-29580 marker through this projection. Only expression-map
+              // resolutions (the DISTINCT * rewrite's synthesized references) reach here with a
+              // marked source; user-written ones already failed checkAmbiguousName in genRexNode.
+              ColumnInfo sourceColInfo = inputRR.getColumnInfos().get(inputRef.getIndex());
+              colInfo.setAmbiguousName(sourceColInfo.hasAmbiguousName());
+            }
             outputRR.put(tabAlias, colAlias, colInfo);
 
             pos = Integer.valueOf(pos.intValue() + 1);
@@ -4546,6 +4599,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ColumnInfo colInfo = outputRR.getColumnInfos().get(i);
           ColumnInfo newColInfo = new ColumnInfo(colInfo.getInternalName(),
               colInfo.getType(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+          newColInfo.setAmbiguousName(colInfo.hasAmbiguousName());
           groupByOutputRowResolver.put(colInfo.getTabAlias(), colInfo.getAlias(), newColInfo);
           if (gbyKeyExpressions != null && gbyKeyExpressions.size() == outputRR.getColumnInfos().size()) {
             groupByOutputRowResolver.putExpression(gbyKeyExpressions.get(i), colInfo);
@@ -4883,11 +4937,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ColumnInfo newCi = new ColumnInfo(colInfo);
           newCi.setTabAlias(alias);
           if (i < targetColNames.size()) {
+            // An explicit column list disambiguates positionally; a collision with an unlisted
+            // column is re-marked when that later column's turn reaches the branch below.
             tmp[1] = targetColNames.get(i);
             newCi.setAlias(tmp[1]);
+            newCi.setAmbiguousName(false);
           } else if ("".equals(tmp[0]) || tmp[1] == null) {
             // ast expression is not a valid column name for table
             tmp[1] = colInfo.getInternalName();
+          } else {
+            ColumnInfo clashingColInfo = newRR.get(alias, tmp[1]);
+            if (clashingColInfo != null) {
+              // Duplicate alias escaping the subquery boundary: tolerated for positional use
+              // (HIVE-19770), but poison the name so a later by-name reference fails (HIVE-29580).
+              // Binding the duplicate to its internal name here is deliberate, not redundant:
+              // putWithCheck would otherwise do it via its own fallback AND call keepAmbiguousInfo,
+              // whose reference-time throw in RowResolver.get would then shadow this marker with a
+              // differently formatted message. Do not "simplify" this line away.
+              clashingColInfo.setAmbiguousName(true);
+              tmp[1] = colInfo.getInternalName();
+            }
           }
           newRR.putWithCheck(alias, tmp[1], colInfo.getInternalName(), newCi);
         }

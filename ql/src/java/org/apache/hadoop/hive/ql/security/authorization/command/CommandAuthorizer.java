@@ -76,14 +76,15 @@ public final class CommandAuthorizer {
 
   private static Set<ReadEntity> getInputs(BaseSemanticAnalyzer sem) {
     Set<ReadEntity> additionalInputs = new HashSet<ReadEntity>();
-    for (Entity e : sem.getInputs()) {
+    for (Entity e : sem.getAllInputs()) {
       if (e.getType() == Entity.Type.PARTITION) {
         additionalInputs.add(new ReadEntity(e.getTable()));
       }
     }
 
+    // getAllInputs() includes tables read by materialized CTE sub-analyzers.
     // Sets.union keeps the values from the first set if they are present in both
-    return Sets.union(sem.getInputs(), additionalInputs);
+    return Sets.union(sem.getAllInputs(), additionalInputs);
   }
 
   private static Set<WriteEntity> getOutputs(BaseSemanticAnalyzer sem) {

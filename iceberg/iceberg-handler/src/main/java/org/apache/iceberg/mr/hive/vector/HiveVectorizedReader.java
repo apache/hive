@@ -184,7 +184,7 @@ public class HiveVectorizedReader {
       }
 
       CloseableIterable<HiveBatchContext> vrbIterable =
-          createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues, idToConstant);
+          createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues, task);
 
       return deleteFilter != null ? deleteFilter.filterBatch(vrbIterable) : vrbIterable;
 
@@ -293,12 +293,12 @@ public class HiveVectorizedReader {
 
   private static CloseableIterable<HiveBatchContext> createVectorizedRowBatchIterable(
       RecordReader<NullWritable, VectorizedRowBatch> hiveRecordReader, JobConf job, int[] partitionColIndices,
-      Object[] partitionValues, Map<Integer, ?> idToConstant) {
+      Object[] partitionValues, FileScanTask task) {
 
     HiveBatchIterator iterator =
-        new HiveBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues, idToConstant);
+        new HiveBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues, task);
 
-    return new CloseableIterable<HiveBatchContext>() {
+    return new CloseableIterable<>() {
 
       @Override
       public CloseableIterator iterator() {

@@ -185,9 +185,9 @@ public class CompactionEvaluator extends CommonPartitionEvaluator {
         .orElse(TableProperties.SELF_OPTIMIZING_MAJOR_TRIGGER_DUPLICATE_RATIO_DEFAULT);
   }
 
-  private static Pair<Integer, StructLike> getPartitionSpecStructPair(Table table, String partitionPath)
+  private static Pair<Integer, StructLike> getPartitionSpecStructPair(Table table, String partitionName)
       throws IOException {
-    if (!table.spec().isPartitioned() || partitionPath == null) {
+    if (!table.spec().isPartitioned() || partitionName == null) {
       return null;
     }
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
@@ -200,10 +200,10 @@ public class CompactionEvaluator extends CommonPartitionEvaluator {
             PartitionSpec spec = table.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
             PartitionData partitionData = IcebergTableUtil.toPartitionData(data,
                 Partitioning.partitionType(table), spec.partitionType());
-            String path = spec.partitionToPath(partitionData);
-            return Maps.immutableEntry(path, Pair.of(spec.specId(), data));
+            String partName = IcebergTableUtil.toPartitionName(spec, partitionData);
+            return Maps.immutableEntry(partName, Pair.of(spec.specId(), data));
           })
-          .filter(e -> e.getKey().equals(partitionPath))
+          .filter(e -> e.getKey().equals(partitionName))
           .transform(Map.Entry::getValue)
           .get(0);
     }

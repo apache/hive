@@ -184,7 +184,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@lday
 POSTHOOK: Output: default@lday
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[79][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[129][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 5' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select * from
 (select        item1.S_ID  S_ID,
@@ -348,6 +348,7 @@ STAGE PLANS:
                 TableScan
                   alias: lday2
                   filterExpr: (ly_date is not null and d_date is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_126_container, bigKeyColName:d_date, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -800,7 +801,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[79][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[129][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 5' is a cross product
 PREHOOK: query: select * from
 (select        item1.S_ID  S_ID,
                 ytday1.D_DATE  D_DATE

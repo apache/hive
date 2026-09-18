@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.hive.vector;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.stream.LongStream;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -34,10 +33,10 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.iceberg.MetadataColumns;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
-import org.apache.iceberg.util.StructProjection;
+import org.apache.iceberg.mr.hive.IcebergTableUtil;
 
 /**
  * Iterator wrapper around Hive's VectorizedRowBatch producer (MRv1 implementing) record readers.
@@ -52,17 +51,32 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
   private final Object[] partitionValues;
   private boolean advanced = false;
   private long rowOffset = Long.MIN_VALUE;
-  private Map<Integer, ?> idToConstant;
+
+  private final int specId;
+  private final long partitionHash;
+  private final String filePath;
+  private final String partitionName;
+
+  private final Long firstRowId;
+  private final Long fileSequenceNumber;
 
   HiveBatchIterator(RecordReader<NullWritable, VectorizedRowBatch> recordReader, JobConf job,
-      int[] partitionColIndices, Object[] partitionValues, Map<Integer, ?> idToConstant) {
+      int[] partitionColIndices, Object[] partitionValues, FileScanTask task) {
     this.recordReader = recordReader;
     this.key = recordReader.createKey();
     this.batch = recordReader.createValue();
     this.vrbCtx = LlapHiveUtils.findMapWork(job).getVectorizedRowBatchCtx();
     this.partitionColIndices = partitionColIndices;
     this.partitionValues = partitionValues;
-    this.idToConstant = idToConstant;
+
+    this.specId = task.file().specId();
+    this.partitionHash = IcebergAcidUtil.computeHash(task.file().partition());
+    this.filePath = task.file().location();
+    this.partitionName = IcebergTableUtil.toPartitionName(task.spec(), task.file().partition());
+
+    this.firstRowId = task.file().firstRowId();
+    this.fileSequenceNumber = task.file().fileSequenceNumber();
+
     RowLineageUtils.initializeRowLineageColumns(vrbCtx, batch);
   }
 
@@ -99,24 +113,14 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
           int idx = vrbCtx.findVirtualColumnNum(vc);
           switch (vc) {
             case PARTITION_SPEC_ID:
-              value = idToConstant.get(MetadataColumns.SPEC_ID.fieldId());
-              vrbCtx.addPartitionColsToBatch(batch.cols[idx], value, idx);
+              vrbCtx.addPartitionColsToBatch(batch.cols[idx], specId, idx);
               break;
             case PARTITION_HASH:
-              value = IcebergAcidUtil.computeHash(
-                      (StructProjection) idToConstant.get(MetadataColumns.PARTITION_COLUMN_ID));
-              vrbCtx.addPartitionColsToBatch(batch.cols[idx], value, idx);
+              vrbCtx.addPartitionColsToBatch(batch.cols[idx], partitionHash, idx);
               break;
             case FILE_PATH:
-              value = idToConstant.get(MetadataColumns.FILE_PATH.fieldId());
               BytesColumnVector bcv = (BytesColumnVector) batch.cols[idx];
-              if (value == null) {
-                bcv.noNulls = false;
-                bcv.isNull[0] = true;
-                bcv.isRepeating = true;
-              } else {
-                bcv.fill(((String) value).getBytes());
-              }
+              bcv.fill(filePath.getBytes());
               break;
             case ROW_POSITION:
               value = LongStream.range(rowOffset, rowOffset + batch.size).toArray();
@@ -126,16 +130,13 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               lcv.isRepeating = false;
               System.arraycopy(value, 0, lcv.vector, 0, batch.size);
               break;
-            case PARTITION_PROJECTION:
+            case PARTITION_NAME:
               bcv = (BytesColumnVector) batch.cols[idx];
-              bcv.noNulls = false;
-              bcv.isNull[0] = true;
-              bcv.isRepeating = true;
+              bcv.fill(partitionName.getBytes());
               break;
             case ROW_LINEAGE_ID:
               LongColumnVector rowIdLcv = (LongColumnVector) batch.cols[idx];
-              Object firstRowIdObj = idToConstant.get(MetadataColumns.ROW_ID.fieldId());
-              if (firstRowIdObj == null) {
+              if (firstRowId == null) {
                 rowIdLcv.noNulls = false;
                 rowIdLcv.isNull[0] = true;
                 rowIdLcv.isRepeating = true;
@@ -144,13 +145,13 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               // If vector[0] is still -1, the reader didn't find the column in the file.
               if (rowIdLcv.vector[0] == -1L) {
                 for (int i = 0; i < batch.size; i++) {
-                  rowIdLcv.vector[i] = (Long) firstRowIdObj + rowOffset + i;
+                  rowIdLcv.vector[i] = firstRowId + rowOffset + i;
                 }
               } else {
                 // Lineage data was found (could be 0). Preserve it and fill only the NULL gaps.
                 for (int i = 0; i < batch.size; i++) {
                   if (rowIdLcv.isNull[i]) {
-                    rowIdLcv.vector[i] = (Long) firstRowIdObj + rowOffset + i;
+                    rowIdLcv.vector[i] = firstRowId + rowOffset + i;
                     rowIdLcv.isNull[i] = false;
                   }
                 }
@@ -161,8 +162,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
 
             case LAST_UPDATED_SEQUENCE_NUMBER:
               LongColumnVector lusnLcv = (LongColumnVector) batch.cols[idx];
-              Object fileSeqObj = idToConstant.get(MetadataColumns.LAST_UPDATED_SEQUENCE_NUMBER.fieldId());
-              if (fileSeqObj == null) {
+              if (fileSequenceNumber == null) {
                 lusnLcv.noNulls = false;
                 lusnLcv.isNull[0] = true;
                 lusnLcv.isRepeating = true;
@@ -172,13 +172,13 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               // If vector[0] is still -1, apply the file-level sequence number to the whole batch.
               if (lusnLcv.vector[0] == -1L) {
                 for (int i = 0; i < batch.size; i++) {
-                  lusnLcv.vector[i] = (Long) fileSeqObj;
+                  lusnLcv.vector[i] = fileSequenceNumber;
                 }
               } else {
                 // Lineage data found in file, fill only the gaps where data is missing.
                 for (int i = 0; i < batch.size; i++) {
                   if (!lusnLcv.noNulls && lusnLcv.isNull[i]) {
-                    lusnLcv.vector[i] = (Long) fileSeqObj;
+                    lusnLcv.vector[i] = fileSequenceNumber;
                     lusnLcv.isNull[i] = false;
                   }
                 }

@@ -680,10 +680,10 @@ public class MapOperator extends AbstractMapOperator {
             vcValues[i] = new LongWritable(ctx.getIoCxt().getPositionDeleteInfo().getPartitionHash());
           }
           break;
-        case PARTITION_PROJECTION:
+        case PARTITION_NAME:
           vcValues[i] = null;
-          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
-            vcValues[i] = new Text(ctx.getIoCxt().getPositionDeleteInfo().getPartitionProjection());
+          if (ctx.getIoCxt().getPartitionName() != null) {
+            vcValues[i] = new Text(ctx.getIoCxt().getPartitionName());
           }
           break;
         case FILE_PATH:

@@ -75,11 +75,11 @@ target directory has two mega-jars which have all the dependencies.
 
 ### Using single jar
 
-    java -jar hmsbench.jar <optins> [test]...
+    java -jar hmsbench.jar <options> [test]...
 
 ### Using hbench on kerberized cluster
 
-    java -jar hmsbench.jar -H `hostname` <optins> [test]...
+    java -jar hmsbench.jar -H `hostname` <options> [test]...
 
 ### Examples
 1. Run all tests with default settings

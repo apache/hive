@@ -1980,6 +1980,17 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.metrics.reporters", "org.apache.iceberg.rest.metrics.LoggingMetricsReporter",
         "A comma separated list of custom Iceberg Metrics Reporting plugins."
     ),
+    CATALOG_SERVLET_UGI_CACHE_SIZE("metastore.catalog.servlet.ugi.cache.size",
+        "hive.metastore.catalog.servlet.ugi.cache.size", 1000L,
+        "Maximum number of proxy UserGroupInformation instances to keep in the catalog servlet UGI cache. " +
+        "Entries displaced by this limit trigger FileSystem resource cleanup for the evicted UGI."
+    ),
+    CATALOG_SERVLET_UGI_CACHE_EXPIRY("metastore.catalog.servlet.ugi.cache.expiry",
+        "hive.metastore.catalog.servlet.ugi.cache.expiry", 3600, TimeUnit.SECONDS,
+        "Idle-expiry time for cached proxy UserGroupInformation instances in the catalog servlet. " +
+        "After this period of inactivity, the entry is evicted and FileSystem.closeAllForUGI is called " +
+        "to release associated IPC and RPC resources. Set to 0 to disable expiry-based eviction."
+    ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
             "hive.metastore.httpserver.threadpool.min", 8,
             "HMS embedded HTTP server minimum number of threads."

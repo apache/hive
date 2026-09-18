@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import java.util.Map;
 
 /**
- * An interface for any possible implementation for publishing statics.
+ * An interface for any possible implementation for publishing statistics.
  */
 @InterfaceAudience.Public
 @InterfaceStability.Stable

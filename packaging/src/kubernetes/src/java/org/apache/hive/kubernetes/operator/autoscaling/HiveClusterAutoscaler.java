@@ -321,6 +321,21 @@ public class HiveClusterAutoscaler {
     return metricsCache.getOrEmpty(key, maxStale);
   }
 
+  /**
+   * Returns cached TezAM metrics for the given LLAP cluster (used by LlapScalingStrategy).
+   */
+  public List<PodMetrics> getTezAmMetricsFromCache(HiveCluster cluster, String llapName) {
+    String namespace = cluster.getMetadata().getNamespace();
+    String clusterName = cluster.getMetadata().getName();
+    int maxStale = cluster.getSpec().llapClusters().stream()
+        .filter(l -> llapName.equals(l.name()))
+        .findFirst()
+        .map(l -> l.tezAm().autoscaling().metricsScrapeIntervalSeconds() * 3)
+        .orElse(30);
+    return metricsCache.getOrEmpty(
+        cacheKey(namespace, clusterName, ConfigUtils.tezAmComponentKey(llapName)), maxStale);
+  }
+
   private void evaluateComponent(HiveCluster cluster, KubernetesClient client,
       String namespace, String clusterName, String component,
       AutoscalingSpec autoscaling, int maxReplicas,

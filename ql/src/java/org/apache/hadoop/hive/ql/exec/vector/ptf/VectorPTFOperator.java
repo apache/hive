@@ -103,9 +103,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private TypeInfo[] outputTypeInfos;
   private DataTypePhysicalVariation[] outputDataTypePhysicalVariations;
 
-  private int evaluatorCount;
-  private String[] evaluatorFunctionNames;
-
   private int[] orderColumnMap;
   private Type[] orderColumnVectorTypes;
   private VectorExpression[] orderExpressions;
@@ -191,9 +188,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
      */
     vOutContext = new VectorizationContext(getName(), this.vContext);
     setupVOutContext();
-
-    evaluatorFunctionNames = this.vectorDesc.getEvaluatorFunctionNames();
-    evaluatorCount = evaluatorFunctionNames.length;
 
     orderColumnMap = vectorPTFInfo.getOrderColumnMap();
     orderColumnVectorTypes = vectorPTFInfo.getOrderColumnVectorTypes();
@@ -333,8 +327,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     }
 
     streamingEvaluatorNums = VectorPTFDesc.getStreamingEvaluatorNums(evaluators);
-
-    allEvaluatorsAreStreaming = (streamingEvaluatorNums.length == evaluatorCount);
+    allEvaluatorsAreStreaming = VectorPTFDesc.getAllEvaluatorsAreStreaming(evaluators);
 
     groupBatches = new VectorPTFGroupBatches(
         hconf, vectorDesc.getVectorizedPTFMaxMemoryBufferingBatchCount());

@@ -187,7 +187,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
-    inputs = sem.getInputs();
+    inputs = sem.getAllInputs();
     outputs = sem.getOutputs();
 
     ctx.setResFile(ctx.getLocalTmpPath());

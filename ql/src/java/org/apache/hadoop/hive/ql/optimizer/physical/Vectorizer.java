@@ -309,7 +309,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         VirtualColumn.PARTITION_HASH, 
         VirtualColumn.FILE_PATH, 
         VirtualColumn.ROW_POSITION,
-        VirtualColumn.PARTITION_PROJECTION,
+        VirtualColumn.PARTITION_NAME,
         VirtualColumn.ROW_LINEAGE_ID,
         VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
   private HiveConf hiveConf;
@@ -3005,9 +3005,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
       }
 
-      // RANK/DENSE_RANK don't care about columns.
+      // RANK/DENSE_RANK/CUME_DIST don't care about columns.
       if (supportedFunctionType != SupportedFunctionType.RANK &&
-          supportedFunctionType != SupportedFunctionType.DENSE_RANK) {
+          supportedFunctionType != SupportedFunctionType.DENSE_RANK &&
+          supportedFunctionType != SupportedFunctionType.CUME_DIST) {
 
         if (exprNodeDescList != null) {
           // LEAD and LAG now supports multiple arguments in vectorized mode

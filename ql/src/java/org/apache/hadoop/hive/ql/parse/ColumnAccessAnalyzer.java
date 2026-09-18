@@ -35,7 +35,8 @@ public class ColumnAccessAnalyzer {
     pGraphContext = pactx;
   }
 
-  public ColumnAccessInfo analyzeColumnAccess(ColumnAccessInfo columnAccessInfo) throws SemanticException {
+  public ColumnAccessInfo analyzeColumnAccess(SemanticAnalyzer analyzer) throws SemanticException {
+    ColumnAccessInfo columnAccessInfo = analyzer.getColumnAccessInfo();
     if (columnAccessInfo == null) {
       columnAccessInfo = new ColumnAccessInfo();
     }
@@ -57,6 +58,21 @@ public class ColumnAccessAnalyzer {
             }
           }
         }
+      }
+    }
+    columnAccessInfo.merge(getMaterializedCteColumnAccessInfo(analyzer.rootClause.asExecutionOrder()));
+    return columnAccessInfo;
+  }
+
+  /**
+   * Merge column access recorded by materialized CTE sub-analyzers into this analyzer's
+   * column access info so authorization sees base-table columns, not only the temp CTE table.
+   */
+  private ColumnAccessInfo getMaterializedCteColumnAccessInfo(List<SemanticAnalyzer.CTEClause> cteClauses) {
+    ColumnAccessInfo columnAccessInfo = new ColumnAccessInfo();
+    for (SemanticAnalyzer.CTEClause cte : cteClauses) {
+      if (cte.source != null && cte.source.getColumnAccessInfo() != null) {
+        columnAccessInfo.merge(cte.source.getColumnAccessInfo());
       }
     }
     return columnAccessInfo;

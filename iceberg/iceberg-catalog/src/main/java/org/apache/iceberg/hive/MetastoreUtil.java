@@ -22,7 +22,6 @@ package org.apache.iceberg.hive;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -48,6 +47,7 @@ import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.view.BaseView;
 import org.apache.iceberg.view.SQLViewRepresentation;
@@ -119,17 +119,18 @@ public class MetastoreUtil {
     }
   }
 
-  public static List<FieldSchema> getPartitionKeys(org.apache.iceberg.Table table, int specId) {
-    Schema schema = table.specs().get(specId).schema();
-    List<FieldSchema> hiveSchema = HiveSchemaUtil.convert(schema);
-    Map<String, String> colNameToColType = hiveSchema.stream()
-        .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
-    return table.specs().get(specId).fields().stream()
-        .map(partField -> new FieldSchema(
-            schema.findColumnName(partField.sourceId()),
-            colNameToColType.get(schema.findColumnName(partField.sourceId())),
-            String.format("Transform: %s", partField.transform().toString()))
-        )
+  public static List<FieldSchema> getPartitionKeys(org.apache.iceberg.Table table) {
+    Schema schema = table.spec().schema();
+
+    return table.spec().fields().stream()
+        .map(partField -> {
+          Types.NestedField col = schema.findField(partField.sourceId());
+          return new FieldSchema(
+              col.name().toLowerCase(),  // HMS lowercases column names
+              HiveSchemaUtil.convertToTypeString(col.type()),
+              "Transform: %s".formatted(partField.transform())
+          );
+        })
         .toList();
   }
 
@@ -143,7 +144,7 @@ public class MetastoreUtil {
     result.setTableType(TableType.EXTERNAL_TABLE.toString());
 
     // TODO: Revert after HIVE-29633 is fixed
-    // result.setPartitionKeys(getPartitionKeys(table, table.spec().specId()));
+    // result.setPartitionKeys(getPartitionKeys(table));
     result.setPartitionKeys(Lists.newArrayList());
 
     TableMetadata metadata = ((BaseTable) table).operations().current();
