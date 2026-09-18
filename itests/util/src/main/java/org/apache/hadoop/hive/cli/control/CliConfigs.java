@@ -420,8 +420,7 @@ public class CliConfigs {
       Map<HiveConf.ConfVars, String> conf = new EnumMap<>(HiveConf.ConfVars.class);
       conf.put(HiveConf.ConfVars.PRE_EXEC_HOOKS, "");
       conf.put(HiveConf.ConfVars.POST_EXEC_HOOKS, "");
-      // Disable merge join conversion cause it triggers very slow S3 list
-      // operations. Check to reenable later
+      // HIVE-30070: Conversion to Map join is very slow for Iceberg tables on S3
       conf.put(HiveConf.ConfVars.HIVE_AUTO_SORTMERGE_JOIN, "false");
       setCustomConfigValueMap(conf);
       setClusterType(MiniClusterType.LLAP_LOCAL);
