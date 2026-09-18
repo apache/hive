@@ -334,7 +334,7 @@ public class TestHiveSchemaConverter {
             "map<string,string>",
             "message hive_schema {\n"
             + "  optional group mapCol (MAP) {\n"
-            + "    repeated group key_value (MAP_KEY_VALUE) {\n"
+            + "    repeated group key_value {\n"
             + "      required binary key (UTF8);\n"
             + "      optional binary value (UTF8);\n"
             + "    }\n"
@@ -348,7 +348,7 @@ public class TestHiveSchemaConverter {
             "map<string,decimal(5,2)>",
             "message hive_schema {\n"
             + "  optional group mapCol (MAP) {\n"
-            + "    repeated group key_value (MAP_KEY_VALUE) {\n"
+            + "    repeated group key_value {\n"
             + "      required binary key (UTF8);\n"
             + "      optional fixed_len_byte_array(3) value (DECIMAL(5,2));\n"
             + "    }\n"
@@ -362,7 +362,7 @@ public class TestHiveSchemaConverter {
             "map<smallint,tinyint>",
             "message hive_schema {\n"
             + "  optional group mapCol (MAP) {\n"
-            + "    repeated group key_value (MAP_KEY_VALUE) {\n"
+            + "    repeated group key_value {\n"
             + "      required int32 key (INT_16);\n"
             + "      optional int32 value (INT_8);\n"
             + "    }\n"
@@ -376,7 +376,7 @@ public class TestHiveSchemaConverter {
             "map<string,struct<a:smallint,b:int>>",
             "message hive_schema {\n"
             + "  optional group mapCol (MAP) {\n"
-            + "    repeated group key_value (MAP_KEY_VALUE) {\n"
+            + "    repeated group key_value {\n"
             + "      required binary key (UTF8);\n"
             + "      optional group value {\n"
             + "        optional int32 a (INT_16);\n"
@@ -393,7 +393,7 @@ public class TestHiveSchemaConverter {
             "map<string,array<string>>",
             "message hive_schema {\n"
             + "  optional group mapCol (MAP) {\n"
-            + "    repeated group key_value (MAP_KEY_VALUE) {\n"
+            + "    repeated group key_value {\n"
             + "      required binary key (UTF8);\n"
             + "      optional group value (LIST) {\n"
             + "        repeated group bag {\n"
@@ -434,10 +434,9 @@ public class TestHiveSchemaConverter {
 
     assertEquals(1, topLevel.asGroupType().getFieldCount());
     Type secondLevel = topLevel.asGroupType().getFields().get(0);
-    // there is one repeated field for mapCol, the field name is "map" and its original Type is
-    // MAP_KEY_VALUE;
-    checkField(secondLevel, "key_value", Repetition.REPEATED,
-        LogicalTypeAnnotation.MapKeyValueTypeAnnotation.getInstance());
+    // the repeated key_value group carries no annotation: Parquet's MAP standard treats
+    // MAP_KEY_VALUE as redundant, and ConversionPatterns.mapType no longer stamps it.
+    checkField(secondLevel, "key_value", Repetition.REPEATED, null);
   }
 
   @Test
