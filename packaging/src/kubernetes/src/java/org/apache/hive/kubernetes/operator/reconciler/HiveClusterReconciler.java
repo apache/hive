@@ -72,6 +72,8 @@ public class HiveClusterReconciler
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveClusterReconciler.class);
 
+  private static final String CONDITION_READY_LITERAL = "Ready";
+  private static final String RECONCILIATION_ERROR_LITERAL = "ReconciliationError";
   private volatile HiveClusterAutoscaler autoscaler;
   private volatile BackgroundMetricsScraper bgScraper;
 
@@ -219,7 +221,7 @@ public class HiveClusterReconciler
         status.getConditions() != null ? status.getConditions() : Collections.emptyList();
 
     status.setConditions(List.of(
-        buildCondition("Ready", "False", "ReconciliationError",
+        buildCondition(CONDITION_READY_LITERAL, "False", RECONCILIATION_ERROR_LITERAL,
             e.getMessage(), existingConditions)
     ));
     status.setObservedGeneration(resource.getMetadata().getGeneration());
@@ -326,7 +328,7 @@ public class HiveClusterReconciler
 
     // Overall Ready condition
     boolean allReady = schemaReady && metastoreReady && hs2Ready;
-    conditions.add(buildCondition("Ready", allReady ? "True" : "False",
+    conditions.add(buildCondition(CONDITION_READY_LITERAL, allReady ? "True" : "False",
         allReady ? "AllComponentsReady" : "ComponentsNotReady",
         allReady ? "All Hive components are ready" : "One or more components are not ready",
         existingConditions));
@@ -408,9 +410,9 @@ public class HiveClusterReconciler
     List<Condition> existingConditions = existingStatus != null && existingStatus.getConditions() != null
         ? existingStatus.getConditions() : Collections.emptyList();
     boolean alreadyReported = existingConditions.stream()
-        .anyMatch(c -> "Ready".equals(c.getType())
+        .anyMatch(c -> CONDITION_READY_LITERAL.equals(c.getType())
             && "False".equals(c.getStatus())
-            && "ReconciliationError".equals(c.getReason())
+            && RECONCILIATION_ERROR_LITERAL.equals(c.getReason())
             && Objects.equals(errorMessage, c.getMessage()));
 
     List<Condition> conditions = newStatus.getConditions();
@@ -418,8 +420,8 @@ public class HiveClusterReconciler
       conditions = new ArrayList<>();
       newStatus.setConditions(conditions);
     }
-    conditions.removeIf(c -> "Ready".equals(c.getType()));
-    conditions.add(buildCondition("Ready", "False", "ReconciliationError",
+    conditions.removeIf(c -> CONDITION_READY_LITERAL.equals(c.getType()));
+    conditions.add(buildCondition(CONDITION_READY_LITERAL, "False", RECONCILIATION_ERROR_LITERAL,
         errorMessage, existingConditions));
     return !alreadyReported;
   }
