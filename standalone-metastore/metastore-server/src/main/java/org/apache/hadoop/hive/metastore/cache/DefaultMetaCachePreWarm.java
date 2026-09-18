@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * tables can be spread over metastore.cached.rawstore.prewarm.threads worker threads, each with
  * its own RawStore instance and hence its own connection to the backing database.
  */
-public class DefaultMetaCachePreWarm implements MetaCachePreWarm {
+class DefaultMetaCachePreWarm implements MetaCachePreWarm {
 
   private static final Logger LOG = LoggerFactory.getLogger(DefaultMetaCachePreWarm.class);
   // How long to wait for the prewarm workers to terminate before giving up on a clean shutdown
@@ -78,7 +78,7 @@ public class DefaultMetaCachePreWarm implements MetaCachePreWarm {
   private ExecutorService prewarmPool;
   private final List<RawStore> workerStores = new ArrayList<>();
 
-  public DefaultMetaCachePreWarm(RawStore rawStore, SharedCache sharedCache,
+  DefaultMetaCachePreWarm(RawStore rawStore, SharedCache sharedCache,
       CachedStore.TablesPendingPrewarm tblsPendingPrewarm) {
     this.rawStore = rawStore;
     this.sharedCache = sharedCache;
@@ -127,7 +127,7 @@ public class DefaultMetaCachePreWarm implements MetaCachePreWarm {
       Collection<String> catalogsToCache;
       try {
         catalogsToCache = CachedStore.catalogsToCache(rawStore);
-        LOG.info("Going to cache catalogs: " + org.apache.commons.lang3.StringUtils.join(catalogsToCache, ", "));
+        LOG.info("Going to cache catalogs: {}", org.apache.commons.lang3.StringUtils.join(catalogsToCache, ", "));
         List<Catalog> catalogs = new ArrayList<>(catalogsToCache.size());
         for (String catName : catalogsToCache) {
           catalogs.add(rawStore.getCatalog(catName));
@@ -139,7 +139,9 @@ public class DefaultMetaCachePreWarm implements MetaCachePreWarm {
           Thread.sleep(sleepTime);
           sleepTime = sleepTime * 2;
         } catch (InterruptedException timerEx) {
-          LOG.info("sleep interrupted", timerEx.getMessage());
+          Thread.currentThread().interrupt();
+          LOG.warn("Interrupted while waiting to retry the catalog prewarm, stopping prewarm");
+          return false;
         }
         // try again
         continue;
@@ -155,11 +157,11 @@ public class DefaultMetaCachePreWarm implements MetaCachePreWarm {
               databases.add(rawStore.getDatabase(catName, dbName));
             } catch (NoSuchObjectException e) {
               // Continue with next database
-              LOG.warn("Failed to cache database " + DatabaseName.getQualified(catName, dbName) + ", moving on", e);
+              LOG.warn("Failed to cache database {}, moving on", DatabaseName.getQualified(catName, dbName), e);
             }
           }
         } catch (MetaException e) {
-          LOG.warn("Failed to cache databases in catalog " + catName + ", moving on", e);
+          LOG.warn("Failed to cache databases in catalog {}, moving on", catName, e);
         }
       }
       sharedCache.populateDatabasesInCache(databases);
@@ -293,14 +295,15 @@ public class DefaultMetaCachePreWarm implements MetaCachePreWarm {
         if (!partNames.isEmpty()) {
           // Get partition column stats for this table
           Deadline.startTimer("getPartitionColumnStatistics");
-          partitionColStats =
-              rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
+          partitionColStats = rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames,
+              CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           cacheObjects.setPartitionColStats(partitionColStats);
           // Get aggregate stats for all partitions of a table and for all but default
           // partition
           Deadline.startTimer("getAggrPartitionColumnStatistics");
-          aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
+          aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames,
+              CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           cacheObjects.setAggrStatsAllPartitions(aggrStatsAllPartitions);
           // Remove default partition from partition names and get aggregate
