@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ParquetCacheLayout;
@@ -73,19 +74,32 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
+import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.orc.TypeDescription;
@@ -206,7 +220,9 @@ public class TestParquetEncodedDataReader {
 
   @Test
   public void testFullReadAllColumns() throws Exception {
-    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5);
+    FileSplit split = wholeFile();
+    Run run = read(job, split);
 
     run.assertClean();
     assertEquals(ROWS, run.rows.size());
@@ -218,13 +234,16 @@ public class TestParquetEncodedDataReader {
     assertEquals(Arrays.asList(1024, 476, 1024, 476, 1024, 476), run.batchSizes);
     assertEquals(ROW_GROUPS, run.counter(LlapIOCounters.SELECTED_ROWGROUPS));
     assertEquals(ROWS, run.counter(LlapIOCounters.ROWS_EMITTED));
+    assertParityWithNonNative(run, job, split);
   }
 
   @Test
   public void testSplitCoveringSecondRowGroup() throws Exception {
     List<BlockMetaData> blocks = footer.getBlocks();
     long start = blocks.get(1).getStartingPos(), end = blocks.get(2).getStartingPos();
-    Run run = read(jobConf(COLUMNS, TYPES, 0, 3), new FileSplit(file, start, end - start, (String[]) null));
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 3);
+    FileSplit split = new FileSplit(file, start, end - start, (String[]) null);
+    Run run = read(job, split);
 
     run.assertClean();
     assertEquals(1, run.counter(LlapIOCounters.SELECTED_ROWGROUPS));
@@ -233,14 +252,18 @@ public class TestParquetEncodedDataReader {
       int row = ROWS_PER_GROUP + i;
       assertArrayEquals("row " + row, project(expectedRow(row), 0, 3), run.rows.get(i));
     }
+    assertParityWithNonNative(run, job, split);
   }
 
   @Test
   public void testDisjointSplitsEmitEveryRowOnce() throws Exception {
     long cut = footer.getBlocks().get(2).getStartingPos();
-    Run first = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), new FileSplit(file, 0, cut, (String[]) null));
-    Run second = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5),
-        new FileSplit(file, cut, fileLength - cut, (String[]) null));
+    JobConf firstJob = jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5);
+    FileSplit firstSplit = new FileSplit(file, 0, cut, (String[]) null);
+    Run first = read(firstJob, firstSplit);
+    JobConf secondJob = jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5);
+    FileSplit secondSplit = new FileSplit(file, cut, fileLength - cut, (String[]) null);
+    Run second = read(secondJob, secondSplit);
 
     first.assertClean();
     second.assertClean();
@@ -252,11 +275,15 @@ public class TestParquetEncodedDataReader {
     for (int i = 0; i < ROWS; ++i) {
       assertArrayEquals("row " + i, expectedRow(i), all.get(i));
     }
+    assertParityWithNonNative(first, firstJob, firstSplit);
+    assertParityWithNonNative(second, secondJob, secondSplit);
   }
 
   @Test
   public void testProjectionOrderAndSubset() throws Exception {
-    Run run = read(jobConf(COLUMNS, TYPES, 4, 0, 3), wholeFile());
+    JobConf job = jobConf(COLUMNS, TYPES, 4, 0, 3);
+    FileSplit split = wholeFile();
+    Run run = read(job, split);
 
     run.assertClean();
     assertEquals(ROWS, run.rows.size());
@@ -267,6 +294,7 @@ public class TestParquetEncodedDataReader {
     for (int i : new int[] {0, 7, 1500, ROWS - 1}) {
       assertArrayEquals("row " + i, project(expectedRow(i), 4, 0, 3), run.rows.get(i));
     }
+    assertParityWithNonNative(run, job, split);
   }
 
   @Test
@@ -792,6 +820,74 @@ public class TestParquetEncodedDataReader {
     parquetReader.loadFooter();
     parquetReader.call();
     return new Run(downstream, counters, tezCounters, buffers, reads, ledger);
+  }
+
+  // ---- parity: compare native rows against the stock VectorizedParquetRecordReader ----
+  //
+  // The native path assembles its ground truth from a Java-computed expectedRow(i). These helpers
+  // add a second ground truth: what parquet-mr's own decode (driven through VectorizedParquetRecordReader)
+  // returns for the same file, JobConf and split. Any drift in the native reader's row-group planning,
+  // page parsing, or cache assembly shows up here as a row-by-row mismatch.
+
+  /** Reads the same (JobConf, FileSplit) via VectorizedParquetRecordReader, returning rows in projection order. */
+  private static List<Object[]> readNonNative(JobConf job, FileSplit split) throws Exception {
+    JobConf mrJob = new JobConf(job);
+    // VectorizedParquetRecordReader looks up its rbCtx through Utilities.getMapWork, which requires
+    // both HIVE_VECTORIZATION_ENABLED and a PLAN path set on the conf.
+    HiveConf.setBoolVar(mrJob, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    HiveConf.setVar(mrJob, HiveConf.ConfVars.PLAN, "//tmp");
+    List<TypeInfo> types = DataWritableReadSupport.getColumnTypes(mrJob.get(IOConstants.COLUMNS_TYPES));
+    Utilities.setMapWork(mrJob, mapWorkFor(mrJob, types));
+    List<Integer> colsToInclude = ColumnProjectionUtils.getReadColumnIDs(mrJob);
+    List<Object[]> rows = new ArrayList<>();
+    try (VectorizedParquetRecordReader mrReader = new VectorizedParquetRecordReader(split, mrJob)) {
+      VectorizedRowBatch batch = mrReader.createValue();
+      while (mrReader.next(NullWritable.get(), batch)) {
+        for (int r = 0; r < batch.size; ++r) {
+          Object[] row = new Object[colsToInclude.size()];
+          for (int i = 0; i < colsToInclude.size(); ++i) {
+            row[i] = CapturingConsumer.value(batch.cols[colsToInclude.get(i)], r);
+          }
+          rows.add(row);
+        }
+      }
+    }
+    return rows;
+  }
+
+  /**
+   * Builds the MapWork/VectorizedRowBatchCtx pair VectorizedParquetRecordReader consults, matching
+   * the physical variation the native path picks (DECIMAL_64 for decimal columns up to precision 18)
+   * so both readers emit the same ColumnVector shape.
+   */
+  private static MapWork mapWorkFor(JobConf job, List<TypeInfo> types) throws Exception {
+    List<String> names = DataWritableReadSupport.getColumnNames(job.get(IOConstants.COLUMNS));
+    StructTypeInfo rowType = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(names, types);
+    StructObjectInspector rowInspector = new ArrayWritableObjectInspector(rowType);
+    DataTypePhysicalVariation[] variations = new DataTypePhysicalVariation[types.size()];
+    for (int i = 0; i < types.size(); ++i) {
+      TypeInfo t = types.get(i);
+      variations[i] = (t instanceof DecimalTypeInfo dti
+              && dti.precision() <= TypeDescription.MAX_DECIMAL64_PRECISION)
+          ? DataTypePhysicalVariation.DECIMAL_64
+          : DataTypePhysicalVariation.NONE;
+    }
+    VectorizedRowBatchCtx rbCtx = new VectorizedRowBatchCtx();
+    rbCtx.init(rowInspector, new String[0]);
+    rbCtx.setRowDataTypePhysicalVariations(variations);
+    MapWork mapWork = new MapWork();
+    mapWork.setVectorMode(true);
+    mapWork.setVectorizedRowBatchCtx(rbCtx);
+    return mapWork;
+  }
+
+  /** Reads the same (job, split) with VectorizedParquetRecordReader and asserts row-by-row equality. */
+  private static void assertParityWithNonNative(Run run, JobConf job, FileSplit split) throws Exception {
+    List<Object[]> stock = readNonNative(job, split);
+    assertEquals("row count differs from parquet-mr", stock.size(), run.rows.size());
+    for (int i = 0; i < stock.size(); ++i) {
+      assertArrayEquals("row " + i + " differs from parquet-mr", stock.get(i), run.rows.get(i));
+    }
   }
 
 
