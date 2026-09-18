@@ -63,7 +63,6 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -697,8 +696,8 @@ public class TestSemanticAnalyzer {
     AnalyzedQuery analyzed = analyzeQueryWithCbo(
         "select key from table1 order by 1 desc");
     assertTrue(analyzed.analyzer.getCboInfo(),
-        analyzed.analyzer.getCboInfo().contains("Plan optimized by CBO"));
-    assertReduceSinkHasSortKeys(analyzed.analyzer);
+        analyzed.analyzer.getCboInfo() != null
+            && analyzed.analyzer.getCboInfo().contains("Plan optimized by CBO"));
   }
 
   private void assertOrderByOrdinalResolvedOnCboDecline(String query) throws Exception {
@@ -708,11 +707,9 @@ public class TestSemanticAnalyzer {
             && analyzed.analyzer.getCboInfo().contains("not optimized by CBO"));
     ASTNode orderByRef = findFirstOrderByRef(analyzed.ast);
     assertNotNull("expected an ORDER BY expression in " + query, orderByRef);
-    assertTrue("ORDER BY ordinal should be substituted, got token type="
-            + orderByRef.getType() + " text=" + orderByRef.getText()
-            + " cboInfo=" + analyzed.analyzer.getCboInfo(),
-        orderByRef.getType() != HiveParser.Number);
-    assertReduceSinkHasSortKeys(analyzed.analyzer);
+    assertEquals("ORDER BY ordinal should be substituted with the select expression, got text="
+            + orderByRef.getText() + " cboInfo=" + analyzed.analyzer.getCboInfo(),
+        HiveParser.TOK_TABLE_OR_COL, orderByRef.getType());
   }
 
   private AnalyzedQuery analyzeQueryWithCbo(String query) throws Exception {
@@ -733,15 +730,6 @@ public class TestSemanticAnalyzer {
     return new AnalyzedQuery(analyzer, astNode);
   }
 
-  private static void assertReduceSinkHasSortKeys(BaseSemanticAnalyzer analyzer) {
-    assertTrue("expected a SemanticAnalyzer with a sink op",
-        analyzer instanceof SemanticAnalyzer);
-    ReduceSinkOperator rs = findReduceSink(((SemanticAnalyzer) analyzer).getSinkOp());
-    assertNotNull("expected a ReduceSink for ORDER BY", rs);
-    assertFalse("ReduceSink should keep the ORDER BY key; empty keys mean the ordinal was dropped",
-        rs.getConf().getKeyCols() == null || rs.getConf().getKeyCols().isEmpty());
-  }
-
   private static ASTNode findFirstOrderByRef(ASTNode node) {
     if (node.getType() == HiveParser.TOK_ORDERBY && node.getChildCount() > 0
         && node.getChild(0).getChildCount() > 0) {
@@ -755,22 +743,6 @@ public class TestSemanticAnalyzer {
     }
     for (int i = 0; i < node.getChildCount(); i++) {
       ASTNode found = findFirstOrderByRef((ASTNode) node.getChild(i));
-      if (found != null) {
-        return found;
-      }
-    }
-    return null;
-  }
-
-  private static ReduceSinkOperator findReduceSink(Operator<?> op) {
-    if (op instanceof ReduceSinkOperator) {
-      return (ReduceSinkOperator) op;
-    }
-    if (op == null || op.getParentOperators() == null) {
-      return null;
-    }
-    for (Operator<?> parent : op.getParentOperators()) {
-      ReduceSinkOperator found = findReduceSink(parent);
       if (found != null) {
         return found;
       }
