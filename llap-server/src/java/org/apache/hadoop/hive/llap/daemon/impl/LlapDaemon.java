@@ -44,6 +44,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.OTELUtils;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -174,7 +175,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
           "LLAP service hosts startswith '@' but hive.zookeeper.quorum is not set." +
               " hive.zookeeper.quorum must be set.");
     }
-    String hostName = MetricsUtils.getHostName();
+    String hostName = ServerUtils.hostname();
     try {
       // re-login with kerberos. This makes sure all daemons have the same login user.
       if (UserGroupInformation.isSecurityEnabled()) {

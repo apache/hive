@@ -19,8 +19,6 @@
 package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +46,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.exec.ExecuteException;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -1148,24 +1147,18 @@ public class Server {
       LOG.warn("request is null; cannot determine hostname");
       return unkHost;
     }
-    try {
-      String address = request.getRemoteAddr();//returns IP addr
-      if(address == null) {
-        LOG.warn(MessageFormat.format("Request remote address is NULL for user [{0}]", requestingUser));
-        return unkHost;
-      }
-
-      //Inet4Address/Inet6Address
-      String hostName = InetAddress.getByName(address).getCanonicalHostName();
-      if(LOG.isDebugEnabled()) {
-        LOG.debug(MessageFormat.format("Resolved remote hostname: [{0}]", hostName));
-      }
-      return hostName;
-
-    } catch (UnknownHostException ex) {
-      LOG.warn(MessageFormat.format("Request remote address could not be resolved, {0}", ex.toString(), ex));
+    String address = request.getRemoteAddr();//returns IP addr
+    if(address == null) {
+      LOG.warn(MessageFormat.format("Request remote address is NULL for user [{0}]", requestingUser));
       return unkHost;
     }
+
+    //Inet4Address/Inet6Address
+    String hostName = ServerUtils.canonicalHostname(address);
+    if(LOG.isDebugEnabled()) {
+      LOG.debug(MessageFormat.format("Resolved remote hostname: [{0}]", hostName));
+    }
+    return hostName;
   }
 
   private void checkEnableLogPrerequisite(boolean enablelog, String statusdir) throws BadParam {

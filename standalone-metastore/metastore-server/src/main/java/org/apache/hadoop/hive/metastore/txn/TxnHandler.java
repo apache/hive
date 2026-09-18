@@ -108,6 +108,7 @@ import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryHandler;
 import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -266,7 +267,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private SqlRetryHandler sqlRetryHandler;
   protected MultiDataSourceJdbcResource jdbcResource;
 
-  private static final String hostname = JavaUtils.hostname();
+  private static final String hostname = MetaStoreUtils.getHostname();
 
   public TxnHandler() {
   }

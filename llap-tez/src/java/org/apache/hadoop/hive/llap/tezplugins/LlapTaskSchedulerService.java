@@ -24,6 +24,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsCollector;
 import org.apache.hadoop.hive.llap.tezplugins.scheduler.StatsPerDag;
 import org.apache.hadoop.io.Text;
@@ -457,7 +458,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       LlapMetricsSystem.initialize("LlapTaskScheduler");
       this.pauseMonitor = new JvmPauseMonitor(conf);
       pauseMonitor.start();
-      String displayName = "LlapTaskSchedulerMetrics-" + MetricsUtils.getHostName();
+      String displayName = "LlapTaskSchedulerMetrics-" + ServerUtils.hostname();
       String sessionId = conf.get("llap.daemon.metrics.sessionid");
       // TODO: HIVE-29569: Not sure about the use of this. Should we instead use workerIdentity as sessionId?
       this.metrics = LlapTaskSchedulerMetrics.create(displayName, sessionId);
