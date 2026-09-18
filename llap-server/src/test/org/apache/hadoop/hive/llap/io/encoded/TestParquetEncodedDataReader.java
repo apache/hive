@@ -628,7 +628,7 @@ public class TestParquetEncodedDataReader {
     int[] leaves = ParquetEncodedDataReader.projectedLeaves(requested, fileSchema);
 
     // x sits at leaf index 2 (nested.a=0, nested.b=1, x=2), not at its top-level ordinal 1.
-    assertArrayEquals(new int[] { 2 }, leaves);
+    assertArrayEquals(new int[] {2}, leaves);
   }
 
   @Test
@@ -645,7 +645,7 @@ public class TestParquetEncodedDataReader {
         .named("requested");
 
     // Only a is present in the file schema (leaf 0); "missing" contributes nothing.
-    assertArrayEquals(new int[] { 0 },
+    assertArrayEquals(new int[] {0},
         ParquetEncodedDataReader.projectedLeaves(requested, fileSchema));
   }
 
@@ -766,7 +766,7 @@ public class TestParquetEncodedDataReader {
       @Override
       protected void decodeBatch(ParquetEncodedColumnBatch batch, Consumer<ColumnVectorBatch> consumer)
           throws InterruptedException {
-        for (MemoryBuffer[] col : batch.columnBuffers) {
+        for (MemoryBuffer[] col : batch.columnBuffers()) {
           Collections.addAll(buffers, col);
         }
         if (failDecode) {
