@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -45,6 +47,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMet
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.rest.extension.MockHiveAuthorizer;
 import org.apache.iceberg.rest.extension.MockHiveAuthorizerFactory;
@@ -253,6 +256,143 @@ class TestIcebergAuthorizer {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
+  void testAuthorizeLoadTable() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    icebergAuthorizer.authorizeLoadTable(CATALOG_NAME, TableIdentifier.of(NAMESPACE, TABLE_NAME));
+
+    var operation = ArgumentCaptor.forClass(HiveOperationType.class);
+    var inputs = ArgumentCaptor.forClass(List.class);
+    var outputs = ArgumentCaptor.forClass(List.class);
+    verify(hiveAuthorizer).checkPrivileges(operation.capture(), inputs.capture(), outputs.capture(), any());
+
+    Assertions.assertEquals(HiveOperationType.QUERY, operation.getValue());
+    Assertions.assertEquals(List.of(), outputs.getValue());
+    Assertions.assertEquals(1, inputs.getValue().size());
+    var input = (HivePrivilegeObject) inputs.getValue().getFirst();
+    assertThat(input.getType()).isEqualTo(HivePrivilegeObjectType.TABLE_OR_VIEW);
+    assertThat(input.getCatName()).isEqualTo(CATALOG_NAME);
+    assertThat(input.getDbname()).isEqualTo(NAMESPACE.level(0));
+    assertThat(input.getObjectName()).isEqualTo(TABLE_NAME);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testAuthorizeLoadTableNormalizesMetadataTable() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    // A metadata-table identifier db.table.snapshots must be checked against its base table.
+    var metadataTable = TableIdentifier.of(Namespace.of(NAMESPACE.level(0), TABLE_NAME), "snapshots");
+    icebergAuthorizer.authorizeLoadTable(CATALOG_NAME, metadataTable);
+
+    var inputs = ArgumentCaptor.forClass(List.class);
+    verify(hiveAuthorizer).checkPrivileges(any(), inputs.capture(), anyList(), any());
+    var input = (HivePrivilegeObject) inputs.getValue().getFirst();
+    assertThat(input.getType()).isEqualTo(HivePrivilegeObjectType.TABLE_OR_VIEW);
+    assertThat(input.getDbname()).isEqualTo(NAMESPACE.level(0));
+    assertThat(input.getObjectName()).isEqualTo(TABLE_NAME);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testFilterTables() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var visible = TableIdentifier.of(NAMESPACE, "visible");
+    var hidden = TableIdentifier.of(NAMESPACE, "hidden");
+    // Only "visible" survives the filter.
+    Mockito.when(hiveAuthorizer.filterListCmdObjects(anyList(), any())).thenAnswer(invocation -> {
+      List<HivePrivilegeObject> objects = invocation.getArgument(0);
+      return objects.stream().filter(o -> "visible".equals(o.getObjectName())).collect(Collectors.toList());
+    });
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    Assertions.assertEquals(List.of(visible), icebergAuthorizer.filterTables(CATALOG_NAME, List.of(visible, hidden)));
+
+    var objects = ArgumentCaptor.forClass(List.class);
+    verify(hiveAuthorizer).filterListCmdObjects(objects.capture(), any());
+    var passed = (HivePrivilegeObject) objects.getValue().getFirst();
+    assertThat(passed.getType()).isEqualTo(HivePrivilegeObjectType.TABLE_OR_VIEW);
+    assertThat(passed.getCatName()).isEqualTo(CATALOG_NAME);
+    assertThat(passed.getDbname()).isEqualTo(NAMESPACE.level(0));
+  }
+
+  @Test
+  void testFilterViews() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var visible = TableIdentifier.of(NAMESPACE, "visible_view");
+    var hidden = TableIdentifier.of(NAMESPACE, "hidden_view");
+    Mockito.when(hiveAuthorizer.filterListCmdObjects(anyList(), any())).thenAnswer(invocation -> {
+      List<HivePrivilegeObject> objects = invocation.getArgument(0);
+      return objects.stream().filter(o -> "visible_view".equals(o.getObjectName())).collect(Collectors.toList());
+    });
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    Assertions.assertEquals(List.of(visible), icebergAuthorizer.filterViews(CATALOG_NAME, List.of(visible, hidden)));
+  }
+
+  @Test
+  void testFilterNamespaces() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var visible = Namespace.of("visible_db");
+    var hidden = Namespace.of("hidden_db");
+    Mockito.when(hiveAuthorizer.filterListCmdObjects(anyList(), any())).thenAnswer(invocation -> {
+      List<HivePrivilegeObject> objects = invocation.getArgument(0);
+      return objects.stream().filter(o -> "visible_db".equals(o.getDbname())).collect(Collectors.toList());
+    });
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    Assertions.assertEquals(
+        List.of(visible), icebergAuthorizer.filterNamespaces(CATALOG_NAME, List.of(visible, hidden)));
+  }
+
+  @Test
+  void testFilterNamespacesSkipsMultiLevel() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    Mockito.when(hiveAuthorizer.filterListCmdObjects(anyList(), any())).thenAnswer(invocation -> invocation.getArgument(0));
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    var single = Namespace.of("db");
+    var multi = Namespace.of("db", "nested");
+    // Multi-level namespaces cannot map to a Hive database and are dropped rather than failing.
+    Assertions.assertEquals(
+        List.of(single), icebergAuthorizer.filterNamespaces(CATALOG_NAME, List.of(single, multi)));
+  }
+
+  @Test
+  void testFilterWithoutAuthorizer() {
+    var icebergAuthorizer = new IcebergAuthorizer(() -> null);
+    var tables = List.of(TableIdentifier.of(NAMESPACE, TABLE_NAME));
+    var namespaces = List.of(NAMESPACE);
+    // Permissive when no authorizer is configured: the full listing is returned unchanged.
+    Assertions.assertEquals(tables, icebergAuthorizer.filterTables(CATALOG_NAME, tables));
+    Assertions.assertEquals(tables, icebergAuthorizer.filterViews(CATALOG_NAME, tables));
+    Assertions.assertEquals(namespaces, icebergAuthorizer.filterNamespaces(CATALOG_NAME, namespaces));
+  }
+
+  @Test
+  void testAuthorizeLoadTableRejected() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var failure = new HiveAccessControlException("access denied");
+    doThrow(failure).when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    var exception = Assertions.assertThrows(ForbiddenException.class, () ->
+        icebergAuthorizer.authorizeLoadTable(CATALOG_NAME, TableIdentifier.of(NAMESPACE, TABLE_NAME)));
+    Assertions.assertEquals("access denied", exception.getMessage());
+    Assertions.assertSame(failure, exception.getCause());
+  }
+
+  @Test
+  void testAuthorizeReadWithoutAuthorizer() {
+    var icebergAuthorizer = new IcebergAuthorizer(() -> null);
+    // Permissive when no authorizer is configured.
+    icebergAuthorizer.authorizeLoadTable(CATALOG_NAME, TableIdentifier.of(NAMESPACE, TABLE_NAME));
+  }
+
+  @Test
   void testTranslateAuthorizationPluginException() throws Exception {
     HiveAuthorizer hiveAuthorizer = mock(HiveAuthorizer.class);
     HiveAuthzPluginException failure = new HiveAuthzPluginException("plugin failure");
@@ -262,7 +402,7 @@ class TestIcebergAuthorizer {
     var request = stageCreateRequest(LOCATION, null);
     var exception = Assertions.assertThrows(IllegalStateException.class, () ->
         icebergAuthorizer.validateStageCreateTable(CATALOG_NAME, NAMESPACE, Map.of(), request));
-    Assertions.assertEquals("Failed to check privileges stage-create", exception.getMessage());
+    Assertions.assertEquals("Failed to check privileges for CREATETABLE", exception.getMessage());
     Assertions.assertSame(failure, exception.getCause());
   }
 }
