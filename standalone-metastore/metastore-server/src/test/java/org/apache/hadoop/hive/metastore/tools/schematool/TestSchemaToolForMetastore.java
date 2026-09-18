@@ -487,6 +487,15 @@ public class TestSchemaToolForMetastore {
     validateMetastoreDbPropertiesTable();
   }
 
+  @Test
+  public void testRebuildIndexes() throws HiveMetaException {
+    schemaTool.setVerbose(true);
+    execute(new SchemaToolTaskInit(), "-initSchema");
+    execute(new SchemaToolTaskRebuildIndexes(), "-rebuildIndexes");
+    // Verify the schema is structurally intact after the index rebuild.
+    Assert.assertTrue(validator.validateSchemaTables(conn));
+  }
+
   private File generateTestScript(String [] stmts) throws IOException {
     File testScriptFile = File.createTempFile("schematest", ".sql");
     testScriptFile.deleteOnExit();
