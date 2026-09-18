@@ -285,9 +285,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
         serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
     // Native Parquet IO is gated per query by the job conf at the dispatch sites.
-    this.parquetCvp = dataCache != null
-        ? new ParquetColumnVectorProducer(dataCache, bufferManagerData, conf, cacheMetrics, ioMetrics)
-        : null;
+    this.parquetCvp = new ParquetColumnVectorProducer(dataCache, bufferManagerData, conf, cacheMetrics, ioMetrics);
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();
