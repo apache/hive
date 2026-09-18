@@ -443,8 +443,9 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     // LLAP cache-backed consumer can reuse the exact same logic. Behavior is unchanged.
     columnReaders = new ParquetRowGroupDecoder(fileSchema, initialDefaults).buildColumnReaders(
         pages, requestedSchema, columnTypesList, colsToInclude,
-        ColumnProjectionUtils.isReadAllColumns(jobConf), skipTimestampConversion, writerTimezone,
-        skipProlepticConversion, legacyConversionEnabled);
+        ColumnProjectionUtils.isReadAllColumns(jobConf),
+        new ParquetRowGroupDecoder.TimestampConversionOptions(skipTimestampConversion, writerTimezone,
+            skipProlepticConversion, legacyConversionEnabled));
 
     currentRowNumInRowGroup = 0;
     currentRowGroupIndex++;

@@ -151,14 +151,16 @@ public class ParquetEncodedDataConsumer
     }
 
     long startTime = counters.startTimeCounter();
-    try {
+    // NOSONAR - S2093 does not apply: codecFactory is a per-consumer field with a per-batch
+    // release() (not close()); try-with-resources would tie it to this scope, which is wrong.
+    try { // NOSONAR
       PageReadStore pages = new ParquetCachedPageReadStore(footer, batch, codecFactory, converter);
 
       VectorizedColumnReader[] columnReaders =
           new ParquetRowGroupDecoder(footer.getFileMetaData().getSchema(), initialDefaults).buildColumnReaders(
               pages, requestedSchema, columnTypesList, colsToInclude, readAllColumns,
-              skipTimestampConversion, writerTimezone, skipProlepticConversion,
-              legacyConversionEnabled);
+              new ParquetRowGroupDecoder.TimestampConversionOptions(skipTimestampConversion,
+                  writerTimezone, skipProlepticConversion, legacyConversionEnabled));
 
       long rowCount = pages.getRowCount();
       long rowsLeft = rowCount;
@@ -190,7 +192,7 @@ public class ParquetEncodedDataConsumer
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
     } catch (IOException | RuntimeException e) {
       // parquet-mr reports decode failures as runtime ParquetDecodingException.
-      LlapIoImpl.LOG.error("Parquet decodeBatch failed for rowGroup " + batch.rowGroupIx + " of " + path, e);
+      LlapIoImpl.LOG.error("Parquet decodeBatch failed for rowGroup " + batch.rowGroupIx() + " of " + path, e);
       downstreamConsumer.setError(e);
     } finally {
       // Returns the pooled Hadoop decompressors after each row group; getDecompressor re-creates

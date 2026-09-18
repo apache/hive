@@ -27,16 +27,16 @@ import org.apache.parquet.hadoop.metadata.ColumnChunkMetaData;
  * One row-group's worth of cached Parquet column-chunk buffers, handed from the reader to the
  * consumer. Extends {@link EncodedColumnBatch} only to satisfy the {@code EncodedDataConsumer}
  * generic bound; the inherited ColumnStreamData machinery is ORC-shaped and unused here. The real
- * payload is in the added fields.
+ * payload is in the fields exposed through the accessors below.
  */
-public class ParquetEncodedColumnBatch extends EncodedColumnBatch<Object> {
+public final class ParquetEncodedColumnBatch extends EncodedColumnBatch<Object> {
 
-  public int rowGroupIx;
+  private int rowGroupIx;
   /** This row group's chunk per projected column; the arrays below are indexed the same way. */
-  public ColumnChunkMetaData[] chunks;
-  public MemoryBuffer[][] columnBuffers;
-  public long[][] bufferOffsets;
-  public int[][] bufferLengths;
+  private ColumnChunkMetaData[] chunks;
+  private MemoryBuffer[][] columnBuffers;
+  private long[][] bufferOffsets;
+  private int[][] bufferLengths;
 
   public ParquetEncodedColumnBatch() {
     // No-arg constructor for pooling / reflection-based construction; fields are populated later
@@ -53,5 +53,25 @@ public class ParquetEncodedColumnBatch extends EncodedColumnBatch<Object> {
     this.columnBuffers = new MemoryBuffer[n][];
     this.bufferOffsets = new long[n][];
     this.bufferLengths = new int[n][];
+  }
+
+  public int rowGroupIx() {
+    return rowGroupIx;
+  }
+
+  public ColumnChunkMetaData[] chunks() {
+    return chunks;
+  }
+
+  public MemoryBuffer[][] columnBuffers() {
+    return columnBuffers;
+  }
+
+  public long[][] bufferOffsets() {
+    return bufferOffsets;
+  }
+
+  public int[][] bufferLengths() {
+    return bufferLengths;
   }
 }
