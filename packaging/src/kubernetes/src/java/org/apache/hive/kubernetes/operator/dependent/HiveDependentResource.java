@@ -55,7 +55,9 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernete
 import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
+import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
+import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
 
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
 import org.apache.hive.kubernetes.operator.model.spec.ProbeSpec;
@@ -377,11 +379,36 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   protected static void validateDatabaseConfig(DatabaseConfig db) {
     if (!DB_TYPE_PATTERN.matcher(db.type()).matches()) {
       throw new IllegalArgumentException(
-          "spec.metastore.database.type must be one of derby, mysql, postgres, mssql, oracle; got: " + db.type());
+          "spec.metastore.database.type must be one of derby, mysql, postgres, mssql, oracle");
     }
     validateOptValue("spec.metastore.database.url", db.url());
     validateOptValue("spec.metastore.database.driver", db.driver());
     validateOptValue("spec.metastore.database.username", db.username());
+  }
+
+  /**
+   * Validates CR-provided string fields before they are embedded into
+   * HiveServer2 SERVICE_OPTS and related env vars.
+   */
+  protected static void validateHiveServer2EmbeddedValues(HiveClusterSpec spec) {
+    if (!spec.metastore().isEnabled()) {
+      validateOptValue("spec.metastore.externalUri", spec.metastore().externalUri());
+    }
+    if (spec.tezAm().isEnabled()) {
+      validateOptValue("spec.zookeeper.quorum", spec.zookeeper().quorum());
+    }
+    spec.llapClusters().stream()
+        .filter(LlapSpec::isEnabled)
+        .forEach(llap -> validateOptValue("spec.llapClusters.serviceHosts", llap.serviceHosts()));
+  }
+
+  /**
+   * Validates CR-provided string fields before they are embedded into
+   * LLAP / TezAM env vars of llap cluster.
+   */
+  public static void validateLlapEmbeddedValues(HiveClusterSpec spec, LlapSpec llap) {
+    validateOptValue("spec.zookeeper.quorum", spec.zookeeper().quorum());
+    validateOptValue("spec.llapClusters.serviceHosts", llap.serviceHosts());
   }
 
   private static void validateOptValue(String field, String value) {
@@ -396,30 +423,27 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    * into a bash download command.
    */
   protected static void validateJarUrl(String jarUrl) {
-    if (containsUnsafeShellChars(jarUrl)) {
-      throw new IllegalArgumentException("external JAR location must not contain whitespace, quotes, backslashes or "
-          + "control characters: " + jarUrl);
-    }
+    validateOptValue("external JAR location", jarUrl);
 
     if (jarUrl != null && (jarUrl.startsWith("http://") || jarUrl.startsWith("https://"))) {
       // Normalizing parse: rejects malformed URLs early instead of
-      // letting wget interpret them preventing init container to crash 
-      // and the spinned up pods to enter CrashLoopBackOff.
+      // letting wget interpret them, preventing the init containers
+      // from crashing and the spun-up pods from entering CrashLoopBackOff.
       try {
         URL url = new URI(jarUrl).toURL();
 
         String host = url.getHost();
         if (host == null || host.isEmpty()) {
-          throw new IllegalArgumentException("HTTP/HTTPS JAR URL must specify a host: " + jarUrl);
+          throw new IllegalArgumentException("HTTP/HTTPS external JAR URL must specify a host");
         }
 
         int port = url.getPort();
         if (port != -1 && (port < 1 || port > 65535)) {
-          throw new IllegalArgumentException("HTTP/HTTPS JAR URL has invalid port: " + jarUrl);
+          throw new IllegalArgumentException("HTTP/HTTPS external JAR URL has invalid port");
         }
 
       } catch (MalformedURLException | URISyntaxException e) {
-        throw new IllegalArgumentException("Malformed HTTP/HTTPS JAR URL: " + jarUrl, e);
+        throw new IllegalArgumentException("Malformed HTTP/HTTPS external JAR URL");
       }
     }
   }

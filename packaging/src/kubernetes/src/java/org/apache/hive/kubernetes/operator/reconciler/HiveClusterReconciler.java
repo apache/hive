@@ -49,6 +49,7 @@ import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsCache;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsScraper;
 import org.apache.hive.kubernetes.operator.autoscaling.PodMetrics;
+import org.apache.hive.kubernetes.operator.dependent.HiveDependentResource;
 import org.apache.hive.kubernetes.operator.dependent.LlapResourceBuilder;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
@@ -651,6 +652,7 @@ public class HiveClusterReconciler
       if (!llapSpec.isEnabled()) {
         continue;
       }
+      HiveDependentResource.validateLlapEmbeddedValues(resource.getSpec(), llapSpec);
       desiredNames.add(llapSpec.name());
       int replicas = resolveLlapReplicaCount(resource, llapSpec, ns, clusterName);
 
