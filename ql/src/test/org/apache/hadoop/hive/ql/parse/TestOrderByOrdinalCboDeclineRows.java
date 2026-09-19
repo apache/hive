@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -78,13 +77,13 @@ public class TestOrderByOrdinalCboDeclineRows {
   @Test
   public void testTablesampleOrderByOrdinalDescReturns321() throws Exception {
     IDriver driver = createDriver();
+
+    driver.run("explain cbo " + QUERY);
+    List<String> explain = fetchRows(driver);
+    assertTrue("CBO should decline TABLESAMPLE, explain=" + explain,
+        explain.stream().anyMatch(line -> line.contains("not optimized by CBO")));
+
     driver.run(QUERY);
-
-    String cboInfo = driver.getPlan() == null ? null : driver.getPlan().getCboInfo();
-    assertNotNull("expected CBO info after compile", cboInfo);
-    assertTrue("CBO should decline TABLESAMPLE, got cboInfo=" + cboInfo,
-        cboInfo.contains("not optimized by CBO"));
-
     assertEquals(Arrays.asList("3", "2", "1"), fetchRows(driver));
   }
 
