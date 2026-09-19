@@ -53,9 +53,9 @@ import org.apache.hive.common.util.DateUtils;
         + "Returns the date that is num_months after start_date.",
     extended = "start_date is a string or timestamp indicating a valid date. "
         + "num_months is a number. output_date_format is an optional String which specifies the format for output.\n"
-        + "The default output format is 'YYYY-MM-dd'.\n"
+        + "The default output format is 'yyyy-MM-dd'.\n"
         + "Example:\n  > SELECT _FUNC_('2009-08-31', 1) FROM src LIMIT 1;\n" + " '2009-09-30'."
-        + "\n  > SELECT _FUNC_('2017-12-31 14:15:16', 2, 'YYYY-MM-dd HH:mm:ss') LIMIT 1;\n"
+        + "\n  > SELECT _FUNC_('2017-12-31 14:15:16', 2, 'yyyy-MM-dd HH:mm:ss') LIMIT 1;\n"
         + "'2018-02-28 14:15:16'.\n")
 @NDV(maxNdv = 250) // 250 seems to be reasonable upper limit for this
 public class GenericUDFAddMonths extends GenericUDF {
