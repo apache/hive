@@ -48,7 +48,9 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.AvoidSplitCombination;
+import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat.NullRowsRecordReader;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
@@ -123,19 +125,15 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
           cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
       if (rr == null) {
         // Reader-specific incompatibility like SMB or schema evolution.
+        if (sourceInputFormat instanceof LlapCacheOnlyInputFormatInterface) {
+          LlapProxy.getIo().initCacheOnlyInputFormat(sourceInputFormat);
+        }
         return sourceInputFormat.getRecordReader(split, job, reporter);
       }
-      // For non-vectorized operator case, wrap the reader if possible.
-      RecordReader<NullWritable, VectorizedRowBatch> result = rr;
-      if (!Utilities.getIsVectorized(job)) {
-        result = null;
-        if (HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED)) {
-          result = wrapLlapReader(tableIncludedCols, rr, split);
-        }
-        if (result == null) {
-          // Cannot wrap a reader for non-vectorized pipeline.
-          return sourceInputFormat.getRecordReader(split, job, reporter);
-        }
+      RecordReader<NullWritable, VectorizedRowBatch> result =
+          wrapOrFallback(rr, tableIncludedCols, split, job);
+      if (result == null) {
+        return sourceInputFormat.getRecordReader(split, job, reporter);
       }
       // This starts the reader in the background.
       rr.start();
@@ -152,6 +150,24 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
         throw new IOException(ex);
       }
     }
+  }
+
+  /**
+   * Adapts the LLAP reader (which always produces vectorized batches) to what the surrounding
+   * operator pipeline expects. In a vectorized pipeline it is handed back as-is; in a
+   * non-vectorized one a row wrapper is attempted, and if that isn't possible (wrapper disabled
+   * or unavailable for this reader) null is returned so the caller falls back to
+   * {@link #sourceInputFormat}.
+   */
+  private RecordReader<NullWritable, VectorizedRowBatch> wrapOrFallback(LlapRecordReader rr,
+      List<Integer> tableIncludedCols, InputSplit split, JobConf job) throws IOException {
+    if (Utilities.getIsVectorized(job)) {
+      return rr;
+    }
+    if (!HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED)) {
+      return null;
+    }
+    return wrapLlapReader(tableIncludedCols, rr, split);
   }
 
   private boolean checkLimitReached(JobConf job) {

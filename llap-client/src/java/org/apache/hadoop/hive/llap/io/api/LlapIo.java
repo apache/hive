@@ -23,9 +23,9 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -74,11 +74,15 @@ public interface LlapIo<T> {
    * @param fileKey fileId of the Parquet file (either the Long fileId of HDFS or the SyntheticFileId).
    *                Optional, if it is not provided, it will be generated, see:
    *                org.apache.hadoop.hive.ql.io.HdfsUtils#getFileId()
+   * @param cacheHit optional out-parameter; when supplied, its {@code value} field is written
+   *                 with {@code true} on a cache hit and {@code false} on a miss, so the caller
+   *                 (which lives in llap-server and holds {@code QueryFragmentCounters}) can bump
+   *                 {@code METADATA_CACHE_HIT} / {@code METADATA_CACHE_MISS} for the LLAP IO summary.
    * @return
    * @throws IOException
    */
-  MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey)
-      throws IOException;
+  MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey,
+      @Nullable BooleanRef cacheHit) throws IOException;
 
   /**
    * Handles request to evict entities specified in the request object.
@@ -106,6 +110,14 @@ public interface LlapIo<T> {
    */
   RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path, CacheTag tag,
       List<Integer> tableIncludedCols, JobConf conf, long offset, long length, Reporter reporter) throws IOException;
+
+  /**
+   * Parquet counterpart of {@link #llapVectorizedOrcReaderForPath}: reads the column chunks of the split through the
+   * LLAP data cache. Returns null when the file cannot be served this way (native Parquet IO disabled, no MapWork,
+   * unsupported schema). See {@link LlapParquetReadRequest} for the identity / split / projection fields.
+   */
+  RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedParquetReaderForPath(
+      LlapParquetReadRequest request, JobConf conf, Reporter reporter) throws IOException;
 
   /**
    * Extract and return the cache content metadata.

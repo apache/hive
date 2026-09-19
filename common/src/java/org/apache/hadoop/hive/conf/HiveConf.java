@@ -262,6 +262,13 @@ public class HiveConf extends Configuration {
       "hive.server2.authentication.ldap.userMembershipKey";
 
   /**
+   * Token that {@link ConfVars#HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED} must contain for
+   * decimal_64 vectorization to be enabled. Extracted here so call sites can reference the same
+   * constant instead of repeating the literal.
+   */
+  public static final String HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64 = "decimal_64";
+
+  /**
    * dbVars are the parameters can be set per database. If these
    * parameters are set as a database property, when switching to that
    * database, the HiveConf variable will be changed. The change of these
@@ -4641,7 +4648,7 @@ public class HiveConf extends Configuration {
         "evaluate call and turn them into NULLs. Assume, by default, this is not needed"),
     HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED(
         "hive.vectorized.input.format.supports.enabled",
-        "decimal_64",
+        HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64,
         "Which vectorized input format support features are enabled for vectorization.\n" +
         "That is, if a VectorizedInputFormat input format does support \"decimal_64\" for example\n" +
         "this variable must enable that to be used in vectorization"),
@@ -4976,6 +4983,9 @@ public class HiveConf extends Configuration {
     LLAP_IO_ENCODE_ENABLED("hive.llap.io.encode.enabled", true,
         "Whether LLAP should try to re-encode and cache data for non-ORC formats. This is used\n" +
         "on LLAP Server side to determine if the infrastructure for that is initialized."),
+    LLAP_IO_PARQUET_NATIVE_ENABLED("hive.llap.io.parquet.native.enabled", true,
+        "Whether LLAP IO caches Parquet column chunks and decodes them from the cache, like ORC.\n" +
+        "A projection that reaches into a nested type falls back to the vectorized Parquet reader."),
     LLAP_IO_ENCODE_FORMATS("hive.llap.io.encode.formats",
         "org.apache.hadoop.mapred.TextInputFormat,",
         "The table input formats for which LLAP IO should re-encode and cache data.\n" +

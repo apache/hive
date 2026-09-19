@@ -3874,7 +3874,8 @@ public class TestInputOutputFormat {
   public void testSchemaEvolutionOldDecimal() throws Exception {
     TypeDescription fileSchema =
         TypeDescription.fromString("struct<a:int,b:struct<c:int>,d:string>");
-    conf.set(ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED.varname, "decimal_64");
+    conf.set(ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED.varname,
+        HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .fileSystem(fs)
@@ -3946,7 +3947,8 @@ public class TestInputOutputFormat {
   public void testSchemaEvolutionDecimal64() throws Exception {
     TypeDescription fileSchema =
       TypeDescription.fromString("struct<a:int,b:struct<c:int>,d:string>");
-    conf.set(ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED.varname, "decimal_64");
+    conf.set(ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED.varname,
+        HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     Writer writer = OrcFile.createWriter(testFilePath,
       OrcFile.writerOptions(conf)
         .fileSystem(fs)
