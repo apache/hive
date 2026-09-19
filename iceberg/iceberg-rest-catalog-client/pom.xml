@@ -30,6 +30,7 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <path.to.iceberg.root>..</path.to.iceberg.root>
+    <test.excludes.additional>**/TestRestCatalogScanPlanningServerIT.java</test.excludes.additional>
   </properties>
   <dependencies>
     <dependency>
@@ -76,6 +77,70 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>patched-iceberg-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>patched-iceberg-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>6.1.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-http</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-io</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-util</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-servlet</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.compression</groupId>
+      <artifactId>jetty-compression-server</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.compression</groupId>
+      <artifactId>jetty-compression-gzip</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.iceberg</groupId>
       <artifactId>iceberg-core</artifactId>
       <classifier>tests</classifier>
@@ -88,4 +153,40 @@
       </exclusions>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- Main code depends on hive-iceberg-shading; tests use patched-iceberg-* for REST harness. -->
+          <classpathDependencyExcludes>
+            <classpathDependencyExclude>org.apache.hive:hive-iceberg-shading</classpathDependencyExclude>
+          </classpathDependencyExcludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-test</id>
+            <configuration>
+              <excludes combine.children="append">
+                <exclude>**/TestRestCatalogScanPlanningServerIT.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>rest-scan-planning-server-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/TestRestCatalogScanPlanningServerIT.java</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -31,6 +31,7 @@
     <hive.path.to.root>../..</hive.path.to.root>
     <path.to.iceberg.root>..</path.to.iceberg.root>
     <shade.relocation.package.prefix>org.apache.hive.iceberg</shade.relocation.package.prefix>
+    <test.excludes.additional>**/TestHiveIcebergServerSideScanPlanningServerIT.java</test.excludes.additional>
   </properties>
   <dependencies>
     <dependency>
@@ -171,18 +172,116 @@
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>patched-iceberg-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>patched-iceberg-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>6.1.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-http</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-io</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-util</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-servlet</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.compression</groupId>
+      <artifactId>jetty-compression-server</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.compression</groupId>
+      <artifactId>jetty-compression-gzip</artifactId>
+      <version>12.1.8</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
       <plugin>
-        <!-- Unpacking all Iceberg related classes into the iceberg-handler jar for consumption by external
-                components -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- hive-exec pulls hive-iceberg-shading, whose RESTObjectMapper uses relocated Jackson and
+               breaks Iceberg's REST test harness (TestBaseWithRESTServer). Tests use patched-iceberg-* instead. -->
+          <classpathDependencyExcludes>
+            <classpathDependencyExclude>org.apache.hive:hive-iceberg-shading</classpathDependencyExclude>
+          </classpathDependencyExcludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-test</id>
+            <configuration>
+              <excludes combine.children="append">
+                <exclude>**/TestHiveIcebergServerSideScanPlanningServerIT.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>rest-scan-planning-server-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/TestHiveIcebergServerSideScanPlanningServerIT.java</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <!-- Merged at prepare-package; keep compile output free of shaded Iceberg for unit tests. -->
+          <classesDirectory>${project.build.directory}/jar-staging</classesDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
+        <!-- Unpack Iceberg modules for the handler jar without polluting target/classes (breaks REST ITs). -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
             <id>unpack</id>
-            <phase>generate-sources</phase>
+            <phase>prepare-package</phase>
             <goals>
               <goal>unpack</goal>
             </goals>
@@ -194,7 +293,7 @@
                   <version>${project.version}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
-                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                  <outputDirectory>${project.build.directory}/iceberg-embedded</outputDirectory>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.apache.hive</groupId>
@@ -202,7 +301,7 @@
                   <version>${project.version}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
-                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                  <outputDirectory>${project.build.directory}/iceberg-embedded</outputDirectory>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.apache.hive</groupId>
@@ -210,9 +309,33 @@
                   <version>${project.version}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
-                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                  <outputDirectory>${project.build.directory}/iceberg-embedded</outputDirectory>
                 </artifactItem>
               </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>stage-handler-jar-classes</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/jar-staging</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.build.outputDirectory}</directory>
+                </resource>
+                <resource>
+                  <directory>${project.build.directory}/iceberg-embedded</directory>
+                </resource>
+              </resources>
             </configuration>
           </execution>
         </executions>
