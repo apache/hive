@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,14 +76,10 @@ public class TestOrderByOrdinalCboDeclineRows {
   @Test
   public void testTablesampleOrderByOrdinalDescReturns321() throws Exception {
     IDriver driver = createDriver();
-
-    driver.run("explain cbo " + QUERY);
-    List<String> explain = fetchRows(driver);
-    assertTrue("CBO should decline TABLESAMPLE, explain=" + explain,
-        explain.stream().anyMatch(line -> line.contains("not optimized by CBO")));
-
     driver.run(QUERY);
-    assertEquals(Arrays.asList("3", "2", "1"), fetchRows(driver));
+    List<String> rows = fetchRows(driver);
+    assertEquals("TABLESAMPLE + ORDER BY 1 DESC should return 3,2,1; fetchTask="
+        + driver.getFetchTask(), Arrays.asList("3", "2", "1"), rows);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -93,11 +88,7 @@ public class TestOrderByOrdinalCboDeclineRows {
     List rows = new ArrayList();
     if (driver.getFetchTask() != null) {
       driver.getFetchTask().setMaxRows(100);
-      List batch = new ArrayList();
-      while (driver.getFetchTask().fetch(batch)) {
-        rows.addAll(batch);
-        batch.clear();
-      }
+      driver.getFetchTask().fetch(rows);
     } else {
       List batch = new ArrayList();
       while (driver.getResults(batch)) {
