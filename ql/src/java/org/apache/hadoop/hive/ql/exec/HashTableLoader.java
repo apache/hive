@@ -39,4 +39,22 @@ public interface HashTableLoader {
 
   void load(MapJoinTableContainer[] mapJoinTables, MapJoinTableContainerSerDe[] mapJoinTableSerdes)
       throws HiveException;
+
+  /**
+   * How many keys to size a map join hash table for. Neither signal bounds the distinct key count,
+   * so take the smaller of the two: the slot arrays are allocated from this value before the first
+   * row is read, and a rehash corrects an undershoot.
+   *
+   * @param estKeyCount the optimizer's distinct-key estimate, non-positive when unavailable
+   * @param inputRecords the APPROXIMATE_INPUT_RECORDS counter, non-positive when unavailable
+   * @return the key count to size from, or -1 when neither signal is available. Never 0:
+   *         {@link org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper#calculateTableSize}
+   *         honours 0 as a real size, which then fails validateCapacity in the fast tables.
+   */
+  static long initialKeyCount(long estKeyCount, long inputRecords) {
+    if (estKeyCount <= 0) {
+      return inputRecords > 0 ? inputRecords : -1;
+    }
+    return inputRecords > 0 ? Math.min(estKeyCount, inputRecords) : estKeyCount;
+  }
 }

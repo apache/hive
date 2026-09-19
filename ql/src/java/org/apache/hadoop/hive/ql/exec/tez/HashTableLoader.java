@@ -18,6 +18,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import static org.apache.hadoop.hive.ql.exec.HashTableLoader.initialKeyCount;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
@@ -229,7 +231,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         } catch (Exception e) {
           LOG.debug("Failed to get value for counter APPROXIMATE_INPUT_RECORDS", e);
         }
-        long keyCount = Math.max(estKeyCount, inputRecords);
+        long keyCount = initialKeyCount(estKeyCount, inputRecords);
 
         long memory = 0;
         if (useHybridGraceHashJoin) {
@@ -253,8 +255,9 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
         }
 
         LOG.info("Loading hash table for input: {} cacheKey: {} tableContainer: {} smallTablePos: {} " +
-                        "estKeyCount : {} keyCount : {}", inputName, cacheKey,
-                tableContainer.getClass().getSimpleName(), pos, estKeyCount, keyCount);
+                        "estKeyCount : {} inputRecords : {} keyCount : {}",
+                inputName, cacheKey, tableContainer.getClass().getSimpleName(), pos, estKeyCount,
+                inputRecords, keyCount);
 
         tableContainer.setSerde(keyCtx, valCtx);
         long startTime = System.currentTimeMillis();
