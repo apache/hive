@@ -50,10 +50,10 @@ public class TestOrderByOrdinalCboDeclineRows {
       "select d from " + TABLE + " tablesample (5 rows) s order by 1 desc";
 
   @ClassRule
-  public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
+  public static HiveTestEnvSetup envSetup = new HiveTestEnvSetup();
 
   @Rule
-  public TestRule methodRule = env_setup.getMethodRule();
+  public TestRule methodRule = envSetup.getMethodRule();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -104,7 +104,7 @@ public class TestOrderByOrdinalCboDeclineRows {
   }
 
   private static IDriver createDriver() {
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    HiveConf conf = envSetup.getTestCtx().hiveConf;
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
