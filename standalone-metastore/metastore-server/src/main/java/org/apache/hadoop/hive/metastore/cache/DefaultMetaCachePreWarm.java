@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EmptyStackException;
 import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DatabaseName;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -73,16 +75,20 @@ class DefaultMetaCachePreWarm implements MetaCachePreWarm {
 
   private final RawStore rawStore;
   private final SharedCache sharedCache;
-  private final CachedStore.TablesPendingPrewarm tblsPendingPrewarm;
+  private final TablesPendingPrewarm tblsPendingPrewarm = new TablesPendingPrewarm();
   private Configuration conf;
   private ExecutorService prewarmPool;
   private final List<RawStore> workerStores = new ArrayList<>();
 
-  DefaultMetaCachePreWarm(RawStore rawStore, SharedCache sharedCache,
-      CachedStore.TablesPendingPrewarm tblsPendingPrewarm) {
+  DefaultMetaCachePreWarm(RawStore rawStore, SharedCache sharedCache) {
     this.rawStore = rawStore;
     this.sharedCache = sharedCache;
-    this.tblsPendingPrewarm = tblsPendingPrewarm;
+  }
+
+  @Override public void prioritizeTableForPrewarm(TableName... tableNames) {
+    for (TableName tableName : tableNames) {
+      tblsPendingPrewarm.prioritizeTableForPrewarm(tableName.getTable());
+    }
   }
 
   @Override public void setConf(Configuration conf) {
@@ -418,5 +424,32 @@ class DefaultMetaCachePreWarm implements MetaCachePreWarm {
       }
     }
     workerStores.clear();
+  }
+
+  /** The tables of the database currently being prewarmed that have not been cached yet. */
+  private static class TablesPendingPrewarm {
+    private final Stack<String> tableNames = new Stack<>();
+
+    synchronized void addTableNamesForPrewarming(List<String> tblNames) {
+      tableNames.clear();
+      if (tblNames != null) {
+        tableNames.addAll(tblNames);
+      }
+    }
+
+    synchronized boolean hasMoreTablesToPrewarm() {
+      return !tableNames.empty();
+    }
+
+    synchronized String getNextTableNameToPrewarm() {
+      return tableNames.pop();
+    }
+
+    synchronized void prioritizeTableForPrewarm(String tblName) {
+      // If the table is in the pending prewarm list, move it to the top
+      if (tableNames.remove(tblName)) {
+        tableNames.push(tblName);
+      }
+    }
   }
 }

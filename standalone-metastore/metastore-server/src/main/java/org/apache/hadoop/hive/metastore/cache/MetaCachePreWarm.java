@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.cache;
 
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
 /**
@@ -39,6 +40,13 @@ public interface MetaCachePreWarm extends AutoCloseable, Configurable {
    *         limit was reached or the thread was interrupted) with only part of the metadata cached
    */
   boolean preWarm() throws MetaException;
+
+  /**
+   * Moves the given tables, when they are still pending prewarm, to the front of the prewarm
+   * queue, so that a table a client is asking for right now becomes available in the cache as
+   * soon as possible.
+   */
+  void prioritizeTableForPrewarm(TableName... tableNames);
 
   /**
    * Releases the prewarm resources, waiting for any still running workers to terminate so that

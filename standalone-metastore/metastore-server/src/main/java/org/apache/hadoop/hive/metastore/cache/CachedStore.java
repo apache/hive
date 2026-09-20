@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Stack;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -118,7 +117,9 @@ public class CachedStore implements RawStore, Configurable {
   // This is set to true only if we were able to cache all the metadata.
   // We may not be able to cache all metadata if we hit CACHED_RAW_STORE_MAX_CACHE_MEMORY limit.
   private static AtomicBoolean isCachedAllMetadata = new AtomicBoolean(false);
-  private static TablesPendingPrewarm tblsPendingPrewarm = new TablesPendingPrewarm();
+  // The prewarmer while a prewarm is in flight, so that getTable can promote requested tables
+  // to the front of the prewarm queue; null once prewarm has completed
+  private static volatile MetaCachePreWarm activePreWarmer = null;
   private RawStore rawStore = null;
   private Configuration conf;
   private static boolean areTxnStatsSupported;
@@ -470,12 +471,15 @@ public class CachedStore implements RawStore, Configurable {
     boolean cachedAllMetadata;
     // The prewarmer is closed (its workers terminated, their stores shut down) before completion
     // is published, so nothing can still be mutating the cache once isCachePrewarmed is set
-    try (MetaCachePreWarm preWarmer = new DefaultMetaCachePreWarm(rawStore, sharedCache, tblsPendingPrewarm)) {
+    try (MetaCachePreWarm preWarmer = new DefaultMetaCachePreWarm(rawStore, sharedCache)) {
       preWarmer.setConf(rawStore.getConf());
       preWarmer.initialize();
+      activePreWarmer = preWarmer;
       cachedAllMetadata = preWarmer.preWarm();
     } catch (MetaException e) {
       throw new RuntimeException("CachedStore prewarm failed", e);
+    } finally {
+      activePreWarmer = null;
     }
     if (cachedAllMetadata) {
       sharedCache.clearDirtyFlags();
@@ -503,32 +507,6 @@ public class CachedStore implements RawStore, Configurable {
     long endTime = System.nanoTime();
     LOG.info("Time taken in prewarming = " + (endTime - startTime) / 1000000 + "ms");
     sharedCache.completeTableCachePrewarm();
-  }
-
-  static class TablesPendingPrewarm {
-    private Stack<String> tableNames = new Stack<>();
-
-    synchronized void addTableNamesForPrewarming(List<String> tblNames) {
-      tableNames.clear();
-      if (tblNames != null) {
-        tableNames.addAll(tblNames);
-      }
-    }
-
-    synchronized boolean hasMoreTablesToPrewarm() {
-      return !tableNames.empty();
-    }
-
-    synchronized String getNextTableNameToPrewarm() {
-      return tableNames.pop();
-    }
-
-    synchronized void prioritizeTableForPrewarm(String tblName) {
-      // If the table is in the pending prewarm list, move it to the top
-      if (tableNames.remove(tblName)) {
-        tableNames.push(tblName);
-      }
-    }
   }
 
   @VisibleForTesting static void setCachePrewarmedState(boolean state) {
@@ -1211,9 +1189,12 @@ public class CachedStore implements RawStore, Configurable {
     if (tbl == null) {
       // This table is not yet loaded in cache
       // If the prewarm thread is working on this table's database,
-      // let's move this table to the top of tblNamesBeingPrewarmed stack,
+      // let's move this table to the top of the prewarm queue,
       // so that it gets loaded to the cache faster and is available for subsequent requests
-      tblsPendingPrewarm.prioritizeTableForPrewarm(tblName);
+      MetaCachePreWarm preWarmer = activePreWarmer;
+      if (preWarmer != null) {
+        preWarmer.prioritizeTableForPrewarm(new TableName(catName, dbName, tblName));
+      }
       Table t = rawStore.getTable(catName, dbName, tblName, validWriteIds);
       if (t != null) {
         sharedCache.addTableToCache(catName, dbName, tblName, t);
