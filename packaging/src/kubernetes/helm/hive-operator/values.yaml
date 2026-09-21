@@ -106,6 +106,17 @@ cluster:
       #   readOnly: true
 
   # ---------------------------------------------------------------------------
+  # UPDATE STRATEGY — how a new image or config reaches running pods
+  # ---------------------------------------------------------------------------
+  # Applies to every component: Metastore, HiveServer2, LLAP and the Tez AMs.
+  # RollingUpdate (default) replaces a component's pods a few at a time, so part
+  # of it keeps serving. An LLAP StatefulSet rolls strictly by ordinal, so its
+  # wall time is one pod startup per daemon -- 24 daemons means 24 startups.
+  # Recreate replaces a component's pods together: one startup instead of one
+  # per daemon, during which that component does not serve.
+  # updateStrategy: Recreate
+
+  # ---------------------------------------------------------------------------
   # AUTO-SUSPEND — fully hibernates the cluster after idle timeout
   # ---------------------------------------------------------------------------
   # When enabled (requires autoscaling on all active components), the operator

@@ -35,6 +35,7 @@ import org.apache.hive.kubernetes.operator.model.spec.HiveServer2Spec;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
 import org.apache.hive.kubernetes.operator.model.spec.MetastoreSpec;
 import org.apache.hive.kubernetes.operator.model.spec.TezAmSpec;
+import org.apache.hive.kubernetes.operator.model.spec.UpdateStrategy;
 import org.apache.hive.kubernetes.operator.model.spec.ZookeeperSpec;
 
 /** Full specification for a HiveCluster custom resource. */
@@ -86,6 +87,12 @@ public record HiveClusterSpec(
     @JsonPropertyDescription("Kubernetes ServiceAccount name for all component pods. "
         + "If not specified, pods use the namespace default service account.")
     String serviceAccountName,
+    @JsonPropertyDescription("How every component replaces its pods when their template changes. "
+        + "RollingUpdate (default) replaces them a few at a time, keeping part of each component "
+        + "serving; an LLAP StatefulSet rolls strictly by ordinal, so its wall time grows with the "
+        + "daemon count. Recreate replaces each component's pods together: one pod startup "
+        + "instead of one per daemon, during which that component does not serve.")
+    UpdateStrategy updateStrategy,
     @JsonPropertyDescription("Auto-suspend configuration. When enabled and all components "
         + "are idle for the configured timeout, the cluster scales to 0 replicas.")
     AutoSuspendSpec autoSuspend,
@@ -109,6 +116,11 @@ public record HiveClusterSpec(
     volumeMounts = volumeMounts != null ? volumeMounts : List.of();
     autoSuspend = autoSuspend != null ? autoSuspend : new AutoSuspendSpec(false, 15, true);
     suspend = suspend != null && suspend;
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
+  }
+
+  public boolean recreateOnUpdate() {
+    return updateStrategy == UpdateStrategy.Recreate;
   }
 
 }

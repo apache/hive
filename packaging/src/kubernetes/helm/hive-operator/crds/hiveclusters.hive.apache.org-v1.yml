@@ -899,6 +899,18 @@ spec:
                     x-kubernetes-preserve-unknown-fields: true
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              updateStrategy:
+                description: "How every component replaces its pods when their template\
+                  \ changes. RollingUpdate (default) replaces them a few at a time,\
+                  \ keeping part of each component serving; an LLAP StatefulSet rolls\
+                  \ strictly by ordinal, so its wall time grows with the daemon count.\
+                  \ Recreate replaces each component's pods together: one pod startup\
+                  \ instead of one per daemon, during which that component does not\
+                  \ serve."
+                enum:
+                - Recreate
+                - RollingUpdate
+                type: string
               volumeMounts:
                 description: "Volume mounts added to all component containers (e.g.,\
                   \ mounting a GCS key file at /etc/gcs/key.json)"

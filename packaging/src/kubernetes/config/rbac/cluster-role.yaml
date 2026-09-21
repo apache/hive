@@ -41,7 +41,7 @@ rules:
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["create", "patch"]
-  # Pods: read-only for readiness checking
+  # Pods: read for readiness checking + delete (updateStrategy: Recreate)
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "delete"]

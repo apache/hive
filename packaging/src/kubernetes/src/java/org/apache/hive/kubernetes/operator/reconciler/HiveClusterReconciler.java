@@ -75,6 +75,7 @@ public class HiveClusterReconciler
 
   private static final String CONDITION_READY_LITERAL = "Ready";
   private static final String RECONCILIATION_ERROR_LITERAL = "ReconciliationError";
+  private static final int ROLLOUT_RECHECK_SECONDS = 5;
   private volatile HiveClusterAutoscaler autoscaler;
   private volatile BackgroundMetricsScraper bgScraper;
 
@@ -166,7 +167,7 @@ public class HiveClusterReconciler
     // Must also run while suspended: resolve*ReplicaCount() return 0 when
     // spec.suspend() is set, and skipping the call would leave LLAP/TezAM
     // at their pre-suspend scale.
-    reconcileLlapClusters(resource, client);
+    boolean awaitingRollout = reconcileLlapClusters(resource, client);
 
     // --- Autoscaling evaluation (only when enabled and not suspended) ---
     if (rescheduleSeconds == 0 && anyAutoscalingEnabled(resource.getSpec())) {
@@ -179,6 +180,13 @@ public class HiveClusterReconciler
       // Reschedule sooner if a two-phase scale-down is pending annotation propagation
       rescheduleSeconds = scaler.hasPendingScaleDowns()
           ? 2 : getMinScrapeInterval(resource.getSpec());
+    }
+
+    if (awaitingRollout && (rescheduleSeconds == 0 || rescheduleSeconds > ROLLOUT_RECHECK_SECONDS)) {
+      // Nothing watches the LLAP StatefulSet, so without this the daemons keep the old template
+      // until a reconcile happens for some other reason. Set after the block above, which only
+      // evaluates the autoscaler while nothing else has asked to come back.
+      rescheduleSeconds = ROLLOUT_RECHECK_SECONDS;
     }
 
     boolean workflowError = applyWorkflowDependentErrors(resource, context, newStatus, existingStatus);
@@ -617,6 +625,61 @@ public class HiveClusterReconciler
     }
   }
 
+  /** True once the StatefulSet's status describes the spec that was just applied. */
+  private static boolean controllerHasCaughtUp(StatefulSet statefulSet) {
+    return statefulSet != null && statefulSet.getStatus() != null
+        && Objects.equals(statefulSet.getMetadata().getGeneration(),
+            statefulSet.getStatus().getObservedGeneration());
+  }
+
+  /** The daemons of one LLAP cluster not on updateRevision, and not already going away. */
+  private static List<Pod> staleLlapDaemons(KubernetesClient client, HiveCluster resource,
+      LlapSpec llapSpec, String updateRevision, String ns) {
+    return client.pods().inNamespace(ns)
+        .withLabels(Labels.selectorForLlapCluster(resource, llapSpec.name()))
+        .list().getItems().stream()
+        .filter(pod -> pod.getMetadata().getDeletionTimestamp() == null)
+        .filter(pod -> {
+          // A pod without the label is not one the StatefulSet controller made.
+          String revision = pod.getMetadata().getLabels().get("controller-revision-hash");
+          return revision != null && !revision.equals(updateRevision);
+        })
+        .toList();
+  }
+
+  /**
+   * Replaces the LLAP daemons still running an older pod template. Under the Recreate strategy
+   * the StatefulSet is OnDelete, so Kubernetes publishes the new revision but leaves the pods
+   * alone; deleting the stale ones in one pass lets the Parallel pod management policy bring
+   * them all back together, rather than one ordinal at a time.
+   *
+   * @return true when the replacement has not finished and the reconcile should come back
+   */
+  boolean recreateStaleLlapDaemons(KubernetesClient client, HiveCluster resource,
+      LlapSpec llapSpec, StatefulSet applied, String ns) {
+    if (!controllerHasCaughtUp(applied)) {
+      // updateRevision still names the previous template, which every pod matches. Come back
+      // rather than compare against it.
+      return true;
+    }
+    String updateRevision = applied.getStatus().getUpdateRevision();
+    List<Pod> stale = staleLlapDaemons(client, resource, llapSpec, updateRevision, ns);
+    if (stale.isEmpty()) {
+      return false;
+    }
+    LOG.info("Recreating {} LLAP daemon(s) of {}/{} at revision {}",
+        stale.size(), ns, llapSpec.name(), updateRevision);
+    try {
+      client.resourceList(stale).delete();
+    } catch (Exception e) {
+      // Same treatment as a failed scale patch: the rollout waits for the next reconcile rather
+      // than taking autoscaling and garbage collection down with it.
+      LOG.warn("Failed to recreate LLAP daemons of {}/{}", ns, llapSpec.name(), e);
+      return true;
+    }
+    return false;
+  }
+
   private void patchSuspendSpec(KubernetesClient client, HiveCluster resource, boolean suspend) {
     String ns = resource.getMetadata().getNamespace();
     String name = resource.getMetadata().getName();
@@ -630,7 +693,7 @@ public class HiveClusterReconciler
               oldSpec.tezAm(), oldSpec.zookeeper(),
               oldSpec.hadoop(), oldSpec.envVars(), oldSpec.externalJars(),
               oldSpec.volumes(), oldSpec.volumeMounts(), oldSpec.serviceAccountName(),
-              oldSpec.autoSuspend(), suspend);
+              oldSpec.updateStrategy(), oldSpec.autoSuspend(), suspend);
           hc.setSpec(newSpec);
           return hc;
         });
@@ -643,7 +706,8 @@ public class HiveClusterReconciler
    * Creates or updates LLAP cluster resources (ConfigMap, Service, StatefulSet, PDB)
    * imperatively via server-side apply. Also garbage-collects resources for removed clusters.
    */
-  private void reconcileLlapClusters(HiveCluster resource, KubernetesClient client) {
+  private boolean reconcileLlapClusters(HiveCluster resource, KubernetesClient client) {
+    boolean awaitingRollout = false;
     String ns = resource.getMetadata().getNamespace();
     String clusterName = resource.getMetadata().getName();
     Set<String> desiredNames = new HashSet<>();
@@ -668,10 +732,13 @@ public class HiveClusterReconciler
       // brief scale-up-then-down on first create (K8s defaults to 1 if omitted).
       // resolveLlapReplicaCount already reads the autoscaler's managed value,
       // so this is always the correct replica count.
-      client.apps().statefulSets().inNamespace(ns)
+      StatefulSet llapStatefulSet = client.apps().statefulSets().inNamespace(ns)
           .resource(LlapResourceBuilder.buildStatefulSet(resource, llapSpec, replicas))
           .forceConflicts()
           .serverSideApply();
+      if (resource.getSpec().recreateOnUpdate()) {
+        awaitingRollout |= recreateStaleLlapDaemons(client, resource, llapSpec, llapStatefulSet, ns);
+      }
       if (llapSpec.autoscaling().isEnabled()) {
         client.policy().v1().podDisruptionBudget().inNamespace(ns)
             .resource(LlapResourceBuilder.buildPdb(resource, llapSpec))
@@ -701,6 +768,7 @@ public class HiveClusterReconciler
     }
 
     garbageCollectLlapResources(client, ns, clusterName, desiredNames);
+    return awaitingRollout;
   }
 
   /**

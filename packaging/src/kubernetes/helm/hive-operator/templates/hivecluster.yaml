@@ -298,6 +298,10 @@ spec:
     {{- toYaml .Values.cluster.storage.volumeMounts | nindent 4 }}
   {{- end }}
 
+  {{- if .Values.cluster.updateStrategy }}
+  updateStrategy: {{ .Values.cluster.updateStrategy }}
+  {{- end }}
+
   {{- if and .Values.cluster.autoSuspend .Values.cluster.autoSuspend.enabled }}
   autoSuspend:
     enabled: true

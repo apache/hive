@@ -442,6 +442,9 @@ public class LlapResourceBuilder
         .endMetadata()
         .withNewSpec()
           .withReplicas(replicas)
+          // A Deployment implements Recreate itself, so unlike the LLAP StatefulSet this needs
+          // nothing from the reconciler.
+          .withStrategy(deploymentStrategy(spec))
           .withNewSelector()
             .withMatchLabels(selectorLabels)
           .endSelector()
@@ -616,6 +619,8 @@ public class LlapResourceBuilder
         .withNewSpec()
           .withReplicas(replicas)
           .withPodManagementPolicy("Parallel")
+          // Parallel governs scaling and creation only; a template change still rolls by ordinal.
+          .withUpdateStrategy(statefulSetUpdateStrategy(spec))
           .withServiceName(ssName)
           .withNewSelector()
             .withMatchLabels(selectorLabels)

@@ -38,6 +38,10 @@ import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStrategyBuilder;
+import io.fabric8.kubernetes.api.model.apps.StatefulSetUpdateStrategy;
+import io.fabric8.kubernetes.api.model.apps.StatefulSetUpdateStrategyBuilder;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
@@ -88,6 +92,40 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   protected static final String CONF_MOUNT_PATH = "/etc/hive/conf";
   protected static final String HIVE_CONF_DIR = "/opt/hive/conf";
   protected static final String EXT_JARS_PATH = "/tmp/ext-jars";
+
+  /**
+   * How a Deployment replaces its pods, from spec.updateStrategy. The rollingUpdate sub-object
+   * is spelled out rather than left to the API server's defaulting: a field this manager does
+   * not own survives the apply, and validation rejects it alongside Recreate, so a cluster
+   * created before the switch could never adopt it. The values below are the API server's own
+   * defaults, so owning them changes nothing about how RollingUpdate behaves.
+   */
+  protected static DeploymentStrategy deploymentStrategy(HiveClusterSpec spec) {
+    if (spec.recreateOnUpdate()) {
+      return new DeploymentStrategyBuilder().withType("Recreate").build();
+    }
+    return new DeploymentStrategyBuilder()
+        .withType("RollingUpdate")
+        .withNewRollingUpdate()
+          .withMaxSurge(new IntOrString("25%"))
+          .withMaxUnavailable(new IntOrString("25%"))
+        .endRollingUpdate()
+        .build();
+  }
+
+  /**
+   * The same policy for a StatefulSet, which has no Recreate: OnDelete leaves the pods to the
+   * reconciler, which replaces them in one pass. Same reason for spelling out rollingUpdate.
+   */
+  protected static StatefulSetUpdateStrategy statefulSetUpdateStrategy(HiveClusterSpec spec) {
+    if (spec.recreateOnUpdate()) {
+      return new StatefulSetUpdateStrategyBuilder().withType("OnDelete").build();
+    }
+    return new StatefulSetUpdateStrategyBuilder()
+        .withType("RollingUpdate")
+        .withNewRollingUpdate().withPartition(0).endRollingUpdate()
+        .build();
+  }
 
   protected HiveDependentResource(Class<R> resourceType) {
     super(resourceType);
