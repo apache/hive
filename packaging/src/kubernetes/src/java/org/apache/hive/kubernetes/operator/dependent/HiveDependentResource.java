@@ -57,6 +57,7 @@ import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
+import org.apache.hive.kubernetes.operator.model.spec.RestrictedVolume;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
 
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
@@ -791,19 +792,15 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    */
   protected static void appendUserVolumes(
       io.fabric8.kubernetes.api.model.PodSpec podSpec,
-      List<Volume> globalVolumes,
+      List<RestrictedVolume> globalVolumes,
       List<VolumeMount> globalVolumeMounts,
-      List<Volume> extraVolumes,
+      List<RestrictedVolume> extraVolumes,
       List<VolumeMount> extraVolumeMounts) {
-    if (globalVolumes != null) {
-      podSpec.getVolumes().addAll(globalVolumes);
-    }
+    podSpec.getVolumes().addAll(RestrictedVolume.toKubernetesVolumes(globalVolumes));
     if (globalVolumeMounts != null) {
       podSpec.getContainers().get(0).getVolumeMounts().addAll(globalVolumeMounts);
     }
-    if (extraVolumes != null) {
-      podSpec.getVolumes().addAll(extraVolumes);
-    }
+    podSpec.getVolumes().addAll(RestrictedVolume.toKubernetesVolumes(extraVolumes));
     if (extraVolumeMounts != null) {
       podSpec.getContainers().get(0).getVolumeMounts().addAll(extraVolumeMounts);
     }

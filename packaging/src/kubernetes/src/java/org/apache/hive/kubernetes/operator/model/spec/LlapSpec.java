@@ -32,7 +32,6 @@ import io.fabric8.kubernetes.api.model.Affinity;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.Toleration;
-import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
 /** Configuration for LLAP (Live Long and Process) daemons. */
@@ -50,9 +49,9 @@ public record LlapSpec(
     ResourceRequirements resources,
     @JsonPropertyDescription("Additional configuration overrides as key-value pairs")
     Map<String, String> configOverrides,
-    @JsonPropertyDescription("Additional volumes to attach to the pod (e.g., for keytabs or truststores)")
-    @SchemaFrom(type = Object[].class) @PreserveUnknownFields
-    List<Volume> extraVolumes,
+    @JsonPropertyDescription("Additional volumes to attach to the pod (e.g., for keytabs or truststores). "
+        + "Allowed types: configMap, secret, emptyDir, persistentVolumeClaim.")
+    List<RestrictedVolume> extraVolumes,
     @JsonPropertyDescription("Additional volume mounts for the container")
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
     List<VolumeMount> extraVolumeMounts,
