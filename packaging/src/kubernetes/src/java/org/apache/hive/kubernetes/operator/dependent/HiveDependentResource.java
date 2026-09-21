@@ -48,6 +48,7 @@ import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.Matcher;
@@ -86,6 +87,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   /** Closed set of valid schematool -dbType values. */
   private static final Pattern DB_TYPE_PATTERN = Pattern.compile("derby|mysql|postgres|mssql|oracle");
 
+  private static final String APPROVED_SERVICE_ACCOUNT_LABEL = "hive.apache.org/service-account-approved";
   protected static final String CONF_MOUNT_PATH = "/etc/hive/conf";
   protected static final String HIVE_CONF_DIR = "/opt/hive/conf";
   protected static final String EXT_JARS_PATH = "/tmp/ext-jars";
@@ -410,6 +412,30 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   public static void validateLlapEmbeddedValues(HiveClusterSpec spec, LlapSpec llap) {
     validateOptValue("spec.zookeeper.quorum", spec.zookeeper().quorum());
     validateOptValue("spec.llapClusters.serviceHosts", llap.serviceHosts());
+  }
+
+  /**
+   * Ensures spec.serviceAccountName references a ServiceAccount in the CR
+   * namespace that is explicitly approved, preventing a principal with only
+   * HiveCluster RBAC running pods as a more privileged SA.
+   */
+  public static void validateServiceAccountName(
+      KubernetesClient client, String namespace, String serviceAccountName) {
+    if (serviceAccountName == null || serviceAccountName.isBlank()) {
+      return;
+    }
+    var sa = client.serviceAccounts().inNamespace(namespace).withName(serviceAccountName).get();
+    if (sa == null) {
+      throw new IllegalArgumentException(
+          "serviceAccountName '" + serviceAccountName + "' not found in namespace " + namespace);
+    }
+    var labels = sa.getMetadata().getLabels();
+    if (labels == null || !Boolean.parseBoolean(labels.get(APPROVED_SERVICE_ACCOUNT_LABEL))) {
+      throw new IllegalArgumentException(
+          "serviceAccountName '" + serviceAccountName
+          + "' is not approved for Hive workloads; requires label "
+          + APPROVED_SERVICE_ACCOUNT_LABEL + "=true");
+    }
   }
 
   private static void validateOptValue(String field, String value) {

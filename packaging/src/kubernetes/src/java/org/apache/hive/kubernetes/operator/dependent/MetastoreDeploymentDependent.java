@@ -73,6 +73,8 @@ public class MetastoreDeploymentDependent
   protected Deployment desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
+    validateServiceAccountName(context.getClient(),
+        hiveCluster.getMetadata().getNamespace(), spec.serviceAccountName());
     DatabaseConfig db = spec.metastore().database();
     Map<String, String> selectorLabels =
         Labels.selectorForComponent(hiveCluster, COMPONENT);

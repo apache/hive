@@ -65,6 +65,8 @@ public class SchemaInitJobDependent
   protected Job desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
+    validateServiceAccountName(context.getClient(),
+        hiveCluster.getMetadata().getNamespace(), spec.serviceAccountName());
     DatabaseConfig db = spec.metastore().database();
 
     List<EnvVar> envVars = new ArrayList<>();

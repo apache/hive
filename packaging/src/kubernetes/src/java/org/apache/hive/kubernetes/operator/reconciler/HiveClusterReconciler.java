@@ -646,6 +646,7 @@ public class HiveClusterReconciler
   private void reconcileLlapClusters(HiveCluster resource, KubernetesClient client) {
     String ns = resource.getMetadata().getNamespace();
     String clusterName = resource.getMetadata().getName();
+    HiveDependentResource.validateServiceAccountName(client, ns, resource.getSpec().serviceAccountName());
     Set<String> desiredNames = new HashSet<>();
 
     for (LlapSpec llapSpec : resource.getSpec().llapClusters()) {
