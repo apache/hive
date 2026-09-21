@@ -608,24 +608,21 @@ public class HiveClusterReconciler
   }
 
   /**
-   * Emits an INFO log when the reconciler's server-side apply is about to change the workload's
-   * replica count. Without this, an SSA-driven scale (a user editing spec.llapClusters[i].replicas,
-   * a helm upgrade rewriting it) reaches the StatefulSet/Deployment silently -- only the
-   * autoscaler path {@link #patchReplicas} logged its scales, so a plain scale looked like the
-   * operator was doing nothing. Read failures are swallowed at DEBUG: the SSA below runs either
-   * way, and a missing pre-scale line is not worth failing the reconcile over.
+   * Reads the workload's current replica count from the API server and hands it to
+   * {@link Workloads#logReplicaChange}, so an SSA-driven scale (a user editing
+   * spec.llapClusters[i].replicas, a helm upgrade rewriting it) logs the same line the dependents'
+   * SSA does instead of reaching the StatefulSet/Deployment silently. Only the read is local to
+   * this class; the message and the "log nothing when unchanged" rule are shared. Read failures
+   * are swallowed at DEBUG: the SSA below runs either way, and a missing pre-scale line is not
+   * worth failing the reconcile over.
    */
   private void logReplicaChange(KubernetesClient client, String ns, String workloadName,
-      String kind, int desired, boolean isStatefulSet) {
+      String component, int desired, boolean isStatefulSet) {
     try {
-      Integer current = Workloads.replicas(isStatefulSet
+      HasMetadata current = isStatefulSet
           ? client.apps().statefulSets().inNamespace(ns).withName(workloadName).get()
-          : client.apps().deployments().inNamespace(ns).withName(workloadName).get());
-      if (current == null) {
-        LOG.info("Creating {} {}/{} with {} replicas", kind, ns, workloadName, desired);
-      } else if (current != desired) {
-        LOG.info("Scaling {} {}/{}: {} -> {} replicas", kind, ns, workloadName, current, desired);
-      }
+          : client.apps().deployments().inNamespace(ns).withName(workloadName).get();
+      Workloads.logReplicaChange(LOG, component, ns, workloadName, current, desired);
     } catch (Exception e) {
       LOG.debug("Could not read current replicas for {}/{}: {}", ns, workloadName, e.getMessage());
     }
@@ -682,8 +679,9 @@ public class HiveClusterReconciler
       // brief scale-up-then-down on first create (K8s defaults to 1 if omitted).
       // resolveLlapReplicaCount already reads the autoscaler's managed value,
       // so this is always the correct replica count.
-      String llapWorkload = clusterName + "-" + llapSpec.name();
-      logReplicaChange(client, ns, llapWorkload, "llap", replicas, /*isStatefulSet=*/true);
+      String llapWorkload = LlapResourceBuilder.resourceName(resource, llapSpec);
+      logReplicaChange(client, ns, llapWorkload, ConfigUtils.COMPONENT_LLAP, replicas,
+          /*isStatefulSet=*/true);
       client.apps().statefulSets().inNamespace(ns)
           .resource(LlapResourceBuilder.buildStatefulSet(resource, llapSpec, replicas))
           .forceConflicts()
@@ -704,7 +702,8 @@ public class HiveClusterReconciler
             .resource(LlapResourceBuilder.buildTezAmService(resource, llapSpec))
             .serverSideApply();
         String tezAmWorkload = LlapResourceBuilder.tezAmResourceName(resource, llapSpec);
-        logReplicaChange(client, ns, tezAmWorkload, "tezam", tezAmReplicas, /*isStatefulSet=*/false);
+        logReplicaChange(client, ns, tezAmWorkload, ConfigUtils.COMPONENT_TEZAM, tezAmReplicas,
+            /*isStatefulSet=*/false);
         client.apps().deployments().inNamespace(ns)
             .resource(LlapResourceBuilder.buildTezAmDeployment(resource, llapSpec, tezAmReplicas))
             .forceConflicts()

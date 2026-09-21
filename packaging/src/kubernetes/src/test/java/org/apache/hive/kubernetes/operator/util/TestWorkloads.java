@@ -20,7 +20,14 @@
 package org.apache.hive.kubernetes.operator.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+
+import java.util.OptionalInt;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
@@ -33,6 +40,7 @@ import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.slf4j.Logger;
 
 class TestWorkloads {
 
@@ -41,7 +49,7 @@ class TestWorkloads {
     Deployment d = new DeploymentBuilder()
         .withNewSpec().withReplicas(3).endSpec()
         .build();
-    assertEquals(3, Workloads.replicas(d));
+    assertEquals(OptionalInt.of(3), Workloads.replicas(d));
   }
 
   @Test
@@ -49,48 +57,80 @@ class TestWorkloads {
     StatefulSet s = new StatefulSetBuilder()
         .withNewSpec().withReplicas(5).endSpec()
         .build();
-    assertEquals(5, Workloads.replicas(s));
+    assertEquals(OptionalInt.of(5), Workloads.replicas(s));
   }
 
   @Test
-  void replicasReturnsNullWhenDeploymentSpecMissing() {
+  void replicasIsEmptyWhenDeploymentSpecMissing() {
     // fabric8 Deployment with no spec set at all
     Deployment d = new DeploymentBuilder().build();
-    assertNull(Workloads.replicas(d));
+    assertFalse(Workloads.replicas(d).isPresent());
   }
 
   @Test
-  void replicasReturnsNullWhenStatefulSetSpecMissing() {
+  void replicasIsEmptyWhenStatefulSetSpecMissing() {
     StatefulSet s = new StatefulSetBuilder().build();
-    assertNull(Workloads.replicas(s));
+    assertFalse(Workloads.replicas(s).isPresent());
   }
 
   @Test
-  void replicasReturnsNullWhenDeploymentReplicasUnset() {
+  void replicasIsEmptyWhenDeploymentReplicasUnset() {
     // spec present, but replicas field not set
     Deployment d = new DeploymentBuilder().withNewSpec().endSpec().build();
-    assertNull(Workloads.replicas(d));
+    assertFalse(Workloads.replicas(d).isPresent());
   }
 
   @Test
-  void replicasReturnsNullWhenStatefulSetReplicasUnset() {
+  void replicasIsEmptyWhenStatefulSetReplicasUnset() {
     StatefulSet s = new StatefulSetBuilder().withNewSpec().endSpec().build();
-    assertNull(Workloads.replicas(s));
+    assertFalse(Workloads.replicas(s).isPresent());
   }
 
   @Test
-  void replicasReturnsNullForNonWorkloadResource() {
-    // Anything that's neither a Deployment nor a StatefulSet returns null,
+  void replicasIsEmptyForNonWorkloadResource() {
+    // Anything that's neither a Deployment nor a StatefulSet is empty,
     // even if it happens to have a "spec" (e.g., a ConfigMap here has none).
     ConfigMap cm = new ConfigMapBuilder()
         .withNewMetadata().withName("cm").endMetadata()
         .build();
-    assertNull(Workloads.replicas(cm));
+    assertFalse(Workloads.replicas(cm).isPresent());
   }
 
   @Test
-  void replicasReturnsNullForNullResource() {
-    assertNull(Workloads.replicas(null));
+  void replicasIsEmptyForNullResource() {
+    assertFalse(Workloads.replicas(null).isPresent());
+  }
+
+  @Test
+  void logReplicaChangeLogsTheDelta() {
+    Logger log = mock(Logger.class);
+    StatefulSet s = new StatefulSetBuilder().withNewSpec().withReplicas(12).endSpec().build();
+
+    Workloads.logReplicaChange(log, "llap", "ns", "hive-llap0", s, 15);
+
+    verify(log).info(anyString(), eq("llap"), eq("ns"), eq("hive-llap0"), eq("12"), eq(15));
+  }
+
+  /** No workload yet: the same line reports the count the first create will set. */
+  @Test
+  void logReplicaChangeLogsNoneAsTheFromValueOnFirstCreate() {
+    Logger log = mock(Logger.class);
+
+    Workloads.logReplicaChange(log, "hiveserver2", "ns", "hive-hiveserver2", null, 2);
+
+    verify(log).info(anyString(), eq("hiveserver2"), eq("ns"), eq("hive-hiveserver2"),
+        eq("none"), eq(2));
+  }
+
+  /** Silence is the signal that nothing is being scaled, so an unchanged count logs nothing. */
+  @Test
+  void logReplicaChangeIsSilentWhenTheCountAlreadyMatches() {
+    Logger log = mock(Logger.class);
+    Deployment d = new DeploymentBuilder().withNewSpec().withReplicas(2).endSpec().build();
+
+    Workloads.logReplicaChange(log, "metastore", "ns", "hive-metastore", d, 2);
+
+    verifyNoInteractions(log);
   }
 
   /**

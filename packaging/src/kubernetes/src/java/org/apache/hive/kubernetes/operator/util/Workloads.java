@@ -19,32 +19,56 @@
 
 package org.apache.hive.kubernetes.operator.util;
 
+import java.util.OptionalInt;
+
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
+import org.slf4j.Logger;
 
 /**
  * Helpers for the operator's workloads (Deployment/StatefulSet): reading fields without the
- * null-guard boilerplate every caller would otherwise repeat, and resolving the workload's
- * K8s name from the autoscaler's component key.
+ * null-guard boilerplate every caller would otherwise repeat, logging replica changes in one
+ * shape, and resolving the workload's K8s name from the autoscaler's component key.
  */
 public final class Workloads {
 
   private Workloads() {}
 
   /**
-   * Returns spec.replicas from a Deployment or StatefulSet, or null when the resource is
-   * absent, has no spec, or the field is unset. A non-workload resource returns null too.
+   * Returns spec.replicas from a Deployment or StatefulSet. Empty when the resource is absent,
+   * has no spec, or the field is unset — in practice that means "the workload isn't there yet",
+   * since the API server defaults spec.replicas on write. A non-workload resource is empty too.
    */
-  public static Integer replicas(HasMetadata resource) {
-    if (resource instanceof Deployment d) {
-      return d.getSpec() == null ? null : d.getSpec().getReplicas();
+  public static OptionalInt replicas(HasMetadata resource) {
+    Integer replicas = null;
+    if (resource instanceof Deployment d && d.getSpec() != null) {
+      replicas = d.getSpec().getReplicas();
+    } else if (resource instanceof StatefulSet s && s.getSpec() != null) {
+      replicas = s.getSpec().getReplicas();
     }
-    if (resource instanceof StatefulSet s) {
-      return s.getSpec() == null ? null : s.getSpec().getReplicas();
+    return replicas == null ? OptionalInt.empty() : OptionalInt.of(replicas);
+  }
+
+  /**
+   * Logs the replica count the operator is about to apply to {@code namespace/name}. One line
+   * covers both cases: {@code current} is the workload as it exists in the cluster, or null when
+   * it doesn't exist yet, which logs as {@code none -> N}. Nothing is logged when the count
+   * already matches, so silence means no scale is happening.
+   * <p>
+   * Shared by every scale path — the dependents' SSA and the imperative LLAP/TezAM SSAs — so the
+   * operator log reads the same whichever one ran. The caller passes its own logger to keep the
+   * log category pointing at the code that is actually scaling.
+   */
+  public static void logReplicaChange(Logger log, String component, String namespace, String name,
+      HasMetadata current, int desired) {
+    OptionalInt actual = replicas(current);
+    if (actual.isPresent() && actual.getAsInt() == desired) {
+      return;
     }
-    return null;
+    log.info("Setting replica count for {} {}/{}: {} -> {}", component, namespace, name,
+        actual.isPresent() ? String.valueOf(actual.getAsInt()) : "none", desired);
   }
 
   /**

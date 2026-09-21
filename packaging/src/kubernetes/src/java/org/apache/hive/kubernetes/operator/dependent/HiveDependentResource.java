@@ -162,10 +162,11 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   }
 
   /**
-   * Resolves the replica count to set in the desired workload spec.
+   * Resolves the replica count to set in the desired workload spec, and logs it when it differs
+   * from what the workload has now.
    * <p>
-   * Always returns an explicit value — never null. Returning null would cause
-   * JOSDK/SSA to omit spec.replicas, and Kubernetes would default it to 1.
+   * Returns a primitive so the value can never be null: a null spec.replicas would make JOSDK/SSA
+   * omit the field, and Kubernetes would default it to 1.
    * <p>
    * When autoscaling is enabled:
    * - On CREATE: returns initialReplicas (minReplicas for the component)
@@ -174,16 +175,20 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    * <p>
    * When autoscaling is disabled: returns staticReplicas (the spec value).
    */
-  protected Integer resolveReplicaCount(P primary, Context<P> context,
+  protected int resolveReplicaCount(P primary, Context<P> context,
       AutoscalingSpec autoscaling, int staticReplicas, int initialReplicas) {
     Optional<R> existing = getSecondaryResource(primary, context);
-    Integer resolved = computeReplicaCount(primary, existing, autoscaling,
+    int resolved = computeReplicaCount(primary, existing, autoscaling,
         staticReplicas, initialReplicas);
-    logReplicaChange(primary, existing, resolved);
+    // Without this, every scale of an HS2/Metastore Deployment reached the cluster silently:
+    // only the imperative LLAP path and the autoscaler logged, and a bare "Reconciled" line
+    // said nothing about the size.
+    Workloads.logReplicaChange(LOG, getComponentName(), primary.getMetadata().getNamespace(),
+        getSecondaryResourceName(primary, context), existing.orElse(null), resolved);
     return resolved;
   }
 
-  private Integer computeReplicaCount(P primary, Optional<R> existing,
+  private int computeReplicaCount(P primary, Optional<R> existing,
       AutoscalingSpec autoscaling, int staticReplicas, int initialReplicas) {
     // Suspended cluster → 0 replicas (dependent resources natively respect suspend).
     // Exception: HMS stays running if includeMetastore=false in autoSuspend config.
@@ -205,38 +210,14 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       if (managed != null) {
         return managed;
       }
-      // Fallback: operator restarted and MANAGED_REPLICAS is empty — read current value
-      Integer current = Workloads.replicas(existing.get());
-      return current != null ? current : initialReplicas;
+      // Fallback: operator restarted and MANAGED_REPLICAS is empty — read current value. The
+      // workload exists, so spec.replicas is set unless something wrote it away; initialReplicas
+      // is the floor either way.
+      return Workloads.replicas(existing.get()).orElse(initialReplicas);
     }
     // First creation: start at minReplicas.
     return initialReplicas;
   }
-
-  /**
-   * Emits an INFO line when the SSA about to run will actually change the workload's replica
-   * count. Silence means the count already matches, so no scale is happening. Without this,
-   * every scale of an HS2/Metastore Deployment reached the cluster silently (only the imperative
-   * LLAP path and the autoscaler logged); a bare "Reconciled" line said nothing about the size.
-   * Uses the same "Scaling ... A -> B" shape the imperative LLAP path emits.
-   */
-  private void logReplicaChange(P primary, Optional<R> existing, Integer desired) {
-    String component = getComponentName();
-    if (component == null || desired == null) {
-      return;
-    }
-    String ns = primary.getMetadata().getNamespace();
-    String name = existing.map(r -> r.getMetadata().getName()).orElse(component);
-    if (existing.isEmpty()) {
-      LOG.info("Creating {} {}/{} with {} replicas", component, ns, name, desired);
-      return;
-    }
-    Integer current = Workloads.replicas(existing.get());
-    if (current != null && !current.equals(desired)) {
-      LOG.info("Scaling {} {}/{}: {} -> {} replicas", component, ns, name, current, desired);
-    }
-  }
-
 
   /**
    * Returns the component name for this dependent (used for autoscaler replica lookup).
