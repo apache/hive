@@ -110,6 +110,30 @@ public class TestLlapStatusRegistryFallback {
   }
 
   @Test
+  public void testConfigureLlapRegistryHostsPreservesFixedRegistryHosts() {
+    Configuration conf = new Configuration(false);
+    Configuration llapRegistryConf = new Configuration(false);
+    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "llap-host-0,llap-host-1");
+
+    LlapStatusServiceDriver.configureLlapRegistryHosts(conf, llapRegistryConf, "ignored");
+
+    assertEquals("llap-host-0,llap-host-1",
+        HiveConf.getVar(llapRegistryConf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS));
+  }
+
+  @Test
+  public void testConfigureLlapRegistryHostsUsesZkRegistryForAppName() {
+    Configuration conf = new Configuration(false);
+    Configuration llapRegistryConf = new Configuration(false);
+    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "@llap0");
+
+    LlapStatusServiceDriver.configureLlapRegistryHosts(conf, llapRegistryConf, "llap0");
+
+    assertEquals("@llap0",
+        HiveConf.getVar(llapRegistryConf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS));
+  }
+
+  @Test
   public void testUpdateRunningThresholdAchievedWhenLaunching() {
     AppStatusBuilder builder = new AppStatusBuilder();
     builder.setDesiredInstances(2);

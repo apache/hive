@@ -180,10 +180,13 @@ public class LlapStatusServiceDriver {
 
         appName = cl.getName();
         if (StringUtils.isEmpty(appName)) {
-          appName = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
-          if (appName.startsWith("@") && appName.length() > 1) {
+          String hosts = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+          if (hosts != null && hosts.startsWith("@") && hosts.length() > 1) {
             // This is a valid YARN Service name. Parse it out.
-            appName = appName.substring(1);
+            appName = hosts.substring(1);
+          } else if (usesRegistryBasedLlapStatus(conf) && !StringUtils.isEmpty(hosts)) {
+            // Fixed registry host list for non-YARN deployments.
+            appName = hosts;
           } else {
             // Invalid app name. Checked later.
             appName = null;
@@ -196,7 +199,7 @@ public class LlapStatusServiceDriver {
         }
         LOG.debug("Using appName: {}", appName);
 
-        llapRegistryConf.set(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + appName);
+        configureLlapRegistryHosts(conf, llapRegistryConf, appName);
       }
 
       if (usesRegistryBasedLlapStatus(conf)) {
@@ -448,10 +451,7 @@ public class LlapStatusServiceDriver {
       appStatusBuilder.setLiveInstances(0);
       appStatusBuilder.setState(State.LAUNCHING);
       appStatusBuilder.clearRunningLlapInstances();
-      return ExitCode.SUCCESS;
-    }
-
-    if (registryOnly) {
+    } else if (registryOnly) {
       List<LlapInstance> registryInstances = new LinkedList<>();
       for (LlapServiceInstance serviceInstance : serviceInstances) {
         registryInstances.add(createLlapInstanceFromRegistry(serviceInstance));
@@ -465,7 +465,6 @@ public class LlapStatusServiceDriver {
         appStatusBuilder.setDesiredInstances(registryInstances.size());
       }
       updateStateFromInstanceCounts(appStatusBuilder, registryInstances.size());
-      return ExitCode.SUCCESS;
     } else {
       // Tracks instances known by both YARN Service and llap.
       List<LlapInstance> validatedInstances = new LinkedList<>();
@@ -541,6 +540,19 @@ public class LlapStatusServiceDriver {
       appStatusBuilder.setState(State.RUNNING_PARTIAL);
     } else {
       appStatusBuilder.setState(State.LAUNCHING);
+    }
+  }
+
+  /**
+   * Configures {@link #llapRegistryConf} for {@link LlapRegistryService}. Preserves a comma-separated
+   * host list for {@code LlapFixedRegistryImpl}; uses {@code @appName} for ZK registry otherwise.
+   */
+  static void configureLlapRegistryHosts(Configuration conf, Configuration llapRegistryConf, String appName) {
+    String configuredHosts = HiveConf.getTrimmedVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    if (configuredHosts != null && !configuredHosts.startsWith("@")) {
+      llapRegistryConf.set(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, configuredHosts);
+    } else {
+      llapRegistryConf.set(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + appName);
     }
   }
 
