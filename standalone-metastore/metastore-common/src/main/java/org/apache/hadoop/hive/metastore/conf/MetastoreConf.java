@@ -405,6 +405,12 @@ public class MetastoreConf {
         "The maximum memory in bytes that the cached objects can use. "
         + "Memory used is calculated based on estimated size of tables and partitions in the cache. "
         + "Setting it to a negative value disables memory estimation."),
+    CACHED_RAW_STORE_PREWARM_THREADS("metastore.cached.rawstore.prewarm.threads",
+        "hive.metastore.cached.rawstore.prewarm.threads", 1,
+        "Number of threads CachedStore uses to prewarm the cache from the backing database at startup. "
+        + "Each thread opens its own connection to the backing database, so this value should be kept "
+        + "below the connection pool size, and the effective concurrent load on the database during "
+        + "prewarm scales with it. The default of 1 preserves the original single-threaded prewarm."),
     CAPABILITY_CHECK("metastore.client.capability.check",
         "hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
