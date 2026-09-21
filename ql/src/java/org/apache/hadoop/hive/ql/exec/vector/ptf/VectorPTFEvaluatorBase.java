@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
@@ -34,21 +36,33 @@ import org.slf4j.LoggerFactory;
  * on an aggregation's 0 or 1 argument(s) and at some point will fill in an output column with the
  * aggregation result.  The aggregation argument is an input column or expression, or no argument.
  *
- * When the aggregation is streaming (e.g. row_number, rank, first_value, etc), the output column
- * can be filled in immediately by the implementation of evaluateGroupBatch.
+ * <p>Evaluators fall into three categories, distinguished by {@link #streamsResult()} and
+ * {@link #isGroupAggregatedStreamingEvaluator()}:
  *
- * For non-streaming aggregations, the aggregation result is not known until the last group batch
- * is processed.  After the last group batch has been processed, the VectorPTFGroupBatches class
- * will call the isGroupResultNull, getResultColumnVectorType, getLongGroupResult |
- * getDoubleGroupResult | getDecimalGroupResult, and getOutputColumnNum methods to get aggregation
- * result information necessary to write it into the output column (as a repeated column) of all
- * the group batches.
+ * <p><b>Buffered aggregate</b> ({@code streamsResult == false},
+ * {@code isGroupAggregatedStreamingEvaluator == false}): e.g. sum, avg.
+ * The aggregation result is not known until the group batches in the window range have been
+ * processed via {@link #evaluateGroupBatch}.  VectorPTFGroupBatches then uses
+ * {@link #isGroupResultNull()}, {@link #getResultColumnVectorType()}, {@link #getGroupResult()},
+ * and {@link #getOutputColumnNum()} to fill the output column when group batches are forwarded.
+ *
+ * <p><b>Pure streaming</b> ({@code streamsResult == true},
+ * {@code isGroupAggregatedStreamingEvaluator == false}): e.g. row_number, rank, first_value.
+ * The output column can be filled in by {@link #evaluateGroupBatch} as each group batch is
+ * forwarded.
+ *
+ * <p><b>Group-aggregated streaming</b> ({@code streamsResult == true},
+ * {@code isGroupAggregatedStreamingEvaluator == true}): e.g. cume_dist.
+ * Group batches are buffered before output is written; {@link #evaluateGroupBatch} fills the
+ * output column when batches are replayed on forward.  See {@link VectorPTFEvaluatorCumeDist}.
  */
 public abstract class VectorPTFEvaluatorBase {
 
   final WindowFrameDef windowFrameDef;
   final VectorExpression inputVecExpr;
   protected int inputColumnNum;
+  protected int partitionSize = -1;
+
   protected final int outputColumnNum;
   private boolean nullsLast;
   private boolean respectNulls = true;
@@ -197,5 +211,21 @@ public abstract class VectorPTFEvaluatorBase {
 
   public void setRespectNulls(boolean respectNulls) {
     this.respectNulls = respectNulls;
+  }
+
+  public void setPartitionSize(int partitionSize) {
+    this.partitionSize = partitionSize;
+  }
+
+  public boolean isGroupAggregatedStreamingEvaluator() {
+    return false;
+  }
+
+  /**
+   * Aggregates per peer group result using group row count.
+   */
+  public void addStreamingGroupResults(List<Integer> groupRowCounts) throws HiveException {
+    throw new HiveException(
+        "No streaming group result precomputation for " + this.getClass().getName());
   }
 }

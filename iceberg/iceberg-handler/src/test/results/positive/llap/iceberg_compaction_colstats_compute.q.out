@@ -1,0 +1,342 @@
+PREHOOK: query: create external table ice_comp_unpart (id bigint, p string)
+stored by iceberg stored as orc
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_comp_unpart
+POSTHOOK: query: create external table ice_comp_unpart (id bigint, p string)
+stored by iceberg stored as orc
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_comp_unpart
+PREHOOK: query: insert into ice_comp_unpart values (1, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_comp_unpart
+POSTHOOK: query: insert into ice_comp_unpart values (1, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_comp_unpart
+PREHOOK: query: insert into ice_comp_unpart values (2, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_comp_unpart
+POSTHOOK: query: insert into ice_comp_unpart values (2, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_comp_unpart
+PREHOOK: query: insert into ice_comp_unpart values (3, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_comp_unpart
+POSTHOOK: query: insert into ice_comp_unpart values (3, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_comp_unpart
+PREHOOK: query: insert into ice_comp_unpart values (7, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_comp_unpart
+POSTHOOK: query: insert into ice_comp_unpart values (7, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_comp_unpart
+PREHOOK: query: explain select id from ice_comp_unpart where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_comp_unpart
+#### A masked pattern was here ####
+POSTHOOK: query: explain select id from ice_comp_unpart where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_comp_unpart
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_comp_unpart
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table ice_comp_unpart COMPACT 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_comp_unpart
+PREHOOK: Output: default@ice_comp_unpart
+POSTHOOK: query: alter table ice_comp_unpart COMPACT 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_comp_unpart
+POSTHOOK: Output: default@ice_comp_unpart
+PREHOOK: query: explain select id from ice_comp_unpart where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_comp_unpart
+#### A masked pattern was here ####
+POSTHOOK: query: explain select id from ice_comp_unpart where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_comp_unpart
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_comp_unpart
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select min(id), max(id) from ice_comp_unpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_comp_unpart
+#### A masked pattern was here ####
+POSTHOOK: query: select min(id), max(id) from ice_comp_unpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_comp_unpart
+#### A masked pattern was here ####
+1	7
+PREHOOK: query: drop table ice_comp_unpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_comp_unpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_comp_unpart
+POSTHOOK: query: drop table ice_comp_unpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_comp_unpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_comp_unpart
+PREHOOK: query: create external table ice_comp (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg stored as orc
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500',
+    -- a compaction runs long after the session that queued it, so the granularity it keeps
+    -- statistics at is asked for the way the compactor takes any of its settings
+    'compactor.hive.iceberg.stats.collect.partlevel'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_comp
+POSTHOOK: query: create external table ice_comp (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg stored as orc
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500',
+    -- a compaction runs long after the session that queued it, so the granularity it keeps
+    -- statistics at is asked for the way the compactor takes any of its settings
+    'compactor.hive.iceberg.stats.collect.partlevel'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_comp
+PREHOOK: query: insert into ice_comp values (1, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_comp
+POSTHOOK: query: insert into ice_comp values (1, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_comp
+PREHOOK: query: insert into ice_comp values (2, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_comp
+POSTHOOK: query: insert into ice_comp values (2, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_comp
+PREHOOK: query: insert into ice_comp values (3, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_comp
+POSTHOOK: query: insert into ice_comp values (3, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_comp
+PREHOOK: query: insert into ice_comp values (4, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_comp
+POSTHOOK: query: insert into ice_comp values (4, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_comp
+PREHOOK: query: insert into ice_comp values (7, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_comp
+POSTHOOK: query: insert into ice_comp values (7, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_comp
+PREHOOK: query: explain select id from ice_comp where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_comp
+#### A masked pattern was here ####
+POSTHOOK: query: explain select id from ice_comp where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_comp
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_comp
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table ice_comp PARTITION (p='a') COMPACT 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_comp
+PREHOOK: Output: default@ice_comp@p=a
+POSTHOOK: query: alter table ice_comp PARTITION (p='a') COMPACT 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_comp
+POSTHOOK: Output: default@ice_comp@p=a
+PREHOOK: query: explain select id from ice_comp where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_comp
+#### A masked pattern was here ####
+POSTHOOK: query: explain select id from ice_comp where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_comp
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_comp
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select min(id), max(id) from ice_comp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_comp
+#### A masked pattern was here ####
+POSTHOOK: query: select min(id), max(id) from ice_comp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_comp
+#### A masked pattern was here ####
+1	7
+PREHOOK: query: drop table ice_comp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_comp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_comp
+POSTHOOK: query: drop table ice_comp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_comp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_comp

@@ -111,12 +111,20 @@ and an equivalent values file.
 Each example below shows both the `helm install` CLI command and the equivalent
 `values.yaml` file. Use whichever approach you prefer.
 
+> **Give each cluster its own release name.** `<release>-hive-operator` is a ClusterRole, so
+> a second cluster under the same release name fails even in another namespace. Naming the
+> release after its namespace is enough, since namespaces are already unique:
+>
+> ```bash
+> export RELEASE=hive-dev
+> ```
+
 ### Ozone (Full-HA, default behavior)
 
 **CLI:**
 
 ```bash
-helm install hive ./helm/hive-operator \
+helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.database.type=postgres \
   --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
   --set cluster.database.driver="org.postgresql.Driver" \
@@ -169,7 +177,7 @@ cluster:
 ```
 
 ```bash
-helm install hive ./helm/hive-operator -f values.yaml
+helm install "$RELEASE" ./helm/hive-operator -f values.yaml
 ```
 
 ---
@@ -188,7 +196,7 @@ kubectl create secret generic aws-s3-creds \
 Then install the operator and HiveCluster with the appropriate storage config:
 
 ```bash
-helm install hive ./helm/hive-operator \
+helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.database.type=postgres \
   --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
   --set cluster.database.driver="org.postgresql.Driver" \
@@ -245,7 +253,7 @@ cluster:
 ```
 
 ```bash
-helm install hive ./helm/hive-operator -f values.yaml
+helm install "$RELEASE" ./helm/hive-operator -f values.yaml
 ```
 
 ---
@@ -261,7 +269,7 @@ kubectl create secret generic gcs-creds  --from-file=key.json=<PATH>.json
 **CLI:**
 
 ```bash
-helm install hive ./helm/hive-operator \
+helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.database.type=postgres \
   --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
   --set cluster.database.driver="org.postgresql.Driver" \
@@ -321,7 +329,7 @@ cluster:
 ```
 
 ```bash
-helm install hive ./helm/hive-operator -f values.yaml
+helm install "$RELEASE" ./helm/hive-operator -f values.yaml
 ```
 
 ---
@@ -333,7 +341,7 @@ helm install hive ./helm/hive-operator -f values.yaml
 **CLI:**
 
 ```bash
-helm install hive ./helm/hive-operator \
+helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.database.type=postgres \
   --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
   --set cluster.database.driver="org.postgresql.Driver" \
@@ -398,7 +406,7 @@ cluster:
 ```
 
 ```bash
-helm install hive ./helm/hive-operator -f values.yaml
+helm install "$RELEASE" ./helm/hive-operator -f values.yaml
 ```
 
 ---
@@ -408,7 +416,7 @@ helm install hive ./helm/hive-operator -f values.yaml
 **CLI:**
 
 ```bash
-helm install hive ./helm/hive-operator \
+helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.zookeeper.quorum="zookeeper:2181" \
   --set cluster.metastore.enabled=false \
   --set cluster.metastore.externalUri="thrift://my-external-metastore:9083" \
@@ -448,7 +456,7 @@ cluster:
 ```
 
 ```bash
-helm install hive ./helm/hive-operator -f values.yaml
+helm install "$RELEASE" ./helm/hive-operator -f values.yaml
 ```
 
 ---
@@ -492,7 +500,7 @@ cluster:
 ```
 
 ```bash
-helm install hive ./helm/hive-operator -f values.yaml
+helm install "$RELEASE" ./helm/hive-operator -f values.yaml
 ```
 
 ---
@@ -609,7 +617,7 @@ cluster:
 ```
 
 ```bash
-helm install hive ./helm/hive-operator -f values-multi-tenant.yaml
+helm install "$RELEASE" ./helm/hive-operator -f values-multi-tenant.yaml
 ```
 
 ### Resulting Kubernetes Resources
@@ -693,7 +701,7 @@ This means scaling up `production` never affects `analytics` or `dev` replicas.
 To add a new cluster, append to `llapClusters[]` and run `helm upgrade`:
 
 ```bash
-helm upgrade hive ./helm/hive-operator -f values-multi-tenant.yaml
+helm upgrade "$RELEASE" ./helm/hive-operator -f values-multi-tenant.yaml
 ```
 
 To remove a cluster, delete the entry from `llapClusters[]` and upgrade. The operator
@@ -1106,7 +1114,7 @@ Each component has sensible per-component defaults (see [Configuration Reference
 Only `enabled=true` is needed to turn on autoscaling:
 
 ```bash
-helm install hive ./helm/hive-operator \
+helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.database.type=postgres \
   --set cluster.database.url="jdbc:postgresql://postgres-postgresql:5432/metastore" \
   --set cluster.database.driver="org.postgresql.Driver" \
@@ -1208,7 +1216,7 @@ cluster:
 ```
 
 ```bash
-helm install hive ./helm/hive-operator -f values-autoscaling.yaml
+helm install "$RELEASE" ./helm/hive-operator -f values-autoscaling.yaml
 ```
 
 When autoscaling is enabled, the operator automatically:
@@ -1468,7 +1476,7 @@ controls shared settings (enabled flag, scratch PVC). Per-LLAP TezAM settings
 ### Upgrade (values only, no CRD changes)
 
 ```bash
-helm upgrade hive ./helm/hive-operator -f my-values.yaml
+helm upgrade "$RELEASE" ./helm/hive-operator -f my-values.yaml
 ```
 
 ### Upgrade (with CRD schema changes)
@@ -1479,14 +1487,14 @@ re-apply the CRD manually:
 
 ```bash
 kubectl apply -f helm/hive-operator/crds/hiveclusters.hive.apache.org-v1.yml
-helm upgrade hive ./helm/hive-operator -f my-values.yaml
+helm upgrade "$RELEASE" ./helm/hive-operator -f my-values.yaml
 ```
 
 ### Full Uninstall and Reinstall (clean slate)
 
 ```bash
 # Uninstall (removes operator + HiveCluster CR + all managed pods)
-helm uninstall hive
+helm uninstall "$RELEASE"
 
 # IMPORTANT: Always delete the CRD before reinstalling to ensure
 # the updated schema is applied. Helm only creates CRDs on install,
@@ -1494,14 +1502,14 @@ helm uninstall hive
 kubectl delete crd hiveclusters.hive.apache.org
 
 # Reinstall
-helm install hive ./helm/hive-operator -f my-values.yaml
+helm install "$RELEASE" ./helm/hive-operator -f my-values.yaml
 ```
 
 ### Remove Everything (including dependencies)
 
 ```bash
 kubectl delete hivecluster --all -A --wait=false --ignore-not-found
-helm uninstall hive --ignore-not-found
+helm uninstall "$RELEASE" --ignore-not-found
 kubectl delete crd hiveclusters.hive.apache.org --wait=false --ignore-not-found
 helm uninstall ozone --ignore-not-found
 helm uninstall postgres --ignore-not-found

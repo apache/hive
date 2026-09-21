@@ -25,8 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.Deadline;
@@ -182,6 +185,44 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
         objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(),
             GetPartitionsArgs.getAllPartitions());
     Assert.assertTrue(db2Ptbl1Partitions.containsAll(db2Ptbl1PartitionsOS));
+    cachedStore.shutdown();
+  }
+
+  /**
+   * HIVE-30053: same coverage as testPrewarm, but with the multi-threaded prewarm enabled.
+   * All databases, tables and partitions must be cached regardless of how the tables are
+   * distributed among the worker threads.
+   */
+  @Test public void testPrewarmMultiThreaded() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "-1Kb");
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_PREWARM_THREADS, 4);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTest(conf);
+    ObjectStore objectStore = (ObjectStore) cachedStore.getRawStore();
+    CachedStore.setCachePrewarmedState(false);
+    CachedStore.prewarm(objectStore);
+    List<String> allDatabases = cachedStore.getAllDatabases(DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(2, allDatabases.size());
+    Assert.assertTrue(allDatabases.contains(db1.getName()));
+    Assert.assertTrue(allDatabases.contains(db2.getName()));
+    // All four tables must be in the shared cache after a parallel prewarm
+    SharedCache sharedCache = CachedStore.getSharedCache();
+    Assert.assertNotNull(sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, db1.getName(), db1Utbl1.getTableName()));
+    Assert.assertNotNull(sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName()));
+    Assert.assertNotNull(sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, db2.getName(), db2Utbl1.getTableName()));
+    Assert.assertNotNull(sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName()));
+    List<Partition> db1Ptbl1Partitions =
+        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName(),
+            GetPartitionsArgs.getAllPartitions());
+    Assert.assertEquals(25, db1Ptbl1Partitions.size());
+    List<Partition> db2Ptbl1Partitions =
+        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(),
+            GetPartitionsArgs.getAllPartitions());
+    Assert.assertEquals(25, db2Ptbl1Partitions.size());
     cachedStore.shutdown();
   }
 
@@ -2148,5 +2189,54 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       throw new Exception("Unable to update SharedCache in 100 attempts; possibly some bug");
     }
     CachedStore.stopCacheUpdateService(100);
+  }
+
+  /**
+   * Regression test for HIVE-30052. Before the fix, triggerPreWarm and startCacheUpdateService
+   * were both static synchronized, so the background thread held the CachedStore class monitor
+   * for the entire duration of prewarm while startCacheUpdateService is called from setConf on
+   * every RawStore construction (once per new HMS worker thread): a cold-started HMS served no
+   * RPCs until prewarm completed because every worker thread blocked constructing its
+   * CachedStore. This test guards the invariant that startCacheUpdateService never requires the
+   * class monitor.
+   */
+  @Test(timeout = 60000)
+  public void testStartCacheUpdateServiceNotBlockedByPrewarmMonitor() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    // Make sure this test performs the first-time initialization path, not the fast path
+    CachedStore.stopCacheUpdateService(100);
+
+    CountDownLatch monitorHeld = new CountDownLatch(1);
+    CountDownLatch releaseMonitor = new CountDownLatch(1);
+    // Simulates a long-running holder of the CachedStore class monitor, as the pre-fix
+    // triggerPreWarm was for the whole duration of prewarm
+    Thread prewarmMonitorHolder = new Thread(() -> {
+      synchronized (CachedStore.class) {
+        monitorHeld.countDown();
+        try {
+          releaseMonitor.await();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    });
+    prewarmMonitorHolder.setDaemon(true);
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    try {
+      prewarmMonitorHolder.start();
+      Assert.assertTrue("monitor holder thread did not start", monitorHeld.await(10, TimeUnit.SECONDS));
+      Future<?> starter = executor.submit(() -> CachedStore.startCacheUpdateService(conf, false, false));
+      // Before the fix this timed out: entering startCacheUpdateService required acquiring the
+      // class monitor held by the thread above
+      starter.get(10, TimeUnit.SECONDS);
+    } finally {
+      // Always release the monitor holder, even when the setup assertion or the timed get fails
+      releaseMonitor.countDown();
+      prewarmMonitorHolder.join(TimeUnit.SECONDS.toMillis(10));
+      executor.shutdownNow();
+      CachedStore.stopCacheUpdateService(100);
+    }
   }
 }

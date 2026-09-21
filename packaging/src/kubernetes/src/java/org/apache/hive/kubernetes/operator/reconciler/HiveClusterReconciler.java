@@ -49,6 +49,7 @@ import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsCache;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsScraper;
 import org.apache.hive.kubernetes.operator.autoscaling.PodMetrics;
+import org.apache.hive.kubernetes.operator.dependent.HiveDependentResource;
 import org.apache.hive.kubernetes.operator.dependent.LlapResourceBuilder;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
@@ -72,6 +73,8 @@ public class HiveClusterReconciler
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveClusterReconciler.class);
 
+  private static final String CONDITION_READY_LITERAL = "Ready";
+  private static final String RECONCILIATION_ERROR_LITERAL = "ReconciliationError";
   private volatile HiveClusterAutoscaler autoscaler;
   private volatile BackgroundMetricsScraper bgScraper;
 
@@ -160,9 +163,10 @@ public class HiveClusterReconciler
     }
 
     // --- Imperative LLAP cluster management ---
-    if (action != SuspendAction.STAY_SUSPENDED && action != SuspendAction.SUSPEND_NOW) {
-      reconcileLlapClusters(resource, client);
-    }
+    // Must also run while suspended: resolve*ReplicaCount() return 0 when
+    // spec.suspend() is set, and skipping the call would leave LLAP/TezAM
+    // at their pre-suspend scale.
+    reconcileLlapClusters(resource, client);
 
     // --- Autoscaling evaluation (only when enabled and not suspended) ---
     if (rescheduleSeconds == 0 && anyAutoscalingEnabled(resource.getSpec())) {
@@ -177,9 +181,11 @@ public class HiveClusterReconciler
           ? 2 : getMinScrapeInterval(resource.getSpec());
     }
 
+    boolean workflowError = applyWorkflowDependentErrors(resource, context, newStatus, existingStatus);
+
     // --- Single exit point for status update ---
     boolean statusNowChanged = !statusEqualsIgnoringTimestamps(existingStatus, newStatus);
-    if (!statusNowChanged && rescheduleSeconds == 0) {
+    if (!statusNowChanged && rescheduleSeconds == 0 && !workflowError) {
       return UpdateControl.noUpdate();
     }
     resource.setStatus(newStatus);
@@ -216,7 +222,7 @@ public class HiveClusterReconciler
         status.getConditions() != null ? status.getConditions() : Collections.emptyList();
 
     status.setConditions(List.of(
-        buildCondition("Ready", "False", "ReconciliationError",
+        buildCondition(CONDITION_READY_LITERAL, "False", RECONCILIATION_ERROR_LITERAL,
             e.getMessage(), existingConditions)
     ));
     status.setObservedGeneration(resource.getMetadata().getGeneration());
@@ -323,7 +329,7 @@ public class HiveClusterReconciler
 
     // Overall Ready condition
     boolean allReady = schemaReady && metastoreReady && hs2Ready;
-    conditions.add(buildCondition("Ready", allReady ? "True" : "False",
+    conditions.add(buildCondition(CONDITION_READY_LITERAL, allReady ? "True" : "False",
         allReady ? "AllComponentsReady" : "ComponentsNotReady",
         allReady ? "All Hive components are ready" : "One or more components are not ready",
         existingConditions));
@@ -384,6 +390,41 @@ public class HiveClusterReconciler
       cs.setPhase("Pending");
     }
     return cs;
+  }
+
+  /**
+   * When the managed workflow dependents incur failures, update the Ready
+   * condition with the incurred error, while preserving component conditions.
+   */
+  private boolean applyWorkflowDependentErrors(HiveCluster resource, Context<HiveCluster> context,
+      HiveClusterStatus newStatus, HiveClusterStatus existingStatus) {
+    var workflowResult = context.managedWorkflowAndDependentResourceContext().getWorkflowReconcileResult();
+    if (workflowResult.isEmpty() || !workflowResult.get().erroredDependentsExist()) {
+      return false;
+    }
+
+    Exception error = workflowResult.get().getErroredDependents().values().iterator().next();
+    String errorMessage = error.getMessage();
+    LOG.error("Error reconciling HiveCluster: {}/{} - {}", resource.getMetadata().getNamespace(),
+        resource.getMetadata().getName(), errorMessage, error);
+
+    List<Condition> existingConditions = existingStatus != null && existingStatus.getConditions() != null
+        ? existingStatus.getConditions() : Collections.emptyList();
+    boolean alreadyReported = existingConditions.stream()
+        .anyMatch(c -> CONDITION_READY_LITERAL.equals(c.getType())
+            && "False".equals(c.getStatus())
+            && RECONCILIATION_ERROR_LITERAL.equals(c.getReason())
+            && Objects.equals(errorMessage, c.getMessage()));
+
+    List<Condition> conditions = newStatus.getConditions();
+    if (conditions == null) {
+      conditions = new ArrayList<>();
+      newStatus.setConditions(conditions);
+    }
+    conditions.removeIf(c -> CONDITION_READY_LITERAL.equals(c.getType()));
+    conditions.add(buildCondition(CONDITION_READY_LITERAL, "False", RECONCILIATION_ERROR_LITERAL,
+        errorMessage, existingConditions));
+    return !alreadyReported;
   }
 
   private Condition buildCondition(String type, String conditionStatus,
@@ -611,6 +652,7 @@ public class HiveClusterReconciler
       if (!llapSpec.isEnabled()) {
         continue;
       }
+      HiveDependentResource.validateLlapEmbeddedValues(resource.getSpec(), llapSpec);
       desiredNames.add(llapSpec.name());
       int replicas = resolveLlapReplicaCount(resource, llapSpec, ns, clusterName);
 
@@ -970,17 +1012,24 @@ public class HiveClusterReconciler
     // the dependent resources (Deployments/StatefulSets) on the next reconcile
     // and use these values for spec.replicas. We don't call patchReplicas()
     // because the workloads may have been garbage-collected while suspended.
-    int hs2Min = Math.max(1, spec.hiveServer2().autoscaling().minReplicas());
-    HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_HIVESERVER2, hs2Min);
+    // With autoscaling disabled the wake value is the spec's static replica
+    // count — using minReplicas (0 by default) would pin the component to 0.
+    int hs2Wake = spec.hiveServer2().autoscaling().isEnabled()
+        ? Math.max(1, spec.hiveServer2().autoscaling().minReplicas())
+        : spec.hiveServer2().replicas();
+    HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_HIVESERVER2, hs2Wake);
 
     if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()) {
-      int hmsMin = Math.max(1, spec.metastore().autoscaling().minReplicas());
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_METASTORE, hmsMin);
+      int hmsWake = spec.metastore().autoscaling().isEnabled()
+          ? Math.max(1, spec.metastore().autoscaling().minReplicas())
+          : spec.metastore().replicas();
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_METASTORE, hmsWake);
     }
 
     for (var llap : spec.llapClusters()) {
       if (llap.isEnabled()) {
-        int llapWake = llap.autoscaling().minReplicas();
+        int llapWake = llap.autoscaling().isEnabled()
+            ? llap.autoscaling().minReplicas() : llap.replicas();
         HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.llapComponentKey(llap.name()), llapWake);
       }
     }
@@ -988,14 +1037,15 @@ public class HiveClusterReconciler
     if (spec.tezAm().isEnabled()) {
       for (var llap : spec.llapClusters()) {
         if (llap.isEnabled()) {
-          int tezWake = llap.tezAm().autoscaling().minReplicas();
+          int tezWake = llap.tezAm().autoscaling().isEnabled()
+              ? llap.tezAm().autoscaling().minReplicas() : llap.tezAm().replicas();
           HiveClusterAutoscaler.setManagedReplicas(ns, name,
               ConfigUtils.tezAmComponentKey(llap.name()), tezWake);
         }
       }
     }
 
-    LOG.info("Cluster {}/{} woken up — restored to minReplicas", ns, name);
+    LOG.info("Cluster {}/{} woken up", ns, name);
   }
 
   private static boolean allAutoscalingEnabled(HiveClusterSpec spec) {

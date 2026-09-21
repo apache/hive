@@ -78,11 +78,11 @@ public final class HiveConfigBuilder {
     props.put(ConfigUtils.HIVE_JAR_DIRECTORY_KEY, "/tmp");
     props.put(ConfigUtils.HIVE_USER_INSTALL_DIR_KEY, "/tmp");
     if (tezAmEnabled) {
-      props.put(ConfigUtils.HIVE_LOCAL_SCRATCH_DIR_KEY,
-          "/opt/hive/scratch");
-    }
-
-    if (tezAmEnabled) {
+      // "yarn-tez" is Tez's own framework name (YarnTezClientProtocolProvider). The default,
+      // "local", would send staging to the local scratch dir, which the TezAM pod cannot
+      // read. file:// because a bare path resolves against fs.defaultFS.
+      props.put(ConfigUtils.MAPREDUCE_FRAMEWORK_NAME_KEY, "yarn-tez");
+      props.put(ConfigUtils.HIVE_SCRATCH_DIR_KEY, "file://" + ConfigUtils.SCRATCH_MOUNT_PATH);
       props.put(ConfigUtils.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY, "true");
       // Default external sessions namespace points to first LLAP cluster's TezAM.
       // Client routes to other clusters by overriding both properties in JDBC URL:
@@ -114,7 +114,7 @@ public final class HiveConfigBuilder {
       props.put(ConfigUtils.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY, "false");
       props.put(ConfigUtils.TEZ_LOCAL_MODE_KEY, "true");
       props.put(ConfigUtils.TEZ_AM_FRAMEWORK_MODE_KEY, "LOCAL");
-      props.put("mapreduce.framework.name", "local");
+      props.put(ConfigUtils.MAPREDUCE_FRAMEWORK_NAME_KEY, "local");
     }
 
     // Server-side LLAP cluster routing: emit per-cluster definitions and routing rules.
@@ -195,18 +195,26 @@ public final class HiveConfigBuilder {
     if (llap != null) {
       tezProps.put(ConfigUtils.HIVE_LLAP_DAEMON_SERVICE_HOSTS_KEY,
           llap.serviceHosts());
-    }
 
-    // Required by LlapTaskCommunicator — Tez's Configuration doesn't get HiveConf defaults
-    tezProps.put(ConfigUtils.HIVE_LLAP_DAEMON_UMBILICAL_PORT_KEY,
-        ConfigUtils.HIVE_LLAP_DAEMON_UMBILICAL_PORT_DEFAULT);
+      // A standalone Tez AM loads tez-site.xml, never hive-site.xml, so LLAP settings from
+      // the HiveServer2 overrides reach it only by being copied here, after the derived
+      // keys above so an explicit user setting wins.
+      Map<String, String> hs2Overrides = spec.hiveServer2().configOverrides();
+      if (hs2Overrides != null) {
+        hs2Overrides.forEach((key, value) -> {
+          if (ConfigUtils.isTezAmLlapKey(key)) {
+            tezProps.put(key, value);
+          }
+        });
+      }
+    }
 
     if (spec.tezAm().configOverrides() != null) {
       tezProps.putAll(spec.tezAm().configOverrides());
     }
 
     // Disable Infinite locality Delay when LLAP Auto-scaling is enabled, as they are mutually exclusive.
-    if (llap != null && llap.isEnabled() && llap.autoscaling().isEnabled() &&
+    if (llap != null && llap.autoscaling().isEnabled() &&
         ConfigUtils.getTimeMs(tezProps, ConfigUtils.HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY, 0) == -1) {
       tezProps.put(ConfigUtils.HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY, "0ms");
     }

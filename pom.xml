@@ -51,6 +51,7 @@
     <module>serde</module>
     <module>service-rpc</module>
     <module>service</module>
+    <module>service-session-store</module>
     <module>streaming</module>
     <module>llap-common</module>
     <module>llap-client</module>
@@ -185,12 +186,13 @@
     <kudu.version>1.17.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
+    <!-- Thrift version must be inline with one installed in the CI (Docker image referenced in the Jenkinsfile) -->
     <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.25.4</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.2.0</mysql.version>
-    <postgres.version>42.7.3</postgres.version>
+    <postgres.version>42.7.12</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>5.9</opencsv.version>
     <orc.version>2.1.2</orc.version>
@@ -198,10 +200,10 @@
     <mockito-core.version>5.17.0</mockito-core.version>
     <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.127.Final</netty.version>
+    <netty.version>4.1.137.Final</netty.version>
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.16.0</parquet.version>
+    <parquet.version>1.18.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.25.5</protobuf.version>
@@ -248,6 +250,7 @@
     <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
     <keycloak.version>26.0.6</keycloak.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
+    <jedis.version>5.1.0</jedis.version>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
@@ -1903,6 +1906,8 @@
             <!-- required by a few tests to find the derby jar -->
             <derby.version>${derby.version}</derby.version>
             <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+            <!-- required by tests to find the postgresql jar -->
+            <postgres.version>${postgres.version}</postgres.version>
             <derby.system.durability>test</derby.system.durability>
             <hadoop.bin.path>${hadoop.bin.path}</hadoop.bin.path>
             <!-- required by Hadoop's JobHistory -->

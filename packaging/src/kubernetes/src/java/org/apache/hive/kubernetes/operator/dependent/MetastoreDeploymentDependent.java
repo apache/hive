@@ -84,6 +84,7 @@ public class MetastoreDeploymentDependent
     if (spec.envVars() != null) {
       envVars.addAll(spec.envVars());
     }
+    envVars.addAll(spec.metastore().envVars());
 
     int thriftPort = ConfigUtils.getInt(
         spec.metastore().configOverrides(),
@@ -172,8 +173,7 @@ public class MetastoreDeploymentDependent
                 .withPorts(ports)
                 .withReadinessProbe(readinessProbe)
                 .withLivenessProbe(livenessProbe)
-                .withResources(buildResources(
-                    spec.metastore().resources()))
+                .withResources(spec.metastore().resources())
                 .withVolumeMounts(volumeMounts)
               .endContainer()
               .withVolumes(volumes)
@@ -182,8 +182,12 @@ public class MetastoreDeploymentDependent
         .endSpec()
         .build();
 
+    applyAffinityOverride(
+        deployment.getSpec().getTemplate().getSpec(), spec.metastore().affinity());
     applySpreadAffinityIfAbsent(
         deployment.getSpec().getTemplate().getSpec(), selectorLabels);
+    applyTolerations(
+        deployment.getSpec().getTemplate().getSpec(), spec.metastore().tolerations());
 
     // HMS uses HTTP transport mode — connections are stateless, so no session
     // drain is needed. The preStop hook simply sends SIGTERM directly to the

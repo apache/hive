@@ -47,6 +47,9 @@ import javax.jdo.Query;
  * is older than {@code metastore.column.statistics.retention.period}, and deletes them.
  * Individual tables may opt out by setting the table property
  * {@value #STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY} to {@code "true"}.
+ * Entire databases may opt out by setting the database property
+ * {@value #STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY} to {@code "true"},
+ * which excludes all tables in that database regardless of their individual table property.
  */
 public class StatisticsManagementTask extends ObjectStore implements MetastoreTaskThread {
 
@@ -57,6 +60,8 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
    * statistics deletion regardless of the global retention setting.
    */
   public static final String STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY =
+      "statistics.auto.deletion.exclude";
+  public static final String STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY =
       "statistics.auto.deletion.exclude";
 
   /** Separator used when building composite map keys; chosen to be safe in HMS identifiers. */
@@ -146,7 +151,8 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
               + "table.database.name, "
               + "table.tableName, "
               + "colName, "
-              + "table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\")");
+              + "table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\"), "
+              + "table.database.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY + "\")");
       @SuppressWarnings("unchecked")
       List<Object[]> rows = (List<Object[]>) tblQuery.execute(lastAnalyzedThreshold);
       return new ArrayList<>(rows);
@@ -174,7 +180,8 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
       String tblName   = (String) row[2];
       String colName   = (String) row[3];
       String excludeVal = (String) row[4];
-      if (Boolean.parseBoolean(excludeVal)) {
+      String dbExcludeVal = (String) row[5];
+      if (Boolean.parseBoolean(excludeVal) || Boolean.parseBoolean(dbExcludeVal)) {
         LOG.info("Skipping auto deletion of table stats for {}.{} due to exclude property.",
             dbName, tblName);
         continue;
@@ -222,7 +229,8 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
               + "partition.table.tableName, "
               + "partition.partitionName, "
               + "colName, "
-              + "partition.table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\")");
+              + "partition.table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\"), "
+              + "partition.table.database.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY + "\")");
       @SuppressWarnings("unchecked")
       List<Object[]> rows = (List<Object[]>) partQuery.execute(lastAnalyzedThreshold);
       return new ArrayList<>(rows);
@@ -249,7 +257,8 @@ public class StatisticsManagementTask extends ObjectStore implements MetastoreTa
       String partName  = (String) row[3];
       String colName   = (String) row[4];
       String excludeVal = (String) row[5];
-      if (Boolean.parseBoolean(excludeVal)) {
+      String dbExcludeVal = (String) row[6];
+      if (Boolean.parseBoolean(excludeVal) || Boolean.parseBoolean(dbExcludeVal)) {
         LOG.info("Skipping auto deletion of partition stats for {}.{} due to exclude property.",
             dbName, tblName);
         continue;

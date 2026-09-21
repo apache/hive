@@ -357,19 +357,19 @@ Table Parameters:
 	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"event_id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"event_time\",\"required\":false,\"type\":\"timestamptz\"},{\"id\":3,\"name\":\"event_src\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"manifests-created\":\"2\",\"manifests-kept\":\"6\",\"manifests-replaced\":\"1\",\"added-data-files\":\"2\",\"deleted-data-files\":\"4\",\"added-records\":\"8\",\"deleted-records\":\"8\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"8\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"manifests-created\":\"3\",\"manifests-kept\":\"6\",\"manifests-replaced\":\"2\",\"added-data-files\":\"1\",\"deleted-data-files\":\"2\",\"added-records\":\"4\",\"deleted-records\":\"4\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"event_src_trunc\",\"transform\":\"truncate[3]\",\"source-id\":3,\"field-id\":1000},{\"name\":\"event_time_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   
 #### A masked pattern was here ####
-	numFiles            	8                   
+	numFiles            	10                  
 	numPartitions       	8                   
 	numRows             	26                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	17                  
+	snapshot-count      	16                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -396,4 +396,3 @@ CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time
 #Masked#	default	ice_orc	event_src_trunc=AAA/event_time_month=2024-09	MAJOR	refused	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	event_src_trunc=BBB/event_time_month=2024-07	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	event_src_trunc=BBB/event_time_month=2024-08	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 

@@ -19,6 +19,7 @@
 
 package org.apache.hive.kubernetes.operator.util;
 
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -74,7 +75,12 @@ public final class ConfigUtils {
 
   public static final String HIVE_USER_INSTALL_DIR_KEY = "hive.user.install.directory";
 
-  public static final String HIVE_LOCAL_SCRATCH_DIR_KEY = "hive.exec.local.scratchdir";
+  public static final String HIVE_SCRATCH_DIR_KEY = "hive.exec.scratchdir";
+
+  public static final String MAPREDUCE_FRAMEWORK_NAME_KEY = "mapreduce.framework.name";
+
+  /** Mount path of the shared scratch PVC on HS2, TezAM and LLAP. */
+  public static final String SCRATCH_MOUNT_PATH = "/opt/hive/scratch";
 
   public static final String HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY = "hive.server2.tez.use.external.sessions";
 
@@ -138,10 +144,15 @@ public final class ConfigUtils {
   public static final String HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_KEY = "hive.llap.daemon.output.service.port";
   public static final int HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_DEFAULT = 15003;
 
-  public static final String HIVE_LLAP_DAEMON_UMBILICAL_PORT_KEY = "hive.llap.daemon.umbilical.port";
-  public static final String HIVE_LLAP_DAEMON_UMBILICAL_PORT_DEFAULT = "0";
-
   public static final String HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY = "hive.llap.task.scheduler.locality.delay";
+
+  /** Prefixes of the HiveServer2 hive.llap settings carried over to a standalone Tez AM. */
+  private static final List<String> TEZ_AM_LLAP_KEY_PREFIXES =
+      List.of("hive.llap.task.", "hive.llap.client.", "hive.llap.daemon.");
+
+  public static boolean isTezAmLlapKey(String key) {
+    return TEZ_AM_LLAP_KEY_PREFIXES.stream().anyMatch(key::startsWith);
+  }
 
   public static final String METASTORE_SERVER_TRANSPORT_MODE_KEY = "metastore.server.thrift.transport.mode";
   public static final String METASTORE_SERVER_TRANSPORT_MODE_DEFAULT = "http";

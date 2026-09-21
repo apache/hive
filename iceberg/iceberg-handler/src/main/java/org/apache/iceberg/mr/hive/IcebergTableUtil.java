@@ -20,16 +20,11 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.time.ZoneId;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -41,16 +36,16 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.TableFetcher;
@@ -68,6 +63,7 @@ import org.apache.hadoop.hive.ql.parse.TransformSpec.TransformType;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.util.Sets;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
@@ -82,15 +78,14 @@ import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
+import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.PartitionStatistics;
-import org.apache.iceberg.PartitionStatisticsFile;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
-import org.apache.iceberg.StatisticsFile;
+import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -98,6 +93,9 @@ import org.apache.iceberg.TableScan;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.data.GenericRecord;
+import org.apache.iceberg.data.InternalRecordWrapper;
+import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
@@ -106,11 +104,9 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.puffin.BlobMetadata;
-import org.apache.iceberg.puffin.Puffin;
-import org.apache.iceberg.puffin.PuffinReader;
+import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
-import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.transforms.Transform;
@@ -118,8 +114,6 @@ import org.apache.iceberg.types.Comparators;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
-import org.apache.iceberg.util.ByteBuffers;
-import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
@@ -141,6 +135,7 @@ public class IcebergTableUtil {
 
   private static final String SPEC_ID_FIELD = "spec_id";
   private static final String NULL_VALUE = "null";
+
 
   private IcebergTableUtil() {
   }
@@ -253,24 +248,15 @@ public class IcebergTableUtil {
     return table.currentSnapshot();
   }
 
-  static String getColStatsPath(Table table) {
-    return getColStatsPath(table, table.currentSnapshot().snapshotId());
+  /** Whether the snapshot holds no rows. */
+  public static boolean isEmptySnapshot(Snapshot snapshot) {
+    return snapshot != null && snapshot.summary() != null &&
+        NumberUtils.toLong(snapshot.summary().get(SnapshotSummary.TOTAL_RECORDS_PROP), -1) == 0;
   }
 
-  static String getColStatsPath(Table table, long snapshotId) {
-    return table.statisticsFiles().stream()
-      .filter(stats -> stats.snapshotId() == snapshotId)
-      .filter(stats -> stats.blobMetadata().stream()
-        .anyMatch(metadata -> ColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
-      )
-      .map(StatisticsFile::path)
-      .findAny().orElse(null);
-  }
-
-  static PartitionStatisticsFile getPartitionStatsFile(Table table, long snapshotId) {
-    return table.partitionStatisticsFiles().stream()
-      .filter(stats -> stats.snapshotId() == snapshotId)
-      .findAny().orElse(null);
+  /** Whether the table's column statistics are maintained per partition, as the flag directs. */
+  public static boolean isPartitionStats(Table table, Configuration conf) {
+    return HiveConf.getBoolVar(conf, ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL) && table.spec().isPartitioned();
   }
 
   /**
@@ -281,9 +267,7 @@ public class IcebergTableUtil {
    * @return iceberg partition spec, always non-null
    */
   public static PartitionSpec spec(Configuration configuration, Schema schema) {
-    List<TransformSpec> partitionBy = SessionStateUtil
-        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
-        .map(o -> (List<TransformSpec>) o).orElse(null);
+    List<TransformSpec> partitionBy = TransformSpec.fromQueryState(configuration);
 
     if (partitionBy == null) {
       LOG.warn(PARTITION_TRANSFORM_SPEC_NOT_FOUND);
@@ -458,24 +442,6 @@ public class IcebergTableUtil {
     deleteFiles.deleteFromRowFilter(exp).commit();
   }
 
-  /**
-   * Parses an Iceberg partition path into a Hive-compatible spec map, representing null partition
-   * values with the Hive default partition name.
-   */
-  public static Map<String, String> makeSpecFromName(String partName, PartitionSpec spec, PartitionData data,
-      String defaultPartitionName) {
-    Map<String, String> partSpecMap = Maps.newLinkedHashMap();
-    Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
-
-    List<PartitionField> fields = spec.fields();
-    for (int i = 0; i < fields.size(); i++) {
-      if (data.get(i) == null) {
-        partSpecMap.put(fields.get(i).name(), defaultPartitionName);
-      }
-    }
-    return partSpecMap;
-  }
-
   public static PartitionData toPartitionData(StructLike key, Types.StructType keyType) {
     PartitionData keyTemplate = new PartitionData(keyType);
     return keyTemplate.copyFor(key);
@@ -493,10 +459,62 @@ public class IcebergTableUtil {
    * name an unpartitioned spec renders. Statistics and partition pruning join on this name, so both must
    * render it the same way.
    */
+  @SuppressWarnings("unchecked")
   public static String toPartitionName(PartitionSpec spec, StructLike data) {
     String path = spec.partitionToPath(data);
     // an unpartitioned spec renders nothing: its rows belong to the table-level partition
-    return path.isEmpty() ? DummyPartition.VOID : path;
+    if (path.isEmpty()) {
+      return DummyPartition.VOID;
+    }
+    // a field of no value renders as the text "null", which a value of that text renders as too,
+    // so the partition of no value takes the name Hive keeps for it and the two stay two
+    List<PartitionField> fields = spec.fields();
+    Class<?>[] javaClasses = spec.javaClasses();
+    String[] parts = path.split("/");
+
+    boolean renamed = false;
+    for (int i = 0; i < fields.size() && i < parts.length; i++) {
+      if (data.get(i, (Class<Object>) javaClasses[i]) == null) {
+        parts[i] = fields.get(i).name() + "=" + ConfVars.DEFAULT_PARTITION_NAME.defaultStrVal;
+        renamed = true;
+      }
+    }
+    return renamed ? String.join("/", parts) : path;
+  }
+
+  /**
+   * Returns a function naming the partition a row belongs to, where the row holds no more than the
+   * columns the spec partitions on. The spec derives the tuple itself, so a name matches the one a
+   * write gives the files it puts in that partition. Deriving one costs the same as writing a row,
+   * so the function holds on to what that takes and is worth reusing over rows an inspector reads.
+   */
+  public static Function<Object, String> partitionNameFunction(Table table, StructObjectInspector inspector) {
+    // the deserializer reads the row by position, so the schema has to follow the inspector rather
+    // than the table, and a name reaches here lowercased however the table spells it
+    Schema sourceSchema = new Schema(inspector.getAllStructFieldRefs().stream()
+        .map(field -> Preconditions.checkNotNull(table.schema().caseInsensitiveFindField(field.getFieldName()),
+            "Table %s partitions on %s, which it has no column for", table.name(), field.getFieldName()))
+        .toList());
+    Deserializer deserializer = new Deserializer.Builder()
+        .schema(sourceSchema)
+        .sourceInspector(inspector)
+        .writerInspector((StructObjectInspector) IcebergObjectInspector.create(sourceSchema))
+        .build();
+
+    // the whole schema, not the row's columns: PartitionKey needs an accessor for every field of
+    // the spec, including a void one, whose source column the row does not carry
+    GenericRecord record = GenericRecord.create(table.schema());
+    InternalRecordWrapper wrapper = new InternalRecordWrapper(table.schema().asStruct());
+    PartitionKey partitionKey = new PartitionKey(table.spec(), table.schema());
+
+    return row -> {
+      // a row whose every value is null is indistinguishable from no row at all once serialized
+      Record source = row == null ? null : deserializer.deserialize(row);
+      sourceSchema.columns().forEach(column ->
+          record.setField(column.name(), source == null ? null : source.getField(column.name())));
+      partitionKey.partition(wrapper.wrap(record));
+      return toPartitionName(table.spec(), partitionKey);
+    };
   }
 
   /**
@@ -573,6 +591,13 @@ public class IcebergTableUtil {
     return predicate;
   }
 
+  public static Object parsePartitionValue(Type type, String value) {
+    boolean isNullValue = NULL_VALUE.equalsIgnoreCase(value) &&
+        !Types.StringType.get().equals(type);
+    return isNullValue ?
+        null : Conversions.fromPartitionString(type, value);
+  }
+
   private static Expression buildFieldPredicate(Types.StructType partitionType,
       String fieldName, String value, String keyPrefix) {
     String key = keyPrefix + fieldName;
@@ -621,13 +646,6 @@ public class IcebergTableUtil {
     Object transformedValue = transform.bind(sourceField.type()).apply(columnValue);
 
     return Expressions.equal(partitionKey, transformedValue);
-  }
-
-  private static Object parsePartitionValue(Type type, String value) {
-    boolean isNullValue = NULL_VALUE.equalsIgnoreCase(value) &&
-        !Types.StringType.get().equals(type);
-    return isNullValue ?
-        null : Conversions.fromPartitionString(type, value);
   }
 
   /**
@@ -721,14 +739,12 @@ public class IcebergTableUtil {
           .filter(evaluator::eval)
           .transform(row -> {
             PartitionSpec spec = icebergTable.specs().get(row.get(SPEC_IDX, Integer.class));
-            if (!spec.isPartitioned()) {
-              return null;
-            }
+            // rows written before the table was partitioned: toPartitionName gives them the
+            // synthetic partition name
             PartitionData data = toPartitionData(
                 row.get(PART_IDX, StructProjection.class), partitionType, spec.partitionType());
             return Maps.immutableEntry(toPartitionName(spec, data), spec.specId());
           })
-          .filter(Objects::nonNull)
           .toSortedList(specIdComparator).stream()
           .map(Map.Entry::getKey)
           .toList();
@@ -738,35 +754,6 @@ public class IcebergTableUtil {
     }
   }
 
-  /**
-   * Reads the given snapshot's partition statistics file in a single pass, keyed by partition name;
-   * empty when the file is missing.
-   */
-  static Map<String, PartitionStatistics> readPartitionStats(Table table, Snapshot snapshot) {
-    PartitionStatisticsFile statsFile = getPartitionStatsFile(table, snapshot.snapshotId());
-    if (statsFile == null) {
-      LOG.warn("Partition stats file not found for snapshot: {}", snapshot.snapshotId());
-      return Map.of();
-    }
-    Map<String, PartitionStatistics> result = Maps.newHashMap();
-    Types.StructType partitionType = Partitioning.partitionType(table);
-
-    try (CloseableIterable<PartitionStatistics> records =
-        table.newPartitionStatisticsScan().useSnapshot(snapshot.snapshotId()).scan()) {
-      LOG.info("Using partition stats from: {}", statsFile.path());
-      for (PartitionStatistics partitionStats : records) {
-        PartitionSpec spec = table.specs().get(partitionStats.specId());
-        PartitionData data = toPartitionData(partitionStats.partition(), partitionType,
-            spec.partitionType());
-        // the scan copies the counters into a fresh object per row, so retaining it is safe;
-        // only the partition tuple may alias the reader's reused struct - do not use it after this loop
-        result.put(toPartitionName(spec, data), partitionStats);
-      }
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-    return Collections.unmodifiableMap(result);
-  }
 
   public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
       throws MetaException, HiveException {
@@ -802,34 +789,6 @@ public class IcebergTableUtil {
     TransformSpec spec = TransformSpec.fromString(transformName.toUpperCase(),
         table.schema().findColumnName(sourceId));
     return spec;
-  }
-
-  public static <T> List<T> readColStats(Table table, Long snapshotId, Predicate<BlobMetadata> filter) {
-    List<T> colStats = Lists.newArrayList();
-
-    String statsPath = IcebergTableUtil.getColStatsPath(table, snapshotId);
-    if (statsPath == null) {
-      LOG.warn("Column stats file not found for snapshot: {}", snapshotId);
-      return colStats;
-    }
-    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
-      List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
-
-      if (filter != null) {
-        blobMetadata = blobMetadata.stream().filter(filter)
-          .toList();
-      }
-      Iterator<ByteBuffer> it = Iterables.transform(reader.readAll(blobMetadata), Pair::second).iterator();
-      LOG.info("Using column stats from: {}", statsPath);
-
-      while (it.hasNext()) {
-        byte[] byteBuffer = ByteBuffers.toByteArray(it.next());
-        colStats.add(SerializationUtils.deserialize(byteBuffer));
-      }
-    } catch (Exception e) {
-      LOG.warn("Unable to read column stats: {}", e.getMessage());
-    }
-    return colStats;
   }
 
   public static ExecutorService newDeleteThreadPool(String completeName, int numThreads) {
@@ -965,7 +924,8 @@ public class IcebergTableUtil {
     int tableSpecId = icebergTable.spec().specId();
     for (T file : files) {
       if (latestSpecOnly == null || latestSpecOnly.equals(file.specId() == tableSpecId)) {
-        String partName = icebergTable.specs().get(file.specId()).partitionToPath(file.partition());
+        String partName = toPartitionName(
+            icebergTable.specs().get(file.specId()), file.partition());
         partitions.add(partName);
       }
     }
@@ -976,11 +936,19 @@ public class IcebergTableUtil {
       Collection<String> partNames) {
     List<Partition> partitions = Lists.newArrayList();
     for (String partName : partNames) {
-      Map<String, String> partSpecMap = Maps.newLinkedHashMap();
-      Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
-      partitions.add(new DummyPartition(hmsTable, partName, partSpecMap));
+      partitions.add(new DummyPartition(hmsTable, partName, specFromName(partName)));
     }
     return partitions;
+  }
+
+  /**
+   * The values a partition name encodes. The name is one this table rendered, so it always parses,
+   * which Warehouse.makeSpecFromName(String) does not get to assume.
+   */
+  static Map<String, String> specFromName(String partName) {
+    Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+    Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+    return partSpecMap;
   }
 
   public static TableFetcher getTableFetcher(IMetaStoreClient msc, String catalogName, String dbPattern,

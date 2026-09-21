@@ -1537,6 +1537,11 @@ public final class GenMapRedUtils {
       }
     }
 
+    // the lookups above carry no snapshot ref: take it from the table the file sink writes to
+    if (table != null && nd.getConf().getTable() != null) {
+      table.setSnapshotRef(nd.getConf().getTable().getSnapshotRef());
+    }
+
     StatsWork columnStatsWork = new StatsWork(table, statsWork, hconf);
     columnStatsWork.collectStatsFromAggregator(nd.getConf());
 

@@ -20,15 +20,14 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -39,24 +38,22 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -64,10 +61,10 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -142,8 +139,6 @@ import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.FindFiles;
-import org.apache.iceberg.GenericBlobMetadata;
-import org.apache.iceberg.GenericStatisticsFile;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionData;
@@ -188,12 +183,11 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.actions.HiveIcebergDeleteOrphanFiles;
 import org.apache.iceberg.mr.hive.plan.IcebergBucketFunction;
+import org.apache.iceberg.mr.hive.stats.IcebergColStatsReader;
+import org.apache.iceberg.mr.hive.stats.IcebergColStatsWriter;
+import org.apache.iceberg.mr.hive.stats.IcebergPartitionStatsReader;
+import org.apache.iceberg.mr.hive.stats.IcebergStoredStats;
 import org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder;
-import org.apache.iceberg.puffin.Blob;
-import org.apache.iceberg.puffin.BlobMetadata;
-import org.apache.iceberg.puffin.Puffin;
-import org.apache.iceberg.puffin.PuffinCompressionCodec;
-import org.apache.iceberg.puffin.PuffinWriter;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
@@ -203,9 +197,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
-import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Types;
-import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
@@ -236,9 +228,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   private static final String TABLE_NAME_SEPARATOR = "..";
   public static final String TABLE_DEFAULT_LOCATION = "TABLE_DEFAULT_LOCATION";
 
-  private static final String PARTITION = "partition";
   private static final String PARTITION_STATS_PREFIX = "partitionStats.";
-  public static final String STATS = "/stats/snap-";
 
   public static final String COPY_ON_WRITE = RowLevelOperationMode.COPY_ON_WRITE.modeName();
   public static final String MERGE_ON_READ = RowLevelOperationMode.MERGE_ON_READ.modeName();
@@ -448,7 +438,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     return predicate;
   }
 
-
   @Override
   public boolean canProvideBasicStatistics() {
     return true;
@@ -465,7 +454,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
     if (snapshot != null) {
-      return IcebergTableUtil.getPartitionStatsFile(table, snapshot.snapshotId()) != null;
+      return IcebergStoredStats.getPartitionStatsFile(table, snapshot.snapshotId()) != null;
     }
     return false;
   }
@@ -521,7 +510,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (snapshot == null) {
       stats = emptyStatsMap();
 
-    } else if (!HiveMetaHook.ICEBERG.equals(getStatsSource()) && !quickStats) {
+    } else if (!HiveMetaHook.ICEBERG.equals(getStatsSource()) && !quickStats &&
+        hmsTable.getSnapshotRef() == null) {
+      // the metastore parameters describe the table, not a branch: use the snapshot's counters
       stats = hmsTable.getParameters();
 
     } else {
@@ -613,7 +604,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
 
     if (snapshot != null && table.spec().isPartitioned()) {
-      PartitionStatisticsFile statsFile = IcebergTableUtil.getPartitionStatsFile(table, snapshot.snapshotId());
+      PartitionStatisticsFile statsFile = IcebergStoredStats.getPartitionStatsFile(table, snapshot.snapshotId());
       if (statsFile == null) {
         try {
           Table statsTable = table;
@@ -628,7 +619,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
                 .commit();
             statsTable = tx.table();
           }
-          statsFile = PartitionStatsHandler.computeAndWriteStatsFile(statsTable);
+          statsFile = PartitionStatsHandler.computeAndWriteStatsFile(statsTable, snapshot.snapshotId());
         } catch (IOException e) {
           throw new UncheckedIOException(e);
         }
@@ -672,6 +663,24 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   /**
+   * Returns the snapshot's partition statistics keyed by partition name, empty if the snapshot has no
+   * partition statistics file. The result is cached for the rest of the query under a key that includes
+   * the snapshot id, so repeated lookups share a single read and a new snapshot never sees an older
+   * snapshot's entry.
+   */
+  @SuppressWarnings("unchecked")
+  private Map<String, PartitionStatistics> getOrCachePartitionStats(Table table, Snapshot snapshot) {
+    String cacheKey = PARTITION_STATS_PREFIX + table.name() + '.' + snapshot.snapshotId();
+    Optional<Object> cached = SessionStateUtil.getResource(conf, cacheKey);
+    if (cached.isPresent()) {
+      return (Map<String, PartitionStatistics>) cached.get();
+    }
+    Map<String, PartitionStatistics> partitionStats = IcebergPartitionStatsReader.read(table, snapshot);
+    SessionStateUtil.addResource(conf, cacheKey, partitionStats);
+    return partitionStats;
+  }
+
+  /**
    * Passes each named partition's statistics to {@code statsConsumer}, served from the snapshot's partition
    * statistics file. Partitions missing from the file are skipped and logged.
    */
@@ -694,24 +703,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     }
   }
 
-  /**
-   * Returns the snapshot's partition statistics keyed by partition name, empty if the snapshot has no
-   * partition statistics file. The result is cached for the rest of the query under a key that includes
-   * the snapshot id, so repeated lookups share a single read and a new snapshot never sees an older
-   * snapshot's entry.
-   */
-  @SuppressWarnings("unchecked")
-  private Map<String, PartitionStatistics> getOrCachePartitionStats(Table table, Snapshot snapshot) {
-    String cacheKey = PARTITION_STATS_PREFIX + table.name() + '.' + snapshot.snapshotId();
-    Optional<Object> cached = SessionStateUtil.getResource(conf, cacheKey);
-    if (cached.isPresent()) {
-      return (Map<String, PartitionStatistics>) cached.get();
-    }
-    Map<String, PartitionStatistics> partitionStats = IcebergTableUtil.readPartitionStats(table, snapshot);
-    SessionStateUtil.addResource(conf, cacheKey, partitionStats);
-    return partitionStats;
-  }
-
   private Table getTable(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     boolean skipCache = SessionStateUtil.getQueryState(conf)
         .map(qs -> !qs.isTxnOpen() && qs.getNumModifiedRows() > 0)
@@ -720,107 +711,28 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable, boolean partitionLevel) {
+    // asked of the configuration alone: a CREATE has to ask before the table it describes exists,
+    // and whether that table has partitions at all is settled by the caller
+    return canSetColStatistics(hmsTable) &&
+        partitionLevel == HiveConf.getBoolVar(conf, ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL);
+  }
+
+  @Override
   public boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     return HiveMetaHook.ICEBERG.equals(getStatsSource());
   }
 
   @Override
-  public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<ColumnStatistics> colStats) {
+  public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Iterator<ColumnStatistics> colStats) {
     Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return writeColStats(colStats, tbl);
-  }
-
-  @SuppressWarnings("checkstyle:CyclomaticComplexity")
-  private boolean writeColStats(List<ColumnStatistics> colStats, Table tbl) {
-    try {
-      if (!shouldRewriteColStats(tbl)) {
-        checkAndMergeColStats(colStats, tbl);
-      }
-      StatisticsFile statisticsFile;
-      String statsPath = tbl.location() + STATS + UUID.randomUUID();
-
-      try (PuffinWriter writer = Puffin.write(tbl.io().newOutputFile(statsPath))
-          .createdBy(Constants.HIVE_ENGINE)
-          .build()) {
-
-        long snapshotId = tbl.currentSnapshot().snapshotId();
-        long snapshotSequenceNumber = tbl.currentSnapshot().sequenceNumber();
-        Schema schema = tbl.spec().schema();
-
-        boolean first = true;
-
-        for (ColumnStatistics stats : colStats) {
-          boolean isTblLevel = stats.getStatsDesc().isIsTblLevel();
-
-          Map<String, String> properties = isTblLevel ? Map.of() :
-              Map.of(PARTITION, String.valueOf(stats.getStatsDesc().getPartName()));
-
-          List<? extends Serializable> statsObjects = isTblLevel ?
-              stats.getStatsObj() : List.of(stats);
-
-          List<Integer> fieldIds = null;
-
-          if (!isTblLevel) {
-            // For partition-level stats, we emit one blob per partition;
-            // therefore, only the first blob should contain the actual fieldIds.
-            fieldIds = !first ? List.of(-1) :
-                stats.getStatsObj().stream()
-                    .map(obj -> schema.findField(obj.getColName()).fieldId())
-                    .toList();
-            first = false;
-          }
-
-          for (Serializable statsObj : statsObjects) {
-            byte[] serialized = SerializationUtils.serialize(statsObj);
-
-            if (isTblLevel) {
-              fieldIds = List.of(schema.findField(
-                  ((ColumnStatisticsObj) statsObj).getColName()).fieldId());
-            }
-
-            writer.add(new Blob(
-                ColumnStatisticsObj.class.getSimpleName(),
-                fieldIds,
-                snapshotId,
-                snapshotSequenceNumber,
-                ByteBuffer.wrap(serialized),
-                PuffinCompressionCodec.NONE,
-                properties
-            ));
-          }
-        }
-
-        writer.finish();
-
-        statisticsFile =
-            new GenericStatisticsFile(
-                snapshotId,
-                statsPath,
-                writer.fileSize(),
-                writer.footerSize(),
-                writer.writtenBlobsMetadata().stream()
-                    .map(GenericBlobMetadata::from)
-                    .collect(ImmutableList.toImmutableList())
-            );
-      } catch (IOException e) {
-        LOG.warn("Unable to write column stats to the Puffin file: {}", e.getMessage());
-
-        Path path = new Path(statsPath);
-        FileSystem fs = path.getFileSystem(conf);
-        if (fs.exists(path)) {
-          fs.delete(path, false);
-        }
-        return false;
-      }
-      tbl.updateStatistics()
-          .setStatistics(statisticsFile)
-          .commit();
-      return true;
-
-    } catch (Exception e) {
-      LOG.warn("Unable to invalidate or merge column stats: {}", e.getMessage());
+    // a write to a branch moves that branch's head, leaving the table's current snapshot behind
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(tbl, hmsTable);
+    if (snapshot == null || !colStats.hasNext()) {
+      return false;
     }
-    return false;
+    return IcebergColStatsWriter.write(tbl, snapshot, colStats, conf);
   }
 
   @Override
@@ -828,13 +740,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
     if (snapshot != null) {
-      return canSetColStatistics(hmsTable) && canProvideColStats(table, snapshot.snapshotId());
+      return canSetColStatistics(hmsTable) &&
+          IcebergStoredStats.findColStatsFile(table, snapshot.snapshotId(), conf) != null;
     }
     return false;
-  }
-
-  private boolean canProvideColStats(Table table, long snapshotId) {
-    return IcebergTableUtil.getColStatsPath(table, snapshotId) != null;
   }
 
   @Override
@@ -853,18 +762,12 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return Lists.newArrayList();
     }
 
-    Predicate<BlobMetadata> filter;
-    if (colNames != null) {
-      Set<String> columns = Sets.newHashSet(colNames);
-      filter = metadata -> {
-        String column = table.schema().findColumnName(metadata.inputFields().getFirst());
-        return columns.contains(column);
-      };
-    } else {
-      filter = null;
+    // this returns the whole-table statistics, so judge the whole-table file: a write since it was
+    // written leaves them stale, and the metastore withholds its own on the same terms
+    if (!IcebergStoredStats.colStatsAccurate(table, snapshot, false)) {
+      return Lists.newArrayList();
     }
-
-    return IcebergTableUtil.readColStats(table, snapshot.snapshotId(), filter);
+    return IcebergColStatsReader.read(table, snapshot.snapshotId(), colNames, conf);
   }
 
   @Override
@@ -877,17 +780,52 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return new AggrStats(Collections.emptyList(), 0);
     }
 
+    // per partition blobs are what is read below, so judge the per partition file
+    StatisticsFile statsFile = IcebergStoredStats.findColStatsFile(table, snapshot.snapshotId(), true);
+    if (statsFile == null) {
+      return new AggrStats(Collections.emptyList(), 0);
+    }
+    return aggrColStats(hmsTable, table, snapshot, statsFile, colNames, partNames);
+  }
+
+  /**
+   * Aggregates the entries the file holds for the asked partitions, the way the metastore aggregates a
+   * native table's: a partition counts as found only when it describes every column asked about.
+   */
+  private AggrStats aggrColStats(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Table table,
+      Snapshot snapshot, StatisticsFile statsFile, List<String> colNames, List<String> partNames)
+      throws MetaException {
     boolean useDensityFunctionForNDVEstimation = MetastoreConf.getBoolVar(getConf(),
         MetastoreConf.ConfVars.STATS_NDV_DENSITY_FUNCTION);
     double ndvTuner = MetastoreConf.getDoubleVar(getConf(), MetastoreConf.ConfVars.STATS_NDV_TUNER);
 
     Set<String> partitions = Sets.newHashSet(partNames);
-    Predicate<BlobMetadata> filter = metadata -> partitions.contains(metadata.properties().get(PARTITION));
+    // a partition written since the file was written is no longer described by it
+    Predicate<String> upToDate =
+        IcebergStoredStats.upToDateColStats(table, snapshot, statsFile, conf, true);
+    // A scan that reads every partition the file describes is asking what the table holds, which
+    // the file already states: the entries aggregated from those same partitions when it was written.
+    // Reading those is one blob per column asked rather than one per partition to merge.
+    List<ColumnStatisticsObj> aggregated = IcebergColStatsReader.readAggr(table, statsFile,
+        partitions, upToDate, colNames, conf);
+    if (aggregated != null) {
+      return new AggrStats(aggregated, partNames.size());
+    }
 
-    List<ColumnStatistics> partStats = IcebergTableUtil.readColStats(table, snapshot.snapshotId(), filter);
+    Map<String, List<ColumnStatisticsObj>> statsByPart = IcebergColStatsReader.readPart(table, statsFile,
+        partition -> partitions.contains(partition) && upToDate.test(partition),
+        Sets.newHashSet(colNames), conf);
 
-    partStats.forEach(colStats ->
-        colStats.getStatsObj().removeIf(statsObj -> !colNames.contains(statsObj.getColName())));
+    List<ColumnStatistics> partStats = Lists.newArrayList();
+    statsByPart.forEach((partition, statsObjs) -> {
+      // the metastore counts a partition as found only when it has every column asked about
+      if (statsObjs.size() == colNames.size()) {
+        ColumnStatisticsDesc statsDesc =
+            new ColumnStatisticsDesc(false, hmsTable.getDbName(), hmsTable.getTableName());
+        statsDesc.setPartName(partition);
+        partStats.add(new ColumnStatistics(statsDesc, statsObjs));
+      }
+    });
 
     List<ColumnStatisticsObj> colStatsList = MetaStoreServerUtils.aggrPartitionStats(partStats,
         MetaStoreUtils.getDefaultCatalog(conf), hmsTable.getDbName(), hmsTable.getTableName(),
@@ -903,7 +841,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (hmsTable.getMetaTable() != null) {
       return null;
     }
-    return getStatsSource().equals(HiveMetaHook.ICEBERG) ?
+    return getStatsSource().equals(HiveMetaHook.ICEBERG) || hmsTable.getSnapshotRef() != null ?
         snapshotRowCount(hmsTable) : metastoreRowCount(hmsTable);
   }
 
@@ -955,48 +893,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         .toUpperCase();
   }
 
-  private boolean shouldRewriteColStats(Table tbl) {
-    return SessionStateUtil.getQueryState(conf)
-            .map(qs -> HiveOperation.ANALYZE_TABLE == qs.getHiveOperation())
-            .orElse(false) ||
-        IcebergTableUtil.getColStatsPath(tbl) != null;
-  }
-
-  private void checkAndMergeColStats(List<ColumnStatistics> statsNew, Table tbl) throws InvalidObjectException {
-    Long previousSnapshotId = tbl.currentSnapshot().parentId();
-    if (previousSnapshotId != null && canProvideColStats(tbl, previousSnapshotId)) {
-
-      boolean isTblLevel = statsNew.getFirst().getStatsDesc().isIsTblLevel();
-      Map<String, ColumnStatistics> oldStatsMap = Maps.newHashMap();
-
-      List<?> statsOld = IcebergTableUtil.readColStats(tbl, previousSnapshotId, null);
-
-      if (!isTblLevel) {
-        for (ColumnStatistics statsObjOld : (List<ColumnStatistics>) statsOld) {
-          oldStatsMap.put(statsObjOld.getStatsDesc().getPartName(), statsObjOld);
-        }
-      } else {
-        statsOld = Collections.singletonList(
-            new ColumnStatistics(null, (List<ColumnStatisticsObj>) statsOld));
-      }
-      for (ColumnStatistics statsObjNew : statsNew) {
-        String partitionKey = statsObjNew.getStatsDesc().getPartName();
-        ColumnStatistics statsObjOld = isTblLevel ?
-            (ColumnStatistics) statsOld.getFirst() : oldStatsMap.get(partitionKey);
-
-        if (statsObjOld != null && statsObjOld.getStatsObjSize() != 0 && !statsObjNew.getStatsObj().isEmpty()) {
-          MetaStoreServerUtils.mergeColStats(statsObjNew, statsObjOld);
-          if (!isTblLevel) {
-            oldStatsMap.remove(partitionKey);
-          }
-        }
-      }
-      if (!isTblLevel) {
-        statsNew.addAll(oldStatsMap.values());
-      }
-    }
-  }
-
   /**
    * Iceberg's optimistic concurrency control fails to provide means for IOW and Insert operations isolation.
    * Use `hive.txn.ext.locking.enabled` config to create Hive locks in order to guarantee data consistency.
@@ -1040,29 +936,16 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       .filter(f -> !f.transform().isVoid())
       .map(f -> {
         TransformSpec spec = IcebergTableUtil.getTransformSpec(table, f.transform().toString(), f.sourceId());
-        spec.setFieldName(f.name());
         return spec;
       })
       .collect(Collectors.toList());
   }
 
   @Override
-  public Map<Integer, List<TransformSpec>> getPartitionTransformSpecs(
-      org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
-      return Collections.emptyMap();
-    }
-    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return table.specs().entrySet().stream().flatMap(e ->
-      e.getValue().fields().stream()
-        .filter(f -> !f.transform().isVoid())
-        .map(f -> {
-          TransformSpec spec = IcebergTableUtil.getTransformSpec(table, f.transform().toString(), f.sourceId());
-          spec.setFieldName(f.name());
-          return Pair.of(e.getKey(), spec);
-        }))
-      .collect(Collectors.groupingBy(
-          Pair::first, Collectors.mapping(Pair::second, Collectors.toList())));
+  public Function<Object, String> partitionNameResolver(
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, StructObjectInspector inspector) {
+    return IcebergTableUtil.partitionNameFunction(
+        IcebergTableUtil.getTable(conf, hmsTable.getTTable()), inspector);
   }
 
   private List<TransformSpec> getWriteSortTransformSpecs(Table table) {
@@ -1293,7 +1176,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
           "Error committing job: " + ids + " for table: " + tableName, e);
     }
   }
-
 
   @Override
   public HiveIcebergOutputCommitter getOutputCommitter() {
@@ -2253,9 +2135,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       Objects.requireNonNull(field, String.format("%s is not a partition column", spec.getKey()));
       // If the partition spec value is null, it's a dynamic partition column.
       if (spec.getValue() != null) {
-        Object partKeyVal = Conversions.fromPartitionString(field.type(), spec.getValue());
-        Objects.requireNonNull(partKeyVal,
-            String.format("Partition spec value for column : %s is invalid", field.name()));
+        IcebergTableUtil.parsePartitionValue(field.type(), spec.getValue());
       }
     }
   }
@@ -2466,7 +2346,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return hmsTable.getPartitionKeys();
     }
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return MetastoreUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
+    return MetastoreUtil.getPartitionKeys(icebergTable);
   }
 
   @Override
@@ -2493,7 +2373,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     }
 
     Set<Partition> partitions = Sets.newHashSet();
-    String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME);
 
     try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
       FluentIterable.from(tasks)
@@ -2503,10 +2382,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
             PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
             String partName = IcebergTableUtil.toPartitionName(spec, partitionData);
 
-            Map<String, String> partSpecMap =
-                IcebergTableUtil.makeSpecFromName(partName, spec, partitionData, defaultPartitionName);
-
-            DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
+            DummyPartition partition =
+                new DummyPartition(hmsTable, partName, IcebergTableUtil.specFromName(partName));
             partitions.add(partition);
           });
     } catch (IOException e) {
@@ -2575,7 +2452,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public boolean supportsDefaultColumnValues(Map<String, String> tblProps) {
     return IcebergTableUtil.formatVersion(tblProps) >= 3;
   }
-
 
   private static List<FieldSchema> schema(List<VirtualColumn> exprs) {
     return exprs.stream().map(v ->

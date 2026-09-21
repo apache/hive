@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.session.SessionState;
+
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.getQualifiedTableName;
 
 /**
  * Utilities for semantic analyzers.
@@ -47,10 +47,9 @@ public final class AnalyzeCommandUtils {
   }
 
   public static Table getTable(ASTNode tree, BaseSemanticAnalyzer sa) throws SemanticException {
-    String tableName = ColumnStatsSemanticAnalyzer.getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
-    String currentDb = SessionState.get().getCurrentDatabase();
-    String [] names = Utilities.getDbTableName(currentDb, tableName);
-    return sa.getTable(names[0], names[1], true);
+    return sa.getTable(
+        getQualifiedTableName((ASTNode) tree.getChild(0).getChild(0)),
+        true);
   }
 
   public static Map<String,String> getPartKeyValuePairsFromAST(Table tbl, ASTNode tree,

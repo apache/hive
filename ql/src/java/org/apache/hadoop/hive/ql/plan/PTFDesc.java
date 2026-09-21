@@ -226,12 +226,7 @@ public class PTFDesc extends AbstractOperatorDesc {
     public boolean getAllEvaluatorsAreStreaming() {
       VectorPTFEvaluatorBase[] evaluators =
           VectorPTFDesc.getEvaluators(vectorPTFDesc, vectorPTFInfo);
-      for (VectorPTFEvaluatorBase evaluator : evaluators) {
-        if (!evaluator.streamsResult()) {
-          return false;
-        }
-      }
-      return true;
+      return VectorPTFDesc.getAllEvaluatorsAreStreaming(evaluators);
     }
   }
 
