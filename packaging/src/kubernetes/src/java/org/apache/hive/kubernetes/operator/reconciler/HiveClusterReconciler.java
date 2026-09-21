@@ -49,6 +49,7 @@ import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsCache;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsScraper;
 import org.apache.hive.kubernetes.operator.autoscaling.PodMetrics;
+import org.apache.hive.kubernetes.operator.dependent.HiveDependentResource;
 import org.apache.hive.kubernetes.operator.dependent.LlapResourceBuilder;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
@@ -72,6 +73,8 @@ public class HiveClusterReconciler
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveClusterReconciler.class);
 
+  private static final String CONDITION_READY_LITERAL = "Ready";
+  private static final String RECONCILIATION_ERROR_LITERAL = "ReconciliationError";
   private volatile HiveClusterAutoscaler autoscaler;
   private volatile BackgroundMetricsScraper bgScraper;
 
@@ -178,9 +181,11 @@ public class HiveClusterReconciler
           ? 2 : getMinScrapeInterval(resource.getSpec());
     }
 
+    boolean workflowError = applyWorkflowDependentErrors(resource, context, newStatus, existingStatus);
+
     // --- Single exit point for status update ---
     boolean statusNowChanged = !statusEqualsIgnoringTimestamps(existingStatus, newStatus);
-    if (!statusNowChanged && rescheduleSeconds == 0) {
+    if (!statusNowChanged && rescheduleSeconds == 0 && !workflowError) {
       return UpdateControl.noUpdate();
     }
     resource.setStatus(newStatus);
@@ -217,7 +222,7 @@ public class HiveClusterReconciler
         status.getConditions() != null ? status.getConditions() : Collections.emptyList();
 
     status.setConditions(List.of(
-        buildCondition("Ready", "False", "ReconciliationError",
+        buildCondition(CONDITION_READY_LITERAL, "False", RECONCILIATION_ERROR_LITERAL,
             e.getMessage(), existingConditions)
     ));
     status.setObservedGeneration(resource.getMetadata().getGeneration());
@@ -324,7 +329,7 @@ public class HiveClusterReconciler
 
     // Overall Ready condition
     boolean allReady = schemaReady && metastoreReady && hs2Ready;
-    conditions.add(buildCondition("Ready", allReady ? "True" : "False",
+    conditions.add(buildCondition(CONDITION_READY_LITERAL, allReady ? "True" : "False",
         allReady ? "AllComponentsReady" : "ComponentsNotReady",
         allReady ? "All Hive components are ready" : "One or more components are not ready",
         existingConditions));
@@ -385,6 +390,41 @@ public class HiveClusterReconciler
       cs.setPhase("Pending");
     }
     return cs;
+  }
+
+  /**
+   * When the managed workflow dependents incur failures, update the Ready
+   * condition with the incurred error, while preserving component conditions.
+   */
+  private boolean applyWorkflowDependentErrors(HiveCluster resource, Context<HiveCluster> context,
+      HiveClusterStatus newStatus, HiveClusterStatus existingStatus) {
+    var workflowResult = context.managedWorkflowAndDependentResourceContext().getWorkflowReconcileResult();
+    if (workflowResult.isEmpty() || !workflowResult.get().erroredDependentsExist()) {
+      return false;
+    }
+
+    Exception error = workflowResult.get().getErroredDependents().values().iterator().next();
+    String errorMessage = error.getMessage();
+    LOG.error("Error reconciling HiveCluster: {}/{} - {}", resource.getMetadata().getNamespace(),
+        resource.getMetadata().getName(), errorMessage, error);
+
+    List<Condition> existingConditions = existingStatus != null && existingStatus.getConditions() != null
+        ? existingStatus.getConditions() : Collections.emptyList();
+    boolean alreadyReported = existingConditions.stream()
+        .anyMatch(c -> CONDITION_READY_LITERAL.equals(c.getType())
+            && "False".equals(c.getStatus())
+            && RECONCILIATION_ERROR_LITERAL.equals(c.getReason())
+            && Objects.equals(errorMessage, c.getMessage()));
+
+    List<Condition> conditions = newStatus.getConditions();
+    if (conditions == null) {
+      conditions = new ArrayList<>();
+      newStatus.setConditions(conditions);
+    }
+    conditions.removeIf(c -> CONDITION_READY_LITERAL.equals(c.getType()));
+    conditions.add(buildCondition(CONDITION_READY_LITERAL, "False", RECONCILIATION_ERROR_LITERAL,
+        errorMessage, existingConditions));
+    return !alreadyReported;
   }
 
   private Condition buildCondition(String type, String conditionStatus,
@@ -612,6 +652,7 @@ public class HiveClusterReconciler
       if (!llapSpec.isEnabled()) {
         continue;
       }
+      HiveDependentResource.validateLlapEmbeddedValues(resource.getSpec(), llapSpec);
       desiredNames.add(llapSpec.name());
       int replicas = resolveLlapReplicaCount(resource, llapSpec, ns, clusterName);
 
