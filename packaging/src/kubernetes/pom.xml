@@ -37,6 +37,17 @@
   </properties>
   <dependencies>
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.javaoperatorsdk</groupId>
       <artifactId>operator-framework</artifactId>
       <version>${josdk.version}</version>
@@ -96,6 +107,7 @@
   </dependencies>
   <build>
     <sourceDirectory>src/java</sourceDirectory>
+    <testSourceDirectory>src/test</testSourceDirectory>
     <resources>
       <resource>
         <directory>src/resources</directory>

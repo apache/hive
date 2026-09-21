@@ -81,6 +81,16 @@ public class HiveClusterAutoscaler {
     MANAGED_REPLICAS.put(cacheKey(namespace, clusterName, component), replicas);
   }
 
+  /**
+   * Forgets a component's managed replica count, so the spec governs it again. Called when the
+   * component is not autoscaled: the store answers "what the autoscaler decided", and nothing is
+   * deciding, so a value left behind by an earlier wake or by autoscaling that has since been
+   * turned off would otherwise outrank every later spec change for the life of the process.
+   */
+  public static void clearManagedReplicas(String namespace, String clusterName, String component) {
+    MANAGED_REPLICAS.remove(cacheKey(namespace, clusterName, component));
+  }
+
   private record PendingScaleDown(int targetReplicas, Instant annotatedAt, List<String> podsToDeregister) {}
 
   private final BackgroundMetricsScraper bgScraper;
