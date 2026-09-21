@@ -210,6 +210,7 @@ public class MetastoreDeploymentDependent
     appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),
         spec.metastore().extraVolumes(), spec.metastore().extraVolumeMounts());
+    applyRestrictedSecurityContext(deployment.getSpec().getTemplate().getSpec(), spec.runAsUser());
 
     return deployment;
   }

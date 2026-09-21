@@ -302,6 +302,7 @@ public class HiveServer2DeploymentDependent
     appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),
         hs2.extraVolumes(), hs2.extraVolumeMounts());
+    applyRestrictedSecurityContext(deployment.getSpec().getTemplate().getSpec(), spec.runAsUser());
 
     return deployment;
   }

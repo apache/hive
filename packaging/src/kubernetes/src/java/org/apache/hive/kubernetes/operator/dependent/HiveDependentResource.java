@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import io.fabric8.kubernetes.api.model.AffinityBuilder;
+import io.fabric8.kubernetes.api.model.CapabilitiesBuilder;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -41,7 +42,11 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
+import io.fabric8.kubernetes.api.model.PodSecurityContextBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
+import io.fabric8.kubernetes.api.model.SeccompProfileBuilder;
+import io.fabric8.kubernetes.api.model.SecurityContext;
+import io.fabric8.kubernetes.api.model.SecurityContextBuilder;
 import io.fabric8.kubernetes.api.model.Affinity;
 import io.fabric8.kubernetes.api.model.Toleration;
 import io.fabric8.kubernetes.api.model.Volume;
@@ -621,6 +626,56 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   protected static void applyTolerations(PodSpec podSpec, List<Toleration> tolerations) {
     if (tolerations != null && !tolerations.isEmpty()) {
       podSpec.setTolerations(tolerations);
+    }
+  }
+
+  /**
+   * Applies a restricted Security Context to every pod spec the operator
+   * generates, aligned with Kubernetes Pod Security restricted Standards.
+   */
+  protected static void applyRestrictedSecurityContext(PodSpec podSpec, Long runAsUser) {
+    if (podSpec.getSecurityContext() == null) {
+      PodSecurityContextBuilder podSc = new PodSecurityContextBuilder()
+          .withRunAsNonRoot(true)
+          .withSeccompProfile(new SeccompProfileBuilder()
+              .withType("RuntimeDefault")
+              .build());
+      if (runAsUser != null) {
+        podSc.withRunAsUser(runAsUser);
+      }
+      podSpec.setSecurityContext(podSc.build());
+    }
+    if (podSpec.getContainers() != null) {
+      for (Container container : podSpec.getContainers()) {
+        if (container.getSecurityContext() == null) {
+          container.setSecurityContext(
+              new SecurityContextBuilder()
+                  .withAllowPrivilegeEscalation(false)
+                  .withCapabilities(new CapabilitiesBuilder()
+                      .withDrop("ALL")
+                      .build())
+                  .withSeccompProfile(new SeccompProfileBuilder()
+                      .withType("RuntimeDefault")
+                      .build())
+                  .build());
+        }
+      }
+    }
+    if (podSpec.getInitContainers() != null) {
+      for (Container container : podSpec.getInitContainers()) {
+        if (container.getSecurityContext() == null) {
+          container.setSecurityContext(
+              new SecurityContextBuilder()
+                  .withAllowPrivilegeEscalation(false)
+                  .withCapabilities(new CapabilitiesBuilder()
+                      .withDrop("ALL")
+                      .build())
+                  .withSeccompProfile(new SeccompProfileBuilder()
+                      .withType("RuntimeDefault")
+                      .build())
+                  .build());
+        }
+      }
     }
   }
 

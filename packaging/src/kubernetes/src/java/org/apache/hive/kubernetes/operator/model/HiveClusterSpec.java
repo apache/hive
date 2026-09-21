@@ -86,6 +86,10 @@ public record HiveClusterSpec(
     @JsonPropertyDescription("Kubernetes ServiceAccount name for all component pods. "
         + "If not specified, pods use the namespace default service account.")
     String serviceAccountName,
+    @JsonPropertyDescription("Numeric UID for all component pods. Set this to match the "
+        + "container image when the image declares a non-numeric USER (e.g. USER hive) "
+        + "and the operator enforces runAsNonRoot.")
+    Long runAsUser,
     @JsonPropertyDescription("Auto-suspend configuration. When enabled and all components "
         + "are idle for the configured timeout, the cluster scales to 0 replicas.")
     AutoSuspendSpec autoSuspend,
