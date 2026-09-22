@@ -53,6 +53,7 @@ import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.compression.CompressionCodecFactory;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
+import org.apache.parquet.hadoop.metadata.FileMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.schema.MessageType;
 
@@ -118,8 +119,8 @@ public class ParquetEncodedDataConsumer
    * so the shared {@link ParquetRowGroupDecoder} produces identical readers.
    */
   private void initSchema() {
-    org.apache.parquet.hadoop.metadata.FileMetaData fileMetaData = footer.getFileMetaData();
-    java.util.Map<String, String> kvMeta = fileMetaData.getKeyValueMetaData();
+    FileMetaData fileMetaData = footer.getFileMetaData();
+    Map<String, String> kvMeta = fileMetaData.getKeyValueMetaData();
 
     this.columnTypesList =
         DataWritableReadSupport.getColumnTypes(jobConf.get(IOConstants.COLUMNS_TYPES));
@@ -191,7 +192,7 @@ public class ParquetEncodedDataConsumer
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, batches);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
     } catch (IOException | RuntimeException e) {
-      // parquet-mr reports decode failures as runtime ParquetDecodingException.
+      // parquet reports decode failures as runtime ParquetDecodingException.
       LlapIoImpl.LOG.error("Parquet decodeBatch failed for rowGroup " + batch.rowGroupIx() + " of " + path, e);
       downstreamConsumer.setError(e);
     } finally {
