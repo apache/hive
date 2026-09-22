@@ -558,10 +558,19 @@ public class TestParquetEncodedDataReader {
     }
   }
 
+  /**
+   * The four ways an Iceberg Hive schema can disagree with the file's, in one read: an order of its
+   * own (ratio before id, and three of the file's columns dropped), a column the file does not have
+   * that an initial default fills in ("added" -> 42), a dropped-and-recreated column, which Iceberg
+   * marks with the DUMMY_FOR_RECREATED_FIELD_IN_FILESCHEMA placeholder so that the stale bytes read
+   * back as null instead of as the recreated column, and a column that merely moved ("name" is last
+   * here, fourth in the file). Rows 7 and 1500 are in the sample because name is null every seventh
+   * row, so a null that comes from the file still has to survive the evolution, and because the
+   * column readers are rebuilt per row group, so a default filled in for the first group only fails
+   * at the boundary.
+   */
   @Test
   public void testEvolvedColumnsReorderedDefaultedAndRecreated() throws Exception {
-    // Hive order differs from the file (ratio before id), "added" is absent with an initial default,
-    // and a recreated field carries the Iceberg placeholder name that no file column matches.
     // Neither ground truth applies: the rows are not the fixture's columns, and the stock reader has
     // no initial-defaults plumbing, so it would emit null for "added" where the native path emits 42.
     skipExpectedRows = true;
