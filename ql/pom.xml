@@ -911,6 +911,12 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>ch.hsr</groupId>
+      <artifactId>geohash</artifactId>
+      <version>${geohash.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.roaringbitmap</groupId>
       <artifactId>RoaringBitmap</artifactId>
       <version>${roaringbit.version}</version>
@@ -1154,6 +1160,7 @@
                   <include>org.locationtech.jts:jts-core</include>
                   <include>org.locationtech.jts.io:jts-io-common</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
+                  <include>ch.hsr:geohash</include>
                   <include>org.apache.tez:tez-protobuf-history-plugin</include>
                 </includes>
               </artifactSet>
