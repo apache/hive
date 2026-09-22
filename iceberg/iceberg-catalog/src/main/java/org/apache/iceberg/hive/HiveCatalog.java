@@ -241,6 +241,10 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
     return name;
   }
 
+  public FileIO io() {
+    return fileIO;
+  }
+
   @Override
   public boolean dropTable(TableIdentifier identifier, boolean purge) {
     if (!isValidIdentifier(identifier)) {
@@ -271,7 +275,7 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
       });
 
       if (purge && lastMetadata != null) {
-        CatalogUtil.dropTableData(ops.io(), lastMetadata);
+        CatalogUtil.dropTableData(new ScopedDeleteFileIO(ops.io(), lastMetadata.location()), lastMetadata);
       }
 
       LOG.info("Dropped table: {}", identifier);
