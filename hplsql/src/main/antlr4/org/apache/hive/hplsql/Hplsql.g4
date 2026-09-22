@@ -51,8 +51,6 @@ stmt :
      | collect_stats_stmt
      | close_stmt
      | cmp_stmt
-     | copy_from_local_stmt
-     | copy_stmt
      | commit_stmt
      | create_database_stmt
      | create_function_stmt
@@ -99,8 +97,6 @@ stmt :
      | while_stmt
      | unconditional_loop_stmt
      | label
-     | hive     
-     | host
      | null_stmt
      | expr_stmt     
      | semicolon_stmt      // Placed here to allow null statements ;;...          
@@ -642,36 +638,7 @@ cmp_stmt :              // CMP statement
 cmp_source :
       (table_name where_clause? | T_OPEN_P select_stmt T_CLOSE_P) (T_AT qident)?
      ;
-     
-copy_from_local_stmt :  // COPY FROM LOCAL statement
-       T_COPY T_FROM T_LOCAL copy_source (T_COMMA copy_source)* T_TO copy_target copy_file_option*
-     ;
-     
-copy_stmt :             // COPY statement
-       T_COPY (table_name | T_OPEN_P select_stmt T_CLOSE_P) T_TO T_HDFS? copy_target copy_option*
-     ;
-     
-copy_source :
-       (file_name | expr) 
-     ;
 
-copy_target :
-       (file_name | expr) 
-     ;
-    
-copy_option :
-       T_AT qident
-     | T_BATCHSIZE expr
-     | T_DELIMITER expr
-     | T_SQLINSERT qident
-     ;
-
-copy_file_option :
-       T_DELETE
-     | T_IGNORE
-     | T_OVERWRITE
-     ;
-     
 commit_stmt :           // COMMIT statement
        T_COMMIT T_WORK?
      ;
@@ -1195,30 +1162,7 @@ expr_file :
        file_name
      | expr
      ;
-      
-hive :
-       T_HIVE hive_item*
-     ;
 
-hive_item :
-       T_SUB qident expr
-     | T_SUB qident L_ID T_EQUAL expr
-     | T_SUB qident
-     ;  
-
-host :     
-       '!' host_cmd  ';'                   // OS command
-     | host_stmt
-     ;
-
-host_cmd :     
-       .*?          
-     ;
-     
-host_stmt :     
-       T_HOST expr          
-     ;
-     
 file_name :
        L_FILE | ('/' | '.' '/')? qident ('/' qident)*
      ;
@@ -1277,7 +1221,6 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_AT
      | T_AUTO_INCREMENT
      | T_AVG
-     | T_BATCHSIZE
      | T_BEGIN   
      | T_BETWEEN
      | T_BIGINT  
@@ -1307,8 +1250,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_COLUMN
      | T_COMMENT  
      | T_COMPRESS     
-     | T_CONSTANT     
-     | T_COPY
+     | T_CONSTANT
      | T_COMMIT
      | T_CONCAT
      | T_CONDITION
@@ -1344,7 +1286,6 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_DEFINITION
      | T_DELETE
      | T_DELIMITED
-     | T_DELIMITER
      | T_DENSE_RANK
      | T_DESC   
      | T_DESCRIBE 
@@ -1393,10 +1334,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_GROUP        
      | T_HANDLER      
      | T_HASH
-     | T_HAVING       
-     | T_HDFS
-     | T_HIVE         
-     | T_HOST    
+     | T_HAVING
      | T_IDENTITY     
      | T_IF    
      | T_IGNORE     
@@ -1535,8 +1473,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_SMALLDATETIME
      | T_SMALLINT     
      | T_SQL
-     | T_SQLEXCEPTION 
-     | T_SQLINSERT
+     | T_SQLEXCEPTION
      | T_SQLSTATE
      | T_SQLWARNING  
      | T_STATS
@@ -1606,8 +1543,7 @@ T_ASC             : A S C ;
 T_ASSOCIATE       : A S S O C I A T E ; 
 T_AT              : A T ;
 T_AUTO_INCREMENT  : A U T O '_' I N C R E M E N T ;
-T_AVG             : A V G ; 
-T_BATCHSIZE       : B A T C H S I Z E ;
+T_AVG             : A V G ;
 T_BEGIN           : B E G I N ;
 T_BETWEEN         : B E T W E E N ; 
 T_BIGINT          : B I G I N T ;
@@ -1644,7 +1580,6 @@ T_CONCAT          : C O N C A T;
 T_CONDITION       : C O N D I T I O N ;
 T_CONSTRAINT      : C O N S T R A I N T ; 
 T_CONTINUE        : C O N T I N U E ;
-T_COPY            : C O P Y ;
 T_COUNT           : C O U N T ;
 T_COUNT_BIG       : C O U N T '_' B I G;
 T_CREATE          : C R E A T E ;
@@ -1669,8 +1604,7 @@ T_DEFINED         : D E F I N E D ;
 T_DEFINER         : D E F I N E R ;
 T_DEFINITION      : D E F I N I T I O N ; 
 T_DELETE          : D E L E T E ;
-T_DELIMITED       : D E L I M I T E D ; 
-T_DELIMITER       : D E L I M I T E R ; 
+T_DELIMITED       : D E L I M I T E D ;
 T_DESC            : D E S C ;
 T_DESCRIBE        : D E S C R I B E ; 
 T_DIAGNOSTICS     : D I A G N O S T I C S ;
@@ -1718,9 +1652,6 @@ T_GROUP           : G R O U P ;
 T_HANDLER         : H A N D L E R ;
 T_HASH            : H A S H ;
 T_HAVING          : H A V I N G ;
-T_HDFS            : H D F S ; 
-T_HIVE            : H I V E ;
-T_HOST            : H O S T ;
 T_IDENTITY        : I D E N T I T Y ; 
 T_IF              : I F ;
 T_IGNORE          : I G N O R E ; 
@@ -1859,7 +1790,6 @@ T_SMALLDATETIME   : S M A L L D A T E T I M E ;
 T_SMALLINT        : S M A L L I N T ;
 T_SQL             : S Q L ; 
 T_SQLEXCEPTION    : S Q L E X C E P T I O N ;
-T_SQLINSERT       : S Q L I N S E R T ;
 T_SQLSTATE        : S Q L S T A T E ;
 T_SQLWARNING      : S Q L W A R N I N G ;
 T_STATS           : S T A T S ; 
