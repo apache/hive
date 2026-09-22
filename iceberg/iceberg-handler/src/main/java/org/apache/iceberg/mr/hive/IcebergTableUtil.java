@@ -213,7 +213,7 @@ public class IcebergTableUtil {
     return getTable(configuration, properties, false);
   }
 
-  static Snapshot getTableSnapshot(Table table, org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  public static Snapshot getTableSnapshot(Table table, org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     long snapshotId = -1;
 
     if (hmsTable.getAsOfTimestamp() != null) {
