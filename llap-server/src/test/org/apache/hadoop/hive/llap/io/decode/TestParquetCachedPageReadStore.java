@@ -72,7 +72,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Page-level parity between {@link ParquetCachedPageReadStore} and parquet-mr's own
+ * Page-level parity between {@link ParquetCachedPageReadStore} and parquet's own
  * ColumnChunkPageReadStore (what {@link ParquetFileReader#readNextRowGroup()} returns).
  *
  * <p>Both stores read the same file and the same row group. The stock one goes through
@@ -190,7 +190,7 @@ public class TestParquetCachedPageReadStore {
       stockReader.setRequestedSchema(projection);
       for (int rowGroupIx = 0; rowGroupIx < footer.getBlocks().size(); ++rowGroupIx) {
         PageReadStore expected = stockReader.readNextRowGroup();
-        assertNotNull("parquet-mr ran out of row groups at " + rowGroupIx, expected);
+        assertNotNull("parquet ran out of row groups at " + rowGroupIx, expected);
 
         ParquetEncodedColumnBatch batch =
             cachedBatch(footer, rowGroupIx, projection, fileBytes, grain, coverage);
@@ -206,7 +206,7 @@ public class TestParquetCachedPageReadStore {
         }
         ++coverage.rowGroups;
       }
-      assertNull("parquet-mr has row groups left over", stockReader.readNextRowGroup());
+      assertNull("parquet has row groups left over", stockReader.readNextRowGroup());
     } finally {
       codecFactory.release();
     }
@@ -215,7 +215,7 @@ public class TestParquetCachedPageReadStore {
 
   private static void assertPageReaderParity(String column, PageReader expected, PageReader actual,
       Coverage coverage) throws IOException {
-    assertNotNull(column + ": parquet-mr has no page reader", expected);
+    assertNotNull(column + ": parquet has no page reader", expected);
     assertNotNull(column + ": no cached page reader", actual);
     assertEquals(column + ": total value count",
         expected.getTotalValueCount(), actual.getTotalValueCount());
@@ -227,7 +227,7 @@ public class TestParquetCachedPageReadStore {
       DataPage actualPage = actual.readPage();
       if (expectedPage == null || actualPage == null) {
         assertNull(column + ": cached reader is short by at least one page", expectedPage);
-        assertNull(column + ": cached reader has " + (pages + 1) + " pages or more, parquet-mr has "
+        assertNull(column + ": cached reader has " + (pages + 1) + " pages or more, parquet has "
             + pages, actualPage);
         break;
       }
