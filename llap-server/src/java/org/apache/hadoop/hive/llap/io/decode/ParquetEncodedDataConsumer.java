@@ -191,7 +191,7 @@ public class ParquetEncodedDataConsumer
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, batches);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
     } catch (IOException | RuntimeException e) {
-      // parquet-mr reports decode failures as runtime ParquetDecodingException.
+      // parquet reports decode failures as runtime ParquetDecodingException.
       LlapIoImpl.LOG.error("Parquet decodeBatch failed for rowGroup " + batch.rowGroupIx() + " of " + path, e);
       downstreamConsumer.setError(e);
     } finally {

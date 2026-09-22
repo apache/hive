@@ -825,7 +825,7 @@ public class TestParquetEncodedDataReader {
   // ---- parity: compare native rows against the stock VectorizedParquetRecordReader ----
   //
   // The native path assembles its ground truth from a Java-computed expectedRow(i). These helpers
-  // add a second ground truth: what parquet-mr's own decode (driven through VectorizedParquetRecordReader)
+  // add a second ground truth: what parquet's own decode (driven through VectorizedParquetRecordReader)
   // returns for the same file, JobConf and split. Any drift in the native reader's row-group planning,
   // page parsing, or cache assembly shows up here as a row-by-row mismatch.
 
@@ -884,9 +884,9 @@ public class TestParquetEncodedDataReader {
   /** Reads the same (job, split) with VectorizedParquetRecordReader and asserts row-by-row equality. */
   private static void assertParityWithNonNative(Run run, JobConf job, FileSplit split) throws Exception {
     List<Object[]> stock = readNonNative(job, split);
-    assertEquals("row count differs from parquet-mr", stock.size(), run.rows.size());
+    assertEquals("row count differs from parquet", stock.size(), run.rows.size());
     for (int i = 0; i < stock.size(); ++i) {
-      assertArrayEquals("row " + i + " differs from parquet-mr", stock.get(i), run.rows.get(i));
+      assertArrayEquals("row " + i + " differs from parquet", stock.get(i), run.rows.get(i));
     }
   }
 

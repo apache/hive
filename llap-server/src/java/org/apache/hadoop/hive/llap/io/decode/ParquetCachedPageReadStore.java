@@ -54,7 +54,7 @@ import org.apache.parquet.io.ParquetDecodingException;
 import org.apache.parquet.schema.PrimitiveType;
 
 /**
- * {@link PageReadStore} over one row group's cached column-chunk buffers, mirroring parquet-mr's
+ * {@link PageReadStore} over one row group's cached column-chunk buffers, mirroring parquet's
  * ParquetFileReader.Chunk.readAllPages and ColumnChunkPageReader without going through a
  * ParquetFileReader (and without offset index or decryption support).
  *
@@ -71,7 +71,7 @@ import org.apache.parquet.schema.PrimitiveType;
  *       {@link BytesInputDecompressor}, and decompresses only when the vectorized column reader
  *       actually calls {@link PageReader#readPage()}, so pages that get pruned never pay the codec cost.</li>
  *   <li><b>Output</b>: the resulting {@code ColumnPath -> PageReader} map backs
- *       {@link #getPageReader(ColumnDescriptor)}, so parquet-mr's VectorizedColumnReader never notices
+ *       {@link #getPageReader(ColumnDescriptor)}, so parquet's VectorizedColumnReader never notices
  *       that it is not reading from a file.</li>
  * </ol>
  *
