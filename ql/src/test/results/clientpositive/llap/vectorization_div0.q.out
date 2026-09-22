@@ -492,7 +492,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((cdouble >= -500.0D) and (cdouble < -199.0D)) (type: boolean)
+                  filterExpr: ((cdouble < -199.0D) and (cdouble >= -500.0D)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 146792 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -500,8 +500,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -500.0), FilterDoubleColLessDoubleScalar(col 5:double, val -199.0))
-                    predicate: ((cdouble >= -500.0D) and (cdouble < -199.0D)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 5:double, val -199.0), FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -500.0))
+                    predicate: ((cdouble < -199.0D) and (cdouble >= -500.0D)) (type: boolean)
                     Statistics: Num rows: 20 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: ++++++
@@ -726,7 +726,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((cint > 500000000) or (cdouble > 1.0E9D) or (ctinyint = 0Y)) (type: boolean)
+                  filterExpr: ((cint > 500000000) or (ctinyint = 0Y) or (cdouble > 1.0E9D)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 220184 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -734,8 +734,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongColGreaterLongScalar(col 2:int, val 500000000), FilterDoubleColGreaterDoubleScalar(col 5:double, val 1.0E9), FilterLongColEqualLongScalar(col 0:tinyint, val 0))
-                    predicate: ((cint > 500000000) or (cdouble > 1.0E9D) or (ctinyint = 0Y)) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterLongColGreaterLongScalar(col 2:int, val 500000000), FilterLongColEqualLongScalar(col 0:tinyint, val 0), FilterDoubleColGreaterDoubleScalar(col 5:double, val 1.0E9))
+                    predicate: ((cint > 500000000) or (ctinyint = 0Y) or (cdouble > 1.0E9D)) (type: boolean)
                     Statistics: Num rows: 3380 Data size: 60576 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: +++++++++
