@@ -713,14 +713,15 @@ public class HiveClusterReconciler
       return 0;
     }
     String componentKey = ConfigUtils.llapComponentKey(llapSpec.name());
-    Integer managed = HiveClusterAutoscaler.getManagedReplicas(ns, clusterName, componentKey);
-    if (managed != null) {
-      return managed;
-    }
-    // First reconcile before autoscaler runs: start at minReplicas if autoscaling enabled
     if (llapSpec.autoscaling().isEnabled()) {
+      Integer managed = HiveClusterAutoscaler.getManagedReplicas(ns, clusterName, componentKey);
+      if (managed != null) {
+        return managed;
+      }
+      // First reconcile before autoscaler runs: start at minReplicas if autoscaling enabled
       return llapSpec.autoscaling().minReplicas();
     }
+    HiveClusterAutoscaler.cleanupManagedReplicas(ns, clusterName, componentKey);
     return llapSpec.replicas();
   }
 
@@ -734,21 +735,19 @@ public class HiveClusterReconciler
       return 0;
     }
     LlapSpec.LlapTezAmSpec tezAmSpec = llapSpec.tezAm();
-    // Check if autoscaler has a managed value for this specific TezAM
     String tezAmComponentKey = ConfigUtils.tezAmComponentKey(llapSpec.name());
-    Integer tezAmManaged = HiveClusterAutoscaler.getManagedReplicas(ns, clusterName, tezAmComponentKey);
-    if (tezAmManaged != null) {
-      return tezAmManaged;
+    // Check if autoscaler has a managed value for this specific TezAM
+    if (tezAmSpec.autoscaling().isEnabled()) {
+      Integer tezAmManaged = HiveClusterAutoscaler.getManagedReplicas(ns, clusterName, tezAmComponentKey);
+      if (tezAmManaged != null) {
+        return tezAmManaged;
+      }
+    } else {
+      HiveClusterAutoscaler.cleanupManagedReplicas(ns, clusterName, tezAmComponentKey);
     }
-    // TezAM follows LLAP's autoscaling gate: only run if LLAP is running.
-    String llapComponentKey = ConfigUtils.llapComponentKey(llapSpec.name());
-    Integer llapManaged = HiveClusterAutoscaler.getManagedReplicas(ns, clusterName, llapComponentKey);
-    if (llapManaged != null && llapManaged == 0) {
-      return 0;
-    }
-    if (llapSpec.autoscaling().isEnabled() && llapManaged == null
-        && llapSpec.autoscaling().minReplicas() == 0) {
-      // First reconcile before autoscaler runs: LLAP starts at 0, so TezAM stays down too.
+
+    int llapDesired = resolveLlapReplicaCount(resource, llapSpec, ns, clusterName);
+    if (llapDesired == 0) {
       return 0;
     }
     if (tezAmSpec.autoscaling().isEnabled()) {
@@ -1012,35 +1011,29 @@ public class HiveClusterReconciler
     // the dependent resources (Deployments/StatefulSets) on the next reconcile
     // and use these values for spec.replicas. We don't call patchReplicas()
     // because the workloads may have been garbage-collected while suspended.
-    // With autoscaling disabled the wake value is the spec's static replica
-    // count — using minReplicas (0 by default) would pin the component to 0.
-    int hs2Wake = spec.hiveServer2().autoscaling().isEnabled()
-        ? Math.max(1, spec.hiveServer2().autoscaling().minReplicas())
-        : spec.hiveServer2().replicas();
-    HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_HIVESERVER2, hs2Wake);
+    if (spec.hiveServer2().autoscaling().isEnabled()) {
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_HIVESERVER2,
+          Math.max(1, spec.hiveServer2().autoscaling().minReplicas()));
+    }
 
-    if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()) {
-      int hmsWake = spec.metastore().autoscaling().isEnabled()
-          ? Math.max(1, spec.metastore().autoscaling().minReplicas())
-          : spec.metastore().replicas();
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_METASTORE, hmsWake);
+    if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()
+        && spec.metastore().autoscaling().isEnabled()) {
+      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_METASTORE,
+          Math.max(1, spec.metastore().autoscaling().minReplicas()));
     }
 
     for (var llap : spec.llapClusters()) {
-      if (llap.isEnabled()) {
-        int llapWake = llap.autoscaling().isEnabled()
-            ? llap.autoscaling().minReplicas() : llap.replicas();
-        HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.llapComponentKey(llap.name()), llapWake);
+      if (llap.isEnabled() && llap.autoscaling().isEnabled()) {
+        HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.llapComponentKey(llap.name()),
+            llap.autoscaling().minReplicas());
       }
     }
 
     if (spec.tezAm().isEnabled()) {
       for (var llap : spec.llapClusters()) {
-        if (llap.isEnabled()) {
-          int tezWake = llap.tezAm().autoscaling().isEnabled()
-              ? llap.tezAm().autoscaling().minReplicas() : llap.tezAm().replicas();
+        if (llap.isEnabled() && llap.tezAm().autoscaling().isEnabled()) {
           HiveClusterAutoscaler.setManagedReplicas(ns, name,
-              ConfigUtils.tezAmComponentKey(llap.name()), tezWake);
+              ConfigUtils.tezAmComponentKey(llap.name()), llap.tezAm().autoscaling().minReplicas());
         }
       }
     }
