@@ -789,7 +789,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: ((cdecimal1 < -2000) or (cdecimal1 > 4390.1351351351)) (type: boolean)
+                  filterExpr: ((cdecimal1 > 4390.1351351351) or (cdecimal1 < -2000)) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -797,8 +797,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val -2000), FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val 4390.1351351351))
-                    predicate: ((cdecimal1 < -2000) or (cdecimal1 > 4390.1351351351)) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val 4390.1351351351), FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val -2000))
+                    predicate: ((cdecimal1 > 4390.1351351351) or (cdecimal1 < -2000)) (type: boolean)
                     Statistics: Num rows: 12275 Data size: 1026480 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Select Vectorization:

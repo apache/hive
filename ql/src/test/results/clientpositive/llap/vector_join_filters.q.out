@@ -78,7 +78,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                  filterExpr: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -86,7 +86,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                    predicate: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                    predicate: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: int)
@@ -326,7 +326,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                  filterExpr: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -334,7 +334,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                    predicate: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                    predicate: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: int)
@@ -503,7 +503,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                  filterExpr: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -511,7 +511,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                    predicate: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                    predicate: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: int)
@@ -680,7 +680,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                  filterExpr: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -688,7 +688,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                    predicate: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                    predicate: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: int)
@@ -857,7 +857,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                  filterExpr: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -865,7 +865,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                    predicate: ((key > 40) and (value > 50) and (key = value)) (type: boolean)
+                    predicate: ((key = value) and (key > 40) and (value > 50)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: int)

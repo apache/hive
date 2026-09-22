@@ -339,7 +339,7 @@ STAGE PLANS:
                   alias: orc_pred
                   Statistics: Num rows: 1049 Data size: 4188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((t > -2Y) and (t < 0Y)) (type: boolean)
+                    predicate: ((t < 0Y) and (t > -2Y)) (type: boolean)
                     Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(t) (type: int)
@@ -410,10 +410,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_pred
-                  filterExpr: ((t > -2Y) and (t < 0Y)) (type: boolean)
+                  filterExpr: ((t < 0Y) and (t > -2Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 4188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((t > -2Y) and (t < 0Y)) (type: boolean)
+                    predicate: ((t < 0Y) and (t > -2Y)) (type: boolean)
                     Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(t) (type: int)
@@ -834,7 +834,7 @@ STAGE PLANS:
                   alias: orc_pred
                   Statistics: Num rows: 1049 Data size: 118521 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((t > 0Y) and (d >= 10.0D) and (d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (s like '%son') and (not (s like '%car%'))) (type: boolean)
+                    predicate: ((d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (d >= 10.0D) and (t > 0Y) and (s like '%son') and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: -
@@ -920,10 +920,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_pred
-                  filterExpr: ((t > 0Y) and (d >= 10.0D) and (d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (s like '%son') and (not (s like '%car%'))) (type: boolean)
+                  filterExpr: ((d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (d >= 10.0D) and (t > 0Y) and (s like '%son') and (not (s like '%car%'))) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 118521 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((t > 0Y) and (d >= 10.0D) and (d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (s like '%son') and (not (s like '%car%'))) (type: boolean)
+                    predicate: ((d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (d >= 10.0D) and (t > 0Y) and (s like '%son') and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 25 Data size: 2825 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: -
