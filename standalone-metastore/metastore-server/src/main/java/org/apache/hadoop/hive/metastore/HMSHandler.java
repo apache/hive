@@ -1483,6 +1483,9 @@ public class HMSHandler extends PrivilegeHandler {
               parsedSourceDbName[DB_NAME], sourceTableName) + " not found");
     }
 
+    firePreEvent(new PreReadTableEvent(sourceTable, this));
+    firePreEvent(new PreReadTableEvent(destinationTable, this));
+
     List<String> partVals = MetaStoreUtils.getPvals(sourceTable.getPartitionKeys(),
         partitionSpecs);
     List<String> partValsPresent = new ArrayList<> ();
@@ -1550,8 +1553,10 @@ public class HMSHandler extends PrivilegeHandler {
         Path destPartitionPath = new Path(destinationTable.getSd().getLocation(),
             Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues()));
         destPartition.getSd().setLocation(destPartitionPath.toString());
+        firePreEvent(new PreAddPartitionEvent(destinationTable, destPartition, this));
         ms.addPartition(destPartition);
         destPartitions.add(destPartition);
+        firePreEvent(new PreDropPartitionEvent(sourceTable, partition, true, this));
         ms.dropPartition(parsedSourceDbName[CAT_NAME], partition.getDbName(), sourceTable.getTableName(),
             Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues()));
       }
@@ -1730,9 +1735,11 @@ public class HMSHandler extends PrivilegeHandler {
       GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], tableName);
       getTableRequest.setCatName(catName);
       Table table = get_table_core(getTableRequest);
+      firePreEvent(new PreReadTableEvent(table, this));
       List<Partition> partitions = getMS()
           .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
               request.getFilterSpec());
+      partitions = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, partitions);
       List<String> processorCapabilities = request.getProcessorCapabilities();
       String processorId = request.getProcessorIdentifier();
       if (processorCapabilities == null || processorCapabilities.size() == 0 ||
@@ -3026,12 +3033,44 @@ public class HMSHandler extends PrivilegeHandler {
 
   @Override
   public void update_table_params(List<TableParamsUpdate> updates) throws TException {
-    for (TableParamsUpdate update : updates) {
-      if (!update.isSetCat_name()) {
-        update.setCat_name(getDefaultCatalog(conf));
+    RawStore ms = getMS();
+    boolean success = false;
+    List<AlterTableEvent> alterEvents = new ArrayList<>(updates.size());
+    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    try {
+      ms.openTransaction();
+      for (TableParamsUpdate update : updates) {
+        if (update.getParamsSize() == 0) {
+          continue;
+        }
+        if (!update.isSetCat_name()) {
+          update.setCat_name(getDefaultCatalog(conf));
+        }
+        GetTableRequest getTableRequest = new GetTableRequest(update.getDb_name(), update.getTable_name());
+        getTableRequest.setCatName(update.getCat_name());
+        Table oldTable = get_table_core(getTableRequest);
+        Table newTable = new Table(oldTable);
+        newTable.setParameters(update.getParams());
+        firePreEvent(new PreAlterTableEvent(oldTable, newTable, this));
+        alterEvents.add(new AlterTableEvent(oldTable, newTable, false, true, -1L, this, false));
+      }
+      ms.updateTableParams(updates);
+      for (AlterTableEvent event : alterEvents) {
+        transactionalListenerResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ALTER_TABLE, event);
+      }
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+      for (AlterTableEvent event : alterEvents) {
+        AlterTableEvent newEvent = new AlterTableEvent(event.getOldTable(), event.getNewTable(),
+            false, success, -1L, this, false);
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_TABLE,
+            newEvent, null, transactionalListenerResponses, ms);
       }
     }
-    getMS().updateTableParams(updates);
   }
 
   public AggrStats get_aggr_stats_for(PartitionsStatsRequest request) throws TException {
