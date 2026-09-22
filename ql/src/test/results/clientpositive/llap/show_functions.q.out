@@ -390,9 +390,11 @@ st_envintersects
 st_equals
 st_exteriorring
 st_geodesiclengthwgs84
+st_geohash
 st_geomcollection
 st_geometryn
 st_geometrytype
+st_geomfromgeohash
 st_geomfromgeojson
 st_geomfromjson
 st_geomfromshape
@@ -1032,9 +1034,11 @@ st_envintersects
 st_equals
 st_exteriorring
 st_geodesiclengthwgs84
+st_geohash
 st_geomcollection
 st_geometryn
 st_geometrytype
+st_geomfromgeohash
 st_geomfromgeojson
 st_geomfromjson
 st_geomfromshape

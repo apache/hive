@@ -65,6 +65,8 @@ import org.apache.hadoop.hive.ql.udf.esri.ST_GeomCollection;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromGeoJson;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromJson;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromShape;
+import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromGeoHash;
+import org.apache.hadoop.hive.ql.udf.esri.ST_GeoHash;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromText;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromWKB;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeometryN;
@@ -737,6 +739,8 @@ public final class FunctionRegistry {
     system.registerFunction("ST_GeomFromGeoJson", ST_GeomFromGeoJson.class);
     system.registerFunction("ST_GeomFromJson", ST_GeomFromJson.class);
     system.registerFunction("ST_GeomFromShape", ST_GeomFromShape.class);
+    system.registerFunction("ST_GeomFromGeoHash", ST_GeomFromGeoHash.class);
+    system.registerFunction("ST_GeoHash", ST_GeoHash.class);
     system.registerFunction("ST_GeomFromText", ST_GeomFromText.class);
     system.registerFunction("ST_GeomFromWKB", ST_GeomFromWKB.class);
     system.registerFunction("ST_GeometryType", ST_GeometryType.class);

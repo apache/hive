@@ -35,15 +35,23 @@ public class LogUtils {
   private static final int MSG_EXCEPTION_THROWN = 9;
   private static final int MSG_NOT_3D = 10;
   private static final int MSG_NOT_MEASURED = 11;
+  private static final int MSG_INVALID_PRECISION = 12;
 
-  private static final String[] messages =
-      { "Mismatched spatial references ('%d' <> '%d')", "Invalid arguments - one or more arguments are null.",
-          "Invalid arguments.  Expecting one or more x,y pairs.",
-          "Invalid arguments.  Expecting one or more x,y pairs in array argument %d.",
-          "Invalid geometry type.  Expecting %s but found %s", "Invalid arguments.  Ill-formed text: %s ....",
-          "Invalid index.  Expected range [%d, %d], actual index %d.", "Internal error - %s.",
-          "Invalid arguments.  Expecting one or more arguments.", "Exception thrown by %s", "Invalid argument - not 3D",
-          "Invalid argument - not measured" };
+  private static final String[] messages = { 
+      "Mismatched spatial references ('%d' <> '%d')",
+      "Invalid arguments - one or more arguments are null.",
+      "Invalid arguments.  Expecting one or more x,y pairs.",
+      "Invalid arguments.  Expecting one or more x,y pairs in array argument %d.",
+      "Invalid geometry type.  Expecting %s but found %s",
+      "Invalid arguments.  Ill-formed text: %s ....",
+      "Invalid index.  Expected range [%d, %d], actual index %d.",
+      "Internal error - %s.",
+      "Invalid arguments.  Expecting one or more arguments.",
+      "Exception thrown by %s",
+      "Invalid argument - not 3D",
+      "Invalid argument - not measured",
+      "Invalid precision - Precision must be between %d and %d"
+  };
 
   /**
    * Log when comparing geometries in different spatial references
@@ -109,6 +117,10 @@ public class LogUtils {
 
   public static void Log_NotMeasured(Logger logger) {
     logger.error(messages[MSG_NOT_MEASURED]);
+  }
+
+  public static void Log_InvalidPrecision(Logger logger, int minPrecision, int maxPrecision) {
+    logger.error(String.format(messages[MSG_INVALID_PRECISION], minPrecision, maxPrecision));
   }
 
 }
