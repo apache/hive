@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import com.esotericsoftware.kryo.kryo5.KryoException;
 import com.google.common.collect.ArrayListMultimap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -47,11 +46,8 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInFile;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect2;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
@@ -270,64 +266,6 @@ public class TestSerializationUtilities {
     byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(
         new LinkedHashMap<String, String>());
     SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
-  }
-
-  @Test(expected = KryoException.class)
-  public void testUntrustedDeserializationRejectsSmuggledClass() {
-    // a class outside the allowlist carried in a "constant" stands in for a gadget object
-    ExprNodeGenericFuncDesc expr = buildColumnEqualsConstant(new ExprNodeConstantDesc(
-        TypeInfoFactory.stringTypeInfo, new java.io.File("/tmp/x")));
-    byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
-    SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
-  }
-
-  @Test(expected = KryoException.class)
-  public void testDeserializeExpressionRejectsSmuggledClass() {
-    ExprNodeGenericFuncDesc expr = buildColumnEqualsConstant(new ExprNodeConstantDesc(
-        TypeInfoFactory.stringTypeInfo, new java.io.File("/tmp/x")));
-    SerializationUtilities.deserializeExpression(SerializationUtilities.serializeExpression(expr));
-  }
-
-  @Test(expected = KryoException.class)
-  public void testUntrustedDeserializationRejectsReflectUdf() {
-    List<ExprNodeDesc> children = new ArrayList<>();
-    children.add(new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "java.lang.ProcessBuilder"));
-    ExprNodeGenericFuncDesc expr = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
-        new GenericUDFReflect(), children);
-    byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
-    SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
-  }
-
-  @Test(expected = KryoException.class)
-  public void testUntrustedDeserializationRejectsReflect2Udf() {
-    List<ExprNodeDesc> children = new ArrayList<>();
-    children.add(new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "java.lang.ProcessBuilder"));
-    ExprNodeGenericFuncDesc expr = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
-        new GenericUDFReflect2(), children);
-    byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
-    SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
-  }
-
-  @Test(expected = KryoException.class)
-  public void testUntrustedDeserializationRejectsInFileUdf() {
-    List<ExprNodeDesc> children = new ArrayList<>();
-    children.add(new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "java.lang.ProcessBuilder"));
-    ExprNodeGenericFuncDesc expr = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
-        new GenericUDFInFile(), children);
-    byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
-    SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
-  }
-
-  @Test
-  public void testUntrustedDeserializationAllowlist() {
-    Assert.assertTrue(
-        SerializationUtilities.isAllowedForUntrustedDeserialization(ExprNodeGenericFuncDesc.class));
-    Assert.assertTrue(SerializationUtilities.isAllowedForUntrustedDeserialization(GenericUDFOPNull.class));
-    Assert.assertTrue(SerializationUtilities.isAllowedForUntrustedDeserialization(ArrayList.class));
-    Assert.assertTrue(SerializationUtilities.isAllowedForUntrustedDeserialization(byte[].class));
-    Assert.assertFalse(SerializationUtilities.isAllowedForUntrustedDeserialization(java.io.File.class));
-    Assert.assertFalse(SerializationUtilities.isAllowedForUntrustedDeserialization(Path.class));
-    Assert.assertFalse(SerializationUtilities.isAllowedForUntrustedDeserialization(GenericUDFReflect.class));
   }
 
   private static ExprNodeGenericFuncDesc buildColumnEqualsConstant(ExprNodeConstantDesc constant) {

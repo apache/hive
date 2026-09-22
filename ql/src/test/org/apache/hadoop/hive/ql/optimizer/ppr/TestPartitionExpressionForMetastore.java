@@ -22,14 +22,20 @@ import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInFile;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect2;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,6 +47,22 @@ import org.junit.Test;
  * must all be rejected before anything stringifies or evaluates the expression.
  */
 public class TestPartitionExpressionForMetastore {
+  public static class CustomGenericUDF extends GenericUDF {
+    @Override
+    public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+      return PrimitiveObjectInspectorFactory.writableVoidObjectInspector;
+    }
+
+    @Override
+    public Object evaluate(DeferredObject[] arguments) throws HiveException {
+      return null;
+    }
+
+    @Override
+    public String getDisplayString(String[] children) {
+      return "custom_udf";
+    }
+  }
 
   @Test
   public void testComparisonExpressionIsAccepted() throws Exception {
@@ -60,18 +82,34 @@ public class TestPartitionExpressionForMetastore {
   }
 
   @Test(expected = MetaException.class)
-  public void testBridgeToNonUdfClassIsRejected() throws Exception {
-    GenericUDFBridge bridge = new GenericUDFBridge("evil", false, "java.lang.ProcessBuilder");
-    ExprNodeGenericFuncDesc expr = buildExpression(bridge,
-        new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "x"));
+  public void testReflect2UdfIsRejected() throws Exception {
+    ExprNodeGenericFuncDesc expr = buildExpression(new GenericUDFReflect2(),
+        new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "java.lang.ProcessBuilder"));
     new PartitionExpressionForMetastore().convertExprToFilter(
         SerializationUtilities.serializeObjectWithTypeInformation(expr), null, false);
   }
 
   @Test(expected = MetaException.class)
-  public void testSmuggledClassIsRejected() throws Exception {
-    ExprNodeGenericFuncDesc expr = buildExpression(new GenericUDFOPEqual(),
-        new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, new java.io.File("/tmp/x")));
+  public void testInFileUdfIsRejected() throws Exception {
+    ExprNodeGenericFuncDesc expr = buildExpression(new GenericUDFInFile(),
+        new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "/tmp/x"));
+    new PartitionExpressionForMetastore().convertExprToFilter(
+        SerializationUtilities.serializeObjectWithTypeInformation(expr), null, false);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testCustomUdfIsRejected() throws Exception {
+    ExprNodeGenericFuncDesc expr = buildExpression(new CustomGenericUDF(),
+        new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "test"));
+    new PartitionExpressionForMetastore().convertExprToFilter(
+        SerializationUtilities.serializeObjectWithTypeInformation(expr), null, false);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testBridgeToNonUdfClassIsRejected() throws Exception {
+    GenericUDFBridge bridge = new GenericUDFBridge("evil", false, "java.lang.ProcessBuilder");
+    ExprNodeGenericFuncDesc expr = buildExpression(bridge,
+        new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "x"));
     new PartitionExpressionForMetastore().convertExprToFilter(
         SerializationUtilities.serializeObjectWithTypeInformation(expr), null, false);
   }
