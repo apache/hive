@@ -54,9 +54,29 @@ import org.apache.parquet.io.ParquetDecodingException;
 import org.apache.parquet.schema.PrimitiveType;
 
 /**
- * {@link PageReadStore} over one row group's cached column-chunk buffers: page headers are parsed in
- * place, page bytes are views of the cache buffers and are decompressed lazily on readPage, mirroring
- * parquet-mr's ParquetFileReader.Chunk.readAllPages and ColumnChunkPageReader (no offset index, no decryption).
+ * {@link PageReadStore} over one row group's cached column-chunk buffers, mirroring parquet-mr's
+ * ParquetFileReader.Chunk.readAllPages and ColumnChunkPageReader without going through a
+ * ParquetFileReader (and without offset index or decryption support).
+ *
+ * <p>How it works:
+ * <ol>
+ *   <li><b>Input</b>: a {@link ParquetEncodedColumnBatch} holding the already-cached
+ *       {@link MemoryBuffer}s for one row group's projected column chunks, plus the file footer.</li>
+ *   <li><b>Stitching and parsing</b>: per chunk, {@link #chunkBuffers} turns the cache buffers into a
+ *       list of {@link ByteBuffer} slices covering exactly the chunk's byte region; {@link #readAllPages}
+ *       then walks that byte range with {@link Util#readPageHeader}, building {@link DataPageV1} /
+ *       {@link DataPageV2} / {@link DictionaryPage} objects whose payloads are
+ *       {@link ByteBufferInputStream} views over the cache buffers - the page bytes are never copied.</li>
+ *   <li><b>Lazy decompression</b>: each {@link CachedChunkPageReader} keeps the raw bytes and its
+ *       {@link BytesInputDecompressor}, and decompresses only when the vectorized column reader
+ *       actually calls {@link PageReader#readPage()}, so pages that get pruned never pay the codec cost.</li>
+ *   <li><b>Output</b>: the resulting {@code ColumnPath -> PageReader} map backs
+ *       {@link #getPageReader(ColumnDescriptor)}, so parquet-mr's VectorizedColumnReader never notices
+ *       that it is not reading from a file.</li>
+ * </ol>
+ *
+ * <p>Page-for-page equivalence with the stock ColumnChunkPageReadStore is covered by
+ * {@code TestParquetCachedPageReadStore}.
  */
 class ParquetCachedPageReadStore implements PageReadStore {
 
