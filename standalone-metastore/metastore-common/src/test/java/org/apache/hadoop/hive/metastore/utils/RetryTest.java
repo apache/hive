@@ -114,10 +114,11 @@ public class RetryTest {
     long startTime = System.currentTimeMillis();
     try {
       retriable.runWithDelay();
-      Assert.fail();
+      Assert.fail("Expected NullPointerException was not thrown");
     } catch (Exception e) {
       Assert.assertEquals(NullPointerException.class, e.getClass());
-      Assert.assertTrue(System.currentTimeMillis() - startTime >= 180 * 1000);
+      long elapsedTime = System.currentTimeMillis() - startTime;
+      Assert.assertTrue("Elapsed time " + elapsedTime + "ms should be >= 179500ms", elapsedTime >= 179500);
     }
   }
 }

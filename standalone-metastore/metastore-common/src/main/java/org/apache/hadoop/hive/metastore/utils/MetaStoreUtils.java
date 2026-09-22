@@ -1330,6 +1330,19 @@ public class MetaStoreUtils {
   }
 
   /**
+   * Get the IP address string (e.g. "192.168.1.50").
+   * @return The network address of the host and UNKNOWN if resolution fails
+   */
+  public static String getHostAddressString() {
+    try {
+      return InetAddress.getLocalHost().getHostAddress();
+    } catch (UnknownHostException e) {
+      LOG.warn("Error trying to get host address : {}", e.getMessage());
+      return "UNKNOWN";
+    }
+  }
+
+  /**
    * Method to get canonical-ized hostname of localhost
    * @return the canonical-ized hostname of localhost is returned. If not found, fallback to UNKNOWN.
    */
