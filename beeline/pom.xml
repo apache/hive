@@ -61,12 +61,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-server</artifactId>
-      <version>${standalone-metastore.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <!--
         Since the compile-time hive-jdbc dependency contains Utils.java,
         which directly imports HiveSQLException from hive-service,
@@ -184,6 +178,18 @@
     are all needed to run BeelineCli test to manage the embedded HS2 session.
   -->
     <dependency>
+      <!--
+        Test scope only: HiveSchemaTool (the only production user of this dependency) moved to
+        the hive-schematool module. It is still needed here at test scope because the embedded
+        HS2 session used by BeelineCli/HiveCli tests requires metastore-server's runtime
+        dependencies (e.g. DataNucleus JDO) that hive-exec's shaded jar does not carry.
+      -->
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${standalone-metastore.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
@@ -261,8 +267,8 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
-      <version>${mockito-inline.version}</version>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
