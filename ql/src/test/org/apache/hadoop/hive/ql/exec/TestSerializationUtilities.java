@@ -53,7 +53,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class TestSerializationUtilities {
-
   @Test
   public void testEveryPropertiesAreSerialized() throws Exception {
     MapWork mapWork = doSerDeser(null);
@@ -249,7 +248,7 @@ public class TestSerializationUtilities {
   }
 
   @Test
-  public void testUntrustedDeserializationAcceptsLegitimateExpression() {
+  public void testDeserializeObjectWithTypeInformationAcceptsLegitimateExpression() {
     ExprNodeGenericFuncDesc expr = buildColumnEqualsConstant(new ExprNodeConstantDesc(
         TypeInfoFactory.stringTypeInfo, "value"));
 
@@ -262,10 +261,31 @@ public class TestSerializationUtilities {
   }
 
   @Test(expected = UnsupportedOperationException.class)
-  public void testUntrustedDeserializationRejectsNonExprRoot() {
+  public void testDeserializeObjectWithTypeInformationRejectsNonExprRoot() {
     byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(
         new LinkedHashMap<String, String>());
     SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
+  }
+
+  @Test
+  public void testDeserializeObjectFromKryoAcceptsLegitimateExpression() {
+    ExprNodeGenericFuncDesc expr = buildColumnEqualsConstant(new ExprNodeConstantDesc(
+        TypeInfoFactory.stringTypeInfo, "value"));
+    String exprString = "(col1 = 'value')";
+    Assert.assertEquals(exprString, expr.getExprString());
+
+    byte[] kryo = SerializationUtilities.serializeObjectToKryo(expr);
+    Assert.assertEquals(
+        exprString,
+        SerializationUtilities.deserializeObjectFromKryo(kryo, ExprNodeGenericFuncDesc.class).getExprString()
+    );
+    Assert.assertNotNull(SerializationUtilities.deserializeObjectFromKryo(kryo, Object.class));
+
+    String base64 = SerializationUtilities.serializeExpression(expr);
+    Assert.assertEquals(
+        exprString,
+        SerializationUtilities.deserializeExpression(base64).getExprString()
+    );
   }
 
   private static ExprNodeGenericFuncDesc buildColumnEqualsConstant(ExprNodeConstantDesc constant) {
