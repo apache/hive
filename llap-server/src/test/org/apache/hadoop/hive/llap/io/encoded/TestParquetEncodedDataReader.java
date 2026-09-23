@@ -1080,7 +1080,7 @@ public class TestParquetEncodedDataReader {
           copies[i] = one[0];
         }
         cache.putFileData(fileKey, ranges, copies, baseOffset, priority, qfCounters, tag);
-        cache.decRefBuffers(java.util.Arrays.asList(copies));
+        cache.decRefBuffers(Arrays.asList(copies));
       }
       long[] result = cache.putFileData(fileKey, ranges, chunks, baseOffset, priority, qfCounters, tag);
       for (MemoryBuffer b : chunks) {
