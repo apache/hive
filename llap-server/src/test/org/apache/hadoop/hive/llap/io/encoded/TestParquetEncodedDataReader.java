@@ -1026,24 +1026,6 @@ public class TestParquetEncodedDataReader {
       this.allocator = cache.getAllocator();
     }
 
-    void assertNothingLeaked() {
-      Set<MemoryBuffer> raw = Collections.newSetFromMap(new IdentityHashMap<>());
-      raw.addAll(allocated);
-      raw.removeAll(freed);
-      raw.removeAll(accepted);
-      assertTrue("raw allocations never freed nor cached: " + raw, raw.isEmpty());
-      Set<MemoryBuffer> both = Collections.newSetFromMap(new IdentityHashMap<>());
-      both.addAll(freed);
-      both.retainAll(accepted);
-      assertTrue("cache-owned buffers raw-freed: " + both, both.isEmpty());
-      for (MemoryBuffer b : allocated) {
-        assertFalse("still locked: " + b, ((LlapAllocatorBuffer) b).isLocked());
-      }
-      for (MemoryBuffer b : hits) {
-        assertFalse("hit still locked: " + b, ((LlapAllocatorBuffer) b).isLocked());
-      }
-    }
-
     @Override
     public DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
         DiskRangeListFactory factory, LowLevelCacheCounters qfCounters, BooleanRef gotAllData) {
@@ -1148,6 +1130,24 @@ public class TestParquetEncodedDataReader {
     @Override
     public int getMaxAllocation() {
       return allocator.getMaxAllocation();
+    }
+
+    void assertNothingLeaked() {
+      Set<MemoryBuffer> raw = Collections.newSetFromMap(new IdentityHashMap<>());
+      raw.addAll(allocated);
+      raw.removeAll(freed);
+      raw.removeAll(accepted);
+      assertTrue("raw allocations never freed nor cached: " + raw, raw.isEmpty());
+      Set<MemoryBuffer> both = Collections.newSetFromMap(new IdentityHashMap<>());
+      both.addAll(freed);
+      both.retainAll(accepted);
+      assertTrue("cache-owned buffers raw-freed: " + both, both.isEmpty());
+      for (MemoryBuffer b : allocated) {
+        assertFalse("still locked: " + b, ((LlapAllocatorBuffer) b).isLocked());
+      }
+      for (MemoryBuffer b : hits) {
+        assertFalse("hit still locked: " + b, ((LlapAllocatorBuffer) b).isLocked());
+      }
     }
   }
 
