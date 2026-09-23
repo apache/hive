@@ -570,25 +570,25 @@ public class HiveClusterReconciler
     String clusterName = resource.getMetadata().getName();
 
     if (!spec.hiveServer2().autoscaling().isEnabled()) {
-      resetComponentAutoscalingState(scaler, ns, clusterName, ConfigUtils.COMPONENT_HIVESERVER2);
+      clearAutoscalingState(scaler, ns, clusterName, ConfigUtils.COMPONENT_HIVESERVER2);
     }
     if (spec.metastore().isEnabled() && !spec.metastore().autoscaling().isEnabled()) {
-      resetComponentAutoscalingState(scaler, ns, clusterName, ConfigUtils.COMPONENT_METASTORE);
+      clearAutoscalingState(scaler, ns, clusterName, ConfigUtils.COMPONENT_METASTORE);
     }
     for (var llap : spec.llapClusters()) {
       if (!llap.isEnabled()) {
         continue;
       }
       if (!llap.autoscaling().isEnabled()) {
-        resetComponentAutoscalingState(scaler, ns, clusterName, ConfigUtils.llapComponentKey(llap.name()));
+        clearAutoscalingState(scaler, ns, clusterName, ConfigUtils.llapComponentKey(llap.name()));
       }
       if (spec.tezAm().isEnabled() && !llap.tezAm().autoscaling().isEnabled()) {
-        resetComponentAutoscalingState(scaler, ns, clusterName, ConfigUtils.tezAmComponentKey(llap.name()));
+        clearAutoscalingState(scaler, ns, clusterName, ConfigUtils.tezAmComponentKey(llap.name()));
       }
     }
   }
 
-  private static void resetComponentAutoscalingState(HiveClusterAutoscaler scaler,
+  private static void clearAutoscalingState(HiveClusterAutoscaler scaler,
       String namespace, String clusterName, String component) {
     if (scaler != null) {
       scaler.resetComponentAutoscalingState(namespace, clusterName, component);
