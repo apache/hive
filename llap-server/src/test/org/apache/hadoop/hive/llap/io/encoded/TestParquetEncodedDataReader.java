@@ -571,8 +571,11 @@ public class TestParquetEncodedDataReader {
    */
   @Test
   public void testEvolvedColumnsReorderedDefaultedAndRecreated() throws Exception {
-    // Neither ground truth applies: the rows are not the fixture's columns, and the stock reader has
-    // no initial-defaults plumbing, so it would emit null for "added" where the native path emits 42.
+    // Neither ground truth applies. expectedRow(i) is a row of the fixture's six file columns and
+    // assertExpectedRows only picks indices out of it, but two of the five values below come from the
+    // Hive schema rather than the file - the recreated column's null and the defaulted 42 - so no
+    // projection of expectedRow(i) can produce this row. And the stock reader has no initial-defaults
+    // plumbing, so it would emit null for "added" where the native path emits 42.
     skipExpectedRows = true;
     skipNonNativeParity = true;
     String columns = "ratio,id,<<DUMMY_FOR_RECREATED_FIELD_IN_FILESCHEMA>>,added,name";
