@@ -785,9 +785,10 @@ public class TestParquetEncodedDataReader {
   /**
    * Drives one split through the native reader and checks its rows against both ground truths -
    * the Java-computed {@link #expectedRow} and the stock VectorizedParquetRecordReader - so every
-   * test that reads rows gets the full A/B comparison without having to ask for it. Runs that ended
-   * in an error or were stopped early are exempt, as are the two tests whose Hive schema is not the
-   * fixture's ({@link #skipExpectedRows} / {@link #skipNonNativeParity}).
+   * test that reads rows gets the full A/B comparison without having to ask for it. A run that
+   * errored or was stopped emits a prefix of the split rather than nothing, so its rows are checked
+   * too, and only the row count is let off. The sole opt-outs are the two tests whose Hive schema is
+   * not the fixture's ({@link #skipExpectedRows} / {@link #skipNonNativeParity}).
    */
   private Run read(JobConf job, FileSplit split, Configuration readerDaemonConf,
       Map<String, Object> initialDefaults) throws Exception {
@@ -827,31 +828,33 @@ public class TestParquetEncodedDataReader {
     parquetReader.loadFooter();
     parquetReader.call();
     Run run = new Run(downstream, counters, tezCounters, buffers, reads, ledger);
-    if (run.error == null && !stopAfterFirstBatch) {
-      if (!skipExpectedRows) {
-        assertExpectedRows(run, job);
-      }
-      if (!skipNonNativeParity) {
-        assertParityWithNonNative(run, job, split);
-      }
+    boolean whole = run.error == null && !stopAfterFirstBatch;
+    if (!skipExpectedRows) {
+      assertExpectedRows(run, job, whole);
+    }
+    if (!skipNonNativeParity) {
+      assertParityWithNonNative(run, job, split, whole);
     }
     return run;
   }
 
   /**
-   * Checks every emitted row against {@link #expectedRow}. Rows always arrive as whole row groups,
-   * so each block of ROWS_PER_GROUP is located by matching its first row against the row-group
-   * starts; that keeps the expectation independent of the reader's own split/SARG planning, which is
-   * what a test asserting "the pruned group was skipped" needs.
+   * Checks every emitted row against {@link #expectedRow}. Rows arrive as whole row groups, so each
+   * block of ROWS_PER_GROUP is located by matching its first row against the row-group starts; that
+   * keeps the expectation independent of the reader's own split/SARG planning, which is what a test
+   * asserting "the pruned group was skipped" needs. A run that was stopped or errored gets the same
+   * treatment, less the whole-row-groups assertion, so that its rows are checked as far as they go.
    */
-  private static void assertExpectedRows(Run run, JobConf job) {
+  private static void assertExpectedRows(Run run, JobConf job, boolean whole) {
     List<Integer> columnIds = ColumnProjectionUtils.getReadColumnIDs(job);
     int[] projection = columnIds.stream().mapToInt(Integer::intValue).toArray();
-    assertEquals("rows should arrive as whole row groups", 0, run.rows.size() % ROWS_PER_GROUP);
-    for (int block = 0; block < run.rows.size() / ROWS_PER_GROUP; ++block) {
-      int offset = block * ROWS_PER_GROUP;
+    if (whole) {
+      assertEquals("rows should arrive as whole row groups", 0, run.rows.size() % ROWS_PER_GROUP);
+    }
+    for (int offset = 0; offset < run.rows.size(); offset += ROWS_PER_GROUP) {
       int firstRow = rowGroupStartOf(run.rows.get(offset), projection);
-      for (int i = 0; i < ROWS_PER_GROUP; ++i) {
+      int rows = Math.min(ROWS_PER_GROUP, run.rows.size() - offset);
+      for (int i = 0; i < rows; ++i) {
         assertArrayEquals("row " + (firstRow + i),
             project(expectedRow(firstRow + i), projection), run.rows.get(offset + i));
       }
@@ -929,11 +932,21 @@ public class TestParquetEncodedDataReader {
     return mapWork;
   }
 
-  /** Reads the same (job, split) with VectorizedParquetRecordReader and asserts row-by-row equality. */
-  private static void assertParityWithNonNative(Run run, JobConf job, FileSplit split) throws Exception {
+  /**
+   * Reads the same (job, split) with VectorizedParquetRecordReader and asserts row-by-row equality.
+   * A run that was stopped or errored emits a prefix of the split, so only its row count is let off:
+   * the rows it did emit still have to match parquet's, and there cannot be more of them.
+   */
+  private static void assertParityWithNonNative(Run run, JobConf job, FileSplit split, boolean whole)
+      throws Exception {
     List<Object[]> stock = readNonNative(job, split);
-    assertEquals("row count differs from parquet", stock.size(), run.rows.size());
-    for (int i = 0; i < stock.size(); ++i) {
+    if (whole) {
+      assertEquals("row count differs from parquet", stock.size(), run.rows.size());
+    } else {
+      assertTrue("more rows than parquet found: " + run.rows.size() + " > " + stock.size(),
+          run.rows.size() <= stock.size());
+    }
+    for (int i = 0; i < run.rows.size(); ++i) {
       assertArrayEquals("row " + i + " differs from parquet", stock.get(i), run.rows.get(i));
     }
   }
