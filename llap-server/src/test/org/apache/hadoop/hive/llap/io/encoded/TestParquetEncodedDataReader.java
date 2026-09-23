@@ -258,7 +258,7 @@ public class TestParquetEncodedDataReader {
     assertEquals(1, run.counter(LlapIOCounters.SELECTED_ROWGROUPS));
     assertEquals(ROWS_PER_GROUP, run.rows.size());
     // The split covers row group 1 only, so the first row emitted must be that group's first row.
-    assertArrayEquals(project(expectedRow(ROWS_PER_GROUP), 0, 3), run.rows.get(0));
+    assertArrayEquals(project(expectedRow(ROWS_PER_GROUP), 0, 3), run.rows.getFirst());
   }
 
   /** Two adjacent splits partition the file: every row comes back exactly once, in order. */
@@ -534,7 +534,7 @@ public class TestParquetEncodedDataReader {
     assertEquals(ROWS_PER_GROUP, run.rows.size());
     // Pins which group survived: assertExpectedRows derives each block's offset from its own first
     // row, so it would be just as happy with a wrong-but-self-consistent group.
-    assertArrayEquals(project(expectedRow(2 * ROWS_PER_GROUP), 0, 3), run.rows.get(0));
+    assertArrayEquals(project(expectedRow(2 * ROWS_PER_GROUP), 0, 3), run.rows.getFirst());
   }
 
   /** The second read of the same chunks is all hits, reuses the very same buffers, and yields the same rows. */
@@ -1027,7 +1027,7 @@ public class TestParquetEncodedDataReader {
       if (first && failFirstRange) {
         CompletableFuture<ByteBuffer> failed = new CompletableFuture<>();
         failed.completeExceptionally(new IOException("boom"));
-        ranges.get(0).setData(failed);
+        ranges.getFirst().setData(failed);
       }
       first = false;
     }

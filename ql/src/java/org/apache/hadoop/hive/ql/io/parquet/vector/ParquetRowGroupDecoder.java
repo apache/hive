@@ -144,13 +144,13 @@ public class ParquetRowGroupDecoder {
           "Current Parquet Vectorization reader doesn't support nested type");
     }
 
-    Type childType = type.asGroupType().getFields().get(0);
+    Type childType = type.asGroupType().getFields().getFirst();
 
     // Parquet file generated using thrift may have child type as PrimitiveType
     if (childType.isPrimitive()) {
       return childType.asPrimitiveType();
     } else {
-      return childType.asGroupType().getFields().get(0).asPrimitiveType();
+      return childType.asGroupType().getFields().getFirst().asPrimitiveType();
     }
   }
 
@@ -172,9 +172,9 @@ public class ParquetRowGroupDecoder {
     // query schema is not present in the file schema, return a dummy
     // reader that produces nulls. This allows queries to proceed even
     // when new columns have been added after the file was written.
-    if (!fileSchema.getColumns().contains(descriptors.get(0))) {
+    if (!fileSchema.getColumns().contains(descriptors.getFirst())) {
       return new VectorizedDummyColumnReader(Optional.ofNullable(initialDefaults)
-          .map(defaults -> defaults.getOrDefault(descriptors.get(0).getPath()[0], null)).orElse(null));
+          .map(defaults -> defaults.getOrDefault(descriptors.getFirst().getPath()[0], null)).orElse(null));
     }
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
@@ -182,8 +182,8 @@ public class ParquetRowGroupDecoder {
         throw new InvalidSchemaException(
             "Failed to find related Parquet column descriptor with type " + type);
       }
-      return new VectorizedPrimitiveColumnReader(descriptors.get(0),
-          pages.getPageReader(descriptors.get(0)), options.skipTimestampConversion(),
+      return new VectorizedPrimitiveColumnReader(descriptors.getFirst(),
+          pages.getPageReader(descriptors.getFirst()), options.skipTimestampConversion(),
           options.writerTimezone(), options.skipProlepticConversion(),
           options.legacyConversionEnabled(), type, typeInfo);
     case STRUCT:
@@ -211,8 +211,8 @@ public class ParquetRowGroupDecoder {
             "Failed to find related Parquet column descriptor with type " + type);
       }
 
-      return new VectorizedListColumnReader(descriptors.get(0),
-          pages.getPageReader(descriptors.get(0)), options.skipTimestampConversion(),
+      return new VectorizedListColumnReader(descriptors.getFirst(),
+          pages.getPageReader(descriptors.getFirst()), options.skipTimestampConversion(),
           options.writerTimezone(), options.skipProlepticConversion(),
           options.legacyConversionEnabled(), getElementType(type), typeInfo);
     case MAP:
@@ -234,14 +234,14 @@ public class ParquetRowGroupDecoder {
               "More than " + MAP_DEFINITION_LEVEL_MAX + " level is found in Map definition, "
                   + "Failed to get the field types for Map with type " + type);
         }
-        groupType = groupType.getFields().get(0).asGroupType();
+        groupType = groupType.getFields().getFirst().asGroupType();
         nestGroup++;
       }
       List<Type> kvTypes = groupType.getFields();
       VectorizedListColumnReader keyListColumnReader = new VectorizedListColumnReader(
-          descriptors.get(0), pages.getPageReader(descriptors.get(0)), options.skipTimestampConversion(),
+          descriptors.getFirst(), pages.getPageReader(descriptors.getFirst()), options.skipTimestampConversion(),
           options.writerTimezone(), options.skipProlepticConversion(),
-          options.legacyConversionEnabled(), kvTypes.get(0), typeInfo);
+          options.legacyConversionEnabled(), kvTypes.getFirst(), typeInfo);
       VectorizedListColumnReader valueListColumnReader = new VectorizedListColumnReader(
           descriptors.get(1), pages.getPageReader(descriptors.get(1)), options.skipTimestampConversion(),
           options.writerTimezone(), options.skipProlepticConversion(),
