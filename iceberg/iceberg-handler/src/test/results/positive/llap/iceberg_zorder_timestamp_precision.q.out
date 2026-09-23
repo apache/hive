@@ -1,0 +1,59 @@
+PREHOOK: query: CREATE TABLE zorder_test (
+    ts timestamp,
+    id int,
+    data string)
+WRITE LOCALLY ORDERED BY zorder(ts, id)
+STORED BY iceberg STORED AS parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@zorder_test
+POSTHOOK: query: CREATE TABLE zorder_test (
+    ts timestamp,
+    id int,
+    data string)
+WRITE LOCALLY ORDERED BY zorder(ts, id)
+STORED BY iceberg STORED AS parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@zorder_test
+PREHOOK: query: INSERT INTO zorder_test VALUES
+  (TIMESTAMP '2023-10-01 12:30:45.123999', 100, 'payload_A'),
+  (TIMESTAMP '2023-10-01 12:30:45.123111', 200, 'payload_B'),
+  (TIMESTAMP '2023-10-01 12:30:45.123555', 300, 'payload_C'),
+  (TIMESTAMP '2023-10-01 12:30:45.123000', 400, 'payload_D'),
+  (TIMESTAMP '2023-10-01 12:30:45.123999', 50,  'payload_E')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@zorder_test
+POSTHOOK: query: INSERT INTO zorder_test VALUES
+  (TIMESTAMP '2023-10-01 12:30:45.123999', 100, 'payload_A'),
+  (TIMESTAMP '2023-10-01 12:30:45.123111', 200, 'payload_B'),
+  (TIMESTAMP '2023-10-01 12:30:45.123555', 300, 'payload_C'),
+  (TIMESTAMP '2023-10-01 12:30:45.123000', 400, 'payload_D'),
+  (TIMESTAMP '2023-10-01 12:30:45.123999', 50,  'payload_E')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@zorder_test
+PREHOOK: query: SELECT * FROM zorder_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@zorder_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM zorder_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@zorder_test
+#### A masked pattern was here ####
+2023-10-01 12:30:45.123	400	payload_D
+2023-10-01 12:30:45.123111	200	payload_B
+2023-10-01 12:30:45.123555	300	payload_C
+2023-10-01 12:30:45.123999	50	payload_E
+2023-10-01 12:30:45.123999	100	payload_A
+PREHOOK: query: DROP TABLE zorder_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@zorder_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@zorder_test
+POSTHOOK: query: DROP TABLE zorder_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@zorder_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@zorder_test
