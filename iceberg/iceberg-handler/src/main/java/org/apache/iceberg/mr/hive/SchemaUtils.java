@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.util.List;
+import java.util.Locale;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -31,6 +32,16 @@ public class SchemaUtils {
   private static final String UNSUPPORTED_TRANSFORM = "Unsupported transform: %s";
 
   private SchemaUtils() {
+  }
+
+  /**
+   * Returns the name the schema gives the field now, or null where it no longer has it. Lower
+   * case, as Hive keeps a column name wherever it keeps one, while an Iceberg schema keeps
+   * whatever case the table was created with.
+   */
+  public static String getColumnName(Schema schema, int fieldId) {
+    String name = schema.findColumnName(fieldId);
+    return name == null ? null : name.toLowerCase(Locale.ROOT);
   }
 
   public static UnboundTerm<Object> toTerm(TransformSpec spec) {
