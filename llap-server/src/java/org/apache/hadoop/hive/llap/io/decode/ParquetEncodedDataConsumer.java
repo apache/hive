@@ -44,9 +44,9 @@ import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetRowGroupDecoder;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedColumnReader;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.parquet.HadoopReadOptions;
 import org.apache.parquet.ParquetReadOptions;
@@ -217,7 +217,7 @@ public class ParquetEncodedDataConsumer
 
   private DataTypePhysicalVariation physicalVariation(TypeInfo columnType) {
     if (useDecimal64ColumnVectors && columnType instanceof DecimalTypeInfo decimalType
-        && decimalType.precision() <= TypeDescription.MAX_DECIMAL64_PRECISION) {
+        && HiveDecimalWritable.isPrecisionDecimal64(decimalType.precision())) {
       return DataTypePhysicalVariation.DECIMAL_64;
     }
     return DataTypePhysicalVariation.NONE;
