@@ -114,6 +114,9 @@ class ParquetCachedPageReadStore implements PageReadStore {
     this.rowCount = block.getRowCount();
     String createdBy = footer.getFileMetaData().getCreatedBy();
     ColumnChunkMetaData[] chunks = batch.chunks();
+    // pc is the projection index: chunks[pc] and the batch's three buffer arrays are all indexed by
+    // it, while the footer's block lists columns in file order. Keying on the path keeps the two
+    // apart, so a projection that drops columns from the middle of the schema still lines up.
     for (int pc = 0; pc < chunks.length; ++pc) {
       ColumnChunkMetaData chunk = chunks[pc];
       readers.put(chunk.getPath(), readAllPages(chunk, chunkBuffers(batch, pc), createdBy,
@@ -121,7 +124,18 @@ class ParquetCachedPageReadStore implements PageReadStore {
     }
   }
 
-  /** Slices of the cached buffers covering exactly the chunk's byte region, in file order. */
+  /**
+   * Slices of the cached buffers covering exactly the chunk's byte region, in file order.
+   *
+   * <p>This is the only place in the class that touches bytes, and the only place the cache appears
+   * at all: the {@link MemoryBuffer}s are already-populated LLAP cache memory, so there is no read
+   * here and nothing to decide - by the time this runs, a cache hit and a miss that
+   * {@code ParquetEncodedDataReader} had to fetch look exactly the same.
+   *
+   * <p>The buffers are cache ranges aligned to absolute file offsets, not to this chunk, so the
+   * first and last one usually overhang the chunk (the first may even start before it). That is what
+   * the clamping below is for.
+   */
   private static List<ByteBuffer> chunkBuffers(ParquetEncodedColumnBatch batch, int pc) {
     ColumnChunkMetaData chunk = batch.chunks()[pc];
     long chunkStart = chunk.getStartingPos();
@@ -135,6 +149,9 @@ class ParquetCachedPageReadStore implements PageReadStore {
       long bufferEnd = bufferStart + bufferLengths[i];
       long sliceStart = Math.max(chunkStart, bufferStart);
       long sliceEnd = Math.min(chunkEnd, bufferEnd);
+      // A dup, because the cache buffer is shared: moving position/limit must not be visible to
+      // another reader of the same buffer. slice() then keeps a view of the clamped region, so the
+      // chunk bytes are still the cache's bytes - nothing is copied here or below.
       ByteBuffer bb = columnBuffers[i].getByteBufferDup();
       bb.position(bb.position() + (int) (sliceStart - bufferStart));
       bb.limit(bb.position() + (int) (sliceEnd - sliceStart));
@@ -146,11 +163,17 @@ class ParquetCachedPageReadStore implements PageReadStore {
   private static PageReader readAllPages(ColumnChunkMetaData chunk, List<ByteBuffer> buffers,
       String createdBy, BytesInputDecompressor decompressor, ParquetMetadataConverter converter)
       throws IOException {
+    // Reads across the buffer boundaries as if the chunk were contiguous, which it is not: a page
+    // header or a payload can straddle two cache buffers. sliceBuffers below hands out views into
+    // these same buffers, so every page this method builds points at cache memory for as long as it
+    // lives - the batch has to keep its refs until the consumer is done decoding.
     ByteBufferInputStream stream = ByteBufferInputStream.wrap(buffers);
     PrimitiveType type = chunk.getPrimitiveType();
     List<DataPage> pages = new ArrayList<>();
     DictionaryPage dictionaryPage = null;
     long valuesRead = 0;
+    // Only data pages count towards valuesRead, so the dictionary page and any page type skipped
+    // below do not end the walk early; the footer's value count is the only terminator.
     while (valuesRead < chunk.getValueCount()) {
       PageHeader header = Util.readPageHeader(stream);
       int uncompressedSize = header.getUncompressed_page_size();
@@ -175,6 +198,8 @@ class ParquetCachedPageReadStore implements PageReadStore {
           break;
         case DATA_PAGE_V2:
           DataPageHeaderV2 v2 = header.getData_page_header_v2();
+          // In V2 the level bytes sit inside the page but are never compressed, so only what is left
+          // after them is codec output. The three slices have to be taken in this order.
           int dataSize = compressedSize
               - v2.getRepetition_levels_byte_length() - v2.getDefinition_levels_byte_length();
           BytesInput repetitionLevels = BytesInput.from(stream.sliceBuffers(v2.getRepetition_levels_byte_length()));
@@ -187,6 +212,8 @@ class ParquetCachedPageReadStore implements PageReadStore {
           valuesRead += v2.getNum_values();
           break;
         default:
+          // A page type this parquet release knows and we do not (an index page, say). Skipping it
+          // by its compressed size keeps the walk aligned on the next header, as parquet does.
           stream.skipFully(compressedSize);
       }
     }
@@ -230,6 +257,12 @@ class ParquetCachedPageReadStore implements PageReadStore {
       return valueCount;
     }
 
+    /**
+     * Decompresses one page, on demand. This is where the cached bytes stop being the cache's: the
+     * decompressed copy is an ordinary heap/direct buffer that the column reader owns and drops after
+     * the batch. Pages the reader never asks for are never decompressed, so a pruned page costs
+     * nothing beyond the header parse.
+     */
     @Override
     public DataPage readPage() {
       DataPage compressedPage = compressedPages.poll();
@@ -251,8 +284,12 @@ class ParquetCachedPageReadStore implements PageReadStore {
         @Override
         public DataPage visit(DataPageV2 page) {
           if (!page.isCompressed()) {
+            // Handed straight through, still a view over the cache buffers. Safe for the same reason
+            // the whole class is: the batch holds the refs until the consumer finishes the row group.
             return page;
           }
+          // getUncompressedSize() covers the levels, which were not compressed, so the codec's own
+          // output size is what is left after them.
           int uncompressedSize = Math.toIntExact(page.getUncompressedSize()
               - page.getDefinitionLevels().size() - page.getRepetitionLevels().size());
           BytesInput data;
