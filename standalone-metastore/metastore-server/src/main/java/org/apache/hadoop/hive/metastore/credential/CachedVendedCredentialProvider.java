@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore.credential;
@@ -22,7 +23,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
 import org.checkerframework.checker.index.qual.NonNegative;
-import org.jetbrains.annotations.NotNull;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -52,20 +52,20 @@ public class CachedVendedCredentialProvider implements VendedCredentialProvider 
           }
 
           @Override
-          public long expireAfterCreate(@NotNull CachedVendedCredentialProvider.CacheKey key,
-              @NotNull List<VendedStorageCredential> value, long currentTime) {
+          public long expireAfterCreate(CachedVendedCredentialProvider.CacheKey key,
+              List<VendedStorageCredential> value, long currentTime) {
             return calculateExpiration(value);
           }
 
           @Override
-          public long expireAfterUpdate(@NotNull CachedVendedCredentialProvider.CacheKey key,
-              @NotNull List<VendedStorageCredential> value, long currentTime, @NonNegative long currentDuration) {
+          public long expireAfterUpdate(CachedVendedCredentialProvider.CacheKey key,
+              List<VendedStorageCredential> value, long currentTime, @NonNegative long currentDuration) {
             return calculateExpiration(value);
           }
 
           @Override
-          public long expireAfterRead(@NotNull CachedVendedCredentialProvider.CacheKey key,
-              @NotNull List<VendedStorageCredential> value, long currentTime, @NonNegative long currentDuration) {
+          public long expireAfterRead(CachedVendedCredentialProvider.CacheKey key,
+              List<VendedStorageCredential> value, long currentTime, @NonNegative long currentDuration) {
             return currentDuration;
           }
         }).build();

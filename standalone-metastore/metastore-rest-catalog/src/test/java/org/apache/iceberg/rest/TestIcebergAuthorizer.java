@@ -26,9 +26,14 @@ import static org.apache.iceberg.hive.HiveCatalog.HMS_TABLE_OWNER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -58,7 +63,6 @@ import org.apache.iceberg.rest.requests.CreateTableRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 class TestIcebergAuthorizer {
   private static final String CATALOG_NAME = "hive";
@@ -264,7 +268,7 @@ class TestIcebergAuthorizer {
     var exception = Assertions.assertThrows(IllegalArgumentException.class, () ->
         icebergAuthorizer.validateStageCreateTable(CATALOG_NAME, NAMESPACE, Map.of(), request));
     Assertions.assertEquals("Only stage create requests are supported", exception.getMessage());
-    Mockito.verifyNoInteractions(hiveAuthorizer);
+    verifyNoInteractions(hiveAuthorizer);
   }
 
   @Test
@@ -277,7 +281,7 @@ class TestIcebergAuthorizer {
     var exception = Assertions.assertThrows(IllegalArgumentException.class, () ->
         icebergAuthorizer.validateStageCreateTable(CATALOG_NAME, nestedNamespace, Map.of(), request));
     Assertions.assertEquals("Hive does not support multi-level namespaces", exception.getMessage());
-    Mockito.verifyNoInteractions(hiveAuthorizer);
+    verifyNoInteractions(hiveAuthorizer);
   }
 
   @Test
@@ -323,7 +327,7 @@ class TestIcebergAuthorizer {
   @SuppressWarnings("unchecked")
   void testResolveAllowedStorageOperationsWithReadAndWritable() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    Mockito.when(hiveAuthorizer.needTransform()).thenReturn(false);
+    when(hiveAuthorizer.needTransform()).thenReturn(false);
 
     var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
     var actual = icebergAuthorizer.resolveAllowedStorageOperations(CATALOG_NAME, TABLE_IDENTIFIER, COLUMNS);
@@ -338,7 +342,7 @@ class TestIcebergAuthorizer {
     var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer, Mockito.times(2)).checkPrivileges(
+    verify(hiveAuthorizer, times(2)).checkPrivileges(
         operationCaptor.capture(),
         inputCaptor.capture(),
         outputCaptor.capture(),
@@ -350,23 +354,23 @@ class TestIcebergAuthorizer {
     assertPrivilegeObjects(List.of(), outputCaptor.getAllValues().getFirst());
     assertPrivilegeObjects(WRITABLE_PRIVILEGES, outputCaptor.getAllValues().getLast());
 
-    Mockito.verify(hiveAuthorizer).needTransform();
+    verify(hiveAuthorizer).needTransform();
 
-    Mockito.verifyNoMoreInteractions(hiveAuthorizer);
+    verifyNoMoreInteractions(hiveAuthorizer);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testResolveAllowedStorageOperationsWithReadable() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    Mockito.doAnswer(invocation -> {
+    doAnswer(invocation -> {
       // 2 is the index of the write privilege list
       if (!((List<?>) invocation.getArgument(2)).isEmpty()) {
         throw new HiveAccessControlException("write denied");
       }
       return null;
     }).when(hiveAuthorizer).checkPrivileges(any(), any(), any(), any());
-    Mockito.when(hiveAuthorizer.needTransform()).thenReturn(false);
+    when(hiveAuthorizer.needTransform()).thenReturn(false);
 
     var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
     var actual = icebergAuthorizer.resolveAllowedStorageOperations(CATALOG_NAME, TABLE_IDENTIFIER, COLUMNS);
@@ -375,7 +379,7 @@ class TestIcebergAuthorizer {
     var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer, Mockito.times(2)).checkPrivileges(
+    verify(hiveAuthorizer, times(2)).checkPrivileges(
         operationCaptor.capture(),
         inputCaptor.capture(),
         outputCaptor.capture(),
@@ -387,24 +391,24 @@ class TestIcebergAuthorizer {
     assertPrivilegeObjects(List.of(), outputCaptor.getAllValues().getFirst());
     assertPrivilegeObjects(WRITABLE_PRIVILEGES, outputCaptor.getAllValues().getLast());
 
-    Mockito.verify(hiveAuthorizer).needTransform();
+    verify(hiveAuthorizer).needTransform();
 
-    Mockito.verifyNoMoreInteractions(hiveAuthorizer);
+    verifyNoMoreInteractions(hiveAuthorizer);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testResolveAllowedStorageOperationsWithReadableAndNullFilter() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    Mockito.doAnswer(invocation -> {
+    doAnswer(invocation -> {
       // 2 is the index of the write privilege list
       if (!((List<?>) invocation.getArgument(2)).isEmpty()) {
         throw new HiveAccessControlException("write denied");
       }
       return null;
     }).when(hiveAuthorizer).checkPrivileges(any(), any(), any(), any());
-    Mockito.when(hiveAuthorizer.needTransform()).thenReturn(true);
-    Mockito.when(hiveAuthorizer.applyRowFilterAndColumnMasking(any(), any())).thenReturn(null);
+    when(hiveAuthorizer.needTransform()).thenReturn(true);
+    when(hiveAuthorizer.applyRowFilterAndColumnMasking(any(), any())).thenReturn(null);
 
     var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
     var actual = icebergAuthorizer.resolveAllowedStorageOperations(CATALOG_NAME, TABLE_IDENTIFIER, COLUMNS);
@@ -413,7 +417,7 @@ class TestIcebergAuthorizer {
     var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer, Mockito.times(2)).checkPrivileges(
+    verify(hiveAuthorizer, times(2)).checkPrivileges(
         operationCaptor.capture(),
         inputCaptor.capture(),
         outputCaptor.capture(),
@@ -426,31 +430,31 @@ class TestIcebergAuthorizer {
     assertPrivilegeObjects(WRITABLE_PRIVILEGES, outputCaptor.getAllValues().getLast());
 
     var filterInputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer).applyRowFilterAndColumnMasking(
+    verify(hiveAuthorizer).applyRowFilterAndColumnMasking(
         any(HiveAuthzContext.class),
         filterInputCaptor.capture()
     );
     Assertions.assertEquals(1, filterInputCaptor.getAllValues().size());
     assertPrivilegeObjects(READABLE_PRIVILEGES, filterInputCaptor.getAllValues().getFirst());
 
-    Mockito.verify(hiveAuthorizer).needTransform();
+    verify(hiveAuthorizer).needTransform();
 
-    Mockito.verifyNoMoreInteractions(hiveAuthorizer);
+    verifyNoMoreInteractions(hiveAuthorizer);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testResolveAllowedStorageOperationsWithReadableAndEmptyFilter() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    Mockito.doAnswer(invocation -> {
+    doAnswer(invocation -> {
       // 2 is the index of the write privilege list
       if (!((List<?>) invocation.getArgument(2)).isEmpty()) {
         throw new HiveAccessControlException("write denied");
       }
       return null;
     }).when(hiveAuthorizer).checkPrivileges(any(), any(), any(), any());
-    Mockito.when(hiveAuthorizer.needTransform()).thenReturn(true);
-    Mockito.when(hiveAuthorizer.applyRowFilterAndColumnMasking(any(), any())).thenReturn(List.of());
+    when(hiveAuthorizer.needTransform()).thenReturn(true);
+    when(hiveAuthorizer.applyRowFilterAndColumnMasking(any(), any())).thenReturn(List.of());
 
     var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
     var actual = icebergAuthorizer.resolveAllowedStorageOperations(CATALOG_NAME, TABLE_IDENTIFIER, COLUMNS);
@@ -459,7 +463,7 @@ class TestIcebergAuthorizer {
     var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer, Mockito.times(2)).checkPrivileges(
+    verify(hiveAuthorizer, times(2)).checkPrivileges(
         operationCaptor.capture(),
         inputCaptor.capture(),
         outputCaptor.capture(),
@@ -472,31 +476,31 @@ class TestIcebergAuthorizer {
     assertPrivilegeObjects(WRITABLE_PRIVILEGES, outputCaptor.getAllValues().getLast());
 
     var filterInputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer).applyRowFilterAndColumnMasking(
+    verify(hiveAuthorizer).applyRowFilterAndColumnMasking(
         any(HiveAuthzContext.class),
         filterInputCaptor.capture()
     );
     Assertions.assertEquals(1, filterInputCaptor.getAllValues().size());
     assertPrivilegeObjects(READABLE_PRIVILEGES, filterInputCaptor.getAllValues().getFirst());
 
-    Mockito.verify(hiveAuthorizer).needTransform();
+    verify(hiveAuthorizer).needTransform();
 
-    Mockito.verifyNoMoreInteractions(hiveAuthorizer);
+    verifyNoMoreInteractions(hiveAuthorizer);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testResolveAllowedStorageOperationsWithReadableAndFilterUnavailable() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    Mockito.doAnswer(invocation -> {
+    doAnswer(invocation -> {
       // 2 is the index of the write privilege list
       if (!((List<?>) invocation.getArgument(2)).isEmpty()) {
         throw new HiveAccessControlException("write denied");
       }
       return null;
     }).when(hiveAuthorizer).checkPrivileges(any(), any(), any(), any());
-    Mockito.when(hiveAuthorizer.needTransform()).thenReturn(true);
-    Mockito.when(hiveAuthorizer.applyRowFilterAndColumnMasking(any(), any())).thenThrow(new SemanticException("error"));
+    when(hiveAuthorizer.needTransform()).thenReturn(true);
+    when(hiveAuthorizer.applyRowFilterAndColumnMasking(any(), any())).thenThrow(new SemanticException("error"));
 
     var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
     var actual = icebergAuthorizer.resolveAllowedStorageOperations(CATALOG_NAME, TABLE_IDENTIFIER, COLUMNS);
@@ -505,7 +509,7 @@ class TestIcebergAuthorizer {
     var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer).checkPrivileges(
+    verify(hiveAuthorizer).checkPrivileges(
         operationCaptor.capture(),
         inputCaptor.capture(),
         outputCaptor.capture(),
@@ -516,32 +520,32 @@ class TestIcebergAuthorizer {
     assertPrivilegeObjects(List.of(), outputCaptor.getAllValues().getFirst());
 
     var filterInputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer).applyRowFilterAndColumnMasking(
+    verify(hiveAuthorizer).applyRowFilterAndColumnMasking(
         any(HiveAuthzContext.class),
         filterInputCaptor.capture()
     );
     Assertions.assertEquals(1, filterInputCaptor.getAllValues().size());
     assertPrivilegeObjects(READABLE_PRIVILEGES, filterInputCaptor.getAllValues().getFirst());
 
-    Mockito.verify(hiveAuthorizer).needTransform();
+    verify(hiveAuthorizer).needTransform();
 
-    Mockito.verifyNoMoreInteractions(hiveAuthorizer);
+    verifyNoMoreInteractions(hiveAuthorizer);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testResolveAllowedStorageOperationsWithReadableAndFilter() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    Mockito.doAnswer(invocation -> {
+    doAnswer(invocation -> {
       // 2 is the index of the write privilege list
       if (!((List<?>) invocation.getArgument(2)).isEmpty()) {
         throw new HiveAccessControlException("write denied");
       }
       return null;
     }).when(hiveAuthorizer).checkPrivileges(any(), any(), any(), any());
-    Mockito.when(hiveAuthorizer.needTransform()).thenReturn(true);
-    Mockito.when(hiveAuthorizer.applyRowFilterAndColumnMasking(any(), any()))
-        .thenReturn(List.of(Mockito.mock(HivePrivilegeObject.class)));
+    when(hiveAuthorizer.needTransform()).thenReturn(true);
+    when(hiveAuthorizer.applyRowFilterAndColumnMasking(any(), any()))
+        .thenReturn(List.of(mock(HivePrivilegeObject.class)));
 
     var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
     var actual = icebergAuthorizer.resolveAllowedStorageOperations(CATALOG_NAME, TABLE_IDENTIFIER, COLUMNS);
@@ -550,7 +554,7 @@ class TestIcebergAuthorizer {
     var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer).checkPrivileges(
+    verify(hiveAuthorizer).checkPrivileges(
         operationCaptor.capture(),
         inputCaptor.capture(),
         outputCaptor.capture(),
@@ -561,23 +565,23 @@ class TestIcebergAuthorizer {
     assertPrivilegeObjects(List.of(), outputCaptor.getAllValues().getFirst());
 
     var filterInputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer).applyRowFilterAndColumnMasking(
+    verify(hiveAuthorizer).applyRowFilterAndColumnMasking(
         any(HiveAuthzContext.class),
         filterInputCaptor.capture()
     );
     Assertions.assertEquals(1, filterInputCaptor.getAllValues().size());
     assertPrivilegeObjects(READABLE_PRIVILEGES, filterInputCaptor.getAllValues().getFirst());
 
-    Mockito.verify(hiveAuthorizer).needTransform();
+    verify(hiveAuthorizer).needTransform();
 
-    Mockito.verifyNoMoreInteractions(hiveAuthorizer);
+    verifyNoMoreInteractions(hiveAuthorizer);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testResolveAllowedStorageOperationsWithWritable() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    Mockito.doAnswer(invocation -> {
+    doAnswer(invocation -> {
       // 1 is the index of the write privilege list
       if (!((List<?>) invocation.getArgument(1)).isEmpty()) {
         throw new HiveAccessControlException("read denied");
@@ -592,7 +596,7 @@ class TestIcebergAuthorizer {
     var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer).checkPrivileges(
+    verify(hiveAuthorizer).checkPrivileges(
         operationCaptor.capture(),
         inputCaptor.capture(),
         outputCaptor.capture(),
@@ -602,14 +606,14 @@ class TestIcebergAuthorizer {
     assertPrivilegeObjects(READABLE_PRIVILEGES, inputCaptor.getAllValues().getFirst());
     assertPrivilegeObjects(List.of(), outputCaptor.getAllValues().getFirst());
 
-    Mockito.verifyNoMoreInteractions(hiveAuthorizer);
+    verifyNoMoreInteractions(hiveAuthorizer);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testResolveAllowedStorageOperationsWithNoPrivilege() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    Mockito.doAnswer(invocation -> {
+    doAnswer(invocation -> {
       throw new HiveAccessControlException("denied");
     }).when(hiveAuthorizer).checkPrivileges(any(), any(), any(), any());
 
@@ -620,7 +624,7 @@ class TestIcebergAuthorizer {
     var operationCaptor = ArgumentCaptor.forClass(HiveOperationType.class);
     var inputCaptor = ArgumentCaptor.forClass(List.class);
     var outputCaptor = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(hiveAuthorizer).checkPrivileges(
+    verify(hiveAuthorizer).checkPrivileges(
         operationCaptor.capture(),
         inputCaptor.capture(),
         outputCaptor.capture(),
@@ -630,13 +634,13 @@ class TestIcebergAuthorizer {
     assertPrivilegeObjects(READABLE_PRIVILEGES, inputCaptor.getAllValues().getFirst());
     assertPrivilegeObjects(List.of(), outputCaptor.getAllValues().getFirst());
 
-    Mockito.verifyNoMoreInteractions(hiveAuthorizer);
+    verifyNoMoreInteractions(hiveAuthorizer);
   }
 
   @Test
   void testResolveAllowedStorageOperationsTranslatesPluginError() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    Mockito.doAnswer(invocation -> {
+    doAnswer(invocation -> {
       throw new HiveAuthzPluginException("boom");
     }).when(hiveAuthorizer).checkPrivileges(any(), any(), any(), any());
 
