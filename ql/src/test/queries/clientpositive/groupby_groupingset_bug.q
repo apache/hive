@@ -1,5 +1,4 @@
 set hive.explain.user=true;
-set hive.optimize.index.filter=true;
 set hive.auto.convert.join=true;
 set hive.vectorized.execution.enabled=true;
 
