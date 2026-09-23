@@ -138,7 +138,12 @@ public class MockHiveAuthorizer extends AbstractHiveAuthorizer {
 
   @Override
   public List<HivePrivilegeObject> filterListCmdObjects(List<HivePrivilegeObject> listObjs, HiveAuthzContext context) {
-    return List.of();
+    // Mirror checkPrivileges: the fully-denied user sees nothing, while read-only and regular users
+    // are allowed to read and therefore see the whole listing.
+    if (PERMISSION_TEST_USER.equals(authenticator.getUserName())) {
+      return List.of();
+    }
+    return listObjs;
   }
 
   @Override
