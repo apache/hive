@@ -54,9 +54,37 @@ import org.apache.parquet.io.ParquetDecodingException;
 import org.apache.parquet.schema.PrimitiveType;
 
 /**
- * {@link PageReadStore} over one row group's cached column-chunk buffers, mirroring parquet's
- * ParquetFileReader.Chunk.readAllPages and ColumnChunkPageReader without going through a
- * ParquetFileReader (and without offset index or decryption support).
+ * {@link PageReadStore} over one row group's cached column-chunk buffers, so that the vectorized
+ * column readers decode straight out of the LLAP cache: no ParquetFileReader, and no copy of the
+ * chunk bytes.
+ *
+ * <p><b>Why this is a copy.</b> Parquet does the same thing over a file, but none of it is
+ * reachable from here: {@code ParquetFileReader.Chunk.readAllPages} is private, the store it fills
+ * ({@code org.apache.parquet.hadoop.ColumnChunkPageReadStore}) is package-private and so is its
+ * {@code addColumn}, and the {@link PageReader} it puts in ({@code ColumnChunkPageReader}) is a
+ * package-private {@code final} class. Only the glue below is re-implemented; page header parsing,
+ * encoding and statistics conversion, the page value types and decompression are all parquet's own
+ * public API.
+ *
+ * <p><b>On a parquet upgrade.</b> Exactly two members track upstream code, each with a counterpart
+ * to diff against the new release:
+ * <ul>
+ *   <li>{@link #readAllPages} mirrors {@code ParquetFileReader.Chunk.readAllPages}: the page-header
+ *       walk, the page-type switch and the mapping of header fields onto {@link DataPageV1},
+ *       {@link DataPageV2} and {@link DictionaryPage}. A new page type, a new header field or a
+ *       changed page constructor lands here.</li>
+ *   <li>{@link CachedChunkPageReader} mirrors {@code ColumnChunkPageReader}: page queueing and
+ *       lazy decompression. New {@link PageReader} behaviour lands here.</li>
+ * </ul>
+ * Also check whether {@link PageReadStore} gained or changed a {@code default} method, since this
+ * class implements none of them ({@code getRowIndexOffset}, {@code getRowIndexes} and
+ * {@code close} are all inherited). {@code TestParquetCachedPageReadStore} compares this store page
+ * for page against the stock one and pins the parquet version, so the upgrade fails the build
+ * rather than passing with a divergence.
+ *
+ * <p>Deliberately unsupported, because LLAP's Parquet path does not use them: the offset index (so
+ * {@code getFirstRowIndex} and {@code getIndexRowCount} keep their no-offset-index defaults),
+ * column encryption, and page checksum verification.
  *
  * <p>How it works:
  * <ol>
@@ -74,9 +102,6 @@ import org.apache.parquet.schema.PrimitiveType;
  *       {@link #getPageReader(ColumnDescriptor)}, so parquet's VectorizedColumnReader never notices
  *       that it is not reading from a file.</li>
  * </ol>
- *
- * <p>Page-for-page equivalence with the stock ColumnChunkPageReadStore is covered by
- * {@code TestParquetCachedPageReadStore}.
  */
 class ParquetCachedPageReadStore implements PageReadStore {
 

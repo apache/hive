@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.io.encoded.ParquetEncodedColumnBatch;
 import org.apache.parquet.HadoopReadOptions;
 import org.apache.parquet.ParquetReadOptions;
+import org.apache.parquet.Version;
 import org.apache.parquet.bytes.BytesInput;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.ParquetProperties.WriterVersion;
@@ -88,6 +89,13 @@ import org.junit.Test;
  */
 public class TestParquetCachedPageReadStore {
 
+  /**
+   * The parquet release {@link ParquetCachedPageReadStore} was last read against. Its javadoc lists
+   * the two members that re-implement parquet-hadoop internals; bump this once they have been
+   * diffed against the new release.
+   */
+  private static final String REVIEWED_PARQUET_VERSION = "1.18.0";
+
   private static final int ROWS = 3000;
   /** Small enough that every column chunk holds several pages. */
   private static final int PAGE_SIZE = 800;
@@ -127,6 +135,20 @@ public class TestParquetCachedPageReadStore {
   @AfterClass
   public static void tearDownClass() throws IOException {
     FileSystem.getLocal(conf).delete(new Path(tmpDir.toString()), true);
+  }
+
+  /**
+   * Fails when the parquet dependency moves, because the page parity below only proves that the
+   * copied logic still matches the release it is compiled against - it cannot tell anyone to go and
+   * re-read the upstream code it was copied from.
+   */
+  @Test
+  public void testParquetVersionWasReviewed() {
+    assertEquals("Parquet went from " + REVIEWED_PARQUET_VERSION + " to " + Version.VERSION_NUMBER
+        + ". ParquetCachedPageReadStore.readAllPages mirrors ParquetFileReader.Chunk.readAllPages and"
+        + " CachedChunkPageReader mirrors ColumnChunkPageReadStore.ColumnChunkPageReader: diff both"
+        + " against the new release and check PageReadStore for new default methods, then bump"
+        + " REVIEWED_PARQUET_VERSION here.", REVIEWED_PARQUET_VERSION, Version.VERSION_NUMBER);
   }
 
   @Test
