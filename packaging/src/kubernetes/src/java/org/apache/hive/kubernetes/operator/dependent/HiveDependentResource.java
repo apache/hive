@@ -184,15 +184,6 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       }
     }
     if (autoscaling == null || !autoscaling.isEnabled()) {
-      if (primary instanceof HiveCluster hc) {
-        String component = getComponentName();
-        if (component != null) {
-          HiveClusterAutoscaler.cleanupManagedReplicas(
-              hc.getMetadata().getNamespace(),
-              hc.getMetadata().getName(),
-              component);
-        }
-      }
       return staticReplicas;
     }
     Optional<R> existing = getSecondaryResource(primary, context);

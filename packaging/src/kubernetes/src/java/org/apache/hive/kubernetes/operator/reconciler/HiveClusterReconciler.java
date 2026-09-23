@@ -162,6 +162,15 @@ public class HiveClusterReconciler
       break;
     }
 
+    boolean canEvaluateAutoscaling = (rescheduleSeconds == 0 && anyAutoscalingEnabled(resource.getSpec()));
+    
+    HiveClusterAutoscaler scaler = autoscaler;
+    if (scaler == null && canEvaluateAutoscaling) {
+      scaler = getOrCreateAutoscaler(client);
+    }
+    
+    resetAutoscalingStateForDisabledComponents(resource, scaler);
+
     // --- Imperative LLAP cluster management ---
     // Must also run while suspended: resolve*ReplicaCount() return 0 when
     // spec.suspend() is set, and skipping the call would leave LLAP/TezAM
@@ -169,8 +178,7 @@ public class HiveClusterReconciler
     reconcileLlapClusters(resource, client);
 
     // --- Autoscaling evaluation (only when enabled and not suspended) ---
-    if (rescheduleSeconds == 0 && anyAutoscalingEnabled(resource.getSpec())) {
-      HiveClusterAutoscaler scaler = getOrCreateAutoscaler(client);
+    if (canEvaluateAutoscaling) {
       HiveClusterAutoscaler.AutoscalingEvaluation eval = scaler.evaluate(resource, client);
       for (Map.Entry<String, Integer> entry : eval.patches().entrySet()) {
         patchReplicas(client, resource, entry.getKey(), entry.getValue());
@@ -553,6 +561,42 @@ public class HiveClusterReconciler
     return autoscaler;
   }
 
+  /**
+   * Clears autoscaling state for components with autoscaling disabled in spec.
+   */
+  private static void resetAutoscalingStateForDisabledComponents(HiveCluster resource, HiveClusterAutoscaler scaler) {
+    HiveClusterSpec spec = resource.getSpec();
+    String ns = resource.getMetadata().getNamespace();
+    String clusterName = resource.getMetadata().getName();
+
+    if (!spec.hiveServer2().autoscaling().isEnabled()) {
+      resetComponentAutoscalingState(scaler, ns, clusterName, ConfigUtils.COMPONENT_HIVESERVER2);
+    }
+    if (spec.metastore().isEnabled() && !spec.metastore().autoscaling().isEnabled()) {
+      resetComponentAutoscalingState(scaler, ns, clusterName, ConfigUtils.COMPONENT_METASTORE);
+    }
+    for (var llap : spec.llapClusters()) {
+      if (!llap.isEnabled()) {
+        continue;
+      }
+      if (!llap.autoscaling().isEnabled()) {
+        resetComponentAutoscalingState(scaler, ns, clusterName, ConfigUtils.llapComponentKey(llap.name()));
+      }
+      if (spec.tezAm().isEnabled() && !llap.tezAm().autoscaling().isEnabled()) {
+        resetComponentAutoscalingState(scaler, ns, clusterName, ConfigUtils.tezAmComponentKey(llap.name()));
+      }
+    }
+  }
+
+  private static void resetComponentAutoscalingState(HiveClusterAutoscaler scaler,
+      String namespace, String clusterName, String component) {
+    if (scaler != null) {
+      scaler.resetComponentAutoscalingState(namespace, clusterName, component);
+    } else {
+      HiveClusterAutoscaler.cleanupManagedReplicas(namespace, clusterName, component);
+    }
+  }
+
   private static boolean anyAutoscalingEnabled(HiveClusterSpec spec) {
     if (spec.hiveServer2().autoscaling().isEnabled()) {
       return true;
@@ -721,7 +765,6 @@ public class HiveClusterReconciler
       // First reconcile before autoscaler runs: start at minReplicas if autoscaling enabled
       return llapSpec.autoscaling().minReplicas();
     }
-    HiveClusterAutoscaler.cleanupManagedReplicas(ns, clusterName, componentKey);
     return llapSpec.replicas();
   }
 
@@ -742,8 +785,6 @@ public class HiveClusterReconciler
       if (tezAmManaged != null) {
         return tezAmManaged;
       }
-    } else {
-      HiveClusterAutoscaler.cleanupManagedReplicas(ns, clusterName, tezAmComponentKey);
     }
 
     int llapDesired = resolveLlapReplicaCount(resource, llapSpec, ns, clusterName);
