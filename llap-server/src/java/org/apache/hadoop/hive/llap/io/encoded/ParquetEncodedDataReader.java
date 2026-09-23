@@ -228,7 +228,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     final List<BlockMetaData> blocks = footer.getBlocks();
     List<BlockMetaData> selected = new ArrayList<>();
     for (BlockMetaData block : blocks) {
-      long firstDataPage = block.getColumns().get(0).getFirstDataPageOffset();
+      long firstDataPage = block.getColumns().getFirst().getFirstDataPageOffset();
       if (firstDataPage >= splitStart && firstDataPage < splitEnd) {
         selected.add(block);
       }
