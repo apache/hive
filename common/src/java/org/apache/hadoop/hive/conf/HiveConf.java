@@ -2486,8 +2486,6 @@ public class HiveConf extends Configuration {
 
     HIVE_SCRIPT_OPERATOR_TRUST("hive.exec.script.trust", false, ""),
     // Optimizer
-    HIVE_OPT_INDEX_FILTER("hive.optimize.index.filter", true, "Whether to enable automatic use of indexes"),
-
     HIVE_OPT_PPD("hive.optimize.ppd", true,
         "Whether to enable predicate pushdown"),
     HIVE_OPT_PPD_WINDOWING("hive.optimize.ppd.windowing", true,
@@ -4790,7 +4788,7 @@ public class HiveConf extends Configuration {
         "hive.tez.bucket.pruning", true,
          "When pruning is enabled, filters on bucket columns will be processed by \n" +
          "filtering the splits against a bitset of included buckets. This needs predicates \n"+
-            "produced by hive.optimize.ppd and hive.optimize.index.filter."),
+            "produced by hive.optimize.ppd."),
     TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT(
         "hive.tez.bucket.pruning.compat", true,
         "When pruning is enabled, handle possibly broken inserts due to negative hashcodes.\n" +
@@ -6791,8 +6789,6 @@ public class HiveConf extends Configuration {
     "hive\\.fetch.task\\..*",
     "hive\\.groupby\\..*",
     "hive\\.hbase\\..*",
-    "hive\\.index\\..*",
-    "hive\\.index\\..*",
     "hive\\.intermediate\\..*",
     "hive\\.jdbc\\..*",
     "hive\\.join\\..*",

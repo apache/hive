@@ -10,9 +10,7 @@ insert overwrite table text_test select * from orc_test_n0;
 explain select * from text_test where col2='1';
 select * from text_test where col2='1';
 
-set hive.optimize.index.filter=false;
 select * from orc_test_n0 where col2='1';
 
-set hive.optimize.index.filter=true;
 select * from orc_test_n0 where col2='1';
 
