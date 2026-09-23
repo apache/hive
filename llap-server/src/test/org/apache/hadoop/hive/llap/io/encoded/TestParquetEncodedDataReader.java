@@ -587,6 +587,7 @@ public class TestParquetEncodedDataReader {
     assertTrue(run.firstBatchCols[2] instanceof BytesColumnVector);
     assertTrue(run.firstBatchCols[3] instanceof LongColumnVector);
     assertTrue(run.firstBatchCols[3].isRepeating);
+    // Values in Hive order: ratio, id, the recreated column, added, name.
     for (int i : new int[] {0, 7, 1500, ROWS - 1}) {
       assertArrayEquals("row " + i, new Object[] {ratio(i), (long) i, null, 42L, i % 7 == 0 ? null : "name-" + i},
           run.rows.get(i));
