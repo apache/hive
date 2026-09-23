@@ -82,12 +82,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
+ * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.11.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
-  private static final Splitter SLASH = Splitter.on('/');
+  private static final Splitter SLASH = Splitter.on('/').omitEmptyStrings();
+
+  private static final String PREFIX_VAR = "prefix";
+  private static final String PREFIX_PLACEHOLDER = "{" + PREFIX_VAR + "}";
+
+  /** Index of the first prefix segment, right after "v1". */
+  private static final int PREFIX_START = 1;
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
       ImmutableMap.<Class<? extends Exception>, Integer>builder()
@@ -161,7 +167,8 @@ public class HMSCatalogAdapter implements Closeable {
     private final Map<Integer, String> requirements;
     private final Map<Integer, String> variables;
     private final Class<? extends RESTRequest> requestClass;
-    private final String resourcePath;
+    private final String pathTemplate;
+    private final boolean acceptsPrefix;
 
     Route(HTTPMethod method, String pattern) {
       this(method, pattern, null);
@@ -172,11 +179,13 @@ public class HMSCatalogAdapter implements Closeable {
         String pattern,
         Class<? extends RESTRequest> requestClass) {
       this.method = method;
-      this.resourcePath = pattern;
+      this.pathTemplate = pattern;
+
+      List<String> segments = SLASH.splitToList(pattern);
+      this.acceptsPrefix = segments.contains(PREFIX_PLACEHOLDER);
 
       // parse the pattern into requirements and variables
-      List<String> parts =
-          SLASH.splitToList(pattern.replaceFirst("/v1/", "v1/").replace("/{prefix}", ""));
+      List<String> parts = segments.stream().filter(s -> !PREFIX_PLACEHOLDER.equals(s)).toList();
       ImmutableMap.Builder<Integer, String> requirementsBuilder = ImmutableMap.builder();
       ImmutableMap.Builder<Integer, String> variablesBuilder = ImmutableMap.builder();
       for (int pos = 0; pos < parts.size(); pos += 1) {
@@ -189,38 +198,73 @@ public class HMSCatalogAdapter implements Closeable {
       }
 
       this.requestClass = requestClass;
-
       this.requiredLength = parts.size();
       this.requirements = requirementsBuilder.build();
       this.variables = variablesBuilder.build();
     }
 
+    /** Number of extra segments in the request, i.e. the prefix length. */
+    private int prefixLength(List<String> requestPath) {
+      return requestPath.size() - requiredLength;
+    }
+
+    /** Maps a template index to a request-path index, skipping prefix segments. */
+    private int mappedIndex(int templateIndex, int prefixLength) {
+      return templateIndex < PREFIX_START ? templateIndex : templateIndex + prefixLength;
+    }
+
     private boolean matches(HTTPMethod requestMethod, List<String> requestPath) {
-      return method == requestMethod
-          && requiredLength == requestPath.size()
-          && requirements.entrySet().stream()
-          .allMatch(
-              requirement ->
-                  requirement
-                      .getValue()
-                      .equalsIgnoreCase(requestPath.get(requirement.getKey())));
+      if (method != requestMethod) {
+        return false;
+      }
+
+      // A multi-segment prefix like "catalogs/my_catalog" gives prefixLength == 2
+      int prefixLength = prefixLength(requestPath);
+
+      // If the path is too short, or too long but the route doesn't support a prefix, reject.
+      if (prefixLength < 0 || (prefixLength > 0 && !acceptsPrefix)) {
+        return false;
+      }
+
+      for (Map.Entry<Integer, String> requirement : requirements.entrySet()) {
+        String actual = requestPath.get(mappedIndex(requirement.getKey(), prefixLength));
+        if (!requirement.getValue().equalsIgnoreCase(actual)) {
+          return false;
+        }
+      }
+      return true;
     }
 
     private Map<String, String> variables(List<String> requestPath) {
+      int prefixLength = prefixLength(requestPath);
+
       ImmutableMap.Builder<String, String> vars = ImmutableMap.builder();
-      variables.forEach((key, value) -> vars.put(value, requestPath.get(key)));
+      for (Map.Entry<Integer, String> var : variables.entrySet()) {
+        vars.put(var.getValue(), requestPath.get(mappedIndex(var.getKey(), prefixLength)));
+      }
+
+      if (prefixLength > 0) {
+        // Clients insert the configured prefix verbatim, so "catalogs/sales" arrives
+        // as two segments; rejoin them. An encoded %2F inside a prefix is not preserved.
+        String prefix = String.join("/",
+            requestPath.subList(PREFIX_START, PREFIX_START + prefixLength));
+        // The HMS backend serves a single HiveCatalog and does not scope by prefix yet.
+        LOG.debug("Ignoring request prefix '{}' for route {}", prefix, this);
+        vars.put(PREFIX_VAR, prefix);
+      }
       return vars.build();
     }
 
     public static Pair<Route, Map<String, String>> from(HTTPMethod method, String path) {
       List<String> parts = SLASH.splitToList(path);
+      Route best = null;
       for (Route candidate : Route.values()) {
-        if (candidate.matches(method, parts)) {
-          return Pair.of(candidate, candidate.variables(parts));
+        if (candidate.matches(method, parts)
+            && (best == null || candidate.prefixLength(parts) < best.prefixLength(parts))) {
+          best = candidate;
         }
       }
-
-      return null;
+      return best == null ? null : Pair.of(best, best.variables(parts));
     }
 
     public Class<? extends RESTRequest> requestClass() {
@@ -230,7 +274,7 @@ public class HMSCatalogAdapter implements Closeable {
 
   private ConfigResponse config() {
     final List<Endpoint> endpoints = Arrays.stream(Route.values())
-        .map(r -> Endpoint.create(r.method.name(), r.resourcePath)).toList();
+        .map(r -> Endpoint.create(r.method.name(), r.pathTemplate)).toList();
     return castResponse(ConfigResponse.class, ConfigResponse.builder().withEndpoints(endpoints).build());
   }
 
@@ -434,91 +478,38 @@ public class HMSCatalogAdapter implements Closeable {
     // only commit if validations passed previously
     transactions.forEach(Transaction::commitTransaction);
   }
-  
-  @SuppressWarnings({"MethodLength", "unchecked"})
+
+  @SuppressWarnings({"unchecked"})
   private <T extends RESTResponse> T handleRequest(
       Route route, Map<String, String> vars, Object body) {
-    switch (route) {
-      case CONFIG:
-        return (T) config();
-
-      case LIST_NAMESPACES:
-        return (T) listNamespaces(vars);
-
-      case CREATE_NAMESPACE:
-        return (T) createNamespace(body);
-
-      case NAMESPACE_EXISTS:
-        return (T) namespaceExists(vars);
-
-      case LOAD_NAMESPACE:
-        return (T) loadNamespace(vars);
-
-      case DROP_NAMESPACE:
-        return (T) dropNamespace(vars);
-
-      case UPDATE_NAMESPACE:
-        return (T) updateNamespace(vars, body);
-
-      case LIST_TABLES:
-        return (T) listTables(vars);
-
-      case CREATE_TABLE:
-        return (T) createTable(vars, body);
-
-      case DROP_TABLE:
-        return (T) dropTable(vars);
-
-      case TABLE_EXISTS:
-        return (T) tableExists(vars);
-
-      case LOAD_TABLE:
-        return (T) loadTable(vars);
-
-      case REGISTER_TABLE:
-        return (T) registerTable(vars, body);
-
-      case UPDATE_TABLE:
-        return (T) updateTable(vars, body);
-
-      case RENAME_TABLE:
-        return (T) renameTable(body);
-
-      case REPORT_METRICS:
-        return (T) reportMetrics(vars, body);
-
-      case COMMIT_TRANSACTION:
-        return (T) commitTransaction(body);
-        
-      case LIST_VIEWS:
-        return (T) listViews(vars);
-
-      case CREATE_VIEW:
-          return (T) createView(vars, body);
-
-      case VIEW_EXISTS:
-        return (T) viewExists(vars);
-
-      case LOAD_VIEW:
-        return (T) loadView(vars);
-
-      case UPDATE_VIEW:
-        return (T) updateView(vars, body);
-        
-      case RENAME_VIEW:
-        return (T) renameView(body);
-        
-      case DROP_VIEW:
-        return (T) dropView(vars);
-
-      case REGISTER_VIEW:
-        return (T) registerView(vars, body);
-
-      default:
-    }
-    return null;
+    return (T) switch (route) {
+      case CONFIG -> config();
+      case LIST_NAMESPACES -> listNamespaces(vars);
+      case CREATE_NAMESPACE -> createNamespace(body);
+      case NAMESPACE_EXISTS -> namespaceExists(vars);
+      case LOAD_NAMESPACE -> loadNamespace(vars);
+      case DROP_NAMESPACE -> dropNamespace(vars);
+      case UPDATE_NAMESPACE -> updateNamespace(vars, body);
+      case LIST_TABLES -> listTables(vars);
+      case CREATE_TABLE -> createTable(vars, body);
+      case DROP_TABLE -> dropTable(vars);
+      case TABLE_EXISTS -> tableExists(vars);
+      case LOAD_TABLE -> loadTable(vars);
+      case REGISTER_TABLE -> registerTable(vars, body);
+      case UPDATE_TABLE -> updateTable(vars, body);
+      case RENAME_TABLE -> renameTable(body);
+      case REPORT_METRICS -> reportMetrics(vars, body);
+      case COMMIT_TRANSACTION -> commitTransaction(body);
+      case LIST_VIEWS -> listViews(vars);
+      case CREATE_VIEW -> createView(vars, body);
+      case VIEW_EXISTS -> viewExists(vars);
+      case LOAD_VIEW -> loadView(vars);
+      case UPDATE_VIEW -> updateView(vars, body);
+      case RENAME_VIEW -> renameView(body);
+      case DROP_VIEW -> dropView(vars);
+      case REGISTER_VIEW -> registerView(vars, body);
+    };
   }
-
 
   <T extends RESTResponse> T execute(
       HTTPMethod method,
