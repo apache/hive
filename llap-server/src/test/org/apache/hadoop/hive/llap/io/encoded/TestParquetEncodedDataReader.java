@@ -805,7 +805,7 @@ public class TestParquetEncodedDataReader {
         .withConf(conf)
         .withType(SCHEMA)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
-        .withRowGroupSize(1024)
+        .withRowGroupSize(1024L)
         .withMinRowCountForPageSizeCheck(ROWS_PER_GROUP)
         .withMaxRowCountForPageSizeCheck(ROWS_PER_GROUP)
         .build()) {
