@@ -162,8 +162,7 @@ public class ParquetEncodedDataConsumer
               new ParquetRowGroupDecoder.TimestampConversionOptions(skipTimestampConversion,
                   writerTimezone, skipProlepticConversion, legacyConversionEnabled));
 
-      long rowCount = pages.getRowCount();
-      long rowsLeft = rowCount;
+      long rowsLeft = pages.getRowCount();
       int batches = 0;
       while (rowsLeft > 0) {
         int batchSize = (int) Math.min(VectorizedRowBatch.DEFAULT_SIZE, rowsLeft);
