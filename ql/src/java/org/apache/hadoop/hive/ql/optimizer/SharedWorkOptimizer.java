@@ -2079,7 +2079,12 @@ public class SharedWorkOptimizer extends Transform {
     Queue<Operator<?>> remaining = new LinkedList<>(startWorkOperators);
     while (!remaining.isEmpty()) {
       Operator<?> op = remaining.poll();
-      if (!visited.add(op) || excludeOps.contains(op)) {
+
+      if (excludeOps.contains(op)) {
+        continue;
+      }
+
+      if (!visited.add(op)) {
         continue;
       }
 

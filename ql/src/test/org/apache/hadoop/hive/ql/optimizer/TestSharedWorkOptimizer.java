@@ -326,6 +326,25 @@ public class TestSharedWorkOptimizer {
     assertTrue(descendants.contains(eventOp));
   }
 
+  @Test
+  public void testFindDescendantWorkOperatorsDoesNotReturnExcludedOperators() {
+    // Map 1
+    TableScanOperator ts1 = getTsOp();
+    Operator<?> rs1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), ts1);
+
+    // Reducer 2 <- Map 1
+    Operator<?> fil = OperatorFactory.getAndMakeChild(getFilterDesc(0), rs1);
+    Operator<?> exclFil = OperatorFactory.getAndMakeChild(getFilterDesc(0), fil);
+    Operator<?> rs2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), fil);
+
+    Set<Operator<?>> descendants = SharedWorkOptimizer.findDescendantWorkOperators(
+        new ParseContext(), new SharedWorkOptimizerCache(), ts1, Set.of(exclFil));
+
+    assertEquals(2, descendants.size());
+    assertTrue(descendants.contains(fil));
+    assertTrue(descendants.contains(rs2));
+  }
+
   private FilterDesc getFilterDesc(int constVal) {
     return new FilterDesc(new ExprNodeConstantDesc(constVal), true);
   }
