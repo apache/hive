@@ -144,6 +144,9 @@ public class TestParquetEncodedDataReader {
   private static final int ROWS = ROWS_PER_GROUP * ROW_GROUPS;
   // Smaller than every column chunk so each chunk spans several cache buffers.
   private static final int MAX_ALLOC = 4096;
+  /** Padding around a range's bytes when a vectored read returns them inside a bigger buffer. */
+  private static final int RANGE_PAD = 29;
+  private static final byte RANGE_POISON = (byte) 0xAB;
 
   private static final MessageType SCHEMA = Types.buildMessage()
       .optional(PrimitiveTypeName.INT32).named("id")
@@ -173,6 +176,8 @@ public class TestParquetEncodedDataReader {
 
   private boolean failFirstRange;
   private boolean unslicedBuffers;
+  /** Fulfils every vectored range from a buffer positioned {@link #RANGE_PAD} bytes in. */
+  private boolean positionedRangeBuffers;
   private boolean stopAfterFirstBatch;
   private boolean failDecode;
   /** Opts out of the expectedRow(i) check, for tests whose Hive schema is not the fixture's. */
@@ -181,6 +186,12 @@ public class TestParquetEncodedDataReader {
   private boolean skipNonNativeParity;
   private ParquetEncodedDataReader reader;
   private int decoded;
+  /**
+   * How many row groups had been decoded when each row group's read went out, in request order. This
+   * is what lookahead looks like from outside: [0, 0, 1] is the reader a group ahead - groups 0 and 1
+   * both requested before anything was decoded - while [0, 1, 2] is one group at a time, each
+   * requested only once the previous one was decoded.
+   */
   private final List<Integer> decodedAtRequest = new ArrayList<>();
 
   @BeforeClass
@@ -221,6 +232,7 @@ public class TestParquetEncodedDataReader {
     ledger = new Ledger(cache);
     failFirstRange = false;
     unslicedBuffers = false;
+    positionedRangeBuffers = false;
     stopAfterFirstBatch = false;
     failDecode = false;
     skipExpectedRows = false;
@@ -352,6 +364,27 @@ public class TestParquetEncodedDataReader {
         run.reads.size() * 3 <= run.buffers.size());
   }
 
+  /**
+   * A projection listed back to front still reads the file front to back. The misses are planned in
+   * projection order, so without sorting them by offset first, adjacent chunks would never look
+   * adjacent and the row group would be read column by column, backwards.
+   */
+  @Test
+  public void testReversedProjectionStillReadsForward() throws Exception {
+    Run run = read(jobConf(COLUMNS, TYPES, 5, 4, 3, 2, 1, 0), wholeFile());
+
+    run.assertClean();
+    assertEquals(ROWS, run.rows.size());
+    long previousEnd = -1;
+    for (long[] read : run.reads) {
+      assertTrue("read at " + read[0] + " goes back behind " + previousEnd, read[0] >= previousEnd);
+      previousEnd = read[0] + read[1];
+    }
+    // All six chunks of a row group are adjacent, so the row group is one range however the columns
+    // were ordered; reading them in projection order would take six.
+    assertEquals(ROW_GROUPS, run.reads.size());
+  }
+
   /** An unprojected column between two projected ones breaks the run: its bytes are never read. */
   @Test
   public void testGapBetweenProjectedChunksSplitsTheRun() throws Exception {
@@ -439,6 +472,34 @@ public class TestParquetEncodedDataReader {
     assertEquals(Arrays.asList(0, 0, 1), decodedAtRequest);
   }
 
+  /**
+   * The lookahead is bounded by the cache memory one IO thread may hold, and it starts the next row
+   * group only if that group and the one already in flight fit in it together. The budget is the
+   * daemon's cache size over its IO thread count, and with the daemon's real numbers it never binds,
+   * so this test sizes it deliberately: one row group and a half, which is room for the group in
+   * flight but never for two. It has to sit on that side of the budget rather than simply be tiny - a
+   * budget below a single group would also stop the lookahead, and then the test could not tell
+   * whether the group in flight was counted at all.
+   */
+  @Test
+  public void testLookaheadStopsWhenTheBudgetIsTooSmall() throws Exception {
+    // Six row groups of cache over four IO threads, so the per-thread budget is the one and a half
+    // this test wants. More than one thread on purpose: with one, dropping the division by the thread
+    // count would not change the budget and the test would not notice. Only the reader reads this
+    // conf - the cache and the allocator come from the fixture's daemonConf.
+    HiveConf oneGroupAndAHalf = new HiveConf(daemonConf);
+    HiveConf.setIntVar(oneGroupAndAHalf, ConfVars.LLAP_IO_THREADPOOL_SIZE, 4);
+    HiveConf.setVar(oneGroupAndAHalf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE,
+        Long.toString(largestRowGroupBytes(0, 1, 2, 3, 4, 5) * 6));
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile(), oneGroupAndAHalf);
+
+    run.assertClean();
+    assertEquals(ROWS, run.rows.size());
+    // The lookahead never fired: one request per row group, each going out only once the previous
+    // group had been decoded. Room for two would have made this [0, 0, 1], as the test above asserts.
+    assertEquals(Arrays.asList(0, 1, 2), decodedAtRequest);
+  }
+
   /** An allocator that hands back whole pooled buffers instead of exact slices still reads every row. */
   @Test
   public void testPooledBuffersReadEveryRow() throws Exception {
@@ -456,6 +517,21 @@ public class TestParquetEncodedDataReader {
     // The second read of a run takes a pooled buffer that the first left longer than the range.
     read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
     Run run = read(jobConf(COLUMNS, TYPES, 3), wholeFile());
+
+    run.assertClean();
+    assertEquals(ROWS, run.rows.size());
+  }
+
+  /**
+   * A filesystem may hand a range back as a view into a bigger buffer of its own, positioned at the
+   * range's bytes rather than at zero - readVectored's contract says nothing about the position. The
+   * local filesystem always returns position zero, so this stream fulfils the ranges itself, from a
+   * poisoned array with the bytes in the middle.
+   */
+  @Test
+  public void testRangeBuffersPositionedInsideABiggerBufferReadEveryRow() throws Exception {
+    positionedRangeBuffers = true;
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
     run.assertClean();
     assertEquals(ROWS, run.rows.size());
@@ -703,6 +779,25 @@ public class TestParquetEncodedDataReader {
         ParquetEncodedDataReader.projectedLeaves(requested, fileSchema));
   }
 
+  /** projectedLeaves resolves a requested field to the top-level column, not to a nested namesake. */
+  @Test
+  public void testProjectedLeavesIgnoresNestedFieldOfTheSameName() {
+    // File schema: struct s { id }, id. Both leaves end in "id", but only the second one is the
+    // column that was requested; s.id is a leaf of a group this reader does not project at all.
+    MessageType fileSchema = Types.buildMessage()
+        .requiredGroup()
+            .required(PrimitiveTypeName.INT32).named("id")
+        .named("s")
+        .required(PrimitiveTypeName.INT32).named("id")
+        .named("file_schema");
+    MessageType requested = Types.buildMessage()
+        .required(PrimitiveTypeName.INT32).named("id")
+        .named("requested");
+
+    assertArrayEquals(new int[] {1},
+        ParquetEncodedDataReader.projectedLeaves(requested, fileSchema));
+  }
+
   // ---- fixture ----
 
   private static void writeFile(Path path, Configuration conf) throws IOException {
@@ -776,6 +871,19 @@ public class TestParquetEncodedDataReader {
       }
     }
     return total;
+  }
+
+  /** The projected bytes of the biggest row group, i.e. the most the reader can have in flight at once. */
+  private static long largestRowGroupBytes(int... fileCols) {
+    long largest = 0;
+    for (BlockMetaData block : footer.getBlocks()) {
+      long group = 0;
+      for (int c : fileCols) {
+        group += block.getColumns().get(c).getTotalSize();
+      }
+      largest = Math.max(largest, group);
+    }
+    return largest;
   }
 
   private static JobConf jobConf(String columns, String types, int... readColumnIds) {
@@ -1004,7 +1112,11 @@ public class TestParquetEncodedDataReader {
     public void readVectored(List<? extends FileRange> ranges, IntFunction<ByteBuffer> allocate)
         throws IOException {
       recordRanges(ranges);
-      super.readVectored(ranges, allocate);
+      if (positionedRangeBuffers) {
+        fulfilAtNonZeroPosition(ranges);
+      } else {
+        super.readVectored(ranges, allocate);
+      }
       injectFailure(ranges);
     }
 
@@ -1012,8 +1124,32 @@ public class TestParquetEncodedDataReader {
     public void readVectored(List<? extends FileRange> ranges, IntFunction<ByteBuffer> allocate,
         java.util.function.Consumer<ByteBuffer> release) throws IOException {
       recordRanges(ranges);
-      super.readVectored(ranges, allocate, release);
+      if (positionedRangeBuffers) {
+        fulfilAtNonZeroPosition(ranges);
+      } else {
+        super.readVectored(ranges, allocate, release);
+      }
       injectFailure(ranges);
+    }
+
+    /**
+     * Hands each range back as a window into a larger buffer: the bytes sit {@link #RANGE_PAD} in,
+     * surrounded by {@link #RANGE_POISON}, with position and limit marking them. Nothing in
+     * readVectored's contract rules this out, and a reader that assumes position zero picks up the
+     * padding instead of the data.
+     */
+    private void fulfilAtNonZeroPosition(List<? extends FileRange> ranges) throws IOException {
+      for (FileRange range : ranges) {
+        byte[] backing = new byte[RANGE_PAD + range.getLength() + RANGE_PAD];
+        Arrays.fill(backing, RANGE_POISON);
+        readFully(range.getOffset(), backing, RANGE_PAD, range.getLength());
+        ByteBuffer data = ByteBuffer.wrap(backing);
+        data.position(RANGE_PAD);
+        data.limit(RANGE_PAD + range.getLength());
+        CompletableFuture<ByteBuffer> done = new CompletableFuture<>();
+        done.complete(data);
+        range.setData(done);
+      }
     }
 
     private void recordRanges(List<? extends FileRange> ranges) {
