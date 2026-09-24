@@ -23,9 +23,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -54,6 +56,9 @@ import org.apache.parquet.column.page.PageReader;
 import org.apache.parquet.compression.CompressionCodecFactory;
 import org.apache.parquet.example.data.Group;
 import org.apache.parquet.example.data.simple.SimpleGroupFactory;
+import org.apache.parquet.format.PageHeader;
+import org.apache.parquet.format.PageType;
+import org.apache.parquet.format.Util;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetWriter;
@@ -121,6 +126,10 @@ public class TestParquetCachedPageReadStore {
       .optional(PrimitiveTypeName.BOOLEAN).named("flag")
       .optional(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(4)
           .as(LogicalTypeAnnotation.decimalType(2, 7)).named("dec")
+      // Repeated: the only column with a repetition level above zero, so it is the only one whose V2
+      // pages carry repetition-level bytes. Without it the rep-level slice is always empty and the
+      // order the three V2 slices are taken in would not be checked by anything.
+      .repeated(PrimitiveTypeName.INT32).named("tags")
       .named("hive_schema");
 
   private static Configuration conf;
@@ -193,14 +202,88 @@ public class TestParquetCachedPageReadStore {
     assertParity(WriterVersion.PARQUET_1_0, CompressionCodecName.SNAPPY, 0, SCHEMA);
   }
 
+  /**
+   * A page type this store does not handle has to be skipped by its compressed size, so that the walk
+   * stays aligned on the next page header. Parquet 1.x never writes one inside a column chunk, so
+   * there is no file to read: an index page is spliced in front of a real chunk's bytes by hand, and
+   * the pages read back have to be the same ones the unspliced chunk gives.
+   */
+  @Test
+  public void testUnknownPageTypeIsSkipped() throws Exception {
+    Path file = new Path(tmpDir.toString(), "index-page.parquet");
+    writeFile(file, WriterVersion.PARQUET_1_0, CompressionCodecName.SNAPPY);
+    byte[] fileBytes = Files.readAllBytes(Paths.get(file.toUri().getPath()));
+    ParquetMetadata footer = footerOf(file);
+    // "bucket", which stays dictionary-encoded, so the dictionary page is read across the splice too.
+    ColumnDescriptor descriptor = SCHEMA.getColumns().get(1);
+    ColumnChunkMetaData chunk = chunkFor(footer.getBlocks().get(0), descriptor);
+    byte[] chunkBytes = Arrays.copyOfRange(fileBytes, (int) chunk.getStartingPos(),
+        (int) (chunk.getStartingPos() + chunk.getTotalSize()));
+
+    ByteArrayOutputStream splicedBytes = new ByteArrayOutputStream();
+    byte[] indexPage = new byte[PAD];
+    Arrays.fill(indexPage, POISON);
+    Util.writePageHeader(
+        new PageHeader(PageType.INDEX_PAGE, indexPage.length, indexPage.length), splicedBytes);
+    splicedBytes.write(indexPage);
+    splicedBytes.write(chunkBytes);
+
+    ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
+    CompressionCodecFactory codecFactory = options.getCodecFactory();
+    ParquetMetadataConverter converter = new ParquetMetadataConverter(options);
+    try {
+      PageReader expected = new ParquetCachedPageReadStore(footer,
+          singleChunkBatch(chunk, chunkBytes), codecFactory, converter).getPageReader(descriptor);
+      PageReader actual = new ParquetCachedPageReadStore(footer,
+          singleChunkBatch(chunkWithTotalSize(chunk, splicedBytes.size()), splicedBytes.toByteArray()),
+          codecFactory, converter).getPageReader(descriptor);
+      assertPageReaderParity("chunk behind an index page", expected, actual, new Coverage());
+    } finally {
+      codecFactory.release();
+    }
+  }
+
+  /**
+   * The cache ranges a batch carries have to tile the chunk exactly. When they do not - a buffer
+   * missing, or one that stops short of the chunk's end - the walk would read whatever is on the other
+   * side of the seam as page bytes and fail much later somewhere inside a decoder, so the store checks
+   * the tiling up front and names the chunk that broke it.
+   */
+  @Test
+  public void testCachedBuffersThatDoNotTileTheChunkAreRejected() throws Exception {
+    Path file = new Path(tmpDir.toString(), "mistiled.parquet");
+    writeFile(file, WriterVersion.PARQUET_1_0, CompressionCodecName.SNAPPY);
+    byte[] fileBytes = Files.readAllBytes(Paths.get(file.toUri().getPath()));
+    ParquetMetadata footer = footerOf(file);
+    MessageType projection = new MessageType(SCHEMA.getName(), SCHEMA.getType("name"));
+    String path = chunkFor(footer.getBlocks().getFirst(), projection.getColumns().getFirst())
+        .getPath().toString();
+    int buffers = cachedBatch(footer, 0, projection, fileBytes, BUFFER_GRAIN, new Coverage())
+        .columnBuffers()[0].length;
+    assertTrue("the fixture needs a chunk spread over several cache buffers", buffers > 2);
+
+    ParquetEncodedColumnBatch withGap =
+        cachedBatch(footer, 0, projection, fileBytes, BUFFER_GRAIN, new Coverage());
+    dropBuffer(withGap, 1);
+    IOException gap = assertThrows(IOException.class, () -> cachedStore(footer, withGap));
+    assertTrue(gap.getMessage(), gap.getMessage().contains(path));
+    assertTrue(gap.getMessage(), gap.getMessage().contains("does not continue at"));
+
+    ParquetEncodedColumnBatch truncated =
+        cachedBatch(footer, 0, projection, fileBytes, BUFFER_GRAIN, new Coverage());
+    dropBuffer(truncated, buffers - 1);
+    IOException tail = assertThrows(IOException.class, () -> cachedStore(footer, truncated));
+    assertTrue(tail.getMessage(), tail.getMessage().contains(path));
+    assertTrue(tail.getMessage(), tail.getMessage().contains("the chunk ends at"));
+  }
+
   private static void assertParity(WriterVersion version, CompressionCodecName codec,
       int grain, MessageType projection) throws Exception {
     Path file = new Path(tmpDir.toString(), version + "-" + codec + "-" + grain + ".parquet");
     writeFile(file, version, codec);
     byte[] fileBytes = Files.readAllBytes(Paths.get(file.toUri().getPath()));
 
-    ParquetMetadata footer = ParquetFileReader.readFooter(
-        HadoopInputFile.fromPath(file, conf), ParquetMetadataConverter.NO_FILTER);
+    ParquetMetadata footer = footerOf(file);
     assertTrue("the fixture should have several row groups", footer.getBlocks().size() > 1);
 
     ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
@@ -226,13 +309,19 @@ public class TestParquetCachedPageReadStore {
           assertPageReaderParity(column, expected.getPageReader(descriptor),
               actual.getPageReader(descriptor), coverage);
         }
+        assertCacheBuffersUntouched("row group " + rowGroupIx, batch);
         ++coverage.rowGroups;
       }
       assertNull("parquet has row groups left over", stockReader.readNextRowGroup());
     } finally {
       codecFactory.release();
     }
-    coverage.assertCovered(grain, projection.getColumns().size());
+    coverage.assertCovered(version, grain, projection.getColumns().size());
+  }
+
+  private static ParquetMetadata footerOf(Path file) throws IOException {
+    return ParquetFileReader.readFooter(
+        HadoopInputFile.fromPath(file, conf), ParquetMetadataConverter.NO_FILTER);
   }
 
   private static void assertPageReaderParity(String column, PageReader expected, PageReader actual,
@@ -253,7 +342,7 @@ public class TestParquetCachedPageReadStore {
             + pages, actualPage);
         break;
       }
-      assertDataPageParity(column + " page " + pages, expectedPage, actualPage);
+      assertDataPageParity(column + " page " + pages, expectedPage, actualPage, coverage);
       ++pages;
     }
     assertTrue(column + ": no pages were compared", pages > 0);
@@ -277,8 +366,8 @@ public class TestParquetCachedPageReadStore {
     ++coverage.dictionaryPages;
   }
 
-  private static void assertDataPageParity(String what, DataPage expected, DataPage actual)
-      throws IOException {
+  private static void assertDataPageParity(String what, DataPage expected, DataPage actual,
+      Coverage coverage) throws IOException {
     assertSame(what + ": page type", expected.getClass(), actual.getClass());
     assertEquals(what + ": value count", expected.getValueCount(), actual.getValueCount());
     assertEquals(what + ": uncompressed size",
@@ -308,6 +397,7 @@ public class TestParquetCachedPageReadStore {
       assertBytes(what + ": definition levels",
           expectedV2.getDefinitionLevels(), actualV2.getDefinitionLevels());
       assertBytes(what + ": data", expectedV2.getData(), actualV2.getData());
+      coverage.v2RepetitionLevelBytes += actualV2.getRepetitionLevels().size();
     } else {
       fail(what + ": unhandled page type " + expected.getClass());
     }
@@ -345,6 +435,59 @@ public class TestParquetCachedPageReadStore {
     return batch;
   }
 
+  /** One projected column, whole chunk in a single cache buffer at the chunk's own file offset. */
+  private static ParquetEncodedColumnBatch singleChunkBatch(ColumnChunkMetaData chunk, byte[] chunkBytes) {
+    ParquetEncodedColumnBatch batch = new ParquetEncodedColumnBatch();
+    batch.init("test-file-key", 0, new ColumnChunkMetaData[] {chunk});
+    batch.columnBuffers()[0] = new MemoryBuffer[] {new CacheBuffer(chunkBytes, 0, chunkBytes.length)};
+    batch.bufferOffsets()[0] = new long[] {chunk.getStartingPos()};
+    batch.bufferLengths()[0] = new int[] {chunkBytes.length};
+    return batch;
+  }
+
+  /**
+   * The same chunk with a different byte length, for a chunk whose bytes were assembled by hand. The
+   * page offsets are kept, so {@code getStartingPos()} still points at where the chunk starts.
+   */
+  private static ColumnChunkMetaData chunkWithTotalSize(ColumnChunkMetaData chunk, long totalSize) {
+    return ColumnChunkMetaData.get(chunk.getPath(), chunk.getPrimitiveType(), chunk.getCodec(),
+        chunk.getEncodingStats(), chunk.getEncodings(), chunk.getStatistics(),
+        chunk.getFirstDataPageOffset(), chunk.getDictionaryPageOffset(), chunk.getValueCount(),
+        totalSize, chunk.getTotalUncompressedSize());
+  }
+
+  /** Removes one cache buffer of the batch's single column, leaving a hole in the chunk's coverage. */
+  private static void dropBuffer(ParquetEncodedColumnBatch batch, int ix) {
+    MemoryBuffer[] buffers = batch.columnBuffers()[0];
+    long[] offsets = batch.bufferOffsets()[0];
+    int[] lengths = batch.bufferLengths()[0];
+    List<MemoryBuffer> keptBuffers = new ArrayList<>();
+    List<Long> keptOffsets = new ArrayList<>();
+    List<Integer> keptLengths = new ArrayList<>();
+    for (int i = 0; i < buffers.length; ++i) {
+      if (i != ix) {
+        keptBuffers.add(buffers[i]);
+        keptOffsets.add(offsets[i]);
+        keptLengths.add(lengths[i]);
+      }
+    }
+    batch.columnBuffers()[0] = keptBuffers.toArray(new MemoryBuffer[0]);
+    batch.bufferOffsets()[0] = keptOffsets.stream().mapToLong(Long::longValue).toArray();
+    batch.bufferLengths()[0] = keptLengths.stream().mapToInt(Integer::intValue).toArray();
+  }
+
+  private static PageReadStore cachedStore(ParquetMetadata footer, ParquetEncodedColumnBatch batch)
+      throws IOException {
+    ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
+    CompressionCodecFactory codecFactory = options.getCodecFactory();
+    try {
+      return new ParquetCachedPageReadStore(footer, batch, codecFactory,
+          new ParquetMetadataConverter(options));
+    } finally {
+      codecFactory.release();
+    }
+  }
+
   private static ColumnChunkMetaData chunkFor(BlockMetaData block, ColumnDescriptor descriptor) {
     for (ColumnChunkMetaData chunk : block.getColumns()) {
       if (Arrays.equals(chunk.getPath().toArray(), descriptor.getPath())) {
@@ -357,7 +500,7 @@ public class TestParquetCachedPageReadStore {
   /**
    * Fills the batch's buffer arrays for one projected column. Buffers are aligned to absolute file
    * offsets rather than to the chunk, so the first one usually starts before the chunk and the last
-   * one ends after it; the store has to clamp that overhang away.
+   * one ends after it; the store has to trim that overhang away.
    */
   private static void tileChunk(ParquetEncodedColumnBatch batch, int pc, byte[] fileBytes, int grain) {
     ColumnChunkMetaData chunk = batch.chunks()[pc];
@@ -371,7 +514,7 @@ public class TestParquetCachedPageReadStore {
     while (pos < chunkEnd) {
       long end = grain > 0 ? Math.min(pos + grain, fileBytes.length) : chunkEnd;
       int length = (int) (end - pos);
-      buffers.add(cacheBuffer(fileBytes, (int) pos, length));
+      buffers.add(new CacheBuffer(fileBytes, (int) pos, length));
       offsets.add(pos);
       lengths.add(length);
       pos = end;
@@ -387,25 +530,51 @@ public class TestParquetCachedPageReadStore {
    * larger backing buffer, the way {@code LlapAllocatorBuffer.initialize} leaves an arena slice:
    * position at the payload, limit at its end. The padding is filled with {@link #POISON} so that an
    * off-by-one read picks up garbage rather than a zero that might still parse.
+   *
+   * <p>It also remembers that initial position and limit, so {@link #assertUntouched} can check the
+   * store left them alone. A real cache buffer is shared with whoever else is reading that range, so
+   * walking it by moving its own position instead of a dup would corrupt another reader's view.
    */
-  private static MemoryBuffer cacheBuffer(byte[] fileBytes, int offset, int length) {
-    ByteBuffer arena = ByteBuffer.allocate(PAD + length + PAD);
-    Arrays.fill(arena.array(), POISON);
-    arena.position(PAD);
-    arena.put(fileBytes, offset, length);
-    arena.position(PAD);
-    arena.limit(PAD + length);
-    return new MemoryBuffer() {
-      @Override
-      public ByteBuffer getByteBufferRaw() {
-        return arena;
-      }
+  private static final class CacheBuffer implements MemoryBuffer {
+    private final ByteBuffer arena;
+    private final int initialPosition;
+    private final int initialLimit;
 
-      @Override
-      public ByteBuffer getByteBufferDup() {
-        return arena.duplicate();
+    CacheBuffer(byte[] fileBytes, int offset, int length) {
+      arena = ByteBuffer.allocate(PAD + length + PAD);
+      Arrays.fill(arena.array(), POISON);
+      arena.position(PAD);
+      arena.put(fileBytes, offset, length);
+      arena.position(PAD);
+      arena.limit(PAD + length);
+      initialPosition = arena.position();
+      initialLimit = arena.limit();
+    }
+
+    @Override
+    public ByteBuffer getByteBufferRaw() {
+      return arena;
+    }
+
+    @Override
+    public ByteBuffer getByteBufferDup() {
+      return arena.duplicate();
+    }
+
+    void assertUntouched(String what) {
+      assertEquals(what + ": the store moved a shared cache buffer's position",
+          initialPosition, arena.position());
+      assertEquals(what + ": the store moved a shared cache buffer's limit",
+          initialLimit, arena.limit());
+    }
+  }
+
+  private static void assertCacheBuffersUntouched(String what, ParquetEncodedColumnBatch batch) {
+    for (int pc = 0; pc < batch.chunks().length; ++pc) {
+      for (MemoryBuffer buffer : batch.columnBuffers()[pc]) {
+        ((CacheBuffer) buffer).assertUntouched(what + " column " + batch.chunks()[pc].getPath());
       }
-    };
+    }
   }
 
   private static void writeFile(Path path, WriterVersion version, CompressionCodecName codec)
@@ -437,6 +606,10 @@ public class TestParquetCachedPageReadStore {
         if (i % 11 != 0) {
           g.append("dec", Binary.fromConstantByteArray(ByteBuffer.allocate(4).putInt(i * 13).array()));
         }
+        // 0, 1 or 2 values per row, so the repetition levels vary from row to row.
+        for (int t = 0; t < i % 3; ++t) {
+          g.append("tags", i * 10 + t);
+        }
         writer.write(g);
       }
     }
@@ -454,8 +627,9 @@ public class TestParquetCachedPageReadStore {
     private int dictionaryPages;
     private int maxPagesPerColumn;
     private int maxBuffersPerChunk;
+    private long v2RepetitionLevelBytes;
 
-    void assertCovered(int grain, int columnsPerRowGroup) {
+    void assertCovered(WriterVersion version, int grain, int columnsPerRowGroup) {
       assertTrue("no row groups compared", rowGroups > 0);
       assertEquals("every projected column of every row group should have been compared",
           rowGroups * columnsPerRowGroup, columns);
@@ -463,6 +637,10 @@ public class TestParquetCachedPageReadStore {
       assertTrue("no dictionary page compared", dictionaryPages > 0);
       assertTrue("every chunk had a single page, so the multi-page path was not exercised",
           maxPagesPerColumn > 1);
+      if (version == WriterVersion.PARQUET_2_0) {
+        assertTrue("no V2 page carried repetition levels, so the order the rep/def/value slices are"
+            + " taken in was not exercised", v2RepetitionLevelBytes > 0);
+      }
       if (grain > 0) {
         assertTrue("every chunk fit in one cache buffer, so no page was split across buffers",
             maxBuffersPerChunk > 1);
