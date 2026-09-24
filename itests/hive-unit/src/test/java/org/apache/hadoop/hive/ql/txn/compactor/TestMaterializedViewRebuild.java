@@ -53,10 +53,18 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
           ""
   );
 
+  private static final List<String> FULL_REBUILD_PLAN_AFTER_UPDATE = Arrays.asList(
+          "CBO PLAN:",
+          "HiveProject(t1.a=[$0], t1.b=[$1], t1.c=[$2])",
+          "  HiveFilter(condition=[OR(IS NULL($0), >($0, 0))])",
+          "    HiveTableScan(table=[[default, t1]], table:alias=[t1])",
+          ""
+  );
+
   private static final List<String> INCREMENTAL_REBUILD_PLAN = Arrays.asList(
           "CBO PLAN:",
           "HiveProject(t1.a=[$0], t1.b=[$1], t1.c=[$2])",
-          "  HiveFilter(condition=[AND(>($5.writeid, 2), OR(>($0, 0), IS NULL($0)))])",
+          "  HiveFilter(condition=[AND(>($5.writeid, 2), OR(IS NULL($0), >($0, 0)))])",
           "    HiveTableScan(table=[[default, t1]], table:alias=[t1])",
           ""
   );
@@ -176,7 +184,7 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
     txnHandler.cleanTxnToWriteIdTable();
 
     List<String> result = execSelectAndDumpData("explain cbo alter materialized view " + MV1 + " rebuild", driver, "");
-    Assert.assertEquals(FULL_REBUILD_PLAN, result);
+    Assert.assertEquals(FULL_REBUILD_PLAN_AFTER_UPDATE, result);
     executeStatementOnDriver("alter materialized view " + MV1 + " rebuild", driver);
 
     result = execSelectAndDumpData("select * from " + MV1 , driver, "");
