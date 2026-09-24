@@ -978,9 +978,9 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     return sb.toString();
   }
 
-  protected static DeploymentStrategy buildDeploymentUpdateStrategy(String updatePolicy) {
-    String policy = updatePolicy != null ? updatePolicy : "RollingUpdate";
-    if ("FlashUpdate".equalsIgnoreCase(policy)) {
+  protected static DeploymentStrategy buildDeploymentUpdateStrategy(String updateStrategy) {
+    String strategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
+    if ("Recreate".equalsIgnoreCase(strategy)) {
       return new DeploymentStrategyBuilder().withType("Recreate").build();
     }
     return new DeploymentStrategyBuilder()
@@ -992,13 +992,13 @@ public abstract class HiveDependentResource<R extends HasMetadata,
             .build();
   }
 
-  protected static String tezAmUpdatePolicy(HiveClusterSpec clusterSpec, LlapSpec llap) {
+  protected static String tezAmUpdateStrategy(HiveClusterSpec clusterSpec, LlapSpec llap) {
     LlapSpec.LlapTezAmSpec perClusterSpec = llap.tezAm();
-    if (perClusterSpec != null && perClusterSpec.updatePolicy() != null
-            && !perClusterSpec.updatePolicy().isBlank()) {
-      return perClusterSpec.updatePolicy();
+    if (perClusterSpec != null && perClusterSpec.updateStrategy() != null
+        && !perClusterSpec.updateStrategy().isBlank()) {
+      return perClusterSpec.updateStrategy();
     }
-    return clusterSpec.tezAm().updatePolicy();
+    return clusterSpec.tezAm().updateStrategy();
   }
 
 }

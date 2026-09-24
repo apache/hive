@@ -444,7 +444,7 @@ public class LlapResourceBuilder
         .endMetadata()
         .withNewSpec()
           .withReplicas(replicas)
-          .withStrategy(buildDeploymentUpdateStrategy(tezAmUpdatePolicy(spec, llap)))
+          .withStrategy(buildDeploymentUpdateStrategy(tezAmUpdateStrategy(spec, llap)))
           .withNewSelector()
             .withMatchLabels(selectorLabels)
           .endSelector()
@@ -609,12 +609,11 @@ public class LlapResourceBuilder
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getLlapDaemonSite(spec, llap)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    // RollingUpdate: native StatefulSet rolling (serial).
-    // FlashUpdate: StatefulSet OnDelete plus parallel stale-pod deletes in reconcileLlapFlashUpdate.
-    String stsUpdatePolicy = "FlashUpdate".equalsIgnoreCase(llap.updatePolicy())
+    String llapStrategy = llap.updateStrategy();
+    String stsUpdateStrategy = "Recreate".equalsIgnoreCase(llapStrategy)
         ? "OnDelete" : "RollingUpdate";
     StatefulSetUpdateStrategy updateStrategy = new StatefulSetUpdateStrategyBuilder()
-        .withType(stsUpdatePolicy)
+        .withType(stsUpdateStrategy)
         .build();
 
     StatefulSet statefulSet = new StatefulSetBuilder()

@@ -76,7 +76,7 @@ public class HiveClusterReconciler
   private static final String CONDITION_READY_LITERAL = "Ready";
   private static final String RECONCILIATION_ERROR_LITERAL = "ReconciliationError";
   private static final String CONTROLLER_REVISION_LABEL = "controller-revision-hash";
-  private static final int FLASH_UPDATE_POLL_SECONDS = 5;
+  private static final int RECREATE_ROLLOUT_POLL_SECONDS = 5;
   private volatile HiveClusterAutoscaler autoscaler;
   private volatile BackgroundMetricsScraper bgScraper;
 
@@ -724,7 +724,8 @@ public class HiveClusterReconciler
           .resource(LlapResourceBuilder.buildStatefulSet(resource, llapSpec, replicas))
           .forceConflicts()
           .serverSideApply();
-      rolloutReschedule = Math.max(rolloutReschedule, reconcileLlapFlashUpdate(client, resource, llapSpec, replicas));
+      rolloutReschedule = Math.max(rolloutReschedule,
+          reconcileLlapRecreateRollout(client, resource, llapSpec, replicas));
       if (llapSpec.autoscaling().isEnabled()) {
         client.policy().v1().podDisruptionBudget().inNamespace(ns)
             .resource(LlapResourceBuilder.buildPdb(resource, llapSpec))
@@ -758,12 +759,12 @@ public class HiveClusterReconciler
   }
 
   /**
-   * For {@code FlashUpdate}, deletes all LLAP pods that lag the desired StatefulSet template.
-   * RollingUpdate is handled by the StatefulSet controller.
+   * For Recreate update Strategy, deletes LLAP pods that lag the desired StatefulSet template.
+   * RollingUpdate is handled by the K8s StatefulSet controller.
    */
-  private int reconcileLlapFlashUpdate(KubernetesClient client, HiveCluster resource,
+  private int reconcileLlapRecreateRollout(KubernetesClient client, HiveCluster resource,
       LlapSpec llapSpec, int replicas) {
-    if (replicas <= 0 || !"FlashUpdate".equalsIgnoreCase(llapSpec.updatePolicy())) {
+    if (replicas <= 0 || !"Recreate".equalsIgnoreCase(llapSpec.updateStrategy())) {
       return 0;
     }
 
@@ -771,7 +772,7 @@ public class HiveClusterReconciler
     String stsName = LlapResourceBuilder.resourceName(resource, llapSpec);
     StatefulSet sts = client.apps().statefulSets().inNamespace(ns).withName(stsName).get();
     if (sts == null || sts.getSpec() == null || sts.getSpec().getTemplate() == null) {
-      return FLASH_UPDATE_POLL_SECONDS;
+      return RECREATE_ROLLOUT_POLL_SECONDS;
     }
 
     var templateMeta = sts.getSpec().getTemplate().getMetadata();
@@ -786,7 +787,7 @@ public class HiveClusterReconciler
         .toList();
 
     if (pods.stream().anyMatch(p -> p.getMetadata().getDeletionTimestamp() != null)) {
-      return FLASH_UPDATE_POLL_SECONDS;
+      return RECREATE_ROLLOUT_POLL_SECONDS;
     }
 
     List<Pod> stale = pods.stream()
@@ -796,13 +797,13 @@ public class HiveClusterReconciler
       return 0;
     }
 
-    LOG.info("FlashUpdate: recreating {} stale LLAP daemon(s) of {}/{}", stale.size(), ns, llapSpec.name());
+    LOG.info("Recreate rollout: replacing {} stale LLAP daemon(s) of {}/{}", stale.size(), ns, llapSpec.name());
     try {
       client.resourceList(stale).delete();
     } catch (Exception e) {
-      LOG.warn("FlashUpdate: failed to delete stale LLAP pods of {}/{}: {} ", ns, llapSpec.name(), e.getMessage());
+      LOG.warn("Recreate rollout: failed to delete stale LLAP pods of {}/{}: {}", ns, llapSpec.name(), e.getMessage());
     }
-    return FLASH_UPDATE_POLL_SECONDS;
+    return RECREATE_ROLLOUT_POLL_SECONDS;
   }
 
   private static boolean isLlapPodStale(Pod pod, String desiredHash, String desiredRevision) {

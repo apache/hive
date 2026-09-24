@@ -84,9 +84,9 @@ public record LlapSpec(
     @JsonPropertyDescription("Per-LLAP TezAM configuration. Each LLAP cluster gets its own TezAM "
         + "with independent replica count and autoscaling.")
     LlapTezAmSpec tezAm,
-    @JsonPropertyDescription("Update policy for LLAP Cluster: RollingUpdate (one by one) or FlashUpdate (all at once)")
+    @JsonPropertyDescription("Update strategy for LLAP Cluster: RollingUpdate (one by one) or Recreate (all at once)")
     @Default("RollingUpdate")
-    String updatePolicy) {
+    String updateStrategy) {
 
   /** Per-LLAP-cluster TezAM replica and autoscaling overrides. */
   public record LlapTezAmSpec(
@@ -104,16 +104,16 @@ public record LlapSpec(
       @SchemaFrom(type = Object[].class)
       @PreserveUnknownFields
       List<Toleration> tolerations,
-      @JsonPropertyDescription("Update policy for LLAP Cluster TezAM: RollingUpdate (one by one) or "
-          + "FlashUpdate (all at once)")
+      @JsonPropertyDescription("Update strategy for LLAP Cluster TezAM: RollingUpdate (one by one) or "
+          + "Recreate (all at once)")
       @Default("RollingUpdate")
-      String updatePolicy) {
+      String updateStrategy) {
 
     public LlapTezAmSpec {
       replicas = replicas != null ? replicas : 1;
       autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
           false, 0, 0, 0, 60, 600, 120, 10, 0, 0, null);
-      updatePolicy = updatePolicy != null ? updatePolicy : "RollingUpdate";
+      updateStrategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
     }
   }
 
@@ -138,7 +138,7 @@ public record LlapSpec(
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 0, 1, 20, 60, 900, 600, 10, 0, 0, null);
     tezAm = tezAm != null ? tezAm : new LlapTezAmSpec(null, null, null, null, null);
-    updatePolicy = updatePolicy != null ? updatePolicy : "RollingUpdate";
+    updateStrategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
   }
 
   public boolean isEnabled() {

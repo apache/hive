@@ -71,9 +71,9 @@ public record TezAmSpec(
     String scratchStorageClassName,
     @JsonPropertyDescription("Autoscaling configuration (operator-driven, no external dependencies)")
     AutoscalingSpec autoscaling,
-    @JsonPropertyDescription("Update policy for the TezAM: RollingUpdate (one by one) or FlashUpdate (all at once)")
+    @JsonPropertyDescription("Update strategy for the TezAM: RollingUpdate (one by one) or Recreate (all at once)")
     @Default("RollingUpdate")
-    String updatePolicy) {
+    String updateStrategy) {
 
   public TezAmSpec {
     replicas = replicas != null ? replicas : 1;
@@ -85,7 +85,7 @@ public record TezAmSpec(
     envVars = envVars != null ? envVars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 0, 0, 0, 60, 600, 120, 10, 0, 0, null);
-    updatePolicy = updatePolicy != null ? updatePolicy : "RollingUpdate";
+    updateStrategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
   }
 
   public boolean isEnabled() {

@@ -94,8 +94,8 @@ spec:
       cpuScaleUpThreshold: {{ .Values.cluster.metastore.autoscaling.cpuScaleUpThreshold | default 90 }}
       cpuScaleDownThreshold: {{ .Values.cluster.metastore.autoscaling.cpuScaleDownThreshold | default 30 }}
     {{- end }}
-    {{- if .Values.cluster.metastore.updatePolicy }}
-    updatePolicy: {{ .Values.cluster.metastore.updatePolicy }}
+    {{- if .Values.cluster.metastore.updateStrategy }}
+    updateStrategy: {{ .Values.cluster.metastore.updateStrategy }}
     {{- end }}
     {{- else }}
     {{- if .Values.cluster.metastore.externalUri }}
@@ -150,8 +150,8 @@ spec:
       cpuScaleUpThreshold: {{ .Values.cluster.hiveServer2.autoscaling.cpuScaleUpThreshold | default 90 }}
       cpuScaleDownThreshold: {{ .Values.cluster.hiveServer2.autoscaling.cpuScaleDownThreshold | default 30 }}
     {{- end }}
-    {{- if .Values.cluster.hiveServer2.updatePolicy }}
-    updatePolicy: {{ .Values.cluster.hiveServer2.updatePolicy }}
+    {{- if .Values.cluster.hiveServer2.updateStrategy }}
+    updateStrategy: {{ .Values.cluster.hiveServer2.updateStrategy }}
     {{- end }}
 
   {{- if .Values.cluster.llapClusterRouting }}
@@ -166,8 +166,8 @@ spec:
     replicas: {{ .replicas | default 2 }}
     executors: {{ .executors | default 1 }}
     memoryMb: {{ .memoryMb | default 1024 }}
-    {{- if .updatePolicy }}
-    updatePolicy: {{ .updatePolicy }}
+    {{- if .updateStrategy }}
+    updateStrategy: {{ .updateStrategy }}
     {{- end }}
     {{- if .resources }}
     resources:
@@ -211,8 +211,8 @@ spec:
     {{- if .tezAm }}
     tezAm:
       replicas: {{ .tezAm.replicas | default 1 }}
-      {{- if .tezAm.updatePolicy }}
-      updatePolicy: {{ .tezAm.updatePolicy }}
+      {{- if .tezAm.updateStrategy }}
+      updateStrategy: {{ .tezAm.updateStrategy }}
       {{- end }}
       {{- if .tezAm.affinity }}
       affinity:
@@ -279,8 +279,8 @@ spec:
       gracePeriodSeconds: {{ .Values.cluster.tezAm.autoscaling.gracePeriodSeconds }}
       metricsScrapeIntervalSeconds: {{ .Values.cluster.tezAm.autoscaling.metricsScrapeIntervalSeconds | default 10 }}
     {{- end }}
-    {{- if .Values.cluster.tezAm.updatePolicy }}
-    updatePolicy: {{ .Values.cluster.tezAm.updatePolicy }}
+    {{- if .Values.cluster.tezAm.updateStrategy }}
+    updateStrategy: {{ .Values.cluster.tezAm.updateStrategy }}
     {{- end }}
     {{- end }}
 
