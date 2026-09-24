@@ -207,6 +207,10 @@ public class ParquetEncodedDataConsumer
     ColumnVector cv = cvb.cols[idx];
     cv.reset();
     cv.ensureSize(batchSize, false);
+    // Seeded, not decided: the column readers only ever clear this flag - on the first value that
+    // differs from row 0, or on any null - and never raise it, so starting from the false that
+    // reset() just left would leave every batch non-repeating. This is what the stock
+    // VectorizedParquetRecordReader does too, immediately before its readBatch call.
     cv.isRepeating = true;
     return cv;
   }
