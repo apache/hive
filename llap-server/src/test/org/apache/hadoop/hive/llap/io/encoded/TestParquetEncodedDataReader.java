@@ -248,7 +248,6 @@ public class TestParquetEncodedDataReader {
     FileSplit split = wholeFile();
     Run run = read(job, split);
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
     assertTrue(run.firstBatchCols[2] instanceof Decimal64ColumnVector);
     assertEquals(2, ((Decimal64ColumnVector) run.firstBatchCols[2]).scale);
@@ -266,7 +265,6 @@ public class TestParquetEncodedDataReader {
     FileSplit split = new FileSplit(file, start, end - start, (String[]) null);
     Run run = read(job, split);
 
-    run.assertClean();
     assertEquals(1, run.counter(LlapIOCounters.SELECTED_ROWGROUPS));
     assertEquals(ROWS_PER_GROUP, run.rows.size());
     // The split covers row group 1 only, so the first row emitted must be that group's first row.
@@ -284,8 +282,6 @@ public class TestParquetEncodedDataReader {
     FileSplit secondSplit = new FileSplit(file, cut, fileLength - cut, (String[]) null);
     Run second = read(secondJob, secondSplit);
 
-    first.assertClean();
-    second.assertClean();
     assertEquals(2, first.counter(LlapIOCounters.SELECTED_ROWGROUPS));
     assertEquals(1, second.counter(LlapIOCounters.SELECTED_ROWGROUPS));
     List<Object[]> all = new ArrayList<>(first.rows);
@@ -303,7 +299,6 @@ public class TestParquetEncodedDataReader {
     FileSplit split = wholeFile();
     Run run = read(job, split);
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
     assertEquals(3, run.firstBatchCols.length);
     assertTrue(run.firstBatchCols[0] instanceof DoubleColumnVector);
@@ -316,7 +311,6 @@ public class TestParquetEncodedDataReader {
   public void testCacheAllocationMatchesBytesRead() throws Exception {
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
-    run.assertClean();
     long used = run.counter(LlapIOCounters.ALLOCATED_USED_BYTES);
     long allocated = run.counter(LlapIOCounters.ALLOCATED_BYTES);
     assertEquals(run.counter(LlapIOCounters.CACHE_MISS_BYTES), used);
@@ -331,7 +325,6 @@ public class TestParquetEncodedDataReader {
   public void testAdjacentColumnChunksReadInOneRun() throws Exception {
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2), wholeFile());
 
-    run.assertClean();
     // This fixture allocates in 4 Kb buffers, far below the cap, so what the loop below really
     // pins is that adjacent chunks merge -- the cap itself never binds here.
     int maxRun = new ParquetCacheLayout(MAX_ALLOC, FLOOR).maxRangeBytes();
@@ -373,7 +366,6 @@ public class TestParquetEncodedDataReader {
   public void testReversedProjectionStillReadsForward() throws Exception {
     Run run = read(jobConf(COLUMNS, TYPES, 5, 4, 3, 2, 1, 0), wholeFile());
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
     long previousEnd = -1;
     for (long[] read : run.reads) {
@@ -390,7 +382,6 @@ public class TestParquetEncodedDataReader {
   public void testGapBetweenProjectedChunksSplitsTheRun() throws Exception {
     Run run = read(jobConf(COLUMNS, TYPES, 0, 2), wholeFile());
 
-    run.assertClean();
     for (BlockMetaData block : footer.getBlocks()) {
       long bigStart = block.getColumns().get(1).getStartingPos();
       long bigEnd = bigStart + block.getColumns().get(1).getTotalSize();
@@ -405,10 +396,9 @@ public class TestParquetEncodedDataReader {
   /** A chunk already in the cache is served from it: no read of the next split touches its range. */
   @Test
   public void testCachedBuffersAreNotReread() throws Exception {
-    read(jobConf(COLUMNS, TYPES, 1), wholeFile()).assertClean();
+    read(jobConf(COLUMNS, TYPES, 1), wholeFile());
     Run second = read(jobConf(COLUMNS, TYPES, 0, 1, 2), wholeFile());
 
-    second.assertClean();
     for (BlockMetaData block : footer.getBlocks()) {
       long bigStart = block.getColumns().get(1).getStartingPos();
       long bigEnd = bigStart + block.getColumns().get(1).getTotalSize();
@@ -428,10 +418,9 @@ public class TestParquetEncodedDataReader {
     // We only assert on the *second* read here — its counters are order-independent because the
     // second read always finds the footer that the first read of this test put in (META_HIT is 1
     // and META_MISS is 0 regardless of prior state).
-    read(jobConf(COLUMNS, TYPES, 0), wholeFile()).assertClean();
+    read(jobConf(COLUMNS, TYPES, 0), wholeFile());
 
     Run second = read(jobConf(COLUMNS, TYPES, 0), wholeFile());
-    second.assertClean();
     assertEquals(1, second.counter(LlapIOCounters.METADATA_CACHE_HIT));
     assertEquals(0, second.counter(LlapIOCounters.METADATA_CACHE_MISS));
   }
@@ -445,7 +434,6 @@ public class TestParquetEncodedDataReader {
     // (TABLE is only set when LLAP_TRACK_CACHE_USAGE is on, which this test's fixture disables.)
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
-    run.assertClean();
     assertEquals(ROW_GROUPS, run.counter(LlapIOCounters.SELECTED_ROWGROUPS));
     assertTrue("TOTAL_IO_TIME_NS not recorded",
         run.counter(LlapIOCounters.TOTAL_IO_TIME_NS) > 0);
@@ -467,7 +455,6 @@ public class TestParquetEncodedDataReader {
   public void testNextRowGroupIsRequestedBeforeCurrentDecodes() throws Exception {
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
-    run.assertClean();
     // Row group 1's request goes out before row group 0 is decoded; row group 2's after it.
     assertEquals(Arrays.asList(0, 0, 1), decodedAtRequest);
   }
@@ -493,7 +480,6 @@ public class TestParquetEncodedDataReader {
         Long.toString(largestRowGroupBytes(0, 1, 2, 3, 4, 5) * 6));
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile(), oneGroupAndAHalf);
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
     // The lookahead never fired: one request per row group, each going out only once the previous
     // group had been decoded. Room for two would have made this [0, 0, 1], as the test above asserts.
@@ -506,7 +492,6 @@ public class TestParquetEncodedDataReader {
     unslicedBuffers = true;
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
   }
 
@@ -518,7 +503,6 @@ public class TestParquetEncodedDataReader {
     read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
     Run run = read(jobConf(COLUMNS, TYPES, 3), wholeFile());
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
   }
 
@@ -533,7 +517,6 @@ public class TestParquetEncodedDataReader {
     positionedRangeBuffers = true;
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
   }
 
@@ -577,7 +560,6 @@ public class TestParquetEncodedDataReader {
     ledger.collide = true;
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
     assertEquals("every buffer we allocated was refused and freed", ledger.allocated.size(), ledger.freed.size());
     assertTrue("nothing of ours reached the cache", ledger.accepted.isEmpty());
@@ -591,7 +573,6 @@ public class TestParquetEncodedDataReader {
         .equals("id", PredicateLeaf.Type.LONG, (long) ROWS + 1).build());
     Run run = read(job, wholeFile());
 
-    run.assertClean();
     assertEquals(0, run.counter(LlapIOCounters.SELECTED_ROWGROUPS));
     assertEquals(0, run.rows.size());
     assertEquals(0, run.counter(LlapIOCounters.ROWS_EMITTED));
@@ -605,7 +586,6 @@ public class TestParquetEncodedDataReader {
     setSarg(job, SearchArgumentFactory.newBuilder().between("id", PredicateLeaf.Type.LONG, lo, hi).build());
     Run run = read(job, wholeFile());
 
-    run.assertClean();
     assertEquals(1, run.counter(LlapIOCounters.SELECTED_ROWGROUPS));
     assertEquals(ROWS_PER_GROUP, run.rows.size());
     // Pins which group survived: assertExpectedRows derives each block's offset from its own first
@@ -620,8 +600,6 @@ public class TestParquetEncodedDataReader {
     Run cold = read(jobConf(COLUMNS, TYPES, 1, 3), wholeFile());
     Run warm = read(jobConf(COLUMNS, TYPES, 1, 3), wholeFile());
 
-    cold.assertClean();
-    warm.assertClean();
     assertEquals(0, cold.counter(LlapIOCounters.CACHE_HIT_BYTES));
     assertEquals(chunkBytes, cold.counter(LlapIOCounters.CACHE_MISS_BYTES));
     assertEquals(chunkBytes, warm.counter(LlapIOCounters.CACHE_HIT_BYTES));
@@ -647,7 +625,6 @@ public class TestParquetEncodedDataReader {
     skipExpectedRows = true;
     Run run = read(jobConf(COLUMNS + ",extra", TYPES + ",string", 0, 6), wholeFile());
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
     assertTrue(run.firstBatchCols[1] instanceof BytesColumnVector);
     for (int i : new int[] {0, 1500, ROWS - 1}) {
@@ -679,7 +656,6 @@ public class TestParquetEncodedDataReader {
     Run run = read(jobConf(columns, "double,int,string,int,string", 0, 1, 2, 3, 4), wholeFile(),
         Map.of("added", 42));
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
     assertTrue(run.firstBatchCols[2] instanceof BytesColumnVector);
     assertTrue(run.firstBatchCols[3] instanceof LongColumnVector);
@@ -726,7 +702,6 @@ public class TestParquetEncodedDataReader {
     Run run = read(jobConf("flag", "boolean", 0),
         new FileSplit(constantFile, 0, length, (String[]) null));
 
-    run.assertClean();
     assertTrue(run.firstBatchCols[0].isRepeating);
   }
 
@@ -738,7 +713,6 @@ public class TestParquetEncodedDataReader {
         .in("id", PredicateLeaf.Type.LONG, 100L, (long) 2 * ROWS_PER_GROUP + 1000).build());
     Run run = read(job, wholeFile());
 
-    run.assertClean();
     assertEquals(2, run.counter(LlapIOCounters.SELECTED_ROWGROUPS));
     // Groups 0 and 2 are selected, so row group 2 follows row group 0 with nothing in between.
     assertArrayEquals(project(expectedRow(3000), 0, 3), run.rows.get(ROWS_PER_GROUP));
@@ -747,7 +721,7 @@ public class TestParquetEncodedDataReader {
   /** With LLAP_IO_CACHE_ONLY on, a chunk that is not cached fails the split instead of going to HDFS. */
   @Test
   public void testCacheOnlyReadThrowsOnColdData() throws Exception {
-    read(jobConf(COLUMNS, TYPES, 0, 3), wholeFile()).assertClean();
+    read(jobConf(COLUMNS, TYPES, 0, 3), wholeFile());
     JobConf job = jobConf(COLUMNS, TYPES, 1);
     HiveConf.setBoolVar(job, ConfVars.LLAP_IO_CACHE_ONLY, true);
     Run run = read(job, wholeFile());
@@ -765,7 +739,6 @@ public class TestParquetEncodedDataReader {
     HiveConf.setBoolVar(noKeyConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID, false);
     Run run = read(jobConf(COLUMNS, TYPES, 0, 2), wholeFile(), noKeyConf);
 
-    run.assertClean();
     assertEquals(ROWS, run.rows.size());
     assertEquals(0, run.counter(LlapIOCounters.CACHE_HIT_BYTES));
     assertEquals(0, run.counter(LlapIOCounters.CACHE_MISS_BYTES));
@@ -962,6 +935,10 @@ public class TestParquetEncodedDataReader {
    * errored or was stopped emits a prefix of the split rather than nothing, so its rows are checked
    * too, and only the row count is let off. The sole opt-outs are the two tests whose Hive schema is
    * not the fixture's ({@link #skipExpectedRows} / {@link #skipNonNativeParity}).
+   *
+   * <p>Also {@link Run#assertClean}s the run, for the same reason: a test only has to say what it is
+   * about, not repeat that the reader reached the end, left no buffer locked and leaked nothing. The
+   * three tests that make the read fail or stop get the resource half of that check instead.
    */
   private Run read(JobConf job, FileSplit split, Configuration readerDaemonConf,
       Map<String, Object> initialDefaults) throws Exception {
@@ -1007,6 +984,13 @@ public class TestParquetEncodedDataReader {
     }
     if (!skipNonNativeParity) {
       assertParityWithNonNative(run, job, split, whole);
+    }
+    if (whole) {
+      run.assertClean();
+    } else {
+      // A run that errored or was stopped is expected to be neither error-free nor done, so only the
+      // resource half of assertClean applies to it. The test itself asserts what went wrong.
+      ledger.assertNothingLeaked();
     }
     return run;
   }
