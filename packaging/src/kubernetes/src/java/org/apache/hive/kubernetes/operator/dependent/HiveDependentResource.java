@@ -38,6 +38,8 @@ import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStrategyBuilder;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
@@ -974,6 +976,29 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       break;
     }
     return sb.toString();
+  }
+
+  protected static DeploymentStrategy buildDeploymentUpdateStrategy(String updatePolicy) {
+    String policy = updatePolicy != null ? updatePolicy : "RollingUpdate";
+    if ("FlashUpdate".equalsIgnoreCase(policy)) {
+      return new DeploymentStrategyBuilder().withType("Recreate").build();
+    }
+    return new DeploymentStrategyBuilder()
+            .withType("RollingUpdate")
+            .withNewRollingUpdate()
+            .withMaxSurge(new IntOrString(0))
+            .withMaxUnavailable(new IntOrString(1))
+            .endRollingUpdate()
+            .build();
+  }
+
+  protected static String tezAmUpdatePolicy(HiveClusterSpec clusterSpec, LlapSpec llap) {
+    LlapSpec.LlapTezAmSpec perClusterSpec = llap.tezAm();
+    if (perClusterSpec != null && perClusterSpec.updatePolicy() != null
+            && !perClusterSpec.updatePolicy().isBlank()) {
+      return perClusterSpec.updatePolicy();
+    }
+    return clusterSpec.tezAm().updatePolicy();
   }
 
 }

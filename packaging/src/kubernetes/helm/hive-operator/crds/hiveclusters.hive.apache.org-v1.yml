@@ -254,6 +254,11 @@ spec:
                       type: object
                     type: array
                     x-kubernetes-preserve-unknown-fields: true
+                  updatePolicy:
+                    default: RollingUpdate
+                    description: "Update policy for HiveServer2: RollingUpdate (one\
+                      \ by one) or FlashUpdate (all at once)"
+                    type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               image:
@@ -527,6 +532,11 @@ spec:
                             type: object
                           type: array
                           x-kubernetes-preserve-unknown-fields: true
+                        updatePolicy:
+                          default: RollingUpdate
+                          description: "Update policy for LLAP Cluster TezAM: RollingUpdate\
+                            \ (one by one) or FlashUpdate (all at once)"
+                          type: string
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
                     tolerations:
@@ -535,6 +545,11 @@ spec:
                         type: object
                       type: array
                       x-kubernetes-preserve-unknown-fields: true
+                    updatePolicy:
+                      default: RollingUpdate
+                      description: "Update policy for LLAP Cluster: RollingUpdate\
+                        \ (one by one) or FlashUpdate (all at once)"
+                      type: string
                   required:
                   - name
                   type: object
@@ -749,6 +764,11 @@ spec:
                       type: object
                     type: array
                     x-kubernetes-preserve-unknown-fields: true
+                  updatePolicy:
+                    default: RollingUpdate
+                    description: "Update policy for Metastore: RollingUpdate (one\
+                      \ by one) or FlashUpdate (all at once)"
+                    type: string
                   warehouseDir:
                     default: /hive/warehouse
                     description: Warehouse directory path
@@ -897,6 +917,11 @@ spec:
                       type: object
                     type: array
                     x-kubernetes-preserve-unknown-fields: true
+                  updatePolicy:
+                    default: RollingUpdate
+                    description: "Update policy for the TezAM: RollingUpdate (one\
+                      \ by one) or FlashUpdate (all at once)"
+                    type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               volumeMounts:

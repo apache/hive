@@ -242,6 +242,7 @@ public class HiveServer2DeploymentDependent
           .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
         .endMetadata()
         .withNewSpec()
+          .withStrategy(buildDeploymentUpdateStrategy(hs2.updatePolicy()))
           .withReplicas(replicas)
           .withNewSelector()
             .withMatchLabels(selectorLabels)

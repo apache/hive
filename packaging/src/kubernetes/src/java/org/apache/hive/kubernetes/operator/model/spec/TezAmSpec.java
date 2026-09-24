@@ -70,7 +70,10 @@ public record TezAmSpec(
         + "Must support ReadWriteMany access. If null, uses cluster default.")
     String scratchStorageClassName,
     @JsonPropertyDescription("Autoscaling configuration (operator-driven, no external dependencies)")
-    AutoscalingSpec autoscaling) {
+    AutoscalingSpec autoscaling,
+    @JsonPropertyDescription("Update policy for the TezAM: RollingUpdate (one by one) or FlashUpdate (all at once)")
+    @Default("RollingUpdate")
+    String updatePolicy) {
 
   public TezAmSpec {
     replicas = replicas != null ? replicas : 1;
@@ -82,6 +85,7 @@ public record TezAmSpec(
     envVars = envVars != null ? envVars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 0, 0, 0, 60, 600, 120, 10, 0, 0, null);
+    updatePolicy = updatePolicy != null ? updatePolicy : "RollingUpdate";
   }
 
   public boolean isEnabled() {

@@ -74,7 +74,10 @@ public record MetastoreSpec(
     @JsonPropertyDescription("Liveness probe configuration")
     ProbeSpec livenessProbe,
     @JsonPropertyDescription("Autoscaling configuration (operator-driven, no external dependencies)")
-    AutoscalingSpec autoscaling) {
+    AutoscalingSpec autoscaling,
+    @JsonPropertyDescription("Update policy for Metastore: RollingUpdate (one by one) or FlashUpdate (all at once)")
+    @Default("RollingUpdate")
+    String updatePolicy) {
 
   public MetastoreSpec {
     replicas = replicas != null ? replicas : 1;
@@ -88,6 +91,7 @@ public record MetastoreSpec(
     envVars = envVars != null ? envVars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 1, 75, 0, 60, 300, 60, 10, 90, 30, null);
+    updatePolicy = updatePolicy != null ? updatePolicy : "RollingUpdate";
   }
 
   public boolean isEnabled() {

@@ -152,6 +152,7 @@ public class MetastoreDeploymentDependent
           .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
         .endMetadata()
         .withNewSpec()
+          .withStrategy(buildDeploymentUpdateStrategy(spec.metastore().updatePolicy()))
           .withReplicas(replicas)
           .withNewSelector()
             .withMatchLabels(selectorLabels)

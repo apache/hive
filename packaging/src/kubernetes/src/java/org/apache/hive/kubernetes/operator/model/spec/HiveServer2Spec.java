@@ -69,7 +69,10 @@ public record HiveServer2Spec(
     @JsonPropertyDescription("Liveness probe configuration")
     ProbeSpec livenessProbe,
     @JsonPropertyDescription("Autoscaling configuration (operator-driven, no external dependencies)")
-    AutoscalingSpec autoscaling) {
+    AutoscalingSpec autoscaling,
+    @JsonPropertyDescription("Update policy for HiveServer2: RollingUpdate (one by one) or FlashUpdate (all at once)")
+    @Default("RollingUpdate")
+    String updatePolicy) {
 
   public HiveServer2Spec {
     replicas = replicas != null ? replicas : 1;
@@ -81,5 +84,6 @@ public record HiveServer2Spec(
     externalJars = externalJars != null ? externalJars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 1, 80, 0, 60, 600, 300, 10, 90, 30, null);
+    updatePolicy = updatePolicy != null ? updatePolicy : "RollingUpdate";
   }
 }

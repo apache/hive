@@ -361,7 +361,27 @@ public class HiveClusterAutoscaler {
       Map<String, Integer> patches, Map<String, AutoscalingStatus> statuses,
       List<PodMetrics> metrics) {
 
-    int currentReplicas = getCurrentReplicas(client, namespace, clusterName, component);
+    int appliedWorkloadReplicas = -1;
+    int currentReplicas;
+    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
+      String llapName = component.substring(ConfigUtils.COMPONENT_LLAP.length() + 1);
+      String workloadName = clusterName + "-" + llapName;
+      var ss = client.apps().statefulSets().inNamespace(namespace).withName(workloadName).get();
+      int specReplicas = 0;
+      int statusReplicas = 0;
+      if (ss != null) {
+        if (ss.getSpec() != null && ss.getSpec().getReplicas() != null) {
+          specReplicas = ss.getSpec().getReplicas();
+        }
+        if (ss.getStatus() != null && ss.getStatus().getReplicas() != null) {
+          statusReplicas = ss.getStatus().getReplicas();
+        }
+      }
+      appliedWorkloadReplicas = specReplicas;
+      currentReplicas = Math.max(specReplicas, statusReplicas);
+    } else {
+      currentReplicas = getCurrentReplicas(client, namespace, clusterName, component);
+    }
 
     String key = cacheKey(namespace, clusterName, component);
 
@@ -380,7 +400,7 @@ public class HiveClusterAutoscaler {
         k -> new ComponentAutoscaler(component, createStrategy(component, cluster)));
 
     ComponentAutoscaler.EvaluationResult result =
-        autoscaler.evaluate(metrics, autoscaling, currentReplicas, maxReplicas);
+        autoscaler.evaluate(metrics, autoscaling, currentReplicas, appliedWorkloadReplicas, maxReplicas);
 
     // Build status
     if (result.patchTo() != null) {
@@ -408,8 +428,7 @@ public class HiveClusterAutoscaler {
       patches.put(component, patchValue);
       MANAGED_REPLICAS.put(key, patchValue);
     } else {
-      // No change needed — record current replicas as the managed value
-      MANAGED_REPLICAS.put(key, currentReplicas);
+      MANAGED_REPLICAS.putIfAbsent(key, currentReplicas);
     }
   }
 
@@ -446,9 +465,13 @@ public class HiveClusterAutoscaler {
       workloadName = clusterName + "-" + component;
     }
     if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
-      var ss = client.apps().statefulSets()
-          .inNamespace(namespace).withName(workloadName).get();
-      return ss != null && ss.getSpec().getReplicas() != null ? ss.getSpec().getReplicas() : 0;
+      var ss = client.apps().statefulSets().inNamespace(namespace).withName(workloadName).get();
+      if (ss != null) {
+        int specReplicas = ss.getSpec() != null && ss.getSpec().getReplicas() != null ? ss.getSpec().getReplicas() : 0;
+        int statusReplicas = ss.getStatus() != null && ss.getStatus().getReplicas() != null ? ss.getStatus().getReplicas() : 0;
+        return Math.max(specReplicas, statusReplicas);
+      }
+      return 0;
     } else {
       var deploy = client.apps().deployments()
           .inNamespace(namespace).withName(workloadName).get();
