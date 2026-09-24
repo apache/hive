@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.orc.impl.SchemaEvolution;
 import org.apache.parquet.HadoopReadOptions;
 import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.column.page.PageReadStore;
@@ -169,9 +168,7 @@ public class ParquetEncodedDataConsumer
       while (rowsLeft > 0) {
         int batchSize = (int) Math.min(VectorizedRowBatch.DEFAULT_SIZE, rowsLeft);
 
-        ColumnVectorBatch cvb = cvbPool.take();
-        cvb.filterContext.reset();
-        cvb.size = batchSize;
+        ColumnVectorBatch cvb = takeBatch(batchSize);
 
         // columnReaders[i] is requestedSchema field i, i.e. the i-th projected column.
         for (int i = 0; i < columnReaders.length; ++i) {
@@ -221,10 +218,5 @@ public class ParquetEncodedDataConsumer
       return DataTypePhysicalVariation.DECIMAL_64;
     }
     return DataTypePhysicalVariation.NONE;
-  }
-
-  @Override
-  public SchemaEvolution getSchemaEvolution() {
-    return null;
   }
 }

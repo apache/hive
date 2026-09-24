@@ -153,10 +153,8 @@ public class OrcEncodedDataConsumer
           if (batchSize == 0) break;
         }
 
-        ColumnVectorBatch cvb = cvbPool.take();
-        cvb.filterContext.reset();
+        ColumnVectorBatch cvb = takeBatch(batchSize);
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
-        cvb.size = batchSize;
         for (int idx = 0; idx < columnReaders.length; ++idx) {
           /*
            * Currently, ORC's TreeReaderFactory class does this:
