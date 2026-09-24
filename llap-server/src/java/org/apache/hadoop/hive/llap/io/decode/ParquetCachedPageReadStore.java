@@ -134,9 +134,16 @@ class ParquetCachedPageReadStore implements PageReadStore {
    *
    * <p>The buffers are cache ranges aligned to absolute file offsets, not to this chunk, so the
    * first and last one usually overhang the chunk (the first may even start before it). That is what
-   * the clamping below is for.
+   * the trimming below is for.
+   *
+   * <p>The trimmed slices have to tile the chunk exactly, which is checked as they are built: a
+   * buffer that does not continue where the previous one ended, or one that reaches past the chunk,
+   * means the batch is not carrying the buffers the chunk was planned with. Without the check the
+   * page walk would read the wrong bytes as page bytes, and fail much later with a decoding error
+   * about a corrupt header.
    */
-  private static List<ByteBuffer> chunkBuffers(ParquetEncodedColumnBatch batch, int pc) {
+  private static List<ByteBuffer> chunkBuffers(ParquetEncodedColumnBatch batch, int pc)
+      throws IOException {
     ColumnChunkMetaData chunk = batch.chunks()[pc];
     long chunkStart = chunk.getStartingPos();
     long chunkEnd = chunkStart + chunk.getTotalSize();
@@ -144,18 +151,29 @@ class ParquetCachedPageReadStore implements PageReadStore {
     long[] bufferOffsets = batch.bufferOffsets()[pc];
     int[] bufferLengths = batch.bufferLengths()[pc];
     List<ByteBuffer> slices = new ArrayList<>(columnBuffers.length);
+    long covered = chunkStart;
     for (int i = 0; i < columnBuffers.length; ++i) {
       long bufferStart = bufferOffsets[i];
       long bufferEnd = bufferStart + bufferLengths[i];
       long sliceStart = Math.max(chunkStart, bufferStart);
       long sliceEnd = Math.min(chunkEnd, bufferEnd);
+      if (sliceStart != covered || sliceEnd <= sliceStart) {
+        throw new IOException("Cached buffer " + (i + 1) + " of " + columnBuffers.length + " for column chunk "
+            + chunk.getPath() + " covers [" + sliceStart + ", " + sliceEnd + ") of the chunk at ["
+            + chunkStart + ", " + chunkEnd + "), which does not continue at " + covered);
+      }
+      covered = sliceEnd;
       // A dup, because the cache buffer is shared: moving position/limit must not be visible to
-      // another reader of the same buffer. slice() then keeps a view of the clamped region, so the
+      // another reader of the same buffer. slice() then keeps a view of the trimmed region, so the
       // chunk bytes are still the cache's bytes - nothing is copied here or below.
       ByteBuffer bb = columnBuffers[i].getByteBufferDup();
       bb.position(bb.position() + (int) (sliceStart - bufferStart));
       bb.limit(bb.position() + (int) (sliceEnd - sliceStart));
       slices.add(bb.slice());
+    }
+    if (covered != chunkEnd) {
+      throw new IOException("Cached buffers for column chunk " + chunk.getPath() + " cover ["
+          + chunkStart + ", " + covered + "), but the chunk ends at " + chunkEnd);
     }
     return slices;
   }
