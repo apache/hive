@@ -691,6 +691,45 @@ public class TestParquetEncodedDataReader {
     }
   }
 
+  /**
+   * A column that holds one value for the whole batch comes back flagged repeating. That only
+   * happens because the consumer seeds the flag before readBatch: the column readers only ever
+   * clear it, never raise it, so without the seed no batch would be repeating. BOOLEAN because
+   * parquet does not dictionary-encode booleans - on a dictionary-encoded page the ids vector starts
+   * out non-repeating, and the flag ends up false whatever the column holds.
+   */
+  @Test
+  public void testConstantColumnIsFlaggedRepeating() throws Exception {
+    MessageType schema = Types.buildMessage()
+        .required(PrimitiveTypeName.BOOLEAN).named("flag")
+        .named("hive_schema");
+    Path constantFile = new Path(tmpDir.toString(), "constant-flag.parquet");
+    try (ParquetWriter<Group> writer =
+        ExampleParquetWriter.builder(constantFile).withConf(daemonConf).withType(schema).build()) {
+      SimpleGroupFactory factory = new SimpleGroupFactory(schema);
+      for (int i = 0; i < ROWS_PER_GROUP; ++i) {
+        writer.write(factory.newGroup().append("flag", true));
+      }
+    }
+    ParquetMetadata constantFooter = ParquetFileReader.readFooter(
+        HadoopInputFile.fromPath(constantFile, daemonConf), ParquetMetadataConverter.NO_FILTER);
+    // Pins the premise rather than assuming it: on a dictionary-encoded page decodeDictionaryIds
+    // ANDs in a fresh ids vector that starts out non-repeating, so the flag would come back false
+    // whatever the column holds and the assertion below would prove nothing.
+    assertFalse("a dictionary page would make this test useless",
+        constantFooter.getBlocks().getFirst().getColumns().getFirst().hasDictionaryPage());
+    // A different file, so expectedRow(i) - the fixture's six columns - does not describe these
+    // rows. Parity does, and the capturing consumer expands the repeating vector like any other.
+    skipExpectedRows = true;
+    long length = constantFile.getFileSystem(daemonConf).getFileStatus(constantFile).getLen();
+
+    Run run = read(jobConf("flag", "boolean", 0),
+        new FileSplit(constantFile, 0, length, (String[]) null));
+
+    run.assertClean();
+    assertTrue(run.firstBatchCols[0].isRepeating);
+  }
+
   /** Row numbering follows the file, not the emitted stream: the rows jump across a pruned group. */
   @Test
   public void testStartRowInFileSkipsPrunedRowGroup() throws Exception {
