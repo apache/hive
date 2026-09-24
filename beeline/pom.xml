@@ -178,12 +178,6 @@
     are all needed to run BeelineCli test to manage the embedded HS2 session.
   -->
     <dependency>
-      <!--
-        Test scope only: HiveSchemaTool (the only production user of this dependency) moved to
-        the hive-schematool module. It is still needed here at test scope because the embedded
-        HS2 session used by BeelineCli/HiveCli tests requires metastore-server's runtime
-        dependencies (e.g. DataNucleus JDO) that hive-exec's shaded jar does not carry.
-      -->
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${standalone-metastore.version}</version>
@@ -329,7 +323,8 @@
             </goals>
             <configuration>
               <createDependencyReducedPom>false</createDependencyReducedPom>
-              <finalName>beeline-standalone</finalName>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>standalone</shadedClassifierName>
               <transformers>
                 <transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
