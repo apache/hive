@@ -25,20 +25,29 @@ import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.FileFormatProxy;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileFormatProxy;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInFile;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMacro;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect2;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -49,6 +58,18 @@ import org.slf4j.LoggerFactory;
  */
 public class PartitionExpressionForMetastore implements PartitionExpressionProxy {
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExpressionForMetastore.class);
+
+  /**
+   * Classes that are never acceptable in a partition expression.
+   * GenericUDFReflect, GenericUDFReflect2, and GenericUDFInFile are typically disallowed in a secure environment.
+   * This set should be in sync with the denylist in
+   * {@link org.apache.hadoop.hive.ql.security.authorization.plugin.SettableConfigUpdater}.
+   */
+  private static final Set<Class<? extends GenericUDF>> DENIED_UDFS = Set.of(
+      GenericUDFReflect.class,
+      GenericUDFReflect2.class,
+      GenericUDFInFile.class
+  );
 
   @Override
   public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName, boolean decodeFilterExpToStr)
@@ -123,7 +144,46 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
     if (expr == null) {
       throw new MetaException("Failed to deserialize expression - ExprNodeDesc not present");
     }
+    validateDeserializedExpr(expr);
     return expr;
+  }
+
+  /**
+   * Rejects client-supplied expression graphs that would execute arbitrary code when the metastore stringifies or
+   * evaluates them.
+   */
+  private void validateDeserializedExpr(ExprNodeDesc expr) throws MetaException {
+    if (expr instanceof ExprNodeGenericFuncDesc exprNodeGenericFuncDesc) {
+      validateDeserializedExprNodeGenericFuncDesc(exprNodeGenericFuncDesc);
+    }
+    if (expr.getChildren() != null) {
+      for (ExprNodeDesc child : expr.getChildren()) {
+        validateDeserializedExpr(child);
+      }
+    }
+  }
+
+  private void validateDeserializedExprNodeGenericFuncDesc(ExprNodeGenericFuncDesc expr) throws MetaException {
+    GenericUDF genericUDF = expr.getGenericUDF();
+    if (DENIED_UDFS.contains(genericUDF.getClass())) {
+      throw new MetaException(genericUDF.getUdfName() + " is not allowed in partition expressions");
+    }
+    if (!FunctionRegistry.isBuiltInFuncExpr(expr)) {
+      throw new MetaException("Only built-in UDFs are allowed in partition expressions");
+    }
+    if (genericUDF instanceof GenericUDFBridge genericUDFBridge) {
+      Class<? extends UDF> udfClass = genericUDFBridge.getUdfClass();
+      if (!UDF.class.isAssignableFrom(udfClass)) {
+        throw new MetaException("Class in partition filter expression is not a UDF: " + udfClass);
+      }
+    }
+    if (genericUDF instanceof GenericUDFMacro genericUDFMacro) {
+      // a macro body is an expression graph of its own
+      ExprNodeDesc body = genericUDFMacro.getBody();
+      if (body != null) {
+        validateDeserializedExpr(body);
+      }
+    }
   }
 
   @Override
@@ -150,6 +210,6 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
 
   @Override
   public SearchArgument createSarg(byte[] expr) {
-    return ConvertAstToSearchArg.create(expr);
+    return SerializationUtilities.deserializeObjectFromKryo(expr, SearchArgumentImpl.class);
   }
 }
