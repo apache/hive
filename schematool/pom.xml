@@ -56,7 +56,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-server</artifactId>
+      <artifactId>metastore-tools-common</artifactId>
       <version>${standalone-metastore.version}</version>
     </dependency>
     <!-- inter-project -->
