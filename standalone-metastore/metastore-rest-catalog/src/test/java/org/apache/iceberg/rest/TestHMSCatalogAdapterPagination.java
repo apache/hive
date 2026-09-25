@@ -21,57 +21,107 @@ package org.apache.iceberg.rest;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.apache.iceberg.catalog.Catalog;
+import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.rest.responses.ListNamespacesResponse;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import javax.servlet.http.HttpServletResponse;
 
 public class TestHMSCatalogAdapterPagination {
 
-  @Test
-  public void testPaginationDelegation() throws Exception {
+  private HMSCatalogAdapter adapter;
+  private HttpServletResponse response;
+  private StringWriter stringWriter;
+
+  @BeforeEach
+  public void setup() throws Exception {
     Catalog catalog =
         Mockito.mock(
             Catalog.class,
             Mockito.withSettings().extraInterfaces(SupportsNamespaces.class, ViewCatalog.class));
     SupportsNamespaces nsCatalog = (SupportsNamespaces) catalog;
-    Mockito.when(nsCatalog.listNamespaces(Mockito.any())).thenReturn(Collections.emptyList());
+    List<Namespace> fakeNamespaces =
+        Arrays.asList(
+            Namespace.of("db1"),
+            Namespace.of("db2"),
+            Namespace.of("db3"),
+            Namespace.of("db4"),
+            Namespace.of("db5"));
+    Mockito.when(nsCatalog.listNamespaces()).thenReturn(fakeNamespaces);
+    Mockito.when(nsCatalog.listNamespaces(Mockito.any())).thenReturn(fakeNamespaces);
 
-    ListNamespacesResponse res3;
-    try (HMSCatalogAdapter adapter =
-        new HMSCatalogAdapter("test", catalog, null, Collections.emptyList())) {
+    adapter = new HMSCatalogAdapter("test", catalog, null, Collections.emptyList());
 
-      HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-      StringWriter stringWriter = new StringWriter();
-      Mockito.when(response.getWriter()).thenReturn(new PrintWriter(stringWriter));
+    response = Mockito.mock(HttpServletResponse.class);
+    stringWriter = new StringWriter();
+    Mockito.when(response.getWriter()).thenReturn(new PrintWriter(stringWriter));
+  }
 
-      // 1. Missing pageSize (should call unpaginated and succeed without NumberFormatException)
-      Map<String, String> vars1 = ImmutableMap.of("pageToken", "0");
-      ListNamespacesResponse res1 =
-          adapter.execute(HTTPMethod.GET, "v1/namespaces", vars1, null, response);
-      if (res1 == null) {
-        System.err.println("Error output: " + stringWriter);
-      }
-      Assertions.assertNotNull(res1, "Response should not be null");
-
-      // 2. Both pageToken and pageSize (should call paginated and slice without errors)
-      Map<String, String> vars2 = ImmutableMap.of("pageToken", "0", "pageSize", "10");
-      ListNamespacesResponse res2 =
-          adapter.execute(HTTPMethod.GET, "v1/namespaces", vars2, null, response);
-      Assertions.assertNotNull(res2, "Response should not be null");
-
-      // 3. pageSize without pageToken
-      Map<String, String> vars3 = ImmutableMap.of("pageSize", "10");
-      res3 = adapter.execute(HTTPMethod.GET, "v1/namespaces", vars3, null, response);
+  @AfterEach
+  public void tearDown() throws Exception {
+    if (adapter != null) {
+      adapter.close();
     }
-    Assertions.assertNotNull(res3, "Response should not be null");
+  }
+
+  @Test
+  public void testUnpaginatedRequest() throws Exception {
+    // Missing pageSize (should call unpaginated and succeed without NumberFormatException)
+    Map<String, String> vars = ImmutableMap.of("pageToken", "0");
+    ListNamespacesResponse res =
+        adapter.execute(HTTPMethod.GET, "v1/namespaces", vars, null, response);
+
+    if (res == null) {
+      System.err.println("Error output: " + stringWriter);
+    }
+    Assertions.assertNotNull(res, "Response should not be null");
+    Assertions.assertEquals(5, res.namespaces().size(), "Should return all 5 unpaginated");
+  }
+
+  @Test
+  public void testPaginatedRequest() throws Exception {
+    // Both pageToken and pageSize (should call paginated and slice without errors)
+    Map<String, String> vars = ImmutableMap.of("pageToken", "0", "pageSize", "2");
+    ListNamespacesResponse res =
+        adapter.execute(HTTPMethod.GET, "v1/namespaces", vars, null, response);
+
+    Assertions.assertNotNull(res, "Response should not be null");
+    Assertions.assertEquals(2, res.namespaces().size(), "Should return exactly 2 paginated items");
+  }
+
+  @Test
+  public void testPaginatedRequestWithoutToken() throws Exception {
+    // pageSize without pageToken
+    Map<String, String> vars = ImmutableMap.of("pageSize", "2");
+    ListNamespacesResponse res =
+        adapter.execute(HTTPMethod.GET, "v1/namespaces", vars, null, response);
+
+    Assertions.assertNotNull(res, "Response should not be null");
+    Assertions.assertEquals(2, res.namespaces().size(), "Should return exactly 2 paginated items");
+  }
+
+  @Test
+  public void testInvalidPageSize() throws Exception {
+    // Invalid pageSize (should return null and write error to response)
+    Map<String, String> vars = ImmutableMap.of("pageSize", "invalid");
+    ListNamespacesResponse res =
+        adapter.execute(HTTPMethod.GET, "v1/namespaces", vars, null, response);
+
+    Assertions.assertNull(res, "Response should be null because it encountered an error");
+    Assertions.assertTrue(
+        stringWriter.toString().contains("must be a positive integer"),
+        "Error output should contain the Preconditions error message");
   }
 }
