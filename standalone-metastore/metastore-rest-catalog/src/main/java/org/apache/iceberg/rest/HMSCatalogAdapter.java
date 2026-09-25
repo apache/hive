@@ -379,9 +379,9 @@ public class HMSCatalogAdapter implements Closeable {
   }
 
   private LoadTableResponse registerTable(Map<String, String> vars, Object body) {
-      Namespace namespace = namespaceFromPathVars(vars);
-      RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
-      return CatalogHandlers.registerTable(catalog, namespace, request);
+    Namespace namespace = namespaceFromPathVars(vars);
+    RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
+    return CatalogHandlers.registerTable(catalog, namespace, request);
   }
 
   private LoadTableResponse updateTable(Map<String, String> vars, Object body) {

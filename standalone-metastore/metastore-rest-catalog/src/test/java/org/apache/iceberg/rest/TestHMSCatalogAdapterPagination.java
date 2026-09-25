@@ -39,14 +39,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import javax.servlet.http.HttpServletResponse;
 
-public class TestHMSCatalogAdapterPagination {
+class TestHMSCatalogAdapterPagination {
 
   private HMSCatalogAdapter adapter;
   private HttpServletResponse response;
   private StringWriter stringWriter;
 
   @BeforeEach
-  public void setup() throws Exception {
+  void setup() throws Exception {
     Catalog catalog =
         Mockito.mock(
             Catalog.class,
@@ -70,14 +70,14 @@ public class TestHMSCatalogAdapterPagination {
   }
 
   @AfterEach
-  public void tearDown() throws Exception {
+  void tearDown() {
     if (adapter != null) {
       adapter.close();
     }
   }
 
   @Test
-  public void testUnpaginatedRequest() throws Exception {
+  void testUnpaginatedRequest() throws Exception {
     // Missing pageSize (should call unpaginated and succeed without NumberFormatException)
     Map<String, String> vars = ImmutableMap.of("pageToken", "0");
     ListNamespacesResponse res =
@@ -91,7 +91,7 @@ public class TestHMSCatalogAdapterPagination {
   }
 
   @Test
-  public void testPaginatedRequest() throws Exception {
+  void testPaginatedRequest() throws Exception {
     // Both pageToken and pageSize (should call paginated and slice without errors)
     Map<String, String> vars = ImmutableMap.of("pageToken", "0", "pageSize", "2");
     ListNamespacesResponse res =
@@ -102,7 +102,7 @@ public class TestHMSCatalogAdapterPagination {
   }
 
   @Test
-  public void testPaginatedRequestWithoutToken() throws Exception {
+  void testPaginatedRequestWithoutToken() throws Exception {
     // pageSize without pageToken
     Map<String, String> vars = ImmutableMap.of("pageSize", "2");
     ListNamespacesResponse res =
@@ -113,7 +113,7 @@ public class TestHMSCatalogAdapterPagination {
   }
 
   @Test
-  public void testInvalidPageSize() throws Exception {
+  void testInvalidPageSize() throws Exception {
     // Invalid pageSize (should return null and write error to response)
     Map<String, String> vars = ImmutableMap.of("pageSize", "invalid");
     ListNamespacesResponse res =
