@@ -232,6 +232,7 @@ public class JobDebugger implements Runnable {
       t.start();
       t.join(HiveConf.getIntVar(conf, HiveConf.ConfVars.TASKLOG_DEBUG_TIMEOUT));
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       console.printError("Timed out trying to finish grabbing task log URLs, "
           + "some task info may be missing");
     }

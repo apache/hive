@@ -415,6 +415,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         try {
           scriptPid.waitFor();
         } catch (InterruptedException interruptedException) {
+          Thread.currentThread().interrupt();
         }
         // best effort attempt to write all output from the script before marking the operator
         // as done
@@ -474,6 +475,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         LOG.error("Got exception", e);
         new_abort = true;
       } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
 
     } else {
