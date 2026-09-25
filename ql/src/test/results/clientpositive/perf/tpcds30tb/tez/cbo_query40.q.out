@@ -2,7 +2,7 @@ CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(w_state=[$0], i_item_id=[$1], sales_before=[$2], sales_after=[$3])
     HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)])
-      HiveProject($f0=[$14], $f1=[$12], $f2=[CASE($9, -($3, CASE(IS NOT NULL($7), $7, 0:DECIMAL(12, 2))), 0:DECIMAL(13, 2))], $f3=[CASE($10, -($3, CASE(IS NOT NULL($7), $7, 0:DECIMAL(12, 2))), 0:DECIMAL(13, 2))])
+      HiveProject($f0=[$14], $f1=[$12], $f2=[CASE($9, -($3, CASE(IS NOT NULL($7), $7, 0.00:DECIMAL(12, 2))), 0.00:DECIMAL(13, 2))], $f3=[CASE($10, -($3, CASE(IS NOT NULL($7), $7, 0.00:DECIMAL(12, 2))), 0.00:DECIMAL(13, 2))])
         HiveJoin(condition=[=($0, $13)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[=($11, $1)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveJoin(condition=[=($4, $8)], joinType=[inner], algorithm=[none], cost=[not available])

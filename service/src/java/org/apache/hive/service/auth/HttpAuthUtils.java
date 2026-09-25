@@ -9,15 +9,19 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.service.auth;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -83,8 +87,10 @@ public final class HttpAuthUtils {
    */
   public static String createCookieToken(String clientUserName) {
     StringBuilder sb = new StringBuilder();
-    sb.append(COOKIE_CLIENT_USER_NAME).append(COOKIE_KEY_VALUE_SEPARATOR).append(clientUserName).
-    append(COOKIE_ATTR_SEPARATOR);
+    sb.append(COOKIE_CLIENT_USER_NAME)
+        .append(COOKIE_KEY_VALUE_SEPARATOR)
+        .append(URLEncoder.encode(clientUserName, StandardCharsets.UTF_8))
+        .append(COOKIE_ATTR_SEPARATOR);
     sb.append(COOKIE_CLIENT_RAND_NUMBER).append(COOKIE_KEY_VALUE_SEPARATOR).
     append((new SecureRandom()).nextLong());
     return sb.toString();
@@ -98,11 +104,17 @@ public final class HttpAuthUtils {
   public static String getUserNameFromCookieToken(String tokenStr) {
     Map<String, String> map = splitCookieToken(tokenStr);
 
-    if (!map.keySet().equals(COOKIE_ATTRIBUTES)) {
-      LOG.error("Invalid token with missing attributes " + tokenStr);
+    if (map == null || !map.keySet().equals(COOKIE_ATTRIBUTES)) {
+      LOG.error("Invalid token with missing attributes {}", tokenStr);
       return null;
     }
-    return map.get(COOKIE_CLIENT_USER_NAME);
+    try {
+      // Reverse the encoding applied in createCookieToken.
+      return URLDecoder.decode(map.get(COOKIE_CLIENT_USER_NAME), StandardCharsets.UTF_8);
+    } catch (IllegalArgumentException e) {
+      LOG.error("Invalid token with malformed user name encoding {}", tokenStr, e);
+      return null;
+    }
   }
 
   /**
@@ -124,7 +136,11 @@ public final class HttpAuthUtils {
       }
       String key = part.substring(0, separator);
       String value = part.substring(separator + 1);
-      map.put(key, value);
+      // Reject duplicate keys to keep the token unambiguous.
+      if (map.put(key, value) != null) {
+        LOG.error("Invalid token with duplicate attribute {}: {}", key, tokenStr);
+        return null;
+      }
     }
     return map;
   }

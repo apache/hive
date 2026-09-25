@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
@@ -40,81 +41,13 @@ public final class Bug {
    * CALCITE-4166</a> is fixed.
    */
   public static final boolean CALCITE_4166_FIXED = false;
-
   /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-4499">issue
-   * CALCITE-4499</a> is fixed.
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6391">issue
+   * CALCITE-6391</a> is fixed.
    */
-  public static final boolean CALCITE_4499_FIXED = false;
-
+  public static final boolean CALCITE_6391_FIXED = false;
   /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-4200">issue
-   * CALCITE-4200</a> is fixed.
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-7641">CALCITE-7641</a> is fixed.
    */
-  public static final boolean CALCITE_4200_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-4513">issue
-   * CALCITE-4513</a> is fixed.
-   */
-  public static final boolean CALCITE_4513_FIXED=false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-4574">CALCITE-4574</a> is fixed.
-   */
-  public static final boolean CALCITE_4574_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-4704">CALCITE-4704</a> is fixed.
-   */
-  public static final boolean CALCITE_4704_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5293">CALCITE-5293</a> is fixed.
-   */
-  public static final boolean CALCITE_5293_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5294">CALCITE-5294</a> is fixed.
-   */
-  public static final boolean CALCITE_5294_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5337">CALCITE-5337</a> is fixed.
-   */
-  public static final boolean CALCITE_5337_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5669">CALCITE-5669</a> is fixed.
-   */
-  public static final boolean CALCITE_5669_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5669">CALCITE-5985</a> is fixed.
-   */
-  public static final boolean CALCITE_5985_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6513">CALCITE-6513</a> is fixed.
-   */
-  public static final boolean CALCITE_6513_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6704">CALCITE-6704</a> is fixed.
-   */
-  public static final boolean CALCITE_6704_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6513">CALCITE-6737</a> is fixed.
-   */
-  public static final boolean CALCITE_6737_FIXED = false;
-
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6954">CALCITE-6954</a> is fixed.
-   */
-  public static final boolean CALCITE_6954_FIXED = false;
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6832">CALCITE-6832</a> is fixed.
-   */
-  public static final boolean CALCITE_6832_FIXED = false;
+  public static final boolean CALCITE_7641_FIXED = false;
 }

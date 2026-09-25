@@ -11611,6 +11611,11 @@ void TProgressUpdateResp::__set_footerSummary(const std::string& val) {
 void TProgressUpdateResp::__set_startTime(const int64_t val) {
   this->startTime = val;
 }
+
+void TProgressUpdateResp::__set_queueMetrics(const std::string& val) {
+  this->queueMetrics = val;
+__isset.queueMetrics = true;
+}
 std::ostream& operator<<(std::ostream& out, const TProgressUpdateResp& obj)
 {
   obj.printTo(out);
@@ -11731,6 +11736,14 @@ uint32_t TProgressUpdateResp::read(::apache::thrift::protocol::TProtocol* iprot)
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->queueMetrics);
+          this->__isset.queueMetrics = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -11808,6 +11821,11 @@ uint32_t TProgressUpdateResp::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeI64(this->startTime);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.queueMetrics) {
+    xfer += oprot->writeFieldBegin("queueMetrics", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->queueMetrics);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -11821,6 +11839,8 @@ void swap(TProgressUpdateResp &a, TProgressUpdateResp &b) {
   swap(a.status, b.status);
   swap(a.footerSummary, b.footerSummary);
   swap(a.startTime, b.startTime);
+  swap(a.queueMetrics, b.queueMetrics);
+  swap(a.__isset, b.__isset);
 }
 
 TProgressUpdateResp::TProgressUpdateResp(const TProgressUpdateResp& other349) {
@@ -11830,6 +11850,8 @@ TProgressUpdateResp::TProgressUpdateResp(const TProgressUpdateResp& other349) {
   status = other349.status;
   footerSummary = other349.footerSummary;
   startTime = other349.startTime;
+  queueMetrics = other349.queueMetrics;
+  __isset = other349.__isset;
 }
 TProgressUpdateResp& TProgressUpdateResp::operator=(const TProgressUpdateResp& other350) {
   headerNames = other350.headerNames;
@@ -11838,6 +11860,8 @@ TProgressUpdateResp& TProgressUpdateResp::operator=(const TProgressUpdateResp& o
   status = other350.status;
   footerSummary = other350.footerSummary;
   startTime = other350.startTime;
+  queueMetrics = other350.queueMetrics;
+  __isset = other350.__isset;
   return *this;
 }
 void TProgressUpdateResp::printTo(std::ostream& out) const {
@@ -11849,6 +11873,7 @@ void TProgressUpdateResp::printTo(std::ostream& out) const {
   out << ", " << "status=" << to_string(status);
   out << ", " << "footerSummary=" << to_string(footerSummary);
   out << ", " << "startTime=" << to_string(startTime);
+  out << ", " << "queueMetrics="; (__isset.queueMetrics ? (out << to_string(queueMetrics)) : (out << "<null>"));
   out << ")";
 }
 

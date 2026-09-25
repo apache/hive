@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.conf.HiveConf;

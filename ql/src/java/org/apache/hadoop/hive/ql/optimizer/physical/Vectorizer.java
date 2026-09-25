@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
@@ -308,7 +309,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         VirtualColumn.PARTITION_HASH, 
         VirtualColumn.FILE_PATH, 
         VirtualColumn.ROW_POSITION,
-        VirtualColumn.PARTITION_PROJECTION,
+        VirtualColumn.PARTITION_NAME,
         VirtualColumn.ROW_LINEAGE_ID,
         VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
   private HiveConf hiveConf;
@@ -2930,6 +2931,12 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
+    if (hasUnbufferedPartitionColumnInEvaluatorArgs(vectorPTFDesc)) {
+      setOperatorIssue(
+          "Window function argument references partition-only column not buffered in vector PTF");
+      return false;
+    }
+
     // Output columns ok?
     String[] outputColumnNames = vectorPTFDesc.getOutputColumnNames();
     TypeInfo[] outputTypeInfos = vectorPTFDesc.getOutputTypeInfos();
@@ -3004,9 +3011,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
       }
 
-      // RANK/DENSE_RANK don't care about columns.
-      if (supportedFunctionType != SupportedFunctionType.RANK &&
-          supportedFunctionType != SupportedFunctionType.DENSE_RANK) {
+      if (!VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType)) {
 
         if (exprNodeDescList != null) {
           // LEAD and LAG now supports multiple arguments in vectorized mode
@@ -5035,6 +5040,70 @@ public class Vectorizer implements PhysicalPlanResolver {
       exprNodeDescs[i] = orderExpressions.get(i).getExprNode();
     }
     return exprNodeDescs;
+  }
+
+  // TODO: An evaluator that wants to handle an unbuffered partition-only column in its calculation could
+  // opt in to vectorization here.
+  private static boolean hasUnbufferedPartitionColumnInEvaluatorArgs(
+      VectorPTFDesc vectorPTFDesc) {
+
+    // PARTITION BY matches ORDER BY, so partition cols are buffered as order cols.
+    if (!vectorPTFDesc.getIsPartitionOrderBy()) {
+      return false;
+    }
+
+    List<ExprNodeDesc> partitionOnlyExprs = getPartitionOnlyExprs(vectorPTFDesc.getPartitionExprNodeDescs(),
+        vectorPTFDesc.getOrderExprNodeDescs());
+    if (partitionOnlyExprs.isEmpty()) {
+      return false;
+    }
+
+    return evaluatorArgsReferencePartitionOnlyExprs(
+        vectorPTFDesc.getEvaluatorFunctionNames(), vectorPTFDesc.getEvaluatorInputExprNodeDescLists(),
+        partitionOnlyExprs);
+  }
+
+  private static boolean evaluatorArgsReferencePartitionOnlyExprs(
+      String[] evaluatorFunctionNames,
+      List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists,
+      List<ExprNodeDesc> partitionOnlyExprs) {
+    for (int i = 0; i < evaluatorFunctionNames.length; i++) {
+      SupportedFunctionType supportedFunctionType =
+          VectorPTFDesc.supportedFunctionsMap.get(evaluatorFunctionNames[i].toLowerCase());
+      List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
+      if (supportedFunctionType == null ||
+          VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType) ||
+          exprNodeDescList == null) {
+        continue;
+      }
+
+      // Check whether an evaluator argument references a partition-only column.
+      if (exprNodeDescList.stream()
+          .anyMatch(expr -> hasPartitionOnlyColumnArg(expr, partitionOnlyExprs))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasPartitionOnlyColumnArg(
+      ExprNodeDesc expr, List<ExprNodeDesc> partitionOnlyExprs) {
+    if (!(expr instanceof ExprNodeColumnDesc)) {
+      return false;
+    }
+    return partitionOnlyExprs.stream().anyMatch(expr::isSame);
+  }
+
+  private static List<ExprNodeDesc> getPartitionOnlyExprs(
+      ExprNodeDesc[] partitionExprNodeDescs, ExprNodeDesc[] orderExprNodeDescs) {
+    List<ExprNodeDesc> partitionOnlyExprs = new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc partitionExpr : partitionExprNodeDescs) {
+      // Collect partition expressions that are not also ORDER BY expressions.
+      if (Arrays.stream(orderExprNodeDescs).noneMatch(partitionExpr::isSame)) {
+        partitionOnlyExprs.add(partitionExpr);
+      }
+    }
+    return partitionOnlyExprs;
   }
 
   /*

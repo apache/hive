@@ -416,7 +416,7 @@ STAGE PLANS:
                       Statistics: Num rows: 10 Data size: 1005 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: dense_rank_window_1 (type: int), _col0 (type: int)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: double)

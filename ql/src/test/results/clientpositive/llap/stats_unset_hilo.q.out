@@ -857,7 +857,7 @@ POSTHOOK: Input: default@stats_both_unset
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`stats_both_unset`
-WHERE `col_float` > 50
+WHERE `col_float` > 5.00E1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1006,7 +1006,7 @@ POSTHOOK: Input: default@stats_both_unset
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`stats_both_unset`
-WHERE `col_double` < 500
+WHERE `col_double` < 5.000E2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1751,7 +1751,7 @@ POSTHOOK: Input: default@stats_min_only
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`stats_min_only`
-WHERE `col_float` > 50
+WHERE `col_float` > 5.00E1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1900,7 +1900,7 @@ POSTHOOK: Input: default@stats_min_only
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`stats_min_only`
-WHERE `col_double` > 200
+WHERE `col_double` > 2.000E2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2645,7 +2645,7 @@ POSTHOOK: Input: default@stats_max_only
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`stats_max_only`
-WHERE `col_float` < 50
+WHERE `col_float` < 5.00E1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2794,7 +2794,7 @@ POSTHOOK: Input: default@stats_max_only
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`stats_max_only`
-WHERE `col_double` < 500
+WHERE `col_double` < 5.000E2
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

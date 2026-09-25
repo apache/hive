@@ -65,7 +65,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
               "type": "VARCHAR",
               "nullable": true,
               "precision": 2147483647,
-              "name": "PARTITION__PROJECTION"
+              "name": "PARTITION__NAME"
             },
             {
               "type": "BIGINT",

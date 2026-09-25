@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.optimizer;
@@ -1534,6 +1535,11 @@ public final class GenMapRedUtils {
       for (BaseWork w: work.getAllWork()) {
         w.setGatheringStats(true);
       }
+    }
+
+    // the lookups above carry no snapshot ref: take it from the table the file sink writes to
+    if (table != null && nd.getConf().getTable() != null) {
+      table.setSnapshotRef(nd.getConf().getTable().getSnapshotRef());
     }
 
     StatsWork columnStatsWork = new StatsWork(table, statsWork, hconf);

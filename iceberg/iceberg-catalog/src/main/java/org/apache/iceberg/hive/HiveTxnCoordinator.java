@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.TxnCoordinator;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -253,32 +252,6 @@ public class HiveTxnCoordinator implements TxnCoordinator {
     if (metadata.spec().isUnpartitioned() || !metadata.partitionStatisticsFiles().isEmpty()) {
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.TRUE);
     }
-    List<String> colNames = getStatsColumnNames(metadata);
-    if (!colNames.isEmpty()) {
-      StatsSetupConst.setColumnStatsState(tbl.getParameters(), colNames);
-    }
-  }
-
-  private static List<String> getStatsColumnNames(TableMetadata metadata) {
-    // Find the first statistics file that contains ColumnStatisticsObj blobs.
-    return metadata.statisticsFiles().stream()
-        .filter(sf -> sf.blobMetadata().stream()
-            .anyMatch(blob -> ColumnStatisticsObj.class.getSimpleName().equals(blob.type())))
-        .findFirst()
-        .map(sf -> {
-          // Unpartitioned: each blob = one column, need all blobs' fields.
-          // Partitioned: first blob has ALL column field IDs.
-          if (metadata.spec().isUnpartitioned()) {
-            return sf.blobMetadata().stream()
-                .flatMap(blob -> blob.fields().stream())
-                .map(fieldId -> metadata.schema().findColumnName(fieldId))
-                .toList();
-          }
-          return sf.blobMetadata().getFirst().fields().stream()
-              .map(fieldId -> metadata.schema().findColumnName(fieldId))
-              .toList();
-        })
-        .orElse(List.of());
   }
 
   private static boolean isCasFailure(TException ex) {

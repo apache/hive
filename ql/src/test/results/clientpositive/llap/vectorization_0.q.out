@@ -1271,7 +1271,7 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`alltypesorc`
-WHERE `cstring1` LIKE 'a%' OR `cstring1` LIKE 'b%' OR `cstring1` LIKE 'c%' OR CHARACTER_LENGTH(`cstring1`) < 50 AND `cstring1` LIKE '%n' AND CHARACTER_LENGTH(`cstring1`) > 0
+WHERE `cstring1` LIKE 'a%' OR `cstring1` LIKE 'b%' OR `cstring1` LIKE 'c%' OR CHARACTER_LENGTH(`cstring1`) > 0 AND CHARACTER_LENGTH(`cstring1`) < 50 AND `cstring1` LIKE '%n'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1288,12 +1288,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) < 50) and (cstring1 like '%n') and (length(cstring1) > 0))) (type: boolean)
+                  filterExpr: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) > 0) and (length(cstring1) < 50) and (cstring1 like '%n'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) < 50) and (cstring1 like '%n') and (length(cstring1) > 0))) (type: boolean)
+                    predicate: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) > 0) and (length(cstring1) < 50) and (cstring1 like '%n'))) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
@@ -30082,7 +30082,7 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint` AS `alltypesorc.ctinyint`, `csmallint` AS `alltypesorc.csmallint`, `cint` AS `alltypesorc.cint`, `cbigint` AS `alltypesorc.cbigint`, `cfloat` AS `alltypesorc.cfloat`, `cdouble` AS `alltypesorc.cdouble`, `cstring1` AS `alltypesorc.cstring1`, `cstring2` AS `alltypesorc.cstring2`, `ctimestamp1` AS `alltypesorc.ctimestamp1`, `ctimestamp2` AS `alltypesorc.ctimestamp2`, `cboolean1` AS `alltypesorc.cboolean1`, `cboolean2` AS `alltypesorc.cboolean2`
 FROM `default`.`alltypesorc`
-WHERE `cint` = 49 AND `cfloat` = 3.5 OR `cint` = 47 AND `cfloat` = 2.09 OR `cint` = 45 AND `cfloat` = 3.02
+WHERE `cint` = 49 AND `cfloat` = 3.5E0 OR `cint` = 47 AND `cfloat` = 2.09E0 OR `cint` = 45 AND `cfloat` = 3.02E0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30193,7 +30193,7 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint` AS `alltypesorc.ctinyint`, `csmallint` AS `alltypesorc.csmallint`, `cint` AS `alltypesorc.cint`, `cbigint` AS `alltypesorc.cbigint`, `cfloat` AS `alltypesorc.cfloat`, `cdouble` AS `alltypesorc.cdouble`, `cstring1` AS `alltypesorc.cstring1`, `cstring2` AS `alltypesorc.cstring2`, `ctimestamp1` AS `alltypesorc.ctimestamp1`, `ctimestamp2` AS `alltypesorc.ctimestamp2`, `cboolean1` AS `alltypesorc.cboolean1`, `cboolean2` AS `alltypesorc.cboolean2`
 FROM `default`.`alltypesorc`
-WHERE (`cint`, `cfloat`) IN ((49, 3.5), (47, 2.09), (45, 3.02))
+WHERE (`cint`, `cfloat`) IN ((49, 3.5E0), (47, 2.09E0), (45, 3.02E0))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -30304,7 +30304,7 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ctinyint` AS `alltypesorc.ctinyint`, `csmallint` AS `alltypesorc.csmallint`, `cint` AS `alltypesorc.cint`, `cbigint` AS `alltypesorc.cbigint`, `cfloat` AS `alltypesorc.cfloat`, `cdouble` AS `alltypesorc.cdouble`, `cstring1` AS `alltypesorc.cstring1`, `cstring2` AS `alltypesorc.cstring2`, `ctimestamp1` AS `alltypesorc.ctimestamp1`, `ctimestamp2` AS `alltypesorc.ctimestamp2`, `cboolean1` AS `alltypesorc.cboolean1`, `cboolean2` AS `alltypesorc.cboolean2`
 FROM `default`.`alltypesorc`
-WHERE (`cint` = 49 OR `cfloat` = 3.5) AND (`cint` = 47 OR `cfloat` = 2.09) AND (`cint` = 45 OR `cfloat` = 3.02)
+WHERE (`cint` = 49 OR `cfloat` = 3.5E0) AND (`cint` = 47 OR `cfloat` = 2.09E0) AND (`cint` = 45 OR `cfloat` = 3.02E0)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

@@ -58,3 +58,17 @@ select * from ice_orc;
 describe formatted ice_orc;
 show compactions order by 'partition';
 
+alter table ice_orc set partition spec();
+
+insert into ice_orc VALUES ('fn9','ln9', 3);
+insert into ice_orc VALUES ('fn10','ln10', 3);
+
+select * from ice_orc;
+describe formatted ice_orc;
+
+alter table ice_orc COMPACT 'major' and wait;
+
+select * from ice_orc;
+describe formatted ice_orc;
+show compactions order by 'partition';
+

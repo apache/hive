@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.kubernetes.operator.model;
@@ -96,12 +97,12 @@ public record HiveClusterSpec(
     Objects.requireNonNull(zookeeper,
         "zookeeper must be provided in the HiveCluster spec");
     metastore = metastore != null ? metastore : new MetastoreSpec(
-        1, null, null, null, null, null, null, true, null, null, null, null);
+        1, null, null, null, null, null, null, null, null, null, true, null, null, null, null);
     hiveServer2 = hiveServer2 != null ? hiveServer2 : new HiveServer2Spec(
-        1, null, null, null, null, null, null, null, null, null);
+        1, null, null, null, null, null, null, null, null, null, null, null, null);
     llapClusters = llapClusters != null ? llapClusters : List.of();
     tezAm = tezAm != null ? tezAm : new TezAmSpec(
-        1, null, null, null, null, true, null, null, null);
+        1, null, null, null, null, null, null, null, true, null, null, null);
     envVars = envVars != null ? envVars : List.of();
     externalJars = externalJars != null ? externalJars : List.of();
     volumes = volumes != null ? volumes : List.of();

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.mr.hive.compaction.evaluator;
@@ -184,9 +185,9 @@ public class CompactionEvaluator extends CommonPartitionEvaluator {
         .orElse(TableProperties.SELF_OPTIMIZING_MAJOR_TRIGGER_DUPLICATE_RATIO_DEFAULT);
   }
 
-  private static Pair<Integer, StructLike> getPartitionSpecStructPair(Table table, String partitionPath)
+  private static Pair<Integer, StructLike> getPartitionSpecStructPair(Table table, String partitionName)
       throws IOException {
-    if (!table.spec().isPartitioned() || partitionPath == null) {
+    if (!table.spec().isPartitioned() || partitionName == null) {
       return null;
     }
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
@@ -199,10 +200,10 @@ public class CompactionEvaluator extends CommonPartitionEvaluator {
             PartitionSpec spec = table.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
             PartitionData partitionData = IcebergTableUtil.toPartitionData(data,
                 Partitioning.partitionType(table), spec.partitionType());
-            String path = spec.partitionToPath(partitionData);
-            return Maps.immutableEntry(path, Pair.of(spec.specId(), data));
+            String partName = IcebergTableUtil.toPartitionName(spec, partitionData);
+            return Maps.immutableEntry(partName, Pair.of(spec.specId(), data));
           })
-          .filter(e -> e.getKey().equals(partitionPath))
+          .filter(e -> e.getKey().equals(partitionName))
           .transform(Map.Entry::getValue)
           .get(0);
     }

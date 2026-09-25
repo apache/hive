@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.service.server;
@@ -77,6 +78,8 @@ import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue.QueueMetricsCache;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue.QueueMetricsRefreshPool;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
@@ -934,8 +937,9 @@ public class HiveServer2 extends CompositeService {
       // will be invoked anyway in TezTask. Doing it early to initialize triggers for non-pool tez session.
       LOG.info("Initializing tez session pool manager. Active resource plan: {}",
         resourcePlan == null || resourcePlan.getPlan() == null ? "null" : resourcePlan.getPlan().getName());
-      tezSessionPoolManager = TezSessionPoolManager.getInstance();
       HiveConf hiveConf = getHiveConf();
+      initializeQueueMetricsPool(hiveConf);
+      tezSessionPoolManager = TezSessionPoolManager.getInstance();
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
         tezSessionPoolManager.setupPool(hiveConf);
       } else {
@@ -963,6 +967,48 @@ public class HiveServer2 extends CompositeService {
     } else {
       LOG.info("Workload management is not enabled as {} config is not set",
         ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname);
+    }
+  }
+
+  /**
+   * Initializes the shared JVM-wide queue metrics refresh pool.
+   * <p>
+   * This pool provides background threads for periodic YARN queue metrics collection across
+   * all Tez sessions. Thread count is configured via
+   * {@code hive.server2.tez.queue.metrics.refresh.threads}. Whether to actually collect metrics
+   * is controlled per-session by {@code hive.tez.queue.metrics.refresh.interval}.
+   * <p>
+   * Failures are non-fatal — logged as warnings so the server can start without queue metrics.
+   */
+  private void initializeQueueMetricsPool(HiveConf hiveConf) {
+    try {
+      int refreshThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS);
+      QueueMetricsRefreshPool.init(refreshThreads);
+      LOG.info("Queue metrics refresh pool initialized with {} threads", refreshThreads);
+    } catch (Exception e) {
+      LOG.warn("Failed to initialize queue metrics refresh pool", e);
+    }
+  }
+
+  /**
+   * Shuts down queue metrics infrastructure to prevent resource leaks on HiveServer2 stop.
+   * Must be called after {@link #stopOrDisconnectTezSessions()} so that no in-flight query
+   * can submit new refresh tasks while the pool is draining.
+   * <p>
+   * Shutdown order:
+   * <ol>
+   *   <li>{@link QueueMetricsRefreshPool#shutdown()} — stops background refresh threads</li>
+   *   <li>{@link QueueMetricsCache#shutdown()} — invalidates all cached queue-metric entries</li>
+   * </ol>
+   */
+  private void shutdownQueueMetricsInfrastructure() {
+    try {
+      LOG.info("Shutting down queue metrics infrastructure");
+      QueueMetricsRefreshPool.shutdown();
+      QueueMetricsCache.getInstance().shutdown();
+      LOG.info("Queue metrics infrastructure shutdown complete");
+    } catch (Exception e) {
+      LOG.warn("Error during queue metrics infrastructure shutdown", e);
     }
   }
 
@@ -1117,6 +1163,7 @@ public class HiveServer2 extends CompositeService {
     }
 
     stopOrDisconnectTezSessions();
+    shutdownQueueMetricsInfrastructure();
 
     if (zKClientForPrivSync != null) {
       zKClientForPrivSync.close();

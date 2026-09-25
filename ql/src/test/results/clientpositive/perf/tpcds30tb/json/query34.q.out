@@ -1390,19 +1390,19 @@
                   "name": "$2"
                 },
                 {
-                  "literal": ">10000",
+                  "literal": ">10000         ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 6
+                    "precision": 15
                   }
                 },
                 {
-                  "literal": "unknown",
+                  "literal": "unknown        ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 7
+                    "precision": 15
                   }
                 }
               ]

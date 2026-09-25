@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
@@ -461,6 +462,16 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
         columnsToRemove = removeCandidate;
       }
     }
+
+    // We must not remove all the group columns: we risk altering the semantics of the aggregation;
+    // e.g., do not convert a HiveAggregate(group=[{0}], COUNT) into HiveAggregate(group=[{}], COUNT)
+    // since they return different results when the input is an empty Values (empty resultset vs. 0)
+    if (columnsToRemove.equals(aggregate.getGroupSet())) {
+      // Just keep one column to avoid any potential problem
+      int keeper = columnsToRemove.nextSetBit(0);
+      columnsToRemove = columnsToRemove.clear(keeper);
+    }
+
     return aggregate.getGroupSet().except(columnsToRemove);
   }
 
@@ -476,9 +487,9 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
    */
   private Aggregate rewriteGBConstantKeys(Aggregate aggregate, ImmutableBitSet fieldsUsed,
       ImmutableBitSet aggCallFields) {
-    if ((aggregate.getIndicatorCount() > 0)
-        || (aggregate.getGroupSet().isEmpty())
-        || fieldsUsed.contains(aggregate.getGroupSet())) {
+    if (aggregate.getGroupSet().isEmpty()
+        || aggregate.getGroupType() != Aggregate.Group.SIMPLE
+        || fieldsUsed.intersects(aggregate.getGroupSet())) {
       return aggregate;
     }
 

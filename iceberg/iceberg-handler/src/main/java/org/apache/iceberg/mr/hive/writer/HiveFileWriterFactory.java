@@ -32,7 +32,6 @@ import org.apache.iceberg.data.orc.GenericOrcWriter;
 import org.apache.iceberg.data.parquet.GenericParquetWriter;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
-import org.apache.iceberg.parquet.VariantShreddingFunction;
 import org.apache.iceberg.parquet.VariantUtil;
 
 class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
@@ -87,31 +86,7 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
     builder.createWriterFunc(GenericParquetWriter::create);
     // Configure variant shredding if enabled and a sample record is available
     if (VariantUtil.shouldUseVariantShredding(properties, dataSchema())) {
-      setVariantShreddingFunc(builder, VariantUtil.variantShreddingFunc(sampleRecord, dataSchema()));
-    }
-  }
-
-  /**
-   * Sets a {@link VariantShreddingFunction} on the underlying Parquet write builder.
-   *
-   * <p>{@link Parquet.DataWriteBuilder} does not expose {@code variantShreddingFunc} directly; it is set on an
-   * internal write builder held in the private {@code appenderBuilder} field. This method uses reflection to
-   * access that internal builder and invoke {@code variantShreddingFunc(VariantShreddingFunction)}.
-   *
-   * TODO: Replace with {@code DataWriteBuilder.variantShreddingFunc(VariantShreddingFunction)}
-   * once it becomes publicly available.
-   */
-  private static void setVariantShreddingFunc(Parquet.DataWriteBuilder dataWriteBuilder,
-      VariantShreddingFunction fn) {
-    try {
-      java.lang.reflect.Field field = dataWriteBuilder.getClass().getDeclaredField("appenderBuilder");
-      field.setAccessible(true);
-      Object writeBuilder = field.get(dataWriteBuilder);
-      writeBuilder.getClass()
-          .getMethod("variantShreddingFunc", VariantShreddingFunction.class)
-          .invoke(writeBuilder, fn);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException(e);
+      builder.variantShreddingFunc(VariantUtil.variantShreddingFunc(sampleRecord, dataSchema()));
     }
   }
 

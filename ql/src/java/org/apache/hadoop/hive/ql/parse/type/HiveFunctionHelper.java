@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.parse.type;
 
@@ -25,11 +26,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexSimplify;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
@@ -336,7 +340,10 @@ public class HiveFunctionHelper implements FunctionHelper {
           RexUtil.flatten(call.getOperands(), call.getOperator()));
     }
 
-    return expr;
+    // Avoid creating incorrect expressions like $1 < NULL or $1 = NULL or NULL = NULL
+    // which may be problematic for Calcite later on
+    RexSimplify rexSimplify = new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, RexUtil.EXECUTOR);
+    return rexSimplify.simplifyComparisonWithNull(expr, RexUnknownAs.UNKNOWN);
   }
 
   private void checkForStatefulFunctions(List<RexNode> exprs)

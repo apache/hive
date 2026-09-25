@@ -1668,19 +1668,19 @@
                   "name": "$3"
                 },
                 {
-                  "literal": "Advanced Degree",
+                  "literal": "Advanced Degree     ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 15
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "Unknown",
+                  "literal": "Unknown             ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 7
+                    "precision": 20
                   }
                 }
               ]

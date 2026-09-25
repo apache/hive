@@ -5111,7 +5111,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
             "name": null
           }
         ],
-        "rowCount": 2952.45
+        "rowCount": 11527.107150205546
       },
       {
         "id": "72",
@@ -5151,7 +5151,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
             ]
           }
         ],
-        "rowCount": 2952.45
+        "rowCount": 11527.107150205546
       },
       {
         "id": "73",

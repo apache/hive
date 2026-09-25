@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.serde2.variant;
@@ -94,7 +95,7 @@ public class VariantBuilder {
     }
     // Determine the number of bytes required per offset entry.
     // The largest offset is the one-past-the-end value, which is total string size. It's very
-    // unlikely that the number of keys could be larger, but incorporate that into the calcualtion
+    // unlikely that the number of keys could be larger, but incorporate that into the calculation
     // in case of pathological data.
     long maxSize = Math.max(dictionaryStringSize, numKeys);
     if (maxSize > SIZE_LIMIT) {

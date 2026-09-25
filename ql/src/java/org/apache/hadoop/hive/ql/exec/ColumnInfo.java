@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec;
@@ -58,6 +59,12 @@ public class ColumnInfo implements Serializable {
   private ObjectInspector objectInspector;
 
   private boolean isHiddenVirtualCol;
+
+  /**
+   * Deliberately excluded from equals/hashCode/isSameColumnForRR: a marked and an unmarked
+   * copy of a column are still the same column for RowResolver purposes (HIVE-29580).
+   */
+  private boolean ambiguousName;
 
   private String typeName;
 
@@ -129,7 +136,21 @@ public class ColumnInfo implements Serializable {
     this.isVirtualCol = columnInfo.getIsVirtualCol();
     this.isHiddenVirtualCol = columnInfo.isHiddenVirtualCol();
     this.nullable = columnInfo.nullable;
+    this.ambiguousName = columnInfo.ambiguousName;
     this.setType(columnInfo.getType());
+  }
+
+  /**
+   * True when this column's alias collided with another column's at a subquery/CTE boundary:
+   * the column stays usable positionally (star expansion, count(*)) but a user-written by-name
+   * reference is ambiguous and must be rejected.
+   */
+  public boolean hasAmbiguousName() {
+    return ambiguousName;
+  }
+
+  public void setAmbiguousName(boolean ambiguousName) {
+    this.ambiguousName = ambiguousName;
   }
 
   public String getTypeName() {

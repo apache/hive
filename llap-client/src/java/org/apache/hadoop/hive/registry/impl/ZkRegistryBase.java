@@ -1,15 +1,20 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.registry.impl;
 
@@ -48,6 +53,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.registry.ClusterNotReadyException;
 import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
@@ -651,14 +657,15 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         long elapsedNs = System.nanoTime() - startTimeNs;
         if (deltaNs == 0 || deltaNs <= elapsedNs) {
           LOG.error("Unable to start curator PathChildrenCache", e);
-          throw new IOException(e);
+          throw new ClusterNotReadyException(e);
         }
         LOG.warn("The cluster is not started yet (InvalidACL); will retry");
         try {
           Thread.sleep(Math.min(sleepTimeMs, (deltaNs - elapsedNs)/1000000L));
         } catch (InterruptedException e1) {
-          LOG.error("Interrupted while retrying the PathChildrenCache startup");
-          throw new IOException(e1);
+          Thread.currentThread().interrupt();
+          LOG.error("Interrupted while retrying the PathChildrenCache startup", e1);
+          throw new ClusterNotReadyException(e1);
         }
         sleepTimeMs = sleepTimeMs << 1;
       } catch (Exception e) {

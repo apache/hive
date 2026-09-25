@@ -114,7 +114,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tt2
-                  filterExpr: ((decimal1911_col_16 is not null and timestamp_col_19 is not null) or ((tinyint_col_21 = -92Y) and UDFToLong(tinyint_col_18) is not null and decimal2709_col_9 is not null)) (type: boolean)
+                  filterExpr: ((decimal1911_col_16 is not null and timestamp_col_19 is not null) or ((tinyint_col_21 = -92Y) and tinyint_col_18 is not null and decimal2709_col_9 is not null)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (decimal1911_col_16 is not null and timestamp_col_19 is not null) (type: boolean)
@@ -130,7 +130,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: decimal(19,11)), _col1 (type: timestamp)
                         Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((tinyint_col_21 = -92Y) and UDFToLong(tinyint_col_18) is not null and decimal2709_col_9 is not null) (type: boolean)
+                    predicate: ((tinyint_col_21 = -92Y) and tinyint_col_18 is not null and decimal2709_col_9 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: decimal2709_col_9 (type: decimal(27,9)), tinyint_col_18 (type: tinyint)

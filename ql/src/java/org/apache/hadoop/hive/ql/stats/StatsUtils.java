@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.stats;
@@ -391,6 +392,40 @@ public class StatsUtils {
       }
 
       if (needColStats) {
+
+        if (table.isNonNative() && !isPartitionStats(table, conf)) {
+          // the table maintains table-level column statistics only, so they answer for a scan of
+          // any part of it, on top of the partition-derived basic statistics
+          List<ColStatistics> colStats =
+              getTableColumnStats(table, neededColumns, colStatsCache, fetchColStats);
+          if (estimateStats) {
+            colStats = estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
+          }
+          // we should have stats for all columns (estimated or actual)
+          if (neededColumns.size() == colStats.size()) {
+            long betterDS = getDataSizeFromColumnStats(nr, colStats);
+            stats.setDataSize((betterDS < 1 || colStats.isEmpty()) ? ds : betterDS);
+          }
+          stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
+          // nothing pruned the list and nothing in it is unknown, so these counts and the row
+          // count above are of the same rows
+          boolean coversEveryPartition =
+              partList.getReferredPartCols().isEmpty() && !partList.hasUnknownPartitions();
+          if (coversEveryPartition) {
+            // infer if any column can be primary key based on column statistics
+            inferAndSetPrimaryKey(stats.getNumRows(), colStats);
+          } else {
+            stats.updateColumnStatsState(State.PARTIAL);
+          }
+          stats.addToColumnStats(colStats);
+
+          if (partStats.isEmpty()) {
+            // all partitions are filtered by partition pruning
+            stats.setBasicStatsState(State.COMPLETE);
+          }
+          return stats;
+        }
+
         List<String> partitionCols = getPartitionColumns(schema, neededColumns, referencedColumns);
 
         // We will retrieve stats from the metastore only for columns that are not cached
@@ -429,9 +464,9 @@ public class StatsUtils {
 
           stats.addToColumnStats(columnStats);
         } else {
-          if (statsRetrieved) {
-            columnStats.addAll(convertColStats(aggrStats.getColStats()));
-          }
+          List<ColStatistics> aggregatedStats = statsRetrieved ?
+              convertColStats(aggrStats.getColStats()) : Collections.emptyList();
+          columnStats.addAll(aggregatedStats);
           int colStatsAvailable = neededColumns.size() + partitionCols.size() - partitionColsToRetrieve.size();
           if (columnStats.size() != colStatsAvailable) {
             LOG.debug("Column stats requested for : {} columns. Able to retrieve for {} columns",
@@ -456,6 +491,9 @@ public class StatsUtils {
           // Change if we could not retrieve for all partitions
           if (aggrStats != null && aggrStats.getPartsFound() != partNames.size() && stats.getColumnStatsState() != State.NONE) {
             stats.updateColumnStatsState(State.PARTIAL);
+            // values aggregated from a subset of the scanned partitions estimate, but never
+            // answer; a partition column's stats come from the pruned values and stay exact
+            aggregatedStats.forEach(colStats -> colStats.setPartialAggregate(true));
             LOG.debug("Column stats requested for : {} partitions. Able to retrieve for {} partitions",
                     partNames.size(), aggrStats.getPartsFound());
           }
@@ -1754,15 +1792,6 @@ public class StatsUtils {
   }
 
   /**
-   * Get number of rows of a give table
-   * @return number of rows
-   */
-  @Deprecated
-  public static long getNumRows(Table table) {
-    return getBasicStatForTable(table, StatsSetupConst.ROW_COUNT);
-  }
-
-  /**
    * Get total size of a give table
    * @return total size
    */
@@ -1994,8 +2023,20 @@ public class StatsUtils {
   }
 
   public static boolean isPartitionStats(Table table, HiveConf conf) {
-    return conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS) && table.isPartitioned()
-        && (!table.isNonNative() || table.getStorageHandler().canSetColStatistics(table));
+    return table.isPartitioned() && isPartitionStatsEnabled(table, conf);
+  }
+
+  /**
+   * Whether this table's statistics are kept per partition, leaving aside whether it has any. A
+   * CREATE has to ask this way, since the table it is about to write does not exist to be asked.
+   */
+  public static boolean isPartitionStatsEnabled(Table table, HiveConf conf) {
+    // the metastore keeps a single row of column statistics per table, with nowhere to put a
+    // partition's, so a table partitioned outside it can only keep them per partition itself
+    if (table.isNonNative()) {
+      return table.getStorageHandler().canSetColStatistics(table, true);
+    }
+    return conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS);
   }
 
   public static boolean checkCanProvideStats(Table table) {
@@ -2020,11 +2061,41 @@ public class StatsUtils {
   }
 
   /**
+   * The row count an answer may be folded against: a handler counts the snapshot the scan reads -
+   * a branch or as-of count, not the current table's - so it describes the same rows the column
+   * statistics served for query answering do. A native table's count comes from its metastore
+   * parameters, once they are up to date.
+   */
+  public static Long getRowCnt(Table table) {
+    if (table.isNonNative()) {
+      HiveStorageHandler handler = table.getStorageHandler();
+      return handler.canProvideBasicStatistics() ? handler.getRowCount(table) : null;
+    }
+    return areBasicStatsUptoDateForQueryAnswering(table, table.getParameters()) ?
+        getBasicStatForTable(table, StatsSetupConst.ROW_COUNT) : null;
+  }
+
+  /**
    * Are the column stats for the table up-to-date for query planning.
    * Can run additional checks compared to the version in StatsSetupConst.
    */
-  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params, String colName) {
-    return checkCanProvideStats(table) && StatsSetupConst.areColumnStatsUptoDate(params, colName);
+  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params,
+      String colName) {
+    return areColumnStatsUptoDateForQueryAnswering(table, params, List.of(colName));
+  }
+
+  /**
+   * The same, asked of every column at once: a handler settles which of its statistics answer
+   * once, and that question is the same whatever column is asked about.
+   */
+  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params,
+      List<String> colNames) {
+    // a handler keeps its own statistics and knows what happened to them, including writes by
+    // other engines that never touched the metastore marker
+    return checkCanProvideStats(table) && (
+        table.isNonNative() ? table.getStorageHandler().areColumnStatsUptoDate(table, colNames) :
+            StatsSetupConst.areColumnStatsUptoDate(params, colNames)
+        );
   }
 
   /**

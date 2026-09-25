@@ -88,7 +88,7 @@ public class HiveDeleteFilter extends DeleteFilter<HiveRow> {
 
     CloseableIterator<HiveBatchContext> iterator = new DeleteFilterBatchIterator(batches);
 
-    return new CloseableIterable<HiveBatchContext>() {
+    return new CloseableIterable<>() {
 
       @Override
       public CloseableIterator<HiveBatchContext> iterator() {

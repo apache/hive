@@ -9,25 +9,24 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore.cache;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Stack;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -43,7 +42,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Deadline;
@@ -96,7 +94,17 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 public class CachedStore implements RawStore, Configurable {
 
-  private static ScheduledExecutorService cacheUpdateMaster = null;
+  // volatile: read without a lock on the startCacheUpdateService fast path
+  private static volatile ScheduledExecutorService cacheUpdateMaster = null;
+  // Guards cacheUpdateMaster init/shutdown. startCacheUpdateService is called from setConf on
+  // every new worker thread's RawStore construction, so this lock must never be held for a long
+  // time; in particular it must not be shared with the long-running prewarm (HIVE-30052).
+  private static final Object CACHE_UPDATE_SERVICE_LOCK = new Object();
+  // Serializes notification-event replays and protects lastEventId: triggerUpdateUsingEvent is
+  // called both by the background update thread and, when metastore.cache.can.use.event is set,
+  // by every worker thread from commitTransaction, so replays must not interleave. Held only for
+  // the duration of one replay batch, never across prewarm (HIVE-30052).
+  private static final Object EVENT_UPDATE_LOCK = new Object();
   private static List<Pattern> whitelistPatterns = null;
   private static List<Pattern> blacklistPatterns = null;
   // Default value set to 100 milliseconds for test purpose
@@ -109,7 +117,9 @@ public class CachedStore implements RawStore, Configurable {
   // This is set to true only if we were able to cache all the metadata.
   // We may not be able to cache all metadata if we hit CACHED_RAW_STORE_MAX_CACHE_MEMORY limit.
   private static AtomicBoolean isCachedAllMetadata = new AtomicBoolean(false);
-  private static TablesPendingPrewarm tblsPendingPrewarm = new TablesPendingPrewarm();
+  // The prewarmer while a prewarm is in flight, so that getTable can promote requested tables
+  // to the front of the prewarm queue; null once prewarm has completed
+  private static volatile MetaCachePreWarm activePreWarmer = null;
   private RawStore rawStore = null;
   private Configuration conf;
   private static boolean areTxnStatsSupported;
@@ -144,26 +154,37 @@ public class CachedStore implements RawStore, Configurable {
     initBlackListWhiteList(conf);
   }
 
-  private static synchronized void triggerUpdateUsingEvent(RawStore rawStore) {
+  private static void triggerUpdateUsingEvent(RawStore rawStore) {
     if (!isCachePrewarmed.get()) {
       LOG.error("cache update should be done only after prewarm");
       throw new RuntimeException("cache update should be done only after prewarm");
     }
-    long startTime = System.nanoTime();
-    long preEventId = lastEventId;
-    try {
-      lastEventId = updateUsingNotificationEvents(rawStore, lastEventId);
-    } catch (Exception e) {
-      LOG.error(" cache update failed for start event id " + lastEventId + " with error ", e);
-      throw new RuntimeException(e.getMessage());
-    } finally {
-      long endTime = System.nanoTime();
-      LOG.info("Time taken in updateUsingNotificationEvents for num events : " + (lastEventId - preEventId) + " = "
-          + (endTime - startTime) / 1000000 + "ms");
+    synchronized (EVENT_UPDATE_LOCK) {
+      long startTime = System.nanoTime();
+      long preEventId = lastEventId;
+      try {
+        lastEventId = updateUsingNotificationEvents(rawStore, lastEventId);
+      } catch (Exception e) {
+        LOG.error(" cache update failed for start event id " + lastEventId + " with error ", e);
+        throw new RuntimeException(e.getMessage());
+      } finally {
+        long endTime = System.nanoTime();
+        LOG.info("Time taken in updateUsingNotificationEvents for num events : " + (lastEventId - preEventId) + " = "
+            + (endTime - startTime) / 1000000 + "ms");
+      }
     }
   }
 
-  private static synchronized void triggerPreWarm(RawStore rawStore) {
+  // Deliberately not synchronized (HIVE-30052): the only caller is the first run of the
+  // single-threaded cacheUpdateMaster executor, and prewarm() is idempotent via isCachePrewarmed.
+  // Holding a monitor here for the entire prewarm would block every thread that needs the same
+  // monitor: previously the shared class monitor blocked all RPC worker threads for the whole
+  // prewarm (in setConf via startCacheUpdateService, and in commitTransaction via
+  // triggerUpdateUsingEvent when event based updates are enabled).
+  private static void triggerPreWarm(RawStore rawStore) {
+    // Bookmark the current event id before prewarm starts so no events are lost while it runs.
+    // No lock needed: event replays cannot run until isCachePrewarmed is set at the end of
+    // prewarm, and that volatile write/read publishes this value to them.
     lastEventId = rawStore.getCurrentNotificationEventId().getEventId();
     prewarm(rawStore);
   }
@@ -447,171 +468,23 @@ public class CachedStore implements RawStore, Configurable {
     }
     long startTime = System.nanoTime();
     LOG.info("Prewarming CachedStore");
-    long sleepTime = 100;
-    while (!isCachePrewarmed.get()) {
-      // Prevents throwing exceptions in our raw store calls since we're not using RawStoreProxy
-      Deadline.registerIfNot(1000000);
-      Collection<String> catalogsToCache;
-      try {
-        catalogsToCache = catalogsToCache(rawStore);
-        LOG.info("Going to cache catalogs: " + org.apache.commons.lang3.StringUtils.join(catalogsToCache, ", "));
-        List<Catalog> catalogs = new ArrayList<>(catalogsToCache.size());
-        for (String catName : catalogsToCache) {
-          catalogs.add(rawStore.getCatalog(catName));
-        }
-        sharedCache.populateCatalogsInCache(catalogs);
-      } catch (MetaException | NoSuchObjectException e) {
-        LOG.warn("Failed to populate catalogs in cache, going to try again", e);
-        try {
-          Thread.sleep(sleepTime);
-          sleepTime = sleepTime * 2;
-        } catch (InterruptedException timerEx) {
-          LOG.info("sleep interrupted", timerEx.getMessage());
-        }
-        // try again
-        continue;
-      }
-      LOG.info("Finished prewarming catalogs, starting on databases");
-      List<Database> databases = new ArrayList<>();
-      for (String catName : catalogsToCache) {
-        try {
-          List<String> dbNames = rawStore.getAllDatabases(catName);
-          LOG.info("Number of databases to prewarm in catalog {}: {}", catName, dbNames.size());
-          for (String dbName : dbNames) {
-            try {
-              databases.add(rawStore.getDatabase(catName, dbName));
-            } catch (NoSuchObjectException e) {
-              // Continue with next database
-              LOG.warn("Failed to cache database " + DatabaseName.getQualified(catName, dbName) + ", moving on", e);
-            }
-          }
-        } catch (MetaException e) {
-          LOG.warn("Failed to cache databases in catalog " + catName + ", moving on", e);
-        }
-      }
-      sharedCache.populateDatabasesInCache(databases);
-      LOG.info("Databases cache is now prewarmed. Now adding tables, partitions and statistics to the cache");
-      int numberOfDatabasesCachedSoFar = 0;
-      for (Database db : databases) {
-        String catName = StringUtils.normalizeIdentifier(db.getCatalogName());
-        String dbName = StringUtils.normalizeIdentifier(db.getName());
-        List<String> tblNames;
-        try {
-          tblNames = rawStore.getAllTables(catName, dbName);
-        } catch (MetaException e) {
-          LOG.warn("Failed to cache tables for database " + DatabaseName.getQualified(catName, dbName) + ", moving on");
-          // Continue with next database
-          continue;
-        }
-        tblsPendingPrewarm.addTableNamesForPrewarming(tblNames);
-        int totalTablesToCache = tblNames.size();
-        int numberOfTablesCachedSoFar = 0;
-        while (tblsPendingPrewarm.hasMoreTablesToPrewarm()) {
-          try {
-            String tblName = StringUtils.normalizeIdentifier(tblsPendingPrewarm.getNextTableNameToPrewarm());
-            if (!shouldCacheTable(catName, dbName, tblName)) {
-              continue;
-            }
-            Table table;
-            try {
-              table = rawStore.getTable(catName, dbName, tblName);
-            } catch (MetaException e) {
-              LOG.debug(ExceptionUtils.getStackTrace(e));
-              // It is possible the table is deleted during fetching tables of the database,
-              // in that case, continue with the next table
-              continue;
-            }
-            List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
-            try {
-              ColumnStatistics tableColStats = null;
-              List<Partition> partitions = null;
-              List<ColumnStatistics> partitionColStats = null;
-              AggrStats aggrStatsAllPartitions = null;
-              AggrStats aggrStatsAllButDefaultPartition = null;
-              TableCacheObjects cacheObjects = new TableCacheObjects();
-              if (!table.getPartitionKeys().isEmpty()) {
-                Deadline.startTimer("getPartitions");
-                partitions = rawStore.getPartitions(catName, dbName, tblName, GetPartitionsArgs.getAllPartitions());
-                Deadline.stopTimer();
-                cacheObjects.setPartitions(partitions);
-                List<String> partNames = new ArrayList<>(partitions.size());
-                for (Partition p : partitions) {
-                  partNames.add(Warehouse.makePartName(table.getPartitionKeys(), p.getValues()));
-                }
-                if (!partNames.isEmpty()) {
-                  // Get partition column stats for this table
-                  Deadline.startTimer("getPartitionColumnStatistics");
-                  partitionColStats =
-                      rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
-                  Deadline.stopTimer();
-                  cacheObjects.setPartitionColStats(partitionColStats);
-                  // Get aggregate stats for all partitions of a table and for all but default
-                  // partition
-                  Deadline.startTimer("getAggrPartitionColumnStatistics");
-                  aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
-                  Deadline.stopTimer();
-                  cacheObjects.setAggrStatsAllPartitions(aggrStatsAllPartitions);
-                  // Remove default partition from partition names and get aggregate
-                  // stats again
-                  List<FieldSchema> partKeys = table.getPartitionKeys();
-                  String defaultPartitionValue =
-                      MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
-                  List<String> partCols = new ArrayList<>();
-                  List<String> partVals = new ArrayList<>();
-                  for (FieldSchema fs : partKeys) {
-                    partCols.add(fs.getName());
-                    partVals.add(defaultPartitionValue);
-                  }
-                  String defaultPartitionName = FileUtils.makePartName(partCols, partVals);
-                  partNames.remove(defaultPartitionName);
-                  Deadline.startTimer("getAggrPartitionColumnStatistics");
-                  aggrStatsAllButDefaultPartition =
-                      rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
-                  Deadline.stopTimer();
-                  cacheObjects.setAggrStatsAllButDefaultPartition(aggrStatsAllButDefaultPartition);
-                }
-              } else {
-                Deadline.startTimer("getTableColumnStatistics");
-                tableColStats = rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames, CacheUtils.HIVE_ENGINE);
-                Deadline.stopTimer();
-                cacheObjects.setTableColStats(tableColStats);
-              }
-
-              Deadline.startTimer("getAllTableConstraints");
-              SQLAllTableConstraints tableConstraints = rawStore.getAllTableConstraints(
-                  new AllTableConstraintsRequest(catName, dbName, tblName));
-              Deadline.stopTimer();
-              cacheObjects.setTableConstraints(tableConstraints);
-
-              // If the table could not cached due to memory limit, stop prewarm
-              boolean isSuccess = sharedCache
-                  .populateTableInCache(table, cacheObjects);
-              if (isSuccess) {
-                LOG.trace("Cached Database: {}'s Table: {}.", dbName, tblName);
-              } else {
-                LOG.info("Unable to cache Database: {}'s Table: {}, since the cache memory is full. "
-                    + "Will stop attempting to cache any more tables.", dbName, tblName);
-                completePrewarm(startTime, false);
-                return;
-              }
-            } catch (MetaException | NoSuchObjectException e) {
-              LOG.debug(ExceptionUtils.getStackTrace(e));
-              // Continue with next table
-              continue;
-            }
-            LOG.debug("Processed database: {}'s table: {}. Cached {} / {}  tables so far.", dbName, tblName,
-                ++numberOfTablesCachedSoFar, totalTablesToCache);
-          } catch (EmptyStackException e) {
-            // We've prewarmed this database, continue with the next one
-            continue;
-          }
-        }
-        LOG.debug("Processed database: {}. Cached {} / {} databases so far.", dbName, ++numberOfDatabasesCachedSoFar,
-            databases.size());
-      }
-      sharedCache.clearDirtyFlags();
-      completePrewarm(startTime, true);
+    boolean cachedAllMetadata;
+    // The prewarmer is closed (its workers terminated, their stores shut down) before completion
+    // is published, so nothing can still be mutating the cache once isCachePrewarmed is set
+    try (MetaCachePreWarm preWarmer = new DefaultMetaCachePreWarm(rawStore, sharedCache)) {
+      preWarmer.setConf(rawStore.getConf());
+      preWarmer.initialize();
+      activePreWarmer = preWarmer;
+      cachedAllMetadata = preWarmer.preWarm();
+    } catch (MetaException e) {
+      throw new RuntimeException("CachedStore prewarm failed", e);
+    } finally {
+      activePreWarmer = null;
     }
+    if (cachedAllMetadata) {
+      sharedCache.clearDirtyFlags();
+    }
+    completePrewarm(startTime, cachedAllMetadata);
   }
 
   /**
@@ -636,32 +509,6 @@ public class CachedStore implements RawStore, Configurable {
     sharedCache.completeTableCachePrewarm();
   }
 
-  static class TablesPendingPrewarm {
-    private Stack<String> tableNames = new Stack<>();
-
-    private synchronized void addTableNamesForPrewarming(List<String> tblNames) {
-      tableNames.clear();
-      if (tblNames != null) {
-        tableNames.addAll(tblNames);
-      }
-    }
-
-    private synchronized boolean hasMoreTablesToPrewarm() {
-      return !tableNames.empty();
-    }
-
-    private synchronized String getNextTableNameToPrewarm() {
-      return tableNames.pop();
-    }
-
-    private synchronized void prioritizeTableForPrewarm(String tblName) {
-      // If the table is in the pending prewarm list, move it to the top
-      if (tableNames.remove(tblName)) {
-        tableNames.push(tblName);
-      }
-    }
-  }
-
   @VisibleForTesting static void setCachePrewarmedState(boolean state) {
     isCachePrewarmed.set(state);
   }
@@ -673,7 +520,7 @@ public class CachedStore implements RawStore, Configurable {
         MetastoreConf.getAsString(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_CACHED_OBJECTS_BLACKLIST));
   }
 
-  private static Collection<String> catalogsToCache(RawStore rs) throws MetaException {
+  static Collection<String> catalogsToCache(RawStore rs) {
     Collection<String> confValue = MetastoreConf.getStringCollection(rs.getConf(), ConfVars.CATALOGS_TO_CACHE);
     if (confValue == null || confValue.isEmpty() || (confValue.size() == 1 && confValue.contains(""))) {
       return rs.getCatalogs();
@@ -690,47 +537,59 @@ public class CachedStore implements RawStore, Configurable {
    * @param conf
    * @param runOnlyOnce
    * @param shouldRunPrewarm
-   */ static synchronized void startCacheUpdateService(Configuration conf, boolean runOnlyOnce,
+   */ static void startCacheUpdateService(Configuration conf, boolean runOnlyOnce,
       boolean shouldRunPrewarm) {
-    if (cacheUpdateMaster == null) {
-      initBlackListWhiteList(conf);
-      if (!MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
-        cacheRefreshPeriodMS =
-            MetastoreConf.getTimeVar(conf, ConfVars.CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY, TimeUnit.MILLISECONDS);
-      }
-      LOG.info("CachedStore: starting cache update service (run every {} ms)", cacheRefreshPeriodMS);
-      cacheUpdateMaster = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-        @Override public Thread newThread(Runnable r) {
-          Thread t = Executors.defaultThreadFactory().newThread(r);
-          t.setName("CachedStore-CacheUpdateService: Thread-" + t.getId());
-          t.setDaemon(true);
-          return t;
-        }
-      });
-      if (!runOnlyOnce) {
-        cacheUpdateMaster
-            .scheduleAtFixedRate(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, cacheRefreshPeriodMS,
-                TimeUnit.MILLISECONDS);
-      }
+    // Fast path: after first initialization this is a per-worker-thread no-op (setConf
+    // calls it on every RawStore construction), so skip the lock entirely.
+    if (cacheUpdateMaster != null && !runOnlyOnce) {
+      return;
     }
-    if (runOnlyOnce) {
-      // Some tests control the execution of the background update thread
-      cacheUpdateMaster.schedule(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, TimeUnit.MILLISECONDS);
+    synchronized (CACHE_UPDATE_SERVICE_LOCK) {
+      if (cacheUpdateMaster == null) {
+        initBlackListWhiteList(conf);
+        if (!MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
+          cacheRefreshPeriodMS =
+              MetastoreConf.getTimeVar(conf, ConfVars.CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY, TimeUnit.MILLISECONDS);
+        }
+        LOG.info("CachedStore: starting cache update service (run every {} ms)", cacheRefreshPeriodMS);
+        cacheUpdateMaster = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+          @Override public Thread newThread(Runnable r) {
+            Thread t = Executors.defaultThreadFactory().newThread(r);
+            t.setName("CachedStore-CacheUpdateService: Thread-" + t.getId());
+            t.setDaemon(true);
+            return t;
+          }
+        });
+        if (!runOnlyOnce) {
+          cacheUpdateMaster
+              .scheduleAtFixedRate(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, cacheRefreshPeriodMS,
+                  TimeUnit.MILLISECONDS);
+        }
+      }
+      if (runOnlyOnce) {
+        // Some tests control the execution of the background update thread
+        cacheUpdateMaster.schedule(new CacheUpdateMasterWork(conf, shouldRunPrewarm), 0, TimeUnit.MILLISECONDS);
+      }
     }
   }
 
-  @VisibleForTesting static synchronized boolean stopCacheUpdateService(long timeout) {
+  @VisibleForTesting static boolean stopCacheUpdateService(long timeout) {
     boolean tasksStoppedBeforeShutdown = false;
-    if (cacheUpdateMaster != null) {
+    ScheduledExecutorService master = cacheUpdateMaster;
+    if (master != null) {
+      cacheUpdateMaster = null;
       LOG.info("CachedStore: shutting down cache update service");
+      // Stop accepting new runs, then give an in-flight task a bounded grace period to finish
+      // before it is interrupted
+      master.shutdown();
       try {
-        tasksStoppedBeforeShutdown = cacheUpdateMaster.awaitTermination(timeout, TimeUnit.MILLISECONDS);
+        tasksStoppedBeforeShutdown = master.awaitTermination(timeout, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
         LOG.info("CachedStore: cache update service was interrupted while waiting for tasks to "
             + "complete before shutting down. Will make a hard stop now.");
       }
-      cacheUpdateMaster.shutdownNow();
-      cacheUpdateMaster = null;
+      master.shutdownNow();
     }
     return tasksStoppedBeforeShutdown;
   }
@@ -1330,9 +1189,12 @@ public class CachedStore implements RawStore, Configurable {
     if (tbl == null) {
       // This table is not yet loaded in cache
       // If the prewarm thread is working on this table's database,
-      // let's move this table to the top of tblNamesBeingPrewarmed stack,
+      // let's move this table to the top of the prewarm queue,
       // so that it gets loaded to the cache faster and is available for subsequent requests
-      tblsPendingPrewarm.prioritizeTableForPrewarm(tblName);
+      MetaCachePreWarm preWarmer = activePreWarmer;
+      if (preWarmer != null) {
+        preWarmer.prioritizeTableForPrewarm(new TableName(catName, dbName, tblName));
+      }
       Table t = rawStore.getTable(catName, dbName, tblName, validWriteIds);
       if (t != null) {
         sharedCache.addTableToCache(catName, dbName, tblName, t);

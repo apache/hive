@@ -162,8 +162,8 @@ EXPLAIN CBO select * from add_part_test where ds='2010-01-01';
 
 
 EXPLAIN VECTORIZED select * from add_part_test where ds='2010-01-01';
-CBO PLAN:HiveProject(add_part_test.key=[$0], add_part_test.value=[$1], add_part_test.ds=[CAST(_UTF-16LE'2010-01-01':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
-  HiveFilter(condition=[=($2, _UTF-16LE'2010-01-01')])
+CBO PLAN:HiveProject(add_part_test.key=[$0], add_part_test.value=[$1], add_part_test.ds=[CAST('2010-01-01':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveFilter(condition=[=($2, '2010-01-01')])
     HiveTableScan(table=[[default, add_part_test]], table:alias=[add_part_test])
 
 PLAN VECTORIZATION:
@@ -289,7 +289,7 @@ EXPLAIN CBO select * from add_part_test where ds>='2010-01-01';
 
 EXPLAIN VECTORIZED select * from add_part_test where ds>='2010-01-01';
 CBO PLAN:HiveProject(add_part_test.key=[$0], add_part_test.value=[$1], add_part_test.ds=[$2])
-  HiveFilter(condition=[>=($2, _UTF-16LE'2010-01-01')])
+  HiveFilter(condition=[>=($2, '2010-01-01')])
     HiveTableScan(table=[[default, add_part_test]], table:alias=[add_part_test])
 
 PLAN VECTORIZATION:
@@ -436,8 +436,8 @@ EXPLAIN CBO select * from add_part_test_db.add_part_test where ds='2010-01-01';
 
 
 EXPLAIN VECTORIZED select * from add_part_test_db.add_part_test where ds='2010-01-01';
-CBO PLAN:HiveProject(add_part_test.key=[$0], add_part_test.value=[$1], add_part_test.ds=[CAST(_UTF-16LE'2010-01-01':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
-  HiveFilter(condition=[=($2, _UTF-16LE'2010-01-01')])
+CBO PLAN:HiveProject(add_part_test.key=[$0], add_part_test.value=[$1], add_part_test.ds=[CAST('2010-01-01':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveFilter(condition=[=($2, '2010-01-01')])
     HiveTableScan(table=[[add_part_test_db, add_part_test]], table:alias=[add_part_test])
 
 PLAN VECTORIZATION:
@@ -563,7 +563,7 @@ EXPLAIN CBO select * from add_part_test_db.add_part_test where ds>='2010-01-01';
 
 EXPLAIN VECTORIZED select * from add_part_test_db.add_part_test where ds>='2010-01-01';
 CBO PLAN:HiveProject(add_part_test.key=[$0], add_part_test.value=[$1], add_part_test.ds=[$2])
-  HiveFilter(condition=[>=($2, _UTF-16LE'2010-01-01')])
+  HiveFilter(condition=[>=($2, '2010-01-01')])
     HiveTableScan(table=[[add_part_test_db, add_part_test]], table:alias=[add_part_test])
 
 PLAN VECTORIZATION:

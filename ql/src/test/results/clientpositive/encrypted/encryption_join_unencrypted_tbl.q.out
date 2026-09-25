@@ -550,7 +550,7 @@ FROM `default`.`src`
 WHERE CAST(`key` AS DOUBLE) IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`, CAST(`key` AS DOUBLE) AS `EXPR$0`
 FROM `default`.`encrypted_table`
-WHERE CAST(`key` AS DOUBLE) IS NOT NULL) AS `t2` ON `t0`.`EXPR$0` = `t2`.`EXPR$0`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`EXPR$0` = `t2`.`EXPR$0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -585,12 +585,12 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
-            filterExpr: UDFToDouble(key) is not null (type: boolean)
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: UDFToDouble(key) is not null (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)

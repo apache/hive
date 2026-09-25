@@ -6,14 +6,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore.conf;
 
@@ -404,6 +405,12 @@ public class MetastoreConf {
         "The maximum memory in bytes that the cached objects can use. "
         + "Memory used is calculated based on estimated size of tables and partitions in the cache. "
         + "Setting it to a negative value disables memory estimation."),
+    CACHED_RAW_STORE_PREWARM_THREADS("metastore.cached.rawstore.prewarm.threads",
+        "hive.metastore.cached.rawstore.prewarm.threads", 1,
+        "Number of threads CachedStore uses to prewarm the cache from the backing database at startup. "
+        + "Each thread opens its own connection to the backing database, so this value should be kept "
+        + "below the connection pool size, and the effective concurrent load on the database during "
+        + "prewarm scales with it. The default of 1 preserves the original single-threaded prewarm."),
     CAPABILITY_CHECK("metastore.client.capability.check",
         "hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
@@ -1978,6 +1985,17 @@ public class MetastoreConf {
     ICEBERG_CATALOG_METRICS_REPORTERS("metastore.iceberg.catalog.metrics.reporters",
         "hive.metastore.iceberg.catalog.metrics.reporters", "org.apache.iceberg.rest.metrics.LoggingMetricsReporter",
         "A comma separated list of custom Iceberg Metrics Reporting plugins."
+    ),
+    CATALOG_SERVLET_UGI_CACHE_SIZE("metastore.catalog.servlet.ugi.cache.size",
+        "hive.metastore.catalog.servlet.ugi.cache.size", 1000L,
+        "Maximum number of proxy UserGroupInformation instances to keep in the catalog servlet UGI cache. " +
+        "Entries displaced by this limit trigger FileSystem resource cleanup for the evicted UGI."
+    ),
+    CATALOG_SERVLET_UGI_CACHE_EXPIRY("metastore.catalog.servlet.ugi.cache.expiry",
+        "hive.metastore.catalog.servlet.ugi.cache.expiry", 3600, TimeUnit.SECONDS,
+        "Idle-expiry time for cached proxy UserGroupInformation instances in the catalog servlet. " +
+        "After this period of inactivity, the entry is evicted and FileSystem.closeAllForUGI is called " +
+        "to release associated IPC and RPC resources. Set to 0 to disable expiry-based eviction."
     ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
             "hive.metastore.httpserver.threadpool.min", 8,

@@ -2136,7 +2136,11 @@
                   "nullable": false
                 }
               }
-            ]
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
           }
         ],
         "rowCount": 976194609469717760
@@ -3609,7 +3613,13 @@
                                   "input": 6,
                                   "name": "$6"
                                 }
-                              ]
+                              ],
+                              "type": {
+                                "type": "DECIMAL",
+                                "nullable": true,
+                                "precision": 22,
+                                "scale": 6
+                              }
                             }
                           ]
                         },
@@ -3945,7 +3955,13 @@
                 "input": 16,
                 "name": "$16"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 22,
+              "scale": 6
+            }
           }
         ],
         "rowCount": 4.4703400466242126E45

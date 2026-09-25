@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.parse;
 
@@ -34,7 +35,8 @@ public class ColumnAccessAnalyzer {
     pGraphContext = pactx;
   }
 
-  public ColumnAccessInfo analyzeColumnAccess(ColumnAccessInfo columnAccessInfo) throws SemanticException {
+  public ColumnAccessInfo analyzeColumnAccess(SemanticAnalyzer analyzer) throws SemanticException {
+    ColumnAccessInfo columnAccessInfo = analyzer.getColumnAccessInfo();
     if (columnAccessInfo == null) {
       columnAccessInfo = new ColumnAccessInfo();
     }
@@ -56,6 +58,21 @@ public class ColumnAccessAnalyzer {
             }
           }
         }
+      }
+    }
+    columnAccessInfo.merge(getMaterializedCteColumnAccessInfo(analyzer.rootClause.asExecutionOrder()));
+    return columnAccessInfo;
+  }
+
+  /**
+   * Merge column access recorded by materialized CTE sub-analyzers into this analyzer's
+   * column access info so authorization sees base-table columns, not only the temp CTE table.
+   */
+  private ColumnAccessInfo getMaterializedCteColumnAccessInfo(List<SemanticAnalyzer.CTEClause> cteClauses) {
+    ColumnAccessInfo columnAccessInfo = new ColumnAccessInfo();
+    for (SemanticAnalyzer.CTEClause cte : cteClauses) {
+      if (cte.source != null && cte.source.getColumnAccessInfo() != null) {
+        columnAccessInfo.merge(cte.source.getColumnAccessInfo());
       }
     }
     return columnAccessInfo;

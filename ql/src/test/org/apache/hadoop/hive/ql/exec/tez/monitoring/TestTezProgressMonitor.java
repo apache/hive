@@ -9,15 +9,17 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue.NoOpQueueMetricsCollector;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.client.DAGClient;
@@ -91,7 +93,7 @@ public class TestTezProgressMonitor {
 
     TezProgressMonitor monitor =
         new TezProgressMonitor(dagClient, dagStatus, new ArrayList<BaseWork>(), progressMap(), console,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE, NoOpQueueMetricsCollector.INSTANCE);
 
     verify(dagClient).getVertexStatus(eq(MAPPER), isNull());
     verify(dagClient).getVertexStatus(eq(REDUCER), isNull());

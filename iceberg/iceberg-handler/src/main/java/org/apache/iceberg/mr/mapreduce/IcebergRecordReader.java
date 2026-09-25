@@ -37,8 +37,6 @@ import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
-import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.ScanTaskGroup;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.avro.Avro;
@@ -86,12 +84,13 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   }
 
   private CloseableIterator<T> nextTask() {
-    CloseableIterator<T> closeableIterator = open(tasks.next(), expectedSchema).iterator();
+    FileScanTask task = tasks.next();
+    CloseableIterator<T> closeableIterator = open(task, expectedSchema).iterator();
     if (!isFetchVirtualColumns() || Utilities.getIsVectorized(conf)) {
       return closeableIterator;
     }
     return new IcebergAcidUtil.VirtualColumnAwareIterator<>(closeableIterator,
-        expectedSchema, conf);
+        expectedSchema.columns(), conf, task);
   }
 
   @Override
@@ -262,19 +261,12 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   }
 
   private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {
-    PartitionSpec spec = task.spec();
-    Set<Integer> idColumns = spec.identitySourceIds();
-    Schema partitionSchema = TypeUtil.select(expectedSchema, idColumns);
-    boolean projectsIdentityPartitionColumns = !partitionSchema.columns().isEmpty();
-    if (expectedSchema.findField(MetadataColumns.PARTITION_COLUMN_ID) != null) {
-      Types.StructType partitionType = Partitioning.partitionType(table);
-      return PartitionUtil.constantsMap(task, partitionType, converter);
-    } else if (projectsIdentityPartitionColumns) {
-      Types.StructType partitionType = Partitioning.partitionType(table);
-      return PartitionUtil.constantsMap(task, partitionType, converter);
-    } else {
-      return Collections.emptyMap();
+    boolean projectsIdentityPartitionColumns = !TypeUtil.select(expectedSchema, task.spec().identitySourceIds())
+        .columns().isEmpty();
+    if (expectedSchema.findField(MetadataColumns.SPEC_ID.fieldId()) != null || projectsIdentityPartitionColumns) {
+      return PartitionUtil.constantsMap(task, converter);
     }
+    return Collections.emptyMap();
   }
 
   private static Schema schemaWithoutConstantsAndMeta(Schema readSchema, Map<Integer, ?> idToConstant) {

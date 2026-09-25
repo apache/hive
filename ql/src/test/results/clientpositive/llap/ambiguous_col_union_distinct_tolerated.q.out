@@ -1,0 +1,20 @@
+PREHOOK: query: select 'a' as c, 'b' as c union select 'a', 'b' union select 'a', 'x'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'a' as c, 'b' as c union select 'a', 'b' union select 'a', 'x'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b
+a	x
+PREHOOK: query: select distinct * from (select 'a' as c, 'b' as c union all select 'a', 'b' union all select 'a', 'x') t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct * from (select 'a' as c, 'b' as c union all select 'a', 'b' union all select 'a', 'x') t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b
+a	x

@@ -438,7 +438,13 @@
                 "input": 1,
                 "name": "$1"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 6.6833812750590004E10
@@ -1349,7 +1355,13 @@
                 "input": 1,
                 "name": "$1"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 6.6833812750590004E10
@@ -2428,7 +2440,13 @@
                 "input": 1,
                 "name": "$1"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 1.7491657141260002E10
@@ -2754,7 +2772,13 @@
                 "input": 1,
                 "name": "$1"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 1.7491657141260002E10
