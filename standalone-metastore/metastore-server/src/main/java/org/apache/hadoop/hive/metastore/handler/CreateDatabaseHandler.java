@@ -75,7 +75,8 @@ public class CreateDatabaseHandler
     boolean isReplicated = isDbReplicationTarget(db);
     Map<String, String> transactionalListenersResponses = Collections.emptyMap();
     Path dbExtPath = new Path(db.getLocationUri());
-    Path dbMgdPath = db.getManagedLocationUri() != null ? new Path(db.getManagedLocationUri()) : null;
+    // beforeExecute() always persists a managed location (explicit or default) onto db
+    Path dbMgdPath = new Path(db.getManagedLocationUri());
     boolean isInTest = MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST);
     try {
       Database authDb = new Database(db);
@@ -97,53 +98,20 @@ public class CreateDatabaseHandler
           madeExternalDir = true;
         }
       } else {
-        if (dbMgdPath != null) {
-          try {
-            // Since this may be done as random user (if doAs=true) he may not have access
-            // to the managed directory. We run this as an admin user
-            madeManagedDir = UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Boolean>) () -> {
-              if (!wh.isDir(dbMgdPath)) {
-                LOG.info("Creating database path in managed directory {}", dbMgdPath);
-                if (!wh.mkdirs(dbMgdPath)) {
-                  throw new MetaException("Unable to create database managed path " + dbMgdPath +
-                      ", failed to create database " + db.getName());
-                }
-                return true;
-              }
-              return false;
-            });
-            if (madeManagedDir) {
-              LOG.info("Created database path in managed directory {}", dbMgdPath);
-            } else if (!isInTest || !isDbReplicationTarget(db)) { // Hive replication tests doesn't drop the db after each test
-              throw new MetaException("Unable to create database managed directory " + dbMgdPath +
-                  ", failed to create database " + db.getName());
-            }
-          } catch (IOException | InterruptedException e) {
-            throw new MetaException(
-                "Unable to create database managed directory " + dbMgdPath + ", failed to create database " +
-                    db.getName() + ":" + e.getMessage());
-          }
+        madeManagedDir = createDbDirectory(dbMgdPath, true, "managed");
+        if (madeManagedDir) {
+         LOG.info("Created database path in managed directory {}", dbMgdPath);
+        } else if (!wh.isDir(dbMgdPath) && (!isInTest || !isDbReplicationTarget(db))) {
+          throw new MetaException("Unable to create database managed directory " + dbMgdPath +
+              ", failed to create database " + db.getName());
         }
-        try {
-          madeExternalDir = UserGroupInformation.getCurrentUser().doAs((PrivilegedExceptionAction<Boolean>) () -> {
-            if (!wh.isDir(dbExtPath)) {
-              LOG.info("Creating database path in external directory {}", dbExtPath);
-              return wh.mkdirs(dbExtPath);
-            }
-            return false;
-          });
-          if (madeExternalDir) {
-            LOG.info("Created database path in external directory {}", dbExtPath);
-          } else {
-            LOG.warn(
-                "Failed to create external path {} for database {}. " +
-                    "This may result in access not being allowed if the StorageBasedAuthorizationProvider is enabled",
-                dbExtPath, db.getName());
-          }
-        } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-          throw new MetaException("Failed to create external path " + dbExtPath + " for database " + db.getName() +
-                  ". This may result in access not being allowed if the " +
-              "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
+        madeExternalDir = createDbDirectory(dbExtPath, false, "external");
+        if (madeExternalDir) {
+          LOG.info("Created database path in external directory {}", dbExtPath);
+        } else if (!wh.isDir(dbExtPath)) {
+          LOG.warn("Failed to create external path {} for database {}. " +
+                  "This may result in access not being allowed if the StorageBasedAuthorizationProvider is enabled",
+              dbExtPath, db.getName());
         }
       }
 
@@ -162,11 +130,11 @@ public class CreateDatabaseHandler
       if (!success) {
         ms.rollbackTransaction();
         if (db.getCatalogName() != null && !db.getCatalogName().equals(Warehouse.DEFAULT_CATALOG_NAME)) {
-          if (madeManagedDir && dbMgdPath != null) {
+          if (madeManagedDir) {
             wh.deleteDir(dbMgdPath, true, db);
           }
         } else {
-          if (madeManagedDir && dbMgdPath != null) {
+          if (madeManagedDir) {
             try {
               UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Void>) () -> {
                 wh.deleteDir(dbMgdPath, true, db);
@@ -230,16 +198,13 @@ public class CreateDatabaseHandler
     Path defaultDbMgdPath = wh.getDefaultDatabasePath(db.getName(), false);
     Path dbExtPath = (passedInURI != null) ?
         wh.getDnsPath(new Path(passedInURI)) : wh.determineDatabasePath(cat, db);
-    Path dbMgdPath = (passedInManagedURI != null) ? wh.getDnsPath(new Path(passedInManagedURI)) : null;
-
+    Path dbMgdPath = (passedInManagedURI != null) ?
+       wh.getDnsPath(new Path(passedInManagedURI)) : defaultDbMgdPath;
     skipAuthorization = ((passedInURI == null && passedInManagedURI == null) ||
-        (defaultDbExtPath.equals(dbExtPath) &&
-            (dbMgdPath == null || defaultDbMgdPath.equals(dbMgdPath))));
-
+       (defaultDbExtPath.equals(dbExtPath) && defaultDbMgdPath.equals(dbMgdPath)));
     db.setLocationUri(dbExtPath.toString());
-    if (dbMgdPath != null) {
-      db.setManagedLocationUri(dbMgdPath.toString());
-    }
+    //Database.managedLocationUri reflects the directory that will actually be created on disk.
+    db.setManagedLocationUri(dbMgdPath.toString());
 
     if (db.getOwnerName() == null){
       try {
@@ -269,4 +234,48 @@ public class CreateDatabaseHandler
                                      Map<String, String> transactionalListenersResponses) implements Result {
 
   }
+
+  /**
+   * Creates the given database directory (managed or external) as the given user,
+   * running the actual mkdir as an admin (login) or current user depending on runAsLoginUser.
+   *
+   * @param path the directory path to create
+   * @param runAsLoginUser true to run as the login (admin) user (used for managed dir,
+   *                        since the calling user may not have access to it),
+   *                        false to run as the current user (used for external dir)
+   * @param dirLabel a short label ("managed"/"external") used only for log/error messages
+   * @return true if the directory was created by this call, false if it already existed
+   * @throws MetaException if directory creation fails
+   */
+  private boolean createDbDirectory(Path path, boolean runAsLoginUser, String dirLabel)
+      throws MetaException {
+    try {
+      UserGroupInformation ugi = runAsLoginUser
+          ? UserGroupInformation.getLoginUser()
+          : UserGroupInformation.getCurrentUser();
+      return ugi.doAs((PrivilegedExceptionAction<Boolean>) () -> {
+        if (!wh.isDir(path)) {
+          LOG.info("Creating database path in {} directory {}", dirLabel, path);
+          return wh.mkdirs(path);
+        }
+        return false;
+      });
+    } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+      Throwable cause = (e instanceof UndeclaredThrowableException && e.getCause() != null)
+          ? e.getCause()
+          : e;
+
+      if (cause instanceof MetaException) {
+        throw (MetaException) cause;
+      }
+
+      String externalHint = "external".equals(dirLabel)
+          ? ". This may result in access not being allowed if the StorageBasedAuthorizationProvider is enabled"
+          : "";
+
+      throw new MetaException("Failed to create " + dirLabel + " path " + path + " for database " + db.getName() +
+          externalHint + ": " + cause.getMessage());
+    }
+  }
+
 }
