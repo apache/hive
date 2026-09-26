@@ -444,7 +444,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
-                  filterExpr: ((cdouble >= -500.0D) and (cdouble < -199.0D)) (type: boolean)
+                  filterExpr: ((cdouble < -199.0D) and (cdouble >= -500.0D)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 146792 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -452,8 +452,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -500.0), FilterDoubleColLessDoubleScalar(col 5:double, val -199.0))
-                    predicate: ((cdouble >= -500.0D) and (cdouble < -199.0D)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 5:double, val -199.0), FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -500.0))
+                    predicate: ((cdouble < -199.0D) and (cdouble >= -500.0D)) (type: boolean)
                     Statistics: Num rows: 20 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: ++

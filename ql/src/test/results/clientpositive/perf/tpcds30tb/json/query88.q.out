@@ -1,10 +1,10 @@
-Warning: Map Join MAPJOIN[605][bigTable=?] in task 'Reducer 5' is a cross product
-Warning: Map Join MAPJOIN[604][bigTable=?] in task 'Reducer 5' is a cross product
-Warning: Map Join MAPJOIN[603][bigTable=?] in task 'Reducer 5' is a cross product
-Warning: Map Join MAPJOIN[602][bigTable=?] in task 'Reducer 5' is a cross product
-Warning: Map Join MAPJOIN[601][bigTable=?] in task 'Reducer 5' is a cross product
-Warning: Map Join MAPJOIN[600][bigTable=?] in task 'Reducer 5' is a cross product
-Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross product
+Warning: Map Join MAPJOIN[601][bigTable=?] in task 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[600][bigTable=?] in task 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[605][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[604][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[603][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[602][bigTable=?] in task 'Reducer 3' is a cross product
 {
   "CBOPlan": {
     "rels": [
@@ -801,26 +801,6 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
           "operands": [
             {
               "op": {
-                "name": "<=",
-                "kind": "LESS_THAN_OR_EQUAL",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 4,
-                  "name": "$4"
-                },
-                {
-                  "literal": 5,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
-            {
-              "op": {
                 "name": "IN",
                 "kind": "OTHER_FUNCTION",
                 "syntax": "SPECIAL"
@@ -999,6 +979,26 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "<=",
+                "kind": "LESS_THAN_OR_EQUAL",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
                 }
               ]
             }
@@ -1617,7 +1617,7 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                   "name": "$3"
                 },
                 {
-                  "literal": 12,
+                  "literal": 11,
                   "type": {
                     "type": "INTEGER",
                     "nullable": false
@@ -1627,8 +1627,8 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             },
             {
               "op": {
-                "name": "<",
-                "kind": "LESS_THAN",
+                "name": ">=",
+                "kind": "GREATER_THAN_OR_EQUAL",
                 "syntax": "BINARY"
               },
               "operands": [
@@ -1705,26 +1705,6 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             "syntax": "BINARY"
           },
           "operands": [
-            {
-              "op": {
-                "name": "<=",
-                "kind": "LESS_THAN_OR_EQUAL",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 4,
-                  "name": "$4"
-                },
-                {
-                  "literal": 5,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
             {
               "op": {
                 "name": "IN",
@@ -1905,6 +1885,26 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "<=",
+                "kind": "LESS_THAN_OR_EQUAL",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
                 }
               ]
             }
@@ -2187,7 +2187,7 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                   "name": "$3"
                 },
                 {
-                  "literal": 11,
+                  "literal": 10,
                   "type": {
                     "type": "INTEGER",
                     "nullable": false
@@ -2275,26 +2275,6 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             "syntax": "BINARY"
           },
           "operands": [
-            {
-              "op": {
-                "name": "<=",
-                "kind": "LESS_THAN_OR_EQUAL",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 4,
-                  "name": "$4"
-                },
-                {
-                  "literal": 5,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
             {
               "op": {
                 "name": "IN",
@@ -2475,6 +2455,26 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "<=",
+                "kind": "LESS_THAN_OR_EQUAL",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
                 }
               ]
             }
@@ -2757,7 +2757,7 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                   "name": "$3"
                 },
                 {
-                  "literal": 11,
+                  "literal": 9,
                   "type": {
                     "type": "INTEGER",
                     "nullable": false
@@ -2767,8 +2767,8 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             },
             {
               "op": {
-                "name": "<",
-                "kind": "LESS_THAN",
+                "name": ">=",
+                "kind": "GREATER_THAN_OR_EQUAL",
                 "syntax": "BINARY"
               },
               "operands": [
@@ -2845,26 +2845,6 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             "syntax": "BINARY"
           },
           "operands": [
-            {
-              "op": {
-                "name": "<=",
-                "kind": "LESS_THAN_OR_EQUAL",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 4,
-                  "name": "$4"
-                },
-                {
-                  "literal": 5,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
             {
               "op": {
                 "name": "IN",
@@ -3045,6 +3025,26 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "<=",
+                "kind": "LESS_THAN_OR_EQUAL",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
                 }
               ]
             }
@@ -3327,7 +3327,7 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                   "name": "$3"
                 },
                 {
-                  "literal": 10,
+                  "literal": 12,
                   "type": {
                     "type": "INTEGER",
                     "nullable": false
@@ -3337,8 +3337,8 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             },
             {
               "op": {
-                "name": ">=",
-                "kind": "GREATER_THAN_OR_EQUAL",
+                "name": "<",
+                "kind": "LESS_THAN",
                 "syntax": "BINARY"
               },
               "operands": [
@@ -3415,26 +3415,6 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             "syntax": "BINARY"
           },
           "operands": [
-            {
-              "op": {
-                "name": "<=",
-                "kind": "LESS_THAN_OR_EQUAL",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 4,
-                  "name": "$4"
-                },
-                {
-                  "literal": 5,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
             {
               "op": {
                 "name": "IN",
@@ -3615,6 +3595,26 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "<=",
+                "kind": "LESS_THAN_OR_EQUAL",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
                 }
               ]
             }
@@ -3897,7 +3897,7 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                   "name": "$3"
                 },
                 {
-                  "literal": 10,
+                  "literal": 11,
                   "type": {
                     "type": "INTEGER",
                     "nullable": false
@@ -3985,26 +3985,6 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             "syntax": "BINARY"
           },
           "operands": [
-            {
-              "op": {
-                "name": "<=",
-                "kind": "LESS_THAN_OR_EQUAL",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 4,
-                  "name": "$4"
-                },
-                {
-                  "literal": 5,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
             {
               "op": {
                 "name": "IN",
@@ -4185,6 +4165,26 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "<=",
+                "kind": "LESS_THAN_OR_EQUAL",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
                 }
               ]
             }
@@ -4467,7 +4467,7 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                   "name": "$3"
                 },
                 {
-                  "literal": 9,
+                  "literal": 10,
                   "type": {
                     "type": "INTEGER",
                     "nullable": false
@@ -4477,8 +4477,8 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             },
             {
               "op": {
-                "name": ">=",
-                "kind": "GREATER_THAN_OR_EQUAL",
+                "name": "<",
+                "kind": "LESS_THAN",
                 "syntax": "BINARY"
               },
               "operands": [
@@ -4555,26 +4555,6 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             "syntax": "BINARY"
           },
           "operands": [
-            {
-              "op": {
-                "name": "<=",
-                "kind": "LESS_THAN_OR_EQUAL",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 4,
-                  "name": "$4"
-                },
-                {
-                  "literal": 5,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
             {
               "op": {
                 "name": "IN",
@@ -4755,6 +4735,26 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "<=",
+                "kind": "LESS_THAN_OR_EQUAL",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
                 }
               ]
             }
@@ -5127,26 +5127,6 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
           "operands": [
             {
               "op": {
-                "name": "<=",
-                "kind": "LESS_THAN_OR_EQUAL",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 4,
-                  "name": "$4"
-                },
-                {
-                  "literal": 5,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
-            {
-              "op": {
                 "name": "IN",
                 "kind": "OTHER_FUNCTION",
                 "syntax": "SPECIAL"
@@ -5325,6 +5305,26 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "<=",
+                "kind": "LESS_THAN_OR_EQUAL",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
                 }
               ]
             }
@@ -5528,28 +5528,28 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
             "name": "$7"
           },
           {
-            "input": 6,
-            "name": "$6"
-          },
-          {
-            "input": 5,
-            "name": "$5"
-          },
-          {
-            "input": 4,
-            "name": "$4"
-          },
-          {
             "input": 3,
             "name": "$3"
+          },
+          {
+            "input": 6,
+            "name": "$6"
           },
           {
             "input": 2,
             "name": "$2"
           },
           {
+            "input": 5,
+            "name": "$5"
+          },
+          {
             "input": 1,
             "name": "$1"
+          },
+          {
+            "input": 4,
+            "name": "$4"
           }
         ],
         "rowCount": 1
