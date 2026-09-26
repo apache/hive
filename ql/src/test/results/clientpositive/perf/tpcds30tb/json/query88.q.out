@@ -862,43 +862,21 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
               "operands": [
                 {
                   "op": {
-                    "name": "AND",
-                    "kind": "AND",
+                    "name": "=",
+                    "kind": "EQUALS",
                     "syntax": "BINARY"
                   },
                   "operands": [
                     {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 3,
-                          "name": "$3"
-                        },
-                        {
-                          "literal": 3,
-                          "type": {
-                            "type": "INTEGER",
-                            "nullable": false
-                          }
-                        }
-                      ]
+                      "input": 3,
+                      "name": "$3"
                     },
                     {
-                      "op": {
-                        "name": "IS NOT NULL",
-                        "kind": "IS_NOT_NULL",
-                        "syntax": "POSTFIX"
-                      },
-                      "operands": [
-                        {
-                          "input": 4,
-                          "name": "$4"
-                        }
-                      ]
+                      "literal": 3,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
                     }
                   ]
                 },
@@ -1768,43 +1746,21 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
               "operands": [
                 {
                   "op": {
-                    "name": "AND",
-                    "kind": "AND",
+                    "name": "=",
+                    "kind": "EQUALS",
                     "syntax": "BINARY"
                   },
                   "operands": [
                     {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 3,
-                          "name": "$3"
-                        },
-                        {
-                          "literal": 3,
-                          "type": {
-                            "type": "INTEGER",
-                            "nullable": false
-                          }
-                        }
-                      ]
+                      "input": 3,
+                      "name": "$3"
                     },
                     {
-                      "op": {
-                        "name": "IS NOT NULL",
-                        "kind": "IS_NOT_NULL",
-                        "syntax": "POSTFIX"
-                      },
-                      "operands": [
-                        {
-                          "input": 4,
-                          "name": "$4"
-                        }
-                      ]
+                      "literal": 3,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
                     }
                   ]
                 },
@@ -2338,43 +2294,21 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
               "operands": [
                 {
                   "op": {
-                    "name": "AND",
-                    "kind": "AND",
+                    "name": "=",
+                    "kind": "EQUALS",
                     "syntax": "BINARY"
                   },
                   "operands": [
                     {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 3,
-                          "name": "$3"
-                        },
-                        {
-                          "literal": 3,
-                          "type": {
-                            "type": "INTEGER",
-                            "nullable": false
-                          }
-                        }
-                      ]
+                      "input": 3,
+                      "name": "$3"
                     },
                     {
-                      "op": {
-                        "name": "IS NOT NULL",
-                        "kind": "IS_NOT_NULL",
-                        "syntax": "POSTFIX"
-                      },
-                      "operands": [
-                        {
-                          "input": 4,
-                          "name": "$4"
-                        }
-                      ]
+                      "literal": 3,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
                     }
                   ]
                 },
@@ -2908,43 +2842,21 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
               "operands": [
                 {
                   "op": {
-                    "name": "AND",
-                    "kind": "AND",
+                    "name": "=",
+                    "kind": "EQUALS",
                     "syntax": "BINARY"
                   },
                   "operands": [
                     {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 3,
-                          "name": "$3"
-                        },
-                        {
-                          "literal": 3,
-                          "type": {
-                            "type": "INTEGER",
-                            "nullable": false
-                          }
-                        }
-                      ]
+                      "input": 3,
+                      "name": "$3"
                     },
                     {
-                      "op": {
-                        "name": "IS NOT NULL",
-                        "kind": "IS_NOT_NULL",
-                        "syntax": "POSTFIX"
-                      },
-                      "operands": [
-                        {
-                          "input": 4,
-                          "name": "$4"
-                        }
-                      ]
+                      "literal": 3,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
                     }
                   ]
                 },
@@ -3478,43 +3390,21 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
               "operands": [
                 {
                   "op": {
-                    "name": "AND",
-                    "kind": "AND",
+                    "name": "=",
+                    "kind": "EQUALS",
                     "syntax": "BINARY"
                   },
                   "operands": [
                     {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 3,
-                          "name": "$3"
-                        },
-                        {
-                          "literal": 3,
-                          "type": {
-                            "type": "INTEGER",
-                            "nullable": false
-                          }
-                        }
-                      ]
+                      "input": 3,
+                      "name": "$3"
                     },
                     {
-                      "op": {
-                        "name": "IS NOT NULL",
-                        "kind": "IS_NOT_NULL",
-                        "syntax": "POSTFIX"
-                      },
-                      "operands": [
-                        {
-                          "input": 4,
-                          "name": "$4"
-                        }
-                      ]
+                      "literal": 3,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
                     }
                   ]
                 },
@@ -4048,43 +3938,21 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
               "operands": [
                 {
                   "op": {
-                    "name": "AND",
-                    "kind": "AND",
+                    "name": "=",
+                    "kind": "EQUALS",
                     "syntax": "BINARY"
                   },
                   "operands": [
                     {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 3,
-                          "name": "$3"
-                        },
-                        {
-                          "literal": 3,
-                          "type": {
-                            "type": "INTEGER",
-                            "nullable": false
-                          }
-                        }
-                      ]
+                      "input": 3,
+                      "name": "$3"
                     },
                     {
-                      "op": {
-                        "name": "IS NOT NULL",
-                        "kind": "IS_NOT_NULL",
-                        "syntax": "POSTFIX"
-                      },
-                      "operands": [
-                        {
-                          "input": 4,
-                          "name": "$4"
-                        }
-                      ]
+                      "literal": 3,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
                     }
                   ]
                 },
@@ -4618,43 +4486,21 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
               "operands": [
                 {
                   "op": {
-                    "name": "AND",
-                    "kind": "AND",
+                    "name": "=",
+                    "kind": "EQUALS",
                     "syntax": "BINARY"
                   },
                   "operands": [
                     {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 3,
-                          "name": "$3"
-                        },
-                        {
-                          "literal": 3,
-                          "type": {
-                            "type": "INTEGER",
-                            "nullable": false
-                          }
-                        }
-                      ]
+                      "input": 3,
+                      "name": "$3"
                     },
                     {
-                      "op": {
-                        "name": "IS NOT NULL",
-                        "kind": "IS_NOT_NULL",
-                        "syntax": "POSTFIX"
-                      },
-                      "operands": [
-                        {
-                          "input": 4,
-                          "name": "$4"
-                        }
-                      ]
+                      "literal": 3,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
                     }
                   ]
                 },
@@ -5188,43 +5034,21 @@ Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross produc
               "operands": [
                 {
                   "op": {
-                    "name": "AND",
-                    "kind": "AND",
+                    "name": "=",
+                    "kind": "EQUALS",
                     "syntax": "BINARY"
                   },
                   "operands": [
                     {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 3,
-                          "name": "$3"
-                        },
-                        {
-                          "literal": 3,
-                          "type": {
-                            "type": "INTEGER",
-                            "nullable": false
-                          }
-                        }
-                      ]
+                      "input": 3,
+                      "name": "$3"
                     },
                     {
-                      "op": {
-                        "name": "IS NOT NULL",
-                        "kind": "IS_NOT_NULL",
-                        "syntax": "POSTFIX"
-                      },
-                      "operands": [
-                        {
-                          "input": 4,
-                          "name": "$4"
-                        }
-                      ]
+                      "literal": 3,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
                     }
                   ]
                 },
