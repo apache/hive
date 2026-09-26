@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -94,20 +95,53 @@ public abstract class AbstractTestParquetDirect {
     }
   }
 
-  public Path writeDirect(String name, MessageType type, DirectWriter writer)
-      throws IOException {
+  /**
+   * Writes a Parquet file whose writer can be configured, so tests can turn on features that are off by
+   * default, such as bloom filters.
+   */
+  public Path writeDirect(String name, MessageType type, DirectWriter writer,
+      Consumer<ParquetWriter.Builder<Void, ?>> configurer) throws IOException {
     File temp = tempDir.newFile(name + ".parquet");
     temp.deleteOnExit();
     temp.delete();
 
     Path path = new Path(temp.getPath());
 
-    ParquetWriter<Void> parquetWriter = new ParquetWriter<Void>(path,
-        new DirectWriteSupport(type, writer, new HashMap<String, String>()));
-    parquetWriter.write(null);
-    parquetWriter.close();
+    DirectBuilder builder = new DirectBuilder(path, type, writer, new HashMap<String, String>());
+    configurer.accept(builder);
+    try (ParquetWriter<Void> parquetWriter = builder.build()) {
+      parquetWriter.write(null);
+    }
 
     return path;
+  }
+
+  private static class DirectBuilder extends ParquetWriter.Builder<Void, DirectBuilder> {
+    private final MessageType type;
+    private final DirectWriter writer;
+    private final Map<String, String> metadata;
+
+    private DirectBuilder(Path file, MessageType type, DirectWriter writer, Map<String, String> metadata) {
+      super(file);
+      this.type = type;
+      this.writer = writer;
+      this.metadata = metadata;
+    }
+
+    @Override
+    protected DirectBuilder self() {
+      return this;
+    }
+
+    @Override
+    protected WriteSupport<Void> getWriteSupport(Configuration conf) {
+      return new DirectWriteSupport(type, writer, metadata);
+    }
+  }
+
+  public Path writeDirect(String name, MessageType type, DirectWriter writer)
+      throws IOException {
+    return writeDirect(name, type, writer, builder -> { });
   }
 
   public static ArrayWritable record(Writable... fields) {
