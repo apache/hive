@@ -190,6 +190,7 @@ public class AggregateStatsCache {
         cacheMisses.incrementAndGet();
       }
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       LOG.debug("Interrupted Exception ignored ",e);
     } finally {
       if (isLocked) {
@@ -304,6 +305,7 @@ public class AggregateStatsCache {
         currentNodes.getAndIncrement();
       }
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       LOG.debug("Interrupted Exception ignored ", e);
     } finally {
       if (isLocked) {
@@ -360,6 +362,7 @@ public class AggregateStatsCache {
                 }
               }
             } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
               LOG.debug("Interrupted Exception ignored ",e);
             } finally {
               if (isLocked) {
@@ -448,6 +451,7 @@ public class AggregateStatsCache {
         numRemovedLRU++;
       }
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       LOG.debug("Interrupted Exception ignored ",e);
     } finally {
       if (isLocked) {

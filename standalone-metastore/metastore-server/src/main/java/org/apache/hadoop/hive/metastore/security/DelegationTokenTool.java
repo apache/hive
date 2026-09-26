@@ -223,7 +223,9 @@ public class DelegationTokenTool extends Configured implements Tool {
         LOG.info("Deleted " + nDeletedTokens + "/" + allDelegationTokenIDs.size() +
                  " (" + (((long)(100*nDeletedTokens))/allDelegationTokenIDs.size()) + "%). " +
                  "Sleeping for " + sleepTimeMillis + "ms...");
-        try {Thread.sleep(sleepTimeMillis); } catch (InterruptedException ignore) {}
+        try {Thread.sleep(sleepTimeMillis); } catch (InterruptedException ignore) {
+          Thread.currentThread().interrupt();
+        }
       }
       LOG.info("Deleting token: " + tokenId.toString());
       if (!isDryRun) {

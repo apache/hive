@@ -786,6 +786,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         try {
           Thread.sleep(sleepInterval);
         } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
         }
         sleepInterval *= 2;
       }

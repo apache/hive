@@ -205,6 +205,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     try {
       Thread.sleep(nextSleep);
     } catch (InterruptedException ignored) {
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -338,7 +339,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       try {
         Thread.sleep(sleep);
       } catch (InterruptedException e) {
-        // ignore
+        Thread.currentThread().interrupt();
       }
     }
   }
@@ -370,7 +371,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       try {
         Thread.sleep(initialDelay);
       } catch (InterruptedException e) {
-        // ignore this
+        Thread.currentThread().interrupt();
       }
     }
 
@@ -394,7 +395,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       try {
         Thread.sleep(heartbeatInterval);
       } catch (InterruptedException e) {
-        //ignore
+        Thread.currentThread().interrupt();
       }
     }
   }
