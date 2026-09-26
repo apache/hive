@@ -14,89 +14,60 @@ insert overwrite table newtypestbl_n4 select * from (select cast("apple" as char
 -- timestamp data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
 select * from newtypestbl_n4 where cast(ts as string)='2011-01-01 01:01:01';
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where cast(ts as string)='2011-01-01 01:01:01';
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts=cast('2011-01-01 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts=cast('2011-01-01 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts=cast('2011-01-01 01:01:01' as varchar(20));
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts=cast('2011-01-01 01:01:01' as varchar(20));
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts!=cast('2011-01-01 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts!=cast('2011-01-01 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts<cast('2011-01-20 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts<cast('2011-01-20 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts<cast('2011-01-22 01:01:01' as timestamp) sort by c;
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts<cast('2011-01-22 01:01:01' as timestamp) sort by c;
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts<cast('2010-10-01 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts<cast('2010-10-01 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts<=cast('2011-01-01 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts<=cast('2011-01-01 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts<=cast('2011-01-20 01:01:01' as timestamp) sort by c;
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts<=cast('2011-01-20 01:01:01' as timestamp) sort by c;
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts in (cast('2011-01-02 01:01:01' as timestamp), cast('2011-01-20 01:01:01' as timestamp));
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts in (cast('2011-01-02 01:01:01' as timestamp), cast('2011-01-20 01:01:01' as timestamp));
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts in (cast('2011-01-01 01:01:01' as timestamp), cast('2011-01-20 01:01:01' as timestamp)) sort by c;
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts in (cast('2011-01-01 01:01:01' as timestamp), cast('2011-01-20 01:01:01' as timestamp)) sort by c;
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts in (cast('2011-01-02 01:01:01' as timestamp), cast('2011-01-08 01:01:01' as timestamp));
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts in (cast('2011-01-02 01:01:01' as timestamp), cast('2011-01-08 01:01:01' as timestamp));
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts between cast('2010-10-01 01:01:01' as timestamp) and cast('2011-01-08 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts between cast('2010-10-01 01:01:01' as timestamp) and cast('2011-01-08 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts between cast('2010-10-01 01:01:01' as timestamp) and cast('2011-01-25 01:01:01' as timestamp) sort by c;
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts between cast('2010-10-01 01:01:01' as timestamp) and cast('2011-01-25 01:01:01' as timestamp) sort by c;
 
-set hive.optimize.index.filter=false;
 select * from newtypestbl_n4 where ts between cast('2010-10-01 01:01:01' as timestamp) and cast('2010-11-01 01:01:01' as timestamp);
 
-set hive.optimize.index.filter=true;
 select * from newtypestbl_n4 where ts between cast('2010-10-01 01:01:01' as timestamp) and cast('2010-11-01 01:01:01' as timestamp);

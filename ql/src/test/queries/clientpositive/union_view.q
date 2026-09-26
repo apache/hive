@@ -13,7 +13,6 @@ CREATE TABLE src_union_3_n0(key int, value string) PARTITIONED BY (ds string, pa
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
-SET hive.optimize.index.filter=true;
 
 SET hive.exec.pre.hooks=;
 SET hive.exec.post.hooks=;

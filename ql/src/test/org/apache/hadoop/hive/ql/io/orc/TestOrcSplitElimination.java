@@ -700,7 +700,6 @@ public class TestOrcSplitElimination {
     conf.setLong(HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE.varname, 1000);
     conf.setLong(HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE.varname, 5000);
     conf.setBoolean(ConfVars.HIVE_ORC_MS_FOOTER_CACHE_PPD.varname, isPpd);
-    conf.setBoolean(ConfVars.HIVE_OPT_INDEX_FILTER.varname, isPpd);
   }
 
   private ObjectInspector createIO() {

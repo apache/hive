@@ -110,7 +110,7 @@ public class FixedBucketPruningOptimizer extends Transform {
       if (filter == null) {
         return;
       }
-      // the sargs are closely tied to hive.optimize.index.filter
+      // the sargs are closely tied to predicate push-down (hive.optimize.ppd)
       SearchArgument sarg = ConvertAstToSearchArg.create(ctxt.pctx.getConf(), filter);
       if (sarg == null) {
         return;

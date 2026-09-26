@@ -1,4 +1,3 @@
-SET hive.optimize.index.filter=true;
 SET hive.optimize.ppd=true;
 SET hive.optimize.ppd.storage=true;
 SET hive.vectorized.execution.enabled=false;
@@ -68,7 +67,6 @@ select id, c from ppd_char_test where a='pineapple' and c<='lemon    ';
 
 select id, c from ppd_char_test where a='pineapple' and c>'lemon ';
 
-SET hive.optimize.index.filter=false;
 SET hive.optimize.ppd=false;
 SET hive.optimize.ppd.storage=false;
 

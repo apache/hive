@@ -1327,12 +1327,10 @@ public final class OpProcFactory {
 
     TableScanDesc tableScanDesc = tableScanOp.getConf();
     Table tbl = tableScanDesc.getTableMetadata();
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER)) {
-      // attach the original predicate to the table scan operator for index
-      // optimizations that require the pushed predicate before pcr & later
-      // optimizations are applied
-      tableScanDesc.setFilterExpr(originalPredicate);
-    }
+    // Attach the original predicate to the table scan operator so that downstream
+    // storage-handler and predicate push-down consumers see the pushed predicate
+    // before pcr and later optimizations are applied.
+    tableScanDesc.setFilterExpr(originalPredicate);
     if (!tbl.isNonNative()) {
       return originalPredicate;
     }
