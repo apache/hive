@@ -44,6 +44,32 @@ public interface ParquetDataColumnReader {
   int readValueDictionaryId();
 
   /**
+   * Consume the next value on this page without materialising it. Used by the ProbeDecode path
+   * ({@code VectorizedPrimitiveColumnReader.readBatch(..., ParquetProbeFilter)}) to advance the
+   * underlying {@code ValuesReader} past filtered-out rows so page offsets stay aligned while
+   * the expensive dictionary lookup and type-conversion work is skipped.
+   *
+   * <p>Concrete implementations should delegate to the underlying {@code ValuesReader.skip()};
+   * the default here throws for safety in case a subclass forgets to override.
+   */
+  default void skip() {
+    throw new UnsupportedOperationException("skip() not supported by " + getClass().getName());
+  }
+
+  /**
+   * Consume the next {@code n} values on this page without materialising them. The default
+   * implementation loops {@link #skip()} {@code n} times; {@code DefaultParquetDataColumnReader}
+   * overrides it to delegate to {@link org.apache.parquet.column.values.ValuesReader#skip(int)}
+   * so that dictionary/RLE readers can use the bulk skip fast-path added in
+   * {@code RunLengthBitPackingHybridDecoder.skipInts(int)}.
+   */
+  default void skip(int n) {
+    for (int i = 0; i < n; i++) {
+      skip();
+    }
+  }
+
+  /**
    * @return the next Long from the page
    */
   long readLong();

@@ -263,8 +263,14 @@ public final class ParquetDataColumnReaderFactory {
       return valuesReader.readValueDictionaryId();
     }
 
+    @Override
     public void skip() {
       valuesReader.skip();
+    }
+
+    @Override
+    public void skip(int n) {
+      valuesReader.skip(n);
     }
 
     @Override
