@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.AcidConstants;
 import org.apache.hadoop.hive.common.AcidMetaDataFile;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -48,6 +49,8 @@ import org.apache.hadoop.hive.metastore.api.TruncateTableRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionsEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -74,6 +77,8 @@ public class TruncateTableHandler
   private RawStore ms;
   private Table table;
   private List<Partition> partitions;
+  private List<Partition> newPartitions;
+  private boolean isPartitioned;
 
   TruncateTableHandler(IHMSHandler handler, TruncateTableRequest request) {
     super(handler, false, request);
@@ -87,10 +92,11 @@ public class TruncateTableHandler
     GetTableRequest getTableRequest = new GetTableRequest(dbName, request.getTableName());
     getTableRequest.setCatName(catName);
     this.table = handler.get_table_core(getTableRequest);
+    this.isPartitioned = 0 != table.getPartitionKeysSize();
 
     this.ms = handler.getMS();
     if (request.getPartNames() == null) {
-      if (0 != table.getPartitionKeysSize()) {
+      if (isPartitioned) {
         this.partitions = ms.getPartitions(catName, dbName,
             request.getTableName(), GetPartitionsArgs.getAllPartitions());
       }
@@ -99,6 +105,22 @@ public class TruncateTableHandler
           request.getTableName(), request.getPartNames());
     }
     this.wh = handler.getWh();
+
+    HMSHandler hmsHandler = (HMSHandler) handler;
+    if (isPartitioned && partitions != null) {
+      this.newPartitions = new ArrayList<>(partitions.size());
+      for (Partition partition : partitions) {
+        Partition newPart = partition.deepCopy();
+        updateStatsForTruncate(newPart.getParameters(), new EnvironmentContext());
+        hmsHandler.firePreEvent(new PreAlterPartitionEvent(dbName, request.getTableName(), table,
+            partition.getValues(), newPart, handler));
+        newPartitions.add(newPart);
+      }
+    } else if (!isPartitioned) {
+      Table newTable = table.deepCopy();
+      updateStatsForTruncate(newTable.getParameters(), new EnvironmentContext());
+      hmsHandler.firePreEvent(new PreAlterTableEvent(table, newTable, handler));
+    }
   }
 
   @Override
@@ -137,8 +159,13 @@ public class TruncateTableHandler
       }
     }
     // Alter the table/partition stats and also notify truncate table event
-    alterTableStatsForTruncate();
-    return new TruncateTableResult(true);
+    boolean success;
+    if (isPartitioned) {
+      success = alterPartitionsForTruncate();
+    } else {
+      success = alterTableStatsForTruncate();
+    }
+    return new TruncateTableResult(success);
   }
 
   private void updateStatsForTruncate(Map<String,String> props, EnvironmentContext environmentContext) {
@@ -160,14 +187,13 @@ public class TruncateTableHandler
     StatsSetupConst.clearColumnStatsState(props);
   }
 
-  private void alterPartitionsForTruncate() throws TException {
+  private boolean alterPartitionsForTruncate() throws TException {
     EnvironmentContext environmentContext = new EnvironmentContext();
-    if (partitions.isEmpty()) {
-      return;
+    if (partitions == null || partitions.isEmpty()) {
+      return true;
     }
     List<List<String>> partValsList = new ArrayList<>();
-    for (Partition partition: partitions) {
-      updateStatsForTruncate(partition.getParameters(), environmentContext);
+    for (Partition partition: newPartitions) {
       if (request.getWriteId() > 0) {
         partition.setWriteId(request.getWriteId());
       }
@@ -175,67 +201,76 @@ public class TruncateTableHandler
           .currentTimeMillis() / 1000));
       partValsList.add(partition.getValues());
     }
-    ms.alterPartitions(catName, dbName, request.getTableName(), partValsList, partitions,
+    boolean success = false;
+    boolean mergeEvents = MetastoreConf.getBoolVar(handler.getConf(),
+        MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
+    ms.openTransaction();
+    try {
+      ms.alterPartitions(catName, dbName, request.getTableName(), partValsList, newPartitions,
         request.getWriteId(), request.getValidWriteIdList());
-    if (handler.getTransactionalListeners() != null && !handler.getTransactionalListeners().isEmpty()) {
-      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(handler.getConf(),
-          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
-      if (shouldSendSingleEvent) {
+      if (mergeEvents) {
         MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
             EventMessage.EventType.ALTER_PARTITIONS,
-            new AlterPartitionsEvent(partitions, partitions, table, true, true, handler), environmentContext);
+            new AlterPartitionsEvent(partitions, newPartitions, table, true, true, handler), environmentContext);
       } else {
-        for (Partition partition : partitions) {
+        for (int i = 0; i < partitions.size(); i++) {
+          Partition oldPart = partitions.get(i);
+          Partition newPart = newPartitions.get(i);
           MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
               EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), handler),
+              new AlterPartitionEvent(oldPart, newPart, table, true, true, newPart.getWriteId(), handler),
               environmentContext);
         }
       }
-    }
-    if (handler.getListeners() != null && !handler.getListeners().isEmpty()) {
-      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(handler.getConf(),
-          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
-      if (shouldSendSingleEvent) {
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+      if (mergeEvents) {
         MetaStoreListenerNotifier.notifyEvent(handler.getListeners(), EventMessage.EventType.ALTER_PARTITIONS,
-            new AlterPartitionsEvent(partitions, partitions, table, true, true, handler), environmentContext);
+            new AlterPartitionsEvent(partitions, newPartitions, table, true, success, handler), environmentContext);
       } else {
-        for (Partition partition : partitions) {
+        for (int i = 0; i < partitions.size(); i++) {
+          Partition oldPart = partitions.get(i);
+          Partition newPart = newPartitions.get(i);
           MetaStoreListenerNotifier.notifyEvent(handler.getListeners(), EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), handler),
+              new AlterPartitionEvent(oldPart, newPart, table, true, success, newPart.getWriteId(), handler),
               environmentContext);
         }
       }
     }
+    return success;
   }
 
-  private void alterTableStatsForTruncate() throws TException{
-    if (0 != table.getPartitionKeysSize()) {
-      alterPartitionsForTruncate();
-    } else {
-      EnvironmentContext environmentContext = new EnvironmentContext();
-      updateStatsForTruncate(table.getParameters(), environmentContext);
-      boolean isReplicated = isDbReplicationTarget(ms.getDatabase(catName, dbName));
+  private boolean alterTableStatsForTruncate() throws TException {
+    EnvironmentContext environmentContext = new EnvironmentContext();
+    Table newTable = table.deepCopy();
+    updateStatsForTruncate(newTable.getParameters(), environmentContext);
+    boolean isReplicated = isDbReplicationTarget(ms.getDatabase(catName, dbName));
+    boolean success = false;
+    ms.openTransaction();
+    try {
       if (!handler.getTransactionalListeners().isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
-            EventMessage.EventType.ALTER_TABLE,
-            new AlterTableEvent(table, table, true, true,
-                request.getWriteId(), handler, isReplicated));
-      }
-
-      if (!handler.getListeners().isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(handler.getListeners(),
-            EventMessage.EventType.ALTER_TABLE,
-            new AlterTableEvent(table, table, true, true,
-                request.getWriteId(), handler, isReplicated));
+        MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(), EventMessage.EventType.ALTER_TABLE,
+            new AlterTableEvent(table, newTable, true, true, request.getWriteId(), handler, isReplicated));
       }
       // TODO: this should actually pass thru and set writeId for txn stats.
       if (request.getWriteId() > 0) {
-        table.setWriteId(request.getWriteId());
+        newTable.setWriteId(request.getWriteId());
       }
-      ms.alterTable(catName, dbName, request.getTableName(), table,
-          request.getValidWriteIdList());
+      ms.alterTable(catName, dbName, request.getTableName(), newTable, request.getValidWriteIdList());
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+      MetaStoreListenerNotifier.notifyEvent(handler.getListeners(),
+          EventMessage.EventType.ALTER_TABLE,
+          new AlterTableEvent(table, newTable, true, success,
+              request.getWriteId(), handler, isReplicated));
     }
+    return success;
   }
 
   private void truncateDataFiles(Path location, boolean isSkipTrash, boolean needCmRecycle)

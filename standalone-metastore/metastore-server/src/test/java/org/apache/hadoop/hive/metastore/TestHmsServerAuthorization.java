@@ -38,9 +38,14 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.StringUtils;
+import java.util.Collections;
+import java.util.Map;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 
@@ -138,6 +143,7 @@ public class TestHmsServerAuthorization {
    * @throws Exception
    */
   protected void creatEnv(Configuration conf) throws Exception {
+    DummyAuthorizationListenerImpl.throwExceptionAtCall = false;
     client.dropDatabase(dbName1, true, true, true);
     client.dropDatabase(dbName2, true, true, true);
     Database db1 = new DatabaseBuilder()
@@ -174,6 +180,24 @@ public class TestHmsServerAuthorization {
    * Test the pre-event listener is called in function get_fields at HMS server.
    * @throws Exception
    */
+
+  private void expectAuthorizationFailure(String operation, ThrowingRunnable action) throws Exception {
+    DummyAuthorizationListenerImpl.throwExceptionAtCall = true;
+    try {
+      action.run();
+      fail(operation + " should fail when authorization is enforced");
+    } catch (MetaException ex) {
+      assertTrue(ex.getMessage().contains("Authorization fails"));
+    } finally {
+      DummyAuthorizationListenerImpl.throwExceptionAtCall = false;
+    }
+  }
+
+  @FunctionalInterface
+  private interface ThrowingRunnable {
+    void run() throws Exception;
+  }
+
   @Test
   public void testGetFields() throws Exception {
     dbName1 = "db_test_get_fields_1";
@@ -189,6 +213,56 @@ public class TestHmsServerAuthorization {
     } catch (MetaException ex) {
       boolean isMessageAuthorization = ex.getMessage().contains("Authorization fails");
       assertEquals(true, isMessageAuthorization);
+    } finally {
+      DummyAuthorizationListenerImpl.throwExceptionAtCall = false;
     }
+  }
+
+  @Test
+  public void testGetPartitionsWithSpecsAuthorization() throws Exception {
+    dbName1 = "db_test_get_partitions_with_specs";
+    creatEnv(conf);
+    GetPartitionsRequest request = new GetPartitionsRequest();
+    request.setDbName(dbName1);
+    request.setTblName(TAB2);
+    request.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
+    expectAuthorizationFailure("get_partitions_with_specs",
+        () -> client.getPartitionsWithSpecs(request));
+  }
+
+  @Test
+  public void testTruncateTableAuthorization() throws Exception {
+    dbName1 = "db_test_truncate_table";
+    creatEnv(conf);
+    expectAuthorizationFailure("truncate_table_req",
+        () -> client.truncateTable(dbName1, TAB1, null));
+    expectAuthorizationFailure("truncate_table_req on partitioned table",
+        () -> client.truncateTable(dbName1, TAB2, null));
+  }
+
+  @Test
+  public void testUpdateTableParamsAuthorization() throws Exception {
+    dbName1 = "db_test_update_table_params";
+    creatEnv(conf);
+    TableParamsUpdate update = new TableParamsUpdate(dbName1, TAB1,
+        Collections.singletonMap("test_key", "test_value"));
+    update.setCat_name(Warehouse.DEFAULT_CATALOG_NAME);
+    expectAuthorizationFailure("update_table_params",
+        () -> client.updateTableParams(Collections.singletonList(update)));
+  }
+
+  @Test
+  public void testExchangePartitionsAuthorization() throws Exception {
+    dbName1 = "db_test_exchange_partitions";
+    creatEnv(conf);
+    Table destTable = new TableBuilder()
+        .setDbName(dbName1)
+        .setTableName("tab3")
+        .addCol("id", "int")
+        .addPartCol("name", "string")
+        .create(client, conf);
+    Map<String, String> partitionSpecs = Collections.singletonMap("name", "value1");
+    expectAuthorizationFailure("exchange_partitions",
+        () -> client.exchange_partitions(partitionSpecs, dbName1, TAB2, dbName1, destTable.getTableName()));
   }
 }
