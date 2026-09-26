@@ -60,6 +60,7 @@ import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
 import org.apache.hive.kubernetes.operator.util.Labels;
+import org.apache.hive.kubernetes.operator.util.Workloads;
 
 import static org.apache.hive.kubernetes.operator.autoscaling.MetricsScraper.isPodReady;
 
@@ -74,7 +75,6 @@ public class LlapResourceBuilder
     extends HiveDependentResource<StatefulSet, HiveCluster> {
 
   private static final LlapResourceBuilder INSTANCE = new LlapResourceBuilder();
-  private static final String TEZAM_INFIX = "-tezam-";
   private static final String HIVE_CONFIG_VOLUME = "hive-config";
   private static final String LLAP_CONFIG_VOLUME = "llap-config";
 
@@ -108,7 +108,7 @@ public class LlapResourceBuilder
 
   /** Resource name for a specific LLAP cluster: {clusterName}-{llapName}. */
   public static String resourceName(HiveCluster hc, LlapSpec llap) {
-    return hc.getMetadata().getName() + "-" + llap.name();
+    return Workloads.nameFor(hc, ConfigUtils.llapComponentKey(llap.name()));
   }
 
   /** ConfigMap name for a specific LLAP cluster. */
@@ -208,17 +208,22 @@ public class LlapResourceBuilder
 
   /** TezAM Deployment/Service name for a specific LLAP cluster. */
   public static String tezAmResourceName(HiveCluster hc, LlapSpec llap) {
-    return hc.getMetadata().getName() + TEZAM_INFIX + llap.name();
+    return tezAmResourceName(hc, llap.name());
+  }
+
+  /** TezAM Deployment/Service name from an LLAP cluster name (used where only the name is in hand). */
+  public static String tezAmResourceName(HiveCluster hc, String llapName) {
+    return Workloads.nameFor(hc, ConfigUtils.tezAmComponentKey(llapName));
   }
 
   /** TezAM ConfigMap name for a specific LLAP cluster. */
   public static String tezAmConfigMapName(HiveCluster hc, LlapSpec llap) {
-    return hc.getMetadata().getName() + TEZAM_INFIX + llap.name() + "-config";
+    return tezAmResourceName(hc, llap) + "-config";
   }
 
   /** TezAM PDB name for a specific LLAP cluster. */
   public static String tezAmPdbName(HiveCluster hc, LlapSpec llap) {
-    return hc.getMetadata().getName() + TEZAM_INFIX + llap.name() + "-pdb";
+    return tezAmResourceName(hc, llap) + "-pdb";
   }
 
   /** Builds the PodDisruptionBudget for a per-LLAP-cluster TezAM. */

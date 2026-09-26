@@ -232,7 +232,7 @@ public class HiveServer2DeploymentDependent
     AutoscalingSpec hs2Autoscaling = hs2.autoscaling();
     int initialReplicas = hs2Autoscaling != null && hs2Autoscaling.isEnabled()
         ? Math.max(1, hs2Autoscaling.minReplicas()) : hs2.replicas();
-    Integer replicas = resolveReplicaCount(
+    int replicas = resolveReplicaCount(
         hiveCluster, context, hs2Autoscaling, hs2.replicas(), initialReplicas);
 
     Deployment deployment = new DeploymentBuilder()

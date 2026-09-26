@@ -62,6 +62,7 @@ import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
 import org.apache.hive.kubernetes.operator.model.spec.ProbeSpec;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
+import org.apache.hive.kubernetes.operator.util.Workloads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,10 +162,11 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   }
 
   /**
-   * Resolves the replica count to set in the desired workload spec.
+   * Resolves the replica count to set in the desired workload spec, and logs it when it differs
+   * from what the workload has now.
    * <p>
-   * Always returns an explicit value — never null. Returning null would cause
-   * JOSDK/SSA to omit spec.replicas, and Kubernetes would default it to 1.
+   * Returns a primitive so the value can never be null: a null spec.replicas would make JOSDK/SSA
+   * omit the field, and Kubernetes would default it to 1.
    * <p>
    * When autoscaling is enabled:
    * - On CREATE: returns initialReplicas (minReplicas for the component)
@@ -173,7 +175,20 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    * <p>
    * When autoscaling is disabled: returns staticReplicas (the spec value).
    */
-  protected Integer resolveReplicaCount(P primary, Context<P> context,
+  protected int resolveReplicaCount(P primary, Context<P> context,
+      AutoscalingSpec autoscaling, int staticReplicas, int initialReplicas) {
+    Optional<R> existing = getSecondaryResource(primary, context);
+    int resolved = computeReplicaCount(primary, existing, autoscaling,
+        staticReplicas, initialReplicas);
+    // Without this, every scale of an HS2/Metastore Deployment reached the cluster silently:
+    // only the imperative LLAP path and the autoscaler logged, and a bare "Reconciled" line
+    // said nothing about the size.
+    Workloads.logReplicaChange(LOG, getComponentName(), primary.getMetadata().getNamespace(),
+        getSecondaryResourceName(primary, context), existing.orElse(null), resolved);
+    return resolved;
+  }
+
+  private int computeReplicaCount(P primary, Optional<R> existing,
       AutoscalingSpec autoscaling, int staticReplicas, int initialReplicas) {
     // Suspended cluster → 0 replicas (dependent resources natively respect suspend).
     // Exception: HMS stays running if includeMetastore=false in autoSuspend config.
@@ -186,7 +201,6 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     if (autoscaling == null || !autoscaling.isEnabled()) {
       return staticReplicas;
     }
-    Optional<R> existing = getSecondaryResource(primary, context);
     if (existing.isPresent()) {
       // Check if the autoscaler has made a decision during this operator's lifecycle
       Integer managed = HiveClusterAutoscaler.getManagedReplicas(
@@ -196,22 +210,14 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       if (managed != null) {
         return managed;
       }
-      // Fallback: operator restarted and MANAGED_REPLICAS is empty — read current value
-      R resource = existing.get();
-      if (resource instanceof io.fabric8.kubernetes.api.model.apps.Deployment d) {
-        return d.getSpec() != null && d.getSpec().getReplicas() != null
-            ? d.getSpec().getReplicas() : initialReplicas;
-      }
-      if (resource instanceof io.fabric8.kubernetes.api.model.apps.StatefulSet s) {
-        return s.getSpec() != null && s.getSpec().getReplicas() != null
-            ? s.getSpec().getReplicas() : initialReplicas;
-      }
-      return initialReplicas;
+      // Fallback: operator restarted and MANAGED_REPLICAS is empty — read current value. The
+      // workload exists, so spec.replicas is set unless something wrote it away; initialReplicas
+      // is the floor either way.
+      return Workloads.replicas(existing.get()).orElse(initialReplicas);
     }
     // First creation: start at minReplicas.
     return initialReplicas;
   }
-
 
   /**
    * Returns the component name for this dependent (used for autoscaler replica lookup).
