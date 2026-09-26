@@ -50,6 +50,7 @@
     <module>qtest-iceberg</module>
     <module>test-docker</module>
     <module>hive-iceberg</module>
+    <module>hive-iceberg-rest-server</module>
   </modules>
   <dependencyManagement>
     <dependencies>
@@ -492,10 +493,30 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>patched-iceberg-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>patched-iceberg-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>${jakarta.servlet-api.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
         <version>${assertj.version}</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito-core.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
