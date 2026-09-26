@@ -991,6 +991,33 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Parses a path-encoded partition literal for partition-column expression evaluation (PCR).
+   * Iceberg tables override this; other formats do not use path-encoded partition names in PCR.
+   */
+  default Object parsePartitionLiteralForExpr(org.apache.hadoop.hive.ql.metadata.Table table,
+      FieldSchema partCol, String pathEncodedValue) throws SemanticException {
+    throw new UnsupportedOperationException(
+        "Path-encoded partition literals are supported for Iceberg tables only");
+  }
+
+  /**
+   * Formats a path-encoded partition name for user-facing display. Iceberg tables override this.
+   */
+  default String formatPartitionNameForDisplay(String pathPartitionName) {
+    throw new UnsupportedOperationException(
+        "Path-encoded partition name display is supported for Iceberg tables only");
+  }
+
+  /**
+   * Formats a display partition name back to the path-encoded form used for internal storage.
+   * Iceberg tables override this.
+   */
+  default String formatPartitionNameForPath(String displayPartitionName) {
+    throw new UnsupportedOperationException(
+        "Path-encoded partition name formatting is supported for Iceberg tables only");
+  }
+
+  /**
    * Returns a list of partitions which contain any files whose content falls under the provided filter condition.
    * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
    * @param filter Iceberg filter expression

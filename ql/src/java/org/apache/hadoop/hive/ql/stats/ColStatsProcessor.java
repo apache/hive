@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -161,6 +162,9 @@ public class ColStatsProcessor implements IStatsProcessor {
               // an ANALYZE rewrite groups by the read-side partition name the reader materialized
               Object partVal = poi.getPrimitiveJavaObject(values.get(pos));
               partName = partVal == null ? null : partVal.toString();
+              if (partName != null && DDLUtils.isIcebergTable(tbl) && tbl.getStorageHandler() != null) {
+                partName = tbl.getStorageHandler().formatPartitionNameForPath(partName);
+              }
             }
           } else {
             List<FieldSchema> partColSchema = new ArrayList<>(tbl.getPartCols());
