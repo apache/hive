@@ -1,0 +1,150 @@
+PREHOOK: query: CREATE TABLE dummystore_src (id int, val string, sort_col int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummystore_src
+POSTHOOK: query: CREATE TABLE dummystore_src (id int, val string, sort_col int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummystore_src
+PREHOOK: query: INSERT INTO dummystore_src VALUES
+  (1,'A',3),(1,'A',1),(1,'A',2),
+  (2,'B',1),(2,'B',3),(2,'B',2),
+  (3,'C',2),(3,'C',1),
+  (4,'D',1),(4,'D',3),(4,'D',2),
+  (5,'E',1),(5,'E',3),(5,'E',2),
+  (6,'F',2),(6,'F',1),
+  (7,'G',1),(7,'G',3),(7,'G',2),
+  (8,'H',1),(8,'H',3),(8,'H',2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dummystore_src
+POSTHOOK: query: INSERT INTO dummystore_src VALUES
+  (1,'A',3),(1,'A',1),(1,'A',2),
+  (2,'B',1),(2,'B',3),(2,'B',2),
+  (3,'C',2),(3,'C',1),
+  (4,'D',1),(4,'D',3),(4,'D',2),
+  (5,'E',1),(5,'E',3),(5,'E',2),
+  (6,'F',2),(6,'F',1),
+  (7,'G',1),(7,'G',3),(7,'G',2),
+  (8,'H',1),(8,'H',3),(8,'H',2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dummystore_src
+POSTHOOK: Lineage: dummystore_src.id SCRIPT []
+POSTHOOK: Lineage: dummystore_src.sort_col SCRIPT []
+POSTHOOK: Lineage: dummystore_src.val SCRIPT []
+PREHOOK: query: EXPLAIN
+SELECT b.id, b.max_val, e.enrch_val
+FROM
+  (SELECT id, max(val) AS max_val FROM dummystore_src GROUP BY id) b
+  LEFT JOIN
+  (SELECT id, val AS enrch_val
+   FROM (SELECT id, val, sort_col,
+                ROW_NUMBER() OVER (PARTITION BY id ORDER BY sort_col DESC) AS rn
+         FROM dummystore_src) t
+   WHERE rn = 1) e
+  ON b.id = e.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummystore_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN
+SELECT b.id, b.max_val, e.enrch_val
+FROM
+  (SELECT id, max(val) AS max_val FROM dummystore_src GROUP BY id) b
+  LEFT JOIN
+  (SELECT id, val AS enrch_val
+   FROM (SELECT id, val, sort_col,
+                ROW_NUMBER() OVER (PARTITION BY id ORDER BY sort_col DESC) AS rn
+         FROM dummystore_src) t
+   WHERE rn = 1) e
+  ON b.id = e.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummystore_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2
+      File Output Operator [FS_19]
+        Select Operator [SEL_18] (rows=11 width=273)
+          Output:["_col0","_col1","_col2"]
+          Merge Join Operator [MERGEJOIN_23] (rows=11 width=273)
+            Conds:GBY_4._col0=DUMMY_STORE_24._col0(Left Outer),Output:["_col0","_col1","_col3"]
+          <-Dummy Store [DUMMY_STORE_24]
+              Select Operator [SEL_11] (rows=11 width=89)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_21] (rows=11 width=93)
+                  predicate:(ROW_NUMBER_window_0 = 1)
+                  PTF Operator [PTF_10] (rows=22 width=93)
+                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col2 DESC NULLS FIRST","partition by:":"_col0"}]
+                    Select Operator [SEL_9] (rows=22 width=93)
+                      Output:["_col0","_col1","_col2"]
+          <-Group By Operator [GBY_4] (rows=8 width=188)
+              Output:["_col0","_col1"],aggregations:["max(VALUE._col0)"],keys:KEY._col0
+            <-Map 1 [SIMPLE_EDGE] vectorized
+              SHUFFLE [RS_27]
+                PartitionCols:_col0
+                Group By Operator [GBY_26] (rows=8 width=188)
+                  Output:["_col0","_col1"],aggregations:["max(val)"],keys:id
+                  Select Operator [SEL_25] (rows=22 width=89)
+                    Output:["id","val"]
+                    TableScan [TS_0] (rows=22 width=89)
+                      default@dummystore_src,dummystore_src,Tbl:COMPLETE,Col:COMPLETE,Output:["id","val"]
+            <-Map 3 [SIMPLE_EDGE] vectorized
+              SHUFFLE [RS_29]
+                PartitionCols:id
+                Filter Operator [FIL_28] (rows=22 width=93)
+                  predicate:id is not null
+                  TableScan [TS_6] (rows=22 width=93)
+                    default@dummystore_src,dummystore_src,Tbl:COMPLETE,Col:COMPLETE,Output:["id","val","sort_col"]
+
+PREHOOK: query: SELECT b.id, b.max_val, e.enrch_val
+FROM
+  (SELECT id, max(val) AS max_val FROM dummystore_src GROUP BY id) b
+  LEFT JOIN
+  (SELECT id, val AS enrch_val
+   FROM (SELECT id, val, sort_col,
+                ROW_NUMBER() OVER (PARTITION BY id ORDER BY sort_col DESC) AS rn
+         FROM dummystore_src) t
+   WHERE rn = 1) e
+  ON b.id = e.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummystore_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT b.id, b.max_val, e.enrch_val
+FROM
+  (SELECT id, max(val) AS max_val FROM dummystore_src GROUP BY id) b
+  LEFT JOIN
+  (SELECT id, val AS enrch_val
+   FROM (SELECT id, val, sort_col,
+                ROW_NUMBER() OVER (PARTITION BY id ORDER BY sort_col DESC) AS rn
+         FROM dummystore_src) t
+   WHERE rn = 1) e
+  ON b.id = e.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummystore_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	A	A
+2	B	B
+3	C	C
+4	D	D
+5	E	E
+6	F	F
+7	G	G
+8	H	H
+PREHOOK: query: DROP TABLE dummystore_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dummystore_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummystore_src
+POSTHOOK: query: DROP TABLE dummystore_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dummystore_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummystore_src
