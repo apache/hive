@@ -52,6 +52,8 @@ import org.apache.iceberg.exceptions.NotAuthorizedException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.exceptions.UnprocessableEntityException;
 import org.apache.iceberg.exceptions.ValidationException;
+import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -342,10 +344,13 @@ public class HMSCatalogAdapter implements Closeable {
   }
 
   private RESTResponse dropTable(Map<String, String> vars) {
+    TableIdentifier ident = identFromPathVars(vars);
     if (PropertyUtil.propertyAsBoolean(vars, "purgeRequested", false)) {
-      CatalogHandlers.purgeTable(catalog, identFromPathVars(vars));
+      String location = catalog.loadTable(ident).location();
+      icebergAuthorizer.validateDropTablePurge(catalogName, ident, location);
+      CatalogHandlers.purgeTable(catalog, ident);
     } else {
-      CatalogHandlers.dropTable(catalog, identFromPathVars(vars));
+      CatalogHandlers.dropTable(catalog, ident);
     }
     return null;
   }
@@ -364,6 +369,10 @@ public class HMSCatalogAdapter implements Closeable {
   private LoadTableResponse registerTable(Map<String, String> vars, Object body) {
       Namespace namespace = namespaceFromPathVars(vars);
       RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
+      request.validate();
+      Map<String, String> namespaceMetadata = asNamespaceCatalog.loadNamespaceMetadata(namespace);
+      FileIO io = ((HiveCatalog) catalog).io();
+      icebergAuthorizer.validateRegisterTable(catalogName, namespace, namespaceMetadata, request, io);
       return castResponse(LoadTableResponse.class, CatalogHandlers.registerTable(catalog, namespace, request));
   }
 

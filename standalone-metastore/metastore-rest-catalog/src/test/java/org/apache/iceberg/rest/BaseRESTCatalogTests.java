@@ -20,15 +20,21 @@
 package org.apache.iceberg.rest;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DataFiles;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.CatalogTests;
@@ -37,6 +43,7 @@ import org.apache.iceberg.catalog.TableCommit;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.rest.extension.MockHiveAuthorizer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -276,5 +283,57 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
     Catalog.TableBuilder builder = catalog.buildTable(tableIdentifier, new Schema()).withLocation(location);
     Assertions.assertThrows(ForbiddenException.class, builder::createTransaction);
     Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+  }
+
+  private static String writeMetadataFile(String directory, String tableLocation) throws IOException {
+    var metadataLocation = directory + "/v1.metadata.json";
+    Files.deleteIfExists(java.nio.file.Path.of(metadataLocation));
+    var io = new HadoopFileIO(new Configuration(false));
+    var metadata = TableMetadata.newTableMetadata(new Schema(), PartitionSpec.unpartitioned(), tableLocation,
+        Collections.emptyMap());
+    TableMetadataParser.write(metadata, io.newOutputFile(metadataLocation));
+    return metadataLocation;
+  }
+
+  @Test
+  void testRegisterTableWithDeniedLocation() {
+    var tableIdentifier = TableIdentifier.of("default", "register-table-denied");
+    var metadataLocation = MockHiveAuthorizer.DENIED_PREFIX + "/register-table-denied/v1.metadata.json";
+    Assertions.assertThrows(ForbiddenException.class, () -> catalog.registerTable(tableIdentifier, metadataLocation));
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+  }
+
+  @Test
+  void testRegisterTableWithDeniedEmbeddedLocation() throws IOException {
+    var tableIdentifier = TableIdentifier.of("default", "register-table-embedded-denied");
+    var tableLocation = MockHiveAuthorizer.DENIED_PREFIX + "/register-table-embedded-denied";
+    var metadataLocation = writeMetadataFile(
+        MockHiveAuthorizer.ALLOWED_PREFIX + "/register-table-embedded-denied", tableLocation);
+    Assertions.assertThrows(ForbiddenException.class, () -> catalog.registerTable(tableIdentifier, metadataLocation));
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+  }
+
+  @Test
+  void testDropTablePurgeDoesNotDeleteFilesOutsideTableLocation() throws IOException {
+    var victimDirectory = java.nio.file.Path.of(MockHiveAuthorizer.ALLOWED_PREFIX, "structural-fence-victim");
+    Files.createDirectories(victimDirectory);
+    var victimFile = victimDirectory.resolve("victim-data.txt");
+    Files.writeString(victimFile, "victim data");
+
+    var tableIdentifier = TableIdentifier.of("default", "structural-fence-attacker");
+    var tableLocation = MockHiveAuthorizer.ALLOWED_PREFIX + "/structural-fence-attacker";
+    Table table = catalog.buildTable(tableIdentifier, new Schema()).withLocation(tableLocation).create();
+
+    DataFile dataFile = DataFiles.builder(table.spec())
+        .withPath(victimFile.toUri().toString())
+        .withFormat(FileFormat.PARQUET)
+        .withFileSizeInBytes(Files.size(victimFile))
+        .withRecordCount(1)
+        .build();
+    table.newAppend().appendFile(dataFile).commit();
+
+    Assertions.assertTrue(catalog.dropTable(tableIdentifier, true));
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+    Assertions.assertTrue(Files.exists(victimFile), "purge must not delete files outside the table location");
   }
 }
