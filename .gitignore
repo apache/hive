@@ -2,6 +2,7 @@ build
 build-eclipse
 .arc_jira_lib
 .classpath*
+.claude/**
 .externalToolBuilders
 .project
 .settings

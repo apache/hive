@@ -98,6 +98,7 @@
         <include>packaging/src/**/*</include>
         <include>pom.xml</include>
         <include>ql/**/*</include>
+        <include>schematool/**/*</include>
         <include>serde/**/*</include>
         <include>service-rpc/**/*</include>
         <include>service-session-store/**/*</include>

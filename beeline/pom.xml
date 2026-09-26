@@ -29,7 +29,6 @@
   <name>Hive Beeline</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <jpackage.plugin.version>4.3.0</jpackage.plugin.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -37,11 +36,6 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -65,11 +59,6 @@
           <artifactId>log4j</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-server</artifactId>
-      <version>${standalone-metastore.version}</version>
     </dependency>
     <dependency>
       <!--
@@ -133,11 +122,46 @@
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
         </exclusion>
+        <!-- kerby/kerberos auth chain pulled in transitively via hadoop-auth; beeline
+             does not exercise hadoop-common's Kerberos/UGI code paths -->
+        <exclusion>
+          <groupId>org.apache.kerby</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <!-- avro is only used by hadoop-common's optional SequenceFile/serialization
+             helpers, not by Configuration/FileSystem/Path/IOUtils/ExitUtil -->
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </exclusion>
+        <!-- ZooKeeper client (curator) is unused; beeline does not talk to ZK
+             through hadoop-common -->
+        <exclusion>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <!-- htrace tracing hooks; not exercised by beeline's thin usage -->
+        <exclusion>
+          <groupId>org.apache.htrace</groupId>
+          <artifactId>htrace-core4</artifactId>
+        </exclusion>
+        <!-- jsch (SFTP/SSH) backs hadoop-common's SFTPFileSystem, which beeline
+             never instantiates -->
+        <exclusion>
+          <groupId>com.jcraft</groupId>
+          <artifactId>jsch</artifactId>
+        </exclusion>
+        <!-- commons-net (FTP client) backs hadoop-common's FTPFileSystem, unused -->
+        <exclusion>
+          <groupId>commons-net</groupId>
+          <artifactId>commons-net</artifactId>
+        </exclusion>
+        <!-- re2j is only used by hadoop-common's optional regex path matching -->
+        <exclusion>
+          <groupId>com.google.re2j</groupId>
+          <artifactId>re2j</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libthrift</artifactId>
     </dependency>
     <dependency>
       <groupId>net.sf.supercsv</groupId>
@@ -153,6 +177,18 @@
     hive-exec, hive-llap-server, and hive-hplsql are declared test scope here so that
     are all needed to run BeelineCli test to manage the embedded HS2 session.
   -->
+    <dependency>
+    <!--
+        Test scope only: HiveSchemaTool (the only production user of this dependency) moved to
+        the hive-schematool module. It is still needed here at test scope because the embedded
+        HS2 session used by BeelineCli/HiveCli tests requires metastore-server's runtime
+        dependencies (e.g. DataNucleus JDO) that hive-exec's shaded jar does not carry.
+    -->
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${standalone-metastore.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
@@ -231,8 +267,8 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
-      <version>${mockito-inline.version}</version>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -243,104 +279,10 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <optional>true</optional>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <profiles>
-    <!--
-    Build a native installer (dmg on macOS, exe/msi on Windows, deb/rpm on Linux).
-    Usage:
-      mvn package -pl beeline -am -DskipTests -P dist
-    -->
-    <profile>
-      <id>dist</id>
-      <properties>
-        <installer.app.version>${jpackage.plugin.version}</installer.app.version>
-        <installer.arch>x64</installer.arch>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>jpackage</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <property name="jpackage.platform.args" value=""/>
-                    <mkdir dir="${project.build.directory}/apache-hive-beeline-${project.version}/${installer.arch}"/>
-                    <exec executable="jpackage" failonerror="true">
-                      <!-- Application identity -->
-                      <arg value="--name"/>
-                      <arg value="beeline"/>
-                      <arg value="--app-version"/>
-                      <arg value="${installer.app.version}"/>
-                      <arg value="--vendor"/>
-                      <arg value="Apache Software Foundation"/>
-                      <arg value="--description"/>
-                      <arg value="Apache Hive Beeline SQL client"/>
-                      <!-- Input: the self-contained fat jar -->
-                      <arg value="--input"/>
-                      <arg value="${project.build.directory}"/>
-                      <arg value="--main-jar"/>
-                      <arg value="beeline-standalone.jar"/>
-                      <arg value="--main-class"/>
-                      <arg value="org.apache.hive.beeline.BeeLine"/>
-                      <!-- Output: arch-specific subdirectory so x64 and arm64 coexist -->
-                      <arg value="--dest"/>
-                      <arg value="${project.build.directory}/apache-hive-beeline-${project.version}/${installer.arch}"/>
-                      <arg line="${jpackage.platform.args}"/>
-                      <!--
-                        jpackage picks the native format automatically:
-                          macOS   → dmg  (x64 on Intel, arm64 on Apple Silicon)
-                          Windows → exe
-                          Linux   → deb
-                        To force a specific type, add:
-                          <arg value="- -type"/> <arg value="pkg"/>
-                      -->
-                    </exec>
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <!--
-      Auto-detects Apple Silicon and sets installer.arch=arm64.
-    -->
-    <profile>
-      <id>macos-arm64-installer</id>
-      <activation>
-        <os>
-          <name>Mac OS X</name>
-          <arch>aarch64</arch>
-        </os>
-      </activation>
-      <properties>
-        <installer.arch>arm64</installer.arch>
-      </properties>
-    </profile>
-    <!--
-      Auto-activates on Windows.
-    -->
-    <profile>
-      <id>windows-installer</id>
-      <activation>
-        <os>
-          <family>windows</family>
-        </os>
-      </activation>
-      <properties>
-        <jpackage.platform.args>--win-console --type msi --win-dir-chooser --win-menu --win-menu-group "Apache Hive" --win-shortcut-prompt --win-help-url https://hive.apache.org/ --license-file ${project.basedir}/../LICENSE --resource-dir ${project.basedir}/src/main/jpackage/windows</jpackage.platform.args>
-      </properties>
-    </profile>
     <profile>
       <id>sources</id>
       <build>
@@ -387,7 +329,8 @@
             </goals>
             <configuration>
               <createDependencyReducedPom>false</createDependencyReducedPom>
-              <finalName>beeline-standalone</finalName>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>standalone</shadedClassifierName>
               <transformers>
                 <transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
