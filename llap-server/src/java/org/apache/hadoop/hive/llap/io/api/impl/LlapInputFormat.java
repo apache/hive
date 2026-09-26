@@ -20,6 +20,7 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -67,7 +68,6 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hive.common.util.HiveStringUtils;
 
 public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowBatch>,
     VectorizedInputFormatInterface, SelfDescribingInputFormatInterface,
@@ -86,7 +86,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   private final Deserializer sourceSerDe;
   final ColumnVectorProducer cvp;
   final ExecutorService executor;
-  private static final String hostName = HiveStringUtils.getHostname();
+  private static final String hostName = ServerUtils.hostname();
 
   private final Configuration daemonConf;
 

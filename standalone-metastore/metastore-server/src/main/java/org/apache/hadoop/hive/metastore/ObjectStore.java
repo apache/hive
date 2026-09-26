@@ -150,6 +150,7 @@ import org.apache.hadoop.hive.metastore.metastore.TransactionHandler;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1768,12 +1769,8 @@ public class ObjectStore implements RawStore, Configurable {
     String hiveSchemaVer = metastoreSchemaInfo.getHiveSchemaVersion();
 
     String user = StringUtils.defaultString(System.getenv("USER"), "UNKNOWN");
-    String hostName = "UNKNOWN";
-    try {
-      hostName = InetAddress.getLocalHost().getHostAddress();
-    } catch (IOException e) {
-      LOG.debug("Fail to get the address of the local host", e);
-    }
+    String hostName = MetaStoreUtils.getHostAddressString();
+
     if (dbSchemaVer == null) {
       if (strictValidation) {
         throw new MetaException("Version information not found in metastore.");

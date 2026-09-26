@@ -872,11 +872,7 @@ public class MetaStoreServerUtils {
     // when schematool or metatool use this, its possible that the saslServer.getRemoteAddress() returns null
     // use localhost address first to see if it part of hadoop.proxyuser hosts.
     if (ipAddress == null) {
-      try {
-        ipAddress = InetAddress.getLocalHost().getHostAddress();
-      } catch (UnknownHostException e) {
-        ipAddress = StringUtils.EMPTY;
-      }
+      ipAddress = MetaStoreUtils.getHostAddressString();
     }
     return machineList.includes(ipAddress);
   }
@@ -932,7 +928,7 @@ public class MetaStoreServerUtils {
     while (true) {
       try {
         Socket socket = new Socket();
-        socket.connect(new InetSocketAddress(port), 5000);
+        socket.connect(new InetSocketAddress("localhost", port), 5000);
         socket.close();
         return;
       } catch (Exception e) {
