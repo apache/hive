@@ -39,6 +39,7 @@ COMPLEX_TYPES = set((
     12,
     13,
     14,
+    24,
 ))
 COLLECTION_TYPES = set((
     10,
@@ -68,6 +69,7 @@ TYPE_NAMES = {
     13: "UNIONTYPE",
     23: "UNKNOWN",
     18: "VARCHAR",
+    24: "VARIANT",
 }
 CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength"
 PRECISION = "precision"
