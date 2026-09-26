@@ -75,8 +75,9 @@
       <!--
         Since the compile-time hive-jdbc dependency contains Utils.java,
         which directly imports HiveSQLException from hive-service,
-        hive-service is also required at runtime and should therefore be declared as a compile-time dependency.
-        -->
+        hive-service is also required at runtime and should therefore be
+        declared as a compile-time dependency.
+      -->
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
@@ -89,16 +90,16 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>commons-cli</groupId>
       <artifactId>commons-cli</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jline</groupId>
@@ -261,9 +262,130 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <version>${maven.license.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>license-fetch</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>download-licenses</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includeOptional>false</includeOptional>
+              <artifactFiltersUrl>${project.baseUri}/src/license/artifact-filters.txt</artifactFiltersUrl>
+              <excludeTransitiveDependencies>true</excludeTransitiveDependencies>
+              <useDefaultUrlReplacements>true</useDefaultUrlReplacements>
+              <licenseUrlReplacements>
+                <licenseUrlReplacements>
+                  <regexp>https?://glassfish(.dev)?\.java\.net/.*CDDL.*</regexp>
+                  <replacement>https://spdx.org/licenses/CDDL-1.1.html</replacement>
+                </licenseUrlReplacements>
+                <licenseUrlReplacement>
+                  <regexp>https?://asm\.objectweb\.org/license.html</regexp>
+                  <replacement>https://asm.ow2.io/license.html</replacement>
+                </licenseUrlReplacement>
+                <licenseUrlReplacement>
+                  <regexp>http://(www\.)?antlr.org/license.html</regexp>
+                  <replacement>http://www.antlr.org/license.html</replacement>
+                </licenseUrlReplacement>
+              </licenseUrlReplacements>
+              <licenseUrlFileNames>
+                <APACHE-2.0>
+                  https?://www\.apache\.org/licenses/LICENSE-2\.0.*
+                  \Qhttps://aws.amazon.com/apache2.0\E
+                  \Qhttps://opensource.org/licenses/Apache-2.0\E
+                  \Qhttp://www.apache.org/licenses/\E
+                </APACHE-2.0>
+                <BSD-2-CLAUSE>
+                  https?://(www\.)?opensource.org/licenses/bsd-license.php
+                  https?://(www\.)?opensource.org/licenses/BSD-2-Clause
+                </BSD-2-CLAUSE>
+                <BSD-3-CLAUSE>
+                  https?://(www\.)?opensource.org/licenses/BSD-3-Clause
+                </BSD-3-CLAUSE>
+                <LGPL-3.0-only>
+                  \Qhttp://www.fsf.org/licensing/licenses/lgpl.txt\E
+                  \Qhttp://www.gnu.org/licenses/lgpl-3.0.txt\E
+                </LGPL-3.0-only>
+                <EPL-1.0>
+                  \Qhttps://www.eclipse.org/org/documents/epl-v10.php\E
+                  \Qhttp://www.eclipse.org/org/documents/epl-v10.php\E
+                </EPL-1.0>
+                <EPL-2.0>
+                  \Qhttps://raw.githubusercontent.com/locationtech/jts/master/LICENSE_EPLv2.txt\E
+                  \Qhttps://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt\E
+                </EPL-2.0>
+                <EDL-1.0>
+                  \Qhttps://www.eclipse.org/org/documents/edl-v10.php\E
+                  \Qhttp://www.eclipse.org/org/documents/edl-v10.php\E
+                </EDL-1.0>
+                <MIT>
+                  https?://(www\.)?opensource\.org/licenses/mit(-license.php)?
+                </MIT>
+                <public-domain-1.0.html>
+                  https?://creativecommons\.org/publicdomain/zero/1\.0/?
+                </public-domain-1.0.html>
+              </licenseUrlFileNames>
+              <licenseUrlFileNameSanitizers>
+                <licenseUrlFileNameSanitizer>
+                  <regexp>[\s-_,]+</regexp>
+                  <replacement>-</replacement>
+                </licenseUrlFileNameSanitizer>
+              </licenseUrlFileNameSanitizers>
+            </configuration>
+          </plugin>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
+              <execution>
+                <!--
+                  Concatenate the source LICENSE with LICENSE-binary (the "this product
+                  bundles dependencies…" preamble). The result is the LICENSE that
+                  ships in the installer, pointing readers at licenses.xml + licenses/.
+                -->
+                <id>create-bin-license</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <concat destfile="${project.build.directory}/generated-resources/LICENSE" force="yes">
+                      <fileset dir="${project.basedir}/..">
+                        <include name="LICENSE"/>
+                        <include name="LICENSE-binary"/>
+                      </fileset>
+                    </concat>
+                  </target>
+                </configuration>
+              </execution>
+              <execution>
+                <id>stage-installer-input</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <property name="installer.input" value="${project.build.directory}/installer-input"/>
+                    <delete dir="${installer.input}" quiet="true"/>
+                    <mkdir dir="${installer.input}"/>
+                    <copy file="${project.build.directory}/beeline-standalone.jar" todir="${installer.input}"/>
+                    <copy file="${project.build.directory}/generated-resources/LICENSE" todir="${installer.input}"/>
+                    <copy file="${project.basedir}/../NOTICE" todir="${installer.input}"/>
+                    <copy file="${project.basedir}/src/license/licenses.xml" todir="${installer.input}"/>
+                    <mkdir dir="${installer.input}/licenses"/>
+                    <copy todir="${installer.input}/licenses">
+                      <fileset dir="${project.build.directory}/generated-resources/licenses"/>
+                    </copy>
+                  </target>
+                </configuration>
+              </execution>
               <execution>
                 <id>jpackage</id>
                 <phase>package</phase>
@@ -284,9 +406,14 @@
                       <arg value="Apache Software Foundation"/>
                       <arg value="--description"/>
                       <arg value="Apache Hive Beeline SQL client"/>
-                      <!-- Input: the self-contained fat jar -->
+                      <!--
+                        Input: the staged directory containing the fat jar + license bundle.
+                        jpackage recursively copies everything under the input dir into the
+                        app image (Contents/app/ on macOS, app/ on Windows/Linux), so LICENSE,
+                        NOTICE, licenses.xml, and licenses/ land next to the runnable jar.
+                      -->
                       <arg value="--input"/>
-                      <arg value="${project.build.directory}"/>
+                      <arg value="${project.build.directory}/installer-input"/>
                       <arg value="--main-jar"/>
                       <arg value="beeline-standalone.jar"/>
                       <arg value="--main-class"/>
@@ -338,7 +465,7 @@
         </os>
       </activation>
       <properties>
-        <jpackage.platform.args>--win-console --type msi --win-dir-chooser --win-menu --win-menu-group "Apache Hive" --win-shortcut-prompt --win-help-url https://hive.apache.org/ --license-file ${project.basedir}/../LICENSE --resource-dir ${project.basedir}/src/main/jpackage/windows</jpackage.platform.args>
+        <jpackage.platform.args>--win-console --type msi --win-dir-chooser --win-menu --win-menu-group "Apache Hive" --win-shortcut-prompt --win-help-url https://hive.apache.org/ --license-file ${project.build.directory}/generated-resources/LICENSE --resource-dir ${project.basedir}/src/main/jpackage/windows</jpackage.platform.args>
       </properties>
     </profile>
     <profile>
@@ -402,6 +529,8 @@
                     "No known driver to handle jdbc:hive2://..."
                 -->
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer"/>
               </transformers>
               <filters>
                 <filter>
