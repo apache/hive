@@ -71,6 +71,8 @@ public class HiveServer2DeploymentDependent
   protected Deployment desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
+    validateServiceAccountName(context.getClient(),
+        hiveCluster.getMetadata().getNamespace(), spec.serviceAccountName());
     HiveServer2Spec hs2 = spec.hiveServer2();
     validateHiveServer2EmbeddedValues(spec);
     Map<String, String> selectorLabels =
@@ -300,6 +302,7 @@ public class HiveServer2DeploymentDependent
     appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),
         hs2.extraVolumes(), hs2.extraVolumeMounts());
+    applyRestrictedSecurityContext(deployment.getSpec().getTemplate().getSpec(), spec.runAsUser());
 
     return deployment;
   }

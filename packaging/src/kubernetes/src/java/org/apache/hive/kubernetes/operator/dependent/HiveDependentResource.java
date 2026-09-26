@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import io.fabric8.kubernetes.api.model.AffinityBuilder;
+import io.fabric8.kubernetes.api.model.CapabilitiesBuilder;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -41,13 +42,18 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
+import io.fabric8.kubernetes.api.model.PodSecurityContextBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
+import io.fabric8.kubernetes.api.model.SeccompProfileBuilder;
+import io.fabric8.kubernetes.api.model.SecurityContext;
+import io.fabric8.kubernetes.api.model.SecurityContextBuilder;
 import io.fabric8.kubernetes.api.model.Affinity;
 import io.fabric8.kubernetes.api.model.Toleration;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.Matcher;
@@ -57,6 +63,7 @@ import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
+import org.apache.hive.kubernetes.operator.model.spec.RestrictedVolume;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
 
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
@@ -85,6 +92,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   /** Closed set of valid schematool -dbType values. */
   private static final Pattern DB_TYPE_PATTERN = Pattern.compile("derby|mysql|postgres|mssql|oracle");
 
+  private static final String APPROVED_SERVICE_ACCOUNT_LABEL = "hive.apache.org/service-account-approved";
   protected static final String CONF_MOUNT_PATH = "/etc/hive/conf";
   protected static final String HIVE_CONF_DIR = "/opt/hive/conf";
   protected static final String EXT_JARS_PATH = "/tmp/ext-jars";
@@ -411,6 +419,30 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     validateOptValue("spec.llapClusters.serviceHosts", llap.serviceHosts());
   }
 
+  /**
+   * Ensures spec.serviceAccountName references a ServiceAccount in the CR
+   * namespace that is explicitly approved, preventing a principal with only
+   * HiveCluster RBAC running pods as a more privileged SA.
+   */
+  public static void validateServiceAccountName(
+      KubernetesClient client, String namespace, String serviceAccountName) {
+    if (serviceAccountName == null || serviceAccountName.isBlank()) {
+      return;
+    }
+    var sa = client.serviceAccounts().inNamespace(namespace).withName(serviceAccountName).get();
+    if (sa == null) {
+      throw new IllegalArgumentException(
+          "serviceAccountName '" + serviceAccountName + "' not found in namespace " + namespace);
+    }
+    var labels = sa.getMetadata().getLabels();
+    if (labels == null || !Boolean.parseBoolean(labels.get(APPROVED_SERVICE_ACCOUNT_LABEL))) {
+      throw new IllegalArgumentException(
+          "serviceAccountName '" + serviceAccountName
+          + "' is not approved for Hive workloads; requires label "
+          + APPROVED_SERVICE_ACCOUNT_LABEL + "=true");
+    }
+  }
+
   private static void validateOptValue(String field, String value) {
     if (containsUnsafeShellChars(value) || (value != null && value.contains("$("))) {
       throw new IllegalArgumentException(field + " must not contain whitespace, quotes, backslashes, "
@@ -594,6 +626,56 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   protected static void applyTolerations(PodSpec podSpec, List<Toleration> tolerations) {
     if (tolerations != null && !tolerations.isEmpty()) {
       podSpec.setTolerations(tolerations);
+    }
+  }
+
+  /**
+   * Applies a restricted Security Context to every pod spec the operator
+   * generates, aligned with Kubernetes Pod Security restricted Standards.
+   */
+  protected static void applyRestrictedSecurityContext(PodSpec podSpec, Long runAsUser) {
+    if (podSpec.getSecurityContext() == null) {
+      PodSecurityContextBuilder podSc = new PodSecurityContextBuilder()
+          .withRunAsNonRoot(true)
+          .withSeccompProfile(new SeccompProfileBuilder()
+              .withType("RuntimeDefault")
+              .build());
+      if (runAsUser != null) {
+        podSc.withRunAsUser(runAsUser);
+      }
+      podSpec.setSecurityContext(podSc.build());
+    }
+    if (podSpec.getContainers() != null) {
+      for (Container container : podSpec.getContainers()) {
+        if (container.getSecurityContext() == null) {
+          container.setSecurityContext(
+              new SecurityContextBuilder()
+                  .withAllowPrivilegeEscalation(false)
+                  .withCapabilities(new CapabilitiesBuilder()
+                      .withDrop("ALL")
+                      .build())
+                  .withSeccompProfile(new SeccompProfileBuilder()
+                      .withType("RuntimeDefault")
+                      .build())
+                  .build());
+        }
+      }
+    }
+    if (podSpec.getInitContainers() != null) {
+      for (Container container : podSpec.getInitContainers()) {
+        if (container.getSecurityContext() == null) {
+          container.setSecurityContext(
+              new SecurityContextBuilder()
+                  .withAllowPrivilegeEscalation(false)
+                  .withCapabilities(new CapabilitiesBuilder()
+                      .withDrop("ALL")
+                      .build())
+                  .withSeccompProfile(new SeccompProfileBuilder()
+                      .withType("RuntimeDefault")
+                      .build())
+                  .build());
+        }
+      }
     }
   }
 
@@ -791,19 +873,15 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    */
   protected static void appendUserVolumes(
       io.fabric8.kubernetes.api.model.PodSpec podSpec,
-      List<Volume> globalVolumes,
+      List<RestrictedVolume> globalVolumes,
       List<VolumeMount> globalVolumeMounts,
-      List<Volume> extraVolumes,
+      List<RestrictedVolume> extraVolumes,
       List<VolumeMount> extraVolumeMounts) {
-    if (globalVolumes != null) {
-      podSpec.getVolumes().addAll(globalVolumes);
-    }
+    podSpec.getVolumes().addAll(RestrictedVolume.toKubernetesVolumes(globalVolumes));
     if (globalVolumeMounts != null) {
       podSpec.getContainers().get(0).getVolumeMounts().addAll(globalVolumeMounts);
     }
-    if (extraVolumes != null) {
-      podSpec.getVolumes().addAll(extraVolumes);
-    }
+    podSpec.getVolumes().addAll(RestrictedVolume.toKubernetesVolumes(extraVolumes));
     if (extraVolumeMounts != null) {
       podSpec.getContainers().get(0).getVolumeMounts().addAll(extraVolumeMounts);
     }

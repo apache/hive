@@ -46,6 +46,10 @@ rules:
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["get", "list", "watch"]
+  # ServiceAccounts: read-only for serviceAccountName approval checks
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "list", "watch"]
   # Events for status reporting
   - apiGroups: [""]
     resources: ["events"]

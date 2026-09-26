@@ -29,6 +29,9 @@ spec:
   {{- if .Values.cluster.serviceAccountName }}
   serviceAccountName: {{ .Values.cluster.serviceAccountName }}
   {{- end }}
+  {{- if .Values.cluster.runAsUser }}
+  runAsUser: {{ .Values.cluster.runAsUser }}
+  {{- end }}
 
   metastore:
     enabled: {{ .Values.cluster.metastore.enabled }}

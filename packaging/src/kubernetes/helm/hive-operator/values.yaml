@@ -51,6 +51,11 @@ cluster:
   # If empty, pods use the namespace default service account.
   serviceAccountName: ""
 
+  # Numeric UID for workload pods. Required when the container image declares a
+  # non-numeric USER (e.g. USER hive) and the operator enforces runAsNonRoot.
+  # Set to null to omit from the HiveCluster CR.
+  runAsUser: 1000
+
   # ---------------------------------------------------------------------------
   # DATABASE (Required) — RDBMS for the Hive Metastore backend
   # ---------------------------------------------------------------------------
