@@ -93,8 +93,9 @@ public class ComponentAutoscaler {
     scaleDownWindow.record(clamped);
 
     int target;
+    boolean isLlap = component.startsWith(ConfigUtils.COMPONENT_LLAP + "-");
     if (clamped > currentReplicas) {
-      if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
+      if (isLlap) {
         // HS2 sessions activation gate scales up the LLAP pods to atleast 1
         // in presence of sessions. Avoid stabilizedMin in this start-up case.
         target = currentReplicas == 0 ? clamped : scaleUpWindow.stabilizedMin();
@@ -106,9 +107,9 @@ public class ComponentAutoscaler {
       // prevents premature scale-down, matches HPA selectPolicy: Max behavior).
       // The stabilization window duration serves as the cooldown between scale-downs.
       target = scaleDownWindow.stabilizedMax();
-      if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
-        target = Math.max(target, currentReplicas - 1);
-      }
+
+      // Scale down for LLAP should be sequential
+      target = isLlap ? Math.max(target, currentReplicas - 1) : target;
     } else {
       target = currentReplicas;
     }
@@ -120,11 +121,8 @@ public class ComponentAutoscaler {
       return new EvaluationResult(metricValue, lastCpuPercent, cpuDesired, clamped, null);
     }
 
-    if (target < currentReplicas) {
-      LOG.info("[{}] Scaling down: {} -> {}", component, currentReplicas, target);
-    } else {
-      LOG.info("[{}] Scaling up: {} -> {}", component, currentReplicas, target);
-    }
+    String evaluateAction = target < currentReplicas ? "Scaling down" : "Scaling up";
+    LOG.info("[{}] {}: {} -> {}", component, evaluateAction, currentReplicas, target);
     return new EvaluationResult(metricValue, lastCpuPercent, cpuDesired, clamped, target);
   }
 

@@ -210,7 +210,8 @@ public class HiveClusterAutoscaler {
             spec.hiveServer2().replicas(), hs2Patches, statuses, hs2Metrics);
 
         Integer hs2Patch = hs2Patches.get(ConfigUtils.COMPONENT_HIVESERVER2);
-        int currentReplicas = getCurrentReplicas(client, namespace, clusterName, ConfigUtils.COMPONENT_HIVESERVER2);
+        int currentReplicas = getEvaluationReplicas(client, namespace, clusterName, ConfigUtils.COMPONENT_HIVESERVER2)
+            .currentReplicas();
         if (hs2Patch != null && hs2Patch < currentReplicas) {
           // Scale-down: defer to allow deletion-cost annotations to propagate
           pendingScaleDowns.put(hs2Key, new PendingScaleDown(hs2Patch, Instant.now(), null));
@@ -275,7 +276,8 @@ public class HiveClusterAutoscaler {
         String tezKey = cacheKey(namespace, clusterName, tezAmComponentKey);
         List<PodMetrics> tezMetrics = metricsCache.getOrEmpty(tezKey, tezAuto.metricsScrapeIntervalSeconds() * 3);
 
-        int currentTezReplicas = getCurrentReplicas(client, namespace, clusterName, tezAmComponentKey);
+        int currentTezReplicas = getEvaluationReplicas(client, namespace, clusterName, tezAmComponentKey)
+            .currentReplicas();
         PendingScaleDown pending = pendingScaleDowns.get(tezKey);
         if (pending != null) {
           Integer appliedTarget = null;
@@ -361,27 +363,9 @@ public class HiveClusterAutoscaler {
       Map<String, Integer> patches, Map<String, AutoscalingStatus> statuses,
       List<PodMetrics> metrics) {
 
-    int appliedWorkloadReplicas = -1;
-    int currentReplicas;
-    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
-      String llapName = component.substring(ConfigUtils.COMPONENT_LLAP.length() + 1);
-      String workloadName = clusterName + "-" + llapName;
-      var ss = client.apps().statefulSets().inNamespace(namespace).withName(workloadName).get();
-      int specReplicas = 0;
-      int statusReplicas = 0;
-      if (ss != null) {
-        if (ss.getSpec() != null && ss.getSpec().getReplicas() != null) {
-          specReplicas = ss.getSpec().getReplicas();
-        }
-        if (ss.getStatus() != null && ss.getStatus().getReplicas() != null) {
-          statusReplicas = ss.getStatus().getReplicas();
-        }
-      }
-      appliedWorkloadReplicas = specReplicas;
-      currentReplicas = Math.max(specReplicas, statusReplicas);
-    } else {
-      currentReplicas = getCurrentReplicas(client, namespace, clusterName, component);
-    }
+    EvaluationReplicas evalReplicas = getEvaluationReplicas(client, namespace, clusterName, component);
+    int currentReplicas = evalReplicas.currentReplicas();
+    int appliedWorkloadReplicas = evalReplicas.appliedWorkloadReplicas();
 
     String key = cacheKey(namespace, clusterName, component);
 
@@ -448,36 +432,39 @@ public class HiveClusterAutoscaler {
     };
   }
 
-  private int getCurrentReplicas(KubernetesClient client, String namespace,
+  private record EvaluationReplicas(int currentReplicas, int appliedWorkloadReplicas) {}
+
+  private EvaluationReplicas getEvaluationReplicas(KubernetesClient client, String namespace,
       String clusterName, String component) {
     // Component key → workload name mapping:
     //   "llap-{name}"  → "{cluster}-{name}"
     //   "tezam-{name}" → "{cluster}-tezam-{name}"
     //   other          → "{cluster}-{component}"
-    String workloadName;
     if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
       String llapName = component.substring(ConfigUtils.COMPONENT_LLAP.length() + 1);
-      workloadName = clusterName + "-" + llapName;
-    } else if (component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
+      String workloadName = clusterName + "-" + llapName;
+      var ss = client.apps().statefulSets().inNamespace(namespace).withName(workloadName).get();
+      if (ss != null) {
+        int specReplicas = ss.getSpec() != null && ss.getSpec().getReplicas() != null
+            ? ss.getSpec().getReplicas() : 0;
+        int statusReplicas = ss.getStatus() != null && ss.getStatus().getReplicas() != null
+            ? ss.getStatus().getReplicas() : 0;
+        return new EvaluationReplicas(Math.max(specReplicas, statusReplicas), specReplicas);
+      }
+      return new EvaluationReplicas(0, 0);
+    }
+
+    String workloadName;
+    if (component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
       String llapName = component.substring(ConfigUtils.COMPONENT_TEZAM.length() + 1);
       workloadName = clusterName + "-tezam-" + llapName;
     } else {
       workloadName = clusterName + "-" + component;
     }
-    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
-      var ss = client.apps().statefulSets().inNamespace(namespace).withName(workloadName).get();
-      if (ss != null) {
-        int specReplicas = ss.getSpec() != null && ss.getSpec().getReplicas() != null ? ss.getSpec().getReplicas() : 0;
-        int statusReplicas = ss.getStatus() != null && ss.getStatus().getReplicas() != null ? ss.getStatus().getReplicas() : 0;
-        return Math.max(specReplicas, statusReplicas);
-      }
-      return 0;
-    } else {
-      var deploy = client.apps().deployments()
-          .inNamespace(namespace).withName(workloadName).get();
-      return deploy != null && deploy.getSpec().getReplicas() != null
-          ? deploy.getSpec().getReplicas() : 0;
-    }
+    var deploy = client.apps().deployments().inNamespace(namespace).withName(workloadName).get();
+    return deploy != null && deploy.getSpec().getReplicas() != null
+        ? new EvaluationReplicas(deploy.getSpec().getReplicas(), -1)
+        : new EvaluationReplicas(0, -1);
   }
 
   /** Counts TezAM pods with active DAG work. */
