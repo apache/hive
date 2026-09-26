@@ -104,16 +104,14 @@ public record LlapSpec(
       @SchemaFrom(type = Object[].class)
       @PreserveUnknownFields
       List<Toleration> tolerations,
-      @JsonPropertyDescription("Update strategy for LLAP Cluster TezAM: RollingUpdate (one by one) or "
-          + "Recreate (all at once)")
-      @Default("RollingUpdate")
+      @JsonPropertyDescription("Update strategy for this LLAP Cluster's TezAM: RollingUpdate (one by one) or "
+          + "Recreate (all at once), overriding spec.tezAm.updateStrategy")
       UpdateStrategy updateStrategy) {
 
     public LlapTezAmSpec {
       replicas = replicas != null ? replicas : 1;
       autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
           false, 0, 0, 0, 60, 600, 120, 10, 0, 0, null);
-      updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
     }
   }
 

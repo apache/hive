@@ -536,9 +536,9 @@ spec:
                           type: array
                           x-kubernetes-preserve-unknown-fields: true
                         updateStrategy:
-                          default: RollingUpdate
-                          description: "Update strategy for LLAP Cluster TezAM: RollingUpdate\
-                            \ (one by one) or Recreate (all at once)"
+                          description: "Update strategy for this LLAP Cluster's TezAM:\
+                            \ RollingUpdate (one by one) or Recreate (all at once),\
+                            \ overriding spec.tezAm.updateStrategy"
                           enum:
                           - Recreate
                           - RollingUpdate

@@ -998,7 +998,8 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     if (perClusterSpec != null && perClusterSpec.updateStrategy() != null) {
       return perClusterSpec.updateStrategy();
     }
-    return clusterSpec.tezAm().updateStrategy();
+    UpdateStrategy clusterTezAmStrategy = clusterSpec.tezAm().updateStrategy();
+    return clusterTezAmStrategy != null ? clusterTezAmStrategy : UpdateStrategy.RollingUpdate;
   }
 
 }
