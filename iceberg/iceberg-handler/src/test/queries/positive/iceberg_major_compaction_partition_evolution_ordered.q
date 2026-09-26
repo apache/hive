@@ -49,6 +49,11 @@ insert into ice_orc VALUES
 insert into ice_orc VALUES 
 ('fn7','ln7', 2, 20, 101),
 ('fn8','ln8', 2, 20, 101);
+insert into ice_orc VALUES ('fn81','ln81', 2, 20, 101);
+insert into ice_orc VALUES ('fn82','ln82', 2, 20, 101);
+insert into ice_orc VALUES ('fn83','ln83', 2, 20, 101);
+insert into ice_orc VALUES ('fn84','ln84', 2, 20, 101);
+insert into ice_orc VALUES ('fn85','ln85', 2, 20, 101);
 
 insert into ice_orc VALUES 
 ('fn9', 'ln9',  3, 20, 101),

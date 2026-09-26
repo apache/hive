@@ -1,12 +1,12 @@
 PREHOOK: query: create external table ice_comp_unpart (id bigint, p string)
 stored by iceberg stored as orc
-tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1000')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_comp_unpart
 POSTHOOK: query: create external table ice_comp_unpart (id bigint, p string)
 stored by iceberg stored as orc
-tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1000')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_comp_unpart
@@ -164,7 +164,7 @@ POSTHOOK: Output: default@ice_comp_unpart
 PREHOOK: query: create external table ice_comp (id bigint, p string)
     partitioned by spec (p)
 stored by iceberg stored as orc
-tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500',
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1000',
     -- a compaction runs long after the session that queued it, so the granularity it keeps
     -- statistics at is asked for the way the compactor takes any of its settings
     'compactor.hive.iceberg.stats.collect.partlevel'='true')
@@ -174,7 +174,7 @@ PREHOOK: Output: default@ice_comp
 POSTHOOK: query: create external table ice_comp (id bigint, p string)
     partitioned by spec (p)
 stored by iceberg stored as orc
-tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500',
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1000',
     -- a compaction runs long after the session that queued it, so the granularity it keeps
     -- statistics at is asked for the way the compactor takes any of its settings
     'compactor.hive.iceberg.stats.collect.partlevel'='true')
