@@ -1,0 +1,125 @@
+PREHOOK: query: CREATE TABLE ice_anc_test (id INT, name STRING) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_anc_test
+POSTHOOK: query: CREATE TABLE ice_anc_test (id INT, name STRING) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_anc_test
+PREHOOK: query: INSERT INTO ice_anc_test VALUES (1, 'A')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_anc_test
+POSTHOOK: query: INSERT INTO ice_anc_test VALUES (1, 'A')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_anc_test
+PREHOOK: query: INSERT INTO ice_anc_test VALUES (2, 'B')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_anc_test
+POSTHOOK: query: INSERT INTO ice_anc_test VALUES (2, 'B')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_anc_test
+PREHOOK: query: INSERT INTO ice_anc_test VALUES (3, 'C')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_anc_test
+POSTHOOK: query: INSERT INTO ice_anc_test VALUES (3, 'C')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_anc_test
+PREHOOK: query: INSERT INTO ice_anc_test VALUES (4, 'D')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_anc_test
+POSTHOOK: query: INSERT INTO ice_anc_test VALUES (4, 'D')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_anc_test
+PREHOOK: query: SELECT iceberg_ancestors_of('default.ice_anc_test') AS (snapshot_id, ts)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ####SnapshotId#-1/-mr-10001
+POSTHOOK: query: SELECT iceberg_ancestors_of('default.ice_anc_test') AS (snapshot_id, ts)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ####SnapshotId#-1/-mr-10001
+#SnapshotId#	#Timestamp#
+#SnapshotId#	#Timestamp#
+#SnapshotId#	#Timestamp#
+#SnapshotId#	#Timestamp#
+PREHOOK: query: ALTER TABLE ice_anc_test CREATE BRANCH test_branch
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice_anc_test
+POSTHOOK: query: ALTER TABLE ice_anc_test CREATE BRANCH test_branch
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice_anc_test
+PREHOOK: query: INSERT INTO ice_anc_test VALUES (5, 'E')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_anc_test
+POSTHOOK: query: INSERT INTO ice_anc_test VALUES (5, 'E')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_anc_test
+PREHOOK: query: INSERT INTO ice_anc_test VALUES (6, 'F')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_anc_test
+POSTHOOK: query: INSERT INTO ice_anc_test VALUES (6, 'F')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_anc_test
+PREHOOK: query: INSERT INTO default.ice_anc_test.branch_test_branch VALUES (7, 'G')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_anc_test@branch_test_branch
+POSTHOOK: query: INSERT INTO default.ice_anc_test.branch_test_branch VALUES (7, 'G')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_anc_test@branch_test_branch
+PREHOOK: query: CREATE TEMPORARY TABLE branch_snap_id AS
+SELECT snapshot_id FROM default.ice_anc_test.refs WHERE name = 'test_branch'
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ice_anc_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@branch_snap_id
+POSTHOOK: query: CREATE TEMPORARY TABLE branch_snap_id AS
+SELECT snapshot_id FROM default.ice_anc_test.refs WHERE name = 'test_branch'
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ice_anc_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@branch_snap_id
+POSTHOOK: Lineage: branch_snap_id.snapshot_id SIMPLE [(ice_anc_test)ice_anc_test.refs.FieldSchema(name:snapshot_id, type:bigint, comment:null), ]
+PREHOOK: query: SELECT iceberg_ancestors_of('default.ice_anc_test', snapshot_id) FROM branch_snap_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@branch_snap_id
+PREHOOK: Output: hdfs://### HDFS PATH ####SnapshotId#-1/-mr-10001
+POSTHOOK: query: SELECT iceberg_ancestors_of('default.ice_anc_test', snapshot_id) FROM branch_snap_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@branch_snap_id
+POSTHOOK: Output: hdfs://### HDFS PATH ####SnapshotId#-1/-mr-10001
+#SnapshotId#	#Timestamp#
+#SnapshotId#	#Timestamp#
+#SnapshotId#	#Timestamp#
+#SnapshotId#	#Timestamp#
+#SnapshotId#	#Timestamp#
+PREHOOK: query: SELECT count(*)
+FROM (SELECT iceberg_ancestors_of('default.ice_anc_test') AS (snapshot_id, ts)) a
+JOIN default.ice_anc_test.snapshots s
+ON a.snapshot_id = s.snapshot_id
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@ice_anc_test
+PREHOOK: Output: hdfs://### HDFS PATH ####SnapshotId#-1/-mr-10001
+POSTHOOK: query: SELECT count(*)
+FROM (SELECT iceberg_ancestors_of('default.ice_anc_test') AS (snapshot_id, ts)) a
+JOIN default.ice_anc_test.snapshots s
+ON a.snapshot_id = s.snapshot_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@ice_anc_test
+POSTHOOK: Output: hdfs://### HDFS PATH ####SnapshotId#-1/-mr-10001
+6
