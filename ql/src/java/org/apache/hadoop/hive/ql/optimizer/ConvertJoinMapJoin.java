@@ -476,6 +476,24 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
+    JoinDesc joinDesc = joinOp.getConf();
+    JoinCondDesc[] joinCondns = joinDesc.getConds();
+
+    Set<Integer> joinCandidates = MapJoinProcessor.getBigTableCandidates(joinCondns);
+    if (joinCandidates.isEmpty()) {
+      // This is a full outer join. This can never be a map-join
+      // of any type. So return false.
+      return false;
+    }
+    // establish the join's structural feasibility before electing a big table:
+    // sizing the candidates can list their tables' locations on remote storage
+    if (!checkJoinSMBFeasibility(joinOp, context)) {
+      // we are just converting to a common merge join operator. The shuffle
+      // join in map-reduce case.
+      fallbackToReduceSideJoin(joinOp, context);
+      return null;
+    }
+
     Class<? extends BigTableSelectorForAutoSMJ> bigTableMatcherClass = null;
     try {
       String selector = HiveConf.getVar(context.parseContext.getConf(),
@@ -488,14 +506,6 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
     BigTableSelectorForAutoSMJ bigTableMatcher =
         ReflectionUtils.newInstance(bigTableMatcherClass, null);
-    JoinDesc joinDesc = joinOp.getConf();
-    JoinCondDesc[] joinCondns = joinDesc.getConds();
-    Set<Integer> joinCandidates = MapJoinProcessor.getBigTableCandidates(joinCondns);
-    if (joinCandidates.isEmpty()) {
-      // This is a full outer join. This can never be a map-join
-      // of any type. So return false.
-      return false;
-    }
     int mapJoinConversionPos =
         bigTableMatcher.getBigTablePosition(context.parseContext, joinOp, joinCandidates);
     if (mapJoinConversionPos < 0) {
@@ -506,14 +516,15 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       return null;
     }
 
-    if (checkConvertJoinSMBJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx)) {
-      convertJoinSMBJoin(joinOp, context, mapJoinConversionPos,
-          tezBucketJoinProcCtx.getNumBuckets(), true);
-    } else {
-      // we are just converting to a common merge join operator. The shuffle
-      // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context);
+    ReduceSinkOperator bigTableRS =
+        (ReduceSinkOperator) joinOp.getParentOperators().get(mapJoinConversionPos);
+    int numBuckets = bigTableRS.getParentOperators().get(0).getOpTraits().getNumBuckets();
+
+    if (numBuckets < 0) {
+      numBuckets = bigTableRS.getConf().getNumReducers();
     }
+    tezBucketJoinProcCtx.setNumBuckets(numBuckets);
+    convertJoinSMBJoin(joinOp, context, mapJoinConversionPos, numBuckets, true);
     return null;
   }
 
@@ -803,18 +814,12 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   }
 
   /*
-   * This method tries to convert a join to an SMB. This is done based on
-   * traits. If the sorted by columns are the same as the join columns then, we
-   * can convert the join to an SMB. Otherwise retain the bucket map join as it
-   * is still more efficient than a regular join.
+   * Decides from traits alone whether a join can become an SMB: the sorted by
+   * columns have to be the same as the join columns on every side. The answer
+   * does not depend on which side is elected the big table, so it is safe to
+   * consult before the election.
    */
-  private boolean checkConvertJoinSMBJoin(JoinOperator joinOp, OptimizeTezProcContext context,
-      int bigTablePosition, TezBucketJoinProcCtx tezBucketJoinProcCtx) throws SemanticException {
-
-    ReduceSinkOperator bigTableRS =
-        (ReduceSinkOperator) joinOp.getParentOperators().get(bigTablePosition);
-    int numBuckets = bigTableRS.getParentOperators().get(0).getOpTraits().getNumBuckets();
-
+  private boolean checkJoinSMBFeasibility(JoinOperator joinOp, OptimizeTezProcContext context) {
     int size = -1;
     boolean shouldCheckExternalTables =
         context.conf.getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS);
@@ -907,11 +912,6 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         return false;
       }
     }
-
-    if (numBuckets < 0) {
-      numBuckets = bigTableRS.getConf().getNumReducers();
-    }
-    tezBucketJoinProcCtx.setNumBuckets(numBuckets);
 
     // With bucketing using two different versions. Version 1 for exiting
     // tables and version 2 for new tables. All the inputs to the SMB must be
