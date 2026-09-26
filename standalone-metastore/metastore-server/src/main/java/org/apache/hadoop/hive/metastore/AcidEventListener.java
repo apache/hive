@@ -50,11 +50,13 @@ import java.util.Optional;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getWriteId;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMustPurge;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isIcebergTable;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.throwMetaException;
 
 
 /**
- * It handles cleanup of dropped partition/table/database in ACID related metastore tables
+ * It handles cleanup of dropped partition/table/database in ACID related metastore tables,
+ * and compaction related metastore tables cleanup for Iceberg tables.
  */
 public class AcidEventListener extends TransactionalMetaStoreEventListener {
 
@@ -104,6 +106,9 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
           }
         }
       }
+    } else if (isIcebergTable(table.getParameters())) {
+      txnHandler = getTxnHandler();
+      txnHandler.cleanupRecords(HiveObjectType.TABLE, null, table, null);
     }
   }
 
@@ -148,7 +153,8 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
 
   @Override
   public void onAlterTable(AlterTableEvent tableEvent) throws MetaException {
-    if (!TxnUtils.isTransactionalTable(tableEvent.getNewTable())) {
+    if (!TxnUtils.isTransactionalTable(tableEvent.getNewTable()) &&
+        !isIcebergTable(tableEvent.getNewTable().getParameters())) {
       return;
     }
     Table oldTable = tableEvent.getOldTable();

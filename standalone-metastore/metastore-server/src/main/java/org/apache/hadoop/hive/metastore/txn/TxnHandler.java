@@ -997,7 +997,15 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     new CleanupRecordsFunction(type, db, table, partitionIterator, getDefaultCatalog(conf), false, txnId)
         .execute(jdbcResource);
   }
-  
+
+  @Override
+  public void cleanupCompactionRecords(Table table, List<String> partitionNames) throws MetaException {
+    if (CollectionUtils.isEmpty(partitionNames)) {
+      return;
+    }
+    new CleanupRecordsFunction(table, partitionNames, getDefaultCatalog(conf)).execute(jdbcResource);
+  }
+
   /**
    * Catalog hasn't been added to transactional tables yet, so it's passed in but not used.
    */
