@@ -69,7 +69,7 @@ public class ComponentAutoscaler {
    * raw metric value, proposed replicas, and the actual patch (null if no change).
    */
   public EvaluationResult evaluate(List<PodMetrics> metrics, AutoscalingSpec spec,
-      int currentReplicas, int maxReplicas) {
+      int currentReplicas, int appliedWorkloadReplicas, int maxReplicas) {
 
     ensureWindows(spec);
 
@@ -106,6 +106,9 @@ public class ComponentAutoscaler {
       // prevents premature scale-down, matches HPA selectPolicy: Max behavior).
       // The stabilization window duration serves as the cooldown between scale-downs.
       target = scaleDownWindow.stabilizedMax();
+      if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
+        target = Math.max(target, currentReplicas - 1);
+      }
     } else {
       target = currentReplicas;
     }
@@ -113,7 +116,7 @@ public class ComponentAutoscaler {
     // Ensure target is still within bounds
     target = Math.max(spec.minReplicas(), Math.min(target, maxReplicas));
 
-    if (target == currentReplicas) {
+    if (target == currentReplicas || (appliedWorkloadReplicas >= 0 && target == appliedWorkloadReplicas)) {
       return new EvaluationResult(metricValue, lastCpuPercent, cpuDesired, clamped, null);
     }
 
