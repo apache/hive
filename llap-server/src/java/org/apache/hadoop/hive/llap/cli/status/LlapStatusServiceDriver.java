@@ -72,7 +72,7 @@ public class LlapStatusServiceDriver {
   private static final Logger CONSOLE_LOGGER = LoggerFactory.getLogger("LlapStatusServiceDriverConsole");
 
   private static final EnumSet<State> NO_YARN_SERVICE_INFO_STATES = EnumSet.of(
-      State.APP_NOT_FOUND, State.COMPLETE, State.LAUNCHING);
+      State.COMPLETE, State.LAUNCHING);
   private static final EnumSet<State> LAUNCHING_STATES = EnumSet.of(
       State.LAUNCHING, State.RUNNING_PARTIAL, State.RUNNING_ALL);
 
@@ -108,6 +108,10 @@ public class LlapStatusServiceDriver {
 
   private static final long LOG_SUMMARY_INTERVAL = 15000L; // Log summary every ~15 seconds.
   private static final String LLAP_KEY = "llap";
+  private static final String TEZ_AM_FRAMEWORK_MODE = "tez.am.framework.mode";
+  private static final String TEZ_FRAMEWORK_MODE_STANDALONE_ZOOKEEPER = "STANDALONE_ZOOKEEPER";
+  /** When set, overrides auto-detection for registry vs YARN status lookup. */
+  private static final String CONFIG_STATUS_USE_REGISTRY = CONF_PREFIX + "status.use-registry";
 
   private final Configuration conf;
   private String appName = null;
@@ -176,10 +180,13 @@ public class LlapStatusServiceDriver {
 
         appName = cl.getName();
         if (StringUtils.isEmpty(appName)) {
-          appName = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
-          if (appName.startsWith("@") && appName.length() > 1) {
+          String hosts = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+          if (hosts != null && hosts.startsWith("@") && hosts.length() > 1) {
             // This is a valid YARN Service name. Parse it out.
-            appName = appName.substring(1);
+            appName = hosts.substring(1);
+          } else if (usesRegistryBasedLlapStatus(conf) && !StringUtils.isEmpty(hosts)) {
+            // Fixed registry host list for non-YARN deployments.
+            appName = hosts;
           } else {
             // Invalid app name. Checked later.
             appName = null;
@@ -192,7 +199,21 @@ public class LlapStatusServiceDriver {
         }
         LOG.debug("Using appName: {}", appName);
 
-        llapRegistryConf.set(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + appName);
+        configureLlapRegistryHosts(conf, llapRegistryConf, appName);
+      }
+
+      if (usesRegistryBasedLlapStatus(conf)) {
+        LOG.info("Non-YARN LLAP deployment detected; using LLAP registry for status");
+        try {
+          ExitCode ret = populateAppStatusFromLlapRegistry(appStatusBuilder, watchTimeoutMs, true);
+          if (ret == ExitCode.SUCCESS) {
+            updateRunningThresholdAchieved(appStatusBuilder, cl.getRunningNodesThreshold());
+          }
+          return ret;
+        } catch (LlapStatusCliException e) {
+          logError(e);
+          return e.getExitCode();
+        }
       }
 
       try {
@@ -200,8 +221,8 @@ public class LlapStatusServiceDriver {
           serviceClient = LlapSliderUtils.createServiceClient(conf);
         }
       } catch (Exception e) {
-        LlapStatusCliException le = new LlapStatusCliException(
-            ExitCode.SERVICE_CLIENT_ERROR_CREATE_FAILED, "Failed to create service client", e);
+        LlapStatusCliException le = new LlapStatusCliException(ExitCode.SERVICE_CLIENT_ERROR_CREATE_FAILED,
+            "Failed to create YARN Service client", e);
         logError(le);
         return le.getExitCode();
       }
@@ -226,7 +247,8 @@ public class LlapStatusServiceDriver {
 
       if (ret != ExitCode.SUCCESS) {
         return ret;
-      } else if (NO_YARN_SERVICE_INFO_STATES.contains(appStatusBuilder.getState())) {
+      } else if (appStatusBuilder.getState() == State.APP_NOT_FOUND
+          || NO_YARN_SERVICE_INFO_STATES.contains(appStatusBuilder.getState())) {
         return ExitCode.SUCCESS;
       } else {
         // Get information from YARN Service
@@ -243,13 +265,15 @@ public class LlapStatusServiceDriver {
         return ret;
       } else {
         try {
-          ret = populateAppStatusFromLlapRegistry(appStatusBuilder, watchTimeoutMs);
+          ret = populateAppStatusFromLlapRegistry(appStatusBuilder, watchTimeoutMs, false);
         } catch (LlapStatusCliException e) {
           logError(e);
           return e.getExitCode();
         }
       }
-
+      if (ret == ExitCode.SUCCESS) {
+        updateRunningThresholdAchieved(appStatusBuilder, cl.getRunningNodesThreshold());
+      }
       return ret;
     } finally {
       LOG.debug("Final AppState: " + appStatusBuilder.toString());
@@ -399,12 +423,12 @@ public class LlapStatusServiceDriver {
 
   /**
    * Populate additional information for containers from the LLAP registry. Must be invoked
-   * after YARN Service status and diagnostics.
+   * after YARN Service status and diagnostics when {@code registryOnly} is false.
    * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
    * @throws LlapStatusCliException
    */
-  private ExitCode populateAppStatusFromLlapRegistry(AppStatusBuilder appStatusBuilder, long watchTimeoutMs)
-      throws LlapStatusCliException {
+  private ExitCode populateAppStatusFromLlapRegistry(AppStatusBuilder appStatusBuilder, long watchTimeoutMs,
+      boolean registryOnly) throws LlapStatusCliException {
 
     if (llapRegistry == null) {
       try {
@@ -427,7 +451,20 @@ public class LlapStatusServiceDriver {
       appStatusBuilder.setLiveInstances(0);
       appStatusBuilder.setState(State.LAUNCHING);
       appStatusBuilder.clearRunningLlapInstances();
-      return ExitCode.SUCCESS;
+    } else if (registryOnly) {
+      List<LlapInstance> registryInstances = new LinkedList<>();
+      for (LlapServiceInstance serviceInstance : serviceInstances) {
+        registryInstances.add(createLlapInstanceFromRegistry(serviceInstance));
+      }
+      if (appStatusBuilder.getAmInfo() == null) {
+        appStatusBuilder.setAmInfo(new AmInfo().setAppName(appName));
+      }
+      appStatusBuilder.clearAndAddPreviouslyKnownRunningInstances(registryInstances);
+      appStatusBuilder.setLiveInstances(registryInstances.size());
+      if (appStatusBuilder.getDesiredInstances() == null) {
+        appStatusBuilder.setDesiredInstances(registryInstances.size());
+      }
+      updateStateFromInstanceCounts(appStatusBuilder, registryInstances.size());
     } else {
       // Tracks instances known by both YARN Service and llap.
       List<LlapInstance> validatedInstances = new LinkedList<>();
@@ -456,18 +493,10 @@ public class LlapStatusServiceDriver {
 
       appStatusBuilder.setLiveInstances(validatedInstances.size());
       appStatusBuilder.setLaunchingInstances(llapExtraInstances.size());
-      if (appStatusBuilder.getDesiredInstances() != null &&
-          validatedInstances.size() >= appStatusBuilder.getDesiredInstances()) {
-        appStatusBuilder.setState(State.RUNNING_ALL);
-        if (validatedInstances.size() > appStatusBuilder.getDesiredInstances()) {
-          LOG.warn("Found more entries in LLAP registry, as compared to desired entries");
-        }
-      } else {
-        if (validatedInstances.size() > 0) {
-          appStatusBuilder.setState(State.RUNNING_PARTIAL);
-        } else {
-          appStatusBuilder.setState(State.LAUNCHING);
-        }
+      updateStateFromInstanceCounts(appStatusBuilder, validatedInstances.size());
+      if (appStatusBuilder.getDesiredInstances() != null
+          && validatedInstances.size() > appStatusBuilder.getDesiredInstances()) {
+        LOG.warn("Found more entries in LLAP registry, as compared to desired entries");
       }
 
       // At this point, everything that can be consumed from AppStatusBuilder has been consumed.
@@ -486,6 +515,76 @@ public class LlapStatusServiceDriver {
 
     }
     return ExitCode.SUCCESS;
+  }
+
+  static LlapInstance createLlapInstanceFromRegistry(LlapServiceInstance serviceInstance) {
+    String containerId = serviceInstance.getProperties().get(
+        HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
+    if (StringUtils.isBlank(containerId)) {
+      containerId = serviceInstance.getWorkerIdentity();
+    }
+    LlapInstance llapInstance = new LlapInstance(serviceInstance.getHost(), containerId);
+    llapInstance.setMgmtPort(serviceInstance.getManagementPort());
+    llapInstance.setRpcPort(serviceInstance.getRpcPort());
+    llapInstance.setShufflePort(serviceInstance.getShufflePort());
+    llapInstance.setWebUrl(serviceInstance.getServicesAddress());
+    llapInstance.setStatusUrl(serviceInstance.getServicesAddress() + "/status");
+    return llapInstance;
+  }
+
+  static void updateStateFromInstanceCounts(AppStatusBuilder appStatusBuilder, int liveInstances) {
+    Integer desiredInstances = appStatusBuilder.getDesiredInstances();
+    if (desiredInstances != null && liveInstances >= desiredInstances) {
+      appStatusBuilder.setState(State.RUNNING_ALL);
+    } else if (liveInstances > 0) {
+      appStatusBuilder.setState(State.RUNNING_PARTIAL);
+    } else {
+      appStatusBuilder.setState(State.LAUNCHING);
+    }
+  }
+
+  /**
+   * Configures {@link #llapRegistryConf} for {@link LlapRegistryService}. Preserves a comma-separated
+   * host list for {@code LlapFixedRegistryImpl}; uses {@code @appName} for ZK registry otherwise.
+   */
+  static void configureLlapRegistryHosts(Configuration conf, Configuration llapRegistryConf, String appName) {
+    String configuredHosts = HiveConf.getTrimmedVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    if (configuredHosts != null && !configuredHosts.startsWith("@")) {
+      llapRegistryConf.set(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, configuredHosts);
+    } else {
+      llapRegistryConf.set(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + appName);
+    }
+  }
+
+  /**
+   * Non-YARN LLAP (e.g. Kubernetes, standalone Tez) uses the LLAP registry for daemon discovery.
+   * YARN Service LLAP uses the YARN APIs. Detection follows deployment config set by the operator.
+   */
+  static boolean usesRegistryBasedLlapStatus(Configuration conf) {
+    if (conf.get(CONFIG_STATUS_USE_REGISTRY) != null) {
+      return conf.getBoolean(CONFIG_STATUS_USE_REGISTRY, false);
+    }
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS)) {
+      return true;
+    }
+    String tezFrameworkMode = conf.get(TEZ_AM_FRAMEWORK_MODE, "");
+    return TEZ_FRAMEWORK_MODE_STANDALONE_ZOOKEEPER.equalsIgnoreCase(tezFrameworkMode);
+  }
+
+  static void updateRunningThresholdAchieved(AppStatusBuilder appStatusBuilder, float runningNodesThreshold) {
+    Integer desiredInstances = appStatusBuilder.getDesiredInstances();
+    Integer liveInstances = appStatusBuilder.getLiveInstances();
+    if (desiredInstances == null || desiredInstances <= 0 || liveInstances == null) {
+      return;
+    }
+    if (!(appStatusBuilder.getState() == State.RUNNING_PARTIAL
+        || appStatusBuilder.getState() == State.RUNNING_ALL)) {
+      return;
+    }
+    float ratio = (float) liveInstances / (float) desiredInstances;
+    if (ratio >= runningNodesThreshold) {
+      appStatusBuilder.setRunningThresholdAchieved(true);
+    }
   }
 
   private void close() {
