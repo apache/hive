@@ -1,0 +1,101 @@
+PREHOOK: query: create table geohash_points (id int, longitude double, latitude double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geohash_points
+POSTHOOK: query: create table geohash_points (id int, longitude double, latitude double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geohash_points
+PREHOOK: query: insert into geohash_points values
+  (1, -126.965375, 43.234528),
+  (2, 0, 0),
+  (3, 19.0, 47.5),
+  (4, -122.4194, 37.7749)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@geohash_points
+POSTHOOK: query: insert into geohash_points values
+  (1, -126.965375, 43.234528),
+  (2, 0, 0),
+  (3, 19.0, 47.5),
+  (4, -122.4194, 37.7749)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@geohash_points
+POSTHOOK: Lineage: geohash_points.id SCRIPT []
+POSTHOOK: Lineage: geohash_points.latitude SCRIPT []
+POSTHOOK: Lineage: geohash_points.longitude SCRIPT []
+PREHOOK: query: select id, longitude, latitude,
+       ST_GeoHash(ST_Point(longitude, latitude), 12) as geohash12,
+       ST_GeoHash(ST_Point(longitude, latitude), 5) as geohash5
+from geohash_points
+order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geohash_points
+#### A masked pattern was here ####
+POSTHOOK: query: select id, longitude, latitude,
+       ST_GeoHash(ST_Point(longitude, latitude), 12) as geohash12,
+       ST_GeoHash(ST_Point(longitude, latitude), 5) as geohash5
+from geohash_points
+order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geohash_points
+#### A masked pattern was here ####
+1	-126.965375	43.234528	9pttyydekk4t	9ptty
+2	0.0	0.0	s00000000000	s0000
+3	19.0	47.5	u2mw0r57s1fb	u2mw0
+4	-122.4194	37.7749	9q8yyk8ytpxr	9q8yy
+PREHOOK: query: select ST_AsText(ST_GeomFromGeoHash('9ptty', 5))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsText(ST_GeomFromGeoHash('9ptty', 5))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POLYGON ((-127.001953125 43.1982421875, -126.9580078125 43.1982421875, -126.9580078125 43.2421875, -127.001953125 43.2421875, -127.001953125 43.1982421875))
+PREHOOK: query: select ST_AsText(ST_GeomFromGeoHash('9ptty'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsText(ST_GeomFromGeoHash('9ptty'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POLYGON ((-127.001953125 43.1982421875, -126.9580078125 43.1982421875, -126.9580078125 43.2421875, -127.001953125 43.2421875, -127.001953125 43.1982421875))
+PREHOOK: query: select ST_NumPoints(ST_GeomFromGeoHash('9ptty', 5))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_NumPoints(ST_GeomFromGeoHash('9ptty', 5))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+5
+PREHOOK: query: select ST_GeoHash(ST_Point(0, 0), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_GeoHash(ST_Point(0, 0), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select ST_GeoHash(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_GeoHash(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select ST_GeomFromGeoHash('9ptty', 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_GeomFromGeoHash('9ptty', 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
