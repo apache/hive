@@ -160,36 +160,8 @@ public class CreateDatabaseHandler
       success = ms.commitTransaction();
     } finally {
       if (!success) {
+        // mkdirs does not establish exclusive ownership of a directory.
         ms.rollbackTransaction();
-        if (db.getCatalogName() != null && !db.getCatalogName().equals(Warehouse.DEFAULT_CATALOG_NAME)) {
-          if (madeManagedDir && dbMgdPath != null) {
-            wh.deleteDir(dbMgdPath, true, db);
-          }
-        } else {
-          if (madeManagedDir && dbMgdPath != null) {
-            try {
-              UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Void>) () -> {
-                wh.deleteDir(dbMgdPath, true, db);
-                return null;
-              });
-            } catch (IOException | InterruptedException e) {
-              LOG.error("Couldn't delete managed directory {} after it was created for database {} {}",
-                  dbMgdPath, db.getName(), e.getMessage());
-            }
-          }
-
-          if (madeExternalDir) {
-            try {
-              UserGroupInformation.getCurrentUser().doAs((PrivilegedExceptionAction<Void>) () -> {
-                wh.deleteDir(dbExtPath, true, db);
-                return null;
-              });
-            } catch (IOException | InterruptedException e) {
-              LOG.error("Couldn't delete external directory {} after it was created for database {} {}",
-                  dbExtPath, db.getName(), e.getMessage());
-            }
-          }
-        }
       }
     }
     return new CreateDatabaseResult(success, transactionalListenersResponses);
