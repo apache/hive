@@ -86,7 +86,7 @@ public record LlapSpec(
     LlapTezAmSpec tezAm,
     @JsonPropertyDescription("Update strategy for LLAP Cluster: RollingUpdate (one by one) or Recreate (all at once)")
     @Default("RollingUpdate")
-    String updateStrategy) {
+    UpdateStrategy updateStrategy) {
 
   /** Per-LLAP-cluster TezAM replica and autoscaling overrides. */
   public record LlapTezAmSpec(
@@ -107,13 +107,13 @@ public record LlapSpec(
       @JsonPropertyDescription("Update strategy for LLAP Cluster TezAM: RollingUpdate (one by one) or "
           + "Recreate (all at once)")
       @Default("RollingUpdate")
-      String updateStrategy) {
+      UpdateStrategy updateStrategy) {
 
     public LlapTezAmSpec {
       replicas = replicas != null ? replicas : 1;
       autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
           false, 0, 0, 0, 60, 600, 120, 10, 0, 0, null);
-      updateStrategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
+      updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
     }
   }
 
@@ -138,7 +138,7 @@ public record LlapSpec(
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 0, 1, 20, 60, 900, 600, 10, 0, 0, null);
     tezAm = tezAm != null ? tezAm : new LlapTezAmSpec(null, null, null, null, null);
-    updateStrategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
   }
 
   public boolean isEnabled() {

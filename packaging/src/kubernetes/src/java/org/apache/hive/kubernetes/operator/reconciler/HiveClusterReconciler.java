@@ -56,6 +56,7 @@ import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.HiveClusterStatus;
 import org.apache.hive.kubernetes.operator.model.spec.AutoSuspendSpec;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
+import org.apache.hive.kubernetes.operator.model.spec.UpdateStrategy;
 import org.apache.hive.kubernetes.operator.model.status.AutoscalingStatus;
 import org.apache.hive.kubernetes.operator.model.status.ComponentStatus;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
@@ -764,7 +765,7 @@ public class HiveClusterReconciler
    */
   private int reconcileLlapRecreateRollout(KubernetesClient client, HiveCluster resource,
       LlapSpec llapSpec, int replicas) {
-    if (replicas <= 0 || !"Recreate".equalsIgnoreCase(llapSpec.updateStrategy())) {
+    if (replicas <= 0 || llapSpec.updateStrategy() != UpdateStrategy.Recreate) {
       return 0;
     }
 

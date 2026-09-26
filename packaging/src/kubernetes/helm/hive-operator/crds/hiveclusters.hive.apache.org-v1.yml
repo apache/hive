@@ -258,6 +258,9 @@ spec:
                     default: RollingUpdate
                     description: "Update strategy for HiveServer2: RollingUpdate (one\
                       \ by one) or Recreate (all at once)"
+                    enum:
+                    - Recreate
+                    - RollingUpdate
                     type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
@@ -536,6 +539,9 @@ spec:
                           default: RollingUpdate
                           description: "Update strategy for LLAP Cluster TezAM: RollingUpdate\
                             \ (one by one) or Recreate (all at once)"
+                          enum:
+                          - Recreate
+                          - RollingUpdate
                           type: string
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
@@ -549,6 +555,9 @@ spec:
                       default: RollingUpdate
                       description: "Update strategy for LLAP Cluster: RollingUpdate\
                         \ (one by one) or Recreate (all at once)"
+                      enum:
+                      - Recreate
+                      - RollingUpdate
                       type: string
                   required:
                   - name
@@ -768,6 +777,9 @@ spec:
                     default: RollingUpdate
                     description: "Update strategy for Metastore: RollingUpdate (one\
                       \ by one) or Recreate (all at once)"
+                    enum:
+                    - Recreate
+                    - RollingUpdate
                     type: string
                   warehouseDir:
                     default: /hive/warehouse
@@ -921,6 +933,9 @@ spec:
                     default: RollingUpdate
                     description: "Update strategy for the TezAM: RollingUpdate (one\
                       \ by one) or Recreate (all at once)"
+                    enum:
+                    - Recreate
+                    - RollingUpdate
                     type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true

@@ -58,6 +58,7 @@ import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
+import org.apache.hive.kubernetes.operator.model.spec.UpdateStrategy;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
@@ -609,9 +610,7 @@ public class LlapResourceBuilder
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getLlapDaemonSite(spec, llap)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    String llapStrategy = llap.updateStrategy();
-    String stsUpdateStrategy = "Recreate".equalsIgnoreCase(llapStrategy)
-        ? "OnDelete" : "RollingUpdate";
+    String stsUpdateStrategy = (llap.updateStrategy() == UpdateStrategy.Recreate) ? "OnDelete" : "RollingUpdate";
     StatefulSetUpdateStrategy updateStrategy = new StatefulSetUpdateStrategyBuilder()
         .withType(stsUpdateStrategy)
         .build();

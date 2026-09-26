@@ -72,7 +72,7 @@ public record HiveServer2Spec(
     AutoscalingSpec autoscaling,
     @JsonPropertyDescription("Update strategy for HiveServer2: RollingUpdate (one by one) or Recreate (all at once)")
     @Default("RollingUpdate")
-    String updateStrategy) {
+    UpdateStrategy updateStrategy) {
 
   public HiveServer2Spec {
     replicas = replicas != null ? replicas : 1;
@@ -84,6 +84,6 @@ public record HiveServer2Spec(
     externalJars = externalJars != null ? externalJars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 1, 80, 0, 60, 600, 300, 10, 90, 30, null);
-    updateStrategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
   }
 }

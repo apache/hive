@@ -77,7 +77,7 @@ public record MetastoreSpec(
     AutoscalingSpec autoscaling,
     @JsonPropertyDescription("Update strategy for Metastore: RollingUpdate (one by one) or Recreate (all at once)")
     @Default("RollingUpdate")
-    String updateStrategy) {
+    UpdateStrategy updateStrategy) {
 
   public MetastoreSpec {
     replicas = replicas != null ? replicas : 1;
@@ -91,7 +91,7 @@ public record MetastoreSpec(
     envVars = envVars != null ? envVars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 1, 75, 0, 60, 300, 60, 10, 90, 30, null);
-    updateStrategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
   }
 
   public boolean isEnabled() {

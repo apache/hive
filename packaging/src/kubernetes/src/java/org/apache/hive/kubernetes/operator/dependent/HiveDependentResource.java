@@ -60,6 +60,7 @@ import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
+import org.apache.hive.kubernetes.operator.model.spec.UpdateStrategy;
 
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
 import org.apache.hive.kubernetes.operator.model.spec.ProbeSpec;
@@ -978,9 +979,9 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     return sb.toString();
   }
 
-  protected static DeploymentStrategy buildDeploymentUpdateStrategy(String updateStrategy) {
-    String strategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
-    if ("Recreate".equalsIgnoreCase(strategy)) {
+  protected static DeploymentStrategy buildDeploymentUpdateStrategy(UpdateStrategy updateStrategy) {
+    UpdateStrategy strategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
+    if (strategy == UpdateStrategy.Recreate) {
       return new DeploymentStrategyBuilder().withType("Recreate").build();
     }
     return new DeploymentStrategyBuilder()
@@ -992,10 +993,9 @@ public abstract class HiveDependentResource<R extends HasMetadata,
             .build();
   }
 
-  protected static String tezAmUpdateStrategy(HiveClusterSpec clusterSpec, LlapSpec llap) {
+  protected static UpdateStrategy tezAmUpdateStrategy(HiveClusterSpec clusterSpec, LlapSpec llap) {
     LlapSpec.LlapTezAmSpec perClusterSpec = llap.tezAm();
-    if (perClusterSpec != null && perClusterSpec.updateStrategy() != null
-        && !perClusterSpec.updateStrategy().isBlank()) {
+    if (perClusterSpec != null && perClusterSpec.updateStrategy() != null) {
       return perClusterSpec.updateStrategy();
     }
     return clusterSpec.tezAm().updateStrategy();

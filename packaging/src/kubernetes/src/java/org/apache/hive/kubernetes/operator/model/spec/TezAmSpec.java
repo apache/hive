@@ -73,7 +73,7 @@ public record TezAmSpec(
     AutoscalingSpec autoscaling,
     @JsonPropertyDescription("Update strategy for the TezAM: RollingUpdate (one by one) or Recreate (all at once)")
     @Default("RollingUpdate")
-    String updateStrategy) {
+    UpdateStrategy updateStrategy) {
 
   public TezAmSpec {
     replicas = replicas != null ? replicas : 1;
@@ -85,7 +85,7 @@ public record TezAmSpec(
     envVars = envVars != null ? envVars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 0, 0, 0, 60, 600, 120, 10, 0, 0, null);
-    updateStrategy = updateStrategy != null ? updateStrategy : "RollingUpdate";
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
   }
 
   public boolean isEnabled() {
