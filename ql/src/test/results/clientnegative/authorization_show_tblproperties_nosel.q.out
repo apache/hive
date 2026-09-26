@@ -1,0 +1,21 @@
+PREHOOK: query: create table t_show_props(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_show_props
+POSTHOOK: query: create table t_show_props(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_show_props
+PREHOOK: query: grant all on table t_show_props to user user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_show_props
+POSTHOOK: query: grant all on table t_show_props to user user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_show_props
+PREHOOK: query: revoke select on table t_show_props from user user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@t_show_props
+POSTHOOK: query: revoke select on table t_show_props from user user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@t_show_props
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation SHOW_TBLPROPERTIES [[SELECT] on Object [type=TABLE_OR_VIEW, name=hive.default.t_show_props]]
