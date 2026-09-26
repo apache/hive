@@ -1233,10 +1233,18 @@ public class Vectorizer implements PhysicalPlanResolver {
           tableScanOperator = (TableScanOperator) op;
         }
       }
+
       if (tableScanCount > 1) {
         setNodeIssue("Vectorized map work only works with 1 TableScanOperator");
         return null;
       }
+
+      if (tableScanOperator == null) {
+        // For example OrcFileMergeOperator could cause this condition
+        setNodeIssue("Vectorized map work requires a TableScanOperator");
+        return null;
+      }
+
       return new ImmutablePair<>(alias, tableScanOperator);
     }
 
@@ -1691,7 +1699,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     private ImmutablePair<Boolean, Boolean> validateInputFormatAndSchemaEvolution(MapWork mapWork, String alias,
         TableScanOperator tableScanOperator, VectorTaskColumnInfo vectorTaskColumnInfo)
             throws SemanticException {
-
       boolean isFullAcidTable = tableScanOperator.getConf().isFullAcidTable();
 
       // These names/types are the data columns plus partition columns.
@@ -1953,7 +1960,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       //--------------------------------------------------------------------------------------------
 
       LOG.info("Examining input format to see if vectorization is enabled.");
-
       ImmutablePair<String,TableScanOperator> onlyOneTableScanPair = verifyOnlyOneTableScanOperator(mapWork);
       if (onlyOneTableScanPair == null) {
         VectorizerReason notVectorizedReason = currentBaseWork.getNotVectorizedReason();
