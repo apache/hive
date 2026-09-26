@@ -99,7 +99,7 @@ cp $SETTINGS .m2/settings.xml
 OPTS=" -s $PWD/.m2/settings.xml -B -Dtest.groups= "
 OPTS+=" -Pitests,qsplits,dist,errorProne,thriftif"
 OPTS+=" -Dmaven.repo.local=$PWD/.m2/repository"
-OPTS+=" -Dthrift.home=/work/thrift-0.16.0"
+OPTS+=" -Dthrift.home=/work/thrift-0.24.0"
 git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi

@@ -115,7 +115,7 @@ public class TestSSLWithMiniKdc {
     });
     String exceptionMessage = expectedException.getMessage();
     // Verify the Thrift library is enforcing the limit
-    assertTrue(exceptionMessage.contains("MaxMessageSize reached"));
+    assertTrue(exceptionMessage.contains("Message size exceeds limit"));
     limitedClient.close();
 
     MetastoreConf.setVar(clientConf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1048576000");

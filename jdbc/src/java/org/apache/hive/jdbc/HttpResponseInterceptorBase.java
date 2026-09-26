@@ -18,7 +18,7 @@
  */
 package org.apache.hive.jdbc;
 
-import org.apache.http.HttpResponseInterceptor;
+import org.apache.hc.core5.http.HttpResponseInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
