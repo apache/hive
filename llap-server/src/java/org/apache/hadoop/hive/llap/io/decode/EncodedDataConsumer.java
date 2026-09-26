@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hive.common.util.FixedSizedObjectPool;
-import org.apache.orc.TypeDescription;
 import org.apache.tez.common.counters.FileSystemCounter;
 import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.runtime.task.TaskRunner2Callable;
@@ -143,6 +142,19 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
 
   protected abstract void decodeBatch(BatchType batch,
       Consumer<ColumnVectorBatch> downstreamConsumer) throws InterruptedException;
+
+  /**
+   * Takes a batch from the pool and readies it for one decode pass. Pooled batches come back with
+   * whatever the last pass left on them - {@code resetBeforeOffer} deliberately resets nothing, so
+   * the column vectors can be reused - which makes clearing the filter context part of taking one:
+   * a selection left over from the previous batch would otherwise be read as this batch's own.
+   */
+  protected ColumnVectorBatch takeBatch(int batchSize) {
+    ColumnVectorBatch cvb = cvbPool.take();
+    cvb.filterContext.reset();
+    cvb.size = batchSize;
+    return cvb;
+  }
 
   @Override
   public void setDone() throws InterruptedException {

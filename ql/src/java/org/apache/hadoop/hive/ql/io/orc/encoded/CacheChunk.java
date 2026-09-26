@@ -26,13 +26,11 @@ import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 
-import com.google.common.annotations.VisibleForTesting;
-
 /**
- * DiskRange containing encoded, uncompressed data from cache.
- * It should be hidden inside EncodedReaderImpl, but we need to expose it for tests.
+ * DiskRange containing encoded, uncompressed data from cache. Beyond ORC's own EncodedReaderImpl,
+ * it is part of the cache's public read surface: any reader consuming cached chunks — ORC and
+ * Parquet alike — receives them typed as CacheChunk from the LowLevelCache.
  */
-@VisibleForTesting
 public class CacheChunk extends DiskRangeList {
   protected MemoryBuffer buffer;
 

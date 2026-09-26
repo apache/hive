@@ -301,7 +301,8 @@ public class MapWork extends BaseWork {
       for (PartitionDesc part : pathToPartitionInfo.values()) {
         Class<? extends InputFormat> inputFormatClass = part.getInputFileFormatClass();
         boolean isUsingLlapIo = canWrapAny && (HiveInputFormat.canWrapForLlap(inputFormatClass, doCheckIfs)
-                || HiveInputFormat.checkInputFormatForLlapEncode(conf, inputFormatClass.getCanonicalName()));
+                || HiveInputFormat.checkInputFormatForLlapEncode(conf, inputFormatClass.getCanonicalName())
+                || HiveInputFormat.usesNativeParquetLlapIo(inputFormatClass, conf));
         if (isUsingLlapIo) {
           if (part.getTableDesc() != null &&
               AcidUtils.isTablePropertyTransactional(part.getTableDesc().getProperties())) {
