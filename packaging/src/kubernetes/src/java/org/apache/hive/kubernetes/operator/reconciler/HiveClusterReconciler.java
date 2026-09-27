@@ -765,7 +765,7 @@ public class HiveClusterReconciler
    */
   private int reconcileLlapRecreateRollout(KubernetesClient client, HiveCluster resource,
       LlapSpec llapSpec, int replicas) {
-    if (replicas <= 0 || llapSpec.updateStrategy() != UpdateStrategy.Recreate) {
+    if (replicas <= 0 || llapSpec.updateStrategy() != UpdateStrategy.RECREATE) {
       return 0;
     }
 

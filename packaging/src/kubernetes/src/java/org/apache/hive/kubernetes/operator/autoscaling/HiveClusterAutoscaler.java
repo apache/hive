@@ -462,9 +462,8 @@ public class HiveClusterAutoscaler {
       workloadName = clusterName + "-" + component;
     }
     var deploy = client.apps().deployments().inNamespace(namespace).withName(workloadName).get();
-    return deploy != null && deploy.getSpec().getReplicas() != null
-        ? new EvaluationReplicas(deploy.getSpec().getReplicas(), -1)
-        : new EvaluationReplicas(0, -1);
+    int deployReplicas = deploy != null && deploy.getSpec().getReplicas() != null ? deploy.getSpec().getReplicas() : 0;
+    return new EvaluationReplicas(deployReplicas, -1);
   }
 
   /** Counts TezAM pods with active DAG work. */

@@ -610,7 +610,7 @@ public class LlapResourceBuilder
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getLlapDaemonSite(spec, llap)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    String stsUpdateStrategy = (llap.updateStrategy() == UpdateStrategy.Recreate) ? "OnDelete" : "RollingUpdate";
+    String stsUpdateStrategy = (llap.updateStrategy() == UpdateStrategy.RECREATE) ? "OnDelete" : "RollingUpdate";
     StatefulSetUpdateStrategy updateStrategy = new StatefulSetUpdateStrategyBuilder()
         .withType(stsUpdateStrategy)
         .build();

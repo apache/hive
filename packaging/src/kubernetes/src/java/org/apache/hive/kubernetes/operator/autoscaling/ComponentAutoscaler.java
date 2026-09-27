@@ -92,7 +92,7 @@ public class ComponentAutoscaler {
     scaleUpWindow.record(clamped);
     scaleDownWindow.record(clamped);
 
-    int target;
+    int target = currentReplicas;
     boolean isLlap = component.startsWith(ConfigUtils.COMPONENT_LLAP + "-");
     if (clamped > currentReplicas) {
       if (isLlap) {
@@ -110,8 +110,6 @@ public class ComponentAutoscaler {
 
       // Scale down for LLAP should be sequential
       target = isLlap ? Math.max(target, currentReplicas - 1) : target;
-    } else {
-      target = currentReplicas;
     }
 
     // Ensure target is still within bounds

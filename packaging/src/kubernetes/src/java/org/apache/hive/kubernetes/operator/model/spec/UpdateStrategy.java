@@ -19,15 +19,19 @@
 
 package org.apache.hive.kubernetes.operator.model.spec;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /** Rollout strategy for Deployments and LLAP StatefulSets. */
 public enum UpdateStrategy {
 
   /** Roll out template changes one pod at a time. */
-  RollingUpdate,
+  @JsonProperty("RollingUpdate")
+  ROLLING_UPDATE,
 
-  /** 
-   * Apply template changes all at once (Deployment Recreate; LLAP StatefulSet 
+  /**
+   * Apply template changes all at once (Deployment Recreate; LLAP StatefulSet
    * OnDelete plus operator driven bulk stale-pod delete).
    */
-  Recreate
+  @JsonProperty("Recreate")
+  RECREATE
 }

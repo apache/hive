@@ -91,7 +91,7 @@ public record MetastoreSpec(
     envVars = envVars != null ? envVars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 1, 75, 0, 60, 300, 60, 10, 90, 30, null);
-    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.ROLLING_UPDATE;
   }
 
   public boolean isEnabled() {

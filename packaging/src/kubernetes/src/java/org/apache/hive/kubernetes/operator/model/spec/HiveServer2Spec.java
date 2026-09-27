@@ -84,6 +84,6 @@ public record HiveServer2Spec(
     externalJars = externalJars != null ? externalJars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 1, 80, 0, 60, 600, 300, 10, 90, 30, null);
-    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.ROLLING_UPDATE;
   }
 }

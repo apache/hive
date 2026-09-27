@@ -980,8 +980,8 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   }
 
   protected static DeploymentStrategy buildDeploymentUpdateStrategy(UpdateStrategy updateStrategy) {
-    UpdateStrategy strategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
-    if (strategy == UpdateStrategy.Recreate) {
+    UpdateStrategy strategy = updateStrategy != null ? updateStrategy : UpdateStrategy.ROLLING_UPDATE;
+    if (strategy == UpdateStrategy.RECREATE) {
       return new DeploymentStrategyBuilder().withType("Recreate").build();
     }
     return new DeploymentStrategyBuilder()
@@ -999,7 +999,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       return perClusterSpec.updateStrategy();
     }
     UpdateStrategy clusterTezAmStrategy = clusterSpec.tezAm().updateStrategy();
-    return clusterTezAmStrategy != null ? clusterTezAmStrategy : UpdateStrategy.RollingUpdate;
+    return clusterTezAmStrategy != null ? clusterTezAmStrategy : UpdateStrategy.ROLLING_UPDATE;
   }
 
 }

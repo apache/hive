@@ -136,7 +136,7 @@ public record LlapSpec(
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 0, 1, 20, 60, 900, 600, 10, 0, 0, null);
     tezAm = tezAm != null ? tezAm : new LlapTezAmSpec(null, null, null, null, null);
-    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.ROLLING_UPDATE;
   }
 
   public boolean isEnabled() {

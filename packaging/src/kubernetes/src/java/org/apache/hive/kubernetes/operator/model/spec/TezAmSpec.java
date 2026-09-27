@@ -85,7 +85,7 @@ public record TezAmSpec(
     envVars = envVars != null ? envVars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 0, 0, 0, 60, 600, 120, 10, 0, 0, null);
-    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.RollingUpdate;
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.ROLLING_UPDATE;
   }
 
   public boolean isEnabled() {
