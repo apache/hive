@@ -23,6 +23,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.generator.annotation.Required;
+import io.fabric8.generator.annotation.ValidationRule;
 import io.fabric8.kubernetes.api.model.ConfigMapVolumeSource;
 import io.fabric8.kubernetes.api.model.EmptyDirVolumeSource;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSource;
@@ -34,18 +35,26 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
  * A restricted pod volume source for HiveCluster specs. Only types that
  * reference namespaced API objects or pod-local storage are permitted.
  */
-public record RestrictedVolume(
-    @Required
-    @JsonPropertyDescription("Volume name, referenced by volumeMounts")
-    String name,
-    @JsonPropertyDescription("ConfigMap volume source")
-    ConfigMapVolumeSource configMap,
-    @JsonPropertyDescription("Secret volume source")
-    SecretVolumeSource secret,
-    @JsonPropertyDescription("EmptyDir volume source")
-    EmptyDirVolumeSource emptyDir,
-    @JsonPropertyDescription("PersistentVolumeClaim volume source")
-    PersistentVolumeClaimVolumeSource persistentVolumeClaim) {
+@ValidationRule(
+    value = "(has(self.configMap) ? 1 : 0) + (has(self.secret) ? 1 : 0) "
+        + "+ (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim) ? 1 : 0) == 1",
+    message = "must specify exactly one of configMap, secret, emptyDir, persistentVolumeClaim")
+public class RestrictedVolume {
+  @Required
+  @JsonPropertyDescription("Volume name, referenced by volumeMounts")
+  public String name;
+
+  @JsonPropertyDescription("ConfigMap volume source")
+  public ConfigMapVolumeSource configMap;
+
+  @JsonPropertyDescription("Secret volume source")
+  public SecretVolumeSource secret;
+
+  @JsonPropertyDescription("EmptyDir volume source")
+  public EmptyDirVolumeSource emptyDir;
+
+  @JsonPropertyDescription("PersistentVolumeClaim volume source")
+  public PersistentVolumeClaimVolumeSource persistentVolumeClaim;
 
   public Volume toKubernetesVolume() {
     return new VolumeBuilder()

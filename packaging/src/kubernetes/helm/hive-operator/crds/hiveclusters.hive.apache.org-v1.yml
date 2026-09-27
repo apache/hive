@@ -251,6 +251,12 @@ spec:
                       required:
                       - name
                       type: object
+                      x-kubernetes-validations:
+                      - message: "must specify exactly one of configMap, secret, emptyDir,\
+                          \ persistentVolumeClaim"
+                        rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret) ?\
+                          \ 1 : 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                          \ ? 1 : 0) == 1"
                     type: array
                   livenessProbe:
                     description: Liveness probe configuration
@@ -518,6 +524,12 @@ spec:
                         required:
                         - name
                         type: object
+                        x-kubernetes-validations:
+                        - message: "must specify exactly one of configMap, secret,\
+                            \ emptyDir, persistentVolumeClaim"
+                          rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret)\
+                            \ ? 1 : 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                            \ ? 1 : 0) == 1"
                       type: array
                     memoryMb:
                       default: 1024
@@ -885,6 +897,12 @@ spec:
                       required:
                       - name
                       type: object
+                      x-kubernetes-validations:
+                      - message: "must specify exactly one of configMap, secret, emptyDir,\
+                          \ persistentVolumeClaim"
+                        rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret) ?\
+                          \ 1 : 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                          \ ? 1 : 0) == 1"
                     type: array
                   livenessProbe:
                     description: Liveness probe configuration
@@ -1142,6 +1160,12 @@ spec:
                       required:
                       - name
                       type: object
+                      x-kubernetes-validations:
+                      - message: "must specify exactly one of configMap, secret, emptyDir,\
+                          \ persistentVolumeClaim"
+                        rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret) ?\
+                          \ 1 : 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                          \ ? 1 : 0) == 1"
                     type: array
                   replicas:
                     default: 1
@@ -1252,6 +1276,12 @@ spec:
                   required:
                   - name
                   type: object
+                  x-kubernetes-validations:
+                  - message: "must specify exactly one of configMap, secret, emptyDir,\
+                      \ persistentVolumeClaim"
+                    rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret) ? 1 :\
+                      \ 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                      \ ? 1 : 0) == 1"
                 type: array
               zookeeper:
                 description: External ZooKeeper connection details (not managed by
