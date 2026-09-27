@@ -975,9 +975,9 @@ spec:
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               runAsUser:
-                description: Numeric UID for all component pods. Set this to match
-                  the container image when the image declares a non-numeric USER (e.g.
-                  USER hive) and the operator enforces runAsNonRoot.
+                default: 1000
+                description: Numeric UID for all component pods. Required because
+                  the operator enforces runAsNonRoot. Defaults to 1000.
                 type: integer
               serviceAccountName:
                 description: "Kubernetes ServiceAccount name for all component pods.\
@@ -1296,6 +1296,7 @@ spec:
                 - quorum
                 type: object
             required:
+            - runAsUser
             - zookeeper
             type: object
             x-kubernetes-preserve-unknown-fields: true

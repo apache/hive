@@ -25,6 +25,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
+import io.fabric8.generator.annotation.Default;
 import io.fabric8.generator.annotation.Required;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -87,9 +88,10 @@ public record HiveClusterSpec(
         + "If not specified, pods use the namespace default service account, which must "
         + "have label hive.apache.org/service-account-approved=true.")
     String serviceAccountName,
-    @JsonPropertyDescription("Numeric UID for all component pods. Set this to match the "
-        + "container image when the image declares a non-numeric USER (e.g. USER hive) "
-        + "and the operator enforces runAsNonRoot.")
+    @Required
+    @Default("1000")
+    @JsonPropertyDescription("Numeric UID for all component pods. Required "
+        + "because the operator enforces runAsNonRoot. Defaults to 1000.")
     Long runAsUser,
     @JsonPropertyDescription("Auto-suspend configuration. When enabled and all components "
         + "are idle for the configured timeout, the cluster scales to 0 replicas.")
@@ -114,6 +116,7 @@ public record HiveClusterSpec(
     volumeMounts = volumeMounts != null ? volumeMounts : List.of();
     autoSuspend = autoSuspend != null ? autoSuspend : new AutoSuspendSpec(false, 15, true);
     suspend = suspend != null && suspend;
+    runAsUser = runAsUser != null ? runAsUser : 1000L;
   }
 
 }

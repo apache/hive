@@ -93,6 +93,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   private static final Pattern DB_TYPE_PATTERN = Pattern.compile("derby|mysql|postgres|mssql|oracle");
 
   private static final String APPROVED_SERVICE_ACCOUNT_LABEL = "hive.apache.org/service-account-approved";
+  public static final long DEFAULT_RUN_AS_USER = 1000L;
   protected static final String CONF_MOUNT_PATH = "/etc/hive/conf";
   protected static final String HIVE_CONF_DIR = "/opt/hive/conf";
   protected static final String EXT_JARS_PATH = "/tmp/ext-jars";
@@ -633,16 +634,15 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    * generates, aligned with Kubernetes Pod Security restricted Standards.
    */
   protected static void applyRestrictedSecurityContext(PodSpec podSpec, Long runAsUser) {
+    long effectiveRunAsUser = runAsUser != null ? runAsUser : DEFAULT_RUN_AS_USER;
     if (podSpec.getSecurityContext() == null) {
-      PodSecurityContextBuilder podSc = new PodSecurityContextBuilder()
+      podSpec.setSecurityContext(new PodSecurityContextBuilder()
           .withRunAsNonRoot(true)
+          .withRunAsUser(effectiveRunAsUser)
           .withSeccompProfile(new SeccompProfileBuilder()
               .withType("RuntimeDefault")
-              .build());
-      if (runAsUser != null) {
-        podSc.withRunAsUser(runAsUser);
-      }
-      podSpec.setSecurityContext(podSc.build());
+              .build())
+          .build());
     }
     if (podSpec.getContainers() != null) {
       for (Container container : podSpec.getContainers()) {

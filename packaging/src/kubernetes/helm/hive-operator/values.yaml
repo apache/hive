@@ -52,9 +52,7 @@ cluster:
   # hive.apache.org/service-account-approved=true (same as any explicit name).
   serviceAccountName: ""
 
-  # Numeric UID for workload pods. Required when the container image declares a
-  # non-numeric USER (e.g. USER hive) and the operator enforces runAsNonRoot.
-  # Set to null to omit from the HiveCluster CR.
+  # Numeric UID for workload pods. Required as the operator enforces runAsNonRoot.
   runAsUser: 1000
 
   # ---------------------------------------------------------------------------
