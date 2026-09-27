@@ -84,7 +84,8 @@ public record HiveClusterSpec(
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
     List<VolumeMount> volumeMounts,
     @JsonPropertyDescription("Kubernetes ServiceAccount name for all component pods. "
-        + "If not specified, pods use the namespace default service account.")
+        + "If not specified, pods use the namespace default service account, which must "
+        + "have label hive.apache.org/service-account-approved=true.")
     String serviceAccountName,
     @JsonPropertyDescription("Numeric UID for all component pods. Set this to match the "
         + "container image when the image declares a non-numeric USER (e.g. USER hive) "

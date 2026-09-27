@@ -981,7 +981,8 @@ spec:
                 type: integer
               serviceAccountName:
                 description: "Kubernetes ServiceAccount name for all component pods.\
-                  \ If not specified, pods use the namespace default service account."
+                  \ If not specified, pods use the namespace default service account,\
+                  \ which must have label hive.apache.org/service-account-approved=true."
                 type: string
               suspend:
                 description: "When true, the cluster is immediately suspended (all\

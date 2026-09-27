@@ -426,18 +426,17 @@ public abstract class HiveDependentResource<R extends HasMetadata,
    */
   public static void validateServiceAccountName(
       KubernetesClient client, String namespace, String serviceAccountName) {
-    if (serviceAccountName == null || serviceAccountName.isBlank()) {
-      return;
-    }
-    var sa = client.serviceAccounts().inNamespace(namespace).withName(serviceAccountName).get();
+    String effectiveSaName = (serviceAccountName == null || serviceAccountName.isBlank())
+        ? "default" : serviceAccountName;
+    var sa = client.serviceAccounts().inNamespace(namespace).withName(effectiveSaName).get();
     if (sa == null) {
       throw new IllegalArgumentException(
-          "serviceAccountName '" + serviceAccountName + "' not found in namespace " + namespace);
+          "serviceAccountName '" + effectiveSaName + "' not found in namespace " + namespace);
     }
     var labels = sa.getMetadata().getLabels();
     if (labels == null || !Boolean.parseBoolean(labels.get(APPROVED_SERVICE_ACCOUNT_LABEL))) {
       throw new IllegalArgumentException(
-          "serviceAccountName '" + serviceAccountName
+          "serviceAccountName '" + effectiveSaName
           + "' is not approved for Hive workloads; requires label "
           + APPROVED_SERVICE_ACCOUNT_LABEL + "=true");
     }
