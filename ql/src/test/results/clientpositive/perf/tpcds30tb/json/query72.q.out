@@ -2351,51 +2351,51 @@
           },
           {
             "name": "p_promo_name",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "p_channel_dmail",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "p_channel_email",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_catalog",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_tv",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_radio",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_press",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_event",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_demo",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_details",
-            "ndv": 2242
+            "ndv": 2237
           },
           {
             "name": "p_purpose",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_discount_active",
-            "ndv": 2
+            "ndv": 1
           }
         ]
       },
@@ -3599,7 +3599,7 @@
           },
           {
             "name": "w_warehouse_name",
-            "ndv": 27
+            "ndv": 26
           },
           {
             "name": "w_warehouse_id",
@@ -3613,19 +3613,19 @@
           },
           {
             "name": "w_street_number",
-            "ndv": 26
+            "ndv": 25
           },
           {
             "name": "w_street_name",
-            "ndv": 27
+            "ndv": 26
           },
           {
             "name": "w_street_type",
-            "ndv": 16
+            "ndv": 15
           },
           {
             "name": "w_suite_number",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "w_city",
@@ -3939,7 +3939,7 @@
           },
           {
             "name": "i_class",
-            "ndv": 99
+            "ndv": 97
           },
           {
             "name": "i_category_id",
@@ -3949,7 +3949,7 @@
           },
           {
             "name": "i_category",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "i_manufact_id",
@@ -3963,7 +3963,7 @@
           },
           {
             "name": "i_size",
-            "ndv": 8
+            "ndv": 7
           },
           {
             "name": "i_formulation",
@@ -3971,15 +3971,15 @@
           },
           {
             "name": "i_color",
-            "ndv": 95
+            "ndv": 94
           },
           {
             "name": "i_units",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "i_container",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "i_manager_id",

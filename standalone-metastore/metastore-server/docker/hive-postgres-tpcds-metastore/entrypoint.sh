@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,10 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/bin/bash
+if [ -f /tmp/metastore_db.zstd ]; then
+  echo "The following tar command might print warnings (leading '/' and no such file or directory)."
+  echo "The cause is due to the way the dump was created. Please ignore these warnings."
+  zstdcat /tmp/metastore_db.zstd | tar -C /var/lib/postgresql/ -x
+  rm /tmp/metastore_db.zstd
+fi
 
-# Restore may exit with non-blocking errors so we shouldn't stop the script
-# since in many cases the dump will be restored correctly
-pg_restore -d metastore /tmp/metastore.dump.gz || true
-# Remove the temporary file
-rm /tmp/metastore.dump.gz
+/usr/local/bin/docker-entrypoint.sh "$@"
+

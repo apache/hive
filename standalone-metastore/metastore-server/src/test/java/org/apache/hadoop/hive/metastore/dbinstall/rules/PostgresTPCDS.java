@@ -21,19 +21,28 @@ package org.apache.hadoop.hive.metastore.dbinstall.rules;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 /**
  * JUnit TestRule for Postgres metastore with TPCDS schema and stat information.
  */
 public class PostgresTPCDS extends Postgres {
   public PostgresTPCDS() {
-    super(DockerImageName.parse("apache/hive-postgres-tpcds-metastore:1.4").asCompatibleSubstituteFor("postgres"));
+    super(DockerImageName.parse("docker.io/apache/hive-postgres-tpcds-metastore:1.5")
+        .asCompatibleSubstituteFor("postgres"));
     container.withUsername("postgres");
+    // the image restores a raw database dump directly, so the database restore phase is skipped,
+    // and the string only appears once in the logs
+    container.waitingFor(
+        new LogMessageWaitStrategy().withRegEx(".*database system is ready to accept connections.*\\s").withTimes(1)
+            .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS)));
   }
 
   @Override
@@ -56,7 +65,7 @@ public class PostgresTPCDS extends Postgres {
     // Upgrade the metastore to latest by running explicitly a script.
     String hiveSchemaVer = MetaStoreSchemaInfoFactory.get(new Configuration()).getHiveSchemaVersion();
     try (InputStream script = PostgresTPCDS.class.getClassLoader()
-        .getResourceAsStream("sql/postgres/upgrade-3.1.3000-to-" + hiveSchemaVer + ".postgres.sql")) {
+        .getResourceAsStream("sql/postgres/migrate-metastore-dump-to-" + hiveSchemaVer + ".postgres.sql")) {
       new MetastoreSchemaTool().runScript(
           buildArray(
               "-upgradeSchema",

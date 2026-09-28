@@ -1502,7 +1502,7 @@
           },
           {
             "name": "i_class",
-            "ndv": 99
+            "ndv": 97
           },
           {
             "name": "i_category_id",
@@ -1512,7 +1512,7 @@
           },
           {
             "name": "i_category",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "i_manufact_id",
@@ -1526,7 +1526,7 @@
           },
           {
             "name": "i_size",
-            "ndv": 8
+            "ndv": 7
           },
           {
             "name": "i_formulation",
@@ -1534,15 +1534,15 @@
           },
           {
             "name": "i_color",
-            "ndv": 95
+            "ndv": 94
           },
           {
             "name": "i_units",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "i_container",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "i_manager_id",
@@ -1798,7 +1798,7 @@
           },
           {
             "name": "p_channel_tv",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_promo_id",
@@ -1836,47 +1836,47 @@
           },
           {
             "name": "p_promo_name",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "p_channel_dmail",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "p_channel_email",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_catalog",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_radio",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_press",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_event",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_demo",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_details",
-            "ndv": 2242
+            "ndv": 2237
           },
           {
             "name": "p_purpose",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_discount_active",
-            "ndv": 2
+            "ndv": 1
           }
         ]
       },
@@ -2200,7 +2200,7 @@
           },
           {
             "name": "s_store_name",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "s_number_employees",
@@ -2216,11 +2216,11 @@
           },
           {
             "name": "s_hours",
-            "ndv": 4
+            "ndv": 3
           },
           {
             "name": "s_manager",
-            "ndv": 1245
+            "ndv": 1243
           },
           {
             "name": "s_market_id",
@@ -2230,7 +2230,7 @@
           },
           {
             "name": "s_geography_class",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_market_desc",
@@ -2248,7 +2248,7 @@
           },
           {
             "name": "s_division_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_company_id",
@@ -2258,7 +2258,7 @@
           },
           {
             "name": "s_company_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_street_number",
@@ -2270,23 +2270,23 @@
           },
           {
             "name": "s_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "s_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "s_city",
-            "ndv": 267
+            "ndv": 266
           },
           {
             "name": "s_county",
-            "ndv": 128
+            "ndv": 127
           },
           {
             "name": "s_state",
-            "ndv": 44
+            "ndv": 43
           },
           {
             "name": "s_zip",
@@ -2294,7 +2294,7 @@
           },
           {
             "name": "s_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_gmt_offset",
@@ -3978,7 +3978,7 @@
           },
           {
             "name": "cp_department",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "cp_catalog_number",
@@ -3998,7 +3998,7 @@
           },
           {
             "name": "cp_type",
-            "ndv": 4
+            "ndv": 3
           }
         ]
       },
@@ -5739,7 +5739,7 @@
           },
           {
             "name": "web_name",
-            "ndv": 15
+            "ndv": 14
           },
           {
             "name": "web_open_date_sk",
@@ -5755,11 +5755,11 @@
           },
           {
             "name": "web_class",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "web_manager",
-            "ndv": 60
+            "ndv": 59
           },
           {
             "name": "web_mkt_id",
@@ -5769,7 +5769,7 @@
           },
           {
             "name": "web_mkt_class",
-            "ndv": 65
+            "ndv": 64
           },
           {
             "name": "web_mkt_desc",
@@ -5777,7 +5777,7 @@
           },
           {
             "name": "web_market_manager",
-            "ndv": 66
+            "ndv": 65
           },
           {
             "name": "web_company_id",
@@ -5787,15 +5787,15 @@
           },
           {
             "name": "web_company_name",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "web_street_number",
-            "ndv": 58
+            "ndv": 57
           },
           {
             "name": "web_street_name",
-            "ndv": 80
+            "ndv": 79
           },
           {
             "name": "web_street_type",
@@ -5807,11 +5807,11 @@
           },
           {
             "name": "web_city",
-            "ndv": 52
+            "ndv": 51
           },
           {
             "name": "web_county",
-            "ndv": 58
+            "ndv": 57
           },
           {
             "name": "web_state",
@@ -5823,7 +5823,7 @@
           },
           {
             "name": "web_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "web_gmt_offset",
