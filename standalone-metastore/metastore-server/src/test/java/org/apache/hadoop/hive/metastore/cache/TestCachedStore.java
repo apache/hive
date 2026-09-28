@@ -188,6 +188,44 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
+  /**
+   * HIVE-30053: same coverage as testPrewarm, but with the multi-threaded prewarm enabled.
+   * All databases, tables and partitions must be cached regardless of how the tables are
+   * distributed among the worker threads.
+   */
+  @Test public void testPrewarmMultiThreaded() throws Exception {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "-1Kb");
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_PREWARM_THREADS, 4);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTest(conf);
+    ObjectStore objectStore = (ObjectStore) cachedStore.getRawStore();
+    CachedStore.setCachePrewarmedState(false);
+    CachedStore.prewarm(objectStore);
+    List<String> allDatabases = cachedStore.getAllDatabases(DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(2, allDatabases.size());
+    Assert.assertTrue(allDatabases.contains(db1.getName()));
+    Assert.assertTrue(allDatabases.contains(db2.getName()));
+    // All four tables must be in the shared cache after a parallel prewarm
+    SharedCache sharedCache = CachedStore.getSharedCache();
+    Assert.assertNotNull(sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, db1.getName(), db1Utbl1.getTableName()));
+    Assert.assertNotNull(sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName()));
+    Assert.assertNotNull(sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, db2.getName(), db2Utbl1.getTableName()));
+    Assert.assertNotNull(sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName()));
+    List<Partition> db1Ptbl1Partitions =
+        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName(),
+            GetPartitionsArgs.getAllPartitions());
+    Assert.assertEquals(25, db1Ptbl1Partitions.size());
+    List<Partition> db2Ptbl1Partitions =
+        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(),
+            GetPartitionsArgs.getAllPartitions());
+    Assert.assertEquals(25, db2Ptbl1Partitions.size());
+    cachedStore.shutdown();
+  }
+
   @Test public void testPrewarmBlackList() {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);

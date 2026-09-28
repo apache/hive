@@ -46,13 +46,13 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class TestSerializationUtilities {
-
   @Test
   public void testEveryPropertiesAreSerialized() throws Exception {
     MapWork mapWork = doSerDeser(null);
@@ -245,5 +245,54 @@ public class TestSerializationUtilities {
     mapWork.setPathToPartitionInfo(partMap);
 
     return mapWork;
+  }
+
+  @Test
+  public void testDeserializeObjectWithTypeInformationAcceptsLegitimateExpression() {
+    ExprNodeGenericFuncDesc expr = buildColumnEqualsConstant(new ExprNodeConstantDesc(
+        TypeInfoFactory.stringTypeInfo, "value"));
+
+    byte[] typed = SerializationUtilities.serializeObjectWithTypeInformation(expr);
+    Object deserialized = SerializationUtilities.deserializeObjectWithTypeInformation(typed, true);
+    Assert.assertTrue(deserialized instanceof ExprNodeGenericFuncDesc);
+
+    String base64 = SerializationUtilities.serializeExpression(expr);
+    Assert.assertNotNull(SerializationUtilities.deserializeExpression(base64));
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void testDeserializeObjectWithTypeInformationRejectsNonExprRoot() {
+    byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(
+        new LinkedHashMap<String, String>());
+    SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
+  }
+
+  @Test
+  public void testDeserializeObjectFromKryoAcceptsLegitimateExpression() {
+    ExprNodeGenericFuncDesc expr = buildColumnEqualsConstant(new ExprNodeConstantDesc(
+        TypeInfoFactory.stringTypeInfo, "value"));
+    String exprString = "(col1 = 'value')";
+    Assert.assertEquals(exprString, expr.getExprString());
+
+    byte[] kryo = SerializationUtilities.serializeObjectToKryo(expr);
+    Assert.assertEquals(
+        exprString,
+        SerializationUtilities.deserializeObjectFromKryo(kryo, ExprNodeGenericFuncDesc.class).getExprString()
+    );
+    Assert.assertNotNull(SerializationUtilities.deserializeObjectFromKryo(kryo, Object.class));
+
+    String base64 = SerializationUtilities.serializeExpression(expr);
+    Assert.assertEquals(
+        exprString,
+        SerializationUtilities.deserializeExpression(base64).getExprString()
+    );
+  }
+
+  private static ExprNodeGenericFuncDesc buildColumnEqualsConstant(ExprNodeConstantDesc constant) {
+    List<ExprNodeDesc> children = new ArrayList<>();
+    children.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "tab", false));
+    children.add(constant);
+    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+        new GenericUDFOPEqual(), children);
   }
 }

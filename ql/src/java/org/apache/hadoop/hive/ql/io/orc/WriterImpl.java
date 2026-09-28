@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -211,6 +213,16 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
                   .getPrimitiveJavaObject(obj).toSqlTimestamp());
               break;
             }
+            case TIMESTAMPLOCALTZ: {
+              TimestampColumnVector vector = (TimestampColumnVector) column;
+              vector.setIsUTC(true);
+              vector.setUsingProlepticCalendar(true);
+              TimestampTZ timestampTZ = ((TimestampLocalTZObjectInspector) inspector)
+                  .getPrimitiveJavaObject(obj);
+              vector.time[rowId] = timestampTZ.toEpochMilli();
+              vector.nanos[rowId] = timestampTZ.getNanos();
+              break;
+            }
             case DATE: {
               DateColumnVector vector = (DateColumnVector) column;
               vector.setUsingProlepticCalendar(true);
@@ -230,6 +242,9 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
               }
               break;
             }
+            default:
+              throw new IllegalArgumentException("Unknown primitive category " +
+                  ((PrimitiveObjectInspector) inspector).getPrimitiveCategory());
           }
           break;
         case STRUCT: {

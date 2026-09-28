@@ -37,6 +37,7 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.exceptions.CommitFailedException;
@@ -82,12 +83,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
+ * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.11.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
-  private static final Splitter SLASH = Splitter.on('/');
+  private static final Splitter SLASH = Splitter.on('/').omitEmptyStrings();
+
+  private static final String PAGE_TOKEN = "pageToken";
+  private static final String PAGE_SIZE = "pageSize";
+  private static final String PARENT = "parent";
+
+  private static final String PREFIX_VAR = "prefix";
+  private static final String PREFIX_PLACEHOLDER = "{" + PREFIX_VAR + "}";
+
+  /** Index of the first prefix segment, right after "v1". */
+  private static final int PREFIX_START = 1;
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
       ImmutableMap.<Class<? extends Exception>, Integer>builder()
@@ -161,7 +172,8 @@ public class HMSCatalogAdapter implements Closeable {
     private final Map<Integer, String> requirements;
     private final Map<Integer, String> variables;
     private final Class<? extends RESTRequest> requestClass;
-    private final String resourcePath;
+    private final String pathTemplate;
+    private final boolean acceptsPrefix;
 
     Route(HTTPMethod method, String pattern) {
       this(method, pattern, null);
@@ -172,11 +184,13 @@ public class HMSCatalogAdapter implements Closeable {
         String pattern,
         Class<? extends RESTRequest> requestClass) {
       this.method = method;
-      this.resourcePath = pattern;
+      this.pathTemplate = pattern;
+
+      List<String> segments = SLASH.splitToList(pattern);
+      this.acceptsPrefix = segments.contains(PREFIX_PLACEHOLDER);
 
       // parse the pattern into requirements and variables
-      List<String> parts =
-          SLASH.splitToList(pattern.replaceFirst("/v1/", "v1/").replace("/{prefix}", ""));
+      List<String> parts = segments.stream().filter(s -> !PREFIX_PLACEHOLDER.equals(s)).toList();
       ImmutableMap.Builder<Integer, String> requirementsBuilder = ImmutableMap.builder();
       ImmutableMap.Builder<Integer, String> variablesBuilder = ImmutableMap.builder();
       for (int pos = 0; pos < parts.size(); pos += 1) {
@@ -189,38 +203,73 @@ public class HMSCatalogAdapter implements Closeable {
       }
 
       this.requestClass = requestClass;
-
       this.requiredLength = parts.size();
       this.requirements = requirementsBuilder.build();
       this.variables = variablesBuilder.build();
     }
 
+    /** Number of extra segments in the request, i.e. the prefix length. */
+    private int prefixLength(List<String> requestPath) {
+      return requestPath.size() - requiredLength;
+    }
+
+    /** Maps a template index to a request-path index, skipping prefix segments. */
+    private int mappedIndex(int templateIndex, int prefixLength) {
+      return templateIndex < PREFIX_START ? templateIndex : templateIndex + prefixLength;
+    }
+
     private boolean matches(HTTPMethod requestMethod, List<String> requestPath) {
-      return method == requestMethod
-          && requiredLength == requestPath.size()
-          && requirements.entrySet().stream()
-          .allMatch(
-              requirement ->
-                  requirement
-                      .getValue()
-                      .equalsIgnoreCase(requestPath.get(requirement.getKey())));
+      if (method != requestMethod) {
+        return false;
+      }
+
+      // A multi-segment prefix like "catalogs/my_catalog" gives prefixLength == 2
+      int prefixLength = prefixLength(requestPath);
+
+      // If the path is too short, or too long but the route doesn't support a prefix, reject.
+      if (prefixLength < 0 || (prefixLength > 0 && !acceptsPrefix)) {
+        return false;
+      }
+
+      for (Map.Entry<Integer, String> requirement : requirements.entrySet()) {
+        String actual = requestPath.get(mappedIndex(requirement.getKey(), prefixLength));
+        if (!requirement.getValue().equalsIgnoreCase(actual)) {
+          return false;
+        }
+      }
+      return true;
     }
 
     private Map<String, String> variables(List<String> requestPath) {
+      int prefixLength = prefixLength(requestPath);
+
       ImmutableMap.Builder<String, String> vars = ImmutableMap.builder();
-      variables.forEach((key, value) -> vars.put(value, requestPath.get(key)));
+      for (Map.Entry<Integer, String> var : variables.entrySet()) {
+        vars.put(var.getValue(), requestPath.get(mappedIndex(var.getKey(), prefixLength)));
+      }
+
+      if (prefixLength > 0) {
+        // Clients insert the configured prefix verbatim, so "catalogs/sales" arrives
+        // as two segments; rejoin them. An encoded %2F inside a prefix is not preserved.
+        String prefix = String.join("/",
+            requestPath.subList(PREFIX_START, PREFIX_START + prefixLength));
+        // The HMS backend serves a single HiveCatalog and does not scope by prefix yet.
+        LOG.debug("Ignoring request prefix '{}' for route {}", prefix, this);
+        vars.put(PREFIX_VAR, prefix);
+      }
       return vars.build();
     }
 
     public static Pair<Route, Map<String, String>> from(HTTPMethod method, String path) {
       List<String> parts = SLASH.splitToList(path);
+      Route best = null;
       for (Route candidate : Route.values()) {
-        if (candidate.matches(method, parts)) {
-          return Pair.of(candidate, candidate.variables(parts));
+        if (candidate.matches(method, parts)
+            && (best == null || candidate.prefixLength(parts) < best.prefixLength(parts))) {
+          best = candidate;
         }
       }
-
-      return null;
+      return best == null ? null : Pair.of(best, best.variables(parts));
     }
 
     public Class<? extends RESTRequest> requestClass() {
@@ -230,29 +279,41 @@ public class HMSCatalogAdapter implements Closeable {
 
   private ConfigResponse config() {
     final List<Endpoint> endpoints = Arrays.stream(Route.values())
-        .map(r -> Endpoint.create(r.method.name(), r.resourcePath)).toList();
-    return castResponse(ConfigResponse.class, ConfigResponse.builder().withEndpoints(endpoints).build());
+        .map(r -> Endpoint.create(r.method.name(), r.pathTemplate)).toList();
+    return ConfigResponse.builder().withEndpoints(endpoints).build();
+  }
+
+  /**
+   * Paging parameters of a list request. Without pageSize the listing is unpaged, expressed as a
+   * single unbounded first page. This relies on CatalogHandlers.paginate treating a null token as
+   * the first page and returning a null next-page-token once the list is exhausted.
+   */
+  private record PageRequest(String token, String size) {
+    private static final PageRequest UNPAGED =
+        new PageRequest(null, String.valueOf(Integer.MAX_VALUE));
+
+    static PageRequest from(Map<String, String> vars) {
+      String size = vars.get(PAGE_SIZE);
+      if (size == null) {
+        return UNPAGED; // token ignored, as upstream; keeping it would overflow token + MAX_VALUE
+      }
+      Preconditions.checkArgument(NumberUtils.toInt(size, 0) > 0,
+          "Invalid %s: %s, must be a positive integer", PAGE_SIZE, size);
+      return new PageRequest(vars.get(PAGE_TOKEN), size);
+    }
   }
 
   private ListNamespacesResponse listNamespaces(Map<String, String> vars) {
-    Namespace namespace;
-    if (vars.containsKey("parent")) {
-      namespace = Namespace.of(RESTUtil.NAMESPACE_SPLITTER.splitToStream(vars.get("parent")).toArray(String[]::new));
-    } else {
-      namespace = Namespace.empty();
-    }
-    ListNamespacesResponse response = castResponse(
-        ListNamespacesResponse.class, CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace));
-    return ListNamespacesResponse.builder()
-        .addAll(icebergAuthorizer.filterNamespaces(catalogName, response.namespaces()))
-        .nextPageToken(response.nextPageToken())
-        .build();
+    Namespace parent = vars.containsKey(PARENT)
+        ? RESTUtil.namespaceFromQueryParam(vars.get(PARENT))
+        : Namespace.empty();
+    PageRequest page = PageRequest.from(vars);
+    return CatalogHandlers.listNamespaces(asNamespaceCatalog, parent, page.token(), page.size());
   }
 
   private CreateNamespaceResponse createNamespace(Object body) {
     CreateNamespaceRequest request = castRequest(CreateNamespaceRequest.class, body);
-    return castResponse(
-        CreateNamespaceResponse.class, CatalogHandlers.createNamespace(asNamespaceCatalog, request));
+    return CatalogHandlers.createNamespace(asNamespaceCatalog, request);
   }
 
   private RESTResponse namespaceExists(Map<String, String> vars) {
@@ -263,8 +324,7 @@ public class HMSCatalogAdapter implements Closeable {
 
   private GetNamespaceResponse loadNamespace(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
-    return castResponse(
-        GetNamespaceResponse.class, CatalogHandlers.loadNamespace(asNamespaceCatalog, namespace));
+    return CatalogHandlers.loadNamespace(asNamespaceCatalog, namespace);
   }
 
   private RESTResponse dropNamespace(Map<String, String> vars) {
@@ -276,34 +336,25 @@ public class HMSCatalogAdapter implements Closeable {
     Namespace namespace = namespaceFromPathVars(vars);
     UpdateNamespacePropertiesRequest request =
         castRequest(UpdateNamespacePropertiesRequest.class, body);
-    return castResponse(
-        UpdateNamespacePropertiesResponse.class,
-        CatalogHandlers.updateNamespaceProperties(asNamespaceCatalog, namespace, request));
+    return CatalogHandlers.updateNamespaceProperties(asNamespaceCatalog, namespace, request);
   }
 
   private ListTablesResponse listTables(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
-    ListTablesResponse response =
-        castResponse(ListTablesResponse.class, CatalogHandlers.listTables(catalog, namespace));
-    return ListTablesResponse.builder()
-        .addAll(icebergAuthorizer.filterTables(catalogName, response.identifiers()))
-        .nextPageToken(response.nextPageToken())
-        .build();
+    PageRequest page = PageRequest.from(vars);
+    return CatalogHandlers.listTables(catalog, namespace, page.token(), page.size());
   }
 
   private LoadTableResponse createTable(Map<String, String> vars, Object body) {
-    final Class<LoadTableResponse> responseType = LoadTableResponse.class;
     Namespace namespace = namespaceFromPathVars(vars);
     CreateTableRequest request = castRequest(CreateTableRequest.class, body);
     request.validate();
     if (request.stageCreate()) {
       Map<String, String> namespaceMetadata = asNamespaceCatalog.loadNamespaceMetadata(namespace);
       icebergAuthorizer.validateStageCreateTable(catalogName, namespace, namespaceMetadata, request);
-      return castResponse(
-              responseType, CatalogHandlers.stageTableCreate(catalog, namespace, request));
+      return CatalogHandlers.stageTableCreate(catalog, namespace, request);
     } else {
-      return castResponse(
-              responseType, CatalogHandlers.createTable(catalog, namespace, request));
+      return CatalogHandlers.createTable(catalog, namespace, request);
     }
   }
 
@@ -324,19 +375,19 @@ public class HMSCatalogAdapter implements Closeable {
 
   private LoadTableResponse loadTable(Map<String, String> vars) {
     TableIdentifier ident = identFromPathVars(vars);
-    return castResponse(LoadTableResponse.class, CatalogHandlers.loadTable(catalog, ident));
+    return CatalogHandlers.loadTable(catalog, ident);
   }
 
   private LoadTableResponse registerTable(Map<String, String> vars, Object body) {
-      Namespace namespace = namespaceFromPathVars(vars);
-      RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
-      return castResponse(LoadTableResponse.class, CatalogHandlers.registerTable(catalog, namespace, request));
+    Namespace namespace = namespaceFromPathVars(vars);
+    RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
+    return CatalogHandlers.registerTable(catalog, namespace, request);
   }
 
   private LoadTableResponse updateTable(Map<String, String> vars, Object body) {
     TableIdentifier ident = identFromPathVars(vars);
     UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
-    return castResponse(LoadTableResponse.class, CatalogHandlers.updateTable(catalog, ident, request));
+    return CatalogHandlers.updateTable(catalog, ident, request);
   }
 
   private RESTResponse renameTable(Object body) {
@@ -361,23 +412,14 @@ public class HMSCatalogAdapter implements Closeable {
 
   private ListTablesResponse listViews(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
-    String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
-    String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
-    ListTablesResponse response = pageSize != null
-        ? castResponse(ListTablesResponse.class,
-            CatalogHandlers.listViews(asViewCatalog, namespace, pageToken, pageSize))
-        : castResponse(ListTablesResponse.class, CatalogHandlers.listViews(asViewCatalog, namespace));
-    return ListTablesResponse.builder()
-        .addAll(icebergAuthorizer.filterViews(catalogName, response.identifiers()))
-        .nextPageToken(response.nextPageToken())
-        .build();
+    PageRequest page = PageRequest.from(vars);
+    return CatalogHandlers.listViews(asViewCatalog, namespace, page.token(), page.size());
   }
 
   private LoadViewResponse createView(Map<String, String> vars, Object body) {
     Namespace namespace = namespaceFromPathVars(vars);
     CreateViewRequest request = castRequest(CreateViewRequest.class, body);
-    return castResponse(
-        LoadViewResponse.class, CatalogHandlers.createView(asViewCatalog, namespace, request));
+    return CatalogHandlers.createView(asViewCatalog, namespace, request);
   }
 
   private RESTResponse viewExists(Map<String, String> vars) {
@@ -388,16 +430,13 @@ public class HMSCatalogAdapter implements Closeable {
 
   private LoadViewResponse loadView(Map<String, String> vars) {
     TableIdentifier ident = viewIdentFromPathVars(vars);
-    // Read authorization is enforced by HMS: views are not cached, so loadView always reaches the
-    // metastore, whose pre-event listener authorizes the read. Checking here would double-authorize.
-    return castResponse(LoadViewResponse.class, CatalogHandlers.loadView(asViewCatalog, ident));
+    return CatalogHandlers.loadView(asViewCatalog, ident);
   }
 
   private LoadViewResponse updateView(Map<String, String> vars, Object body) {
     TableIdentifier ident = viewIdentFromPathVars(vars);
     UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
-    return castResponse(
-        LoadViewResponse.class, CatalogHandlers.updateView(asViewCatalog, ident, request));
+    return CatalogHandlers.updateView(asViewCatalog, ident, request);
   }
 
   private RESTResponse renameView(Object body) {
@@ -414,8 +453,7 @@ public class HMSCatalogAdapter implements Closeable {
   private LoadViewResponse registerView(Map<String, String> vars, Object body) {
     Namespace namespace = namespaceFromPathVars(vars);
     RegisterViewRequest request = castRequest(RegisterViewRequest.class, body);
-    return castResponse(
-        LoadViewResponse.class, CatalogHandlers.registerView(asViewCatalog, namespace, request));
+    return CatalogHandlers.registerView(asViewCatalog, namespace, request);
   }
 
   /**
@@ -445,40 +483,38 @@ public class HMSCatalogAdapter implements Closeable {
     // only commit if validations passed previously
     transactions.forEach(Transaction::commitTransaction);
   }
-  
-  @SuppressWarnings({"MethodLength", "unchecked"})
+
+  @SuppressWarnings({"unchecked"})
   private <T extends RESTResponse> T handleRequest(
       Route route, Map<String, String> vars, Object body) {
-    return switch (route) {
-      case CONFIG -> (T) config();
-      case LIST_NAMESPACES -> (T) listNamespaces(vars);
-      case CREATE_NAMESPACE -> (T) createNamespace(body);
-      case NAMESPACE_EXISTS -> (T) namespaceExists(vars);
-      case LOAD_NAMESPACE -> (T) loadNamespace(vars);
-      case DROP_NAMESPACE -> (T) dropNamespace(vars);
-      case UPDATE_NAMESPACE -> (T) updateNamespace(vars, body);
-      case LIST_TABLES -> (T) listTables(vars);
-      case CREATE_TABLE -> (T) createTable(vars, body);
-      case DROP_TABLE -> (T) dropTable(vars);
-      case TABLE_EXISTS -> (T) tableExists(vars);
-      case LOAD_TABLE -> (T) loadTable(vars);
-      case REGISTER_TABLE -> (T) registerTable(vars, body);
-      case UPDATE_TABLE -> (T) updateTable(vars, body);
-      case RENAME_TABLE -> (T) renameTable(body);
-      case REPORT_METRICS -> (T) reportMetrics(vars, body);
-      case COMMIT_TRANSACTION -> (T) commitTransaction(body);
-      case LIST_VIEWS -> (T) listViews(vars);
-      case CREATE_VIEW -> (T) createView(vars, body);
-      case VIEW_EXISTS -> (T) viewExists(vars);
-      case LOAD_VIEW -> (T) loadView(vars);
-      case UPDATE_VIEW -> (T) updateView(vars, body);
-      case RENAME_VIEW -> (T) renameView(body);
-      case DROP_VIEW -> (T) dropView(vars);
-      case REGISTER_VIEW -> (T) registerView(vars, body);
-      default -> null;
+    return (T) switch (route) {
+      case CONFIG -> config();
+      case LIST_NAMESPACES -> listNamespaces(vars);
+      case CREATE_NAMESPACE -> createNamespace(body);
+      case NAMESPACE_EXISTS -> namespaceExists(vars);
+      case LOAD_NAMESPACE -> loadNamespace(vars);
+      case DROP_NAMESPACE -> dropNamespace(vars);
+      case UPDATE_NAMESPACE -> updateNamespace(vars, body);
+      case LIST_TABLES -> listTables(vars);
+      case CREATE_TABLE -> createTable(vars, body);
+      case DROP_TABLE -> dropTable(vars);
+      case TABLE_EXISTS -> tableExists(vars);
+      case LOAD_TABLE -> loadTable(vars);
+      case REGISTER_TABLE -> registerTable(vars, body);
+      case UPDATE_TABLE -> updateTable(vars, body);
+      case RENAME_TABLE -> renameTable(body);
+      case REPORT_METRICS -> reportMetrics(vars, body);
+      case COMMIT_TRANSACTION -> commitTransaction(body);
+      case LIST_VIEWS -> listViews(vars);
+      case CREATE_VIEW -> createView(vars, body);
+      case VIEW_EXISTS -> viewExists(vars);
+      case LOAD_VIEW -> loadView(vars);
+      case UPDATE_VIEW -> updateView(vars, body);
+      case RENAME_VIEW -> renameView(body);
+      case DROP_VIEW -> dropView(vars);
+      case REGISTER_VIEW -> registerView(vars, body);
     };
   }
-
 
   <T extends RESTResponse> T execute(
       HTTPMethod method,
@@ -523,12 +559,6 @@ public class HMSCatalogAdapter implements Closeable {
     }
   }
 
-  private static class BadResponseType extends RuntimeException {
-    private BadResponseType(Class<?> responseType, Object response) {
-      super(
-          String.format("Invalid response object, not a %s: %s", responseType.getName(), response));
-    }
-  }
 
   private static class BadRequestType extends RuntimeException {
     private BadRequestType(Class<?> requestType, Object request) {
@@ -543,12 +573,6 @@ public class HMSCatalogAdapter implements Closeable {
     throw new BadRequestType(requestType, request);
   }
 
-  public static <T extends RESTResponse> T castResponse(Class<T> responseType, Object response) {
-    if (responseType.isInstance(response)) {
-      return responseType.cast(response);
-    }
-    throw new BadResponseType(responseType, response);
-  }
 
   public static void configureResponseFromException(
       Exception exc, ErrorResponse.Builder errorBuilder) {
@@ -564,7 +588,7 @@ public class HMSCatalogAdapter implements Closeable {
   }
 
   private static Namespace namespaceFromPathVars(Map<String, String> pathVars) {
-    return RESTUtil.decodeNamespace(pathVars.get("namespace"));
+    return RESTUtil.decodeNamespace(pathVars.get("namespace"), "%1F");
   }
 
   private static TableIdentifier identFromPathVars(Map<String, String> pathVars) {

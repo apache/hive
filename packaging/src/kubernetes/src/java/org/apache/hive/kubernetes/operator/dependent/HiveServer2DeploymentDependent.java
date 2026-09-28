@@ -72,6 +72,7 @@ public class HiveServer2DeploymentDependent
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
     HiveServer2Spec hs2 = spec.hiveServer2();
+    validateHiveServer2EmbeddedValues(spec);
     Map<String, String> selectorLabels =
         Labels.selectorForComponent(hiveCluster, COMPONENT);
 
