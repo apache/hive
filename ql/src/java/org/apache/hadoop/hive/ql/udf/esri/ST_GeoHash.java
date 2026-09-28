@@ -57,7 +57,8 @@ public class ST_GeoHash extends ST_Geometry {
     }
 
     Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
-    if (geom == null) {
+    if (geom == null || geom.isEmpty()) {
+      LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
     Point point = (Point) geom;
@@ -67,7 +68,7 @@ public class ST_GeoHash extends ST_Geometry {
   private Text geohashText(double longitude, double latitude, IntWritable precisionArg) {
     int precision =
         GeoHashUtils.resolveEncodePrecision(precisionArg == null ? null : precisionArg.get());
-    if (precision < 0) {
+    if (precision == GeoHashUtils.INVALID_PRECISION) {
       LogUtils.Log_InvalidPrecision(LOG, GeoHashUtils.MIN_CHARACTER_PRECISION,
           GeoHashUtils.MAX_CHARACTER_PRECISION);
       return null;

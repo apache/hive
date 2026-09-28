@@ -18,6 +18,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -45,14 +46,14 @@ public class ST_GeomFromGeoHash extends ST_Geometry {
 
   public BytesWritable evaluate(Text geohashText, IntWritable precisionArg) {
     String geohash = geohashText != null ? geohashText.toString().trim() : null;
-    if (geohash == null || geohash.isEmpty()) {
+    if (StringUtils.isEmpty(geohash)) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
     int characterPrecision = GeoHashUtils.resolveDecodePrecision(precisionArg == null ? null : precisionArg.get(),
         geohash.length());
-    if (characterPrecision < 0) {
+    if (characterPrecision == GeoHashUtils.INVALID_PRECISION) {
       LogUtils.Log_InvalidPrecision(LOG, GeoHashUtils.MIN_CHARACTER_PRECISION,
           Math.min(geohash.length(), GeoHashUtils.MAX_CHARACTER_PRECISION));
       return null;

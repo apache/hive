@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.esri;
 
 import ch.hsr.geohash.BoundingBox;
 import ch.hsr.geohash.GeoHash;
+import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Polygon;
 
@@ -33,6 +34,9 @@ public final class GeoHashUtils {
   public static final int MAX_CHARACTER_PRECISION = 12;
 
   public static final int DEFAULT_CHARACTER_PRECISION = 12;
+
+  /** Sentinel from {@link #resolveEncodePrecision} and {@link #resolveDecodePrecision} when invalid. */
+  public static final int INVALID_PRECISION = -1;
 
   private GeoHashUtils() {
   }
@@ -49,7 +53,7 @@ public final class GeoHashUtils {
    *     length)
    */
   public static Polygon geohashCellPolygon(String geohash, int characterPrecision) {
-    if (geohash == null || geohash.isEmpty()) {
+    if (StringUtils.isEmpty(geohash)) {
       return null;
     }
     if (characterPrecision < MIN_CHARACTER_PRECISION ||
@@ -77,7 +81,7 @@ public final class GeoHashUtils {
   public static int resolveEncodePrecision(Integer precisionArg) {
     int precision = precisionArg == null ? DEFAULT_CHARACTER_PRECISION : precisionArg;
     if (precision < MIN_CHARACTER_PRECISION || precision > MAX_CHARACTER_PRECISION) {
-      return -1;
+      return INVALID_PRECISION;
     }
     return precision;
   }
@@ -87,7 +91,7 @@ public final class GeoHashUtils {
     if (precision < MIN_CHARACTER_PRECISION ||
         precision > geohashLength ||
         geohashLength > MAX_CHARACTER_PRECISION) {
-      return -1;
+      return INVALID_PRECISION;
     }
     return precision;
   }

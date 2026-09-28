@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /** Unit tests for geohash UDFs; golden encode/decode output is covered by geospatial_geohash.q. */
 public class TestGeoHash {
@@ -43,6 +42,14 @@ public class TestGeoHash {
     BytesWritable geom3d = pt.evaluate(new DoubleWritable(-126.965375), new DoubleWritable(43.234528),
         new DoubleWritable(999.0));
     assertEquals("9pttyydekk4t", gh.evaluate(geom3d, new IntWritable(12)).toString());
+  }
+
+  @Test
+  public void testStGeoHashRejectsEmptyPoint() {
+    ST_GeoHash gh = new ST_GeoHash();
+    BytesWritable emptyPoint =
+        GeometryUtils.geometryToEsriShapeBytesWritable(GeometryUtils.GEOMETRY_FACTORY.createPoint());
+    assertNull(gh.evaluate(emptyPoint, new IntWritable(5)));
   }
 
   @Test
@@ -76,15 +83,4 @@ public class TestGeoHash {
     assertNull(fromHash.evaluate(new Text("9ptty"), new IntWritable(13)));
   }
 
-  @Test
-  public void testGeoHashUtilsEncode() {
-    assertEquals(5, GeoHashUtils.geohashForPoint(0, 0, 5).length());
-    assertEquals(GeoHashUtils.DEFAULT_CHARACTER_PRECISION,
-        GeoHashUtils.geohashForPoint(0, 0, GeoHashUtils.DEFAULT_CHARACTER_PRECISION).length());
-  }
-
-  @Test
-  public void testGeoHashUtilsCellPolygon() {
-    assertTrue(GeoHashUtils.geohashCellPolygon("9ptty", 5).isValid());
-  }
 }

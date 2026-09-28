@@ -914,7 +914,6 @@
       <groupId>ch.hsr</groupId>
       <artifactId>geohash</artifactId>
       <version>${geohash.version}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.roaringbitmap</groupId>
