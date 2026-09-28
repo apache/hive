@@ -421,12 +421,11 @@ public class ObjectStore implements RawStore, Configurable {
     if (descriptor == null) {
       throw new IllegalArgumentException("Unable to unwrap the store as " + iface);
     }
-    String implClassName =
-        conf.get("metastore." + descriptor.alias() + ".store.impl", "");
-    Class<?> ifaceImpl = descriptor.defaultImpl();
-    if (StringUtils.isNotEmpty(implClassName)) {
-      ifaceImpl = conf.getClass(implClassName, ifaceImpl);
-    }
+    String ifaceKey = "metastore." + descriptor.alias() + ".store.impl";
+    String implClassName = conf.getTrimmed(ifaceKey);
+    Class<?> ifaceImpl = StringUtils.isNotEmpty(implClassName)
+        ? conf.getClass(ifaceKey, descriptor.defaultImpl())
+        : descriptor.defaultImpl();
     T simpl = (T) JavaUtils.newInstance(ifaceImpl);
     List<Query> openQueries = new LinkedList<>();
     if (simpl instanceof RawStoreBundle rsb) {

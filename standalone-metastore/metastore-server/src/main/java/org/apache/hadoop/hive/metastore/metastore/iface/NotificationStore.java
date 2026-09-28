@@ -50,10 +50,11 @@ public interface NotificationStore {
   void addNotificationEvent(NotificationEvent event) throws MetaException;
 
   /**
-   * Remove older notification events.
+   * Remove older notification events, transaction is explicitly handled inside.
    *
    * @param olderThan Remove any events older or equal to a given number of seconds
    */
+  @MetaDescriptor.NoTransaction
   void cleanNotificationEvents(int olderThan);
 
   /**
@@ -72,9 +73,10 @@ public interface NotificationStore {
   NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst);
 
   /**
-   * Remove older notification events.
+   * Remove older notification events, transaction is explicitly handled inside.
    * @param olderThan Remove any events older or equal to a given number of seconds
    */
+  @MetaDescriptor.NoTransaction
   void cleanWriteNotificationEvents(int olderThan);
 
   /**
