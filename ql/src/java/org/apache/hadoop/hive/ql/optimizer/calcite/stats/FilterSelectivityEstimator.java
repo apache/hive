@@ -582,7 +582,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return inverseBool ? 1.0 - betweenSelectivity : betweenSelectivity;
     }
 
-    Range<Float> domain = Range.closedOpen(min, Math.nextUp(max));
+    Range<Float> domain = columnDomainRange(min, max);
 
     if (inverseBool) {
       Range<Float> universe = domain;
@@ -603,6 +603,19 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return 0;
     }
     return overlapWidth / domainWidth;
+  }
+
+  /**
+   * Inclusive MIN/MAX column stats mapped to a half-open float domain for width/overlap.
+   * {@link Math#nextUp(float)} on {@link Float#MAX_VALUE} overflows to infinity and breaks width;
+   * use a closed upper bound when the exclusive successor is not representable.
+   */
+  private static Range<Float> columnDomainRange(float min, float max) {
+    float exclusiveUpper = Math.nextUp(max);
+    if (Float.isInfinite(exclusiveUpper)) {
+      return Range.closed(min, max);
+    }
+    return Range.closedOpen(min, exclusiveUpper);
   }
 
   private static Range<Float> intersectRanges(Range<Float> left, Range<Float> right) {
