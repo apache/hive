@@ -63,6 +63,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
         .put("1.1.1", "1.1.0")
         .put("1.2.1", "1.2.0")
         .put("4.2.1", "4.2.0")
+        .put("4.2.2", "4.2.0")
       .build();
 
   public MetaStoreSchemaInfo(String metastoreHome, String dbType) throws HiveMetaException {
