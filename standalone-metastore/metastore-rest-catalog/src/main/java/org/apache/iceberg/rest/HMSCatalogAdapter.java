@@ -53,8 +53,6 @@ import org.apache.iceberg.exceptions.NotAuthorizedException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.exceptions.UnprocessableEntityException;
 import org.apache.iceberg.exceptions.ValidationException;
-import org.apache.iceberg.hive.HiveCatalog;
-import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -388,8 +386,7 @@ public class HMSCatalogAdapter implements Closeable {
     RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
     request.validate();
     Map<String, String> namespaceMetadata = asNamespaceCatalog.loadNamespaceMetadata(namespace);
-    FileIO io = ((HiveCatalog) catalog).io();
-    icebergAuthorizer.validateRegisterTable(catalogName, namespace, namespaceMetadata, request, io);
+    icebergAuthorizer.validateRegisterTable(catalogName, namespace, namespaceMetadata, request);
     return CatalogHandlers.registerTable(catalog, namespace, request);
   }
 

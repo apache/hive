@@ -21,6 +21,7 @@ package org.apache.iceberg.hive;
 
 import java.util.Map;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.io.OutputFile;
@@ -40,11 +41,11 @@ class ScopedDeleteFileIO implements FileIO {
   private static final Logger LOG = LoggerFactory.getLogger(ScopedDeleteFileIO.class);
 
   private final FileIO delegate;
-  private final String location;
+  private final Path location;
 
   ScopedDeleteFileIO(FileIO delegate, String location) {
     this.delegate = delegate;
-    this.location = normalize(location);
+    this.location = new Path(location);
   }
 
   @Override
@@ -59,11 +60,31 @@ class ScopedDeleteFileIO implements FileIO {
 
   @Override
   public void deleteFile(String path) {
-    if (!isContained(location, normalize(path))) {
-      LOG.warn("Skipping delete outside table location {}: {}", location, path);
+    var candidate = new Path(path);
+    if (!FileUtils.isPathWithinSubtree(qualify(candidate, location), qualify(location, candidate))) {
+      LOG.debug("Skipping delete outside table location {}: {}", location, path);
       return;
     }
     delegate.deleteFile(path);
+  }
+
+  /**
+   * A path with no scheme refers to the same filesystem location as an otherwise-identical path
+   * that does carry one, whichever side that happens to be: manifests can hold data file paths
+   * written without a scheme, and a table's own location can equally be scheme-less (e.g. when a
+   * caller supplies one explicitly). {@link org.apache.hadoop.fs.Path#equals} is scheme-sensitive,
+   * so without this a schemeless path would never match its scheme-qualified counterpart in
+   * {@link FileUtils#isPathWithinSubtree} even when it is nested directly under it. When both (or
+   * neither) sides carry a scheme, {@code path} is returned unchanged, so a genuine mismatch (e.g.
+   * a different scheme or authority) is still correctly treated as outside the table location.
+   */
+  private static Path qualify(Path path, Path other) {
+    var pathUri = path.toUri();
+    var otherUri = other.toUri();
+    if (pathUri.getScheme() == null && otherUri.getScheme() != null) {
+      return new Path(otherUri.getScheme(), otherUri.getAuthority(), pathUri.getPath());
+    }
+    return path;
   }
 
   @Override
@@ -79,13 +100,5 @@ class ScopedDeleteFileIO implements FileIO {
   @Override
   public void close() {
     delegate.close();
-  }
-
-  private static boolean isContained(String root, String candidate) {
-    return candidate.equals(root) || candidate.startsWith(root.endsWith("/") ? root : root + "/");
-  }
-
-  private static String normalize(String location) {
-    return new Path(location).toUri().normalize().toString();
   }
 }

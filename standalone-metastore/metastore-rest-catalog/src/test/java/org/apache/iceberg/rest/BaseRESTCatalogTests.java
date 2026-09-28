@@ -324,16 +324,28 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
     var tableLocation = MockHiveAuthorizer.ALLOWED_PREFIX + "/structural-fence-attacker";
     Table table = catalog.buildTable(tableIdentifier, new Schema()).withLocation(tableLocation).create();
 
-    DataFile dataFile = DataFiles.builder(table.spec())
+    var ownedDirectory = java.nio.file.Path.of(MockHiveAuthorizer.ALLOWED_PREFIX, "structural-fence-attacker", "data");
+    Files.createDirectories(ownedDirectory);
+    var ownedFile = ownedDirectory.resolve("owned-data.txt");
+    Files.writeString(ownedFile, "owned data");
+
+    DataFile victimDataFile = DataFiles.builder(table.spec())
         .withPath(victimFile.toUri().toString())
         .withFormat(FileFormat.PARQUET)
         .withFileSizeInBytes(Files.size(victimFile))
         .withRecordCount(1)
         .build();
-    table.newAppend().appendFile(dataFile).commit();
+    DataFile ownedDataFile = DataFiles.builder(table.spec())
+        .withPath(ownedFile.toUri().toString())
+        .withFormat(FileFormat.PARQUET)
+        .withFileSizeInBytes(Files.size(ownedFile))
+        .withRecordCount(1)
+        .build();
+    table.newAppend().appendFile(victimDataFile).appendFile(ownedDataFile).commit();
 
     Assertions.assertTrue(catalog.dropTable(tableIdentifier, true));
     Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
     Assertions.assertTrue(Files.exists(victimFile), "purge must not delete files outside the table location");
+    Assertions.assertFalse(Files.exists(ownedFile), "purge must delete files nested inside the table location");
   }
 }

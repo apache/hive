@@ -241,10 +241,6 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
     return name;
   }
 
-  public FileIO io() {
-    return fileIO;
-  }
-
   @Override
   public boolean dropTable(TableIdentifier identifier, boolean purge) {
     if (!isValidIdentifier(identifier)) {
