@@ -71,7 +71,6 @@ import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
-import org.apache.iceberg.hive.rest.catalog.RestCatalogScanPlanning;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mapping.NameMapping;
@@ -302,7 +301,7 @@ public class HiveTableUtil {
         IcebergCatalogProperties.getCatalogType(conf, catalogName))) {
       return false;
     }
-    return RestCatalogScanPlanning.requestsServerSidePlanning(catalogName, conf);
+    return RestCatalogScanPlanningUtil.requestsServerSidePlanning(catalogName, conf);
   }
 
   private static String catalogNameForScan(Configuration conf) {

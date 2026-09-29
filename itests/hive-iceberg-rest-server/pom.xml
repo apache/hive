@@ -38,6 +38,8 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Jetty 12 for Iceberg REST embedded-server tests; Hive uses jetty.version 9.x elsewhere. -->
+    <iceberg.rest.test.jetty.version>12.1.8</iceberg.rest.test.jetty.version>
   </properties>
   <dependencyManagement>
     <dependencies>

@@ -30,7 +30,7 @@ import org.apache.iceberg.Scan;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
-import org.apache.iceberg.hive.rest.catalog.RestCatalogScanPlanning;
+import org.apache.iceberg.mr.hive.RestCatalogScanPlanningUtil;
 import org.apache.iceberg.rest.requests.PlanTableScanRequest;
 import org.apache.iceberg.rest.responses.ErrorResponse;
 import org.apache.iceberg.rest.responses.LoadTableResponse;
@@ -48,7 +48,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
 /**
- * Embedded REST server tests for {@link RestCatalogScanPlanning}: when Hive-style configuration sets
+ * Embedded REST server tests for {@link RestCatalogScanPlanningUtil}: when Hive-style configuration sets
  * {@code scan-planning-mode=server}, {@link RESTTable} / {@link RESTTableScan} delegate split
  * planning to the catalog server ({@code POST /plan}).
  */
@@ -96,7 +96,7 @@ class TestRestCatalogScanPlanningServerIT extends TestBaseWithRESTServer {
   protected Map<String, String> additionalCatalogProperties() {
     Configuration conf = new Configuration();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, CATALOG_NAME);
-    RestCatalogScanPlanning.setScanPlanningMode(conf, CATALOG_NAME, "server");
+    RestCatalogScanPlanningUtil.setScanPlanningMode(conf, CATALOG_NAME, "server");
     return IcebergCatalogProperties.getCatalogProperties(conf, CATALOG_NAME);
   }
 
@@ -126,11 +126,11 @@ class TestRestCatalogScanPlanningServerIT extends TestBaseWithRESTServer {
   void hiveCatalogConfigurationIssuesPlanTableScanRequest() throws IOException {
     Configuration conf = new Configuration();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, CATALOG_NAME);
-    RestCatalogScanPlanning.setScanPlanningMode(conf, CATALOG_NAME, "server");
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED, true);
+    RestCatalogScanPlanningUtil.setScanPlanningMode(conf, CATALOG_NAME, "server");
+    RestCatalogScanPlanningUtil.setHiveRestScanPlanningMode(conf, "server");
     assertThat(IcebergCatalogProperties.getCatalogProperties(conf, CATALOG_NAME))
         .containsEntry(RESTCatalogProperties.SCAN_PLANNING_MODE, "server");
-    assertThat(RestCatalogScanPlanning.isServerMode(conf, CATALOG_NAME)).isTrue();
+    assertThat(RestCatalogScanPlanningUtil.isServerMode(conf, CATALOG_NAME)).isTrue();
 
     restCatalog.createNamespace(NS);
     Table table =
