@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -517,5 +518,58 @@ public class FilterUtils {
       }
     }
     return response;
+  }
+
+  /**
+   * Filter the list of write event info if filtering is enabled. Otherwise, return original list.
+   * Each WriteEventInfo entry exposes the database/table it belongs to; entries whose table
+   * is not accessible to the caller (per the configured filter hook) are dropped, so this API
+   * cannot be used as a side-channel to enumerate file paths for tables the caller cannot see.
+   *
+   * @param isFilterEnabled true: filtering is enabled; false: filtering is disabled.
+   * @param filterHook: the object that does filtering
+   * @param catName: the catalog name
+   * @param writeEventInfoList: the list of write event info to filter
+   * @return the list of write event info entries that current user has access if filtering is
+   *         enabled; otherwise, the original list
+   * @throws MetaException
+   */
+  public static List<WriteEventInfo> filterWriteEventInfoIfEnabled(
+      boolean isFilterEnabled,
+      MetaStoreFilterHook filterHook,
+      String catName,
+      List<WriteEventInfo> writeEventInfoList) throws MetaException {
+
+    if (!isFilterEnabled || writeEventInfoList == null || writeEventInfoList.isEmpty()) {
+      return writeEventInfoList;
+    }
+
+    // Group by dbName -> list of distinct tableNames referenced, mirroring the approach used
+    // in filterCompactionsIfEnabled, so we make one filterTableNames() call per db instead of
+    // one call per row.
+    Map<String, List<String>> dbToTables = new HashMap<>();
+    for (WriteEventInfo info : writeEventInfoList) {
+      dbToTables.computeIfAbsent(info.getDatabase(), k -> new ArrayList<>());
+      if (!dbToTables.get(info.getDatabase()).contains(info.getTable())) {
+        dbToTables.get(info.getDatabase()).add(info.getTable());
+      }
+    }
+
+    // Resolve, per db, which of those tables the caller is actually allowed to see.
+    Map<String, Set<String>> allowedTablesByDb = new HashMap<>();
+    for (Map.Entry<String, List<String>> e : dbToTables.entrySet()) {
+      List<String> allowed = filterHook.filterTableNames(catName, e.getKey(), e.getValue());
+      allowedTablesByDb.put(e.getKey(), new HashSet<>(allowed));
+    }
+
+    // Keep only entries whose table is in the allowed set for its db.
+    List<WriteEventInfo> result = new ArrayList<>(writeEventInfoList.size());
+    for (WriteEventInfo info : writeEventInfoList) {
+      Set<String> allowedTables = allowedTablesByDb.get(info.getDatabase());
+      if (allowedTables != null && allowedTables.contains(info.getTable())) {
+        result.add(info);
+      }
+    }
+    return result;
   }
 }
