@@ -13,10 +13,11 @@
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  * KIND, either express or implied.  See the License for the
- * limitations under the License.
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
-package org.apache.iceberg.hive.rest.catalog;
+package org.apache.iceberg.mr.hive;
 
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -35,21 +36,21 @@ import org.apache.iceberg.rest.RESTCatalogProperties;
  * {@link RESTCatalogProperties.ScanPlanningMode#SERVER}, Iceberg's {@code RESTSessionCatalog} returns a
  * {@code RESTTable} that delegates {@code planTasks()} to the server. Hive's
  * {@code IcebergInputFormat} calls {@code scan.planTasks()} via
- * {@link org.apache.iceberg.mr.hive.HiveTableUtil#resolveTableForScanPlanning}, which reloads the
- * live REST catalog table (instead of a serialized metadata snapshot) when server mode is enabled and
- * {@link HiveConf.ConfVars#HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED} is true.
+ * {@link HiveTableUtil#resolveTableForScanPlanning}, which reloads the live REST catalog table
+ * (instead of a serialized metadata snapshot) when server mode is enabled and
+ * {@link HiveConf.ConfVars#HIVE_ICEBERG_REST_SCAN_PLANNING_MODE} is {@code server}.
  * Operators can use this helper or set catalog {@code scan-planning-mode} directly in {@code hive-site.xml}.
  *
- * <p>Tests: {@code TestRestCatalogScanPlanning} in {@code iceberg-rest-catalog-client};
+ * <p>Tests: {@code TestRestCatalogScanPlanningUtil} in {@code iceberg-handler};
  * {@code TestHiveIcebergServerSideScanPlanning} in {@code iceberg-handler}; embedded REST server
  * tests {@code TestRestCatalogScanPlanningServerIT} and {@code TestHiveIcebergServerSideScanPlanningServerIT}
  * in {@code itests/hive-iceberg-rest-server}.
  *
  * @see <a href="https://iceberg.apache.org/docs/latest/catalog-properties/">REST catalog properties</a>
  */
-public final class RestCatalogScanPlanning {
+public final class RestCatalogScanPlanningUtil {
 
-  private RestCatalogScanPlanning() {
+  private RestCatalogScanPlanningUtil() {
   }
 
   public static String catalogPropertyKey(String catalogName) {
@@ -84,7 +85,22 @@ public final class RestCatalogScanPlanning {
     if (conf == null) {
       return false;
     }
-    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED);
+    return RESTCatalogProperties.ScanPlanningMode.SERVER ==
+        RESTCatalogProperties.ScanPlanningMode.fromString(getHiveRestScanPlanningMode(conf));
+  }
+
+  public static String getHiveRestScanPlanningMode(Configuration conf) {
+    if (conf == null) {
+      return RESTCatalogProperties.SCAN_PLANNING_MODE_DEFAULT.modeName();
+    }
+    return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SCAN_PLANNING_MODE);
+  }
+
+  public static void setHiveRestScanPlanningMode(Configuration conf, String mode) {
+    HiveConf.setVar(
+        conf,
+        HiveConf.ConfVars.HIVE_ICEBERG_REST_SCAN_PLANNING_MODE,
+        RESTCatalogProperties.ScanPlanningMode.fromString(mode).modeName());
   }
 
   /**
@@ -140,7 +156,7 @@ public final class RestCatalogScanPlanning {
       return;
     }
 
-    if (!RestCatalogScanPlanning.shouldPropagateCatalogPropertiesToJob(catalogName, sessionConf)) {
+    if (!shouldPropagateCatalogPropertiesToJob(catalogName, sessionConf)) {
       return;
     }
 
@@ -176,8 +192,8 @@ public final class RestCatalogScanPlanning {
     }
 
     consumer.accept(
-        HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED.varname,
-        String.valueOf(isHiveServerSideScanPlanningEnabled(sessionConf)));
+        HiveConf.ConfVars.HIVE_ICEBERG_REST_SCAN_PLANNING_MODE.varname,
+        getHiveRestScanPlanningMode(sessionConf));
 
     String sessionDefaultCatalog =
         MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
