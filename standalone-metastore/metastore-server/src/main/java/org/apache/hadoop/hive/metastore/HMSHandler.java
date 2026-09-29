@@ -2876,25 +2876,25 @@ public class HMSHandler extends PrivilegeHandler {
     List<AlterTableEvent> alterEvents = new ArrayList<>(updates.size());
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
     List<Map.Entry<TableParamsUpdate, Table>> entries = new ArrayList<>(updates.size());
+    for (TableParamsUpdate update : updates) {
+      if (update.getParamsSize() == 0) {
+        continue;
+      }
+      org.apache.hadoop.hive.metastore.api.TableName tableName = update.getTable_name();
+      if (!tableName.isSetCat_name()) {
+        tableName.setCat_name(getDefaultCatalog(conf));
+      }
+      GetTableRequest getTableRequest = new GetTableRequest(tableName.getDb_name(), tableName.getTbl_name());
+      getTableRequest.setCatName(tableName.getCat_name());
+      Table oldTable = get_table_core(getTableRequest);
+      Table newTable = new Table(oldTable);
+      newTable.setParameters(update.getParams());
+      firePreEvent(new PreAlterTableEvent(oldTable, newTable, this));
+      alterEvents.add(new AlterTableEvent(oldTable, newTable, false, true, -1L, this, false));
+      entries.add(Map.entry(update, oldTable));
+    }
     try {
       ms.openTransaction();
-      for (TableParamsUpdate update : updates) {
-        if (update.getParamsSize() == 0) {
-          continue;
-        }
-        org.apache.hadoop.hive.metastore.api.TableName tableName = update.getTable_name();
-        if (!tableName.isSetCat_name()) {
-          tableName.setCat_name(getDefaultCatalog(conf));
-        }
-        GetTableRequest getTableRequest = new GetTableRequest(tableName.getDb_name(), tableName.getTbl_name());
-        getTableRequest.setCatName(tableName.getCat_name());
-        Table oldTable = get_table_core(getTableRequest);
-        Table newTable = new Table(oldTable);
-        newTable.setParameters(update.getParams());
-        firePreEvent(new PreAlterTableEvent(oldTable, newTable, this));
-        alterEvents.add(new AlterTableEvent(oldTable, newTable, false, true, -1L, this, false));
-        entries.add(Map.entry(update, oldTable));
-      }
       ms.updateTableParams(entries);
       for (AlterTableEvent event : alterEvents) {
         transactionalListenerResponses =

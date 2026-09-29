@@ -66,8 +66,8 @@ public class ExchangePartitionsHandler
   private TableName sourceName;
   private TableName destName;
 
-  private Map<String, String> transactionalListenerResponsesForAddPartition = Collections.emptyMap();
-  private final List<Map<String, String>> transactionalListenerResponsesForDropPartition = new ArrayList<>();
+  private Map<String, String> transactionalListenerResponsesForAddPartition;
+  private List<Map<String, String>> transactionalListenerResponsesForDropPartition;
 
   ExchangePartitionsHandler(IHMSHandler handler, ExchangePartitionsRequest request) {
     super(handler, false, request);
@@ -77,13 +77,8 @@ public class ExchangePartitionsHandler
   protected void beforeExecute() throws TException, IOException {
     org.apache.hadoop.hive.metastore.api.TableName reqSource = request.getSourceTable();
     org.apache.hadoop.hive.metastore.api.TableName reqTarget = request.getTargetTable();
-    if (request.getPartitionSpecs() == null || reqSource == null || reqTarget == null
-        || reqSource.getDb_name() == null || reqSource.getTbl_name() == null
-        || reqTarget.getDb_name() == null || reqTarget.getTbl_name() == null) {
-      throw new MetaException("The DB and table name for the source and destination tables,"
-          + " and the partition specs must not be null.");
-    }
 
+    request.validate();
     String defaultCat = getDefaultCatalog(handler.getConf());
     if (!reqSource.isSetCat_name()) {
       reqSource.setCat_name(defaultCat);
@@ -126,6 +121,7 @@ public class ExchangePartitionsHandler
       }
       i++;
     }
+
     GetPartitionsArgs getPartitionsArgs = new GetPartitionsArgs.GetPartitionsArgsBuilder()
         .part_vals(partVals)
         .max(-1)
@@ -167,6 +163,9 @@ public class ExchangePartitionsHandler
       throw new MetaException("Exchange partition not allowed for " + sourceName
           + " Dest db : " + destName.getDb());
     }
+
+    transactionalListenerResponsesForDropPartition = new ArrayList<>();
+    transactionalListenerResponsesForAddPartition = Collections.emptyMap();
   }
 
   @Override

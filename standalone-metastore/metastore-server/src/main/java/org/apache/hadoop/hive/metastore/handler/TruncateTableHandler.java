@@ -78,6 +78,7 @@ public class TruncateTableHandler
   private Table table;
   private List<Partition> partitions;
   private List<Partition> newPartitions;
+  private Table newTable;
   private boolean isPartitioned;
 
   TruncateTableHandler(IHMSHandler handler, TruncateTableRequest request) {
@@ -112,13 +113,22 @@ public class TruncateTableHandler
       for (Partition partition : partitions) {
         Partition newPart = partition.deepCopy();
         updateStatsForTruncate(newPart.getParameters(), new EnvironmentContext());
+        if (request.getWriteId() > 0) {
+          newPart.setWriteId(request.getWriteId());
+        }
+        newPart.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
+            .currentTimeMillis() / 1000));
         hmsHandler.firePreEvent(new PreAlterPartitionEvent(dbName, request.getTableName(), table,
             partition.getValues(), newPart, handler));
         newPartitions.add(newPart);
       }
     } else if (!isPartitioned) {
-      Table newTable = table.deepCopy();
+      newTable = table.deepCopy();
       updateStatsForTruncate(newTable.getParameters(), new EnvironmentContext());
+      // TODO: this should actually pass thru and set writeId for txn stats.
+      if (request.getWriteId() > 0) {
+        newTable.setWriteId(request.getWriteId());
+      }
       hmsHandler.firePreEvent(new PreAlterTableEvent(table, newTable, handler));
     }
   }
@@ -194,11 +204,6 @@ public class TruncateTableHandler
     }
     List<List<String>> partValsList = new ArrayList<>();
     for (Partition partition: newPartitions) {
-      if (request.getWriteId() > 0) {
-        partition.setWriteId(request.getWriteId());
-      }
-      partition.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
-          .currentTimeMillis() / 1000));
       partValsList.add(partition.getValues());
     }
     boolean success = false;
@@ -244,9 +249,6 @@ public class TruncateTableHandler
   }
 
   private boolean alterTableStatsForTruncate() throws TException {
-    EnvironmentContext environmentContext = new EnvironmentContext();
-    Table newTable = table.deepCopy();
-    updateStatsForTruncate(newTable.getParameters(), environmentContext);
     boolean isReplicated = isDbReplicationTarget(ms.getDatabase(catName, dbName));
     boolean success = false;
     ms.openTransaction();
@@ -254,10 +256,6 @@ public class TruncateTableHandler
       if (!handler.getTransactionalListeners().isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(), EventMessage.EventType.ALTER_TABLE,
             new AlterTableEvent(table, newTable, true, true, request.getWriteId(), handler, isReplicated));
-      }
-      // TODO: this should actually pass thru and set writeId for txn stats.
-      if (request.getWriteId() > 0) {
-        newTable.setWriteId(request.getWriteId());
       }
       ms.alterTable(catName, dbName, request.getTableName(), newTable, request.getValidWriteIdList());
       success = ms.commitTransaction();

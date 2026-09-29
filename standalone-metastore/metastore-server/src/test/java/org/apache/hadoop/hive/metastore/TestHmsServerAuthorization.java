@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.TableName;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -244,9 +245,8 @@ public class TestHmsServerAuthorization {
   public void testUpdateTableParamsAuthorization() throws Exception {
     dbName1 = "db_test_update_table_params";
     creatEnv(conf);
-    TableParamsUpdate update = new TableParamsUpdate(dbName1, TAB1,
+    TableParamsUpdate update = new TableParamsUpdate(new TableName(dbName1, TAB1),
         Collections.singletonMap("test_key", "test_value"));
-    update.setCat_name(Warehouse.DEFAULT_CATALOG_NAME);
     expectAuthorizationFailure("update_table_params",
         () -> client.updateTableParams(Collections.singletonList(update)));
   }
