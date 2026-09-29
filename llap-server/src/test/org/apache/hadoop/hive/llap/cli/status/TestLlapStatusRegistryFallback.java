@@ -134,6 +134,17 @@ public class TestLlapStatusRegistryFallback {
   }
 
   @Test
+  public void testIsLlapDaemonWebResponsiveWhenUnreachable() {
+    assertFalse(LlapStatusServiceDriver.isLlapDaemonWebResponsive("http://127.0.0.1:1/status"));
+  }
+
+  @Test
+  public void testIsLlapDaemonWebResponsiveWhenStatusUrlBlank() {
+    assertFalse(LlapStatusServiceDriver.isLlapDaemonWebResponsive(null));
+    assertFalse(LlapStatusServiceDriver.isLlapDaemonWebResponsive(""));
+  }
+
+  @Test
   public void testUpdateRunningThresholdAchievedWhenLaunching() {
     AppStatusBuilder builder = new AppStatusBuilder();
     builder.setDesiredInstances(2);

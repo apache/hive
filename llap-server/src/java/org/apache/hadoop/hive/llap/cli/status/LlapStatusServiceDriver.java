@@ -26,6 +26,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -112,6 +114,8 @@ public class LlapStatusServiceDriver {
   private static final String TEZ_FRAMEWORK_MODE_STANDALONE_ZOOKEEPER = "STANDALONE_ZOOKEEPER";
   /** When set, overrides auto-detection for registry vs YARN status lookup. */
   private static final String CONFIG_STATUS_USE_REGISTRY = CONF_PREFIX + "status.use-registry";
+
+  private static final int FIXED_REGISTRY_STATUS_CHECK_TIMEOUT_MS = 3000;
 
   private final Configuration conf;
   private String appName = null;
@@ -456,15 +460,26 @@ public class LlapStatusServiceDriver {
       for (LlapServiceInstance serviceInstance : serviceInstances) {
         registryInstances.add(createLlapInstanceFromRegistry(serviceInstance));
       }
+      int configuredInstances = registryInstances.size();
+      List<LlapInstance> liveRegistryInstances = registryInstances;
+      if (!llapRegistry.isDynamic()) {
+        liveRegistryInstances = new LinkedList<>();
+        for (LlapInstance instance : registryInstances) {
+          if (isLlapDaemonWebResponsive(instance.getStatusUrl())) {
+            liveRegistryInstances.add(instance);
+          }
+        }
+        appStatusBuilder.setLaunchingInstances(configuredInstances - liveRegistryInstances.size());
+      }
       if (appStatusBuilder.getAmInfo() == null) {
         appStatusBuilder.setAmInfo(new AmInfo().setAppName(appName));
       }
-      appStatusBuilder.clearAndAddPreviouslyKnownRunningInstances(registryInstances);
-      appStatusBuilder.setLiveInstances(registryInstances.size());
+      appStatusBuilder.clearAndAddPreviouslyKnownRunningInstances(liveRegistryInstances);
+      appStatusBuilder.setLiveInstances(liveRegistryInstances.size());
       if (appStatusBuilder.getDesiredInstances() == null) {
-        appStatusBuilder.setDesiredInstances(registryInstances.size());
+        appStatusBuilder.setDesiredInstances(configuredInstances);
       }
-      updateStateFromInstanceCounts(appStatusBuilder, registryInstances.size());
+      updateStateFromInstanceCounts(appStatusBuilder, liveRegistryInstances.size());
     } else {
       // Tracks instances known by both YARN Service and llap.
       List<LlapInstance> validatedInstances = new LinkedList<>();
@@ -515,6 +530,29 @@ public class LlapStatusServiceDriver {
 
     }
     return ExitCode.SUCCESS;
+  }
+
+  static boolean isLlapDaemonWebResponsive(String statusUrl) {
+    if (StringUtils.isBlank(statusUrl)) {
+      return false;
+    }
+    HttpURLConnection conn = null;
+    try {
+      conn = (HttpURLConnection) new URL(statusUrl).openConnection();
+      conn.setRequestMethod("GET");
+      conn.setConnectTimeout(FIXED_REGISTRY_STATUS_CHECK_TIMEOUT_MS);
+      conn.setReadTimeout(FIXED_REGISTRY_STATUS_CHECK_TIMEOUT_MS);
+      int responseCode = conn.getResponseCode();
+      return responseCode >= HttpURLConnection.HTTP_OK
+          && responseCode < HttpURLConnection.HTTP_MULT_CHOICE;
+    } catch (IOException e) {
+      LOG.debug("LLAP daemon status check failed for {}: {}", statusUrl, e.toString());
+      return false;
+    } finally {
+      if (conn != null) {
+        conn.disconnect();
+      }
+    }
   }
 
   static LlapInstance createLlapInstanceFromRegistry(LlapServiceInstance serviceInstance) {
