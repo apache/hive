@@ -1079,6 +1079,10 @@ class DeleteColumnStatisticsRequest;
 
 class ReplayedTxnsForPolicyResult;
 
+class ExchangePartitionsRequest;
+
+class TableName;
+
 class MetaException;
 
 class UnknownTableException;
@@ -19501,8 +19505,7 @@ void swap(AlterTableResponse &a, AlterTableResponse &b);
 std::ostream& operator<<(std::ostream& out, const AlterTableResponse& obj);
 
 typedef struct _TableParamsUpdate__isset {
-  _TableParamsUpdate__isset() : cat_name(false), expected_param_key(false), expected_param_value(false) {}
-  bool cat_name :1;
+  _TableParamsUpdate__isset() : expected_param_key(false), expected_param_value(false) {}
   bool expected_param_key :1;
   bool expected_param_value :1;
 } _TableParamsUpdate__isset;
@@ -19513,28 +19516,19 @@ class TableParamsUpdate : public virtual ::apache::thrift::TBase {
   TableParamsUpdate(const TableParamsUpdate&);
   TableParamsUpdate& operator=(const TableParamsUpdate&);
   TableParamsUpdate() noexcept
-                    : cat_name(),
-                      db_name(),
-                      table_name(),
-                      expected_param_key(),
+                    : expected_param_key(),
                       expected_param_value() {
   }
 
   virtual ~TableParamsUpdate() noexcept;
-  std::string cat_name;
-  std::string db_name;
-  std::string table_name;
+  TableName table_name;
   std::map<std::string, std::string>  params;
   std::string expected_param_key;
   std::string expected_param_value;
 
   _TableParamsUpdate__isset __isset;
 
-  void __set_cat_name(const std::string& val);
-
-  void __set_db_name(const std::string& val);
-
-  void __set_table_name(const std::string& val);
+  void __set_table_name(const TableName& val);
 
   void __set_params(const std::map<std::string, std::string> & val);
 
@@ -19544,12 +19538,6 @@ class TableParamsUpdate : public virtual ::apache::thrift::TBase {
 
   bool operator == (const TableParamsUpdate & rhs) const
   {
-    if (__isset.cat_name != rhs.__isset.cat_name)
-      return false;
-    else if (__isset.cat_name && !(cat_name == rhs.cat_name))
-      return false;
-    if (!(db_name == rhs.db_name))
-      return false;
     if (!(table_name == rhs.table_name))
       return false;
     if (!(params == rhs.params))
@@ -21604,6 +21592,109 @@ class ReplayedTxnsForPolicyResult : public virtual ::apache::thrift::TBase {
 void swap(ReplayedTxnsForPolicyResult &a, ReplayedTxnsForPolicyResult &b);
 
 std::ostream& operator<<(std::ostream& out, const ReplayedTxnsForPolicyResult& obj);
+
+
+class ExchangePartitionsRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  ExchangePartitionsRequest(const ExchangePartitionsRequest&);
+  ExchangePartitionsRequest& operator=(const ExchangePartitionsRequest&);
+  ExchangePartitionsRequest() noexcept {
+  }
+
+  virtual ~ExchangePartitionsRequest() noexcept;
+  std::map<std::string, std::string>  partitionSpecs;
+  TableName sourceTable;
+  TableName targetTable;
+
+  void __set_partitionSpecs(const std::map<std::string, std::string> & val);
+
+  void __set_sourceTable(const TableName& val);
+
+  void __set_targetTable(const TableName& val);
+
+  bool operator == (const ExchangePartitionsRequest & rhs) const
+  {
+    if (!(partitionSpecs == rhs.partitionSpecs))
+      return false;
+    if (!(sourceTable == rhs.sourceTable))
+      return false;
+    if (!(targetTable == rhs.targetTable))
+      return false;
+    return true;
+  }
+  bool operator != (const ExchangePartitionsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ExchangePartitionsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ExchangePartitionsRequest &a, ExchangePartitionsRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const ExchangePartitionsRequest& obj);
+
+typedef struct _TableName__isset {
+  _TableName__isset() : cat_name(false) {}
+  bool cat_name :1;
+} _TableName__isset;
+
+class TableName : public virtual ::apache::thrift::TBase {
+ public:
+
+  TableName(const TableName&);
+  TableName& operator=(const TableName&);
+  TableName() noexcept
+            : cat_name(),
+              db_name(),
+              tbl_name() {
+  }
+
+  virtual ~TableName() noexcept;
+  std::string cat_name;
+  std::string db_name;
+  std::string tbl_name;
+
+  _TableName__isset __isset;
+
+  void __set_cat_name(const std::string& val);
+
+  void __set_db_name(const std::string& val);
+
+  void __set_tbl_name(const std::string& val);
+
+  bool operator == (const TableName & rhs) const
+  {
+    if (__isset.cat_name != rhs.__isset.cat_name)
+      return false;
+    else if (__isset.cat_name && !(cat_name == rhs.cat_name))
+      return false;
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    return true;
+  }
+  bool operator != (const TableName &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableName & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TableName &a, TableName &b);
+
+std::ostream& operator<<(std::ostream& out, const TableName& obj);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

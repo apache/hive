@@ -452,38 +452,6 @@ public class ObjectStore implements RawStore, Configurable {
     };
   }
 
-  @Override
-  public void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException {
-    if (updates == null || updates.isEmpty()) {
-      return;
-    }
-
-    new GetListHelper<TableName, Void>(createRawStoreBundle(), null) {
-      @Override
-      protected List<Void> getSqlResult() throws MetaException {
-        boolean success = false;
-        try {
-          openTransaction();
-          directSql.updateTableParams(updates, ObjectStore.this::getTable);
-          success = commitTransaction();
-        } finally {
-          rollbackAndCleanup(success, null);
-        }
-        return null;
-      }
-
-      @Override
-      protected boolean canUseJdoQuery() {
-        return false;
-      }
-
-      @Override
-      protected List<Void> getJdoResult() {
-        throw new UnsupportedOperationException("UnsupportedOperationException");
-      }
-    }.run(false);
-  }
-
   /**
    * if this is the commit of the first open call then an actual commit is
    * called.
