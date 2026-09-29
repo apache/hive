@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.iceberg.util.DateTimeUtil;
 import org.apache.iceberg.util.ZOrderByteUtils;
 
 /**
@@ -154,10 +155,10 @@ public class GenericUDFIcebergZorder extends GenericUDF {
         Object tsValue = oi.getPrimitiveJavaObject(value);
         long tsInMicros;
         if (tsValue instanceof org.apache.hadoop.hive.common.type.Timestamp ts) {
-          tsInMicros = ts.toEpochSecond() * 1_000_000L + (ts.getNanos() / 1000);
+          tsInMicros = ts.toEpochMicro();
         } else if (tsValue instanceof java.sql.Timestamp ts) {
           Instant instant = ts.toInstant();
-          tsInMicros = instant.getEpochSecond() * 1_000_000L + (instant.getNano() / 1000);
+          tsInMicros = DateTimeUtil.microsFromInstant(instant);
         } else {
           throw new HiveException("Unsupported TIMESTAMP backing type: " + tsValue.getClass());
         }
