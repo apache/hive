@@ -308,7 +308,15 @@ public class HMSCatalogAdapter implements Closeable {
         ? RESTUtil.namespaceFromQueryParam(vars.get(PARENT))
         : Namespace.empty();
     PageRequest page = PageRequest.from(vars);
-    return CatalogHandlers.listNamespaces(asNamespaceCatalog, parent, page.token(), page.size());
+    ListNamespacesResponse response =
+        CatalogHandlers.listNamespaces(asNamespaceCatalog, parent, page.token(), page.size());
+    if (icebergAuthorizer == null) {
+      return response;
+    }
+    return ListNamespacesResponse.builder()
+        .addAll(icebergAuthorizer.filterNamespaces(catalogName, response.namespaces()))
+        .nextPageToken(response.nextPageToken())
+        .build();
   }
 
   private CreateNamespaceResponse createNamespace(Object body) {
@@ -342,7 +350,14 @@ public class HMSCatalogAdapter implements Closeable {
   private ListTablesResponse listTables(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
     PageRequest page = PageRequest.from(vars);
-    return CatalogHandlers.listTables(catalog, namespace, page.token(), page.size());
+    ListTablesResponse response = CatalogHandlers.listTables(catalog, namespace, page.token(), page.size());
+    if (icebergAuthorizer == null) {
+      return response;
+    }
+    return ListTablesResponse.builder()
+        .addAll(icebergAuthorizer.filterTables(catalogName, response.identifiers()))
+        .nextPageToken(response.nextPageToken())
+        .build();
   }
 
   private LoadTableResponse createTable(Map<String, String> vars, Object body) {
@@ -413,7 +428,14 @@ public class HMSCatalogAdapter implements Closeable {
   private ListTablesResponse listViews(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
     PageRequest page = PageRequest.from(vars);
-    return CatalogHandlers.listViews(asViewCatalog, namespace, page.token(), page.size());
+    ListTablesResponse response = CatalogHandlers.listViews(asViewCatalog, namespace, page.token(), page.size());
+    if (icebergAuthorizer == null) {
+      return response;
+    }
+    return ListTablesResponse.builder()
+        .addAll(icebergAuthorizer.filterViews(catalogName, response.identifiers()))
+        .nextPageToken(response.nextPageToken())
+        .build();
   }
 
   private LoadViewResponse createView(Map<String, String> vars, Object body) {

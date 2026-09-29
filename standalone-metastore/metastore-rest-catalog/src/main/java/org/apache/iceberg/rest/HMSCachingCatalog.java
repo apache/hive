@@ -38,6 +38,7 @@ import javax.management.ObjectName;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Ticker;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.BaseMetadataTable;
 import org.apache.iceberg.HasTableOperations;
@@ -58,7 +59,6 @@ import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.MetadataLocator;
 import org.apache.iceberg.view.View;
 import org.apache.iceberg.view.ViewBuilder;
-import org.jetbrains.annotations.TestOnly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +101,7 @@ public final class HMSCachingCatalog
    * This is intended for testing purposes only; production code should not rely on the underlying catalog.
    * @return the underlying HiveCatalog
    */
-  @TestOnly
+  @VisibleForTesting
   public HiveCatalog getCatalog() {
     return hiveCatalog;
   }
