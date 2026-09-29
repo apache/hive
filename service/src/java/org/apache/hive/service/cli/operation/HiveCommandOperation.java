@@ -45,6 +45,8 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.apache.hive.service.cli.session.HiveSessionImpl;
+import org.apache.hive.service.cli.session.PersistableSessionUtils;
 
 /**
  * Executes a HiveCommand
@@ -131,6 +133,17 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
       throw new HiveSQLException("Error running query: " + e.toString(), e);
     }
     setState(OperationState.FINISHED);
+  }
+
+  @Override
+  protected void onNewState(OperationState state, OperationState prevState) {
+    super.onNewState(state, prevState);
+    if (state == OperationState.FINISHED) {
+      HiveSessionImpl impl = PersistableSessionUtils.unwrapSession(parentSession);
+      if (impl != null) {
+        impl.onOperationFinished(statement);
+      }
+    }
   }
 
   /* (non-Javadoc)

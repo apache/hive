@@ -4737,7 +4737,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return results;
   }
 
-  // This method converts PartitionSpec to Partiton.
+  // This method converts PartitionSpec to Partition.
   // This is required because listPartitionsSpecByExpr return set of PartitionSpec but hive
   // require Partition
   static List<Partition> convertFromPartSpec(Iterator<PartitionSpec> iterator, Table tbl)
@@ -5074,7 +5074,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
         final String msg = "Unable to move source " + srcP + " to destination " + destf;
 
-        // If we do a rename for a non-local file, we will be transfering the original
+        // If we do a rename for a non-local file, we will be transferring the original
         // file permissions from source to the destination. Else, in case of mvFile() where we
         // copy from source to destination, we will inherit the destination's parent group ownership.
         if (null == pool) {
@@ -5533,7 +5533,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
-   * If moving across different FileSystems or differnent encryption zone, need to do a File copy instead of rename.
+   * If moving across different FileSystems or different encryption zone, need to do a File copy instead of rename.
    * TODO- consider if need to do this for different file authority.
    * @throws HiveException
    */
@@ -6310,6 +6310,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
         return tbl.getStorageHandler().getColStatistics(tbl, colNames);
       }
+      if (tbl.isNonNative() && (tbl.getStorageHandler().canSetColStatistics(tbl)
+          || !tbl.getQualifier().isEmpty())) {
+        // the handler owns the table's statistics, or the read is qualified by a branch, a
+        // point in time or a metadata table: the metastore's single set describes none of them
+        return Collections.emptyList();
+      }
       if (checkTransactional) {
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         retv = getMSC().getTableColumnStatistics(tbl.getDbName(), tbl.getTableName(), colNames, 
@@ -6364,6 +6370,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
         return tbl.getStorageHandler().getAggrColStatsFor(tbl, colNames, partName);
       }
+      if (tbl.isNonNative() && (tbl.getStorageHandler().canSetColStatistics(tbl)
+          || !tbl.getQualifier().isEmpty())) {
+        // the handler owns the table's statistics, or the read is qualified by a branch, a
+        // point in time or a metadata table: the metastore's single set describes none of them
+        return new AggrStats(new ArrayList<>(), 0);
+      }
       if (checkTransactional) {
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
@@ -6377,7 +6389,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS, "HS2-cache");
     }
   }
-  
+
   public void deleteColumnStatistics(TableName tableName) throws HiveException {
     DeleteColumnStatisticsRequest request = 
         new DeleteColumnStatisticsRequest(tableName.getDb(), tableName.getTable());

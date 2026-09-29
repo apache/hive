@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter.DescTableFormatte
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -153,7 +154,9 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
           HiveStorageHandler sh = table.getStorageHandler();
           
           sh.getBasicStatistics(table).forEach((k, v) -> valueMap.put(k, Longs.tryParse(v)));
-          numParts = sh.getPartitionNames(table).size();
+          numParts = (int) sh.getPartitionNames(table).stream()
+              .filter(name -> !DummyPartition.isVoid(name))
+              .count();
           
         } else {
           PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
@@ -280,11 +283,18 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private void addStatsForRegularColumn(Table table, List<ColumnStatisticsObj> colStats,
       String colName, Map<String, String> tableProps) throws HiveException {
+    if (table.isNonNative() && !StatsUtils.isPartitionStats(table, context.getConf())) {
+      // the table maintains table-level column statistics only, whose accuracy the table
+      // properties already reflect
+      colStats.addAll(context.getDb().getTableColumnStatistics(table,
+          Lists.newArrayList(colName.toLowerCase()), false));
+      return;
+    }
     List<String> parts = context.getDb().getPartitionNames(table, (short) -1);
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, Lists.newArrayList(colName.toLowerCase()),
         parts, false);
     colStats.addAll(aggrStats.getColStats());
-    
+
     if (parts.size() == aggrStats.getPartsFound()) {
       StatsSetupConst.setColumnStatsState(tableProps, Lists.newArrayList(colName.toLowerCase()));
     } else {

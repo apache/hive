@@ -101,6 +101,7 @@
         <include>schematool/**/*</include>
         <include>serde/**/*</include>
         <include>service-rpc/**/*</include>
+        <include>service-session-store/**/*</include>
         <include>service/**/*</include>
         <include>shims/**/*</include>
         <include>storage-api/**/*</include>

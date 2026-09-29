@@ -51,6 +51,7 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
      * Do careful maintenance of the outputColVector.noNulls flag.
      */
     LongColumnVector longColVector = (LongColumnVector) batch.cols[outputColumnNum];
+    longColVector.noNulls = true;
     longColVector.isRepeating = true;
     longColVector.isNull[0] = false;
     longColVector.vector[0] = rank;

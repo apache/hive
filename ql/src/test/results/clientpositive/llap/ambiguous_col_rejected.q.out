@@ -1,0 +1,5 @@
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in tpm
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in t
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in x
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in z
+FAILED: SemanticException [Error 10007]: Ambiguous column reference a in renamed

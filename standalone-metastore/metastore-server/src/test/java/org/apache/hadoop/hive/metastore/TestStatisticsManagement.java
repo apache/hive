@@ -207,6 +207,115 @@ public class TestStatisticsManagement {
   }
 
   /**
+   * Verifies that setting {@value StatisticsManagementTask#STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY}
+   * to {@code "true"} on a database excludes all tables in that database from table-level
+   * column statistics auto-deletion, even if the individual table has no exclude property set.
+   */
+  @Test
+  public void testExcludedDatabaseTableStatsAreNotDeleted() throws Exception {
+    String dbName = "stats_db8";
+    String tableName = "tbl8";
+    createDbAndTable(dbName, tableName, false, true); // table not excluded, db excluded
+    writeTableLevelColStats(dbName, tableName, "c1");
+    assertHasTableColStats(dbName, tableName, "c1");
+    makeAllTableColStatsOlderThanRetention(dbName, tableName);
+
+    runStatisticsManagementTask(conf);
+
+    // Stats must still be present because the database is marked as excluded.
+    assertHasTableColStats(dbName, tableName, "c1");
+  }
+
+  /**
+   * Verifies that setting {@value StatisticsManagementTask#STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY}
+   * to {@code "true"} on a database excludes all partition-level column statistics for tables in
+   * that database from auto-deletion, even if the individual table has no exclude property set.
+   */
+  @Test
+  public void testExcludedDatabasePartitionStatsAreNotDeleted() throws Exception {
+    String dbName = "stats_db9";
+    String tableName = "tbl9";
+    String partVal = "p1";
+    createDbAndPartitionedTable(dbName, tableName, false, true); // table not excluded, db excluded
+    createPartition(dbName, tableName, partVal);
+
+    String partName = "part_col=" + partVal;
+    writePartitionLevelColStats(dbName, tableName, partName, "c1");
+    assertHasPartitionColStats(dbName, tableName, partName, "c1");
+    makeAllPartitionColStatsOlderThanRetention(dbName, tableName);
+
+    runStatisticsManagementTask(conf);
+
+    // Stats must still be present because the database is marked as excluded.
+    assertHasPartitionColStats(dbName, tableName, partName, "c1");
+  }
+
+  /**
+   * Verifies that setting {@value StatisticsManagementTask#STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY}
+   * to {@code "false"} on a database does not prevent deletion. Only an explicit {@code "true"}
+   * value on the database excludes its tables; any other value (including {@code "false"}) is
+   * treated as not excluded.
+   */
+  @Test
+  public void testDatabaseExcludePropertySetToFalseDoesNotPreventDeletion() throws Exception {
+    String dbName = "stats_db10";
+    String tableName = "tbl10";
+
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .setCatalogName(DEFAULT_CATALOG_NAME)
+        .create(client, conf);
+    db.getParameters().put(
+        StatisticsManagementTask.STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY, "false");
+    client.alterDatabase(dbName, db);
+
+    TableBuilder tb = new TableBuilder()
+        .inDb(db)
+        .setTableName(tableName)
+        .addCol("c1", "double")
+        .addCol("c2", "string")
+        .setInputFormat("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat")
+        .setOutputFormat("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat");
+    client.createTable(tb.build(conf));
+    client.flushCache();
+
+    writeTableLevelColStats(dbName, tableName, "c1");
+    assertHasTableColStats(dbName, tableName, "c1");
+    makeAllTableColStatsOlderThanRetention(dbName, tableName);
+
+    runStatisticsManagementTask(conf);
+
+    // "false" is not a valid exclude signal; stats should be deleted.
+    assertNoTableColStats(dbName, tableName, "c1");
+  }
+
+  /**
+   * Verifies that when both the database and the table set the exclude property to conflicting
+   * values (db excluded, table explicitly not excluded), the database-level exclusion still wins
+   * and stats are preserved.
+   */
+  @Test
+  public void testDatabaseExclusionOverridesTableNonExclusion() throws Exception {
+    String dbName = "stats_db11";
+    String tableName = "tbl11";
+    // table's own exclude flag is "false" (explicitly not excluded), but db is excluded
+    createDbAndTable(dbName, tableName, false, true);
+    Table t = client.getTable(dbName, tableName);
+    t.getParameters().put(
+        StatisticsManagementTask.STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY, "false");
+    client.alter_table(dbName, tableName, t);
+
+    writeTableLevelColStats(dbName, tableName, "c1");
+    assertHasTableColStats(dbName, tableName, "c1");
+    makeAllTableColStatsOlderThanRetention(dbName, tableName);
+
+    runStatisticsManagementTask(conf);
+
+    // Database-level exclusion should still protect the stats.
+    assertHasTableColStats(dbName, tableName, "c1");
+  }
+
+  /**
    * Verifies that fresh table-level column statistics whose {@code lastAnalyzed} is within the
    * retention period are not deleted when the task runs.
    */
@@ -257,12 +366,30 @@ public class TestStatisticsManagement {
    * @param exclude   if {@code true}, sets the auto-deletion exclude property on the table
    */
   private void createDbAndTable(String dbName, String tableName, boolean exclude) throws Exception {
+    createDbAndTable(dbName, tableName, exclude, false);
+  }
+
+  /**
+   * Creates a database (unless it is the default database) and a simple two-column test table.
+   *
+   * @param dbName    name of the database to create
+   * @param tableName name of the table to create
+   * @param exclude   if {@code true}, sets the auto-deletion exclude property on the table
+   * @param dbExclude if {@code true}, sets the auto-deletion exclude property on the database
+   */
+  private void createDbAndTable(String dbName, String tableName, boolean exclude,
+                                boolean dbExclude) throws Exception {
     Database db;
     if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
-      db = new DatabaseBuilder()
+      DatabaseBuilder dbBuilder = new DatabaseBuilder()
           .setName(dbName)
-          .setCatalogName(DEFAULT_CATALOG_NAME)
-          .create(client, conf);
+          .setCatalogName(DEFAULT_CATALOG_NAME);
+      db = dbBuilder.create(client, conf);
+      if (dbExclude) {
+        db.getParameters().put(
+            StatisticsManagementTask.STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY, "true");
+        client.alterDatabase(dbName, db);
+      }
     } else {
       db = client.getDatabase(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
     }
@@ -293,10 +420,28 @@ public class TestStatisticsManagement {
    */
   private void createDbAndPartitionedTable(String dbName, String tableName,
                                            boolean exclude) throws Exception {
-    Database db = new DatabaseBuilder()
+    createDbAndPartitionedTable(dbName, tableName, exclude, false);
+  }
+
+  /**
+   * Creates a database and a partitioned test table with one partition key {@code part_col}.
+   *
+   * @param dbName    name of the database to create
+   * @param tableName name of the table to create
+   * @param exclude   if {@code true}, sets the auto-deletion exclude property on the table
+   * @param dbExclude if {@code true}, sets the auto-deletion exclude property on the database
+   */
+  private void createDbAndPartitionedTable(String dbName, String tableName,
+                                           boolean exclude, boolean dbExclude) throws Exception {
+    DatabaseBuilder dbBuilder = new DatabaseBuilder()
         .setName(dbName)
-        .setCatalogName(DEFAULT_CATALOG_NAME)
-        .create(client, conf);
+        .setCatalogName(DEFAULT_CATALOG_NAME);
+    Database db = dbBuilder.create(client, conf);
+    if (dbExclude) {
+      db.getParameters().put(
+          StatisticsManagementTask.STATISTICS_AUTO_DELETION_EXCLUDE_DBPROPERTY, "true");
+      client.alterDatabase(dbName, db);
+    }
 
     TableBuilder tb = new TableBuilder()
         .inDb(db)

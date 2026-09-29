@@ -21,12 +21,23 @@ package org.apache.hadoop.hive.metastore;
 
 import static javax.ws.rs.core.HttpHeaders.WWW_AUTHENTICATE;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalListener;
+import com.github.benmanes.caffeine.cache.Ticker;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import java.security.KeyStore;
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.metastore.auth.HttpAuthenticationException;
 import org.apache.hadoop.hive.metastore.auth.jwt.SimpleJWTAuthenticator;
 import org.apache.hadoop.hive.metastore.auth.oauth2.OAuth2Authenticator;
@@ -106,6 +117,14 @@ public class ServletSecurity {
   private final Function<HttpServletRequest, List<String>> scopeProvider;
   private SimpleJWTAuthenticator jwtAuthenticator = null;
   private OAuth2Authenticator oAuth2Authenticator = null;
+  private final Cache<UgiKey, UserGroupInformation> proxyUserCache;
+  private final ScheduledExecutorService cacheMaintenanceExecutor;
+
+  /**
+   * Cache key for a proxy {@link UserGroupInformation}. A proxy UGI is bound to both the effective user it
+   * impersonates and the server login user acting as its real user, so both participate in identity.
+   */
+  record UgiKey(String effectiveUser, String loginUser) {}
 
   public ServletSecurity(AuthType authType, Configuration conf) {
     this(authType, conf, null);
@@ -117,6 +136,127 @@ public class ServletSecurity {
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     this.authType = authType;
     this.scopeProvider = scopeProvider;
+    this.cacheMaintenanceExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+      Thread t = new Thread(r, "ugi-cache-cleanup");
+      t.setDaemon(true);
+      return t;
+    });
+    long expiryMs = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_EXPIRY,
+        TimeUnit.MILLISECONDS);
+    this.proxyUserCache = createCacheWithConfig(
+        expiryMs,
+        MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_SIZE),
+        cacheMaintenanceExecutor);
+    if (expiryMs > 0) {
+      // Periodically flush expired entries that accumulated during idle periods (Caffeine only runs
+      // maintenance when the cache is accessed; without this, a burst followed by silence keeps
+      // UGI/FileSystem resources live past the configured expiry window).
+      cacheMaintenanceExecutor.scheduleAtFixedRate(proxyUserCache::cleanUp,
+          expiryMs, expiryMs, TimeUnit.MILLISECONDS);
+    }
+  }
+
+  @VisibleForTesting
+  ServletSecurity(AuthType authType, Configuration conf,
+      Function<HttpServletRequest, List<String>> scopeProvider, Executor cacheCleanupExecutor) {
+    this.conf = conf;
+    this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
+    this.authType = authType;
+    this.scopeProvider = scopeProvider;
+    this.cacheMaintenanceExecutor = null;
+    this.proxyUserCache = createCacheWithConfig(
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_EXPIRY, TimeUnit.MILLISECONDS),
+        MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_SIZE),
+        cacheCleanupExecutor);
+  }
+
+  /**
+   * Creates a UGI cache with the specified expiration time and maximum size.
+   *
+   * @param expirationMs Time in milliseconds after which entries expire due to inactivity
+   * @param maxSize      Maximum number of entries the cache can hold
+   * @param cacheCleanupExecutor executor on which removal-listener cleanup ({@link FileSystem#closeAllForUGI})
+   *                             runs; production uses a dedicated single-thread daemon executor so cleanup stays
+   *                             off request threads and does not interfere with JVM-wide shared pools
+   * @return A configured Caffeine cache for UGI objects
+   */
+  private Cache<UgiKey, UserGroupInformation> createCacheWithConfig(long expirationMs, long maxSize,
+      Executor cacheCleanupExecutor) {
+    // Note: eviction closes the UGI's FileSystems. If an entry is evicted while a request is still inside doAs,
+    // that in-flight operation could see a "FileSystem closed" error. We don't reference-count to prevent this;
+    // instead we rely on generous margins: expiry is idle-based (expireAfterAccess), and both the expiry window
+    // and maximumSize should be kept well above the longest operation / peak concurrent distinct users.
+    RemovalListener<UgiKey, UserGroupInformation> cleanupListener =
+        (key, ugi, cause) -> {
+          if (ugi != null) {
+            try {
+              FileSystem.closeAllForUGI(ugi);
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Cleaned up FileSystem handles for evicted UGI: {} (cause: {})",
+                    ugi.getUserName(), cause);
+              }
+            } catch (IOException cleanupException) {
+              LOG.error("Failed to clean up FileSystem handles for evicted UGI: {} (cause: {})",
+                  ugi, cause, cleanupException);
+            }
+          }
+        };
+
+    Caffeine<UgiKey, UserGroupInformation> builder = Caffeine.<UgiKey, UserGroupInformation>newBuilder()
+        .maximumSize(maxSize)
+        .executor(cacheCleanupExecutor)
+        .removalListener(cleanupListener);
+
+    if (expirationMs > 0) {
+      builder.expireAfterAccess(Duration.ofMillis(expirationMs))
+          .ticker(Ticker.systemTicker());
+    }
+
+    return builder.build();
+  }
+
+  /**
+   * Returns the (cached) proxy {@link UserGroupInformation} for the given user, creating it on a cache miss.
+   * <p>Caching the proxy UGI prevents Hadoop{@literal '}s {@code FileSystem.CACHE} from accumulating a distinct
+   * entry (and its RPC/IPC resources) for every request; evicted entries are cleaned up through
+   * {@link FileSystem#closeAllForUGI(UserGroupInformation)}.</p>
+   * @param userName the effective user name extracted from the request
+   * @param loginUser the server login user that acts as the real user of the proxy
+   * @return the cached or freshly created proxy user
+   */
+  @VisibleForTesting
+  UserGroupInformation getProxyUser(String userName, UserGroupInformation loginUser) {
+    return proxyUserCache.get(new UgiKey(userName, loginUser.getUserName()), key -> {
+      LOG.debug("Creating proxy user for: {}", key.effectiveUser());
+      return UserGroupInformation.createProxyUser(key.effectiveUser(), loginUser);
+    });
+  }
+
+  /**
+   * Forces the proxy user cache to run any pending maintenance (eviction and cleanup).
+   */
+  @VisibleForTesting
+  void cleanUpProxyUserCache() {
+    proxyUserCache.cleanUp();
+  }
+
+  /**
+   * Releases resources held by this instance: stops the cache maintenance scheduler and runs any
+   * pending eviction cleanup. Should be called when the servlet is destroyed.
+   */
+  public void close() {
+    if (cacheMaintenanceExecutor != null) {
+      cacheMaintenanceExecutor.shutdownNow();
+    }
+  }
+
+  /**
+   * @return the approximate number of entries currently held in the proxy user cache
+   */
+  @VisibleForTesting
+  long proxyUserCacheSize() {
+    proxyUserCache.cleanUp();
+    return proxyUserCache.estimatedSize();
   }
 
   /**
@@ -172,6 +312,12 @@ public class ServletSecurity {
     @Override
     public String getServletInfo() {
       return delegate.getServletInfo();
+    }
+
+    @Override
+    public void destroy() {
+      ServletSecurity.this.close();
+      delegate.destroy();
     }
   }
 
@@ -237,8 +383,7 @@ public class ServletSecurity {
       // Temporary, and useless for now. Here only to allow this to work on an otherwise kerberized
       // server.
       if (isSecurityEnabled || authType == AuthType.JWT || authType == AuthType.OAUTH2) {
-        LOG.info("Creating proxy user for: {}", userFromHeader);
-        clientUgi = UserGroupInformation.createProxyUser(userFromHeader, UserGroupInformation.getLoginUser());
+        clientUgi = getProxyUser(userFromHeader, UserGroupInformation.getLoginUser());
       } else {
         // Unreachable in the case of NONE
         Preconditions.checkState(authType == AuthType.SIMPLE);

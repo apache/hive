@@ -169,7 +169,7 @@ avg_col_len
 max_col_len         	                    
 num_trues           	                    
 num_falses          	                    
-bit_vector          	                    
+bit_vector          	HL                  
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: desc formatted tbl_ice_puffin b
@@ -188,7 +188,7 @@ avg_col_len         	3.4444444444444446
 max_col_len         	5                   
 num_trues           	                    
 num_falses          	                    
-bit_vector          	                    
+bit_vector          	HL                  
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: desc formatted tbl_ice_puffin c
@@ -207,7 +207,7 @@ avg_col_len
 max_col_len         	                    
 num_trues           	                    
 num_falses          	                    
-bit_vector          	                    
+bit_vector          	HL                  
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: insert into tbl_ice_puffin values (10, 'six', 100000), (5000, 'two', 510000)
@@ -250,12 +250,12 @@ data_type           	int
 min                 	1                   
 max                 	5000                
 num_nulls           	0                   
-distinct_count      	9                   
+distinct_count      	10                  
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    
 num_falses          	                    
-bit_vector          	                    
+bit_vector          	HL                  
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: desc formatted tbl_ice_puffin b
@@ -274,7 +274,7 @@ avg_col_len         	3.4444444444444446
 max_col_len         	5                   
 num_trues           	                    
 num_falses          	                    
-bit_vector          	                    
+bit_vector          	HL                  
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: desc formatted tbl_ice_puffin c
@@ -288,11 +288,11 @@ data_type           	int
 min                 	50                  
 max                 	510000              
 num_nulls           	0                   
-distinct_count      	9                   
+distinct_count      	11                  
 avg_col_len         	                    
 max_col_len         	                    
 num_trues           	                    
 num_falses          	                    
-bit_vector          	                    
+bit_vector          	HL                  
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}

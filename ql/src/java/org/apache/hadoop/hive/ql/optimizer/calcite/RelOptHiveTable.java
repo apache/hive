@@ -129,9 +129,9 @@ public class RelOptHiveTable implements RelOptTable {
     this.hiveTblMetadata = hiveTblMetadata;
     this.hiveColStatsMap = new HashMap<>();
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
-    this.hiveNonPartitionColsMap = HiveCalciteUtil.getColInfoMap(hiveNonPartitionCols, 0);
+    this.hiveNonPartitionColsMap = getColInfoMap(hiveNonPartitionCols, hiveTblMetadata);
     this.hivePartitionCols = ImmutableList.copyOf(hivePartitionCols);
-    this.hivePartitionColsMap = HiveCalciteUtil.getColInfoMap(hivePartitionCols, hiveNonPartitionColsMap.size());
+    this.hivePartitionColsMap = getColInfoMap(hivePartitionCols, hiveTblMetadata);
     this.noOfNonVirtualCols = hiveNonPartitionCols.size() + hivePartitionCols.size();
     this.hiveVirtualCols = ImmutableList.copyOf(hiveVirtualCols);
     this.hiveConf = hconf;
@@ -142,6 +142,16 @@ public class RelOptHiveTable implements RelOptTable {
     Pair<List<ImmutableBitSet>, List<ImmutableBitSet>> constraintKeys = generateKeys();
     this.keys = constraintKeys.left;
     this.nonNullablekeys = constraintKeys.right;
+  }
+
+  private static ImmutableMap<Integer, ColumnInfo> getColInfoMap(List<ColumnInfo> hiveCols, Table table) {
+    ImmutableMap.Builder<Integer, ColumnInfo> builder = ImmutableMap.builder();
+
+    for (ColumnInfo ci : hiveCols) {
+      builder.put(table.getColumnIndexByName(ci.getInternalName()), ci);
+    }
+
+    return builder.build();
   }
 
   //~ Methods ----------------------------------------------------------------
@@ -667,6 +677,8 @@ public class RelOptHiveTable implements RelOptTable {
         LOG.error(logMsg);
         throw new RuntimeException(logMsg);
       }
+    } else {
+      colStatsCached.updateState(State.COMPLETE);
     }
   }
 

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -281,12 +282,20 @@ public class StatsSetupConst {
     return stats.basicStats;
   }
 
-  public static boolean areColumnStatsUptoDate(Map<String, String> params, String colName) {
+  /** Whether the stored column statistics are up to date for every column asked. */
+  public static boolean areColumnStatsUptoDate(Map<String, String> params, List<String> colNames) {
     if (params == null) {
-      return false;
+      // every column of no columns is up to date
+      return colNames.isEmpty();
     }
+    // the marker is one document holding every column, so it is parsed for the ask rather than
+    // once per column: a caller asking per partition would otherwise reparse it per column too
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
-    return stats.columnStats.containsKey(colName);
+    return stats.columnStats.keySet().containsAll(colNames);
+  }
+
+  public static boolean areColumnStatsUptoDate(Map<String, String> params, String colName) {
+    return areColumnStatsUptoDate(params, Collections.singletonList(colName));
   }
 
   // It will only throw JSONException when stats.put(BASIC_STATS, TRUE)

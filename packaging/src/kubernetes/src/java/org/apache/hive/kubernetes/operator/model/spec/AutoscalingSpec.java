@@ -33,10 +33,14 @@ public record AutoscalingSpec(
     @Default("0")
     Integer minReplicas,
     @JsonPropertyDescription("Threshold that triggers scale-up (component-specific: "
-        + "sessions per pod for HS2, request rate for HMS, busy slots per daemon for LLAP). "
+        + "sessions per pod for HS2, request rate for HMS, load percentage pending in TezAM for LLAP). "
         + "Not used by TezAM (demand-based: 1 TezAM per session).")
     @Default("80")
     Integer scaleUpThreshold,
+    @JsonPropertyDescription("Threshold that triggers scale-down (LLAP only): "
+        + "average daemon utilization percentage (0-100) below which scale-down triggers.")
+    @Default("20")
+    Integer scaleDownThreshold,
     @JsonPropertyDescription("Stabilization window in seconds for scale-up decisions. "
         + "Picks the highest recommendation within this window to prevent flapping.")
     @Default("60")
@@ -73,6 +77,7 @@ public record AutoscalingSpec(
     enabled = enabled != null ? enabled : false;
     minReplicas = minReplicas != null ? minReplicas : 0;
     scaleUpThreshold = scaleUpThreshold != null ? scaleUpThreshold : 80;
+    scaleDownThreshold = scaleDownThreshold != null ? scaleDownThreshold : 20;
     scaleUpStabilizationSeconds = scaleUpStabilizationSeconds != null ? scaleUpStabilizationSeconds : 60;
     scaleDownStabilizationSeconds = scaleDownStabilizationSeconds != null ? scaleDownStabilizationSeconds : 600;
     gracePeriodSeconds = gracePeriodSeconds != null ? gracePeriodSeconds : 3600;

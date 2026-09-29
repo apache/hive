@@ -209,7 +209,7 @@ public class PartitionIterable implements Iterable<Partition> {
           partitionNames = db.getPartitionNamesByPartitionVals(table, pVals, (short) -1);
           break;
         case BY_EXPR:
-          // TO-DO: this can be dealt with in a seperate PR. The current changes does not have a particular use case for this.
+          // TO-DO: this can be dealt with in a separate PR. The current changes does not have a particular use case for this.
           throw new HiveException("getpartitionsbyexpr is currently unsupported for the getpartitionswithspecs API");
         default:
           throw new HiveException("No such partition filter mode: " + filterMode);

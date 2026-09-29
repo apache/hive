@@ -266,6 +266,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -4014,6 +4015,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             colList.add(Pair.of(colInfo, colSrcRR));
             oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
                 colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+            oColInfo.setAmbiguousName(colInfo.hasAmbiguousName());
             inputColsProcessed.put(colInfo, oColInfo);
           }
           if (ensureUniqueCols) {
@@ -4101,6 +4103,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           colList.add(Pair.of(colInfo, input));
           oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
               colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+          oColInfo.setAmbiguousName(colInfo.hasAmbiguousName());
           inputColsProcessed.put(colInfo, oColInfo);
         }
         assert nonNull(tmp);
@@ -8660,6 +8663,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     fileSinkDesc.setWriteOperation(writeOperation);
+    if (writeOperation != Context.Operation.OTHER
+        && dest_tab != null
+        && dest_tab.getStorageHandler() != null) {
+      boolean copyOnWrite =
+          dest_tab.getStorageHandler().shouldOverwrite(dest_tab, ctx.getOperation());
+      fileSinkDesc.setCopyOnWrite(copyOnWrite);
+    }
 
     fileSinkDesc.setTemporary(destTableIsTemporary);
     fileSinkDesc.setMaterialization(destTableIsMaterialization);
@@ -8900,6 +8910,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void genAutoColumnStatsGatheringPipeline(Table table, Map<String, String> partSpec, Operator curr,
                                                    boolean isInsertInto, boolean useTableValueConstructor)
       throws SemanticException {
+    if (isInsertInto && table.hasNonNativePartitionSupport() && StatsUtils.isPartitionStats(table, conf)) {
+      // this table keeps its column statistics per partition, and an insert reaches too few of them
+      // to pay for grouping the gather by partition; they stand until something covers the table
+      LOG.debug("Skipping column stats autogather for insert into partition-level table {}",
+          table.getTableName());
+      return;
+    }
     LOG.info("Generate an operator pipeline to autogather column stats for table " + table.getTableName()
         + " in query " + ctx.getCmd());
     ColumnStatsAutoGatherContext columnStatsAutoGatherContext = null;

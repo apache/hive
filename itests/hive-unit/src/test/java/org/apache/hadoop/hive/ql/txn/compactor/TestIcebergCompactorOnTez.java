@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -71,7 +72,11 @@ public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtil.runCompaction(conf, DB_NAME, TABLE_NAME, CompactionType.MINOR, false, 
         "a=aaa111/a_trunc=aaa/a_bucket=0/b=1/c=100/d=1.0/e=2.0/f=4.00/g=true/h=2024-05-01/h_year=2024/i_month=2024-05/j_day=2024-05-01/k=2024-05-02T10%3A00%3A00/k_hour=2024-05-02-10",
         "a=bbb222/a_trunc=bbb/a_bucket=3/b=2/c=200/d=2.0/e=3.0/f=8.00/g=false/h=2024-05-03/h_year=2024/i_month=2024-05/j_day=2024-05-03/k=2024-05-04T13%3A00%3A00/k_hour=2024-05-04-13",
-        "a=null/a_trunc=null/a_bucket=null/b=null/c=null/d=null/e=null/f=null/g=null/h=null/h_year=null/i_month=null/j_day=null/k=null/k_hour=null"
+        "a=__HIVE_DEFAULT_PARTITION__/a_trunc=__HIVE_DEFAULT_PARTITION__/a_bucket=__HIVE_DEFAULT_PARTITION__/" +
+        "b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__/" +
+        "e=__HIVE_DEFAULT_PARTITION__/f=__HIVE_DEFAULT_PARTITION__/g=__HIVE_DEFAULT_PARTITION__/" +
+        "h=__HIVE_DEFAULT_PARTITION__/h_year=__HIVE_DEFAULT_PARTITION__/i_month=__HIVE_DEFAULT_PARTITION__/" +
+        "j_day=__HIVE_DEFAULT_PARTITION__/k=__HIVE_DEFAULT_PARTITION__/k_hour=__HIVE_DEFAULT_PARTITION__"
     );
     
     Assert.assertEquals(3, getFilesCount());
@@ -118,7 +123,7 @@ public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
     // Compaction should be initiated for each partition from the latest spec
     Assert.assertTrue(isCompactExist(rsp, "b_trunc_3=aaa", CompactionType.MINOR, CompactionState.SUCCEEDED));
     Assert.assertTrue(isCompactExist(rsp, "b_trunc_3=bbb", CompactionType.MINOR, CompactionState.SUCCEEDED));
-    Assert.assertTrue(isCompactExist(rsp, "b_trunc_3=null", CompactionType.MINOR, CompactionState.SUCCEEDED));
+    Assert.assertTrue(isCompactExist(rsp, "b_trunc_3=__HIVE_DEFAULT_PARTITION__", CompactionType.MINOR, CompactionState.SUCCEEDED));
 
     // Additional compaction should be initiated for all partitions from past partition specs
     Assert.assertTrue(isCompactExist(rsp, null, CompactionType.MINOR, CompactionState.SUCCEEDED));
@@ -162,6 +167,48 @@ public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
     List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     return Integer.parseInt(res.getFirst());
+  }
+
+  @Test
+  public void testOldSpecPartitionCompactionKeepsCurrentSpecStatistics() throws Exception {
+    // Compacting a partition of an older spec rewrites its rows into partitions of the current
+    // one, so what the compaction measured describes no current partition whole. The statistics
+    // stored for the current partitions must survive it untouched, or an aggregate answered from
+    // them would describe only the migrated rows.
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES, true);
+    driver = DriverFactory.newDriver(conf);
+    try {
+      executeStatementOnDriver(String.format("create table %s " +
+          "(id int, c bigint, a int, b string) " +
+          "partitioned by spec(a) stored by iceberg stored as orc " +
+          "tblproperties ('compactor.threshold.min.input.files'='1', " +
+          "'compactor.threshold.target.size'='1500')", QUALIFIED_TABLE_NAME), driver);
+
+      executeStatementOnDriver(String.format("INSERT INTO %s VALUES (1, 0, 1, 'x7')", QUALIFIED_TABLE_NAME), driver);
+      executeStatementOnDriver(String.format("INSERT INTO %s VALUES (2, 10, 1, 'x7')", QUALIFIED_TABLE_NAME), driver);
+      executeStatementOnDriver(String.format("INSERT INTO %s VALUES (5, 3, 1, 'x7')", QUALIFIED_TABLE_NAME), driver);
+      executeStatementOnDriver(String.format("INSERT INTO %s VALUES (6, 7, 1, 'x7')", QUALIFIED_TABLE_NAME), driver);
+
+      executeStatementOnDriver(String.format("alter table %s set partition spec(b)", QUALIFIED_TABLE_NAME), driver);
+
+      executeStatementOnDriver(String.format("INSERT INTO %s VALUES (3, 50, 2, 'x7')", QUALIFIED_TABLE_NAME), driver);
+      executeStatementOnDriver(String.format("INSERT INTO %s VALUES (4, 100, 2, 'x7')", QUALIFIED_TABLE_NAME), driver);
+      executeStatementOnDriver(String.format("analyze table %s compute statistics for columns",
+          QUALIFIED_TABLE_NAME), driver);
+
+      CompactorTestUtil.runCompaction(conf, DB_NAME, TABLE_NAME, CompactionType.MAJOR, false, "a=1");
+      Assert.assertTrue(isCompactExist(new HiveMetaStoreClient(conf).showCompactions(), "a=1",
+          CompactionType.MAJOR, CompactionState.SUCCEEDED));
+
+      driver.run(String.format("select max(c) from %s where b = 'x7'", QUALIFIED_TABLE_NAME));
+      List<String> res = new ArrayList<>();
+      driver.getFetchTask().fetch(res);
+      Assert.assertEquals(List.of("100"), res);
+    } finally {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES, false);
+    }
   }
 
   private List<String> getAllRecords() throws Exception {

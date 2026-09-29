@@ -248,21 +248,35 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
     final Optional<Integer> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
 
     final long start = System.nanoTime();
-    int deleteCount = doCleanNotificationEvents(tooOld, batchSize, table, tableName);
+    int deleteCount = 0;
+    int batchCount;
+    do {
+      batchCount = cleanNotificationEventsBatch(tooOld, batchSize, table, tableName);
+      deleteCount += batchCount;
+    } while (batchCount > 0);
 
     if (deleteCount == 0) {
       LOG.info("No {} events found to be cleaned with eventTime < {}", tableName, tooOld);
-    } else {
-      int batchCount = 0;
-      do {
-        batchCount = doCleanNotificationEvents(tooOld, batchSize, table, tableName);
-        deleteCount += batchCount;
-      } while (batchCount > 0);
     }
 
     final long finish = System.nanoTime();
     LOG.info("Deleted {} {} events older than epoch:{} in {}ms", deleteCount, tableName, tooOld,
         TimeUnit.NANOSECONDS.toMillis(finish - start));
+  }
+
+  private <T> int cleanNotificationEventsBatch(final int ageSec, final Optional<Integer> batchSize,
+      Class<T> tableClass, String tableName) {
+    boolean committed = false;
+    baseStore.openTransaction();
+    try {
+      int deleted = doCleanNotificationEvents(ageSec, batchSize, tableClass, tableName);
+      committed = baseStore.commitTransaction();
+      return deleted;
+    } finally {
+      if (!committed && baseStore.isActiveTransaction()) {
+        baseStore.rollbackTransaction();
+      }
+    }
   }
 
   private <T> int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize,
@@ -309,6 +323,7 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
       }
       pm.deletePersistentAll(events);
     }
+    query.closeAll();
     return eventsCount;
   }
 
@@ -328,14 +343,10 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
     Long result = 0L;
     long fromEventId = rqst.getFromEventId();
     String inputDbName = rqst.getDbName();
-    String catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
+    String catName = rqst.isSetCatName() ? normalizeIdentifier(rqst.getCatName()) : getDefaultCatalog(conf);
     long toEventId;
     String paramSpecs;
     List<Object> paramVals = new ArrayList<>();
-
-    // We store a catalog name in lower case in metastore and also use the same way everywhere in
-    // hive.
-    assert catName.equals(catName.toLowerCase());
 
     // Build the query to count events, part by part
     String queryStr = "select count(eventId) from " + MNotificationLog.class.getName();
@@ -353,8 +364,7 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
       // counted.
       queryStr = queryStr + " && (dbName == inputDbName || dbName == null)";
       paramSpecs = paramSpecs + ", java.lang.String inputDbName";
-      // We store a database name in lower case in metastore.
-      paramVals.add(inputDbName.toLowerCase());
+      paramVals.add(normalizeIdentifier(inputDbName));
     }
 
     // catName could be NULL in case of transaction related events, which also need to be
@@ -374,7 +384,7 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
     if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
       queryStr = queryStr + " && (";
       for (String tableName : rqst.getTableNames()) {
-        paramVals.add(tableName.toLowerCase());
+        paramVals.add(normalizeIdentifier(tableName));
         queryStr = queryStr + "tableName == tableName" + paramVals.size() + " || ";
         paramSpecs = paramSpecs + ", java.lang.String tableName" + paramVals.size();
       }
@@ -386,7 +396,7 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
     query.declareParameters(paramSpecs);
     result = (Long) query.executeWithArray(paramVals.toArray());
     // Cap the event count by limit if specified.
-    long  eventCount = result.longValue();
+    long eventCount = result.longValue();
     if (rqst.isSetLimit() && eventCount > rqst.getLimit()) {
       eventCount = rqst.getLimit();
     }

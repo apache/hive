@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeException;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.tez.dag.api.SessionNotRunning;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -45,6 +46,23 @@ public class TestReExecuteLostAMQueryPlugin {
   @Test
   public void testRetryOnNoCurrentDAGException() throws Exception {
     testReExecuteWithExceptionMessage("No running DAG at present");
+  }
+
+  @Test
+  public void testRetryOnDefaultSessionNotRunningException() throws Exception {
+    ReExecuteLostAMQueryPlugin plugin = new ReExecuteLostAMQueryPlugin();
+    ReExecuteLostAMQueryPlugin.LocalHook hook = plugin.new LocalHook();
+
+    HiveConf conf = new HiveConf();
+
+    HookContext context = new HookContext(null, QueryState.getNewQueryState(conf, null), null, null, null,
+        null, null, null, null, false, null, null);
+    context.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
+    context.setException(new SessionNotRunning("Tez session is not running"));
+
+    hook.run(context);
+
+    Assert.assertTrue(plugin.shouldReExecute(1));
   }
 
   private void testReExecuteWithExceptionMessage(String message) throws Exception {

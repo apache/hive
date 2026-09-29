@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,7 +45,8 @@ class TestHiveRelJsonSchemaReader {
   void testReadSchemaFromTpcdsQuery1() throws IOException {
     Path iFile = TPCDS_JSON_PATH.resolve("query1.q.out");
     String jsonContent = new String(Files.readAllBytes(iFile), Charset.defaultCharset());
-    RelOptSchema schema = HiveRelJsonSchemaReader.read(jsonContent, new HiveConf(), new HiveTypeFactory());
+    RelOptSchema schema = HiveRelJsonSchemaReader.read(jsonContent, new HiveConf(),
+        new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
     Set<TpcdsTable> validTables =
         ImmutableSet.of(TpcdsTable.CUSTOMER, TpcdsTable.STORE, TpcdsTable.DATE_DIM, TpcdsTable.STORE_RETURNS);
     for (TpcdsTable t : validTables) {
