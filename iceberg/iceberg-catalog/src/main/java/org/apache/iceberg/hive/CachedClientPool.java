@@ -128,6 +128,17 @@ public class CachedClientPool implements ClientPool<IMetaStoreClient, TException
     return clientPoolCache;
   }
 
+  /** Clears the JVM-wide client pool cache. For unit tests only. */
+  @VisibleForTesting
+  static synchronized void resetClientPoolCacheForTests() {
+    if (clientPoolCache != null) {
+      clientPoolCache.asMap().values().forEach(HiveClientPool::close);
+      clientPoolCache.invalidateAll();
+      clientPoolCache.cleanUp();
+      clientPoolCache = null;
+    }
+  }
+
   @Override
   public <R> R run(Action<R, IMetaStoreClient, TException> action) throws TException, InterruptedException {
     return clientPool().run(action);
