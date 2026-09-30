@@ -99,7 +99,7 @@ public class TestParquetCachedPageReadStore {
    * the two members that re-implement parquet-hadoop internals; bump this once they have been
    * diffed against the new release.
    */
-  private static final String REVIEWED_PARQUET_VERSION = "1.18.0";
+  private static final String REVIEWED_PARQUET_VERSION = "1.18.1";
 
   private static final int ROWS = 3000;
   /** Small enough that every column chunk holds several pages. */
