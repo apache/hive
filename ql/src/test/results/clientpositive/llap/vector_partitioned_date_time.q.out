@@ -1501,7 +1501,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_orc_partitioned_date
-                  Statistics: Num rows: 137 Data size: 39448 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 39439 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1511,7 +1511,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 39448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 39439 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -2563,7 +2563,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_orc_partitioned_timestamp
-                  Statistics: Num rows: 137 Data size: 39448 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 39441 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -2573,7 +2573,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 39448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 39441 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -4170,7 +4170,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_parquet_partitioned_date
-                  Statistics: Num rows: 137 Data size: 12195 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 15264 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -4180,7 +4180,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 12195 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 15264 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -5232,7 +5232,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_parquet_partitioned_timestamp
-                  Statistics: Num rows: 137 Data size: 9908 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 12954 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -5242,7 +5242,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 9908 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 12954 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:

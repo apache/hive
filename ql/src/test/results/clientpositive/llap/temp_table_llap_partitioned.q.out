@@ -1924,7 +1924,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: oft
-                  Statistics: Num rows: 12288 Data size: 13243096 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 12288 Data size: 13242176 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]

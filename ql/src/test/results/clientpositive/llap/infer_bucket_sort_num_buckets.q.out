@@ -158,11 +158,11 @@ STAGE PLANS:
                 Statistics: Num rows: 1000 Data size: 279000 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   bucketingVersion: 2
-                  key expressions: _col2 (type: string)
-                  null sort order: z
+                  key expressions: _col2 (type: string), rand(1234567L) (type: double)
+                  null sort order: za
                   numBuckets: -1
-                  sort order: +
-                  Map-reduce partition columns: _col2 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col2 (type: string), rand(1234567L) (type: double)
                   Statistics: Num rows: 1000 Data size: 279000 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: -1
                   value expressions: _col0 (type: int), _col1 (type: string)
@@ -353,7 +353,7 @@ Table:              	test_table_n0
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-	numFiles            	1                   
+	numFiles            	2                   
 	numRows             	670                 
 	rawDataSize         	5888                
 	totalSize           	#Masked#
@@ -391,7 +391,7 @@ Table:              	test_table_n0
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
-	numFiles            	1                   
+	numFiles            	2                   
 	numRows             	330                 
 	rawDataSize         	2924                
 	totalSize           	#Masked#
