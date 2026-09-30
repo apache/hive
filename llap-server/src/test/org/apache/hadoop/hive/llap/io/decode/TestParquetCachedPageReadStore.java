@@ -231,13 +231,13 @@ public class TestParquetCachedPageReadStore {
     ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
     CompressionCodecFactory codecFactory = options.getCodecFactory();
     ParquetMetadataConverter converter = new ParquetMetadataConverter(options);
-    try {
-      PageReader expected = new ParquetCachedPageReadStore(footer,
-          singleChunkBatch(chunk, chunkBytes), codecFactory, converter).getPageReader(descriptor);
-      PageReader actual = new ParquetCachedPageReadStore(footer,
-          singleChunkBatch(chunkWithTotalSize(chunk, splicedBytes.size()), splicedBytes.toByteArray()),
-          codecFactory, converter).getPageReader(descriptor);
-      assertPageReaderParity("chunk behind an index page", expected, actual, new Coverage());
+    try (PageReadStore plain = new ParquetCachedPageReadStore(footer,
+             singleChunkBatch(chunk, chunkBytes), codecFactory, converter);
+         PageReadStore spliced = new ParquetCachedPageReadStore(footer,
+             singleChunkBatch(chunkWithTotalSize(chunk, splicedBytes.size()), splicedBytes.toByteArray()),
+             codecFactory, converter)) {
+      assertPageReaderParity("chunk behind an index page", plain.getPageReader(descriptor),
+          spliced.getPageReader(descriptor), new Coverage());
     } finally {
       codecFactory.release();
     }
@@ -476,13 +476,18 @@ public class TestParquetCachedPageReadStore {
     batch.bufferLengths()[0] = keptLengths.stream().mapToInt(Integer::intValue).toArray();
   }
 
-  private static PageReadStore cachedStore(ParquetMetadata footer, ParquetEncodedColumnBatch batch)
+  /**
+   * Builds a store over the batch and drops it again. Only the construction matters: the callers use
+   * this to assert that a batch whose buffers do not tile the chunk is rejected up front, so the
+   * store is never read from and never escapes.
+   */
+  private static void cachedStore(ParquetMetadata footer, ParquetEncodedColumnBatch batch)
       throws IOException {
     ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
     CompressionCodecFactory codecFactory = options.getCodecFactory();
-    try {
-      return new ParquetCachedPageReadStore(footer, batch, codecFactory,
-          new ParquetMetadataConverter(options));
+    try (PageReadStore store = new ParquetCachedPageReadStore(footer, batch, codecFactory,
+        new ParquetMetadataConverter(options))) {
+      assertNotNull(store);
     } finally {
       codecFactory.release();
     }

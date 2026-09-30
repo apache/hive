@@ -29,6 +29,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -223,20 +224,8 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     consumer.setFileMetadata(footer, requestedSchema, path);
 
     final Allocator allocator = bufferManager.getAllocator();
-    final long splitStart = split.getStart();
-    final long splitEnd = splitStart + split.getLength();
     final List<BlockMetaData> blocks = footer.getBlocks();
-    List<BlockMetaData> selected = new ArrayList<>();
-    for (BlockMetaData block : blocks) {
-      long firstDataPage = block.getColumns().getFirst().getFirstDataPageOffset();
-      if (firstDataPage >= splitStart && firstDataPage < splitEnd) {
-        selected.add(block);
-      }
-    }
-    FilterPredicate predicate = ParquetRecordReaderBase.toFilterPredicate(jobConf, fileSchema);
-    if (predicate != null) {
-      selected = RowGroupFilter.filterRowGroups(FilterCompat.get(predicate), selected, fileSchema);
-    }
+    List<BlockMetaData> selected = selectRowGroups(blocks, fileSchema);
     Map<BlockMetaData, Integer> rowGroupOf = new IdentityHashMap<>();
     for (int i = 0; i < blocks.size(); ++i) {
       rowGroupOf.put(blocks.get(i), i);
@@ -270,6 +259,29 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
         }
       }
     }
+  }
+
+  /**
+   * The row groups this split has to read: the ones whose first data page falls inside the split, as
+   * Parquet's own input format assigns them, minus any the pushed-down predicate rules out on its
+   * statistics. Returned in file order, since the fetch pipeline reads them in that order.
+   */
+  private List<BlockMetaData> selectRowGroups(List<BlockMetaData> blocks, MessageType fileSchema)
+      throws IOException {
+    long splitStart = split.getStart();
+    long splitEnd = splitStart + split.getLength();
+    List<BlockMetaData> selected = new ArrayList<>();
+    for (BlockMetaData block : blocks) {
+      long firstDataPage = block.getColumns().getFirst().getFirstDataPageOffset();
+      if (firstDataPage >= splitStart && firstDataPage < splitEnd) {
+        selected.add(block);
+      }
+    }
+    FilterPredicate predicate = ParquetRecordReaderBase.toFilterPredicate(jobConf, fileSchema);
+    if (predicate == null) {
+      return selected;
+    }
+    return RowGroupFilter.filterRowGroups(FilterCompat.get(predicate), selected, fileSchema);
   }
 
   /** Whether the projection reaches into a group type, which this reader does not decode. */
@@ -545,10 +557,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       runs.add(new Run(FileRange.createFileRange(from, (int) (to - from)), misses.subList(i, j)));
       i = j;
     }
-    List<FileRange> ranges = new ArrayList<>(runs.size());
-    for (Run run : runs) {
-      ranges.add(run.range);
-    }
+    List<FileRange> ranges = runs.stream().map(run -> run.range).collect(Collectors.toList());
     fileStream.readVectored(ranges, buffers::allocate, buffers::release);
     // Only requests the stream accepted are the fetch's to wait for or cancel.
     fetch.runs.addAll(runs);
