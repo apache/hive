@@ -45,21 +45,21 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
-      - name: Cache Thrift 0.16.0
+      - name: Cache Thrift 0.24.0
         if: runner.os == 'Linux'
         id: cache-thrift
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/thrift-0.16.0-install
-          key: thrift-0.16.0-${{ runner.os }}-${{ runner.arch }}
-      - name: Install Thrift 0.16.0
+          path: ${{ github.workspace }}/thrift-0.24.0-install
+          key: thrift-0.24.0-${{ runner.os }}-${{ runner.arch }}
+      - name: Install Thrift 0.24.0
         if: runner.os == 'Linux' && steps.cache-thrift.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update && sudo apt-get install -y bison flex g++ libboost-all-dev libevent-dev libssl-dev make pkg-config
-          wget -q https://archive.apache.org/dist/thrift/0.16.0/thrift-0.16.0.tar.gz
-          tar xzf thrift-0.16.0.tar.gz
-          cd thrift-0.16.0
-          ./configure --prefix=${{ github.workspace }}/thrift-0.16.0-install \
+          wget -q https://archive.apache.org/dist/thrift/0.24.0/thrift-0.24.0.tar.gz
+          tar xzf thrift-0.24.0.tar.gz
+          cd thrift-0.24.0
+          ./configure --prefix=${{ github.workspace }}/thrift-0.24.0-install \
             --without-java --without-python --without-py3 --without-ruby \
             --without-nodejs --without-go --without-erlang --without-lua \
             --without-perl --without-php --without-php_extension --without-dart \
@@ -68,15 +68,15 @@ jobs:
             --without-cpp --without-c_glib --without-netstd
           make -j$(nproc)
           make install
-          mkdir -p ${{ github.workspace }}/thrift-0.16.0-install/share/fb303/if
-          cp contrib/fb303/if/fb303.thrift ${{ github.workspace }}/thrift-0.16.0-install/share/fb303/if/
+          mkdir -p ${{ github.workspace }}/thrift-0.24.0-install/share/fb303/if
+          cp contrib/fb303/if/fb303.thrift ${{ github.workspace }}/thrift-0.24.0-install/share/fb303/if/
           cd ..
-          rm -rf thrift-0.16.0 thrift-0.16.0.tar.gz
+          rm -rf thrift-0.24.0 thrift-0.24.0.tar.gz
       - name: Build with Maven
         run: |
           PROFILES="-Pitests"
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            PROFILES+=",thriftif -Dthrift.home=${{ github.workspace }}/thrift-0.16.0-install"
+            PROFILES+=",thriftif -Dthrift.home=${{ github.workspace }}/thrift-0.24.0-install"
           fi
           mvn clean install -DskipTests $PROFILES
       - name: Thrift validation
