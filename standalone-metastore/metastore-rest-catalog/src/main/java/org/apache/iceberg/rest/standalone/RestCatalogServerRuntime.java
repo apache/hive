@@ -44,6 +44,13 @@ public class RestCatalogServerRuntime {
   private String restEndpoint;
   private int port;
 
+  /**
+   * Creates the runtime for {@code conf}, validating that HMS Thrift URIs are configured.
+   *
+   * @param conf the configuration used to reach HMS
+   * @param serverProperties the Spring Boot server properties, used to detect SSL
+   * @throws IllegalArgumentException if {@code metastore.thrift.uris} is not configured
+   */
   public RestCatalogServerRuntime(Configuration conf, ServerProperties serverProperties) {
     this.conf = conf;
     this.serverProperties = serverProperties;
@@ -62,6 +69,13 @@ public class RestCatalogServerRuntime {
     }
   }
 
+  /**
+   * Records the actual port the web server bound to and computes the REST endpoint URL.
+   * The configured port may be 0 (bind to any free port), so the actual port is only known once
+   * the server has started.
+   *
+   * @param event the web server initialization event
+   */
   @EventListener
   public void onWebServerInitialized(WebServerInitializedEvent event) {
     int actualPort = event.getWebServer().getPort();
@@ -90,11 +104,13 @@ public class RestCatalogServerRuntime {
     return ssl != null && ssl.isEnabled();
   }
 
+  /** Returns the actual port the web server bound to, or {@code 0} if not yet initialized. */
   @VisibleForTesting
   public int getPort() {
     return port;
   }
 
+  /** Returns the REST endpoint URL, or {@code null} if the web server is not yet initialized. */
   public String getRestEndpoint() {
     return restEndpoint;
   }

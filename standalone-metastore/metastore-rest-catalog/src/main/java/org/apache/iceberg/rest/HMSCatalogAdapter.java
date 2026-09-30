@@ -128,6 +128,16 @@ public class HMSCatalogAdapter implements Closeable {
   private final List<IcebergMetricsReporter> metricsReporters;
   private final Clock clock = Clock.systemUTC();
 
+  /**
+   * Creates an adapter that dispatches Iceberg REST Catalog requests to {@code catalog}.
+   *
+   * @param catalogName the catalog name used when checking authorization
+   * @param catalog the underlying catalog, which must implement {@link SupportsNamespaces} and
+   *     {@link ViewCatalog}
+   * @param icebergAuthorizer authorizer used to filter list results and validate table
+   *     locations, or {@code null} to skip authorization
+   * @param metricsReporters reporters notified when a {@code reportMetrics} request is received
+   */
   public HMSCatalogAdapter(String catalogName, Catalog catalog, IcebergAuthorizer icebergAuthorizer,
       List<IcebergMetricsReporter> metricsReporters) {
     Preconditions.checkArgument(catalog instanceof SupportsNamespaces);
@@ -569,9 +579,12 @@ public class HMSCatalogAdapter implements Closeable {
     return null;
   }
 
+  /**
+   * Closes the configured metrics reporters. The caller remains responsible for closing the
+   * underlying catalog backing this REST catalog.
+   */
   @Override
   public void close() {
-    // The caller is responsible for closing the underlying catalog backing this REST catalog.
     for (IcebergMetricsReporter reporter : metricsReporters) {
       try {
         reporter.close();
@@ -588,6 +601,10 @@ public class HMSCatalogAdapter implements Closeable {
     }
   }
 
+  /**
+   * Casts {@code request} to {@code requestType}, throwing a {@code 400 Bad Request} error if
+   * the request body does not match the type expected by the route.
+   */
   public static <T> T castRequest(Class<T> requestType, Object request) {
     if (requestType.isInstance(request)) {
       return requestType.cast(request);
@@ -596,6 +613,10 @@ public class HMSCatalogAdapter implements Closeable {
   }
 
 
+  /**
+   * Populates {@code errorBuilder} with the HTTP status, error type, and message derived from
+   * {@code exc}, logging the exception at a level appropriate to its severity.
+   */
   public static void configureResponseFromException(
       Exception exc, ErrorResponse.Builder errorBuilder) {
     var errorCode = EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500);

@@ -60,10 +60,12 @@ public class HMSCatalogFactory {
     this.configuration = conf;
   }
   
+  /** Returns the configured servlet port. */
   public int getPort() {
     return port;
   }
-  
+
+  /** Returns the configured servlet path. */
   public String getPath() {
     return path;
   }

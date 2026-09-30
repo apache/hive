@@ -49,6 +49,11 @@ public class HMSCatalogServlet extends HttpServlet {
   private final Map<String, String> responseHeaders =
       ImmutableMap.of(CONTENT_TYPE, APPLICATION_JSON);
 
+  /**
+   * Creates a servlet that dispatches Iceberg REST Catalog requests to {@code restCatalogAdapter}.
+   *
+   * @param restCatalogAdapter the adapter used to execute each request
+   */
   public HMSCatalogServlet(HMSCatalogAdapter restCatalogAdapter) {
     this.restCatalogAdapter = restCatalogAdapter;
   }
@@ -99,6 +104,10 @@ public class HMSCatalogServlet extends HttpServlet {
     restCatalogAdapter.close();
   }
 
+  /**
+   * Parsed view of a servlet request, or the {@link ErrorResponse} to return instead if parsing
+   * the request failed.
+   */
   public static class ServletRequestContext {
     private HTTPMethod method;
     private String path;
@@ -168,18 +177,22 @@ public class HMSCatalogServlet extends HttpServlet {
       return method;
     }
 
+    /** The request path, relative to the servlet, with the leading '/' removed. */
     public String path() {
       return path;
     }
 
+    /** The request's query parameters, keyed by parameter name. */
     public Map<String, String> queryParams() {
       return queryParams;
     }
 
+    /** The deserialized request body, or {@code null} if the route expects no request body. */
     public Object body() {
       return body;
     }
 
+    /** The error to return instead of dispatching the request, if parsing the request failed. */
     public Optional<ErrorResponse> error() {
       return Optional.ofNullable(errorResponse);
     }
