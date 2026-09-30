@@ -453,7 +453,7 @@ public class TestParquetEncodedDataReader {
   /** The reader runs a row group ahead: group n+1 is requested while group n is still decoding. */
   @Test
   public void testNextRowGroupIsRequestedBeforeCurrentDecodes() throws Exception {
-    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
+    read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
     // Row group 1's request goes out before row group 0 is decoded; row group 2's after it.
     assertEquals(Arrays.asList(0, 0, 1), decodedAtRequest);
