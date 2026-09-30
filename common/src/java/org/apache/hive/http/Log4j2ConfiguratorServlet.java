@@ -238,30 +238,20 @@ public class Log4j2ConfiguratorServlet extends HttpServlet {
         LOG.warn("Invalid log level: {} for logger: {}. Ignoring reconfiguration.", logger.getLevel(), loggerName);
         continue;
       }
-      setLogLevel(loggerName, logLevel);
+
+      // getLoggerConfig never returns null: for a logger that is not configured explicitly it returns the
+      // closest configured ancestor (the root logger if there is none). Only update the returned config when
+      // its name matches the request, otherwise we would change an ancestor's level instead of the requested one.
+      LoggerConfig loggerConfig = conf.getLoggerConfig(loggerName);
+      if (loggerName.equals(loggerConfig.getName())) {
+        LOG.debug("Updating logger ({}) to {} level", loggerName, logLevel);
+        loggerConfig.setLevel(logLevel);
+      } else {
+        LOG.debug("Logger ({}) not configured. Adding as new logger with {} level", loggerName, logLevel);
+        conf.addLogger(loggerName, new LoggerConfig(loggerName, logLevel, true));
+      }
     }
     context.updateLoggers(conf);
-  }
-
-  /**
-   * Sets the level for a single logger, adding a new logger when it is not explicitly
-   * configured yet.
-   * <p>
-   * {@link Configuration#getLoggerConfig(String)} never returns {@code null}: for an
-   * unconfigured name it returns the closest configured ancestor (the root logger for a
-   * brand-new name). Comparing the requested name against the returned config's name is
-   * therefore required so that setting a level for a not-yet-configured child logger does
-   * not silently change one of its ancestors instead.
-   */
-  void setLogLevel(final String loggerName, final Level logLevel) {
-    LoggerConfig loggerConfig = conf.getLoggerConfig(loggerName);
-    if (loggerName.equals(loggerConfig.getName())) {
-      LOG.debug("Updating logger ({}) to {} level", loggerName, logLevel);
-      loggerConfig.setLevel(logLevel);
-    } else {
-      LOG.debug("Logger ({}) not configured. Adding as new logger with {} level", loggerName, logLevel);
-      conf.addLogger(loggerName, new LoggerConfig(loggerName, logLevel, true));
-    }
   }
 
   private void listLoggers(final HttpServletResponse response) throws IOException {
