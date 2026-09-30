@@ -93,7 +93,8 @@ class HiveMetaToolCommandLine {
       .hasOptionalArgs(3)
       .withDescription("De-duplicate column descriptors for partitioned tables to reduce metadata bloat. "
           + "Optional catalog, database, and table filters support * wildcards. Use -dryRun to preview changes, "
-          + "-verbose to print per-partition details, and -timeout to set a timeout in seconds.")
+          + "-verbose to print per-partition details, and -timeout to set a timeout in seconds. "
+          + "Live runs validate committed state: partition column schemas are unchanged and duplicates are removed.")
       .create("dedupColumns");
 
   private static final Option VERBOSE = OptionBuilder

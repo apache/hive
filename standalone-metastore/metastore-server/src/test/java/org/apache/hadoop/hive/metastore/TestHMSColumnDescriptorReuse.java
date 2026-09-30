@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
+import org.apache.hadoop.hive.metastore.tools.ColumnDeduplicator;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
@@ -42,6 +43,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,10 +55,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
 public class TestHMSColumnDescriptorReuse {
+
   private ObjectStore objectStore = null;
   private Configuration conf;
 
@@ -196,6 +200,7 @@ public class TestHMSColumnDescriptorReuse {
       MetaToolObjectStore.DedupColumnsResult result = metaToolStore.dedupColumns(null, "default", "person", progress,
           false, false);
       assertEquals(0, result.getTablesWithDuplicates());
+      assertEquals(0, result.getTablesValidated());
 
       FieldSchema lname = new FieldSchema("lname", ColumnType.STRING_TYPE_NAME, "");
       Table tbl2 = newTable(Arrays.asList(id, fname, lname), Collections.singletonList(country));
@@ -209,6 +214,7 @@ public class TestHMSColumnDescriptorReuse {
 
       result = metaToolStore.dedupColumns(null, "default", "person", progress, false, false);
       assertTrue(result.getStorageDescriptorsUpdated() > 0);
+      assertEquals(1, result.getTablesValidated());
       assertEquals(2, countColumnDescriptors());
       assertNotNull(progress.get());
 
@@ -228,6 +234,75 @@ public class TestHMSColumnDescriptorReuse {
     } finally {
       Deadline.stopTimer();
     }
+  }
+
+  @Test
+  public void testValidateTableAfterDedupReloadsPartitionById() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.PARTITION_REUSE_COLUMN_DESCRIPTORS, false);
+    createTableWithDuplicateColumnDescriptors();
+    long partId = lookupPartitionId("country=Germany");
+    List<FieldSchema> cols = Arrays.asList(
+        new FieldSchema("id", ColumnType.STRING_TYPE_NAME, ""),
+        new FieldSchema("fname", ColumnType.STRING_TYPE_NAME, ""));
+
+    validate(Collections.singletonList(new ColumnDeduplicator.PartitionSchemaSnapshot(partId, cols)));
+  }
+
+  @Test
+  public void testValidateTableAfterDedupDetectsSchemaChange() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.PARTITION_REUSE_COLUMN_DESCRIPTORS, false);
+    createTableWithDuplicateColumnDescriptors();
+    long partId = lookupPartitionId("country=Germany");
+
+    List<ColumnDeduplicator.PartitionSchemaSnapshot> snapshots = Collections.singletonList(
+        new ColumnDeduplicator.PartitionSchemaSnapshot(partId, Collections.singletonList(
+            new FieldSchema("unexpected", ColumnType.STRING_TYPE_NAME, ""))));
+
+    MetaException ex = assertThrows(MetaException.class, () -> validate(snapshots));
+    assertTrue(ex.getMessage().contains("column schema changed for partition " + partId));
+  }
+
+  private int createTableWithDuplicateColumnDescriptors() throws Exception {
+    FieldSchema id = new FieldSchema("id", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema fname = new FieldSchema("fname", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema country = new FieldSchema("country", ColumnType.STRING_TYPE_NAME, "");
+
+    Table tbl1 = newTable(Arrays.asList(id, fname), Collections.singletonList(country));
+    objectStore.createTable(tbl1);
+    objectStore.addPartition(newPart(tbl1, "US"));
+    objectStore.addPartition(newPart(tbl1, "Greece"));
+
+    FieldSchema lname = new FieldSchema("lname", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl2 = newTable(Arrays.asList(id, fname, lname), Collections.singletonList(country));
+    objectStore.alterTable(DEFAULT_CATALOG_NAME, tbl1.getDbName(), tbl1.getTableName(), tbl2, null);
+    objectStore.addPartition(newPart(tbl2, "Italy"));
+    objectStore.addPartition(newPart(tbl1, "Germany"));
+    objectStore.addPartition(newPart(tbl1, "Belgium"));
+    objectStore.addPartition(newPart(tbl2, "England"));
+
+    return countColumnDescriptors();
+  }
+
+  private long lookupPartitionId(String partName) throws Exception {
+    try (Connection c = TestTxnDbUtil.getConnection(conf);
+        PreparedStatement ps = c.prepareStatement(
+            "SELECT \"PART_ID\" FROM \"PARTITIONS\" WHERE \"PART_NAME\" = ?")) {
+      ps.setString(1, partName);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (!rs.next()) {
+          throw new IllegalStateException("Partition not found: " + partName);
+        }
+        return rs.getLong(1);
+      }
+    }
+  }
+
+  private void validate(List<ColumnDeduplicator.PartitionSchemaSnapshot> snapshots)
+      throws Exception {
+    ColumnDeduplicator deduplicator =
+        new ColumnDeduplicator(objectStore.createRawStoreBundle(), null, false, false);
+    ColumnDeduplicator.TableInfo tableInfo = new ColumnDeduplicator.TableInfo(0L, 0L, "hive", "default", "person");
+    deduplicator.validateTableAfterDedup(tableInfo, snapshots);
   }
 
   private int countColumnDescriptors() {
