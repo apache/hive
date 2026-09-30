@@ -27,19 +27,10 @@ class TableParamsUpdate
 
     public static array $tspec = [
         1 => [
-            'var' => 'cat_name',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ],
-        2 => [
-            'var' => 'db_name',
-            'isRequired' => true,
-            'type' => TType::STRING,
-        ],
-        3 => [
             'var' => 'table_name',
             'isRequired' => true,
-            'type' => TType::STRING,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\TableName',
         ],
         4 => [
             'var' => 'params',
@@ -66,9 +57,7 @@ class TableParamsUpdate
         ],
     ];
 
-    public ?string $cat_name = null;
-    public ?string $db_name = null;
-    public ?string $table_name = null;
+    public ?TableName $table_name = null;
     /**
      * @var array
      */
@@ -79,14 +68,8 @@ class TableParamsUpdate
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['cat_name'])) {
-                $this->cat_name = (string)$vals['cat_name'];
-            }
-            if (isset($vals['db_name'])) {
-                $this->db_name = (string)$vals['db_name'];
-            }
             if (isset($vals['table_name'])) {
-                $this->table_name = (string)$vals['table_name'];
+                $this->table_name = $vals['table_name'];
             }
             if (isset($vals['params'])) {
                 $this->params = $vals['params'];
@@ -121,22 +104,9 @@ class TableParamsUpdate
                 }
                 switch ($fid) {
                     case 1:
-                        if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->cat_name);
-                        } else {
-                            $xfer += $input->skip($ftype);
-                        }
-                        break;
-                    case 2:
-                        if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->db_name);
-                        } else {
-                            $xfer += $input->skip($ftype);
-                        }
-                        break;
-                    case 3:
-                        if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->table_name);
+                        if ($ftype == TType::STRUCT) {
+                            $this->table_name = new \metastore\TableName();
+                            $xfer += $this->table_name->read($input);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
@@ -194,19 +164,12 @@ class TableParamsUpdate
         $output->incrementRecursionDepth();
         try {
             $xfer += $output->writeStructBegin('TableParamsUpdate');
-            if ($this->cat_name !== null) {
-                $xfer += $output->writeFieldBegin('cat_name', TType::STRING, 1);
-                $xfer += $output->writeString($this->cat_name);
-                $xfer += $output->writeFieldEnd();
-            }
-            if ($this->db_name !== null) {
-                $xfer += $output->writeFieldBegin('db_name', TType::STRING, 2);
-                $xfer += $output->writeString($this->db_name);
-                $xfer += $output->writeFieldEnd();
-            }
             if ($this->table_name !== null) {
-                $xfer += $output->writeFieldBegin('table_name', TType::STRING, 3);
-                $xfer += $output->writeString($this->table_name);
+                if (!is_object($this->table_name)) {
+                    throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+                }
+                $xfer += $output->writeFieldBegin('table_name', TType::STRUCT, 1);
+                $xfer += $this->table_name->write($output);
                 $xfer += $output->writeFieldEnd();
             }
             if ($this->params !== null) {

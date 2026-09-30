@@ -110,13 +110,13 @@ class ThriftHiveMetastore_get_privilege_set_args
                     case 3:
                         if ($ftype == TType::LST) {
                             $this->group_names = [];
-                            $_size1931 = 0;
-                            $_etype1934 = 0;
-                            $xfer += $input->readListBegin($_etype1934, $_size1931);
-                            for ($_i1935 = 0; $_i1935 < $_size1931; ++$_i1935) {
-                                $elem1936 = null;
-                                $xfer += $input->readString($elem1936);
-                                $this->group_names[] = $elem1936;
+                            $_size1940 = 0;
+                            $_etype1943 = 0;
+                            $xfer += $input->readListBegin($_etype1943, $_size1940);
+                            for ($_i1944 = 0; $_i1944 < $_size1940; ++$_i1944) {
+                                $elem1945 = null;
+                                $xfer += $input->readString($elem1945);
+                                $this->group_names[] = $elem1945;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -162,8 +162,8 @@ class ThriftHiveMetastore_get_privilege_set_args
                 }
                 $xfer += $output->writeFieldBegin('group_names', TType::LST, 3);
                 $output->writeListBegin(TType::STRING, count($this->group_names));
-                foreach ($this->group_names as $iter1937) {
-                    $xfer += $output->writeString($iter1937);
+                foreach ($this->group_names as $iter1946) {
+                    $xfer += $output->writeString($iter1946);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();
