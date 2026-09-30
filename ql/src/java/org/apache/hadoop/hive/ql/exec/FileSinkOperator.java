@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AffectedRowsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -149,9 +150,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient String counterGroup;
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
   public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
-  public static final String HAS_COW_MATCHED_MARKER_CONF = "hive.filesink.cow.matched.marker";
-  private transient StructField cowMatchedMarkerField;
-  protected transient long matchedRowCount = 0;
+  private transient long affectedRowCount;
+  private transient boolean allWritersProvideAffectedRows;
+  private transient boolean hasAffectedRowsWriter;
   private transient Set<String> dynamicPartitionSpecs = new HashSet<>();
 
   /**
@@ -235,6 +236,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (outWriters[idx] != null) {
           try {
             outWriters[idx].close(abort);
+            recordAffectedRows(outWriters[idx]);
             updateProgress();
           } catch (IOException e) {
             exception = e;
@@ -744,12 +746,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         bucketInspector = (IntObjectInspector)bucketField.getFieldObjectInspector();
       }
 
-      cowMatchedMarkerField = hconf.getBoolean(HAS_COW_MATCHED_MARKER_CONF, false) ?
-          lastStructField((StructObjectInspector) inputObjInspectors[0]) : null;
-
       numRows = 0;
       cntr = 1;
-      matchedRowCount = 0;
+      affectedRowCount = 0;
+      allWritersProvideAffectedRows = true;
+      hasAffectedRowsWriter = false;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
       statsMap.put(getCounterName(Counter.RECORDS_OUT), row_count);
@@ -1191,9 +1192,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fpaths.addToStat(StatsSetupConst.ROW_COUNT, 1);
       }
 
-      if (cowMatchedMarkerField == null || isCowMatchedRow(row)) {
-        ++matchedRowCount;
-      }
 
       if ((++numRows == cntr) && LOG.isInfoEnabled()) {
         cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
@@ -1498,21 +1496,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     return FileUtils.makePartName(dpColNames, row);
   }
 
-  private static StructField lastStructField(StructObjectInspector rowInspector) {
-    List<? extends StructField> fields = rowInspector.getAllStructFieldRefs();
-    return fields.get(fields.size() - 1);
+  private void recordAffectedRows(RecordWriter writer) {
+    if (writer instanceof AffectedRowsProvidingRecordWriter) {
+      affectedRowCount += ((AffectedRowsProvidingRecordWriter) writer).getAffectedRows();
+      hasAffectedRowsWriter = true;
+    } else {
+      allWritersProvideAffectedRows = false;
+    }
   }
 
-  private boolean isCowMatchedRow(Object row) {
-    Object markerValue = ((StructObjectInspector) inputObjInspectors[0])
-        .getStructFieldData(row, cowMatchedMarkerField);
-    return markerValue != null && Boolean.parseBoolean(markerValue.toString());
+  private boolean hasAffectedRows() {
+    return hasAffectedRowsWriter && allWritersProvideAffectedRows;
   }
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
-
-    row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : matchedRowCount);
 
     LOG.info("{}: {} written - {}",
             this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
@@ -1587,6 +1585,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (isNativeTable()) {
           fsp.commit(fs, commitPaths, deleteDeltas);
         }
+      }
+      if (conf.isDeleteOfSplitUpdate()) {
+        row_count.set(0);
+      } else if (hasAffectedRows()) {
+        row_count.set(affectedRowCount);
+      } else {
+        row_count.set(numRows);
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {
         boolean isDelete = AcidUtils.Operation.DELETE.equals(conf.getAcidOperation());

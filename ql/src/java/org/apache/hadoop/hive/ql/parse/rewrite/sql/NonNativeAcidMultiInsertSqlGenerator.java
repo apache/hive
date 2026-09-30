@@ -40,20 +40,27 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
 
   @Override
   public void appendAcidSelectColumns(Operation operation) {
-    appendAcidSelectColumns(operation, false, false);
+    appendAcidSelectColumns(operation, false, false, "-1");
   }
 
   @Override
   public void appendAcidSelectColumnsForDeletedRecords(Operation operation, boolean skipPrefix) {
-    appendAcidSelectColumns(operation, true, skipPrefix);
+    appendAcidSelectColumnsForDeletedRecords(operation, skipPrefix, "-1");
   }
 
-  private void appendAcidSelectColumns(Operation operation, boolean markRowIdAsDeleted, boolean skipPrefix) {
+  @Override
+  public void appendAcidSelectColumnsForDeletedRecords(
+      Operation operation, boolean skipPrefix, String deletedRowPosition) {
+    appendAcidSelectColumns(operation, true, skipPrefix, deletedRowPosition);
+  }
+
+  private void appendAcidSelectColumns(
+      Operation operation, boolean markRowIdAsDeleted, boolean skipPrefix, String deletedRowPosition) {
     List<FieldSchema> acidSelectColumns = targetTable.getStorageHandler().acidSelectColumns(targetTable, operation);
     for (FieldSchema fieldSchema : acidSelectColumns) {
       boolean deletedRowId = markRowIdAsDeleted && fieldSchema.equals(targetTable.getStorageHandler().getRowId());
       String identifier = deletedRowId ?
-          "-1" : HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
+          deletedRowPosition : HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
       if (!markRowIdAsDeleted || skipPrefix) {
         queryStr.append(identifier);
       }
@@ -63,7 +70,7 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
           queryStr.append(" AS ");
         }
         String prefixedIdentifier = deletedRowId ?
-            "-1" : HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
+            deletedRowPosition : HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
         queryStr.append(prefixedIdentifier);
       }
       queryStr.append(",");

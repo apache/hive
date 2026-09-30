@@ -472,7 +472,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
-  public void testCopyOnWriteMergeReportsOnlyMatchedUpdateRowCount() throws IOException {
+  public void testCopyOnWriteMergeReportsMatchedRowCount() throws IOException {
     Assume.assumeTrue(formatVersion == 2);
 
     TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_count");
@@ -502,7 +502,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
             "WHEN MATCHED THEN UPDATE SET b = 'merged' " +
             "WHEN NOT MATCHED THEN INSERT VALUES (src.a, src.b)");
 
-    Assert.assertEquals(2, numModifiedRows);
+    Assert.assertEquals(3, numModifiedRows);
   }
 
   @Test

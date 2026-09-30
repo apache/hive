@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -65,7 +64,6 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     setOperation(ctx);
     MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
     isRowLineageSupported = shouldAddRowLineageColumnsForMerge(mergeStatement, conf);
-    conf.setBoolean(FileSinkOperator.HAS_COW_MATCHED_MARKER_CONF, true);
     handleSource(mergeStatement, sqlGenerator);
 
     sqlGenerator.append('\n');
@@ -143,7 +141,6 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
   static class CopyOnWriteMergeWhenClauseSqlGenerator extends MergeRewriter.MergeWhenClauseSqlGenerator {
 
     private final COWWithClauseBuilder cowWithClauseBuilder;
-    private final String matchedMarkerCol;
     private int subQueryCount = 0;
 
     CopyOnWriteMergeWhenClauseSqlGenerator(
@@ -152,7 +149,6 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       super(conf, sqlGenerator, mergeStatement,
           shouldAddRowLineageColumnsForMerge(mergeStatement, conf), setvaluesClause);
       this.cowWithClauseBuilder = new COWWithClauseBuilder();
-      this.matchedMarkerCol = HiveUtils.unparseIdentifier("cow_update_matched", conf);
     }
 
     @Override
@@ -184,7 +180,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       }
       sqlGenerator.append(
           StringUtils.join(addRowLineageValuesForAppendWhenNotMatchedClause(isRowLineageSupported, values), ","));
-      sqlGenerator.append(", false AS ").append(matchedMarkerCol);
+
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
       sqlGenerator.append("\n   WHERE ");
       
@@ -219,7 +215,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       addValuesForRowLineageForCopyOnMerge(isRowLineageSupported, values,
           "NULL AS " + HiveUtils.unparseIdentifier(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName()), conf);
       sqlGenerator.append(columnRefsFunc.apply(StringUtils.join(values, ",")));
-      sqlGenerator.append(", true AS ").append(matchedMarkerCol);
+
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
 
       addWhereClauseOfUpdate(
@@ -249,7 +245,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
         sqlGenerator.append(hintStr);
       }
       sqlGenerator.append(StringUtils.join(deleteValues, ","));
-      sqlGenerator.append(", false AS ").append(matchedMarkerCol);
+
       sqlGenerator.append("\nFROM " + sourceName);
       sqlGenerator.indent().append("WHERE ");
 
@@ -273,7 +269,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("AND ").append(filePathCol);
       sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from t )");
       sqlGenerator.append("\nunion all");
-      sqlGenerator.append("\nselect *, false AS ").append(matchedMarkerCol).append(" from t");
+      sqlGenerator.append("\nselect * from t");
 
       cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, whereClauseStr, false,
           isRowLineageSupported, TARGET_PREFIX);

@@ -68,6 +68,11 @@ public abstract class MultiInsertSqlGenerator {
     throw new UnsupportedOperationException();
   }
 
+  public void appendAcidSelectColumnsForDeletedRecords(
+      Operation operation, boolean skipPrefix, String deletedRowPosition) {
+    throw new UnsupportedOperationException();
+  }
+
   public abstract List<String> getDeleteValues(Operation operation);
   public abstract List<String> getSortKeys(Operation operation);
 
