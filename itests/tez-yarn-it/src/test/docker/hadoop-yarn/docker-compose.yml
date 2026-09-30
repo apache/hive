@@ -18,7 +18,7 @@
 
 services:
   namenode:
-    image: hive-it-hadoop-jdk21:latest
+    image: hive-it-hadoop:latest
     hostname: namenode
     command: ["hdfs", "namenode"]
     env_file:
@@ -26,8 +26,8 @@ services:
     environment:
       ENSURE_NAMENODE_DIR: /tmp/hadoop-hadoop/dfs/name
     ports:
-      - "8020:8020"
-      - "9870:9870"
+      - "8020:8020" # NameNode RPC
+      - "9870:9870" # NameNode web UI
     healthcheck:
       test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/9870'"]
       interval: 5s
@@ -36,7 +36,7 @@ services:
       start_period: 10s
 
   datanode:
-    image: hive-it-hadoop-jdk21:latest
+    image: hive-it-hadoop:latest
     hostname: datanode
     command: ["hdfs", "datanode"]
     env_file:
@@ -45,11 +45,11 @@ services:
       namenode:
         condition: service_healthy
     ports:
-      - "9866:9866"
-      - "9864:9864"
+      - "9866:9866" # DataNode data transfer
+      - "9864:9864" # DataNode web UI
 
   resourcemanager:
-    image: hive-it-hadoop-jdk21:latest
+    image: hive-it-hadoop:latest
     hostname: resourcemanager
     command: ["yarn", "resourcemanager"]
     env_file:
@@ -58,12 +58,12 @@ services:
       namenode:
         condition: service_healthy
     ports:
-      - "8032:8032"
-      - "8088:8088"
+      - "8032:8032" # ResourceManager RPC
+      - "8088:8088" # ResourceManager web UI
     # No healthcheck: RM webapp binds to hostname "resourcemanager", not localhost.
 
   nodemanager:
-    image: hive-it-hadoop-jdk21:latest
+    image: hive-it-hadoop:latest
     hostname: nodemanager
     command: ["yarn", "nodemanager"]
     env_file:
@@ -72,4 +72,5 @@ services:
       resourcemanager:
         condition: service_started
     ports:
-      - "41000:41000"
+      - "8042:8042" # NodeManager web UI
+      - "41000-41020:41000-41020" # Tez AM client RPC range

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Custom Hadoop image for the Tez-on-YARN localization integration tests.
+# Custom Hadoop image for the Tez-on-YARN Integration tests.
 #
 # The official apache/hadoop:3.4.2 image ships Java 8 for its HDFS/YARN daemons.
 # Hive is compiled for Java 21, so Tez AM and task containers -- which load
