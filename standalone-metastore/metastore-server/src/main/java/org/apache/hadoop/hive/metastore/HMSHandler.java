@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.AppendPartitionHandler;
 import org.apache.hadoop.hive.metastore.handler.BaseHandler;
 import org.apache.hadoop.hive.metastore.handler.DropPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.ExchangePartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.GetPartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.GetTableHandler;
 import org.apache.hadoop.hive.metastore.handler.PrivilegeHandler;
@@ -82,7 +83,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependNotNullCatToDbName;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 /**
@@ -1436,16 +1436,6 @@ public class HMSHandler extends PrivilegeHandler {
   }
 
   @Override
-  public Partition exchange_partition(Map<String, String> partitionSpecs,
-                                      String sourceDbName, String sourceTableName, String destDbName,
-                                      String destTableName) throws TException {
-    exchange_partitions(partitionSpecs, sourceDbName, sourceTableName, destDbName, destTableName);
-    // Wouldn't it make more sense to return the first element of the list returned by the
-    // previous call?
-    return new Partition();
-  }
-
-  @Override
   public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
                                              String sourceDbName, String sourceTableName, String destDbName,
                                              String destTableName) throws TException {
@@ -1460,168 +1450,21 @@ public class HMSHandler extends PrivilegeHandler {
     if (!parsedDestDbName[CAT_NAME].equals(parsedSourceDbName[CAT_NAME])) {
       throw new MetaException("You cannot move a partition across catalogs");
     }
+    org.apache.hadoop.hive.metastore.api.TableName srcTbl =
+        new org.apache.hadoop.hive.metastore.api.TableName(parsedSourceDbName[DB_NAME], sourceTableName);
+    srcTbl.setCat_name(parsedSourceDbName[CAT_NAME]);
+    org.apache.hadoop.hive.metastore.api.TableName destTbl =
+        new org.apache.hadoop.hive.metastore.api.TableName(parsedDestDbName[DB_NAME], destTableName);
+    destTbl.setCat_name(parsedDestDbName[CAT_NAME]);
 
-    boolean success = false;
-    boolean pathCreated = false;
-    RawStore ms = getMS();
-    ms.openTransaction();
-
-    Table destinationTable =
-        ms.getTable(
-            parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME], destTableName, null);
-    if (destinationTable == null) {
-      throw new MetaException( "The destination table " +
-          TableName.getQualified(parsedDestDbName[CAT_NAME],
-              parsedDestDbName[DB_NAME], destTableName) + " not found");
-    }
-    Table sourceTable =
-        ms.getTable(
-            parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME], sourceTableName, null);
-    if (sourceTable == null) {
-      throw new MetaException("The source table " +
-          TableName.getQualified(parsedSourceDbName[CAT_NAME],
-              parsedSourceDbName[DB_NAME], sourceTableName) + " not found");
-    }
-
-    List<String> partVals = MetaStoreUtils.getPvals(sourceTable.getPartitionKeys(),
-        partitionSpecs);
-    List<String> partValsPresent = new ArrayList<> ();
-    List<FieldSchema> partitionKeysPresent = new ArrayList<> ();
-    int i = 0;
-    for (FieldSchema fs: sourceTable.getPartitionKeys()) {
-      String partVal = partVals.get(i);
-      if (partVal != null && !partVal.equals("")) {
-        partValsPresent.add(partVal);
-        partitionKeysPresent.add(fs);
-      }
-      i++;
-    }
-    // Passed the unparsed DB name here, as get_partitions_ps expects to parse it
-    List<Partition> partitionsToExchange = get_partitions_ps(sourceDbName, sourceTableName,
-        partVals, (short)-1);
-    if (partitionsToExchange == null || partitionsToExchange.isEmpty()) {
-      throw new MetaException("No partition is found with the values " + partitionSpecs
-          + " for the table " + sourceTableName);
-    }
-    boolean sameColumns = MetaStoreUtils.compareFieldColumns(
-        sourceTable.getSd().getCols(), destinationTable.getSd().getCols());
-    boolean samePartitions = MetaStoreUtils.compareFieldColumns(
-        sourceTable.getPartitionKeys(), destinationTable.getPartitionKeys());
-    if (!sameColumns || !samePartitions) {
-      throw new MetaException("The tables have different schemas." +
-          " Their partitions cannot be exchanged.");
-    }
-    Path sourcePath = new Path(sourceTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
-    Path destPath = new Path(destinationTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
-    List<Partition> destPartitions = new ArrayList<>();
-
-    Map<String, String> transactionalListenerResponsesForAddPartition = Collections.emptyMap();
-    List<Map<String, String>> transactionalListenerResponsesForDropPartition =
-        Lists.newArrayListWithCapacity(partitionsToExchange.size());
-
-    // Check if any of the partitions already exists in destTable.
-    List<String> destPartitionNames = ms.listPartitionNames(parsedDestDbName[CAT_NAME],
-        parsedDestDbName[DB_NAME], destTableName, (short) -1);
-    if (destPartitionNames != null && !destPartitionNames.isEmpty()) {
-      for (Partition partition : partitionsToExchange) {
-        String partToExchangeName =
-            Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues());
-        if (destPartitionNames.contains(partToExchangeName)) {
-          throw new MetaException("The partition " + partToExchangeName
-              + " already exists in the table " + destTableName);
-        }
-      }
-    }
-
-    Database srcDb = ms.getDatabase(parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME]);
-    Database destDb = ms.getDatabase(parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME]);
-    if (!HiveMetaStore.isRenameAllowed(srcDb, destDb)) {
-      throw new MetaException("Exchange partition not allowed for " +
-          TableName.getQualified(parsedSourceDbName[CAT_NAME],
-              parsedSourceDbName[DB_NAME], sourceTableName) + " Dest db : " + destDbName);
-    }
+    ExchangePartitionsRequest request = new ExchangePartitionsRequest(partitionSpecs, srcTbl, destTbl);
+    ExchangePartitionsHandler exchangePartitionsHandler = null;
     try {
-      for (Partition partition: partitionsToExchange) {
-        Partition destPartition = new Partition(partition);
-        destPartition.setDbName(parsedDestDbName[DB_NAME]);
-        destPartition.setTableName(destinationTable.getTableName());
-        Path destPartitionPath = new Path(destinationTable.getSd().getLocation(),
-            Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues()));
-        destPartition.getSd().setLocation(destPartitionPath.toString());
-        ms.addPartition(destPartition);
-        destPartitions.add(destPartition);
-        ms.dropPartition(parsedSourceDbName[CAT_NAME], partition.getDbName(), sourceTable.getTableName(),
-            Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues()));
-      }
-      Path destParentPath = destPath.getParent();
-      if (!wh.isDir(destParentPath)) {
-        if (!wh.mkdirs(destParentPath)) {
-          throw new MetaException("Unable to create path " + destParentPath);
-        }
-      }
-      /*
-       * TODO: Use the hard link feature of hdfs
-       * once https://issues.apache.org/jira/browse/HDFS-3370 is done
-       */
-      pathCreated = wh.renameDir(sourcePath, destPath, false);
-
-      // Setting success to false to make sure that if the listener fails, rollback happens.
-      success = false;
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponsesForAddPartition =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ADD_PARTITION,
-                new AddPartitionEvent(destinationTable, destPartitions, true, this));
-
-        for (Partition partition : partitionsToExchange) {
-          DropPartitionEvent dropPartitionEvent =
-              new DropPartitionEvent(sourceTable, partition, true, true, this);
-          transactionalListenerResponsesForDropPartition.add(
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.DROP_PARTITION,
-                  dropPartitionEvent));
-        }
-      }
-
-      success = ms.commitTransaction();
-      return destPartitions;
-    } finally {
-      if (!success || !pathCreated) {
-        ms.rollbackTransaction();
-        if (pathCreated) {
-          wh.renameDir(destPath, sourcePath, false);
-        }
-      }
-
-      if (!listeners.isEmpty()) {
-        AddPartitionEvent addPartitionEvent = new AddPartitionEvent(destinationTable, destPartitions, success, this);
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ADD_PARTITION,
-            addPartitionEvent,
-            null,
-            transactionalListenerResponsesForAddPartition, ms);
-
-        i = 0;
-        for (Partition partition : partitionsToExchange) {
-          DropPartitionEvent dropPartitionEvent =
-              new DropPartitionEvent(sourceTable, partition, success, true, this);
-          Map<String, String> parameters =
-              (transactionalListenerResponsesForDropPartition.size() > i)
-                  ? transactionalListenerResponsesForDropPartition.get(i)
-                  : null;
-
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.DROP_PARTITION,
-              dropPartitionEvent,
-              null,
-              parameters, ms);
-          i++;
-        }
-      }
+      exchangePartitionsHandler = AbstractRequestHandler.offer(this, request);
+    } catch (IOException e) {
+      throwMetaException(e);
     }
+    return exchangePartitionsHandler.getResult().partitions();
   }
 
   @Override
@@ -1730,9 +1573,11 @@ public class HMSHandler extends PrivilegeHandler {
       GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], tableName);
       getTableRequest.setCatName(catName);
       Table table = get_table_core(getTableRequest);
+      firePreEvent(new PreReadTableEvent(table, this));
       List<Partition> partitions = getMS()
           .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
               request.getFilterSpec());
+      partitions = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, partitions);
       List<String> processorCapabilities = request.getProcessorCapabilities();
       String processorId = request.getProcessorIdentifier();
       if (processorCapabilities == null || processorCapabilities.size() == 0 ||
@@ -3026,12 +2871,47 @@ public class HMSHandler extends PrivilegeHandler {
 
   @Override
   public void update_table_params(List<TableParamsUpdate> updates) throws TException {
+    RawStore ms = getMS();
+    boolean success = false;
+    List<AlterTableEvent> alterEvents = new ArrayList<>(updates.size());
+    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    List<Map.Entry<TableParamsUpdate, Table>> entries = new ArrayList<>(updates.size());
     for (TableParamsUpdate update : updates) {
-      if (!update.isSetCat_name()) {
-        update.setCat_name(getDefaultCatalog(conf));
+      if (update.getParamsSize() == 0) {
+        continue;
+      }
+      org.apache.hadoop.hive.metastore.api.TableName tableName = update.getTable_name();
+      if (!tableName.isSetCat_name()) {
+        tableName.setCat_name(getDefaultCatalog(conf));
+      }
+      GetTableRequest getTableRequest = new GetTableRequest(tableName.getDb_name(), tableName.getTbl_name());
+      getTableRequest.setCatName(tableName.getCat_name());
+      Table oldTable = get_table_core(getTableRequest);
+      Table newTable = new Table(oldTable);
+      newTable.setParameters(update.getParams());
+      firePreEvent(new PreAlterTableEvent(oldTable, newTable, this));
+      alterEvents.add(new AlterTableEvent(oldTable, newTable, false, true, -1L, this, false));
+      entries.add(Map.entry(update, oldTable));
+    }
+    try {
+      ms.openTransaction();
+      ms.updateTableParams(entries);
+      for (AlterTableEvent event : alterEvents) {
+        transactionalListenerResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ALTER_TABLE, event);
+      }
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+      for (AlterTableEvent event : alterEvents) {
+        AlterTableEvent newEvent = new AlterTableEvent(event.getOldTable(), event.getNewTable(),
+            false, success, -1L, this, false);
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_TABLE,
+            newEvent, null, transactionalListenerResponses, ms);
       }
     }
-    getMS().updateTableParams(updates);
   }
 
   public AggrStats get_aggr_stats_for(PartitionsStatsRequest request) throws TException {

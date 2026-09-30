@@ -52,11 +52,13 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Deadline;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
@@ -2893,6 +2895,28 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     result = getMPartition(catName, dbName, tblName, name);
 
     return result;
+  }
+
+  @Override
+  public void updateTableParams(List<Map.Entry<TableParamsUpdate, Table>> updates) throws MetaException, NoSuchObjectException {
+    if (updates == null || updates.isEmpty()) {
+      return;
+    }
+    new GetListHelper<TableName, Void>(this, null) {
+      @Override
+      protected List<Void> getSqlResult() throws MetaException {
+        getDirectSql().updateTableParams(updates);
+        return null;
+      }
+      @Override
+      protected boolean canUseJdoQuery() {
+        return false;
+      }
+      @Override
+      protected List<Void> getJdoResult() {
+        throw new UnsupportedOperationException("UnsupportedOperationException");
+      }
+    }.run(false);
   }
 
   /**

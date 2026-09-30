@@ -16,32 +16,32 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_append_partition_args
+class TableName
 {
     static public $isValidate = false;
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'db_name',
+            'var' => 'cat_name',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
         2 => array(
-            'var' => 'tbl_name',
-            'isRequired' => false,
+            'var' => 'db_name',
+            'isRequired' => true,
             'type' => TType::STRING,
         ),
         3 => array(
-            'var' => 'part_vals',
-            'isRequired' => false,
-            'type' => TType::LST,
-            'etype' => TType::STRING,
-            'elem' => array(
-                'type' => TType::STRING,
-                ),
+            'var' => 'tbl_name',
+            'isRequired' => true,
+            'type' => TType::STRING,
         ),
     );
 
+    /**
+     * @var string
+     */
+    public $cat_name = null;
     /**
      * @var string
      */
@@ -50,29 +50,25 @@ class ThriftHiveMetastore_append_partition_args
      * @var string
      */
     public $tbl_name = null;
-    /**
-     * @var string[]
-     */
-    public $part_vals = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
+            if (isset($vals['cat_name'])) {
+                $this->cat_name = $vals['cat_name'];
+            }
             if (isset($vals['db_name'])) {
                 $this->db_name = $vals['db_name'];
             }
             if (isset($vals['tbl_name'])) {
                 $this->tbl_name = $vals['tbl_name'];
             }
-            if (isset($vals['part_vals'])) {
-                $this->part_vals = $vals['part_vals'];
-            }
         }
     }
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_append_partition_args';
+        return 'TableName';
     }
 
 
@@ -91,30 +87,21 @@ class ThriftHiveMetastore_append_partition_args
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->db_name);
+                        $xfer += $input->readString($this->cat_name);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 2:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->tbl_name);
+                        $xfer += $input->readString($this->db_name);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 3:
-                    if ($ftype == TType::LST) {
-                        $this->part_vals = array();
-                        $_size1650 = 0;
-                        $_etype1653 = 0;
-                        $xfer += $input->readListBegin($_etype1653, $_size1650);
-                        for ($_i1654 = 0; $_i1654 < $_size1650; ++$_i1654) {
-                            $elem1655 = null;
-                            $xfer += $input->readString($elem1655);
-                            $this->part_vals []= $elem1655;
-                        }
-                        $xfer += $input->readListEnd();
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->tbl_name);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -132,27 +119,20 @@ class ThriftHiveMetastore_append_partition_args
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_append_partition_args');
+        $xfer += $output->writeStructBegin('TableName');
+        if ($this->cat_name !== null) {
+            $xfer += $output->writeFieldBegin('cat_name', TType::STRING, 1);
+            $xfer += $output->writeString($this->cat_name);
+            $xfer += $output->writeFieldEnd();
+        }
         if ($this->db_name !== null) {
-            $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
+            $xfer += $output->writeFieldBegin('db_name', TType::STRING, 2);
             $xfer += $output->writeString($this->db_name);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->tbl_name !== null) {
-            $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 2);
+            $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 3);
             $xfer += $output->writeString($this->tbl_name);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->part_vals !== null) {
-            if (!is_array($this->part_vals)) {
-                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-            }
-            $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
-            $output->writeListBegin(TType::STRING, count($this->part_vals));
-            foreach ($this->part_vals as $iter1656) {
-                $xfer += $output->writeString($iter1656);
-            }
-            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

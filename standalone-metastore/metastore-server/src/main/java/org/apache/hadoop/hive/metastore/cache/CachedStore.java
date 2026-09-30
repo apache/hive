@@ -1373,11 +1373,6 @@ public class CachedStore implements RawStore, Configurable {
     return newTable;
   }
 
-  @Override
-  public void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException {
-    rawStore.updateTableParams(updates);
-  }
-
   @Override public List<Table> getTableObjectsByName(String catName, String dbName, List<String> tblNames)
       throws MetaException, UnknownDBException {
     if (canUseEvents && rawStore.isActiveTransaction()) {
