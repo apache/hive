@@ -92,7 +92,7 @@ public final class PersistableSessionUtils {
 
   /**
    * Determines whether a SQL statement changes session state that should
-   * be persisted (database, configs, JARs, temp tables, temp functions).
+   * be persisted (database, configs, hive variables, JARs, temp tables, temp functions).
    */
   public static boolean isStateChangingCommand(String statement) {
     if (statement == null) {
