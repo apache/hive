@@ -136,8 +136,8 @@ POSTHOOK: query: show partitions ice_tbl
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@ice_tbl
 partition
-pcol=a%22ab/datecol=2019-02-07
-pcol=a%27ab/datecol=2019-02-07
+pcol=a"ab/datecol=2019-02-07
+pcol=a'ab/datecol=2019-02-07
 pcol=abc/datecol=2019-02-07
 pcol=xya/datecol=2027-01-20
 pcol=xyb/datecol=2025-07-18

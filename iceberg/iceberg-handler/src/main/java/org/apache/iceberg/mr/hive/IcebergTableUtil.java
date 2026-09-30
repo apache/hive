@@ -662,7 +662,7 @@ public class IcebergTableUtil {
         Object icebergValue = Literal.of(decoded).to(type).value();
         return HiveIdentityPartitionConverters.convertConstant(type, icebergValue);
       default:
-        return parsePartitionValue(type, decoded);
+        return HiveIdentityPartitionConverters.convertConstant(type, parsePartitionValue(type, decoded));
     }
   }
 
@@ -1012,11 +1012,17 @@ public class IcebergTableUtil {
     return partitions;
   }
 
+  /** Wire path name for identity; display name for {@link Partition#getName()}. */
+  public static DummyPartition toMetastorePartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      String wirePartName) {
+    return new DummyPartition(hmsTable, formatPartitionNameForDisplay(wirePartName), specFromName(wirePartName));
+  }
+
   public static List<Partition> convertNameToMetastorePartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Collection<String> partNames) {
     List<Partition> partitions = Lists.newArrayList();
     for (String partName : partNames) {
-      partitions.add(new DummyPartition(hmsTable, partName, specFromName(partName)));
+      partitions.add(toMetastorePartition(hmsTable, partName));
     }
     return partitions;
   }

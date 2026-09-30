@@ -2376,7 +2376,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public Object parsePartitionLiteralForExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       FieldSchema partCol, String pathEncodedValue) throws SemanticException {
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    Types.NestedField field = icebergTable.schema().findField(partCol.getName());
+    Types.NestedField field = icebergTable.schema().caseInsensitiveFindField(partCol.getName());
     if (field == null) {
       throw new SemanticException("No column by the name: " + partCol.getName());
     }
@@ -2425,10 +2425,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
             PartitionSpec spec = task.spec();
             PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
             String partName = IcebergTableUtil.toPartitionName(spec, partitionData);
-
-            DummyPartition partition =
-                new DummyPartition(hmsTable, partName, IcebergTableUtil.specFromName(partName));
-            partitions.add(partition);
+            partitions.add(IcebergTableUtil.toMetastorePartition(hmsTable, partName));
           });
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
