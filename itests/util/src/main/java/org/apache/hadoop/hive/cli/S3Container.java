@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.cli;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -124,6 +125,10 @@ public final class S3Container {
         Files.move(tmp, file, StandardCopyOption.ATOMIC_MOVE);
       }
       LOG.info("Data from {} are available in {}", bucket.dataUrl, file);
+      String sha256 = DigestUtils.sha256Hex(Files.readAllBytes(file));
+      if (!bucket.sha256Digest.equals(sha256)) {
+        throw new IllegalArgumentException("Invalid checksum for:" + file);
+      }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -160,10 +165,10 @@ public final class S3Container {
     conf.set("fs.AbstractFileSystem.s3.impl", "org.apache.hadoop.fs.s3a.S3A");
   }
 
-  public record Bucket(String name, String keyPrefix, URL dataUrl) {
+  public record Bucket(String name, String keyPrefix, URL dataUrl, String sha256Digest) {
 
-    public Bucket(String name, String keyPrefix, String dataUrl) {
-      this(name, keyPrefix, toUrl(dataUrl));
+    public Bucket(String name, String keyPrefix, String dataUrl, String  sha256Digest) {
+      this(name, keyPrefix, toUrl(dataUrl), sha256Digest);
     }
 
     private static URL toUrl(String url) {

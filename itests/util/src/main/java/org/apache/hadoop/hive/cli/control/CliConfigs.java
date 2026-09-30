@@ -413,7 +413,8 @@ public class CliConfigs {
       S3Container.Bucket bucket = new S3Container.Bucket(
           "dw-team-bucket",
           "data/warehouse/tablespace/external/hive/tpcds_partitioned_iceberg_parquet_10000.db/",
-          "https://github.com/zabetak/hive-test-datasets/releases/download/1.1/iceberg_s3_tpcds10tb.zip");
+          "https://github.com/apache/hive-test-datasets/releases/download/1.0/iceberg_s3_tpcds10tb.zip",
+          "abe8b7dc47507736402158bbb12580e66792bbcfc7be2f7d1d30b139f1ba7f82");
       setS3Bucket(bucket);
       setHiveConfDir("data/conf/llap");
       // Restore hooks to their default values and remove noise from the out file
