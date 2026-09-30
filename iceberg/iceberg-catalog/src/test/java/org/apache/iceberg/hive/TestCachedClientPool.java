@@ -30,6 +30,7 @@ import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.hive.CachedClientPool.Key;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -45,6 +46,11 @@ public class TestCachedClientPool {
   @RegisterExtension
   private static final HiveMetastoreExtension HIVE_METASTORE_EXTENSION =
       HiveMetastoreExtension.builder().withDatabase(DB_NAME).build();
+
+  @BeforeEach
+  public void resetClientPoolCache() {
+    CachedClientPool.resetClientPoolCacheForTests();
+  }
 
   @Test
   public void testClientPoolCleaner() throws InterruptedException {
