@@ -295,9 +295,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
-    // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
-    fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
-    fallbackToNonVectorizedModeForEqualityDeletes(tableDesc.getProperties());
+    if (vectorizationUnsupported(tableDesc.getProperties()) || hasEqualityDeletes(tableDesc.getProperties())) {
+      disableVectorization();
+    }
 
     boolean allowDataFilesWithinTableLocationOnly =
         conf.getBoolean(ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
@@ -310,8 +310,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
-    // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
-    fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
+    if (vectorizationUnsupported(tableDesc.getProperties())) {
+      disableVectorization();
+    }
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
@@ -1879,7 +1880,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   /**
-   * If any of the following checks is true we fall back to non vectorized mode:
+   * Whether the table cannot be read vectorized:
    * <ul>
    *   <li>fileformat is set to avro</li>
    *   <li>querying metadata tables</li>
@@ -1888,30 +1889,28 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
    * </ul>
    * @param tableProps table properties, must be not null
    */
-  private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
+  private boolean vectorizationUnsupported(Properties tableProps) {
     Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
 
-    if (FileFormat.AVRO == IcebergTableUtil.defaultFileFormat(tableProps::getProperty) ||
+    return FileFormat.AVRO == IcebergTableUtil.defaultFileFormat(tableProps::getProperty) ||
         isValidMetadataTable(tableProps.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY)) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
-        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
-      // disable vectorization
-      SessionStateUtil.getQueryState(conf).ifPresent(qs ->
-          qs.getConf().setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false));
-    }
+        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema);
   }
 
   /**
-   * The vectorized reader cannot apply equality deletes (HiveVectorizedReader), so a snapshot that has any is read
-   * row by row: the current one, or the head of the branch or tag scanned.
+   * Whether the scanned snapshot has equality deletes, which the vectorized reader cannot apply
+   * (HiveVectorizedReader): the current one, or the head of the branch or tag scanned.
    */
-  private void fallbackToNonVectorizedModeForEqualityDeletes(Properties tableProps) {
+  private boolean hasEqualityDeletes(Properties tableProps) {
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(
         IcebergTableUtil.getTable(conf, tableProps), tableProps.getProperty(Catalogs.SNAPSHOT_REF));
-    if (snapshot != null && PropertyUtil.propertyAsLong(snapshot.summary(), TOTAL_EQ_DELETES_PROP, 0) > 0) {
-      SessionStateUtil.getQueryState(conf).ifPresent(qs ->
-          qs.getConf().setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false));
-    }
+    return snapshot != null && PropertyUtil.propertyAsLong(snapshot.summary(), TOTAL_EQ_DELETES_PROP, 0) > 0;
+  }
+
+  private void disableVectorization() {
+    SessionStateUtil.getQueryState(conf).ifPresent(qs ->
+        qs.getConf().setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false));
   }
 
   /**
