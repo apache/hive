@@ -96,12 +96,12 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.EXPECTED_PARAM_KEY,_Fields.EXPECTED_PARAM_VALUE};
+  private static final _Fields[] optionals = {_Fields.EXPECTED_PARAM_KEY,_Fields.EXPECTED_PARAM_VALUE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("table_name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "TableName")));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TableName.class)));
     tmpMap.put(_Fields.PARAMS, new org.apache.thrift.meta_data.FieldMetaData("params", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
@@ -540,6 +540,9 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     // check for sub-struct validity
+    if (table_name != null) {
+      table_name.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -569,45 +572,21 @@ package org.apache.hadoop.hive.metastore.api;
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol iprot, TableParamsUpdate struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField schemeField;
-      iprot.readStructBegin();
-      while (true)
-      {
-        schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (schemeField.id) {
-          case 1: // TABLE_NAME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.table_name = new TableName();
-              struct.table_name.read(iprot);
-              struct.setTable_nameIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
+      iprot.incrementRecursionDepth();
+      try {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
             break;
           }
           switch (schemeField.id) {
-            case 1: // CAT_NAME
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.cat_name = iprot.readString();
-                struct.setCat_nameIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            case 2: // DB_NAME
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.db_name = iprot.readString();
-                struct.setDb_nameIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            case 3: // TABLE_NAME
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-                struct.table_name = iprot.readString();
+            case 1: // TABLE_NAME
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.table_name = new TableName();
+                struct.table_name.read(iprot);
                 struct.setTable_nameIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -743,16 +722,12 @@ package org.apache.hadoop.hive.metastore.api;
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, TableParamsUpdate struct) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.table_name = new TableName();
-      struct.table_name.read(iprot);
-      struct.setTable_nameIsSet(true);
-      {
-        org.apache.thrift.protocol.TMap _map1488 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
-        struct.params = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map1488.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _key1489;
-        @org.apache.thrift.annotation.Nullable java.lang.String _val1490;
-        for (int _i1491 = 0; _i1491 < _map1488.size; ++_i1491)
+      prot.incrementRecursionDepth();
+      try {
+        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+        struct.table_name = new TableName();
+        struct.table_name.read(iprot);
+        struct.setTable_nameIsSet(true);
         {
           org.apache.thrift.protocol.TMap _map1488 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
           struct.params = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map1488.size);
@@ -765,16 +740,18 @@ package org.apache.hadoop.hive.metastore.api;
             struct.params.put(_key1489, _val1490);
           }
         }
-      }
-      struct.setParamsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(2);
-      if (incoming.get(0)) {
-        struct.expected_param_key = iprot.readString();
-        struct.setExpected_param_keyIsSet(true);
-      }
-      if (incoming.get(1)) {
-        struct.expected_param_value = iprot.readString();
-        struct.setExpected_param_valueIsSet(true);
+        struct.setParamsIsSet(true);
+        java.util.BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.expected_param_key = iprot.readString();
+          struct.setExpected_param_keyIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.expected_param_value = iprot.readString();
+          struct.setExpected_param_valueIsSet(true);
+        }
+      } finally {
+        prot.decrementRecursionDepth();
       }
     }
   }

@@ -86,13 +86,13 @@ class ThriftHiveMetastore_get_role_names_result
                     case 0:
                         if ($ftype == TType::LST) {
                             $this->success = [];
-                            $_size1917 = 0;
-                            $_etype1920 = 0;
-                            $xfer += $input->readListBegin($_etype1920, $_size1917);
-                            for ($_i1921 = 0; $_i1921 < $_size1917; ++$_i1921) {
-                                $elem1922 = null;
-                                $xfer += $input->readString($elem1922);
-                                $this->success[] = $elem1922;
+                            $_size1926 = 0;
+                            $_etype1929 = 0;
+                            $xfer += $input->readListBegin($_etype1929, $_size1926);
+                            for ($_i1930 = 0; $_i1930 < $_size1926; ++$_i1930) {
+                                $elem1931 = null;
+                                $xfer += $input->readString($elem1931);
+                                $this->success[] = $elem1931;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -133,8 +133,8 @@ class ThriftHiveMetastore_get_role_names_result
                 }
                 $xfer += $output->writeFieldBegin('success', TType::LST, 0);
                 $output->writeListBegin(TType::STRING, count($this->success));
-                foreach ($this->success as $iter1923) {
-                    $xfer += $output->writeString($iter1923);
+                foreach ($this->success as $iter1932) {
+                    $xfer += $output->writeString($iter1932);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();

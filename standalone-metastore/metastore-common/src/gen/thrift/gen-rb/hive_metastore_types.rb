@@ -891,6 +891,10 @@ class DeleteColumnStatisticsRequest; end
 
 class ReplayedTxnsForPolicyResult; end
 
+class ExchangePartitionsRequest; end
+
+class TableName; end
+
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -7758,17 +7762,13 @@ end
 
 class TableParamsUpdate
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  CAT_NAME_FIELD_ID = 1
-  DB_NAME_FIELD_ID = 2
-  TABLE_NAME_FIELD_ID = 3
+  TABLE_NAME_FIELD_ID = 1
   PARAMS_FIELD_ID = 4
   EXPECTED_PARAM_KEY_FIELD_ID = 5
   EXPECTED_PARAM_VALUE_FIELD_ID = 6
 
   FIELDS = {
-    CAT_NAME_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'cat_name', :optional => true},
-    DB_NAME_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-    TABLE_NAME_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'table_name'},
+    TABLE_NAME_FIELD_ID => {:type => ::Thrift::Types::STRUCT, :name => 'table_name', :class => ::TableName},
     PARAMS_FIELD_ID => {:type => ::Thrift::Types::MAP, :name => 'params', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
     EXPECTED_PARAM_KEY_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'expected_param_key', :optional => true},
     EXPECTED_PARAM_VALUE_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'expected_param_value', :optional => true}
@@ -7777,7 +7777,6 @@ class TableParamsUpdate
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field db_name is unset!') unless @db_name
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field table_name is unset!') unless @table_name
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field params is unset!') unless @params
   end
@@ -8508,6 +8507,51 @@ class ReplayedTxnsForPolicyResult
   def struct_fields; FIELDS; end
 
   def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ExchangePartitionsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PARTITIONSPECS_FIELD_ID = 1
+  SOURCETABLE_FIELD_ID = 2
+  TARGETTABLE_FIELD_ID = 3
+
+  FIELDS = {
+    PARTITIONSPECS_FIELD_ID => {:type => ::Thrift::Types::MAP, :name => 'partitionSpecs', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+    SOURCETABLE_FIELD_ID => {:type => ::Thrift::Types::STRUCT, :name => 'sourceTable', :class => ::TableName},
+    TARGETTABLE_FIELD_ID => {:type => ::Thrift::Types::STRUCT, :name => 'targetTable', :class => ::TableName}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field partitionSpecs is unset!') unless @partitionSpecs
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field sourceTable is unset!') unless @sourceTable
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field targetTable is unset!') unless @targetTable
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TableName
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CAT_NAME_FIELD_ID = 1
+  DB_NAME_FIELD_ID = 2
+  TBL_NAME_FIELD_ID = 3
+
+  FIELDS = {
+    CAT_NAME_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'cat_name', :optional => true},
+    DB_NAME_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+    TBL_NAME_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field db_name is unset!') unless @db_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field tbl_name is unset!') unless @tbl_name
   end
 
   ::Thrift::Struct.generate_accessors self
