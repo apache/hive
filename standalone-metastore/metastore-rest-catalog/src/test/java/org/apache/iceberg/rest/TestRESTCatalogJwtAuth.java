@@ -23,6 +23,10 @@ import java.util.Map;
 import java.util.Optional;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
+import org.apache.iceberg.Schema;
+import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
 import org.apache.iceberg.rest.extension.MockHiveAuthorizer;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
@@ -37,6 +41,12 @@ class TestRESTCatalogJwtAuth extends BaseRESTCatalogTests {
   @RegisterExtension
   private static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION =
       HiveRESTCatalogServerExtension.builder(AuthType.JWT).build();
+
+  @RegisterExtension
+  private static final HiveRESTCatalogServerExtension CACHED_REST_CATALOG_EXTENSION =
+      HiveRESTCatalogServerExtension.builder(AuthType.JWT)
+          .configure("metastore.iceberg.catalog.cache.expiry", "60000")
+          .build();
 
   @Override
   protected Map<String, String> getDefaultClientConfiguration() throws Exception {
@@ -86,5 +96,34 @@ class TestRESTCatalogJwtAuth extends BaseRESTCatalogTests {
     Assertions.assertEquals(
         "Not authorized: Authentication error: Couldn't find bearer token in the auth header in the request",
         error.getMessage());
+  }
+
+  @Test
+  void testDeniedUserCannotLoadTableWarmedByAuthorizedUser() throws Exception {
+    var db = Namespace.of("jwt_cache_permission_test_db");
+    var table = TableIdentifier.of(db, "test_table");
+    try (var client = RCKUtils.initCatalogClient(getCachedDefaultClientConfiguration())) {
+      client.createNamespace(db);
+      client.createTable(table, new Schema());
+      Assertions.assertNotNull(client.loadTable(table));
+    }
+
+    try (var client = RCKUtils.initCatalogClient(getCachedPermissionTestClientConfiguration())) {
+      Assertions.assertThrows(ForbiddenException.class, () -> client.loadTable(table));
+    }
+  }
+
+  private Map<String, String> getCachedDefaultClientConfiguration() throws Exception {
+    return Map.of(
+        "uri", CACHED_REST_CATALOG_EXTENSION.getRestEndpoint(),
+        "token", JwksServer.generateValidJWT("USER_1")
+    );
+  }
+
+  private Map<String, String> getCachedPermissionTestClientConfiguration() throws Exception {
+    return Map.of(
+        "uri", CACHED_REST_CATALOG_EXTENSION.getRestEndpoint(),
+        "token", JwksServer.generateValidJWT(MockHiveAuthorizer.PERMISSION_TEST_USER)
+    );
   }
 }
