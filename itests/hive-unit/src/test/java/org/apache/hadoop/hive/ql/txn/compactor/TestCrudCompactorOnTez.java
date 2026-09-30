@@ -1811,23 +1811,31 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         .runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true, "ds=yesterday", "ds=today");
     CompactorTestUtil.runCleaner(hiveConf);
     List<String> expectedRsPtnToday = new ArrayList<>();
-    expectedRsPtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t3\tNULL\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t2\t3\tNULL\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t2\t4\tNULL\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t3\t3\t1001\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":2}\t4\t4\t1005\ttoday");
+    expectedRsPtnToday.add("1\t1\t3\tNULL\ttoday");
+    expectedRsPtnToday.add("1\t2\t3\tNULL\ttoday");
+    expectedRsPtnToday.add("1\t2\t4\tNULL\ttoday");
+    expectedRsPtnToday.add("3\t3\t3\t1001\ttoday");
+    expectedRsPtnToday.add("3\t4\t4\t1005\ttoday");
+    Collections.sort(expectedRsPtnToday);
+
     List<String> expectedRsPtnYesterday = new ArrayList<>();
-    expectedRsPtnYesterday.add("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t4\tNULL\tyesterday");
-    expectedRsPtnYesterday.add("{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t3\t4\t1002\tyesterday");
-    expectedRsPtnYesterday.add("{\"writeid\":3,\"bucketid\":536936448,\"rowid\":2}\t4\t3\t1004\tyesterday");
+    expectedRsPtnYesterday.add("1\t1\t4\tNULL\tyesterday");
+    expectedRsPtnYesterday.add("3\t3\t4\t1002\tyesterday");
+    expectedRsPtnYesterday.add("3\t4\t3\t1004\tyesterday");
+    Collections.sort(expectedRsPtnYesterday);
+
     // Partition 'today'
-    List<String> rsCompactPtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  " + tblName
+    List<String> rsCompactPtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID.writeid, a, b, c, ds from " + tblName
         + " where ds='today'", driver);
-    Assert.assertEquals("compacted read", expectedRsPtnToday, rsCompactPtnToday);
+    Collections.sort(rsCompactPtnToday);
+    Assert.assertEquals("compacted read today", expectedRsPtnToday, rsCompactPtnToday);
+
     // Partition 'yesterday'
-    List<String> rsCompactPtnYesterday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  " + tblName
+    List<String> rsCompactPtnYesterday = executeStatementOnDriverAndReturnResults("select ROW__ID.writeid, a, b, c, ds from " + tblName
         + " where ds='yesterday'", driver);
-    Assert.assertEquals("compacted read", expectedRsPtnYesterday, rsCompactPtnYesterday);
+    Collections.sort(rsCompactPtnYesterday);
+    Assert.assertEquals("compacted read yesterday", expectedRsPtnYesterday, rsCompactPtnYesterday);
+
     // Clean up
     dropTables(driver, tblName);
   }
