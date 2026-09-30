@@ -134,8 +134,6 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
           ioCxtRef.setDeletedRecord(recordIdentifier != null && recordIdentifier.isDeleteEvent());
         } else {
           ioCxtRef.parseRecordIdentifier(jobConf);
-          ioCxtRef.parsePositionDeleteInfo(jobConf);
-          ioCxtRef.parseRowLineageInfo(jobConf);
         }
       }
       return retVal;

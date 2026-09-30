@@ -266,6 +266,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
@@ -12347,34 +12348,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
-    if (HiveConf.getVar(conf, HIVE_STATS_DBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getTempDirForInterimJobPath(tab.getPath()).toString();
-      LOG.debug("Set stats collection dir : " + statsTmpLoc);
-      tsDesc.setTmpStatsDir(statsTmpLoc);
+    // basic statistics the storage handler keeps make scan-side gathering redundant, and it keeps the scan from
+    // vectorizing
+    if (!BasicStatsNoJobTask.storageHandlerOwnsBasicStats(tab)) {
+      setupStatsGathering(tsDesc, tab, alias, rwsch);
     }
-    tsDesc.setGatherStats(true);
-    tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-
-    // append additional virtual columns for storing statistics
-    Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
-    List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
-    while (vcs.hasNext()) {
-      VirtualColumn vc = vcs.next();
-      rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),
-          vc.getTypeInfo(), alias, true, vc.getIsHidden()));
-      vcList.add(vc);
-    }
-    tsDesc.addVirtualCols(vcList);
-
-    String tblName = tab.getTableName();
-    // Theoretically the key prefix could be any unique string shared
-    // between TableScanOperator (when publishing) and StatsTask (when aggregating).
-    // Here we use
-    // db_name.table_name + partitionSec
-    // as the prefix for easy of read during explain and debugging.
-    // Currently, partition spec can only be static partition.
-    String k = FileUtils.escapePathName(tblName).toLowerCase() + Path.SEPARATOR;
-    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName()).toLowerCase() + "." + k);
 
     // set up WriteEntity for replication and txn stats
     WriteEntity we = new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED);
@@ -12416,6 +12394,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+  }
+
+  private void setupStatsGathering(TableScanDesc tsDesc, Table tab, String alias, RowResolver rwsch) {
+    if (HiveConf.getVar(conf, HIVE_STATS_DBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
+      String statsTmpLoc = ctx.getTempDirForInterimJobPath(tab.getPath()).toString();
+      LOG.debug("Set stats collection dir : " + statsTmpLoc);
+      tsDesc.setTmpStatsDir(statsTmpLoc);
+    }
+    tsDesc.setGatherStats(true);
+    tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+
+    // append additional virtual columns for storing statistics
+    Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
+    List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
+    while (vcs.hasNext()) {
+      VirtualColumn vc = vcs.next();
+      rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),
+          vc.getTypeInfo(), alias, true, vc.getIsHidden()));
+      vcList.add(vc);
+    }
+    tsDesc.addVirtualCols(vcList);
+
+    String tblName = tab.getTableName();
+    // Theoretically the key prefix could be any unique string shared
+    // between TableScanOperator (when publishing) and StatsTask (when aggregating).
+    // Here we use
+    // db_name.table_name + partitionSec
+    // as the prefix for easy of read during explain and debugging.
+    // Currently, partition spec can only be static partition.
+    String k = FileUtils.escapePathName(tblName).toLowerCase() + Path.SEPARATOR;
+    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName()).toLowerCase() + "." + k);
   }
 
   private Operator genPlan(QB parent, QBExpr qbexpr) throws SemanticException {

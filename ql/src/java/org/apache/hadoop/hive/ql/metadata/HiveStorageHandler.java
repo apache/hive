@@ -275,7 +275,17 @@ public interface HiveStorageHandler extends Configurable {
   default boolean canProvideBasicStatistics() {
     return false;
   }
-  
+
+  /**
+   * Check if the storage handler supplies the table's basic statistics itself, rather than from the metastore
+   * parameters an ANALYZE scan writes.
+   * @param table table object
+   * @return true if the storage handler supplies the table's basic statistics
+   */
+  default boolean canProvideBasicStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return canProvideBasicStatistics();
+  }
+
   /**
    * Check if the storage handler can provide partition statistics.
    * @return true if the storage handler can supply the partition statistics

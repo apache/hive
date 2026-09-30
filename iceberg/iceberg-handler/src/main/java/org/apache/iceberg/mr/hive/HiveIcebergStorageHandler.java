@@ -198,6 +198,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SerializationUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
@@ -296,6 +297,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     overlayTableProperties(conf, tableDesc, map);
     // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
     fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
+    fallbackToNonVectorizedModeForEqualityDeletes(tableDesc.getProperties());
 
     boolean allowDataFilesWithinTableLocationOnly =
         conf.getBoolean(ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
@@ -441,6 +443,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public boolean canProvideBasicStatistics() {
     return true;
+  }
+
+  @Override
+  public boolean canProvideBasicStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    return canProvideBasicStatistics() && HiveMetaHook.ICEBERG.equals(getStatsSource());
   }
 
   @Override
@@ -1889,6 +1896,19 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         hasOrcTimeInSchema(tableProps, tableSchema) ||
         !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
       // disable vectorization
+      SessionStateUtil.getQueryState(conf).ifPresent(qs ->
+          qs.getConf().setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false));
+    }
+  }
+
+  /**
+   * The vectorized reader cannot apply equality deletes (HiveVectorizedReader), so a snapshot that has any is read
+   * row by row: the current one, or the head of the branch or tag scanned.
+   */
+  private void fallbackToNonVectorizedModeForEqualityDeletes(Properties tableProps) {
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(
+        IcebergTableUtil.getTable(conf, tableProps), tableProps.getProperty(Catalogs.SNAPSHOT_REF));
+    if (snapshot != null && PropertyUtil.propertyAsLong(snapshot.summary(), TOTAL_EQ_DELETES_PROP, 0) > 0) {
       SessionStateUtil.getQueryState(conf).ifPresent(qs ->
           qs.getConf().setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false));
     }

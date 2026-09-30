@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.io.RowLineageInfo;
@@ -181,10 +182,6 @@ public class IcebergAcidUtil {
     return rec.get(DELETE_FILE_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
   }
 
-  public static long getFilePosition(Record rec) {
-    return rec.get(FILE_READ_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
-  }
-
   public static long getDeleteFilePosition(Record rec) {
     return rec.get(DELETE_FILE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
   }
@@ -240,9 +237,11 @@ public class IcebergAcidUtil {
 
   public static class VirtualColumnAwareIterator<T> implements CloseableIterator<T> {
 
+    private static final int ROW_POSITION_INDEX = FILE_READ_META_COLS.get(MetadataColumns.ROW_POSITION);
+
     private final CloseableIterator<T> currentIterator;
     private final GenericRecord current;
-    private final Configuration conf;
+    private final IOContext ioContext;
 
     private final int specId;
     private final long partitionHash;
@@ -253,13 +252,13 @@ public class IcebergAcidUtil {
       this.currentIterator = currentIterator;
       this.current = GenericRecord.create(
           new Schema(columns.subList(FILE_READ_META_COLS.size(), columns.size())));
-      this.conf = conf;
+      this.ioContext = IOContextMap.get(conf);
 
       this.specId = task.file().specId();
       this.partitionHash = computeHash(task.file().partition());
       this.filePath = task.file().location();
 
-      IOContextMap.get(conf).setPartitionName(
+      ioContext.setPartitionName(
           IcebergTableUtil.toPartitionName(task.spec(), task.file().partition()));
     }
 
@@ -278,13 +277,10 @@ public class IcebergAcidUtil {
       T next = currentIterator.next();
       GenericRecord rec = (GenericRecord) next;
       IcebergAcidUtil.copyFields(rec, FILE_READ_META_COLS.size(), current.size(), current);
-      PositionDeleteInfo.setIntoConf(conf,
-          specId,
-          partitionHash,
-          filePath,
-          IcebergAcidUtil.getFilePosition(rec));
-      RowLineageInfo.setRowLineageInfoIntoConf(RowLineageReader.readRowId(rec),
-          RowLineageReader.readLastUpdatedSequenceNumber(rec), conf);
+      ioContext.setPositionDeleteInfo(
+          new PositionDeleteInfo(specId, partitionHash, filePath, rec.get(ROW_POSITION_INDEX, Long.class)));
+      ioContext.setRowLineageInfo(new RowLineageInfo(
+          RowLineageReader.readRowId(rec), RowLineageReader.readLastUpdatedSequenceNumber(rec)));
       return (T) current;
     }
   }

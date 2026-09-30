@@ -114,6 +114,10 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     return table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics();
   }
 
+  public static boolean storageHandlerOwnsBasicStats(Table table) {
+    return table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics(table);
+  }
+
 
   @Override
   public void initialize(CompilationOpContext opContext) {
@@ -127,7 +131,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
     ExecutorService threadPool = StatsTask.newThreadPool(conf);
 
-    return aggregateStats(threadPool, db);
+    return aggregateStats(threadPool, db, tbl);
   }
 
   public StageType getType() {
@@ -345,9 +349,13 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   }
 
   private Collection<Partition> getPartitions(Table table) {
+    // the handler keeps this table's partitions
+    if (table.hasNonNativePartitionSupport()) {
+      return null;
+    }
     Collection<Partition> partitions = null;
     if (work.getPartitions() == null || work.getPartitions().isEmpty()) {
-      if (table.isPartitioned() && !table.hasNonNativePartitionSupport()) {
+      if (table.isPartitioned()) {
         partitions = table.getTableSpec().partitions;
       }
     } else {
@@ -370,7 +378,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   }
 
 
-  private int aggregateStats(ExecutorService threadPool, Hive db) {
+  private int aggregateStats(ExecutorService threadPool, Hive db, Table tbl) {
     int ret = 0;
     try {
       JobConf jc = new JobConf(conf);
@@ -403,7 +411,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       shutdownAndAwaitTermination(threadPool);
       LOG.debug("Stats collection threadpool shutdown successful.");
 
-      ret = updatePartitions(db, scs, table);
+      ret = updatePartitions(db, scs, table, tbl);
 
     } catch (Exception e) {
       console.printError("Failed to collect footer statistics.", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
@@ -418,7 +426,8 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     return ret;
   }
 
-  private int updatePartitions(Hive db, List<StatCollector> scs, Table table) throws InvalidOperationException, HiveException {
+  private int updatePartitions(Hive db, List<StatCollector> scs, Table table, Table tbl)
+      throws InvalidOperationException, HiveException {
 
     String tableFullName = table.getFullyQualifiedName();
 
@@ -463,11 +472,13 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         throw new RuntimeException("very interesting");
       }
 
-      if (values.get(0).result instanceof Table) {
+      if (values.get(0).result instanceof Table result) {
         // the metastore keeps one set of counts, and they describe the table, not a branch
         if (table.getSnapshotRef() == null) {
-          db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext, true);
+          db.alterTable(tableFullName, result, environmentContext, true);
           LOG.debug("Updated stats for {}.", tableFullName);
+          // ColStatsProcessor writes the task's table object back: hand it the parameters just written
+          tbl.setTTable(result.getTTable());
         }
       } else {
         if (values.get(0).result instanceof Partition) {
