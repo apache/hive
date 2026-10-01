@@ -674,7 +674,7 @@ public class RelOptHiveTable implements RelOptTable {
           console.printInfo(logMsg);
         }
       } else {
-        LOG.error(logMsg);
+        LOG.warn(logMsg);
         throw new RuntimeException(logMsg);
       }
     } else {
