@@ -160,9 +160,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       // Set distCp custom name corresponding to the replication policy.
       String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameToLoadIn);
       conf.set(JobContext.JOB_NAME, mapRedCustomName);
-      if (shouldLoadAtlasMetadata()) {
-        addAtlasLoadTask();
-      }
       if (conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_HANDLE_DENY_POLICY_TARGET)) {
         initiateRangerDenyTask();
       }
@@ -236,23 +233,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
               + " not supported for replication ", ReplUtils.REPL_RANGER_SERVICE));
     }
-  }
-
-  private void addAtlasLoadTask() throws HiveException {
-    Path atlasDumpDir = new Path(new Path(work.dumpDirectory).getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
-    LOG.info("Adding task to load Atlas metadata from {} ", atlasDumpDir);
-    String targetDbName = StringUtils.isEmpty(work.dbNameToLoadIn) ? work.getSourceDbName() : work.dbNameToLoadIn;
-    AtlasLoadWork atlasLoadWork = new AtlasLoadWork(work.getSourceDbName(), targetDbName, atlasDumpDir,
-        work.getMetricCollector());
-    Task<?> atlasLoadTask = TaskFactory.get(atlasLoadWork, conf);
-    if (childTasks == null) {
-      childTasks = new ArrayList<>();
-    }
-    childTasks.add(atlasLoadTask);
-  }
-
-  private boolean shouldLoadAtlasMetadata() {
-    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA);
   }
 
   private int executeBootStrapLoad() throws Exception {
