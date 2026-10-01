@@ -70,9 +70,11 @@ There are some arguments to specify the component version:
 -hadoop <hadoop version>
 -tez <tez version>
 -hive <hive version> 
+-aws-sdk auto|none|<aws sdk v2 version>
 ```
 If the version is not provided, it will read the version from current `pom.xml`:
-`project.version`, `hadoop.version` and `tez.version` for Hive, Hadoop and Tez respectively. 
+`project.version`, `hadoop.version`, `tez.version` and `aws-java-sdk.version` for Hive, Hadoop, Tez and the
+AWS SDK respectively. 
 
 For example, the following command uses Hive 4.0.0, Hadoop `hadoop.version` and Tez `tez.version` to build the image,
 ```shell
@@ -84,6 +86,29 @@ together with Hadoop 3.1.0 and Tez 0.10.1 to build the image,
 ./build.sh -hadoop 3.1.0 -tez 0.10.1
 ```
 After building successfully, you get a Docker image named `apache/hive` by default, tagged by the provided Hive version.
+
+##### AWS SDK bundle (s3a:// support)
+Since Hadoop 3.4.3, `hadoop-aws` sits on the default classpath but the AWS SDK v2 it links against is no longer
+part of the Hadoop distribution, so the image supplies it. `build.sh` downloads
+`software.amazon.awssdk:bundle` into `packaging/cache` (reused across builds) and bakes it into `/opt/hive/lib`.
+Without it, touching an `s3a://` path fails with
+`NoClassDefFoundError: software/amazon/awssdk/core/exception/SdkException`.
+
+`-aws-sdk` takes one of three values:
+
+| value | effect |
+|---|---|
+| `auto` (default) | `aws-java-sdk.version` from `pom.xml` |
+| `none` | no bundle, ~650MB smaller image. `s3a://` then fails at runtime. |
+| `<version>` | an explicit `software.amazon.awssdk:bundle` version |
+
+```shell
+./build.sh -tez 0.10.5 -aws-sdk none
+./build.sh -tez 0.10.5 -aws-sdk 2.42.25
+```
+
+A jar mounted at `/tmp/ext-jars` is copied into `/opt/hive/lib` at startup, so a different SDK version can be
+supplied at run time without rebuilding.
 
 #### Run services
 
