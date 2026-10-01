@@ -37,7 +37,6 @@
     <module>beeline</module>
     <module>classification</module>
     <module>cli</module>
-    <module>schematool</module>
     <module>common</module>
     <module>contrib</module>
     <module>hbase-handler</module>
