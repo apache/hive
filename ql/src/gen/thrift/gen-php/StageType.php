@@ -65,11 +65,7 @@ final class StageType
 
     public const RANGER_DENY = 21;
 
-    public const ATLAS_DUMP = 22;
-
-    public const ATLAS_LOAD = 23;
-
-    public const CLEAR_DANGLING_TXNS = 24;
+    public const CLEAR_DANGLING_TXNS = 22;
 
     public static $names = [
         0 => 'CONDITIONAL',
@@ -94,8 +90,6 @@ final class StageType
         19 => 'RANGER_DUMP',
         20 => 'RANGER_LOAD',
         21 => 'RANGER_DENY',
-        22 => 'ATLAS_DUMP',
-        23 => 'ATLAS_LOAD',
-        24 => 'CLEAR_DANGLING_TXNS',
+        22 => 'CLEAR_DANGLING_TXNS',
     ];
 }
