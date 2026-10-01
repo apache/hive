@@ -1,0 +1,203 @@
+PREHOOK: query: create table ajt_dim (x int, k int, y int, primary key (k) disable novalidate rely)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ajt_dim
+POSTHOOK: query: create table ajt_dim (x int, k int, y int, primary key (k) disable novalidate rely)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ajt_dim
+PREHOOK: query: create table ajt_dim_nopk (k int, x int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ajt_dim_nopk
+POSTHOOK: query: create table ajt_dim_nopk (k int, x int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ajt_dim_nopk
+PREHOOK: query: create table ajt_fact (fk int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ajt_fact
+POSTHOOK: query: create table ajt_fact (fk int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ajt_fact
+PREHOOK: query: insert into ajt_dim values (10, 1, 100), (20, 2, 200), (null, 3, 300)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ajt_dim
+POSTHOOK: query: insert into ajt_dim values (10, 1, 100), (20, 2, 200), (null, 3, 300)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ajt_dim
+POSTHOOK: Lineage: ajt_dim.k SCRIPT []
+POSTHOOK: Lineage: ajt_dim.x SCRIPT []
+POSTHOOK: Lineage: ajt_dim.y SCRIPT []
+PREHOOK: query: insert into ajt_dim_nopk values (1, 10), (2, 20), (3, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ajt_dim_nopk
+POSTHOOK: query: insert into ajt_dim_nopk values (1, 10), (2, 20), (3, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ajt_dim_nopk
+POSTHOOK: Lineage: ajt_dim_nopk.k SCRIPT []
+POSTHOOK: Lineage: ajt_dim_nopk.x SCRIPT []
+PREHOOK: query: insert into ajt_fact values (1), (1), (2), (3), (3), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ajt_fact
+POSTHOOK: query: insert into ajt_fact values (1), (1), (2), (3), (3), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ajt_fact
+POSTHOOK: Lineage: ajt_fact.fk SCRIPT []
+PREHOOK: query: explain cbo
+select k, sum(x), min(x), max(x), count(x), count(*) from ajt_dim join ajt_fact on k = fk group by k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ajt_dim
+PREHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select k, sum(x), min(x), max(x), count(x), count(*) from ajt_dim join ajt_fact on k = fk group by k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ajt_dim
+POSTHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(k=[$0], _c1=[*($1, $6)], _c2=[$2], _c3=[$3], _c4=[*($4, $6)], _c5=[$6])
+  HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(k=[$1], x=[$0], x0=[$0], x1=[$0], $f4=[CASE(IS NOT NULL($0), 1:BIGINT, 0:BIGINT)])
+      HiveTableScan(table=[[default, ajt_dim]], table:alias=[ajt_dim])
+    HiveProject(fk=[$0], count=[$1])
+      HiveAggregate(group=[{0}], count=[count()])
+        HiveProject(fk=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, ajt_fact]], table:alias=[ajt_fact])
+
+PREHOOK: query: select k, sum(x), min(x), max(x), count(x), count(*) from ajt_dim join ajt_fact on k = fk group by k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ajt_dim
+PREHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+POSTHOOK: query: select k, sum(x), min(x), max(x), count(x), count(*) from ajt_dim join ajt_fact on k = fk group by k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ajt_dim
+POSTHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+1	20	10	10	2	2
+2	20	20	20	1	1
+3	NULL	NULL	NULL	0	3
+PREHOOK: query: explain cbo
+select k, y, sum(x), sum(y) from ajt_dim join ajt_fact on k = fk group by k, y
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ajt_dim
+PREHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select k, y, sum(x), sum(y) from ajt_dim join ajt_fact on k = fk group by k, y
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ajt_dim
+POSTHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(k=[$0], y=[$1], _c2=[*($2, $4)], _c3=[*($1, $4)])
+  HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(k=[$1], y=[$2], x=[$0])
+      HiveTableScan(table=[[default, ajt_dim]], table:alias=[ajt_dim])
+    HiveProject(fk=[$0], count=[$1])
+      HiveAggregate(group=[{0}], count=[count()])
+        HiveProject(fk=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, ajt_fact]], table:alias=[ajt_fact])
+
+PREHOOK: query: select k, y, sum(x), sum(y) from ajt_dim join ajt_fact on k = fk group by k, y
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ajt_dim
+PREHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+POSTHOOK: query: select k, y, sum(x), sum(y) from ajt_dim join ajt_fact on k = fk group by k, y
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ajt_dim
+POSTHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+1	100	20	200
+2	200	20	200
+3	300	NULL	900
+PREHOOK: query: explain cbo
+select d.k, sum(d.x) from (select k, max(x) x from ajt_dim_nopk group by k) d join ajt_fact on d.k = fk group by d.k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ajt_dim_nopk
+PREHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select d.k, sum(d.x) from (select k, max(x) x from ajt_dim_nopk group by k) d join ajt_fact on d.k = fk group by d.k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ajt_dim_nopk
+POSTHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(d.k=[$0], _c1=[*($1, $3)])
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(k=[$0], $f1=[$1])
+      HiveAggregate(group=[{0}], agg#0=[max($1)])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, ajt_dim_nopk]], table:alias=[ajt_dim_nopk])
+    HiveProject(fk=[$0], count=[$1])
+      HiveAggregate(group=[{0}], count=[count()])
+        HiveProject(fk=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, ajt_fact]], table:alias=[ajt_fact])
+
+PREHOOK: query: select d.k, sum(d.x) from (select k, max(x) x from ajt_dim_nopk group by k) d join ajt_fact on d.k = fk group by d.k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ajt_dim_nopk
+PREHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+POSTHOOK: query: select d.k, sum(d.x) from (select k, max(x) x from ajt_dim_nopk group by k) d join ajt_fact on d.k = fk group by d.k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ajt_dim_nopk
+POSTHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+1	20
+2	20
+3	NULL
+PREHOOK: query: select k, sum(x), min(x), max(x), count(x), count(*) from ajt_dim join ajt_fact on k = fk group by k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ajt_dim
+PREHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+POSTHOOK: query: select k, sum(x), min(x), max(x), count(x), count(*) from ajt_dim join ajt_fact on k = fk group by k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ajt_dim
+POSTHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+1	20	10	10	2	2
+2	20	20	20	1	1
+3	NULL	NULL	NULL	0	3
+PREHOOK: query: select k, y, sum(x), sum(y) from ajt_dim join ajt_fact on k = fk group by k, y
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ajt_dim
+PREHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+POSTHOOK: query: select k, y, sum(x), sum(y) from ajt_dim join ajt_fact on k = fk group by k, y
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ajt_dim
+POSTHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+1	100	20	200
+2	200	20	200
+3	300	NULL	900
+PREHOOK: query: select d.k, sum(d.x) from (select k, max(x) x from ajt_dim_nopk group by k) d join ajt_fact on d.k = fk group by d.k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ajt_dim_nopk
+PREHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+POSTHOOK: query: select d.k, sum(d.x) from (select k, max(x) x from ajt_dim_nopk group by k) d join ajt_fact on d.k = fk group by d.k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ajt_dim_nopk
+POSTHOOK: Input: default@ajt_fact
+#### A masked pattern was here ####
+1	20
+2	20
+3	NULL
