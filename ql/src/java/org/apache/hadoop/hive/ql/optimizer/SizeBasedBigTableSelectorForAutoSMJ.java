@@ -94,9 +94,9 @@ public abstract class SizeBasedBigTableSelectorForAutoSMJ {
   }
 
   /**
-   * The size of the partitions a scan reads. A storage handler keeping its own statistics is asked
-   * for all of them at once: it holds no partition parameters to read one by one, and the table's
-   * own size stands for every partition rather than for any of them.
+   * Sums the sizes of the given partitions. For a storage-handler table the partition statistics
+   * are fetched from the handler in one batch; when the handler has no statistics for some
+   * partition the sum would fall short, so the table-level size is used instead.
    */
   protected long getSize(HiveConf conf, Table table, List<Partition> partitions) {
     if (!table.isNonNative()) {
@@ -115,8 +115,8 @@ public abstract class SizeBasedBigTableSelectorForAutoSMJ {
       String size = partStats != null ? partStats.get(StatsSetupConst.TOTAL_SIZE) : null;
       long partSize = NumberUtils.toLong(size, -1);
       if (partSize < 0) {
-        // a partition it cannot size would leave the total standing for less than the scan reads,
-        // so the table's own size answers instead: more than the scan reads, never less
+        // a partition without statistics would make the sum an underestimate, so fall back to
+        // the whole-table size: it may overestimate the scan but never underestimates it
         return handlerSize(table);
       }
       total += partSize;

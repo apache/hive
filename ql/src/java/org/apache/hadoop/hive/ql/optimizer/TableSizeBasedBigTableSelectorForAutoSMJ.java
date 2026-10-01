@@ -70,7 +70,7 @@ implements BigTableSelectorForAutoSMJ {
         else {
           // For partitioned tables, get the size of all the partitions
           PrunedPartitionList partsList = PartitionPruner.prune(topOp, parseCtx, null);
-          currentSize = getSize(conf, table, List.copyOf(partsList.getNotDeniedPartns()));
+          currentSize = getSize(conf, table, partsList.getNotDeniedPartns());
         }
 
         if (currentSize > maxSize) {

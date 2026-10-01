@@ -68,8 +68,8 @@ public class TestSizeBasedBigTableSelectorForAutoSMJ {
 
   @Test
   public void handlerPartitionsAreSizedTogetherAndSummed() {
-    // the table's own size stands for every partition rather than for any of them, so the
-    // partitions a scan reads are asked for by name and their sizes added
+    // the table-level size covers the whole table, not one partition, so the partitions
+    // are looked up by name in one batch and their sizes summed
     Table table = handlerTable(Map.of(StatsSetupConst.TOTAL_SIZE, "777"));
     Mockito.when(table.getStorageHandler().getAggrBasicStatsFor(Mockito.eq(table), Mockito.anyList()))
         .thenReturn(Map.of(
@@ -82,8 +82,8 @@ public class TestSizeBasedBigTableSelectorForAutoSMJ {
 
   @Test
   public void handlerPartitionOfUnknownSizeFallsBackToTheTable() {
-    // sizing one partition and not the other would stand for less than the scan reads, so the
-    // table's own size answers instead: more than the scan reads, never less
+    // summing only the sized partition would underestimate the scan, so the whole-table
+    // size is used instead: it may overestimate but never underestimates
     Table table = handlerTable(Map.of(StatsSetupConst.TOTAL_SIZE, "777"));
     Mockito.when(table.getStorageHandler().getAggrBasicStatsFor(Mockito.eq(table), Mockito.anyList()))
         .thenReturn(Map.of("p=a", Map.of(StatsSetupConst.TOTAL_SIZE, "100")));
