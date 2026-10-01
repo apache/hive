@@ -193,9 +193,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
   public void testExternalTablesReplLoadBootstrapIncr() throws Throwable {
     // Bootstrap
     String withClause = " WITH('" + HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA
-            + "' = 'true' ,'" + HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA + "' = 'true' , '"
-            + HiveConf.ConfVars.HIVE_IN_TEST + "' = 'true'" + ",'"+ HiveConf.ConfVars.REPL_ATLAS_ENDPOINT
-        + "' = 'http://localhost:21000/atlas'" +  ",'"+ HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB + "' = 'tgt'"
+            + "' = 'true' , '" + HiveConf.ConfVars.HIVE_IN_TEST + "' = 'true'"
         +  ",'"+ HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME + "' = 'cluster0'"
         +  ",'"+ HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME + "' = 'cluster1')";
     primary.run("use " + primaryDbName)
@@ -529,11 +527,6 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
     Metric rangerMetric = new Metric(ReplUtils.MetricName.POLICIES.name(), 0);
     rangerDump.addMetric(rangerMetric);
     stages.add(rangerDump);
-    //Atlas
-    Stage atlasDump = new Stage("ATLAS_LOAD", Status.SUCCESS, 0);
-    Metric atlasMetric = new Metric(ReplUtils.MetricName.ENTITIES.name(), 0);
-    atlasDump.addMetric(atlasMetric);
-    stages.add(atlasDump);
     //Hive
     Stage replDump = new Stage("REPL_LOAD", Status.SUCCESS, 0);
     if (isBootstrap) {
@@ -558,11 +551,6 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
     Metric rangerMetric = new Metric(ReplUtils.MetricName.POLICIES.name(), 0);
     rangerDump.addMetric(rangerMetric);
     stages.add(rangerDump);
-    //Atlas
-    Stage atlasDump = new Stage("ATLAS_DUMP", Status.SUCCESS, 0);
-    Metric atlasMetric = new Metric(ReplUtils.MetricName.ENTITIES.name(), 0);
-    atlasDump.addMetric(atlasMetric);
-    stages.add(atlasDump);
     //Hive
     Stage replDump = new Stage("REPL_DUMP", Status.SUCCESS, 0);
     if (isBootstrap) {
