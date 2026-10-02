@@ -271,7 +271,7 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
       });
 
       if (purge && lastMetadata != null) {
-        CatalogUtil.dropTableData(new ScopedDeleteFileIO(ops.io(), lastMetadata.location()), lastMetadata);
+        CatalogUtil.dropTableData(new ScopedDeleteFileIO(ops.io(), lastMetadata.location(), conf), lastMetadata);
       }
 
       LOG.info("Dropped table: {}", identifier);

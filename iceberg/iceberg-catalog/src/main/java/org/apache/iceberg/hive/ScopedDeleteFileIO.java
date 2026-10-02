@@ -19,7 +19,10 @@
 
 package org.apache.iceberg.hive;
 
+import java.net.URI;
 import java.util.Map;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.iceberg.io.FileIO;
@@ -41,11 +44,13 @@ class ScopedDeleteFileIO implements FileIO {
   private static final Logger LOG = LoggerFactory.getLogger(ScopedDeleteFileIO.class);
 
   private final FileIO delegate;
+  private final URI defaultUri;
   private final Path location;
 
-  ScopedDeleteFileIO(FileIO delegate, String location) {
+  ScopedDeleteFileIO(FileIO delegate, String location, Configuration conf) {
     this.delegate = delegate;
-    this.location = new Path(location);
+    this.defaultUri = FileSystem.getDefaultUri(conf);
+    this.location = qualify(new Path(location));
   }
 
   @Override
@@ -60,8 +65,8 @@ class ScopedDeleteFileIO implements FileIO {
 
   @Override
   public void deleteFile(String path) {
-    var candidate = new Path(path);
-    if (!FileUtils.isPathWithinSubtree(qualify(candidate, location), qualify(location, candidate))) {
+    var candidate = qualify(new Path(path));
+    if (!FileUtils.isPathWithinSubtree(candidate, location)) {
       LOG.debug("Skipping delete outside table location {}: {}", location, path);
       return;
     }
@@ -69,22 +74,18 @@ class ScopedDeleteFileIO implements FileIO {
   }
 
   /**
-   * A path with no scheme refers to the same filesystem location as an otherwise-identical path
-   * that does carry one, whichever side that happens to be: manifests can hold data file paths
-   * written without a scheme, and a table's own location can equally be scheme-less (e.g. when a
-   * caller supplies one explicitly). {@link org.apache.hadoop.fs.Path#equals} is scheme-sensitive,
-   * so without this a schemeless path would never match its scheme-qualified counterpart in
-   * {@link FileUtils#isPathWithinSubtree} even when it is nested directly under it. When both (or
-   * neither) sides carry a scheme, {@code path} is returned unchanged, so a genuine mismatch (e.g.
+   * Manifests can hold data file paths written without a scheme, and a table's own location can
+   * equally be scheme-less (e.g. when a caller supplies one explicitly). {@link Path#equals} is
+   * scheme-sensitive, so without this a schemeless path would never match its scheme-qualified
+   * counterpart in {@link FileUtils#isPathWithinSubtree} even when it is nested directly under it.
+   * A scheme-less path refers to a location on the cluster's default filesystem (the one
+   * configured via {@code fs.defaultFS} in {@code core-site.xml}), so that is what it is qualified
+   * against here, rather than against whatever scheme the other side of the comparison happens to
+   * carry. A path that already carries a scheme is returned unchanged, so a genuine mismatch (e.g.
    * a different scheme or authority) is still correctly treated as outside the table location.
    */
-  private static Path qualify(Path path, Path other) {
-    var pathUri = path.toUri();
-    var otherUri = other.toUri();
-    if (pathUri.getScheme() == null && otherUri.getScheme() != null) {
-      return new Path(otherUri.getScheme(), otherUri.getAuthority(), pathUri.getPath());
-    }
-    return path;
+  private Path qualify(Path path) {
+    return path.makeQualified(defaultUri, new Path(Path.SEPARATOR));
   }
 
   @Override
