@@ -359,10 +359,13 @@ public class HMSCatalogAdapter implements Closeable {
   }
 
   private RESTResponse dropTable(Map<String, String> vars) {
+    TableIdentifier ident = identFromPathVars(vars);
     if (PropertyUtil.propertyAsBoolean(vars, "purgeRequested", false)) {
-      CatalogHandlers.purgeTable(catalog, identFromPathVars(vars));
+      String location = catalog.loadTable(ident).location();
+      icebergAuthorizer.validateDropTablePurge(catalogName, ident, location);
+      CatalogHandlers.purgeTable(catalog, ident);
     } else {
-      CatalogHandlers.dropTable(catalog, identFromPathVars(vars));
+      CatalogHandlers.dropTable(catalog, ident);
     }
     return null;
   }
@@ -381,6 +384,9 @@ public class HMSCatalogAdapter implements Closeable {
   private LoadTableResponse registerTable(Map<String, String> vars, Object body) {
     Namespace namespace = namespaceFromPathVars(vars);
     RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
+    request.validate();
+    Map<String, String> namespaceMetadata = asNamespaceCatalog.loadNamespaceMetadata(namespace);
+    icebergAuthorizer.validateRegisterTable(catalogName, namespace, namespaceMetadata, request);
     return CatalogHandlers.registerTable(catalog, namespace, request);
   }
 

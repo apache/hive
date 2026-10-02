@@ -30,9 +30,11 @@ import java.util.function.Supplier;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
@@ -45,9 +47,11 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizer;
 import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.hive.HiveHadoopUtil;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
+import org.apache.iceberg.rest.requests.RegisterTableRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,5 +164,101 @@ class IcebergAuthorizer {
     } catch (HiveAuthzPluginException e) {
       throw new IllegalStateException("Failed to check privileges stage-create", e);
     }
+  }
+
+  /**
+   * Enforces authorization for REGISTER_TABLE. The request's {@code metadataLocation} must be authorized, since
+   * REGISTER_TABLE is otherwise an arbitrary-file-read primitive that returns any metadata file's contents to the
+   * caller. The {@code location()} embedded in that metadata file (which becomes the table's HMS
+   * {@code StorageDescriptor.location}) is not checked here: it is authorized transitively by HMS's own
+   * CREATE_TABLE authorization when {@code CatalogHandlers.registerTable} creates the metastore table.
+   *
+   * <p>When no {@code HiveAuthorizer} is configured, falls back to requiring the metadata location to be
+   * contained in the namespace's external root, since there is no policy to otherwise decide whether the caller
+   * may read an arbitrary location with service credentials.
+   *
+   * @param catalogName the Hive catalog name
+   * @param namespace the Iceberg namespace
+   * @param namespaceMetadata the Iceberg namespace metadata
+   * @param request the register table request
+   * @throws ForbiddenException if the location is not authorized, or not contained in the namespace
+   * @throws IllegalStateException if the authorization plugin fails
+   */
+  void validateRegisterTable(String catalogName, Namespace namespace, Map<String, String> namespaceMetadata,
+      RegisterTableRequest request) {
+    Preconditions.checkArgument(namespace.levels().length == 1, "Hive does not support multi-level namespaces");
+    var databaseName = namespace.level(0);
+    var commandString = "register table " + request.name();
+    checkLocationAuthorized(catalogName, databaseName, namespaceMetadata, request.metadataLocation(), commandString);
+  }
+
+  /**
+   * Enforces authorization for DROP_TABLE with {@code purge=true}. Purge deletes every file referenced by the
+   * table's current metadata using the catalog's shared, service-level {@code FileIO}, so the location must be
+   * authorized like any other DFS_URI access.
+   *
+   * <p>Unlike {@link #validateRegisterTable}, there is no namespace-containment fallback here: the structural
+   * fence in {@code HiveCatalog.dropTable} already restricts purge deletions to files under the table's own
+   * location regardless of whether a {@code HiveAuthorizer} is configured, so a deployment without one relies on
+   * that fence rather than this check.
+   *
+   * @param catalogName the Hive catalog name
+   * @param identifier the table identifier being dropped
+   * @param location the table's current location
+   * @throws ForbiddenException if the location is not authorized
+   * @throws IllegalStateException if the authorization plugin fails
+   */
+  void validateDropTablePurge(String catalogName, TableIdentifier identifier, String location) {
+    var authorizer = authorizerSupplier.get();
+    if (authorizer == null) {
+      LOG.info("No pre-event listener is configured for catalog {}, skipping drop-table-purge authorization for {}",
+          catalogName, identifier);
+      return;
+    }
+
+    var inputs = Collections.singletonList(
+        new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
+    var builder = new HiveAuthzContext.Builder();
+    builder.setCommandString("drop table " + identifier.name());
+    try {
+      authorizer.checkPrivileges(HiveOperationType.DROPTABLE, inputs, Collections.emptyList(), builder.build());
+    } catch (HiveAccessControlException e) {
+      throw new ForbiddenException(e, e.getMessage());
+    } catch (HiveAuthzPluginException e) {
+      throw new IllegalStateException("Failed to check privileges drop-table-purge", e);
+    }
+  }
+
+  private void checkLocationAuthorized(String catalogName, String databaseName,
+      Map<String, String> namespaceMetadata, String location, String commandString) {
+    var authorizer = authorizerSupplier.get();
+    if (authorizer == null) {
+      LOG.info("No pre-event listener is configured for catalog {}, falling back to namespace containment for {}",
+          catalogName, location);
+      checkContainedInNamespace(databaseName, namespaceMetadata, location);
+      return;
+    }
+
+    var inputs = Collections.singletonList(
+        new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
+    var builder = new HiveAuthzContext.Builder();
+    builder.setCommandString(commandString);
+    try {
+      authorizer.checkPrivileges(HiveOperationType.CREATETABLE, inputs, Collections.emptyList(), builder.build());
+    } catch (HiveAccessControlException e) {
+      throw new ForbiddenException(e, e.getMessage());
+    } catch (HiveAuthzPluginException e) {
+      throw new IllegalStateException("Failed to check privileges for " + commandString, e);
+    }
+  }
+
+  private void checkContainedInNamespace(String databaseName, Map<String, String> namespaceMetadata,
+      String location) {
+    var externalRoot = namespaceMetadata.get("location");
+    if (externalRoot != null && FileUtils.isPathWithinSubtree(new Path(location), new Path(externalRoot))) {
+      return;
+    }
+    throw new ForbiddenException(
+        "Location %s is not authorized and is not contained in namespace %s", location, databaseName);
   }
 }
