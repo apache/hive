@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.ql.io;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 
 /**
- * A record writer that can report the number of logical rows affected by its operation.
+ * A record writer that reports logical target rows represented by its copy-on-write replacement
+ * markers. Insert rows are not included in this count.
  */
 public interface AffectedRowsProvidingRecordWriter extends RecordWriter {
   long getAffectedRows();

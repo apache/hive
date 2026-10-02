@@ -271,6 +271,33 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
+  public void testCopyOnWriteDeleteReportsMatchedRowCount() throws IOException {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_delete_count");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (a int, b string) " +
+        "STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(new Schema(
+            optional(1, "a", Types.IntegerType.get()),
+            optional(2, "b", Types.StringType.get()))) + "', " +
+        "'" + InputFormatConfig.PARTITION_SPEC + "'='" +
+        PartitionSpecParser.toJson(PartitionSpec.unpartitioned()) + "', " +
+        "'write.delete.mode'='copy-on-write', " +
+        "'" + InputFormatConfig.EXTERNAL_TABLE_PURGE + "'='TRUE', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "DELETE FROM " + identifier + " WHERE a IN (2, 4)");
+
+    Assert.assertEquals(2, numModifiedRows);
+  }
+
+  @Test
   public void testDeleteStatementPartitioned() {
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("last_name").bucket("customer_id", 16).build();
