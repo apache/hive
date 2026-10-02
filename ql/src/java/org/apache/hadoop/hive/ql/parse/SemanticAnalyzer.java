@@ -9589,34 +9589,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return result;
   }
 
-  /**
-   * CBO resolves positions in CLUSTER BY, DISTRIBUTE BY, SORT BY and ORDER BY in
-   * CalcitePlanner.genSortByKey. When CBO is enabled but declines the statement, the positions reach
-   * this planner unresolved. With CBO disabled, processPositionAlias has already replaced ORDER BY
-   * positions with the select expressions, so a remaining number is a literal.
-   */
-  private boolean isUnresolvedPosition(ASTNode node) {
-    return node.getType() == HiveParser.Number
-        && HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_ENABLED)
-        && (HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS)
-            || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS));
-  }
-
-  /**
-   * Resolves a 1-based position against the select output, where SELECT * is already expanded.
-   */
-  private ExprNodeDesc genPositionExpr(ASTNode positionNode, RowResolver selectOutputRR)
-      throws SemanticException {
-    List<ColumnInfo> columns = selectOutputRR.getColumnInfos();
-    int pos = Integer.parseInt(positionNode.getText());
-    if (pos < 1 || pos > columns.size()) {
-      throw new SemanticException(ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
-          "Position alias: " + pos + " does not exist\n"
-              + "The Select List is indexed from 1 to " + columns.size()));
-    }
-    return new ExprNodeColumnDesc(columns.get(pos - 1));
-  }
-
   private Operator genReduceSinkPlan(Operator<?> input,
                                      List<ExprNodeDesc> partitionCols, List<ExprNodeDesc> sortCols,
                                      String sortOrder, String nullOrder, int numReducers, AcidUtils.Operation acidOp, boolean isCompaction)
@@ -9770,6 +9742,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new RowSchema(selectRR.getColumnInfos()), interim), selectRR);
     output.setColumnExprMap(selColExprMap);
     return output;
+  }
+
+  /**
+   * CBO resolves positions in CLUSTER BY, DISTRIBUTE BY, SORT BY and ORDER BY in
+   * CalcitePlanner.genSortByKey. When CBO is enabled but declines the statement, the positions reach
+   * this planner unresolved. With CBO disabled, processPositionAlias has already replaced ORDER BY
+   * positions with the select expressions, so a remaining number is a literal.
+   */
+  private boolean isUnresolvedPosition(ASTNode node) {
+    return node.getType() == HiveParser.Number
+        && HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_ENABLED)
+        && (HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS)
+            || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS));
+  }
+
+  /**
+   * Resolves a 1-based position against the select output, where SELECT * is already expanded.
+   */
+  private ExprNodeDesc genPositionExpr(ASTNode positionNode, RowResolver selectOutputRR)
+      throws SemanticException {
+    List<ColumnInfo> columns = selectOutputRR.getColumnInfos();
+    int pos = Integer.parseInt(positionNode.getText());
+    if (pos < 1 || pos > columns.size()) {
+      throw new SemanticException(ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
+          positionAliasNotFoundMessage(pos, columns.size())));
+    }
+    return new ExprNodeColumnDesc(columns.get(pos - 1));
+  }
+
+  private static String positionAliasNotFoundMessage(int pos, int selectListSize) {
+    return "Position alias: " + pos + " does not exist\nThe Select List is indexed from 1 to " + selectListSize;
   }
 
   private Operator genJoinOperatorChildren(QBJoinTree join, Operator left,
@@ -14317,8 +14320,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 } else {
                   throw new SemanticException(
                       ErrorMsg.INVALID_POSITION_ALIAS_IN_GROUPBY.getMsg(
-                          "Position alias: " + pos + " does not exist\n" +
-                              "The Select List is indexed from 1 to " + selectExpCnt));
+                          positionAliasNotFoundMessage(pos, selectExpCnt)));
                 }
               } else {
                 warn("Using constant number  " + node.getText() +
@@ -14357,8 +14359,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   } else {
                     throw new SemanticException(
                         ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
-                            "Position alias: " + pos + " does not exist\n" +
-                                "The Select List is indexed from 1 to " + selectExpCnt));
+                            positionAliasNotFoundMessage(pos, selectExpCnt)));
                   }
                 } else {
                   throw new SemanticException(
