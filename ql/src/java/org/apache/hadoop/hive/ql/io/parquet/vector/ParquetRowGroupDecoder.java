@@ -22,9 +22,10 @@ package org.apache.hadoop.hive.ql.io.parquet.vector;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -46,12 +47,13 @@ import org.apache.parquet.schema.Type;
  * cache-backed consumer ({@code ParquetEncodedDataConsumer}) can share a single, behavior-preserving
  * implementation of the Hive-type-driven Parquet column-reader construction.
  *
- * <p>The instance only carries the {@code fileSchema} (used for the schema-evolution check). All
+ * <p>The instance only carries per-file state (the file's leaf columns, used for the
+ * schema-evolution check), so it is built once per file and reused for every row group; all
  * per-row-group state lives in the supplied {@link PageReadStore}.
  */
 public class ParquetRowGroupDecoder {
 
-  private static final int MAP_DEFINITION_LEVEL_MAX = 3;
+  private static final int MAX_MAP_WRAPPER_GROUPS = 3;
 
   /**
    * Bag of writer-timezone / proleptic / legacy conversion flags forwarded to every primitive
@@ -64,11 +66,13 @@ public class ParquetRowGroupDecoder {
       boolean legacyConversionEnabled) {
   }
 
-  private final MessageType fileSchema;
+  private final Set<ColumnDescriptor> fileColumns;
   private final Map<String, Object> initialDefaults;
 
   public ParquetRowGroupDecoder(MessageType fileSchema, Map<String, Object> initialDefaults) {
-    this.fileSchema = fileSchema;
+    // Materialized once: getColumns() rebuilds the whole leaf list on every call, and the
+    // schema-evolution check below runs per requested column.
+    this.fileColumns = new HashSet<>(fileSchema.getColumns());
     this.initialDefaults = initialDefaults;
   }
 
@@ -96,23 +100,15 @@ public class ParquetRowGroupDecoder {
     List<Type> types = requestedSchema.getFields();
     VectorizedColumnReader[] columnReaders = new VectorizedColumnReader[types.size()];
 
-    if (!readAllColumns) {
-      // certain queries like select count(*) from table do not have
-      // any projected columns and still have isReadAllColumns as false
-      // in such cases columnReaders are not needed
-      // However, if colsToInclude is not empty we should initialize each columnReader
-      if (!colsToInclude.isEmpty()) {
-        for (int i = 0; i < types.size(); ++i) {
-          columnReaders[i] = buildVectorizedParquetReader(
-              columnTypesList.get(colsToInclude.get(i)), types.get(i), pages,
-              requestedSchema.getColumns(), options, 0, 0);
-        }
-      }
-    } else {
-      for (int i = 0; i < types.size(); ++i) {
-        columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i),
-            types.get(i), pages, requestedSchema.getColumns(), options, 0, 0);
-      }
+    // Certain queries like "select count(*) from table" project no columns and still have
+    // isReadAllColumns as false; in such cases no columnReader is needed and the array stays null.
+    if (!readAllColumns && colsToInclude.isEmpty()) {
+      return columnReaders;
+    }
+    for (int i = 0; i < types.size(); ++i) {
+      int tableCol = readAllColumns ? i : colsToInclude.get(i);
+      columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(tableCol), types.get(i),
+          pages, requestedSchema.getColumns(), options, 0, 0);
     }
     return columnReaders;
   }
@@ -133,9 +129,13 @@ public class ParquetRowGroupDecoder {
     return res;
   }
 
-  // Nested types are unsupported here on purpose; callers detect that in advance
-  // (ParquetEncodedDataReader.projectsNestedTypes) and route the query to the non-native reader.
-  private static PrimitiveType getElementType(Type type) {
+  /**
+   * The primitive element type of a LIST's three-level encoding. Nested types are unsupported here
+   * on purpose; callers detect that in advance
+   * ({@code ParquetEncodedDataReader.projectsNestedTypes}) and route the query to the non-native
+   * reader.
+   */
+  private static PrimitiveType listElementType(Type type) {
     if (type.isPrimitive()) {
       return type.asPrimitiveType();
     }
@@ -168,89 +168,71 @@ public class ParquetRowGroupDecoder {
     }
     List<ColumnDescriptor> descriptors =
         getAllColumnDescriptorByType(depth, type, columnDescriptors);
+    if (descriptors.isEmpty()) {
+      throw new InvalidSchemaException(
+          "Failed to find related Parquet column descriptor with type " + type);
+    }
+    ColumnDescriptor descriptor = descriptors.getFirst();
     // Support for schema evolution: if the column from the current
     // query schema is not present in the file schema, return a dummy
     // reader that produces nulls. This allows queries to proceed even
     // when new columns have been added after the file was written.
-    if (!fileSchema.getColumns().contains(descriptors.getFirst())) {
-      return new VectorizedDummyColumnReader(Optional.ofNullable(initialDefaults)
-          .map(defaults -> defaults.getOrDefault(descriptors.getFirst().getPath()[0], null)).orElse(null));
+    if (!fileColumns.contains(descriptor)) {
+      return new VectorizedDummyColumnReader(
+          initialDefaults == null ? null : initialDefaults.get(descriptor.getPath()[0]));
     }
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
-      if (columnDescriptors == null || columnDescriptors.isEmpty()) {
-        throw new InvalidSchemaException(
-            "Failed to find related Parquet column descriptor with type " + type);
-      }
-      return new VectorizedPrimitiveColumnReader(descriptors.getFirst(),
-          pages.getPageReader(descriptors.getFirst()), options.skipTimestampConversion(),
-          options.writerTimezone(), options.skipProlepticConversion(),
-          options.legacyConversionEnabled(), type, typeInfo);
+      return new VectorizedPrimitiveColumnReader(descriptor, pages.getPageReader(descriptor),
+          options.skipTimestampConversion(), options.writerTimezone(),
+          options.skipProlepticConversion(), options.legacyConversionEnabled(), type, typeInfo);
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
       List<VectorizedColumnReader> fieldReaders = new ArrayList<>();
       List<TypeInfo> fieldTypes = structTypeInfo.getAllStructFieldTypeInfos();
       List<Type> types = type.asGroupType().getFields();
       for (int i = 0; i < fieldTypes.size(); i++) {
-        VectorizedColumnReader r =
-            buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages,
-                descriptors, options, depth + 1, typeDefLevel);
-        if (r != null) {
-          fieldReaders.add(r);
-        } else {
-          throw new IllegalStateException(
-              "Fail to build Parquet vectorized reader based on Hive type " + fieldTypes.get(i)
-                  .getTypeName() + " and Parquet type" + types.get(i).toString());
-        }
+        fieldReaders.add(buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages,
+            descriptors, options, depth + 1, typeDefLevel));
       }
       return new VectorizedStructColumnReader(fieldReaders, typeDefLevel);
     case LIST:
       checkListColumnSupport(((ListTypeInfo) typeInfo).getListElementTypeInfo());
-      if (columnDescriptors == null || columnDescriptors.isEmpty()) {
-        throw new InvalidSchemaException(
-            "Failed to find related Parquet column descriptor with type " + type);
-      }
-
-      return new VectorizedListColumnReader(descriptors.getFirst(),
-          pages.getPageReader(descriptors.getFirst()), options.skipTimestampConversion(),
-          options.writerTimezone(), options.skipProlepticConversion(),
-          options.legacyConversionEnabled(), getElementType(type), typeInfo);
+      return listReader(descriptor, pages, options, listElementType(type), typeInfo);
     case MAP:
-      if (columnDescriptors == null || columnDescriptors.isEmpty()) {
-        throw new InvalidSchemaException(
-            "Failed to find related Parquet column descriptor with type " + type);
-      }
-
       // Parquet has more than one on-disk shape for MAP; walk down until we find the
-      // {key, value} group, tolerating up to MAP_DEFINITION_LEVEL_MAX wrapping groups.
+      // {key, value} group, tolerating up to MAX_MAP_WRAPPER_GROUPS wrapping groups.
       // See parquet-format's LogicalTypes spec for the MAP annotation for the shapes.
       int nestGroup = 0;
       GroupType groupType = type.asGroupType();
       // if FieldCount == 2, get types for key & value,
-      // otherwise, continue to get the group type until MAP_DEFINITION_LEVEL_MAX.
+      // otherwise, continue to get the group type until MAX_MAP_WRAPPER_GROUPS.
       while (groupType.getFieldCount() < 2) {
-        if (nestGroup > MAP_DEFINITION_LEVEL_MAX) {
+        if (nestGroup > MAX_MAP_WRAPPER_GROUPS) {
           throw new InvalidSchemaException(
-              "More than " + MAP_DEFINITION_LEVEL_MAX + " level is found in Map definition, "
+              "More than " + MAX_MAP_WRAPPER_GROUPS + " level is found in Map definition, "
                   + "Failed to get the field types for Map with type " + type);
         }
         groupType = groupType.getFields().getFirst().asGroupType();
         nestGroup++;
       }
       List<Type> kvTypes = groupType.getFields();
-      VectorizedListColumnReader keyListColumnReader = new VectorizedListColumnReader(
-          descriptors.getFirst(), pages.getPageReader(descriptors.getFirst()), options.skipTimestampConversion(),
-          options.writerTimezone(), options.skipProlepticConversion(),
-          options.legacyConversionEnabled(), kvTypes.getFirst(), typeInfo);
-      VectorizedListColumnReader valueListColumnReader = new VectorizedListColumnReader(
-          descriptors.get(1), pages.getPageReader(descriptors.get(1)), options.skipTimestampConversion(),
-          options.writerTimezone(), options.skipProlepticConversion(),
-          options.legacyConversionEnabled(), kvTypes.get(1), typeInfo);
-      return new VectorizedMapColumnReader(keyListColumnReader, valueListColumnReader);
+      return new VectorizedMapColumnReader(
+          listReader(descriptor, pages, options, kvTypes.getFirst(), typeInfo),
+          listReader(descriptors.get(1), pages, options, kvTypes.get(1), typeInfo));
     case UNION:
     default:
       throw new UnsupportedOperationException("Unsupported category " + typeInfo.getCategory().name());
     }
+  }
+
+  /** The one reader shape a LIST, and each half of a MAP, is read through. */
+  private static VectorizedListColumnReader listReader(ColumnDescriptor descriptor,
+      PageReadStore pages, TimestampConversionOptions options, Type elementType, TypeInfo typeInfo)
+      throws IOException {
+    return new VectorizedListColumnReader(descriptor, pages.getPageReader(descriptor),
+        options.skipTimestampConversion(), options.writerTimezone(),
+        options.skipProlepticConversion(), options.legacyConversionEnabled(), elementType, typeInfo);
   }
 
   /**
@@ -261,10 +243,10 @@ public class ParquetRowGroupDecoder {
   private static void checkListColumnSupport(TypeInfo elementType) {
     if (elementType instanceof PrimitiveTypeInfo primitiveTypeInfo) {
       switch (primitiveTypeInfo.getPrimitiveCategory()) {
-        case INTERVAL_DAY_TIME, TIMESTAMP:
-          throw new UnsupportedOperationException("Unsupported primitive type used in list: " + elementType);
-        default:
-          // supported
+      case INTERVAL_DAY_TIME, TIMESTAMP:
+        throw new UnsupportedOperationException("Unsupported primitive type used in list: " + elementType);
+      default:
+        // supported
       }
     } else {
       throw new UnsupportedOperationException("Unsupported type used in list: " + elementType);

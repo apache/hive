@@ -90,7 +90,7 @@ import org.apache.parquet.schema.PrimitiveType;
  * <ol>
  *   <li><b>Input</b>: a {@link ParquetEncodedColumnBatch} holding the already-cached
  *       {@link MemoryBuffer}s for one row group's projected column chunks, plus the file footer.</li>
- *   <li><b>Stitching and parsing</b>: per chunk, {@link #chunkBuffers} turns the cache buffers into a
+ *   <li><b>Stitching and parsing</b>: per chunk, {@link #sliceChunk} turns the cache buffers into a
  *       list of {@link ByteBuffer} slices covering exactly the chunk's byte region; {@link #readAllPages}
  *       then walks that byte range with {@link Util#readPageHeader}, building {@link DataPageV1} /
  *       {@link DataPageV2} / {@link DictionaryPage} objects whose payloads are
@@ -119,7 +119,7 @@ class ParquetCachedPageReadStore implements PageReadStore {
     // apart, so a projection that drops columns from the middle of the schema still lines up.
     for (int pc = 0; pc < chunks.length; ++pc) {
       ColumnChunkMetaData chunk = chunks[pc];
-      readers.put(chunk.getPath(), readAllPages(chunk, chunkBuffers(batch, pc), createdBy,
+      readers.put(chunk.getPath(), readAllPages(chunk, sliceChunk(batch, pc), createdBy,
           codecFactory.getDecompressor(chunk.getCodec()), converter));
     }
   }
@@ -142,7 +142,7 @@ class ParquetCachedPageReadStore implements PageReadStore {
    * page walk would read the wrong bytes as page bytes, and fail much later with a decoding error
    * about a corrupt header.
    */
-  private static List<ByteBuffer> chunkBuffers(ParquetEncodedColumnBatch batch, int pc)
+  private static List<ByteBuffer> sliceChunk(ParquetEncodedColumnBatch batch, int pc)
       throws IOException {
     ColumnChunkMetaData chunk = batch.chunks()[pc];
     long chunkStart = chunk.getStartingPos();
@@ -290,13 +290,9 @@ class ParquetCachedPageReadStore implements PageReadStore {
       return compressedPage.accept(new DataPage.Visitor<DataPage>() {
         @Override
         public DataPage visit(DataPageV1 page) {
-          try {
-            return new DataPageV1(decompressor.decompress(page.getBytes(), page.getUncompressedSize()),
-                page.getValueCount(), page.getUncompressedSize(), page.getStatistics(),
-                page.getRlEncoding(), page.getDlEncoding(), page.getValueEncoding());
-          } catch (IOException e) {
-            throw new ParquetDecodingException("could not decompress page", e);
-          }
+          return new DataPageV1(decompress(page.getBytes(), page.getUncompressedSize(), "page"),
+              page.getValueCount(), page.getUncompressedSize(), page.getStatistics(),
+              page.getRlEncoding(), page.getDlEncoding(), page.getValueEncoding());
         }
 
         @Override
@@ -310,12 +306,7 @@ class ParquetCachedPageReadStore implements PageReadStore {
           // output size is what is left after them.
           int uncompressedSize = Math.toIntExact(page.getUncompressedSize()
               - page.getDefinitionLevels().size() - page.getRepetitionLevels().size());
-          BytesInput data;
-          try {
-            data = decompressor.decompress(page.getData(), uncompressedSize);
-          } catch (IOException e) {
-            throw new ParquetDecodingException("could not decompress page", e);
-          }
+          BytesInput data = decompress(page.getData(), uncompressedSize, "page");
           return DataPageV2.uncompressed(page.getRowCount(), page.getNullCount(), page.getValueCount(),
               page.getRepetitionLevels(), page.getDefinitionLevels(), page.getDataEncoding(), data,
               page.getStatistics());
@@ -328,13 +319,17 @@ class ParquetCachedPageReadStore implements PageReadStore {
       if (compressedDictionaryPage == null) {
         return null;
       }
+      BytesInput bytes = decompress(compressedDictionaryPage.getBytes(),
+          compressedDictionaryPage.getUncompressedSize(), "dictionary page");
+      return new DictionaryPage(bytes, compressedDictionaryPage.getDictionarySize(),
+          compressedDictionaryPage.getEncoding());
+    }
+
+    private BytesInput decompress(BytesInput bytes, int uncompressedSize, String what) {
       try {
-        BytesInput bytes = decompressor.decompress(
-            compressedDictionaryPage.getBytes(), compressedDictionaryPage.getUncompressedSize());
-        return new DictionaryPage(bytes, compressedDictionaryPage.getDictionarySize(),
-            compressedDictionaryPage.getEncoding());
+        return decompressor.decompress(bytes, uncompressedSize);
       } catch (IOException e) {
-        throw new ParquetDecodingException("Could not decompress dictionary page", e);
+        throw new ParquetDecodingException("could not decompress " + what, e);
       }
     }
   }
