@@ -98,9 +98,9 @@ Without it, touching an `s3a://` path fails with
 
 | value | effect |
 |---|---|
-| `auto` (default) | `aws-java-sdk.version` from `pom.xml` |
+| `auto` (default) | `aws-java-sdk.version` from `pom.xml`, skipped for Hadoop releases that ship their own bundle (up to 3.4.2) |
 | `none` | no bundle, ~650MB smaller image. `s3a://` then fails at runtime. |
-| `<version>` | an explicit `software.amazon.awssdk:bundle` version |
+| `<version>` | an explicit `software.amazon.awssdk:bundle` version, added regardless of what Hadoop ships |
 
 ```shell
 ./build.sh -tez 0.10.5 -aws-sdk none

@@ -125,12 +125,19 @@ fi
 AWS_SDK_DIR="$WORK_DIR/aws-jars"
 mkdir -p "$AWS_SDK_DIR"
 if [ "$AWS_SDK" = "auto" ]; then
-  AWS_SDK=$(mvn -f "$SOURCE_DIR/pom.xml" -q help:evaluate -Dexpression=aws-java-sdk.version -DforceStdout)
+  # Releases up to 3.4.2 bundle their own SDK; adding a second one would put two
+  # versions on the LLAP daemon classpath, which reads share/hadoop/tools/lib.
+  if tar -tzf "$CACHE_DIR/$HADOOP_FILE_NAME" | grep -q 'share/hadoop/.*/bundle-.*\.jar'; then
+    echo "Hadoop $HADOOP_VERSION ships its own AWS SDK v2 bundle; not adding another."
+    AWS_SDK=none
+  else
+    AWS_SDK=$(mvn -f "$SOURCE_DIR/pom.xml" -q help:evaluate -Dexpression=aws-java-sdk.version -DforceStdout)
+  fi
+elif [ "$AWS_SDK" = "none" ]; then
+  echo "No AWS SDK v2 bundle in the image; s3a:// will not work."
 fi
 
-if [ "$AWS_SDK" = "none" ]; then
-  echo "No AWS SDK v2 bundle in the image; s3a:// will not work."
-else
+if [ "$AWS_SDK" != "none" ]; then
   AWS_SDK_FILE_NAME="bundle-$AWS_SDK.jar"
   AWS_SDK_URL=${AWS_SDK_URL:-"https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/$AWS_SDK/$AWS_SDK_FILE_NAME"}
   if [ ! -f "$CACHE_DIR/$AWS_SDK_FILE_NAME" ]; then
