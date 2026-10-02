@@ -67,10 +67,6 @@ import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
 import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
-import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -144,7 +140,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /** Reads the footer once (through the LLAP footer cache when the file has a usable key). */
-  public ParquetMetadata loadFooter() throws IOException {
+  public ParquetMetadata readFooter() throws IOException {
     fileKey = SyntheticFileId.fromJobConf(jobConf);
     if (fileKey == null) {
       fileKey = LlapHiveUtils.createFileIdUsingFS(path.getFileSystem(jobConf), path, daemonConf);
@@ -220,7 +216,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
         + (fileKey == null ? "" : " (" + fileKey + ")"));
 
     MessageType fileSchema = footer.getFileMetaData().getSchema();
-    int[] projected = projectedLeaves(requestedSchema, fileSchema);
+    int[] projected = findLeafIndexes(requestedSchema, fileSchema);
     consumer.setFileMetadata(footer, requestedSchema, path);
 
     final Allocator allocator = bufferManager.getAllocator();
@@ -238,7 +234,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     FileSystem fs = path.getFileSystem(jobConf);
     try (FSDataInputStream fileStream = openFile(fs)) {
       ParquetRangeBuffers buffers = ParquetRangeBuffers.forStream(fileStream);
-      Deque<Fetch> inFlight = new ArrayDeque<>();
+      Deque<RowGroupFetch> inFlight = new ArrayDeque<>();
       try {
         for (int i = 0; i < selected.size() && !isStopped.get(); ++i) {
           if (inFlight.isEmpty()) {
@@ -247,14 +243,14 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
           }
           // The next row group's requests go out now so its transfer overlaps this one's decode.
           if (i + 1 < selected.size() && !isStopped.get()
-              && bytes(inFlight.peek()) + bytes(projected, selected.get(i + 1)) <= lookaheadBudget) {
+              && projectedChunkBytes(inFlight.peek()) + projectedChunkBytes(projected, selected.get(i + 1)) <= lookaheadBudget) {
             inFlight.add(startFetch(fileStream, buffers, allocator, projected, selected.get(i + 1),
                 rowGroupOf.get(selected.get(i + 1))));
           }
           finishFetch(allocator, buffers, inFlight.poll());
         }
       } finally {
-        for (Fetch fetch : inFlight) {
+        for (RowGroupFetch fetch : inFlight) {
           abandon(allocator, fetch);
         }
       }
@@ -295,24 +291,6 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /**
-   * Whether the query needs row-lineage virtual columns ({@code ROW__LINEAGE__ID} /
-   * {@code LAST__UPDATED__SEQUENCE__NUMBER}) that the fallback reader augments the requested schema
-   * with via {@link RowLineageUtils#getRequestedSchemaWithRowLineageColumns}. The native pipeline
-   * doesn't propagate that augmentation through {@code Includes} yet, so we defer to the fallback
-   * reader instead of quietly emitting nulls in the lineage slots.
-   */
-  public boolean needsRowLineage() {
-    VectorizedRowBatchCtx rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
-    if (rbCtx == null) {
-      return false;
-    }
-    MessageType fileSchema = footer.getFileMetaData().getSchema();
-    return RowLineageUtils.isRowLineageColumnPresent(rbCtx, fileSchema, VirtualColumn.ROW_LINEAGE_ID)
-        || RowLineageUtils.isRowLineageColumnPresent(rbCtx, fileSchema,
-            VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
-  }
-
-  /**
    * Leaf-column positions of the requested fields; {@code BlockMetaData.getColumns()} is a flat list
    * of leaves in file-schema order, so a top-level primitive at ordinal {@code k} in the file schema
    * may sit at a very different leaf index (e.g. a nested group of two leaves before it shifts it
@@ -320,7 +298,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
    * top-level primitive ({@link #projectsNestedTypes()} would have forced a fallback otherwise), so
    * each requested field maps to exactly one leaf whose path is a single segment.
    */
-  static int[] projectedLeaves(MessageType requestedSchema, MessageType fileSchema) {
+  static int[] findLeafIndexes(MessageType requestedSchema, MessageType fileSchema) {
     List<ColumnDescriptor> allLeaves = fileSchema.getColumns();
     List<Integer> selected = new ArrayList<>();
     for (Type field : requestedSchema.getFields()) {
@@ -339,7 +317,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     return selected.stream().mapToInt(Integer::intValue).toArray();
   }
 
-  private static long bytes(int[] projected, BlockMetaData block) {
+  private static long projectedChunkBytes(int[] projected, BlockMetaData block) {
     long total = 0;
     for (int leaf : projected) {
       total += block.getColumns().get(leaf).getTotalSize();
@@ -347,7 +325,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     return total;
   }
 
-  private static long bytes(Fetch fetch) {
+  private static long projectedChunkBytes(RowGroupFetch fetch) {
     long total = 0;
     for (ColumnChunkMetaData chunk : fetch.batch.chunks()) {
       total += chunk.getTotalSize();
@@ -356,16 +334,16 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /** One row group on its way in: buffers planned, missing ranges requested, not yet decoded. */
-  private static final class Fetch {
+  private static final class RowGroupFetch {
     private final ParquetEncodedColumnBatch batch = new ParquetEncodedColumnBatch();
-    private final List<ColumnPlan> columns = new ArrayList<>();
+    private final List<ChunkPlan> columns = new ArrayList<>();
     private final List<Part> misses = new ArrayList<>();
-    private final List<Run> runs = new ArrayList<>();
+    private final List<ReadRange> readRanges = new ArrayList<>();
   }
 
   /** The buffers covering one column chunk, in file order, and which stretches of them are new. */
-  private record ColumnPlan(List<Part> parts, List<MissRun> missRuns) {
-    ColumnPlan() {
+  private record ChunkPlan(List<Part> parts, List<Gap> gaps) {
+    ChunkPlan() {
       this(new ArrayList<>(), new ArrayList<>());
     }
   }
@@ -385,17 +363,17 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /** {@code count} consecutive parts covering one contiguous missing sub-range; cached as a unit. */
-  private record MissRun(int firstPart, int count) {
+  private record Gap(int firstPart, int count) {
   }
 
   /** One vectored range and the cache buffers it fills, in file order. */
-  private record Run(FileRange range, List<Part> parts) {
+  private record ReadRange(FileRange range, List<Part> parts) {
   }
 
-  private Fetch startFetch(FSDataInputStream fileStream, ParquetRangeBuffers buffers, Allocator allocator,
+  private RowGroupFetch startFetch(FSDataInputStream fileStream, ParquetRangeBuffers buffers, Allocator allocator,
       int[] projected, BlockMetaData block, int rg)
       throws IOException {
-    Fetch fetch = new Fetch();
+    RowGroupFetch fetch = new RowGroupFetch();
     ColumnChunkMetaData[] chunks = new ColumnChunkMetaData[projected.length];
     for (int pc = 0; pc < projected.length; ++pc) {
       chunks[pc] = block.getColumns().get(projected[pc]);
@@ -403,9 +381,9 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     fetch.batch.init(fileKey, rg, chunks);
     try {
       for (ColumnChunkMetaData chunk : chunks) {
-        ColumnPlan column = new ColumnPlan();
+        ChunkPlan column = new ChunkPlan();
         fetch.columns.add(column);
-        planColumnChunk(allocator, chunk.getStartingPos(),
+        planChunk(allocator, chunk.getStartingPos(),
             chunk.getStartingPos() + chunk.getTotalSize(), column, fetch.misses);
       }
       // The vectored dispatch is where non-async FS impls actually read; count it under HDFS_TIME.
@@ -419,18 +397,18 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     return fetch;
   }
 
-  private void finishFetch(Allocator allocator, ParquetRangeBuffers buffers, Fetch fetch)
+  private void finishFetch(Allocator allocator, ParquetRangeBuffers buffers, RowGroupFetch fetch)
       throws IOException, InterruptedException {
     try {
       // Awaiting the vectored futures is where the miss bytes actually arrive from HDFS.
       long hdfsStart = counters.startTimeCounter();
       receiveMisses(buffers, fetch);
       counters.recordHdfsTime(hdfsStart);
-      for (ColumnPlan column : fetch.columns) {
-        putColumn(allocator, column);
+      for (ChunkPlan column : fetch.columns) {
+        cacheChunk(allocator, column);
       }
       for (int pc = 0; pc < fetch.columns.size(); ++pc) {
-        assemble(fetch.batch, pc, fetch.columns.get(pc).parts);
+        setBatchColumn(fetch.batch, pc, fetch.columns.get(pc).parts);
       }
       // consumeData returns the batch on success; after a throw it is still ours.
       consumer.consumeData(fetch.batch);
@@ -441,11 +419,11 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /** Drops a fetch that will not be decoded: outstanding requests are cancelled, buffers released. */
-  private void abandon(Allocator allocator, Fetch fetch) {
-    for (Run run : fetch.runs) {
-      run.range.getData().cancel(true);
+  private void abandon(Allocator allocator, RowGroupFetch fetch) {
+    for (ReadRange readRange : fetch.readRanges) {
+      readRange.range.getData().cancel(true);
     }
-    for (ColumnPlan column : fetch.columns) {
+    for (ChunkPlan column : fetch.columns) {
       for (Part part : column.parts) {
         if (part.owned) {
           bufferManager.decRefBuffer(part.buffer);
@@ -475,8 +453,8 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
    * hits as returned by getFileData, and freshly allocated power-of-two buffers for everything
    * missing. Misses are appended to {@code allMisses} so the whole row group can be read at once.
    */
-  private void planColumnChunk(Allocator allocator, long start, long end,
-      ColumnPlan column, List<Part> allMisses) throws IOException {
+  private void planChunk(Allocator allocator, long start, long end,
+      ChunkPlan column, List<Part> allMisses) throws IOException {
     DiskRangeList head = new DiskRangeList(start, end);
     if (fileKey != null) {
       head = lowLevelCache.getFileData(fileKey, head, 0, ParquetCacheLayout.CACHE_CHUNK_FACTORY,
@@ -488,7 +466,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
         if (current.hasData()) {
           column.parts.add(new Part(((CacheChunk) current).getBuffer(), current, true));
         } else {
-          planMissRun(allocator, current, column, allMisses);
+          planGap(allocator, current, column, allMisses);
         }
       }
     } catch (Exception e) {
@@ -504,14 +482,15 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /**
-   * Records one missing sub-range as a run of freshly allocated power-of-two buffers, and appends
-   * each part to {@code allMisses} so the caller can request them all in one vectored call.
+   * Records one gap in the cache's coverage of the chunk as consecutive freshly allocated
+   * power-of-two buffers, and appends each part to {@code allMisses} so the caller can request them
+   * all in one vectored call.
    */
-  private void planMissRun(Allocator allocator, DiskRangeList missing, ColumnPlan column,
+  private void planGap(Allocator allocator, DiskRangeList missing, ChunkPlan column,
       List<Part> allMisses) throws IOException {
     LlapHiveUtils.throwIfCacheOnlyRead(cacheOnly);
     int[] sizes = layout.bufferSizes(missing.getEnd() - missing.getOffset());
-    column.missRuns.add(new MissRun(column.parts.size(), sizes.length));
+    column.gaps.add(new Gap(column.parts.size(), sizes.length));
     long partFrom = missing.getOffset();
     for (int size : sizes) {
       MemoryBuffer[] one = new MemoryBuffer[1];
@@ -533,14 +512,14 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
    * several concurrent requests rather than one. A filesystem without a vectored implementation
    * reads the ranges in turn.
    */
-  private static void requestMisses(FSDataInputStream fileStream, ParquetRangeBuffers buffers, Fetch fetch,
+  private static void requestMisses(FSDataInputStream fileStream, ParquetRangeBuffers buffers, RowGroupFetch fetch,
       int maxRange) throws IOException {
     List<Part> misses = fetch.misses;
     if (misses.isEmpty()) {
       return;
     }
     misses.sort(Comparator.comparingLong(part -> part.range.getOffset()));
-    List<Run> runs = new ArrayList<>();
+    List<ReadRange> readRanges = new ArrayList<>();
     int i = 0;
     while (i < misses.size()) {
       long from = misses.get(i).range.getOffset();
@@ -554,23 +533,25 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
         to = next.getEnd();
         ++j;
       }
-      runs.add(new Run(FileRange.createFileRange(from, (int) (to - from)), misses.subList(i, j)));
+      readRanges.add(
+          new ReadRange(FileRange.createFileRange(from, (int) (to - from)), misses.subList(i, j)));
       i = j;
     }
-    List<FileRange> ranges = runs.stream().map(run -> run.range).collect(Collectors.toList());
+    List<FileRange> ranges =
+        readRanges.stream().map(ReadRange::range).collect(Collectors.toList());
     fileStream.readVectored(ranges, buffers::allocate, buffers::release);
     // Only requests the stream accepted are the fetch's to wait for or cancel.
-    fetch.runs.addAll(runs);
+    fetch.readRanges.addAll(readRanges);
   }
 
-  /** Waits for the requested runs and copies each into the cache buffers it covers. */
-  private static void receiveMisses(ParquetRangeBuffers buffers, Fetch fetch) throws IOException {
-    for (Run run : fetch.runs) {
-      ByteBuffer data = FutureIO.awaitFuture(run.range.getData());
-      for (Part part : run.parts) {
+  /** Waits for the requested ranges and copies each into the cache buffers it covers. */
+  private static void receiveMisses(ParquetRangeBuffers buffers, RowGroupFetch fetch) throws IOException {
+    for (ReadRange readRange : fetch.readRanges) {
+      ByteBuffer data = FutureIO.awaitFuture(readRange.range.getData());
+      for (Part part : readRange.parts) {
         int length = part.range.getLength();
         ByteBuffer src = data.duplicate();
-        src.position(data.position() + (int) (part.range.getOffset() - run.range.getOffset()));
+        src.position(data.position() + (int) (part.range.getOffset() - readRange.range.getOffset()));
         src.limit(src.position() + length);
         part.buffer.getByteBufferRaw().duplicate().put(src);
       }
@@ -579,9 +560,9 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /** Hands one column's freshly read buffers to the cache; every part then carries a ref we own. */
-  private void putColumn(Allocator allocator, ColumnPlan column) {
-    for (MissRun run : column.missRuns) {
-      List<Part> parts = column.parts.subList(run.firstPart, run.firstPart + run.count);
+  private void cacheChunk(Allocator allocator, ChunkPlan column) {
+    for (Gap gap : column.gaps) {
+      List<Part> parts = column.parts.subList(gap.firstPart, gap.firstPart + gap.count);
       if (fileKey == null) {
         for (Part part : parts) {
           bufferManager.incRefBuffer(part.buffer);
@@ -611,7 +592,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  private static void assemble(ParquetEncodedColumnBatch batch, int pc, List<Part> parts) {
+  private static void setBatchColumn(ParquetEncodedColumnBatch batch, int pc, List<Part> parts) {
     int n = parts.size();
     MemoryBuffer[] columnBuffers = new MemoryBuffer[n];
     long[] bufferOffsets = new long[n];

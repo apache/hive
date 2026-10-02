@@ -38,7 +38,7 @@ public final class ParquetCacheLayout {
    * parallelism while a large range amortises the request. Measured against S3 the knee is here:
    * below 4 Mb throughput drops sharply, above 8 Mb it is flat. Trino also splits at 8 Mb.
    */
-  private static final int MIN_RANGE_CAP_BYTES = 8 << 20;
+  private static final int MAX_RANGE_FLOOR_BYTES = 8 << 20;
 
   public static final DiskRangeListFactory CACHE_CHUNK_FACTORY = CacheChunk::new;
 
@@ -56,10 +56,12 @@ public final class ParquetCacheLayout {
    * @param splitFloor size below which a remainder is left as one buffer rather than split further
    */
   public ParquetCacheLayout(int maxAlloc, long splitFloor) {
+    // Rounded, not asserted: BuddyAllocator validates its maximum as a power of two, but
+    // SimpleAllocator (LLAP IO memory mode "none") reports Integer.MAX_VALUE.
     this.maxBuffer = Integer.highestOneBit(maxAlloc);
     // Clamped, not cast: the key is validated as a size but not against the allocator's maximum.
     this.minBuffer = (int) Math.min(splitFloor, maxBuffer);
-    this.maxRange = Math.max(MIN_RANGE_CAP_BYTES, maxAlloc);
+    this.maxRange = Math.max(MAX_RANGE_FLOOR_BYTES, maxAlloc);
   }
 
   /**

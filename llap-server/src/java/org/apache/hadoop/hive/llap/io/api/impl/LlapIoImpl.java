@@ -178,7 +178,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     MetadataCache metadataCache = null;
     SerDeLowLevelCacheImpl serdeCache = null; // TODO: extract interface when needed
-    BufferUsageManager bufferManagerData = null;
     BufferUsageManager bufferManagerGeneric = null;
     boolean isEncodeEnabled = useLowLevelCache
         && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED);
@@ -228,7 +227,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
       cacheImpl.startThreads(); // Start the cache threads.
       // Cache also serves as buffer manager for both data and generic (encoded/serde) paths.
-      bufferManagerData = cacheImpl;
       bufferManager = cacheImpl;
       bufferManagerGeneric = serdeCache;
       if (trackUsage) {
@@ -249,7 +247,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       fileMetadataCache = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
       bufferManager = sbm;
-      bufferManagerData = sbm;
       bufferManagerGeneric = sbm;
       dataCache = sbm;
       this.memoryManager = null;
@@ -281,11 +278,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     // TODO: this should depends on input format and be in a map, or something.
     this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, dataCache, pathCache, bufferManagerData, conf, cacheMetrics, ioMetrics, tracePool);
+        metadataCache, dataCache, pathCache, bufferManager, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
         serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
     // Native Parquet IO is gated per query by the job conf at the dispatch sites.
-    this.parquetCvp = new ParquetColumnVectorProducer(dataCache, bufferManagerData, conf, cacheMetrics, ioMetrics);
+    this.parquetCvp = new ParquetColumnVectorProducer(dataCache, bufferManager, conf, cacheMetrics, ioMetrics);
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();
@@ -353,17 +350,17 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   @Override
   public InputFormat<NullWritable, VectorizedRowBatch> getInputFormat(
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe) {
-    ColumnVectorProducer cvp = genericCvp;
+    ColumnVectorProducer cvp;
     if (sourceInputFormat instanceof OrcInputFormat) {
       cvp = orcCvp; // Special-case for ORC.
     } else if (sourceInputFormat instanceof MapredParquetInputFormat && sourceSerDe == null) {
       // Parquet arrives without a SerDe only from HiveInputFormat's native-cache dispatch; with one
       // it is the encode.formats configuration, which keeps the re-encoding producer.
-      if (parquetCvp == null) {
-        return null;
-      }
       cvp = parquetCvp;
-    } else if (cvp == null) {
+    } else {
+      cvp = genericCvp;
+    }
+    if (cvp == null) {
       LOG.warn("LLAP encode is disabled; cannot use for " + sourceInputFormat.getClass());
       return null;
     }
@@ -497,9 +494,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   @Override
   public RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedParquetReaderForPath(
       LlapParquetReadRequest request, JobConf conf, Reporter reporter) throws IOException {
-    if (parquetCvp == null) {
-      return null;
-    }
     FileSplit split = new FileSplit(request.path(), request.offset(), request.length(), (String[]) null);
     try {
       LlapRecordReader rr = LlapRecordReader.create(conf, split, request.tableIncludedCols(),

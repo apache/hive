@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.llap;
 
 import java.nio.ByteBuffer;
 
+import javax.annotation.Nullable;
+
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.StreamCapabilities;
 import org.apache.hadoop.io.ElasticByteBufferPool;
@@ -35,12 +37,22 @@ import org.apache.hadoop.io.ElasticByteBufferPool;
 public final class ParquetRangeBuffers {
   private final ElasticByteBufferPool pool;
 
-  private ParquetRangeBuffers(boolean pooled) {
-    this.pool = pooled ? new ElasticByteBufferPool() : null;
+  /** Pooled: the stream fills buffers we own, so they can be reused across the split's row groups. */
+  static ParquetRangeBuffers pooled() {
+    return new ParquetRangeBuffers(new ElasticByteBufferPool());
+  }
+
+  /** Unpooled: the stream may hand back slices of a larger buffer; slices alias, so they go to the GC. */
+  static ParquetRangeBuffers unpooled() {
+    return new ParquetRangeBuffers(null);
   }
 
   public static ParquetRangeBuffers forStream(FSDataInputStream stream) {
-    return new ParquetRangeBuffers(!stream.hasCapability(StreamCapabilities.VECTOREDIO_BUFFERS_SLICED));
+    return stream.hasCapability(StreamCapabilities.VECTOREDIO_BUFFERS_SLICED) ? unpooled() : pooled();
+  }
+
+  private ParquetRangeBuffers(@Nullable ElasticByteBufferPool pool) {
+    this.pool = pool;
   }
 
   public ByteBuffer allocate(int length) {

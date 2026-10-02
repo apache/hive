@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
@@ -173,6 +174,8 @@ public class TestParquetEncodedDataReader {
   private Ledger ledger;
   /** hive.llap.io.encode.alloc.size at its default, the grain these expectations assume. */
   private static final int FLOOR = 256 * 1024;
+  /** Hands every job its own plan path, which is the key its MapWork is cached under. */
+  private static final AtomicInteger PLAN_ID = new AtomicInteger();
 
   private boolean failFirstRange;
   private boolean unslicedBuffers;
@@ -747,7 +750,7 @@ public class TestParquetEncodedDataReader {
     }
   }
 
-  /** projectedLeaves returns a column's leaf ordinal, which a preceding nested group shifts. */
+  /** findLeafIndexes returns a column's leaf ordinal, which a preceding nested group shifts. */
   @Test
   public void testProjectedLeavesSkipsPrecedingNestedGroup() {
     /*
@@ -766,13 +769,13 @@ public class TestParquetEncodedDataReader {
         .required(PrimitiveTypeName.INT32).named("x")
         .named("requested");
 
-    int[] leaves = ParquetEncodedDataReader.projectedLeaves(requested, fileSchema);
+    int[] leaves = ParquetEncodedDataReader.findLeafIndexes(requested, fileSchema);
 
     // x sits at leaf index 2 (nested.a=0, nested.b=1, x=2), not at its top-level ordinal 1.
     assertArrayEquals(new int[] {2}, leaves);
   }
 
-  /** projectedLeaves drops a requested field the file schema does not have rather than throwing. */
+  /** findLeafIndexes drops a requested field the file schema does not have rather than throwing. */
   @Test
   public void testProjectedLeavesMissingFieldSkipped() {
     // File schema: a, b. Requested: a, missing. The method must resolve a and drop the
@@ -788,10 +791,10 @@ public class TestParquetEncodedDataReader {
 
     // Only a is present in the file schema (leaf 0); "missing" contributes nothing.
     assertArrayEquals(new int[] {0},
-        ParquetEncodedDataReader.projectedLeaves(requested, fileSchema));
+        ParquetEncodedDataReader.findLeafIndexes(requested, fileSchema));
   }
 
-  /** projectedLeaves resolves a requested field to the top-level column, not to a nested namesake. */
+  /** findLeafIndexes resolves a requested field to the top-level column, not to a nested namesake. */
   @Test
   public void testProjectedLeavesIgnoresNestedFieldOfTheSameName() {
     // File schema: struct s { id }, id. Both leaves end in "id", but only the second one is the
@@ -807,7 +810,7 @@ public class TestParquetEncodedDataReader {
         .named("requested");
 
     assertArrayEquals(new int[] {1},
-        ParquetEncodedDataReader.projectedLeaves(requested, fileSchema));
+        ParquetEncodedDataReader.findLeafIndexes(requested, fileSchema));
   }
 
   // ---- fixture ----
@@ -898,7 +901,7 @@ public class TestParquetEncodedDataReader {
     return largest;
   }
 
-  private static JobConf jobConf(String columns, String types, int... readColumnIds) {
+  private static JobConf jobConf(String columns, String types, int... readColumnIds) throws Exception {
     JobConf job = new JobConf(daemonConf);
     job.set(IOConstants.COLUMNS, columns);
     job.set(IOConstants.COLUMNS_TYPES, types);
@@ -909,6 +912,12 @@ public class TestParquetEncodedDataReader {
     ColumnProjectionUtils.setReadColumns(job, ids);
     HiveConf.setVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED,
         HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
+    // Both readers look up their VectorizedRowBatchCtx through Utilities.getMapWork, which needs
+    // HIVE_VECTORIZATION_ENABLED and a PLAN path on the conf. The plan path doubles as the key of
+    // the global work map, so each job gets its own and cannot pick up another test's schema.
+    HiveConf.setBoolVar(job, ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    HiveConf.setVar(job, ConfVars.PLAN, "//tmp/" + PLAN_ID.incrementAndGet());
+    Utilities.setMapWork(job, mapWorkFor(job, DataWritableReadSupport.getColumnTypes(types)));
     return job;
   }
 
@@ -975,7 +984,7 @@ public class TestParquetEncodedDataReader {
     };
     this.reader = parquetReader;
     edc.init(parquetReader, parquetReader);
-    parquetReader.loadFooter();
+    parquetReader.readFooter();
     parquetReader.call();
     Run run = new Run(downstream, counters, tezCounters, buffers, reads, ledger);
     boolean whole = run.error == null && !stopAfterFirstBatch;
@@ -1039,13 +1048,8 @@ public class TestParquetEncodedDataReader {
 
   /** Reads the same (JobConf, FileSplit) via VectorizedParquetRecordReader, returning rows in projection order. */
   private static List<Object[]> readNonNative(JobConf job, FileSplit split) throws Exception {
+    // The vectorized plan jobConf() installed is what makes both readers agree on the batch shape.
     JobConf mrJob = new JobConf(job);
-    // VectorizedParquetRecordReader looks up its rbCtx through Utilities.getMapWork, which requires
-    // both HIVE_VECTORIZATION_ENABLED and a PLAN path set on the conf.
-    HiveConf.setBoolVar(mrJob, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
-    HiveConf.setVar(mrJob, HiveConf.ConfVars.PLAN, "//tmp");
-    List<TypeInfo> types = DataWritableReadSupport.getColumnTypes(mrJob.get(IOConstants.COLUMNS_TYPES));
-    Utilities.setMapWork(mrJob, mapWorkFor(mrJob, types));
     List<Integer> colsToInclude = ColumnProjectionUtils.getReadColumnIDs(mrJob);
     List<Object[]> rows = new ArrayList<>();
     try (VectorizedParquetRecordReader mrReader = new VectorizedParquetRecordReader(split, mrJob)) {

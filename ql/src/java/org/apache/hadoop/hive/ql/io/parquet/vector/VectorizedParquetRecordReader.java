@@ -102,6 +102,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private Object[] partitionValues;
   private boolean addPartitionCols = true;
   private Path cacheFsPath;
+  private ParquetRowGroupDecoder rowGroupDecoder;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -260,6 +261,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       this.totalRowCount += block.getRowCount();
     }
     this.fileSchema = parquetMetadata.getFileMetaData().getSchema();
+    // Per-file state only, so it is built here and reused for every row group of the split.
+    this.rowGroupDecoder = new ParquetRowGroupDecoder(fileSchema, initialDefaults);
     this.writerTimezone = DataWritableReadSupport
         .getWriterTimeZoneId(parquetMetadata.getFileMetaData().getKeyValueMetaData());
 
@@ -441,7 +444,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     }
     // Delegate the (Hive-type-driven) column-reader construction to the shared helper so the
     // LLAP cache-backed consumer can reuse the exact same logic. Behavior is unchanged.
-    columnReaders = new ParquetRowGroupDecoder(fileSchema, initialDefaults).buildColumnReaders(
+    columnReaders = rowGroupDecoder.buildColumnReaders(
         pages, requestedSchema, columnTypesList, colsToInclude,
         ColumnProjectionUtils.isReadAllColumns(jobConf),
         new ParquetRowGroupDecoder.TimestampConversionOptions(skipTimestampConversion, writerTimezone,

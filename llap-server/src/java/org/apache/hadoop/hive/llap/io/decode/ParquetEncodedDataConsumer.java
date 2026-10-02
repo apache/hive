@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -31,21 +30,20 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
-import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.encoded.ParquetEncodedColumnBatch;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetRowGroupDecoder;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedColumnReader;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.parquet.HadoopReadOptions;
 import org.apache.parquet.ParquetReadOptions;
@@ -72,7 +70,6 @@ public class ParquetEncodedDataConsumer
     extends EncodedDataConsumer<Object, ParquetEncodedColumnBatch> {
 
   private final Configuration jobConf;
-  private final boolean useDecimal64ColumnVectors;
   private final CompressionCodecFactory codecFactory;
   private final ParquetMetadataConverter converter;
   private ParquetMetadata footer;
@@ -84,19 +81,15 @@ public class ParquetEncodedDataConsumer
   private List<TypeInfo> columnTypesList;
   private List<Integer> colsToInclude;
   private boolean readAllColumns;
-  private boolean skipTimestampConversion;
-  private boolean skipProlepticConversion;
-  private boolean legacyConversionEnabled;
-  private ZoneId writerTimezone;
+  private DataTypePhysicalVariation[] variations;
+  private ParquetRowGroupDecoder rowGroupDecoder;
+  private ParquetRowGroupDecoder.TimestampConversionOptions conversions;
   private boolean schemaInitialized = false;
 
   public ParquetEncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, Includes includes,
       QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics, Configuration jobConf) {
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
     this.jobConf = jobConf;
-    this.useDecimal64ColumnVectors = HiveConf.getVar(jobConf,
-        ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
-        .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     ParquetReadOptions options = HadoopReadOptions.builder(jobConf).build();
     this.codecFactory = options.getCodecFactory();
     this.converter = new ParquetMetadataConverter(options);
@@ -125,20 +118,30 @@ public class ParquetEncodedDataConsumer
         DataWritableReadSupport.getColumnTypes(jobConf.get(IOConstants.COLUMNS_TYPES));
     this.colsToInclude = ColumnProjectionUtils.getReadColumnIDs(jobConf);
     this.readAllColumns = ColumnProjectionUtils.isReadAllColumns(jobConf);
+    // The vectorizer already decided per column whether it wants a DECIMAL_64 vector; honouring that
+    // is what keeps the batch shape identical to the one the operator pipeline was planned for.
+    // A split that arrives without a vectorized plan on the conf carries no such decision, so every
+    // column then gets the default vector for its type.
+    VectorizedRowBatchCtx rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
+    this.variations = rbCtx == null ? null : rbCtx.getRowdataTypePhysicalVariations();
 
-    this.writerTimezone = DataWritableReadSupport.getWriterTimeZoneId(kvMeta);
+    boolean skipTimestampConversion;
     if (HiveConf.getBoolVar(jobConf, ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
-      this.skipTimestampConversion =
+      skipTimestampConversion =
           !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
     } else {
-      this.skipTimestampConversion = false;
+      skipTimestampConversion = false;
     }
     Boolean proleptic = DataWritableReadSupport.getWriterDateProleptic(kvMeta);
     if (proleptic == null) {
       proleptic = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT);
     }
-    this.skipProlepticConversion = proleptic;
-    this.legacyConversionEnabled = DataWritableReadSupport.getZoneConversionLegacy(kvMeta, jobConf);
+    this.conversions = new ParquetRowGroupDecoder.TimestampConversionOptions(skipTimestampConversion,
+        DataWritableReadSupport.getWriterTimeZoneId(kvMeta), proleptic,
+        DataWritableReadSupport.getZoneConversionLegacy(kvMeta, jobConf));
+
+    // Per-file state only, so it is built here and reused for every row group of the split.
+    this.rowGroupDecoder = new ParquetRowGroupDecoder(fileMetaData.getSchema(), initialDefaults);
 
     this.schemaInitialized = true;
   }
@@ -156,11 +159,8 @@ public class ParquetEncodedDataConsumer
     try { // NOSONAR
       PageReadStore pages = new ParquetCachedPageReadStore(footer, batch, codecFactory, converter);
 
-      VectorizedColumnReader[] columnReaders =
-          new ParquetRowGroupDecoder(footer.getFileMetaData().getSchema(), initialDefaults).buildColumnReaders(
-              pages, requestedSchema, columnTypesList, colsToInclude, readAllColumns,
-              new ParquetRowGroupDecoder.TimestampConversionOptions(skipTimestampConversion,
-                  writerTimezone, skipProlepticConversion, legacyConversionEnabled));
+      VectorizedColumnReader[] columnReaders = rowGroupDecoder.buildColumnReaders(
+          pages, requestedSchema, columnTypesList, colsToInclude, readAllColumns, conversions);
 
       long rowsLeft = pages.getRowCount();
       int batches = 0;
@@ -174,8 +174,9 @@ public class ParquetEncodedDataConsumer
           if (columnReaders[i] == null) {
             continue;
           }
-          TypeInfo columnType = columnTypesList.get(readAllColumns ? i : colsToInclude.get(i));
-          ColumnVector cv = prepareColumnVector(cvb, i, columnType, batchSize);
+          int tableColId = readAllColumns ? i : colsToInclude.get(i);
+          TypeInfo columnType = columnTypesList.get(tableColId);
+          ColumnVector cv = prepareColumnVector(cvb, i, tableColId, columnType, batchSize);
           columnReaders[i].readBatch(batchSize, cv, columnType);
         }
 
@@ -189,8 +190,9 @@ public class ParquetEncodedDataConsumer
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
     } catch (IOException | RuntimeException e) {
       // parquet reports decode failures as runtime ParquetDecodingException.
-      LlapIoImpl.LOG.error("Parquet decodeBatch failed for rowGroup " + batch.rowGroupIx() + " of " + path, e);
-      downstreamConsumer.setError(e);
+      // Not logged here: setError logs the throwable with its stack at WARN, and next() rethrows it.
+      downstreamConsumer.setError(new IOException(
+          String.format("Parquet decode failed for row group %d of %s", batch.rowGroupIx(), path), e));
     } finally {
       // Returns the pooled Hadoop decompressors after each row group; getDecompressor re-creates
       // them. codecFactory is a per-consumer field with a per-batch release() (not close()) —
@@ -199,10 +201,12 @@ public class ParquetEncodedDataConsumer
     }
   }
 
-  private ColumnVector prepareColumnVector(ColumnVectorBatch cvb, int idx, TypeInfo columnType,
-      int batchSize) {
+  private ColumnVector prepareColumnVector(ColumnVectorBatch cvb, int idx, int tableColId,
+      TypeInfo columnType, int batchSize) {
     if (cvb.cols[idx] == null) {
-      cvb.cols[idx] = VectorizedBatchUtil.createColumnVector(columnType, physicalVariation(columnType));
+      DataTypePhysicalVariation variation =
+          variations == null ? DataTypePhysicalVariation.NONE : variations[tableColId];
+      cvb.cols[idx] = VectorizedBatchUtil.createColumnVector(columnType, variation);
     }
     ColumnVector cv = cvb.cols[idx];
     cv.reset();
@@ -213,13 +217,5 @@ public class ParquetEncodedDataConsumer
     // VectorizedParquetRecordReader does too, immediately before its readBatch call.
     cv.isRepeating = true;
     return cv;
-  }
-
-  private DataTypePhysicalVariation physicalVariation(TypeInfo columnType) {
-    if (useDecimal64ColumnVectors && columnType instanceof DecimalTypeInfo decimalType
-        && HiveDecimalWritable.isPrecisionDecimal64(decimalType.precision())) {
-      return DataTypePhysicalVariation.DECIMAL_64;
-    }
-    return DataTypePhysicalVariation.NONE;
   }
 }

@@ -67,29 +67,13 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
           new ParquetEncodedDataConsumer(consumer, includes, counters, ioMetrics, job);
       ParquetEncodedDataReader reader = new ParquetEncodedDataReader(
           lowLevelCache, bufferManager, conf, job, split, edc, counters);
-      reader.loadFooter();
-      // Null makes LlapInputFormat fall back to the normal VectorizedParquetRecordReader.
+      reader.readFooter();
+      // Null makes LlapInputFormat fall back to the normal VectorizedParquetRecordReader. The
+      // fallback still caches (footer via LlapProxy, data via LlapCacheAwareFs); what's lost for
+      // this split is vectored reads, row-group lookahead, and its LLAP IO summary counters.
       if (reader.projectsNestedTypes()) {
         LlapIoImpl.LOG.info("Parquet native cache: falling back to normal reader for {} due to "
             + "nested types in the projection", split.getPath());
-        return null;
-      }
-      /*
-       * Fallback path still caches (footer via LlapProxy, data via LlapCacheAwareFs); what's lost
-       * for this split is vectored reads, row-group lookahead, and its LLAP IO summary counters.
-       * Guard fires per split only for Iceberg-Parquet files that physically carry _row_id /
-       * _last_updated_sequence_number while the query projects those virtual columns.
-       *
-       *   Table shape                                                   Fires?
-       *   ------------------------------------------------------------  ------
-       *   Non-Iceberg Parquet                                           never
-       *   Iceberg-Parquet, row lineage disabled                         never
-       *   Iceberg-Parquet, row lineage on, file has no _row_id yet      never
-       *   Iceberg-Parquet, row lineage on, file has lineage columns     yes, per split
-       */
-      if (reader.needsRowLineage()) {
-        LlapIoImpl.LOG.info("Parquet native cache: falling back to normal reader for {} due to "
-            + "row-lineage virtual columns", split.getPath());
         return null;
       }
       edc.init(reader, reader);
