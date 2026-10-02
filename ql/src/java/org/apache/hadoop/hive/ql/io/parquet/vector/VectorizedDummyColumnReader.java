@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.io.parquet.vector;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -128,8 +129,12 @@ public class VectorizedDummyColumnReader extends BaseVectorizedColumnReader {
         return;
 
       case DECIMAL:
-        DecimalColumnVector dcv = (DecimalColumnVector) col;
-        dcv.set(0, HiveDecimal.create(value.toString()));
+        HiveDecimal decimal = HiveDecimal.create(value.toString());
+        if (col instanceof Decimal64ColumnVector dec64) {
+          dec64.set(0, decimal);
+        } else {
+          ((DecimalColumnVector) col).set(0, decimal);
+        }
         return;
 
       case TIMESTAMP: {
