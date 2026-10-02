@@ -666,15 +666,14 @@ public class RelOptHiveTable implements RelOptTable {
       String logMsg = "No Stats for " + hiveTblMetadata.getCompleteName() + ", Columns: "
           + getColNamesForLogging(colNamesFailedStats);
       noColsMissingStats.getAndAdd(colNamesFailedStats.size());
+      LOG.warn(logMsg);
       if (allowMissingStats) {
-        LOG.warn(logMsg);
         HiveConf conf = SessionState.getSessionConf();
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_SHOW_WARNINGS)) {
           LogHelper console = SessionState.getConsole();
           console.printInfo(logMsg);
         }
       } else {
-        LOG.warn(logMsg);
         throw new RuntimeException(logMsg);
       }
     } else {

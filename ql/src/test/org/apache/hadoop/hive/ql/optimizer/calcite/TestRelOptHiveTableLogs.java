@@ -46,7 +46,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-public class TestRelOptHiveTable {
+public class TestRelOptHiveTableLogs {
 
   private static final String MISSING_STATS_MSG = "No Stats for default@dummy, Columns: col1";
 
