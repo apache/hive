@@ -63,12 +63,16 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -726,5 +730,57 @@ public class TestSemanticAnalyzer {
         new HashSet<>(), colSrcRR, colSrcRR, 0, output, new ArrayList<>(Arrays.asList("l", "r")), false);
 
     assertTrue(output.get("l", "c").hasAmbiguousName());
+  }
+
+  @Test
+  public void testOrderByPositionResolvedWhenCboDeclines() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select value, key from table1 tablesample (2 rows) order by 2 desc");
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testOrderByPositionOverSelectStarResolvedWhenCboDeclines() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery("select * from table1 tablesample (2 rows) order by 2");
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("+", rs.getOrder());
+  }
+
+  @Test
+  public void testDistributeBySortByPositionsResolvedWhenCboDeclines() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select key, value from table1 tablesample (2 rows) distribute by 2 sort by 1 desc");
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertColumns(rs.getKeyCols(), "_col0");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testOutOfRangePositionRejectedWhenCboDeclines() {
+    SemanticException e = assertThrows(SemanticException.class,
+        () -> analyzeWithCbo("select key from table1 tablesample (2 rows) order by 2"));
+    assertTrue(e.getMessage(), e.getMessage().contains("Position alias: 2 does not exist"));
+  }
+
+  private ReduceSinkDesc reduceSinkOfCboDeclinedQuery(String query) throws Exception {
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(query);
+    assertTrue(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO because"));
+    List<ReduceSinkDesc> reduceSinks = new ArrayList<>();
+    for (Operator<?> op : analyzer.opParseCtx.keySet()) {
+      if (op instanceof ReduceSinkOperator) {
+        reduceSinks.add(((ReduceSinkOperator) op).getConf());
+      }
+    }
+    assertEquals(1, reduceSinks.size());
+    return reduceSinks.get(0);
+  }
+
+  private static void assertColumns(List<ExprNodeDesc> exprs, String... expectedColumns) {
+    assertEquals(exprs.toString(), expectedColumns.length, exprs.size());
+    for (int i = 0; i < expectedColumns.length; i++) {
+      assertTrue(exprs.get(i).toString(), exprs.get(i) instanceof ExprNodeColumnDesc);
+      assertEquals(expectedColumns[i], ((ExprNodeColumnDesc) exprs.get(i)).getColumn());
+    }
   }
 }
