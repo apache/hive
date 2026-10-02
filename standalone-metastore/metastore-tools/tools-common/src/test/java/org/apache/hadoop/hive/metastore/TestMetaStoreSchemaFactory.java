@@ -19,15 +19,12 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-@Category(MetastoreUnitTest.class)
 public class TestMetaStoreSchemaFactory {
   private Configuration conf;
 
@@ -59,7 +56,7 @@ public class TestMetaStoreSchemaFactory {
     Class<?> clasz = null;
     try {
       clasz = conf.getClassByName(className);
-      clasz.getConstructor(String.class, String.class);
+      var unused = clasz.getConstructor(String.class, String.class);
     } catch (NoSuchMethodException | IllegalArgumentException | ClassNotFoundException e) {
       throw new IllegalArgumentException(e);
     }
