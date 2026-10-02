@@ -604,6 +604,12 @@ public class HMSCatalogAdapter implements Closeable {
   /**
    * Casts {@code request} to {@code requestType}, throwing a {@code 400 Bad Request} error if
    * the request body does not match the type expected by the route.
+   *
+   * @param requestType the type expected by the route
+   * @param request the deserialized request body
+   * @param <T> the expected request type
+   * @return {@code request} cast to {@code requestType}
+   * @throws BadRequestType if {@code request} is not an instance of {@code requestType}
    */
   public static <T> T castRequest(Class<T> requestType, Object request) {
     if (requestType.isInstance(request)) {
@@ -616,6 +622,9 @@ public class HMSCatalogAdapter implements Closeable {
   /**
    * Populates {@code errorBuilder} with the HTTP status, error type, and message derived from
    * {@code exc}, logging the exception at a level appropriate to its severity.
+   *
+   * @param exc the exception raised while processing the request
+   * @param errorBuilder the builder to populate with the derived error response
    */
   public static void configureResponseFromException(
       Exception exc, ErrorResponse.Builder errorBuilder) {

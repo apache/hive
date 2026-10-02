@@ -78,6 +78,8 @@ public class IcebergCatalogConfiguration {
 
   /**
    * Creates the REST Catalog servlet registration. Shared by production config and tests.
+   * @param conf the configuration
+   * @return the servlet registration
    */
   public static ServletRegistrationBean<HttpServlet> createRestCatalogServlet(Configuration conf) {
     String servletPath = MetastoreConf.getVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_PATH);

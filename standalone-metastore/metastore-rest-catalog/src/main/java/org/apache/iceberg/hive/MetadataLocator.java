@@ -46,12 +46,18 @@ public class MetadataLocator {
           .build();
   private final HiveCatalog catalog;
 
-  /** Creates a locator that resolves metadata-file locations through {@code catalog}. */
+  /**
+   * Creates a locator that resolves metadata-file locations through {@code catalog}.
+   * @param catalog the catalog to resolve metadata-file locations through
+   */
   public MetadataLocator(HiveCatalog catalog) {
     this.catalog = catalog;
   }
 
-  /** Returns the catalog this locator resolves metadata-file locations through. */
+  /**
+   * Returns the catalog this locator resolves metadata-file locations through.
+   * @return the catalog
+   */
   public HiveCatalog getCatalog() {
     return catalog;
   }

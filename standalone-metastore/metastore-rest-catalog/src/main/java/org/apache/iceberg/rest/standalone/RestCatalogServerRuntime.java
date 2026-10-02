@@ -104,13 +104,19 @@ public class RestCatalogServerRuntime {
     return ssl != null && ssl.isEnabled();
   }
 
-  /** Returns the actual port the web server bound to, or {@code 0} if not yet initialized. */
+  /**
+   * Returns the actual port the web server bound to, or {@code 0} if not yet initialized.
+   * @return the actual port
+   */
   @VisibleForTesting
   public int getPort() {
     return port;
   }
 
-  /** Returns the REST endpoint URL, or {@code null} if the web server is not yet initialized. */
+  /**
+   * Returns the REST endpoint URL, or {@code null} if the web server is not yet initialized.
+   * @return the REST endpoint URL
+   */
   public String getRestEndpoint() {
     return restEndpoint;
   }

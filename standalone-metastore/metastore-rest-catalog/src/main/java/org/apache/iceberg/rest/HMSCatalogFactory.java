@@ -60,12 +60,18 @@ public class HMSCatalogFactory {
     this.configuration = conf;
   }
   
-  /** Returns the configured servlet port. */
+  /**
+   * Returns the configured servlet port.
+   * @return the servlet port
+   */
   public int getPort() {
     return port;
   }
 
-  /** Returns the configured servlet path. */
+  /**
+   * Returns the configured servlet path.
+   * @return the servlet path
+   */
   public String getPath() {
     return path;
   }
@@ -87,7 +93,7 @@ public class HMSCatalogFactory {
    * Builds the underlying {@link HiveCatalog} from the given configuration.
    * <p>Exposed so tests can obtain a catalog through the exact production construction path rather
    * than duplicating it; the servlet path wraps the result in an {@link HMSCachingCatalog} when a
-   * positive cache expiry is configured (see {@link #createCatalog()}).</p>
+   * positive cache expiry is configured (see {@link #createCatalog(IcebergAuthorizer)}).</p>
    * @param configuration the configuration
    * @return the initialized HiveCatalog
    */

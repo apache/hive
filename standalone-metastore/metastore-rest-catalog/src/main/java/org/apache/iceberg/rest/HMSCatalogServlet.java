@@ -177,22 +177,34 @@ public class HMSCatalogServlet extends HttpServlet {
       return method;
     }
 
-    /** The request path, relative to the servlet, with the leading '/' removed. */
+    /**
+     * The request path, relative to the servlet, with the leading '/' removed.
+     * @return the request path
+     */
     public String path() {
       return path;
     }
 
-    /** The request's query parameters, keyed by parameter name. */
+    /**
+     * The request's query parameters, keyed by parameter name.
+     * @return the query parameters
+     */
     public Map<String, String> queryParams() {
       return queryParams;
     }
 
-    /** The deserialized request body, or {@code null} if the route expects no request body. */
+    /**
+     * The deserialized request body, or {@code null} if the route expects no request body.
+     * @return the request body
+     */
     public Object body() {
       return body;
     }
 
-    /** The error to return instead of dispatching the request, if parsing the request failed. */
+    /**
+     * The error to return instead of dispatching the request, if parsing the request failed.
+     * @return the error, if any
+     */
     public Optional<ErrorResponse> error() {
       return Optional.ofNullable(errorResponse);
     }
