@@ -135,7 +135,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     if (mapWork == null) return null; // No compatible MapWork.
     LlapRecordReader rr = new LlapRecordReader(mapWork, job, split, tableIncludedCols, hostName,
         cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
-    if (!rr.checkOrcSchemaEvolution()) {
+    if (rr.rp == null) {
+      return null; // The producer declined the split; the caller uses the source reader.
+    }
+    if (!rr.checkSchemaEvolution()) {
       rr.close();
       throwIfCacheOnlyRead(HiveConf.getBoolVar(job, ConfVars.LLAP_IO_CACHE_ONLY));
       return null;
@@ -185,7 +188,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     final boolean
         decimal64Support =
-        HiveConf.getVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+        HiveConf.getVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+            .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     int
         limit =
         determineQueueLimit(bestEffortSize,
@@ -348,8 +352,14 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     executor.submit(rp.getReadCallable());
   }
 
-  private boolean checkOrcSchemaEvolution() {
+  private boolean checkSchemaEvolution() {
     SchemaEvolution evolution = rp.getSchemaEvolution();
+    if (evolution == null) {
+      // Only the ORC pipeline hangs an ORC SchemaEvolution off the ReadPipeline; other formats
+      // (native Parquet today) handle column resolution themselves, so there is nothing to
+      // validate here.
+      return true;
+    }
 
     if (evolution.hasConversion() && !evolution.isOnlyImplicitConversion()) {
 
@@ -654,6 +664,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
   void setPartitionValues(Object[] partitionValues) {
     this.partitionValues = partitionValues;
+  }
+
+  ReadPipeline getReadPipeline() {
+    return rp;
   }
 
   /** This class encapsulates include-related logic for LLAP readers. It is not actually specific

@@ -52,9 +52,51 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.orc.impl.RecordReaderUtils;
 
 /**
- * This is currently only used by Parquet; however, a generally applicable approach is used -
- * you pass in a set of offset pairs for a file, and the file is cached with these boundaries.
- * Don't add anything format specific here.
+ * A shim {@link FileSystem} that transparently interposes on reads so that byte ranges backed by
+ * the LLAP {@link DataCache} are served from memory and only genuine misses go to the underlying
+ * (real) file system.
+ *
+ * <h3>What it does</h3>
+ * It exposes a virtual {@code llapcache://} URI in place of the real file path. Reads issued
+ * against that URI are routed through {@link CacheAwareInputStream}, which consults the
+ * {@link DataCache} for each requested chunk: hits are copied straight out of cache buffers,
+ * misses are fetched from the wrapped {@link FileSystem}, handed back to the caller, and
+ * simultaneously inserted into the cache so subsequent reads of the same chunk are served from
+ * memory. All non-read {@code FileSystem} operations (open/append/create/delete/rename/
+ * getFileStatus/listStatus/mkdirs) are simply delegated to the wrapped file system after
+ * translating the virtual path back to the real one.
+ *
+ * <h3>How it works</h3>
+ * The reader that wants caching calls {@link #registerFile(DataCache, Path, Object, TreeMap,
+ * Configuration, CacheTag)} with the real path, a stable {@code fileKey}, and a chunk index
+ * (a {@code TreeMap} of {@code startOffset -> endOffset} boundaries covering the ranges the
+ * reader intends to read - typically the column-chunk ranges of the projected columns). The
+ * shim assigns a unique {@code splitId}, stashes the per-split state in a static map, registers
+ * itself as the handler for the {@code llapcache} scheme via {@code fs.llapcache.impl}, and
+ * returns a virtual {@code llapcache://llapcache/&lt;splitId&gt;} path. The caller hands this
+ * virtual path to the underlying format library (e.g. the Parquet reader); when the library
+ * opens the path and issues positioned reads, this class receives them, splits them along the
+ * pre-registered chunk boundaries, and either serves each chunk from cache or reads-through and
+ * populates it. When the reader is finished it must call {@link #unregisterFile(Path)} to drop
+ * the per-split state.
+ *
+ * <h3>When it is used</h3>
+ * Today the only caller is the vectorized Parquet path in
+ * {@code VectorizedParquetRecordReader.wrapPathForCache}, which engages the shim when LLAP IO
+ * is enabled and a {@link DataCache} was injected into the reader via
+ * {@code LlapCacheOnlyInputFormatInterface.injectCaches}. Concretely that means:
+ * <ul>
+ *   <li>LLAP daemon splits where the native Parquet cache pipeline
+ *       ({@code ParquetColumnVectorProducer} / {@code ParquetEncodedDataReader}) declines the
+ *       split and {@code LlapInputFormat} falls back to the source
+ *       {@code VectorizedParquetInputFormat} - e.g. nested-type projections or setup errors.
+ *   <li>Iceberg vectorized Parquet reads via {@code HiveVectorizedReader.parquetRecordReader},
+ *       which always uses {@code VectorizedParquetInputFormat} directly and injects caches when
+ *       LLAP is on - the native Parquet cache pipeline is not reachable from that entry point.
+ * </ul>
+ * Non-LLAP execution (no daemon, no {@code DataCache} injected) skips this shim entirely and
+ * reads directly from the real file system. The class is deliberately format-agnostic - the
+ * boundaries are supplied by the caller, so nothing Parquet-specific should be added here.
  */
 public class LlapCacheAwareFs extends FileSystem {
   public static final String SCHEME = "llapcache";
