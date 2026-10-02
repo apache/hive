@@ -37,10 +37,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws
-                  filterExpr: ((ws_quantity > 0) and (ws_net_profit > 1) and (ws_net_paid > 0)) (type: boolean)
+                  filterExpr: ((ws_net_profit > 1) and (ws_quantity > 0) and (ws_net_paid > 0)) (type: boolean)
                   Statistics: Num rows: 21594638446 Data size: 5441536184068 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ws_quantity > 0) and (ws_net_profit > 1) and (ws_net_paid > 0)) (type: boolean)
+                    predicate: ((ws_net_profit > 1) and (ws_quantity > 0) and (ws_net_paid > 0)) (type: boolean)
                     Statistics: Num rows: 14390903321 Data size: 3626299247340 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ws_item_sk (type: bigint), ws_order_number (type: bigint), ws_quantity (type: int), ws_net_paid (type: decimal(7,2)), ws_sold_date_sk (type: bigint)
@@ -106,10 +106,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cs
-                  filterExpr: ((cs_quantity > 0) and (cs_net_profit > 1) and (cs_net_paid > 0)) (type: boolean)
+                  filterExpr: ((cs_net_profit > 1) and (cs_quantity > 0) and (cs_net_paid > 0)) (type: boolean)
                   Statistics: Num rows: 43005109025 Data size: 10824794628716 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cs_quantity > 0) and (cs_net_profit > 1) and (cs_net_paid > 0)) (type: boolean)
+                    predicate: ((cs_net_profit > 1) and (cs_quantity > 0) and (cs_net_paid > 0)) (type: boolean)
                     Statistics: Num rows: 28650456622 Data size: 7211592203468 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cs_item_sk (type: bigint), cs_order_number (type: bigint), cs_quantity (type: int), cs_net_paid (type: decimal(7,2)), cs_sold_date_sk (type: bigint)
@@ -256,10 +256,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sts
-                  filterExpr: ((ss_quantity > 0) and (ss_net_profit > 1) and (ss_net_paid > 0)) (type: boolean)
+                  filterExpr: ((ss_net_profit > 1) and (ss_quantity > 0) and (ss_net_paid > 0)) (type: boolean)
                   Statistics: Num rows: 82510879939 Data size: 20349734757316 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ss_quantity > 0) and (ss_net_profit > 1) and (ss_net_paid > 0)) (type: boolean)
+                    predicate: ((ss_net_profit > 1) and (ss_quantity > 0) and (ss_net_paid > 0)) (type: boolean)
                     Statistics: Num rows: 41222412506 Data size: 10166721784872 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_item_sk (type: bigint), ss_ticket_number (type: bigint), ss_quantity (type: int), ss_net_paid (type: decimal(7,2)), ss_sold_date_sk (type: bigint)

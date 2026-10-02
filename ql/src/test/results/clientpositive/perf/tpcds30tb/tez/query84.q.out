@@ -18,7 +18,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_returns
                   filterExpr: sr_cdemo_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:sr_cdemo_sk, smallTablePos:1, keyRatio:2.536782067417032E-6
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:sr_cdemo_sk, smallTablePos:1, keyRatio:2.9596369881191995E-6
                   Statistics: Num rows: 8634166995 Data size: 66673356440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: sr_cdemo_sk is not null (type: boolean)
@@ -46,22 +46,22 @@ STAGE PLANS:
                           outputColumnNames: _col2, _col6
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 21903 Data size: 6220452 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 25554 Data size: 7257336 Basic stats: COMPLETE Column stats: COMPLETE
                           Top N Key Operator
                             sort order: +
                             keys: _col2 (type: char(16))
                             null sort order: z
-                            Statistics: Num rows: 21903 Data size: 6220452 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 25554 Data size: 7257336 Basic stats: COMPLETE Column stats: COMPLETE
                             top n: 100
                             Select Operator
                               expressions: _col6 (type: string), _col2 (type: char(16))
                               outputColumnNames: _col1, _col2
-                              Statistics: Num rows: 21903 Data size: 6220452 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 25554 Data size: 7257336 Basic stats: COMPLETE Column stats: COMPLETE
                               Reduce Output Operator
                                 key expressions: _col2 (type: char(16))
                                 null sort order: z
                                 sort order: +
-                                Statistics: Num rows: 21903 Data size: 6220452 Basic stats: COMPLETE Column stats: COMPLETE
+                                Statistics: Num rows: 25554 Data size: 7257336 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -87,7 +87,7 @@ STAGE PLANS:
                 TableScan
                   alias: customer
                   filterExpr: (c_current_hdemo_sk is not null and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:c_current_hdemo_sk, smallTablePos:1, keyRatio:2.836375E-4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:c_current_hdemo_sk, smallTablePos:1, keyRatio:3.309125E-4
                   Statistics: Num rows: 80000000 Data size: 24275219040 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c_current_hdemo_sk is not null and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
@@ -115,13 +115,13 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col4
                           input vertices:
                             1 Map 6
-                          Statistics: Num rows: 22691 Data size: 6444252 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 26473 Data size: 7518340 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col1 (type: bigint)
                             null sort order: z
                             sort order: +
                             Map-reduce partition columns: _col1 (type: bigint)
-                            Statistics: Num rows: 22691 Data size: 6444252 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 26473 Data size: 7518340 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: char(16)), _col4 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -151,7 +151,7 @@ STAGE PLANS:
                 TableScan
                   alias: household_demographics
                   filterExpr: hd_income_band_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_118_container, bigKeyColName:hd_income_band_sk, smallTablePos:1, keyRatio:0.3001388888888889
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_118_container, bigKeyColName:hd_income_band_sk, smallTablePos:1, keyRatio:0.35
                   Statistics: Num rows: 7200 Data size: 115200 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: hd_income_band_sk is not null (type: boolean)
@@ -169,34 +169,34 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 7
-                        Statistics: Num rows: 2161 Data size: 17288 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2520 Data size: 20160 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: bigint)
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: bigint)
-                          Statistics: Num rows: 2161 Data size: 17288 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 2520 Data size: 20160 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 7 
             Map Operator Tree:
                 TableScan
                   alias: income_band
-                  filterExpr: ((ib_lower_bound >= 32287) and (ib_upper_bound <= 82287)) (type: boolean)
+                  filterExpr: ((ib_upper_bound <= 82287) and (ib_lower_bound >= 32287)) (type: boolean)
                   Statistics: Num rows: 20 Data size: 320 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ib_lower_bound >= 32287) and (ib_upper_bound <= 82287)) (type: boolean)
-                    Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((ib_upper_bound <= 82287) and (ib_lower_bound >= 32287)) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ib_income_band_sk (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -205,7 +205,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: char(16)), VALUE._col0 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 21903 Data size: 6220452 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 25554 Data size: 7257336 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 100
                   Statistics: Num rows: 100 Data size: 28400 Basic stats: COMPLETE Column stats: COMPLETE
