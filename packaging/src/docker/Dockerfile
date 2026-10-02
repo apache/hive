@@ -129,6 +129,8 @@ RUN set -eux; \
     fi; \
     rm -rf /opt/tez-snapshot-download
 
+# AWS SDK v2 bundle for s3a://, staged by build.sh. Empty for -aws-sdk none.
+COPY --chown=hive aws-jars/ $HIVE_HOME/lib/
 
 COPY --chown=hive entrypoint.sh /
 COPY --chown=hive conf $HIVE_HOME/conf
