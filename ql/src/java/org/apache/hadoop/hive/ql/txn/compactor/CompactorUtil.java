@@ -516,6 +516,7 @@ public class CompactorUtil {
         return requestCompaction(ci, runAs, hostName, txnHandler);
       }
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       //Handle InterruptedException separately so the compactionInfo won't be marked as failed.
       LOG.info("Initiator pool is being shut down, task received interruption.");
     } catch (Throwable ex) {

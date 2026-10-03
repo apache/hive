@@ -390,6 +390,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
             future.get();
           }
         } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
           LOG.debug("Cancelling " + futures.size() + " file stats lookup tasks");
           //cancel other futures
           for (Future future : futures) {
