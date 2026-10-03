@@ -41,7 +41,7 @@ Stage-3
                   Output:["_col0","_col1","_col2","_col2"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
                   PARTITION_ONLY_SHUFFLE [RS_15]
-                    PartitionCols:_col2
+                    PartitionCols:_col2, rand(1234567L)
                     Select Operator [SEL_14] (rows=77 width=187)
                       Output:["_col0","_col1","_col2"]
                       TableScan [TS_0] (rows=77 width=187)
@@ -95,7 +95,7 @@ Stage-3
                   Output:["_col0","_col1","_col2","_col2"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
                   PARTITION_ONLY_SHUFFLE [RS_15]
-                    PartitionCols:_col2
+                    PartitionCols:_col2, rand(1234567L)
                     Select Operator [SEL_14] (rows=77/6 width=187)
                       Output:["_col0","_col1","_col2"]
                       TableScan [TS_0] (rows=77/6 width=187)

@@ -34,6 +34,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -100,7 +101,7 @@ import com.google.common.collect.Sets;
  * When dynamic partitioning (with or without bucketing and sorting) is enabled, this optimization
  * sorts the records on partition, bucket and sort columns respectively before inserting records
  * into the destination table. This enables reducers to keep only one record writer all the time
- * thereby reducing the the memory pressure on the reducers.
+ * thereby reducing the memory pressure on the reducers.
  * Sorting is based on the Dynamic Partitioning context that is already created in the file sink operator.
  * If that contains instructions for custom expression sorting, then this optimizer will disregard any partitioning or
  * bucketing information of the Hive (table format) table, and will arrange the plan solely as per the custom exprs.
@@ -116,12 +117,23 @@ public class SortedDynPartitionOptimizer extends Transform {
     }
   };
 
+  private static final Function<List<ExprNodeDesc>, ExprNodeDesc> RAND_EXPRESSION =
+      cols -> {
+        try {
+          List<ExprNodeDesc> args = Collections.singletonList(new ExprNodeConstantDesc(1234567L));
+          return ExprNodeGenericFuncDesc.newInstance(
+              FunctionRegistry.getFunctionInfo("rand").getGenericUDF(), args);
+        } catch (SemanticException e) {
+          throw new RuntimeException(e);
+        }
+      };
+
   @Override
   public ParseContext transform(ParseContext pCtx) throws SemanticException {
 
     // create a walker which walks the tree in a DFS manner while maintaining the
     // operator stack. The dispatcher generates the plan from the operator tree
-    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<>();
 
     String FS = FileSinkOperator.getOperatorName() + "%";
 
@@ -300,19 +312,16 @@ public class SortedDynPartitionOptimizer extends Transform {
         List<ColumnInfo> colInfos = fsParent.getSchema().getSignature();
         bucketColumns = getPositionsToExprNodes(bucketPositions, colInfos);
       }
-      List<Integer> sortNullOrder = new ArrayList<>();
-      for (int order : sortOrder) {
-        sortNullOrder.add(NullOrdering.defaultNullOrder(order, parseCtx.getConf()).getCode());
-      }
-      LOG.debug("Got sort order");
-      for (int i : sortPositions) {
-        LOG.debug("sort position " + i);
-      }
-      for (int i : sortOrder) {
-        LOG.debug("sort order " + i);
-      }
-      for (int i : sortNullOrder) {
-        LOG.debug("sort null order " + i);
+      List<Integer> sortNullOrder =
+          sortOrder.stream()
+              .map(order -> NullOrdering.defaultNullOrder(order, parseCtx.getConf()).getCode())
+              .collect(Collectors.toList());
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Got sort order");
+        LOG.debug("sort positions: {}", sortPositions);
+        LOG.debug("sort orders: {}", sortOrder);
+        LOG.debug("sort null orders: {}", sortNullOrder);
       }
 
       // update file sink descriptor
@@ -612,6 +621,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // 2) Partition columns
       // 3) Bucket number column
       // 4) Sort columns
+      // 5) rand() (Appended last to safely distribute partition data across reducers)
 
       boolean customPartitionExprPresent = customPartitionExprs != null && !customPartitionExprs.isEmpty();
       boolean customSortExprPresent = customSortExprs != null && !customSortExprs.isEmpty();
@@ -730,6 +740,21 @@ public class SortedDynPartitionOptimizer extends Transform {
         partCols.add(allCols.get(idx).clone());
       }
 
+      // Universally spread dynamic partition data across reducers to prevent data skew bottlenecks.
+      // IMPORTANT: We must NOT do this if the table is explicitly bucketed (bucketColumns is not
+      // empty), otherwise we will randomly scatter rows that belong to strict buckets, corrupting
+      // the bucket hash!
+      if (CollectionUtils.isEmpty(bucketColumns)) {
+        ExprNodeDesc randExpr = RAND_EXPRESSION.apply(allCols);
+        partCols.add(randExpr);
+        // Append to the absolute end to avoid scrambling custom sort/partition exprs
+        keyCols.add(randExpr);
+        orderStr += (order == 1) ? "+" : "-";
+        nullOrderStr.append(nullOrder);
+        LOG.info(
+            "SortedDynPartitionOptimizer: Injected rand() to spread partition data across reducers.");
+      }
+
       // in the absence of SORTED BY clause, the sorted dynamic partition insert
       // should honor the ordering of records provided by ORDER BY in SELECT statement
       ReduceSinkOperator parentRSOp = OperatorUtils.findSingleOperatorUpstream(parent,
@@ -795,6 +820,10 @@ public class SortedDynPartitionOptimizer extends Transform {
       rsConf.addComputedField(Utilities.ReduceField.KEY + "." + BUCKET_SORT_EXPRESSION.apply(allCols).getExprString());
       for (Function<List<ExprNodeDesc>, ExprNodeDesc> customSortExpr : customSortExprs) {
         rsConf.addComputedField(Utilities.ReduceField.KEY + "." + customSortExpr.apply(allCols).getExprString());
+      }
+      if (CollectionUtils.isEmpty(bucketColumns)) {
+        rsConf.addComputedField(
+            Utilities.ReduceField.KEY + "." + RAND_EXPRESSION.apply(allCols).getExprString());
       }
       op.setColumnExprMap(colExprMap);
       return op;
