@@ -53,9 +53,9 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
   private long rowOffset = Long.MIN_VALUE;
 
   private final int specId;
-  private final long partitionHash;
   private final String filePath;
   private final String partitionName;
+  private final byte[] partitionKey;
 
   private final Long firstRowId;
   private final Long fileSequenceNumber;
@@ -70,9 +70,9 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
     this.partitionValues = partitionValues;
 
     this.specId = task.file().specId();
-    this.partitionHash = IcebergAcidUtil.computeHash(task.file().partition());
     this.filePath = task.file().location();
     this.partitionName = IcebergTableUtil.toPartitionName(task.spec(), task.file().partition());
+    this.partitionKey = IcebergAcidUtil.serializePartition(task.file().partition(), task.spec());
 
     this.firstRowId = task.file().firstRowId();
     this.fileSequenceNumber = task.file().fileSequenceNumber();
@@ -115,9 +115,6 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
             case PARTITION_SPEC_ID:
               vrbCtx.addPartitionColsToBatch(batch.cols[idx], specId, idx);
               break;
-            case PARTITION_HASH:
-              vrbCtx.addPartitionColsToBatch(batch.cols[idx], partitionHash, idx);
-              break;
             case FILE_PATH:
               BytesColumnVector bcv = (BytesColumnVector) batch.cols[idx];
               bcv.fill(filePath.getBytes());
@@ -129,6 +126,10 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               Arrays.fill(lcv.isNull, false);
               lcv.isRepeating = false;
               System.arraycopy(value, 0, lcv.vector, 0, batch.size);
+              break;
+            case PARTITION_KEY:
+              bcv = (BytesColumnVector) batch.cols[idx];
+              bcv.fill(partitionKey);
               break;
             case PARTITION_NAME:
               bcv = (BytesColumnVector) batch.cols[idx];

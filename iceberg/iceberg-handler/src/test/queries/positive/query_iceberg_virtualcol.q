@@ -4,11 +4,11 @@ insert into tbl_ice values (1, 'one', 50), (2, 'two', 50), (3, 'three', 50), (4,
 
 select tbl_ice.ROW__POSITION from tbl_ice;
 
-select a, c, tbl_ice.PARTITION__SPEC__ID, tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION from tbl_ice
-order by tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION desc;
+select a, c, tbl_ice.PARTITION__SPEC__ID, tbl_ice.ROW__POSITION from tbl_ice
+order by c, tbl_ice.ROW__POSITION desc;
 
-select a, c, tbl_ice.PARTITION__SPEC__ID, tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION from tbl_ice
-sort by tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION desc;
+select a, c, tbl_ice.PARTITION__SPEC__ID, tbl_ice.ROW__POSITION from tbl_ice
+sort by c, tbl_ice.ROW__POSITION desc;
 
 
 -- create a table with more than 4 columns
