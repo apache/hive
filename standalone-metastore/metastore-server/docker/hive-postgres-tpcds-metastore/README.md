@@ -19,7 +19,7 @@ limitations under the License.
 # Postgres TPC-DS metastore
 
 A dockerized Postgres database with a Hive metastore dump from a
-[TPC-DS 30TB dataset](https://github.com/zabetak/hive-test-datasets/releases/download/1.0/metastore_tpcds30tb_3_1_3000.dump.gz).
+[TPC-DS 30TB dataset](https://github.com/thomasrebele/hive-postgres-metastore/releases/download/tpcds-30tb-histogram-1.0/metastore_tpcds30tb_with_histograms.raw_db.zstd), including histograms. The dump has been created with a fresh Postgres database, importing a dump with `pg_restore`, stopping Postgres, and then compressing the Postgres database files. More details can be found [here](https://github.com/thomasrebele/hive-postgres-metastore/tree/tpcds-30tb-histogram-1.0).
 
 ## Build and deploy 
 
@@ -30,12 +30,12 @@ the official ASF Docker Hub registry.
 
 ## Manual
 
-Build and tag the docker image: `docker build --tag apache/hive-postgres-tpcds-metastore:1.4 .`
+Build and tag the docker image: `docker build --tag apache/hive-postgres-tpcds-metastore:1.5 .`
 
 ## Usage
 
 -   Create and start Postgres container:
-    `docker run --name postgres_metastore -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d apache/hive-postgres-tpcds-metastore:1.4`
+    `docker run --name postgres_metastore -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d apache/hive-postgres-tpcds-metastore:1.5`
 -   Verify that the container is running: `docker ps`
 -   Stop Postgres container: `docker stop postgres_metastore`
 -   Remove Postgres container: `docker rm postgres_metastore`
