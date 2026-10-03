@@ -46,9 +46,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
               "name": "PARTITION__SPEC__ID"
             },
             {
-              "type": "BIGINT",
+              "type": "BINARY",
               "nullable": true,
-              "name": "PARTITION__HASH"
+              "precision": -1,
+              "name": "PARTITION__KEY"
             },
             {
               "type": "VARCHAR",

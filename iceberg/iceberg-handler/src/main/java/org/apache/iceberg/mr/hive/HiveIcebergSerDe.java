@@ -181,15 +181,11 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     }
     if (copyOnWrite) {
-      return getSchemaWithRowLineage(
-          IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns(), false), conf);
+      return getSchemaWithRowLineage(IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns()), conf);
     }
     switch (operation) {
       case DELETE:
-        boolean isMergeTask = HiveCustomStorageHandlerUtils.isMergeTaskEnabled(
-            key -> serDeProperties.getProperty(key, conf.get(key)),
-            tableName);
-        return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns(), isMergeTask);
+        return IcebergAcidUtil.createSerdeSchemaForDelete();
       case UPDATE:
         return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
       case OTHER:
