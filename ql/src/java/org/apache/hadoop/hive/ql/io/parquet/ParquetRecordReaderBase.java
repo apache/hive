@@ -33,9 +33,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.parquet.HadoopReadOptions;
+import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.filter2.compat.FilterCompat;
 import org.apache.parquet.filter2.compat.RowGroupFilter;
 import org.apache.parquet.filter2.predicate.FilterPredicate;
+import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.parquet.hadoop.ParquetInputSplit;
@@ -44,6 +47,8 @@ import org.apache.parquet.hadoop.api.ReadSupport;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.FileMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
+import org.apache.parquet.io.InputFile;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
 import org.apache.parquet.schema.Type;
@@ -110,8 +115,6 @@ public abstract class ParquetRecordReaderBase {
     ParquetInputSplit split;
     final Path finalPath = fileSplit.getPath();
 
-    // TODO enable MetadataFilter by using readFooter(Configuration configuration, Path file,
-    // MetadataFilter filter) API
     final List<BlockMetaData> blocks = parquetMetadata.getBlocks();
     final FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
 
@@ -127,12 +130,14 @@ public abstract class ParquetRecordReaderBase {
 
     schemaSize = MessageTypeParser.parseMessageType(readContext.getReadSupportMetadata()
       .get(DataWritableReadSupport.HIVE_TABLE_AS_PARQUET_SCHEMA)).getFieldCount();
-    final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
+    final List<BlockMetaData> splitGroup = new ArrayList<>();
     final long splitStart = fileSplit.getStart();
     final long splitLength = fileSplit.getLength();
     for (final BlockMetaData block : blocks) {
-      final long firstDataPage = block.getColumns().get(0).getFirstDataPageOffset();
-      if (firstDataPage >= splitStart && firstDataPage < splitStart + splitLength) {
+      // Dictionary pages physically precede the first data page. Using getStartingPos()
+      // ensures they are properly accounted for when determining split boundaries.
+      final long startingPos = block.getStartingPos();
+      if (startingPos >= splitStart && startingPos < splitStart + splitLength) {
         splitGroup.add(block);
       }
     }
@@ -181,9 +186,30 @@ public abstract class ParquetRecordReaderBase {
     return split;
   }
 
-  @SuppressWarnings("deprecation")
+  /**
+   * Helper method to centralize footer reading using the modern {@link
+   * ParquetFileReader#open(InputFile, ParquetReadOptions)} API.
+   */
+  protected ParquetMetadata readFooterFromInputFile(InputFile inputFile, ParquetReadOptions options)
+      throws IOException {
+    try (ParquetFileReader reader = ParquetFileReader.open(inputFile, options)) {
+      return reader.getFooter();
+    }
+  }
+
+  /**
+   * Reads the Parquet file footer. By applying {@link ParquetMetadataConverter#range(long, long)},
+   * we instruct the Parquet parser to skip deserializing BlockMetaData for row groups that fall
+   * outside the byte boundaries of the current FileSplit.
+   */
   protected ParquetMetadata getParquetMetadata(Path path, JobConf conf) throws IOException {
-    return ParquetFileReader.readFooter(jobConf, path);
+    ParquetReadOptions options =
+        HadoopReadOptions.builder(conf)
+            .withMetadataFilter(
+                ParquetMetadataConverter.range(
+                    fileSplit.getStart(), fileSplit.getStart() + fileSplit.getLength()))
+            .build();
+    return readFooterFromInputFile(HadoopInputFile.fromPath(path, conf), options);
   }
 
   public FilterCompat.Filter setFilter(final JobConf conf, MessageType schema) {

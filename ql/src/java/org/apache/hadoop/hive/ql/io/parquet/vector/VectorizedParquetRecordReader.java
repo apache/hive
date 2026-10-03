@@ -56,9 +56,12 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.parquet.HadoopReadOptions;
+import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.ParquetRuntimeException;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReadStore;
+import org.apache.parquet.filter2.compat.FilterCompat;
 import org.apache.parquet.format.converter.ParquetMetadataConverter.MetadataFilter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputSplit;
@@ -279,8 +282,23 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     requestedSchema = getRequestedSchemaWithRowLineageColumns(rbCtx, requestedSchema, fileSchema, colsToInclude);
 
     Path path = wrapPathForCache(filePath, cacheKey, configuration, blocks, cacheTag);
-    this.reader = new ParquetFileReader(
-      configuration, parquetMetadata.getFileMetaData(), path, blocks, requestedSchema.getColumns());
+    // Inject the FilterCompat.Filter into the ParquetReadOptions.
+    // This unlocks Parquet 1.11+ ColumnIndex page skipping (PARQUET-1310), allowing the reader to
+    // evaluate min/max statistics per Data Page and skip reading pages that do not match the
+    // predicate.
+    HadoopReadOptions.Builder optionsBuilder = HadoopReadOptions.builder(configuration);
+    FilterCompat.Filter filter = setFilter(configuration, fileSchema);
+    if (filter != null) {
+      optionsBuilder.withRecordFilter(filter);
+    }
+    ParquetReadOptions filteredReadOptions = optionsBuilder.build();
+
+    // Wrap the metadata to include only the Row Groups (blocks) that survived the
+    // FileSplit boundary check and the RowGroupFilter predicate check.
+    ParquetMetadata filteredMetadata =
+        new ParquetMetadata(parquetMetadata.getFileMetaData(), blocks);
+    this.reader = new ParquetFileReader(configuration, path, filteredMetadata, filteredReadOptions);
+    this.reader.setRequestedSchema(requestedSchema.getColumns());
   }
 
   private Path wrapPathForCache(Path path, Object fileKey, JobConf configuration,
@@ -319,7 +337,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       return readFooterFromFile(file, fs, stat, filter);
     } else {
       MemoryBufferOrBuffers footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(file, configuration, cacheKey);
-      return ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), filter);
+      ParquetReadOptions options = ParquetReadOptions.builder().withMetadataFilter(filter).build();
+      return readFooterFromInputFile(new ParquetFooterInputFromCache(footerData), options);
     }
   }
 
@@ -335,7 +354,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
         return stat.getLen();
       }
     };
-    return ParquetFileReader.readFooter(inputFile, filter);
+    ParquetReadOptions options = ParquetReadOptions.builder().withMetadataFilter(filter).build();
+    return readFooterFromInputFile(inputFile, options);
   }
 
   public static CacheTag cacheTagOfParquetFile(Path path, Configuration cacheConf, JobConf jobConf) {
