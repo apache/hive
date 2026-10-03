@@ -263,12 +263,9 @@ public class PlanModifierForASTConv {
     }
 
     @Override
-    public RelNode visit(final RelNode rel) {
-      if (rel instanceof TableSpool spool) {
-        aliases.add(spool.getTable().getQualifiedName().getLast().toLowerCase());
-        return spool;
-      }
-      return super.visit(rel);
+    public RelNode visit(TableSpool spool) {
+      aliases.add(spool.getTable().getQualifiedName().getLast().toLowerCase());
+      return spool;
     }
   }
 

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.SortExchange;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.logical.LogicalAggregate;
@@ -132,17 +133,23 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
   }
 
   @Override
+  public RelNode visit(SortExchange sortExchange) {
+    if (sortExchange instanceof HiveSortExchange) {
+      return visit((HiveSortExchange) sortExchange);
+    }
+    return super.visit(sortExchange);
+  }
+
+  @Override
   public RelNode visit(RelNode node) {
     // There are several Hive RelNode types which do not have their own visit() method
     // defined in the HiveRelShuttle interface, which need to be handled appropriately here.
-    // Per jcamachorodriguez we should not encounter HiveMultiJoin/HiveSortExchange
-    // during these checks, so no need to add those here.
+    // Per jcamachorodriguez we should not encounter HiveMultiJoin
+    // during these checks, so no need to add it here.
     if (node instanceof HiveUnion) {
       return visit((HiveUnion) node);
     } else if (node instanceof HiveSortLimit) {
       return visit((HiveSortLimit) node);
-    } else if (node instanceof HiveSortExchange) {
-      return visit((HiveSortExchange) node);
     } else if (node instanceof HiveSemiJoin) {
       return visit((HiveSemiJoin) node);
     } else if (node instanceof HiveExcept) {

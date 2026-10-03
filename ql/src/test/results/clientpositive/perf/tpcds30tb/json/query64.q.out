@@ -2229,7 +2229,7 @@
               "name": "$6"
             },
             {
-              "literal": 2001,
+              "literal": 2000,
               "type": {
                 "type": "INTEGER",
                 "nullable": false
@@ -5774,6 +5774,7 @@
           5,
           6,
           24,
+          25,
           29,
           30,
           34,
@@ -5859,6 +5860,7 @@
         "id": "58",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
+          "i_product_name",
           "i_item_sk",
           "s_store_name",
           "s_zip",
@@ -5872,23 +5874,27 @@
           "ca_zip0",
           "d_year",
           "d_year0",
-          "$f13",
           "$f14",
           "$f15",
-          "$f16"
+          "$f16",
+          "$f17"
         ],
         "exprs": [
-          {
-            "input": 4,
-            "name": "$4"
-          },
           {
             "input": 5,
             "name": "$5"
           },
           {
+            "input": 4,
+            "name": "$4"
+          },
+          {
             "input": 6,
             "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
           },
           {
             "input": 0,
@@ -5907,10 +5913,6 @@
             "name": "$3"
           },
           {
-            "input": 9,
-            "name": "$9"
-          },
-          {
             "input": 10,
             "name": "$10"
           },
@@ -5923,16 +5925,16 @@
             "name": "$12"
           },
           {
-            "input": 7,
-            "name": "$7"
+            "input": 13,
+            "name": "$13"
           },
           {
             "input": 8,
             "name": "$8"
           },
           {
-            "input": 13,
-            "name": "$13"
+            "input": 9,
+            "name": "$9"
           },
           {
             "input": 14,
@@ -5945,6 +5947,10 @@
           {
             "input": 16,
             "name": "$16"
+          },
+          {
+            "input": 17,
+            "name": "$17"
           }
         ],
         "rowCount": 4.277045496443079E88
@@ -5960,8 +5966,8 @@
           },
           "operands": [
             {
-              "input": 13,
-              "name": "$13"
+              "input": 14,
+              "name": "$14"
             }
           ]
         },
@@ -5971,9 +5977,18 @@
         "id": "60",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
+          "$f0",
           "$f1",
           "$f2",
           "$f3",
+          "$f4",
+          "$f5",
+          "$f6",
+          "$f7",
+          "$f8",
+          "$f9",
+          "$f10",
+          "$f11",
           "$f15",
           "$f16",
           "$f17",
@@ -5993,8 +6008,40 @@
             "name": "$2"
           },
           {
-            "input": 13,
-            "name": "$13"
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 11,
+            "name": "$11"
           },
           {
             "input": 14,
@@ -6007,6 +6054,10 @@
           {
             "input": 16,
             "name": "$16"
+          },
+          {
+            "input": 17,
+            "name": "$17"
           }
         ],
         "rowCount": 3.849340946798771E88
@@ -6542,7 +6593,7 @@
               "name": "$6"
             },
             {
-              "literal": 2000,
+              "literal": 2001,
               "type": {
                 "type": "INTEGER",
                 "nullable": false
@@ -7504,7 +7555,6 @@
           5,
           6,
           24,
-          25,
           29,
           30,
           34,
@@ -7590,7 +7640,6 @@
         "id": "103",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
-          "i_product_name",
           "i_item_sk",
           "s_store_name",
           "s_zip",
@@ -7604,27 +7653,23 @@
           "ca_zip0",
           "d_year",
           "d_year0",
+          "$f13",
           "$f14",
           "$f15",
-          "$f16",
-          "$f17"
+          "$f16"
         ],
         "exprs": [
-          {
-            "input": 5,
-            "name": "$5"
-          },
           {
             "input": 4,
             "name": "$4"
           },
           {
-            "input": 6,
-            "name": "$6"
+            "input": 5,
+            "name": "$5"
           },
           {
-            "input": 7,
-            "name": "$7"
+            "input": 6,
+            "name": "$6"
           },
           {
             "input": 0,
@@ -7643,6 +7688,10 @@
             "name": "$3"
           },
           {
+            "input": 9,
+            "name": "$9"
+          },
+          {
             "input": 10,
             "name": "$10"
           },
@@ -7655,16 +7704,16 @@
             "name": "$12"
           },
           {
-            "input": 13,
-            "name": "$13"
+            "input": 7,
+            "name": "$7"
           },
           {
             "input": 8,
             "name": "$8"
           },
           {
-            "input": 9,
-            "name": "$9"
+            "input": 13,
+            "name": "$13"
           },
           {
             "input": 14,
@@ -7677,10 +7726,6 @@
           {
             "input": 16,
             "name": "$16"
-          },
-          {
-            "input": 17,
-            "name": "$17"
           }
         ],
         "rowCount": 4.277045496443079E88
@@ -7696,8 +7741,8 @@
           },
           "operands": [
             {
-              "input": 14,
-              "name": "$14"
+              "input": 13,
+              "name": "$13"
             }
           ]
         },
@@ -7707,18 +7752,9 @@
         "id": "105",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
-          "$f0",
           "$f1",
           "$f2",
           "$f3",
-          "$f4",
-          "$f5",
-          "$f6",
-          "$f7",
-          "$f8",
-          "$f9",
-          "$f10",
-          "$f11",
           "$f15",
           "$f16",
           "$f17",
@@ -7738,40 +7774,8 @@
             "name": "$2"
           },
           {
-            "input": 3,
-            "name": "$3"
-          },
-          {
-            "input": 4,
-            "name": "$4"
-          },
-          {
-            "input": 5,
-            "name": "$5"
-          },
-          {
-            "input": 6,
-            "name": "$6"
-          },
-          {
-            "input": 7,
-            "name": "$7"
-          },
-          {
-            "input": 8,
-            "name": "$8"
-          },
-          {
-            "input": 9,
-            "name": "$9"
-          },
-          {
-            "input": 10,
-            "name": "$10"
-          },
-          {
-            "input": 11,
-            "name": "$11"
+            "input": 13,
+            "name": "$13"
           },
           {
             "input": 14,
@@ -7784,10 +7788,6 @@
           {
             "input": 16,
             "name": "$16"
-          },
-          {
-            "input": 17,
-            "name": "$17"
           }
         ],
         "rowCount": 3.849340946798771E88
@@ -7810,12 +7810,29 @@
               },
               "operands": [
                 {
-                  "input": 9,
-                  "name": "$9"
+                  "input": 2,
+                  "name": "$2"
                 },
+                {
+                  "input": 17,
+                  "name": "$17"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
                 {
                   "input": 1,
                   "name": "$1"
+                },
+                {
+                  "input": 16,
+                  "name": "$16"
                 }
               ]
             },
@@ -7827,29 +7844,12 @@
               },
               "operands": [
                 {
-                  "input": 8,
-                  "name": "$8"
+                  "input": 3,
+                  "name": "$3"
                 },
                 {
-                  "input": 0,
-                  "name": "$0"
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "=",
-                "kind": "EQUALS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 10,
-                  "name": "$10"
-                },
-                {
-                  "input": 2,
-                  "name": "$2"
+                  "input": 18,
+                  "name": "$18"
                 }
               ]
             },
@@ -7861,12 +7861,12 @@
               },
               "operands": [
                 {
-                  "input": 3,
-                  "name": "$3"
-                },
-                {
                   "input": 19,
                   "name": "$19"
+                },
+                {
+                  "input": 12,
+                  "name": "$12"
                 }
               ]
             }
@@ -7907,8 +7907,36 @@
         ],
         "exprs": [
           {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
             "input": 7,
             "name": "$7"
+          },
+          {
+            "input": 8,
+            "name": "$8"
           },
           {
             "input": 9,
@@ -7939,22 +7967,6 @@
             "name": "$15"
           },
           {
-            "input": 16,
-            "name": "$16"
-          },
-          {
-            "input": 17,
-            "name": "$17"
-          },
-          {
-            "input": 18,
-            "name": "$18"
-          },
-          {
-            "input": 19,
-            "name": "$19"
-          },
-          {
             "input": 20,
             "name": "$20"
           },
@@ -7967,20 +7979,8 @@
             "name": "$22"
           },
           {
-            "input": 4,
-            "name": "$4"
-          },
-          {
-            "input": 5,
-            "name": "$5"
-          },
-          {
-            "input": 6,
-            "name": "$6"
-          },
-          {
-            "input": 3,
-            "name": "$3"
+            "input": 19,
+            "name": "$19"
           }
         ],
         "rowCount": 2.500440591043405E174
