@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -172,8 +173,25 @@ public class StatsUtils {
     List<String> neededColumns = tableScanOperator.getNeededColumns();
     List<String> referencedColumns = tableScanOperator.getReferencedColumns();
 
-    return collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
+    Statistics stats = collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
         referencedColumns);
+    stats.addToColumnStats(
+        getVirtualColumnStats(tableScanOperator.getConf().getVirtualCols(), stats.getNumRows()));
+    return stats;
+  }
+
+  // the statistics of the virtual columns that carry a fixed average length
+  static List<ColStatistics> getVirtualColumnStats(List<VirtualColumn> virtualColumns, long numRows) {
+    List<ColStatistics> stats = new ArrayList<>();
+    for (VirtualColumn column : virtualColumns) {
+      column.getAvgLength().ifPresent(avgColLen -> {
+        ColStatistics cs = new ColStatistics(column.getName(), column.getTypeInfo().getTypeName());
+        cs.setAvgColLen(avgColLen);
+        cs.setCountDistint(numRows);
+        stats.add(cs);
+      });
+    }
+    return stats;
   }
 
   private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,

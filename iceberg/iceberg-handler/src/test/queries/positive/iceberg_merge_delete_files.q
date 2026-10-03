@@ -74,3 +74,18 @@ delete from orc_part_source where key in (select key from src);
 select count(*) from orc_part_source;
 
 select count(distinct(file_path)) from default.orc_part_source.files;
+
+-- Few partitions: several writers delete from each partition, the merge task merges the deletes of a partition
+create table orc_part2_source(key string, p int) partitioned by spec(p) stored by iceberg stored as orc tblproperties('format-version'='2');
+insert into table orc_part2_source select key, cast(key as int) % 2 from src;
+insert into table orc_part2_source select key, cast(key as int) % 2 from src;
+insert into table orc_part2_source select key, cast(key as int) % 2 from src;
+insert into table orc_part2_source select key, cast(key as int) % 2 from src;
+
+delete from orc_part2_source where key in (select key from src where cast(key as int) < 200);
+
+select count(*) from orc_part2_source;
+select count(*) from orc_part2_source where cast(key as int) < 200;
+
+-- Only 1 file corresponding to deletes must be generated per partition.
+select `partition`.p, count(*) from default.orc_part2_source.delete_files group by `partition`.p order by `partition`.p;
