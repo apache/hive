@@ -114,6 +114,10 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     return table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics();
   }
 
+  public static boolean storageHandlerOwnsBasicStats(Table table) {
+    return table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics(table);
+  }
+
 
   @Override
   public void initialize(CompilationOpContext opContext) {
@@ -127,7 +131,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
     ExecutorService threadPool = StatsTask.newThreadPool(conf);
 
-    return aggregateStats(threadPool, db);
+    return aggregateStats(threadPool, db, tbl);
   }
 
   public StageType getType() {
@@ -345,9 +349,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   }
 
   private Collection<Partition> getPartitions(Table table) {
+    if (table.hasNonNativePartitionSupport()) {
+      return null;
+    }
     Collection<Partition> partitions = null;
     if (work.getPartitions() == null || work.getPartitions().isEmpty()) {
-      if (table.isPartitioned() && !table.hasNonNativePartitionSupport()) {
+      if (table.isPartitioned()) {
         partitions = table.getTableSpec().partitions;
       }
     } else {
@@ -370,7 +377,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   }
 
 
-  private int aggregateStats(ExecutorService threadPool, Hive db) {
+  private int aggregateStats(ExecutorService threadPool, Hive db, Table tbl) {
     int ret = 0;
     try {
       JobConf jc = new JobConf(conf);
@@ -403,7 +410,19 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       shutdownAndAwaitTermination(threadPool);
       LOG.debug("Stats collection threadpool shutdown successful.");
 
-      ret = updatePartitions(db, scs, table);
+      if (work.isStatsReliable()) {
+        for (StatCollector statsCollection : scs) {
+          if (!statsCollection.isValid()) {
+            LOG.debug("Stats requested to be reliable. Empty stats found: {}", statsCollection.partish.getSimpleName());
+            return -1;
+          }
+        }
+      }
+      Table newTbl = updatePartitions(db, scs, table);
+      if (newTbl != null) {
+        // ColStatsProcessor writes the task's table object back: hand it the parameters just written
+        tbl.setTTable(newTbl.getTTable());
+      }
 
     } catch (Exception e) {
       console.printError("Failed to collect footer statistics.", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
@@ -418,20 +437,16 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     return ret;
   }
 
-  private int updatePartitions(Hive db, List<StatCollector> scs, Table table) throws InvalidOperationException, HiveException {
+  /**
+   * @return the table whose statistics were written, or null
+   */
+  private Table updatePartitions(Hive db, List<StatCollector> scs, Table table)
+      throws InvalidOperationException, HiveException {
 
     String tableFullName = table.getFullyQualifiedName();
 
     if (scs.isEmpty()) {
-      return 0;
-    }
-    if (work.isStatsReliable()) {
-      for (StatCollector statsCollection : scs) {
-        if (!statsCollection.isValid()) {
-          LOG.debug("Stats requested to be reliable. Empty stats found: {}", statsCollection.partish.getSimpleName());
-          return -1;
-        }
-      }
+      return null;
     }
     List<StatCollector> validColectors = Lists.newArrayList();
     for (StatCollector statsCollection : scs) {
@@ -456,6 +471,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
     LOG.debug("Updating stats for: {}", tableFullName);
 
+    Table newTbl = null;
     for (String partName : collectorsByTable.keySet()) {
       ImmutableList<StatCollector> values = collectorsByTable.get(partName);
 
@@ -463,11 +479,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         throw new RuntimeException("very interesting");
       }
 
-      if (values.get(0).result instanceof Table) {
+      if (values.get(0).result instanceof Table result) {
         // the metastore keeps one set of counts, and they describe the table, not a branch
         if (table.getSnapshotRef() == null) {
-          db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext, true);
+          db.alterTable(tableFullName, result, environmentContext, true);
           LOG.debug("Updated stats for {}.", tableFullName);
+          newTbl = result;
         }
       } else {
         if (values.get(0).result instanceof Partition) {
@@ -480,7 +497,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
     }
     LOG.debug("Updated stats for: {}", tableFullName);
-    return 0;
+    return newTbl;
   }
 
   private void shutdownAndAwaitTermination(ExecutorService threadPool) {

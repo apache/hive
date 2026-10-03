@@ -161,6 +161,24 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void testAnalyzeTableComputeStatisticsForColumnsWithEqualityDeletes() throws IOException {
+    // the vectorized reader cannot apply equality deletes, and the scan of a column analyze vectorizes
+    Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        formatVersion);
+    List<Record> toDelete = TestHelper.RecordsBuilder
+        .newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).add(1L, "Bob", null).build();
+    DeleteFile deleteFile = HiveIcebergTestUtils.createEqualityDeleteFile(table, "dummyPath",
+        ImmutableList.of("customer_id", "first_name"), fileFormat, toDelete);
+    table.newRowDelta().addDeletes(deleteFile).commit();
+
+    shell.executeStatement("ANALYZE TABLE customers COMPUTE STATISTICS FOR COLUMNS");
+
+    List<Object[]> rows = shell.executeStatement("SELECT customer_id FROM customers ORDER BY customer_id");
+    Assert.assertEquals(2, rows.size());
+  }
+
+  @Test
   public void testAnalyzeTableComputeStatisticsEmptyTable() throws IOException, TException, InterruptedException {
     String dbName = "default";
     String tableName = "customers";
