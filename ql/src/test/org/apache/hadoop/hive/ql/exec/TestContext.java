@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
@@ -30,6 +31,8 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class TestContext {
@@ -72,4 +75,24 @@ public class TestContext {
         assertEquals(mrTmpPath, spyContext.getTempDirForInterimJobPath(new Path("file:///user")));
         conf.setBoolean(HiveConf.ConfVars.HIVE_BLOBSTORE_OPTIMIZATIONS_ENABLED.varname, true);
     }
+
+  @Test
+  public void testClearRemovesScratchDirEagerlyWhenHDFSCleanupEnabled() throws IOException {
+    // HIVE-27636: when isHDFSCleanup is true, scratch/staging directories
+    // created via getMRScratchDir are only registered for deleteOnExit,
+    // which means they are not removed until the JVM exits. For
+    // long-running processes (e.g. HiveServer2), calling clear() should
+    // eagerly remove them instead of waiting for JVM exit.
+    context.setHDFSCleanup(true);
+
+    Path scratchDir = context.getMRScratchDir(true);
+    FileSystem fs = scratchDir.getFileSystem(conf);
+
+    assertTrue("Scratch dir should have been created", fs.exists(scratchDir));
+
+    context.clear();
+
+    assertFalse("Scratch dir should be removed eagerly by clear(), " +
+        "without waiting for JVM exit", fs.exists(scratchDir));
+  }
 }
