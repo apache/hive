@@ -342,3 +342,81 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_part_source
 #### A masked pattern was here ####
 305
+PREHOOK: query: create table orc_part2_source(key string, p int) partitioned by spec(p) stored by iceberg stored as orc tblproperties('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_part2_source
+POSTHOOK: query: create table orc_part2_source(key string, p int) partitioned by spec(p) stored by iceberg stored as orc tblproperties('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_part2_source
+PREHOOK: query: insert into table orc_part2_source select key, cast(key as int) % 2 from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part2_source
+POSTHOOK: query: insert into table orc_part2_source select key, cast(key as int) % 2 from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part2_source
+PREHOOK: query: insert into table orc_part2_source select key, cast(key as int) % 2 from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part2_source
+POSTHOOK: query: insert into table orc_part2_source select key, cast(key as int) % 2 from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part2_source
+PREHOOK: query: insert into table orc_part2_source select key, cast(key as int) % 2 from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part2_source
+POSTHOOK: query: insert into table orc_part2_source select key, cast(key as int) % 2 from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part2_source
+PREHOOK: query: insert into table orc_part2_source select key, cast(key as int) % 2 from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part2_source
+POSTHOOK: query: insert into table orc_part2_source select key, cast(key as int) % 2 from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part2_source
+PREHOOK: query: delete from orc_part2_source where key in (select key from src where cast(key as int) < 200)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_part2_source
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orc_part2_source
+POSTHOOK: query: delete from orc_part2_source where key in (select key from src where cast(key as int) < 200)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_part2_source
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orc_part2_source
+PREHOOK: query: select count(*) from orc_part2_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_part2_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orc_part2_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_part2_source
+#### A masked pattern was here ####
+1244
+PREHOOK: query: select count(*) from orc_part2_source where cast(key as int) < 200
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_part2_source
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orc_part2_source where cast(key as int) < 200
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_part2_source
+#### A masked pattern was here ####
+0
+PREHOOK: query: select `partition`.p, count(*) from default.orc_part2_source.delete_files group by `partition`.p order by `partition`.p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_part2_source
+#### A masked pattern was here ####
+POSTHOOK: query: select `partition`.p, count(*) from default.orc_part2_source.delete_files group by `partition`.p order by `partition`.p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_part2_source
+#### A masked pattern was here ####
+0	1
+1	1

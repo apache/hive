@@ -207,7 +207,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.FILE_PATH;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER;
-import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_HASH;
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_KEY;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_NAME;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_SPEC_ID;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.ROW_LINEAGE_ID;
@@ -236,12 +236,15 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public static final String MERGE_ON_READ = RowLevelOperationMode.MERGE_ON_READ.modeName();
 
   private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(
-      PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH, ROW_POSITION);
+      PARTITION_SPEC_ID, PARTITION_KEY, FILE_PATH, ROW_POSITION);
 
   private static final List<FieldSchema> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA = schema(ACID_VIRTUAL_COLS);
 
   private static final List<FieldSchema> POSITION_DELETE_ORDERING =
-      orderBy(PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH, ROW_POSITION);
+      orderBy(PARTITION_SPEC_ID, PARTITION_KEY, FILE_PATH, ROW_POSITION);
+
+  // the spec and partition of a row are functions of its file
+  private static final List<FieldSchema> ROW_IDENTITY = orderBy(FILE_PATH, ROW_POSITION);
 
   private static final List<FieldSchema> EMPTY_ORDERING = ImmutableList.of();
 
@@ -379,11 +382,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
           Operation.valueOf(tableDesc.getProperties().getProperty(
               HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX + tableName)));
     }
-    boolean isMergeTaskEnabled = Boolean.parseBoolean(tableDesc.getProperty(
-        HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED + tableName));
-    if (isMergeTaskEnabled) {
-      HiveCustomStorageHandlerUtils.setMergeTaskEnabled(jobConf, tableName, true);
-    }
     String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
     tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
     jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
@@ -439,7 +437,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
     List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
     Set<String> skipList =
-        Stream.of(FILE_PATH, PARTITION_SPEC_ID, PARTITION_HASH, PARTITION_NAME,
+        Stream.of(FILE_PATH, PARTITION_SPEC_ID, PARTITION_NAME,
                 ROW_LINEAGE_ID, LAST_UPDATED_SEQUENCE_NUMBER)
             .map(VirtualColumn::getName).collect(Collectors.toSet());
 
@@ -1008,12 +1006,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public DynamicPartitionCtx createDPContext(
       HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation)
       throws SemanticException {
-    // delete records are already clustered by partition spec id and the hash of the partition struct
-    // there is no need to do any additional sorting based on partition columns
-    if (writeOperation == Operation.DELETE && !shouldOverwrite(hmsTable, writeOperation)) {
-      return null;
-    }
-
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 
@@ -1615,14 +1607,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
     return switch (operation) {
-      case DELETE ->
-        // TODO: make it configurable whether we want to include the table columns in the select query.
-        // It might make delete writes faster if we don't have to write out the row object
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
-      case UPDATE -> shouldOverwrite(table, operation) ?
-          ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA :
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
-      case MERGE -> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
+      // the full row is for copy-on-write rewrites
+      case DELETE -> ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
+      case UPDATE, MERGE -> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default -> ImmutableList.of();
     };
   }
@@ -1639,7 +1626,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       // a DV writer does not need its deletes ordered
       case DELETE -> IcebergTableUtil.isFanoutEnabled(table.getParameters()) ||
           IcebergTableUtil.formatVersion(table.getParameters()) >= 3 ? EMPTY_ORDERING : POSITION_DELETE_ORDERING;
-      case MERGE -> POSITION_DELETE_ORDERING;
+      // the cardinality check of a MERGE groups the matches of a row
+      case MERGE -> ROW_IDENTITY;
       // For update operations we use the same sort order defined by
       // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}
       default -> EMPTY_ORDERING;

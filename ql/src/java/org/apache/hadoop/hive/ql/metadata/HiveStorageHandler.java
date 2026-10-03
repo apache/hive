@@ -565,7 +565,8 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * Specifies which additional virtual columns should be added to the virtual column registry during compilation
-   * for tables that support ACID operations.
+   * for tables that support ACID operations. The records a merge-on-read DELETE/UPDATE/MERGE statement deletes
+   * carry exactly these columns.
    *
    * Should only return a non-empty list if
    * {@link HiveStorageHandler#supportsAcidOperations()} returns something

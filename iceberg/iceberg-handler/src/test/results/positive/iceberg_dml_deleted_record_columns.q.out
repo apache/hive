@@ -1,0 +1,2602 @@
+PREHOOK: query: create external table ice_src (id int) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_src
+POSTHOOK: query: create external table ice_src (id int) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_src
+PREHOOK: query: insert into ice_src values (2), (3), (5), (9), (11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_src
+POSTHOOK: query: insert into ice_src values (2), (3), (5), (9), (11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_src
+PREHOOK: query: create external table ice_v2 (id int, name string, cat string, ts timestamp, tsltz timestamp with local time zone,
+  s struct<`date`:string, `end`:int, `user`:string, `order`:int>, tags array<string>, amount decimal(10,2))
+partitioned by spec (cat, bucket(4, id), day(ts), day(tsltz))
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_v2
+POSTHOOK: query: create external table ice_v2 (id int, name string, cat string, ts timestamp, tsltz timestamp with local time zone,
+  s struct<`date`:string, `end`:int, `user`:string, `order`:int>, tags array<string>, amount decimal(10,2))
+partitioned by spec (cat, bucket(4, id), day(ts), day(tsltz))
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_v2
+PREHOOK: query: create external table ice_v3 (id int, name string, cat string, ts timestamp, tsltz timestamp with local time zone,
+  s struct<`date`:string, `end`:int, `user`:string, `order`:int>, tags array<string>, amount decimal(10,2))
+partitioned by spec (cat, bucket(4, id), day(ts), day(tsltz))
+stored by iceberg tblproperties ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_v3
+POSTHOOK: query: create external table ice_v3 (id int, name string, cat string, ts timestamp, tsltz timestamp with local time zone,
+  s struct<`date`:string, `end`:int, `user`:string, `order`:int>, tags array<string>, amount decimal(10,2))
+partitioned by spec (cat, bucket(4, id), day(ts), day(tsltz))
+stored by iceberg tblproperties ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_v3
+PREHOOK: query: insert into ice_v2 select id, concat('n', id), if(id % 2 = 0, 'even', 'odd'),
+  cast(concat('2026-01-0', id) as timestamp), cast(concat('2026-02-0', id, ' 10:00:00') as timestamp with local time zone),
+  named_struct('date', concat('d', id), 'end', id * 10, 'user', concat('u', id), 'order', id * 100),
+  array(concat('t', id), 'x'), id * 1.5
+from (select explode(array(1, 2, 3, 4, 5, 6, 7, 8, 9)) as id) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_v2
+POSTHOOK: query: insert into ice_v2 select id, concat('n', id), if(id % 2 = 0, 'even', 'odd'),
+  cast(concat('2026-01-0', id) as timestamp), cast(concat('2026-02-0', id, ' 10:00:00') as timestamp with local time zone),
+  named_struct('date', concat('d', id), 'end', id * 10, 'user', concat('u', id), 'order', id * 100),
+  array(concat('t', id), 'x'), id * 1.5
+from (select explode(array(1, 2, 3, 4, 5, 6, 7, 8, 9)) as id) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_v2
+PREHOOK: query: insert into ice_v3 select * from ice_v2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: default@ice_v3
+POSTHOOK: query: insert into ice_v3 select * from ice_v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: default@ice_v3
+PREHOOK: query: explain delete from ice_v2 where id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: default@ice_v2
+POSTHOOK: query: explain delete from ice_v2 where id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_v2
+                  filterExpr: (id = 1) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (id = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.ice_v2
+            Execution mode: vectorized
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_v2
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: delete from ice_v2 where id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: default@ice_v2
+POSTHOOK: query: delete from ice_v2 where id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+PREHOOK: query: delete from ice_v3 where id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3
+PREHOOK: Output: default@ice_v3
+POSTHOOK: query: delete from ice_v3 where id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3
+POSTHOOK: Output: default@ice_v3
+PREHOOK: query: explain update ice_v2 set name = 'upd', s = named_struct('date', 'D', 'end', 0, 'user', 'U', 'order', 0) where id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: default@ice_v2
+PREHOOK: Output: default@ice_v2
+POSTHOOK: query: explain update ice_v2 set name = 'upd', s = named_struct('date', 'D', 'end', 0, 'user', 'U', 'order', 0) where id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_v2
+                  filterExpr: (id = 4) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 2300 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (id = 4) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 2348 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint), tags (type: array<string>), amount (type: decimal(10,2)), cat (type: string), ts (type: timestamp), tsltz (type: timestamp with local time zone)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col6, _col7, _col8, _col10, _col11
+                      Statistics: Num rows: 1 Data size: 2540 Basic stats: COMPLETE Column stats: PARTIAL
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: binary), _col2 (type: string), _col3 (type: bigint)
+                        outputColumnNames: _col0, _col1, _col2, _col3
+                        Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: PARTIAL
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: PARTIAL
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_v2
+                      Select Operator
+                        expressions: 4 (type: int), 'upd' (type: string), _col8 (type: string), _col10 (type: timestamp), _col11 (type: timestamp with local time zone), const struct('D',0,'U',0) (type: struct<date:string,end:int,user:string,order:int>), _col6 (type: array<string>), _col7 (type: decimal(10,2))
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                        Statistics: Num rows: 1 Data size: 2629 Basic stats: COMPLETE Column stats: PARTIAL
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 2629 Basic stats: COMPLETE Column stats: PARTIAL
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_v2
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_v2
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: update ice_v2 set name = 'upd', s = named_struct('date', 'D', 'end', 0, 'user', 'U', 'order', 0) where id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: default@ice_v2
+PREHOOK: Output: default@ice_v2
+POSTHOOK: query: update ice_v2 set name = 'upd', s = named_struct('date', 'D', 'end', 0, 'user', 'U', 'order', 0) where id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+PREHOOK: query: update ice_v3 set name = 'upd', s = named_struct('date', 'D', 'end', 0, 'user', 'U', 'order', 0) where id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3
+PREHOOK: Output: default@ice_v3
+PREHOOK: Output: default@ice_v3
+POSTHOOK: query: update ice_v3 set name = 'upd', s = named_struct('date', 'D', 'end', 0, 'user', 'U', 'order', 0) where id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3
+POSTHOOK: Output: default@ice_v3
+POSTHOOK: Output: default@ice_v3
+PREHOOK: query: explain merge into ice_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg', tsltz = cast('2026-03-01 10:00:00' as timestamp with local time zone)
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'N', 'end', 1, 'user', 'N', 'order', 1), array('n'), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_src
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: default@ice_v2
+PREHOOK: Output: default@ice_v2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: explain merge into ice_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg', tsltz = cast('2026-03-01 10:00:00' as timestamp with local time zone)
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'N', 'end', 1, 'user', 'N', 'order', 1), array('n'), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+POSTHOOK: Output: default@merge_tmp_table
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-6 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-6
+  Stage-7 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-6
+  Stage-8 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-5
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_v2
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 24300 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 9 Data size: 24732 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint), id (type: int), cat (type: string), ts (type: timestamp), s (type: struct<date:string,end:int,user:string,order:int>), tags (type: array<string>), amount (type: decimal(10,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 9 Data size: 26496 Basic stats: COMPLETE Column stats: PARTIAL
+                      Reduce Output Operator
+                        key expressions: _col4 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col4 (type: int)
+                        Statistics: Num rows: 9 Data size: 26496 Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col0 (type: int), _col1 (type: binary), _col2 (type: string), _col3 (type: bigint), _col5 (type: string), _col6 (type: timestamp), _col7 (type: struct<date:string,end:int,user:string,order:int>), _col8 (type: array<string>), _col9 (type: decimal(10,2))
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: id (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join 0 to 1
+                keys:
+                  0 _col4 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 14 Data size: 29496 Basic stats: COMPLETE Column stats: PARTIAL
+                Select Operator
+                  expressions: _col4 (type: int), _col2 (type: string), _col5 (type: string), _col3 (type: bigint), _col9 (type: decimal(10,2)), _col8 (type: array<string>), _col7 (type: struct<date:string,end:int,user:string,order:int>), _col0 (type: int), _col10 (type: int), _col6 (type: timestamp), _col1 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                  Statistics: Num rows: 14 Data size: 29496 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: ((_col0 = _col8) and (_col0 = 2)) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 14748 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: _col7 (type: int), _col10 (type: binary), _col1 (type: string), _col3 (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 7 Data size: 1220 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 7 Data size: 1220 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.ice_v2
+                  Filter Operator
+                    predicate: ((_col0 = _col8) and (_col0 <> 2)) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 14748 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: _col7 (type: int), _col10 (type: binary), _col1 (type: string), _col3 (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 7 Data size: 1220 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 7 Data size: 1220 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.ice_v2
+                  Filter Operator
+                    predicate: ((_col0 = _col8) and (_col0 = 2)) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 14748 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: 2 (type: int), 'mrg' (type: string), _col2 (type: string), _col9 (type: timestamp), TIMESTAMPLOCALTZ'2026-03-01 10:00:00.0 US/Pacific' (type: timestamp with local time zone), _col6 (type: struct<date:string,end:int,user:string,order:int>), _col5 (type: array<string>), _col4 (type: decimal(10,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                      Statistics: Num rows: 7 Data size: 14397 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 7 Data size: 14397 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.ice_v2
+                  Filter Operator
+                    predicate: _col0 is null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 11796 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: _col8 (type: int), 'new' (type: string), 'odd' (type: string), TIMESTAMP'2026-01-01 00:00:00' (type: timestamp), TIMESTAMPLOCALTZ'2026-03-02 10:00:00.0 US/Pacific' (type: timestamp with local time zone), named_struct('date','N','end',1,'user','N','order',1) (type: struct<date:string,end:int,user:string,order:int>), array('n') (type: array<string>), 0 (type: decimal(10,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                      Statistics: Num rows: 5 Data size: 4180 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 5 Data size: 4180 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.ice_v2
+                  Filter Operator
+                    predicate: (_col0 = _col8) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 14748 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: _col1 (type: string), _col3 (type: bigint)
+                      outputColumnNames: _col1, _col3
+                      Statistics: Num rows: 7 Data size: 14748 Basic stats: COMPLETE Column stats: PARTIAL
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col1 (type: string), _col3 (type: bigint)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 7 Data size: 1016 Basic stats: COMPLETE Column stats: PARTIAL
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: bigint)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                          Statistics: Num rows: 7 Data size: 1016 Basic stats: COMPLETE Column stats: PARTIAL
+                          value expressions: _col2 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 7 Data size: 1016 Basic stats: COMPLETE Column stats: PARTIAL
+                Filter Operator
+                  predicate: (_col2 > 1L) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 400 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: cardinality_violation(_col0,_col1) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.merge_tmp_table
+
+  Stage: Stage-6
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_v2
+
+  Stage: Stage-7
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-4
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.merge_tmp_table
+
+  Stage: Stage-8
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: merge into ice_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg', tsltz = cast('2026-03-01 10:00:00' as timestamp with local time zone)
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'N', 'end', 1, 'user', 'N', 'order', 1), array('n'), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_src
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: default@ice_v2
+PREHOOK: Output: default@ice_v2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg', tsltz = cast('2026-03-01 10:00:00' as timestamp with local time zone)
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'N', 'end', 1, 'user', 'N', 'order', 1), array('n'), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+POSTHOOK: Output: default@ice_v2
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_v2)ice_v2.null, ]
+PREHOOK: query: merge into ice_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg', tsltz = cast('2026-03-01 10:00:00' as timestamp with local time zone)
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'N', 'end', 1, 'user', 'N', 'order', 1), array('n'), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_src
+PREHOOK: Input: default@ice_v3
+PREHOOK: Output: default@ice_v3
+PREHOOK: Output: default@ice_v3
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg', tsltz = cast('2026-03-01 10:00:00' as timestamp with local time zone)
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'N', 'end', 1, 'user', 'N', 'order', 1), array('n'), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Input: default@ice_v3
+POSTHOOK: Output: default@ice_v3
+POSTHOOK: Output: default@ice_v3
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_v3)ice_v3.null, ]
+PREHOOK: query: select * from ice_v2 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_v2 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	mrg	even	2026-01-02 00:00:00	2026-03-01 10:00:00.0 US/Pacific	{"date":"d2","end":20,"user":"u2","order":200}	["t2","x"]	3.00
+4	upd	even	2026-01-04 00:00:00	2026-02-04 10:00:00.0 US/Pacific	{"date":"D","end":0,"user":"U","order":0}	["t4","x"]	6.00
+6	n6	even	2026-01-06 00:00:00	2026-02-06 10:00:00.0 US/Pacific	{"date":"d6","end":60,"user":"u6","order":600}	["t6","x"]	9.00
+7	n7	odd	2026-01-07 00:00:00	2026-02-07 10:00:00.0 US/Pacific	{"date":"d7","end":70,"user":"u7","order":700}	["t7","x"]	10.50
+8	n8	even	2026-01-08 00:00:00	2026-02-08 10:00:00.0 US/Pacific	{"date":"d8","end":80,"user":"u8","order":800}	["t8","x"]	12.00
+11	new	odd	2026-01-01 00:00:00	2026-03-02 10:00:00.0 US/Pacific	{"date":"N","end":1,"user":"N","order":1}	["n"]	0.00
+PREHOOK: query: select * from ice_v3 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_v3 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	mrg	even	2026-01-02 00:00:00	2026-03-01 10:00:00.0 US/Pacific	{"date":"d2","end":20,"user":"u2","order":200}	["t2","x"]	3.00
+4	upd	even	2026-01-04 00:00:00	2026-02-04 10:00:00.0 US/Pacific	{"date":"D","end":0,"user":"U","order":0}	["t4","x"]	6.00
+6	n6	even	2026-01-06 00:00:00	2026-02-06 10:00:00.0 US/Pacific	{"date":"d6","end":60,"user":"u6","order":600}	["t6","x"]	9.00
+7	n7	odd	2026-01-07 00:00:00	2026-02-07 10:00:00.0 US/Pacific	{"date":"d7","end":70,"user":"u7","order":700}	["t7","x"]	10.50
+8	n8	even	2026-01-08 00:00:00	2026-02-08 10:00:00.0 US/Pacific	{"date":"d8","end":80,"user":"u8","order":800}	["t8","x"]	12.00
+11	new	odd	2026-01-01 00:00:00	2026-03-02 10:00:00.0 US/Pacific	{"date":"N","end":1,"user":"N","order":1}	["n"]	0.00
+PREHOOK: query: select id, name from ice_v2 where cat = 'even' and ts >= cast('2026-01-04' as timestamp) order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_v2 where cat = 'even' and ts >= cast('2026-01-04' as timestamp) order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	upd
+6	n6
+8	n8
+PREHOOK: query: select id, name from ice_v3 where cat = 'even' and ts >= cast('2026-01-04' as timestamp) order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_v3 where cat = 'even' and ts >= cast('2026-01-04' as timestamp) order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	upd
+6	n6
+8	n8
+PREHOOK: query: select id, name from ice_v2 where tsltz >= cast('2026-02-05 00:00:00' as timestamp with local time zone) order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_v2 where tsltz >= cast('2026-02-05 00:00:00' as timestamp with local time zone) order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	mrg
+6	n6
+7	n7
+8	n8
+11	new
+PREHOOK: query: select id, name from ice_v3 where tsltz >= cast('2026-02-05 00:00:00' as timestamp with local time zone) order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_v3 where tsltz >= cast('2026-02-05 00:00:00' as timestamp with local time zone) order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	mrg
+6	n6
+7	n7
+8	n8
+11	new
+PREHOOK: query: select d.spec_id, d.`partition`, f.`partition` from default.ice_v3.delete_files d
+join default.ice_v3.data_files f on d.referenced_data_file = f.file_path
+order by d.spec_id, f.`partition`.cat, f.`partition`.id_bucket, f.`partition`.ts_day
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select d.spec_id, d.`partition`, f.`partition` from default.ice_v3.delete_files d
+join default.ice_v3.data_files f on d.referenced_data_file = f.file_path
+order by d.spec_id, f.`partition`.cat, f.`partition`.id_bucket, f.`partition`.ts_day
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	{"cat":"even","id_bucket":0,"ts_day":"2026-01-02","tsltz_day":"2026-02-02"}	{"cat":"even","id_bucket":0,"ts_day":"2026-01-02","tsltz_day":"2026-02-02"}
+0	{"cat":"even","id_bucket":2,"ts_day":"2026-01-04","tsltz_day":"2026-02-04"}	{"cat":"even","id_bucket":2,"ts_day":"2026-01-04","tsltz_day":"2026-02-04"}
+0	{"cat":"odd","id_bucket":0,"ts_day":"2026-01-01","tsltz_day":"2026-02-01"}	{"cat":"odd","id_bucket":0,"ts_day":"2026-01-01","tsltz_day":"2026-02-01"}
+0	{"cat":"odd","id_bucket":3,"ts_day":"2026-01-03","tsltz_day":"2026-02-03"}	{"cat":"odd","id_bucket":3,"ts_day":"2026-01-03","tsltz_day":"2026-02-03"}
+0	{"cat":"odd","id_bucket":3,"ts_day":"2026-01-05","tsltz_day":"2026-02-05"}	{"cat":"odd","id_bucket":3,"ts_day":"2026-01-05","tsltz_day":"2026-02-05"}
+0	{"cat":"odd","id_bucket":3,"ts_day":"2026-01-09","tsltz_day":"2026-02-09"}	{"cat":"odd","id_bucket":3,"ts_day":"2026-01-09","tsltz_day":"2026-02-09"}
+PREHOOK: query: select count(*) from default.ice_v3.delete_files d
+join default.ice_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from default.ice_v3.delete_files d
+join default.ice_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: create external table ice_xf_v2 (id int, name string, ts timestamp, d date, amount decimal(10,2))
+partitioned by spec (hour(ts), month(d), truncate(2, name), truncate(10, amount))
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_xf_v2
+POSTHOOK: query: create external table ice_xf_v2 (id int, name string, ts timestamp, d date, amount decimal(10,2))
+partitioned by spec (hour(ts), month(d), truncate(2, name), truncate(10, amount))
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_xf_v2
+PREHOOK: query: create external table ice_xf_v3 (id int, name string, ts timestamp, d date, amount decimal(10,2))
+partitioned by spec (hour(ts), month(d), truncate(2, name), truncate(10, amount))
+stored by iceberg tblproperties ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_xf_v3
+POSTHOOK: query: create external table ice_xf_v3 (id int, name string, ts timestamp, d date, amount decimal(10,2))
+partitioned by spec (hour(ts), month(d), truncate(2, name), truncate(10, amount))
+stored by iceberg tblproperties ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_xf_v3
+PREHOOK: query: insert into ice_xf_v2 select id, concat('n', id % 3, id), cast(concat('2026-01-01 0', id, ':30:00') as timestamp),
+  cast(concat('2026-0', id, '-15') as date), id * 7.25
+from (select explode(array(1, 2, 3, 4, 5, 6, 7, 8, 9)) as id) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_xf_v2
+POSTHOOK: query: insert into ice_xf_v2 select id, concat('n', id % 3, id), cast(concat('2026-01-01 0', id, ':30:00') as timestamp),
+  cast(concat('2026-0', id, '-15') as date), id * 7.25
+from (select explode(array(1, 2, 3, 4, 5, 6, 7, 8, 9)) as id) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_xf_v2
+PREHOOK: query: insert into ice_xf_v3 select * from ice_xf_v2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v2
+PREHOOK: Output: default@ice_xf_v3
+POSTHOOK: query: insert into ice_xf_v3 select * from ice_xf_v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v2
+POSTHOOK: Output: default@ice_xf_v3
+PREHOOK: query: delete from ice_xf_v2 where id in (1, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v2
+PREHOOK: Output: default@ice_xf_v2
+POSTHOOK: query: delete from ice_xf_v2 where id in (1, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v2
+POSTHOOK: Output: default@ice_xf_v2
+PREHOOK: query: delete from ice_xf_v3 where id in (1, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v3
+PREHOOK: Output: default@ice_xf_v3
+POSTHOOK: query: delete from ice_xf_v3 where id in (1, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v3
+POSTHOOK: Output: default@ice_xf_v3
+PREHOOK: query: update ice_xf_v2 set name = 'upd' where id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v2
+PREHOOK: Output: default@ice_xf_v2
+PREHOOK: Output: default@ice_xf_v2
+POSTHOOK: query: update ice_xf_v2 set name = 'upd' where id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v2
+POSTHOOK: Output: default@ice_xf_v2
+POSTHOOK: Output: default@ice_xf_v2
+PREHOOK: query: update ice_xf_v3 set name = 'upd' where id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v3
+PREHOOK: Output: default@ice_xf_v3
+PREHOOK: Output: default@ice_xf_v3
+POSTHOOK: query: update ice_xf_v3 set name = 'upd' where id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v3
+POSTHOOK: Output: default@ice_xf_v3
+POSTHOOK: Output: default@ice_xf_v3
+PREHOOK: query: merge into ice_xf_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set amount = 0
+when matched then delete
+when not matched then insert values (s.id, 'new', cast('2026-01-01 23:00:00' as timestamp), cast('2026-12-31' as date), 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_src
+PREHOOK: Input: default@ice_xf_v2
+PREHOOK: Output: default@ice_xf_v2
+PREHOOK: Output: default@ice_xf_v2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_xf_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set amount = 0
+when matched then delete
+when not matched then insert values (s.id, 'new', cast('2026-01-01 23:00:00' as timestamp), cast('2026-12-31' as date), 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Input: default@ice_xf_v2
+POSTHOOK: Output: default@ice_xf_v2
+POSTHOOK: Output: default@ice_xf_v2
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_xf_v2)ice_xf_v2.null, ]
+PREHOOK: query: merge into ice_xf_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set amount = 0
+when matched then delete
+when not matched then insert values (s.id, 'new', cast('2026-01-01 23:00:00' as timestamp), cast('2026-12-31' as date), 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_src
+PREHOOK: Input: default@ice_xf_v3
+PREHOOK: Output: default@ice_xf_v3
+PREHOOK: Output: default@ice_xf_v3
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_xf_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set amount = 0
+when matched then delete
+when not matched then insert values (s.id, 'new', cast('2026-01-01 23:00:00' as timestamp), cast('2026-12-31' as date), 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Input: default@ice_xf_v3
+POSTHOOK: Output: default@ice_xf_v3
+POSTHOOK: Output: default@ice_xf_v3
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_xf_v3)ice_xf_v3.null, ]
+PREHOOK: query: select * from ice_xf_v2 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_xf_v2 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	n22	2026-01-01 02:30:00	2026-02-15	0.00
+4	upd	2026-01-01 04:30:00	2026-04-15	29.00
+6	n06	2026-01-01 06:30:00	2026-06-15	43.50
+7	n17	2026-01-01 07:30:00	2026-07-15	50.75
+8	n28	2026-01-01 08:30:00	2026-08-15	58.00
+9	new	2026-01-01 23:00:00	2026-12-31	1.00
+11	new	2026-01-01 23:00:00	2026-12-31	1.00
+PREHOOK: query: select * from ice_xf_v3 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_xf_v3 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	n22	2026-01-01 02:30:00	2026-02-15	0.00
+4	upd	2026-01-01 04:30:00	2026-04-15	29.00
+6	n06	2026-01-01 06:30:00	2026-06-15	43.50
+7	n17	2026-01-01 07:30:00	2026-07-15	50.75
+8	n28	2026-01-01 08:30:00	2026-08-15	58.00
+9	new	2026-01-01 23:00:00	2026-12-31	1.00
+11	new	2026-01-01 23:00:00	2026-12-31	1.00
+PREHOOK: query: select id, name from ice_xf_v2 where d >= cast('2026-04-01' as date) and name like 'n%' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_xf_v2 where d >= cast('2026-04-01' as date) and name like 'n%' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6	n06
+7	n17
+8	n28
+9	new
+11	new
+PREHOOK: query: select id, name from ice_xf_v3 where d >= cast('2026-04-01' as date) and name like 'n%' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_xf_v3 where d >= cast('2026-04-01' as date) and name like 'n%' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6	n06
+7	n17
+8	n28
+9	new
+11	new
+PREHOOK: query: select count(*) from default.ice_xf_v3.delete_files d
+join default.ice_xf_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_xf_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from default.ice_xf_v3.delete_files d
+join default.ice_xf_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_xf_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: create external table ice_evo_v2 (id int, name string, region string, amount int)
+partitioned by spec (region) stored by iceberg stored as avro tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_evo_v2
+POSTHOOK: query: create external table ice_evo_v2 (id int, name string, region string, amount int)
+partitioned by spec (region) stored by iceberg stored as avro tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_evo_v2
+PREHOOK: query: create external table ice_evo_v3 (id int, name string, region string, amount int)
+partitioned by spec (region) stored by iceberg stored as orc tblproperties ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_evo_v3
+POSTHOOK: query: create external table ice_evo_v3 (id int, name string, region string, amount int)
+partitioned by spec (region) stored by iceberg stored as orc tblproperties ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_evo_v3
+PREHOOK: query: insert into ice_evo_v2 values (1, 'a', 'eu', 10), (2, 'b', 'us', 20), (3, 'c', 'eu', 30), (4, 'd', 'us', 40)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_evo_v2
+POSTHOOK: query: insert into ice_evo_v2 values (1, 'a', 'eu', 10), (2, 'b', 'us', 20), (3, 'c', 'eu', 30), (4, 'd', 'us', 40)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_evo_v2
+PREHOOK: query: insert into ice_evo_v3 values (1, 'a', 'eu', 10), (2, 'b', 'us', 20), (3, 'c', 'eu', 30), (4, 'd', 'us', 40)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_evo_v3
+POSTHOOK: query: insert into ice_evo_v3 values (1, 'a', 'eu', 10), (2, 'b', 'us', 20), (3, 'c', 'eu', 30), (4, 'd', 'us', 40)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_evo_v3
+PREHOOK: query: alter table ice_evo_v2 set partition spec (bucket(2, id))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_evo_v2
+POSTHOOK: query: alter table ice_evo_v2 set partition spec (bucket(2, id))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_evo_v2
+POSTHOOK: Output: default@ice_evo_v2
+PREHOOK: query: alter table ice_evo_v3 set partition spec (bucket(2, id))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_evo_v3
+POSTHOOK: query: alter table ice_evo_v3 set partition spec (bucket(2, id))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_evo_v3
+POSTHOOK: Output: default@ice_evo_v3
+PREHOOK: query: insert into ice_evo_v2 values (5, 'e', 'eu', 50), (6, 'f', 'us', 60)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_evo_v2
+POSTHOOK: query: insert into ice_evo_v2 values (5, 'e', 'eu', 50), (6, 'f', 'us', 60)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_evo_v2
+PREHOOK: query: insert into ice_evo_v3 values (5, 'e', 'eu', 50), (6, 'f', 'us', 60)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_evo_v3
+POSTHOOK: query: insert into ice_evo_v3 values (5, 'e', 'eu', 50), (6, 'f', 'us', 60)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_evo_v3
+PREHOOK: query: delete from ice_evo_v2 where id in (1, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v2
+PREHOOK: Output: default@ice_evo_v2
+POSTHOOK: query: delete from ice_evo_v2 where id in (1, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v2
+POSTHOOK: Output: default@ice_evo_v2
+PREHOOK: query: delete from ice_evo_v3 where id in (1, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v3
+PREHOOK: Output: default@ice_evo_v3
+POSTHOOK: query: delete from ice_evo_v3 where id in (1, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v3
+POSTHOOK: Output: default@ice_evo_v3
+PREHOOK: query: update ice_evo_v2 set amount = -1 where id in (2, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v2
+PREHOOK: Output: default@ice_evo_v2
+PREHOOK: Output: default@ice_evo_v2
+POSTHOOK: query: update ice_evo_v2 set amount = -1 where id in (2, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v2
+POSTHOOK: Output: default@ice_evo_v2
+POSTHOOK: Output: default@ice_evo_v2
+PREHOOK: query: update ice_evo_v3 set amount = -1 where id in (2, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v3
+PREHOOK: Output: default@ice_evo_v3
+PREHOOK: Output: default@ice_evo_v3
+POSTHOOK: query: update ice_evo_v3 set amount = -1 where id in (2, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v3
+POSTHOOK: Output: default@ice_evo_v3
+POSTHOOK: Output: default@ice_evo_v3
+PREHOOK: query: merge into ice_evo_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'eu', 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v2
+PREHOOK: Input: default@ice_src
+PREHOOK: Output: default@ice_evo_v2
+PREHOOK: Output: default@ice_evo_v2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_evo_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'eu', 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v2
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Output: default@ice_evo_v2
+POSTHOOK: Output: default@ice_evo_v2
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_evo_v2)ice_evo_v2.null, ]
+PREHOOK: query: merge into ice_evo_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'eu', 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v3
+PREHOOK: Input: default@ice_src
+PREHOOK: Output: default@ice_evo_v3
+PREHOOK: Output: default@ice_evo_v3
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_evo_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'eu', 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v3
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Output: default@ice_evo_v3
+POSTHOOK: Output: default@ice_evo_v3
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_evo_v3)ice_evo_v3.null, ]
+PREHOOK: query: select * from ice_evo_v2 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_evo_v2 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	mrg	us	-1
+4	d	us	40
+5	new	eu	0
+6	f	us	-1
+9	new	eu	0
+11	new	eu	0
+PREHOOK: query: select * from ice_evo_v3 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_evo_v3 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	mrg	us	-1
+4	d	us	40
+5	new	eu	0
+6	f	us	-1
+9	new	eu	0
+11	new	eu	0
+PREHOOK: query: select id, name, amount from ice_evo_v2 where region = 'us' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name, amount from ice_evo_v2 where region = 'us' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	mrg	-1
+4	d	40
+6	f	-1
+PREHOOK: query: select id, name, amount from ice_evo_v3 where region = 'us' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_evo_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name, amount from ice_evo_v3 where region = 'us' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_evo_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	mrg	-1
+4	d	40
+6	f	-1
+PREHOOK: query: create external table ice_multi_v2 (id int, name string, region string, ts timestamp, dt date)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_multi_v2
+POSTHOOK: query: create external table ice_multi_v2 (id int, name string, region string, ts timestamp, dt date)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: create external table ice_multi_v3 (id int, name string, region string, ts timestamp, dt date)
+stored by iceberg tblproperties ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_multi_v3
+POSTHOOK: query: create external table ice_multi_v3 (id int, name string, region string, ts timestamp, dt date)
+stored by iceberg tblproperties ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: insert into ice_multi_v2 values (1, 'alpha', 'eu', '2024-01-01 10:00:00', '2024-01-01'),
+  (2, 'beta', 'us', '2025-02-02 11:00:00', '2025-02-02')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_multi_v2
+POSTHOOK: query: insert into ice_multi_v2 values (1, 'alpha', 'eu', '2024-01-01 10:00:00', '2024-01-01'),
+  (2, 'beta', 'us', '2025-02-02 11:00:00', '2025-02-02')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: insert into ice_multi_v3 select * from ice_multi_v2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Output: default@ice_multi_v3
+POSTHOOK: query: insert into ice_multi_v3 select * from ice_multi_v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: alter table ice_multi_v2 set partition spec (region, day(ts), bucket(16, id), truncate(3, name))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_multi_v2
+POSTHOOK: query: alter table ice_multi_v2 set partition spec (region, day(ts), bucket(16, id), truncate(3, name))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: alter table ice_multi_v3 set partition spec (region, day(ts), bucket(16, id), truncate(3, name))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_multi_v3
+POSTHOOK: query: alter table ice_multi_v3 set partition spec (region, day(ts), bucket(16, id), truncate(3, name))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: insert into ice_multi_v2 values (3, 'gamma', 'eu', '2024-03-03 12:00:00', '2024-03-03'),
+  (4, 'delta', null, '2024-04-04 13:00:00', '2024-04-04'), (5, 'epsilon', 'us', null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_multi_v2
+POSTHOOK: query: insert into ice_multi_v2 values (3, 'gamma', 'eu', '2024-03-03 12:00:00', '2024-03-03'),
+  (4, 'delta', null, '2024-04-04 13:00:00', '2024-04-04'), (5, 'epsilon', 'us', null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: insert into ice_multi_v3 select * from ice_multi_v2 where id between 3 and 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Output: default@ice_multi_v3
+POSTHOOK: query: insert into ice_multi_v3 select * from ice_multi_v2 where id between 3 and 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: alter table ice_multi_v2 set partition spec (bucket(8, id), truncate(100, id), year(dt), bucket(4, dt))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_multi_v2
+POSTHOOK: query: alter table ice_multi_v2 set partition spec (bucket(8, id), truncate(100, id), year(dt), bucket(4, dt))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: alter table ice_multi_v3 set partition spec (bucket(8, id), truncate(100, id), year(dt), bucket(4, dt))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_multi_v3
+POSTHOOK: query: alter table ice_multi_v3 set partition spec (bucket(8, id), truncate(100, id), year(dt), bucket(4, dt))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: insert into ice_multi_v2 values (6, 'zeta', 'eu', '2023-06-06 14:00:00', '2023-06-06'),
+  (7, 'eta', 'us', '2022-07-07 15:00:00', '2022-07-07'), (8, 'theta', null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_multi_v2
+POSTHOOK: query: insert into ice_multi_v2 values (6, 'zeta', 'eu', '2023-06-06 14:00:00', '2023-06-06'),
+  (7, 'eta', 'us', '2022-07-07 15:00:00', '2022-07-07'), (8, 'theta', null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: insert into ice_multi_v3 select * from ice_multi_v2 where id between 6 and 8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Output: default@ice_multi_v3
+POSTHOOK: query: insert into ice_multi_v3 select * from ice_multi_v2 where id between 6 and 8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: alter table ice_multi_v2 set partition spec (region, month(ts))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_multi_v2
+POSTHOOK: query: alter table ice_multi_v2 set partition spec (region, month(ts))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: alter table ice_multi_v3 set partition spec (region, month(ts))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_multi_v3
+POSTHOOK: query: alter table ice_multi_v3 set partition spec (region, month(ts))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: insert into ice_multi_v2 values (9, 'iota', 'eu', '2021-09-09 16:00:00', '2021-09-09'),
+  (10, 'kappa', 'us', '2021-10-10 17:00:00', '2021-10-10')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_multi_v2
+POSTHOOK: query: insert into ice_multi_v2 values (9, 'iota', 'eu', '2021-09-09 16:00:00', '2021-09-09'),
+  (10, 'kappa', 'us', '2021-10-10 17:00:00', '2021-10-10')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: insert into ice_multi_v3 select * from ice_multi_v2 where id between 9 and 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Output: default@ice_multi_v3
+POSTHOOK: query: insert into ice_multi_v3 select * from ice_multi_v2 where id between 9 and 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: select spec_id, count(*) from default.ice_multi_v2.data_files group by spec_id order by spec_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select spec_id, count(*) from default.ice_multi_v2.data_files group by spec_id order by spec_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	1
+1	3
+2	3
+3	2
+PREHOOK: query: select spec_id, count(*) from default.ice_multi_v3.data_files group by spec_id order by spec_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select spec_id, count(*) from default.ice_multi_v3.data_files group by spec_id order by spec_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	1
+1	3
+2	3
+3	2
+PREHOOK: query: delete from ice_multi_v2 where id % 2 = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Output: default@ice_multi_v2
+POSTHOOK: query: delete from ice_multi_v2 where id % 2 = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: delete from ice_multi_v3 where id % 2 = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v3
+PREHOOK: Output: default@ice_multi_v3
+POSTHOOK: query: delete from ice_multi_v3 where id % 2 = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: update ice_multi_v2 set name = 'upd' where id in (1, 3, 7, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Output: default@ice_multi_v2
+PREHOOK: Output: default@ice_multi_v2
+POSTHOOK: query: update ice_multi_v2 set name = 'upd' where id in (1, 3, 7, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v2
+PREHOOK: query: update ice_multi_v3 set name = 'upd' where id in (1, 3, 7, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v3
+PREHOOK: Output: default@ice_multi_v3
+PREHOOK: Output: default@ice_multi_v3
+POSTHOOK: query: update ice_multi_v3 set name = 'upd' where id in (1, 3, 7, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: default@ice_multi_v3
+POSTHOOK: Output: default@ice_multi_v3
+PREHOOK: query: merge into ice_multi_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set region = 'ap'
+when matched then delete
+when not matched then insert values (s.id, 'new', null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Input: default@ice_src
+PREHOOK: Output: default@ice_multi_v2
+PREHOOK: Output: default@ice_multi_v2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_multi_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set region = 'ap'
+when matched then delete
+when not matched then insert values (s.id, 'new', null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Output: default@ice_multi_v2
+POSTHOOK: Output: default@ice_multi_v2
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_multi_v2)ice_multi_v2.null, ]
+PREHOOK: query: merge into ice_multi_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set region = 'ap'
+when matched then delete
+when not matched then insert values (s.id, 'new', null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v3
+PREHOOK: Input: default@ice_src
+PREHOOK: Output: default@ice_multi_v3
+PREHOOK: Output: default@ice_multi_v3
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_multi_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set region = 'ap'
+when matched then delete
+when not matched then insert values (s.id, 'new', null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Output: default@ice_multi_v3
+POSTHOOK: Output: default@ice_multi_v3
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_multi_v3)ice_multi_v3.null, ]
+PREHOOK: query: select * from ice_multi_v2 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_multi_v2 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	upd	eu	2024-01-01 10:00:00	2024-01-01
+2	new	NULL	NULL	NULL
+3	upd	ap	2024-03-03 12:00:00	2024-03-03
+7	upd	us	2022-07-07 15:00:00	2022-07-07
+11	new	NULL	NULL	NULL
+PREHOOK: query: select * from ice_multi_v3 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_multi_v3 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	upd	eu	2024-01-01 10:00:00	2024-01-01
+2	new	NULL	NULL	NULL
+3	upd	ap	2024-03-03 12:00:00	2024-03-03
+7	upd	us	2022-07-07 15:00:00	2022-07-07
+11	new	NULL	NULL	NULL
+PREHOOK: query: select id, name from ice_multi_v2 where region = 'eu' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_multi_v2 where region = 'eu' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	upd
+PREHOOK: query: select id, name from ice_multi_v3 where region = 'eu' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_multi_v3 where region = 'eu' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	upd
+PREHOOK: query: select d.spec_id, count(*) from default.ice_multi_v3.delete_files d
+join default.ice_multi_v3.data_files f on d.referenced_data_file = f.file_path group by d.spec_id order by d.spec_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select d.spec_id, count(*) from default.ice_multi_v3.delete_files d
+join default.ice_multi_v3.data_files f on d.referenced_data_file = f.file_path group by d.spec_id order by d.spec_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	1
+1	3
+2	3
+3	4
+PREHOOK: query: select count(*) from default.ice_multi_v3.delete_files d
+join default.ice_multi_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_multi_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from default.ice_multi_v3.delete_files d
+join default.ice_multi_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_multi_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: create external table ice_void_v2 (id int, name string, region string, amount int)
+stored by iceberg tblproperties ('format-version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_void_v2
+POSTHOOK: query: create external table ice_void_v2 (id int, name string, region string, amount int)
+stored by iceberg tblproperties ('format-version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: create external table ice_void_v3 (id int, name string, region string, amount int)
+stored by iceberg tblproperties ('format-version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_void_v3
+POSTHOOK: query: create external table ice_void_v3 (id int, name string, region string, amount int)
+stored by iceberg tblproperties ('format-version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: insert into ice_void_v2 values (10, 'j', 'eu', 100), (11, 'k', 'us', 110)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v2
+POSTHOOK: query: insert into ice_void_v2 values (10, 'j', 'eu', 100), (11, 'k', 'us', 110)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: insert into ice_void_v3 values (10, 'j', 'eu', 100), (11, 'k', 'us', 110)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v3
+POSTHOOK: query: insert into ice_void_v3 values (10, 'j', 'eu', 100), (11, 'k', 'us', 110)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: alter table ice_void_v2 set partition spec (region, bucket(4, id))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_void_v2
+POSTHOOK: query: alter table ice_void_v2 set partition spec (region, bucket(4, id))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: alter table ice_void_v3 set partition spec (region, bucket(4, id))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_void_v3
+POSTHOOK: query: alter table ice_void_v3 set partition spec (region, bucket(4, id))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: insert into ice_void_v2 values (1, 'a', 'eu', 10), (2, 'b', 'us', 20), (3, 'c', 'eu', 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v2
+POSTHOOK: query: insert into ice_void_v2 values (1, 'a', 'eu', 10), (2, 'b', 'us', 20), (3, 'c', 'eu', 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: insert into ice_void_v3 values (1, 'a', 'eu', 10), (2, 'b', 'us', 20), (3, 'c', 'eu', 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v3
+POSTHOOK: query: insert into ice_void_v3 values (1, 'a', 'eu', 10), (2, 'b', 'us', 20), (3, 'c', 'eu', 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: alter table ice_void_v2 set partition spec (bucket(4, id))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_void_v2
+POSTHOOK: query: alter table ice_void_v2 set partition spec (bucket(4, id))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: alter table ice_void_v3 set partition spec (bucket(4, id))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_void_v3
+POSTHOOK: query: alter table ice_void_v3 set partition spec (bucket(4, id))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: insert into ice_void_v2 values (4, 'd', 'eu', 40), (5, 'e', 'us', 50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v2
+POSTHOOK: query: insert into ice_void_v2 values (4, 'd', 'eu', 40), (5, 'e', 'us', 50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: insert into ice_void_v3 values (4, 'd', 'eu', 40), (5, 'e', 'us', 50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v3
+POSTHOOK: query: insert into ice_void_v3 values (4, 'd', 'eu', 40), (5, 'e', 'us', 50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: alter table ice_void_v2 set partition spec()
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_void_v2
+POSTHOOK: query: alter table ice_void_v2 set partition spec()
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: alter table ice_void_v3 set partition spec()
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_void_v3
+POSTHOOK: query: alter table ice_void_v3 set partition spec()
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: insert into ice_void_v2 values (12, 'l', 'eu', 120), (13, 'm', 'us', 130)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v2
+POSTHOOK: query: insert into ice_void_v2 values (12, 'l', 'eu', 120), (13, 'm', 'us', 130)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: insert into ice_void_v3 values (12, 'l', 'eu', 120), (13, 'm', 'us', 130)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v3
+POSTHOOK: query: insert into ice_void_v3 values (12, 'l', 'eu', 120), (13, 'm', 'us', 130)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: alter table ice_void_v2 set partition spec (truncate(1, name))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_void_v2
+POSTHOOK: query: alter table ice_void_v2 set partition spec (truncate(1, name))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: alter table ice_void_v3 set partition spec (truncate(1, name))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_void_v3
+POSTHOOK: query: alter table ice_void_v3 set partition spec (truncate(1, name))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: insert into ice_void_v2 values (14, 'n', 'eu', 140), (15, 'o', 'us', 150)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v2
+POSTHOOK: query: insert into ice_void_v2 values (14, 'n', 'eu', 140), (15, 'o', 'us', 150)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: insert into ice_void_v3 values (14, 'n', 'eu', 140), (15, 'o', 'us', 150)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_void_v3
+POSTHOOK: query: insert into ice_void_v3 values (14, 'n', 'eu', 140), (15, 'o', 'us', 150)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: alter table ice_void_v2 set tblproperties ('format-version'='2')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@ice_void_v2
+PREHOOK: Output: default@ice_void_v2
+POSTHOOK: query: alter table ice_void_v2 set tblproperties ('format-version'='2')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: alter table ice_void_v3 set tblproperties ('format-version'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@ice_void_v3
+PREHOOK: Output: default@ice_void_v3
+POSTHOOK: query: alter table ice_void_v3 set tblproperties ('format-version'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: select spec_id, count(*) from default.ice_void_v2.data_files group by spec_id order by spec_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select spec_id, count(*) from default.ice_void_v2.data_files group by spec_id order by spec_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	1
+1	3
+2	2
+3	1
+4	2
+PREHOOK: query: delete from ice_void_v2 where id in (1, 4, 10, 12, 14)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v2
+PREHOOK: Output: default@ice_void_v2
+POSTHOOK: query: delete from ice_void_v2 where id in (1, 4, 10, 12, 14)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: delete from ice_void_v3 where id in (1, 4, 10, 12, 14)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v3
+PREHOOK: Output: default@ice_void_v3
+POSTHOOK: query: delete from ice_void_v3 where id in (1, 4, 10, 12, 14)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: update ice_void_v2 set name = 'upd' where id in (2, 5, 11, 13, 15)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v2
+PREHOOK: Output: default@ice_void_v2
+PREHOOK: Output: default@ice_void_v2
+POSTHOOK: query: update ice_void_v2 set name = 'upd' where id in (2, 5, 11, 13, 15)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+PREHOOK: query: update ice_void_v3 set name = 'upd' where id in (2, 5, 11, 13, 15)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v3
+PREHOOK: Output: default@ice_void_v3
+PREHOOK: Output: default@ice_void_v3
+POSTHOOK: query: update ice_void_v3 set name = 'upd' where id in (2, 5, 11, 13, 15)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+PREHOOK: query: merge into ice_void_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'ap', 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_src
+PREHOOK: Input: default@ice_void_v2
+PREHOOK: Output: default@ice_void_v2
+PREHOOK: Output: default@ice_void_v2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_void_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'ap', 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+POSTHOOK: Output: default@ice_void_v2
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_void_v2)ice_void_v2.null, ]
+PREHOOK: query: merge into ice_void_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'ap', 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_src
+PREHOOK: Input: default@ice_void_v3
+PREHOOK: Output: default@ice_void_v3
+PREHOOK: Output: default@ice_void_v3
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_void_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'ap', 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+POSTHOOK: Output: default@ice_void_v3
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_void_v3)ice_void_v3.null, ]
+PREHOOK: query: select * from ice_void_v2 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_void_v2 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	mrg	eu	30
+9	new	ap	0
+13	upd	us	130
+15	upd	us	150
+PREHOOK: query: select * from ice_void_v3 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_void_v3 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	mrg	eu	30
+9	new	ap	0
+13	upd	us	130
+15	upd	us	150
+PREHOOK: query: select id, name from ice_void_v2 where region = 'eu' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_void_v2 where region = 'eu' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	mrg
+PREHOOK: query: select id, name from ice_void_v3 where region = 'eu' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_void_v3 where region = 'eu' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	mrg
+PREHOOK: query: select count(*) from default.ice_void_v3.delete_files d
+join default.ice_void_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_void_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from default.ice_void_v3.delete_files d
+join default.ice_void_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_void_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: create external table ice_str_v2 (id int, s string) partitioned by spec (s, truncate(1, s))
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_str_v2
+POSTHOOK: query: create external table ice_str_v2 (id int, s string) partitioned by spec (s, truncate(1, s))
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_str_v2
+PREHOOK: query: create external table ice_str_v3 (id int, s string) partitioned by spec (s, truncate(1, s))
+stored by iceberg tblproperties ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_str_v3
+POSTHOOK: query: create external table ice_str_v3 (id int, s string) partitioned by spec (s, truncate(1, s))
+stored by iceberg tblproperties ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_str_v3
+PREHOOK: query: insert into ice_str_v2 values (1, null), (2, null), (3, ''), (4, ''), (5, 'null'), (6, 'null'), (7, ' '), (8, ' ')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str_v2
+POSTHOOK: query: insert into ice_str_v2 values (1, null), (2, null), (3, ''), (4, ''), (5, 'null'), (6, 'null'), (7, ' '), (8, ' ')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str_v2
+PREHOOK: query: insert into ice_str_v3 values (1, null), (2, null), (3, ''), (4, ''), (5, 'null'), (6, 'null'), (7, ' '), (8, ' ')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str_v3
+POSTHOOK: query: insert into ice_str_v3 values (1, null), (2, null), (3, ''), (4, ''), (5, 'null'), (6, 'null'), (7, ' '), (8, ' ')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str_v3
+PREHOOK: query: select count(*) from default.ice_str_v2.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from default.ice_str_v2.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4
+PREHOOK: query: delete from ice_str_v2 where id in (1, 3, 5, 7)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v2
+PREHOOK: Output: default@ice_str_v2
+POSTHOOK: query: delete from ice_str_v2 where id in (1, 3, 5, 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v2
+POSTHOOK: Output: default@ice_str_v2
+PREHOOK: query: delete from ice_str_v3 where id in (1, 3, 5, 7)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v3
+PREHOOK: Output: default@ice_str_v3
+POSTHOOK: query: delete from ice_str_v3 where id in (1, 3, 5, 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v3
+POSTHOOK: Output: default@ice_str_v3
+PREHOOK: query: select id, s, length(s) from ice_str_v2 order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, s, length(s) from ice_str_v2 order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	NULL	NULL
+4		0
+6	null	4
+8	 	1
+PREHOOK: query: select id, s, length(s) from ice_str_v3 order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, s, length(s) from ice_str_v3 order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	NULL	NULL
+4		0
+6	null	4
+8	 	1
+PREHOOK: query: select id from ice_str_v2 where s is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id from ice_str_v2 where s is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2
+PREHOOK: query: select id from ice_str_v2 where s = ''
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id from ice_str_v2 where s = ''
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4
+PREHOOK: query: select id from ice_str_v2 where s = 'null'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id from ice_str_v2 where s = 'null'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6
+PREHOOK: query: select id from ice_str_v2 where s = ' '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id from ice_str_v2 where s = ' '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8
+PREHOOK: query: select id from ice_str_v3 where s is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id from ice_str_v3 where s is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2
+PREHOOK: query: select id from ice_str_v3 where s = ''
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id from ice_str_v3 where s = ''
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4
+PREHOOK: query: select id from ice_str_v3 where s = 'null'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id from ice_str_v3 where s = 'null'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6
+PREHOOK: query: select id from ice_str_v3 where s = ' '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id from ice_str_v3 where s = ' '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8
+PREHOOK: query: select count(*) from default.ice_str_v3.delete_files d
+join default.ice_str_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from default.ice_str_v3.delete_files d
+join default.ice_str_v3.data_files f on d.referenced_data_file = f.file_path
+where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: create external table ice_mixed_v2 (id int, name string, cat string)
+partitioned by spec (cat, bucket(2, id)) stored by iceberg
+tblproperties ('format-version'='2', 'write.delete.mode'='copy-on-write')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_mixed_v2
+POSTHOOK: query: create external table ice_mixed_v2 (id int, name string, cat string)
+partitioned by spec (cat, bucket(2, id)) stored by iceberg
+tblproperties ('format-version'='2', 'write.delete.mode'='copy-on-write')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_mixed_v2
+PREHOOK: query: create external table ice_mixed_v3 (id int, name string, cat string)
+partitioned by spec (cat, bucket(2, id)) stored by iceberg
+tblproperties ('format-version'='3', 'write.delete.mode'='copy-on-write')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_mixed_v3
+POSTHOOK: query: create external table ice_mixed_v3 (id int, name string, cat string)
+partitioned by spec (cat, bucket(2, id)) stored by iceberg
+tblproperties ('format-version'='3', 'write.delete.mode'='copy-on-write')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_mixed_v3
+PREHOOK: query: insert into ice_mixed_v2 values (1, 'a', 'odd'), (2, 'b', 'even'), (3, 'c', 'odd'), (4, 'd', 'even')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_mixed_v2
+POSTHOOK: query: insert into ice_mixed_v2 values (1, 'a', 'odd'), (2, 'b', 'even'), (3, 'c', 'odd'), (4, 'd', 'even')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_mixed_v2
+PREHOOK: query: insert into ice_mixed_v3 values (1, 'a', 'odd'), (2, 'b', 'even'), (3, 'c', 'odd'), (4, 'd', 'even')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_mixed_v3
+POSTHOOK: query: insert into ice_mixed_v3 values (1, 'a', 'odd'), (2, 'b', 'even'), (3, 'c', 'odd'), (4, 'd', 'even')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_mixed_v3
+PREHOOK: query: update ice_mixed_v2 set name = 'upd' where id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_mixed_v2
+PREHOOK: Output: default@ice_mixed_v2
+PREHOOK: Output: default@ice_mixed_v2
+POSTHOOK: query: update ice_mixed_v2 set name = 'upd' where id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_mixed_v2
+POSTHOOK: Output: default@ice_mixed_v2
+POSTHOOK: Output: default@ice_mixed_v2
+PREHOOK: query: update ice_mixed_v3 set name = 'upd' where id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_mixed_v3
+PREHOOK: Output: default@ice_mixed_v3
+PREHOOK: Output: default@ice_mixed_v3
+POSTHOOK: query: update ice_mixed_v3 set name = 'upd' where id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_mixed_v3
+POSTHOOK: Output: default@ice_mixed_v3
+POSTHOOK: Output: default@ice_mixed_v3
+PREHOOK: query: merge into ice_mixed_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_mixed_v2
+PREHOOK: Input: default@ice_src
+PREHOOK: Output: default@ice_mixed_v2
+PREHOOK: Output: default@ice_mixed_v2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_mixed_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_mixed_v2
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Output: default@ice_mixed_v2
+POSTHOOK: Output: default@ice_mixed_v2
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_mixed_v2)ice_mixed_v2.null, ]
+PREHOOK: query: merge into ice_mixed_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_mixed_v3
+PREHOOK: Input: default@ice_src
+PREHOOK: Output: default@ice_mixed_v3
+PREHOOK: Output: default@ice_mixed_v3
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_mixed_v3 t using ice_src s on t.id = s.id
+when matched and t.id = 2 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 'odd')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_mixed_v3
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Output: default@ice_mixed_v3
+POSTHOOK: Output: default@ice_mixed_v3
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_mixed_v3)ice_mixed_v3.null, ]
+PREHOOK: query: select * from ice_mixed_v2 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_mixed_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_mixed_v2 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_mixed_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	odd
+2	mrg	even
+4	upd	even
+5	new	odd
+9	new	odd
+11	new	odd
+PREHOOK: query: select * from ice_mixed_v3 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_mixed_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_mixed_v3 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_mixed_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	odd
+2	mrg	even
+4	upd	even
+5	new	odd
+9	new	odd
+11	new	odd
+PREHOOK: query: select id, name from ice_mixed_v2 where cat = 'odd' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_mixed_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_mixed_v2 where cat = 'odd' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_mixed_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a
+5	new
+9	new
+11	new
+PREHOOK: query: select id, name from ice_mixed_v3 where cat = 'odd' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_mixed_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from ice_mixed_v3 where cat = 'odd' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_mixed_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a
+5	new
+9	new
+11	new
+PREHOOK: query: create external table ice_sorted_v2 (id int, name string, amount int) partitioned by spec (bucket(2, id))
+stored by iceberg tblproperties ('format-version'='2', 'write.fanout.enabled'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_sorted_v2
+POSTHOOK: query: create external table ice_sorted_v2 (id int, name string, amount int) partitioned by spec (bucket(2, id))
+stored by iceberg tblproperties ('format-version'='2', 'write.fanout.enabled'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_sorted_v2
+PREHOOK: query: insert into ice_sorted_v2 values (1, 'a', 10), (2, 'b', 20), (3, 'c', 30), (4, 'd', 40)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_sorted_v2
+POSTHOOK: query: insert into ice_sorted_v2 values (1, 'a', 10), (2, 'b', 20), (3, 'c', 30), (4, 'd', 40)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_sorted_v2
+PREHOOK: query: explain delete from ice_sorted_v2 where id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_sorted_v2
+PREHOOK: Output: default@ice_sorted_v2
+POSTHOOK: query: explain delete from ice_sorted_v2 where id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_sorted_v2
+POSTHOOK: Output: default@ice_sorted_v2
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_sorted_v2
+                  filterExpr: (id = 1) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (id = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: PARTIAL
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: binary), _col2 (type: string), _col3 (type: bigint)
+                        null sort order: zzzz
+                        sort order: ++++
+                        Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: PARTIAL
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: binary), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: bigint)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                      output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                      serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                      name: default.ice_sorted_v2
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_sorted_v2
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: delete from ice_sorted_v2 where id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_sorted_v2
+PREHOOK: Output: default@ice_sorted_v2
+POSTHOOK: query: delete from ice_sorted_v2 where id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_sorted_v2
+POSTHOOK: Output: default@ice_sorted_v2
+PREHOOK: query: update ice_sorted_v2 set amount = -1 where id = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_sorted_v2
+PREHOOK: Output: default@ice_sorted_v2
+PREHOOK: Output: default@ice_sorted_v2
+POSTHOOK: query: update ice_sorted_v2 set amount = -1 where id = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_sorted_v2
+POSTHOOK: Output: default@ice_sorted_v2
+POSTHOOK: Output: default@ice_sorted_v2
+PREHOOK: query: merge into ice_sorted_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_sorted_v2
+PREHOOK: Input: default@ice_src
+PREHOOK: Output: default@ice_sorted_v2
+PREHOOK: Output: default@ice_sorted_v2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into ice_sorted_v2 t using ice_src s on t.id = s.id
+when matched and t.id = 3 then update set name = 'mrg'
+when matched then delete
+when not matched then insert values (s.id, 'new', 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_sorted_v2
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Output: default@ice_sorted_v2
+POSTHOOK: Output: default@ice_sorted_v2
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_sorted_v2)ice_sorted_v2.null, ]
+PREHOOK: query: select * from ice_sorted_v2 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_sorted_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_sorted_v2 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_sorted_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	mrg	30
+4	d	40
+5	new	0
+9	new	0
+11	new	0
+PREHOOK: query: alter table ice_v2 create branch b1
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice_v2
+POSTHOOK: query: alter table ice_v2 create branch b1
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice_v2
+PREHOOK: query: alter table ice_v3 create branch b1
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice_v3
+POSTHOOK: query: alter table ice_v3 create branch b1
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice_v3
+PREHOOK: query: delete from default.ice_v2.branch_b1 where id = 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2@branch_b1
+PREHOOK: Output: default@ice_v2@branch_b1
+POSTHOOK: query: delete from default.ice_v2.branch_b1 where id = 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2@branch_b1
+POSTHOOK: Output: default@ice_v2@branch_b1
+PREHOOK: query: delete from default.ice_v3.branch_b1 where id = 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3@branch_b1
+PREHOOK: Output: default@ice_v3@branch_b1
+POSTHOOK: query: delete from default.ice_v3.branch_b1 where id = 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3@branch_b1
+POSTHOOK: Output: default@ice_v3@branch_b1
+PREHOOK: query: update default.ice_v2.branch_b1 set name = 'br' where id = 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2@branch_b1
+PREHOOK: Output: default@ice_v2@branch_b1
+PREHOOK: Output: default@ice_v2@branch_b1
+POSTHOOK: query: update default.ice_v2.branch_b1 set name = 'br' where id = 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2@branch_b1
+POSTHOOK: Output: default@ice_v2@branch_b1
+POSTHOOK: Output: default@ice_v2@branch_b1
+PREHOOK: query: update default.ice_v3.branch_b1 set name = 'br' where id = 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3@branch_b1
+PREHOOK: Output: default@ice_v3@branch_b1
+PREHOOK: Output: default@ice_v3@branch_b1
+POSTHOOK: query: update default.ice_v3.branch_b1 set name = 'br' where id = 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3@branch_b1
+POSTHOOK: Output: default@ice_v3@branch_b1
+POSTHOOK: Output: default@ice_v3@branch_b1
+PREHOOK: query: merge into default.ice_v2.branch_b1 t using ice_src s on t.id = s.id
+when matched and t.id = 11 then update set name = 'brm'
+when matched then delete
+when not matched then insert values (s.id, 'brn', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'B', 'end', 2, 'user', 'B', 'order', 2), array('b'), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_src
+PREHOOK: Input: default@ice_v2@branch_b1
+PREHOOK: Output: default@ice_v2@branch_b1
+PREHOOK: Output: default@ice_v2@branch_b1
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into default.ice_v2.branch_b1 t using ice_src s on t.id = s.id
+when matched and t.id = 11 then update set name = 'brm'
+when matched then delete
+when not matched then insert values (s.id, 'brn', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'B', 'end', 2, 'user', 'B', 'order', 2), array('b'), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Input: default@ice_v2@branch_b1
+POSTHOOK: Output: default@ice_v2@branch_b1
+POSTHOOK: Output: default@ice_v2@branch_b1
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_v2)ice_v2.branch_b1.null, ]
+PREHOOK: query: merge into default.ice_v3.branch_b1 t using ice_src s on t.id = s.id
+when matched and t.id = 11 then update set name = 'brm'
+when matched then delete
+when not matched then insert values (s.id, 'brn', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'B', 'end', 2, 'user', 'B', 'order', 2), array('b'), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_src
+PREHOOK: Input: default@ice_v3@branch_b1
+PREHOOK: Output: default@ice_v3@branch_b1
+PREHOOK: Output: default@ice_v3@branch_b1
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into default.ice_v3.branch_b1 t using ice_src s on t.id = s.id
+when matched and t.id = 11 then update set name = 'brm'
+when matched then delete
+when not matched then insert values (s.id, 'brn', 'odd', cast('2026-01-01' as timestamp),
+  cast('2026-03-02 10:00:00' as timestamp with local time zone),
+  named_struct('date', 'B', 'end', 2, 'user', 'B', 'order', 2), array('b'), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_src
+POSTHOOK: Input: default@ice_v3@branch_b1
+POSTHOOK: Output: default@ice_v3@branch_b1
+POSTHOOK: Output: default@ice_v3@branch_b1
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_v3)ice_v3.branch_b1.null, ]
+PREHOOK: query: select id, name, cat, s from default.ice_v2.branch_b1 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2@branch_b1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name, cat, s from default.ice_v2.branch_b1 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2@branch_b1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	brn	odd	{"date":"B","end":2,"user":"B","order":2}
+4	upd	even	{"date":"D","end":0,"user":"U","order":0}
+5	brn	odd	{"date":"B","end":2,"user":"B","order":2}
+6	br	even	{"date":"d6","end":60,"user":"u6","order":600}
+8	n8	even	{"date":"d8","end":80,"user":"u8","order":800}
+9	brn	odd	{"date":"B","end":2,"user":"B","order":2}
+11	brm	odd	{"date":"N","end":1,"user":"N","order":1}
+PREHOOK: query: select id, name, cat, s from default.ice_v3.branch_b1 order by id, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3@branch_b1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name, cat, s from default.ice_v3.branch_b1 order by id, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3@branch_b1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	brn	odd	{"date":"B","end":2,"user":"B","order":2}
+4	upd	even	{"date":"D","end":0,"user":"U","order":0}
+5	brn	odd	{"date":"B","end":2,"user":"B","order":2}
+6	br	even	{"date":"d6","end":60,"user":"u6","order":600}
+8	n8	even	{"date":"d8","end":80,"user":"u8","order":800}
+9	brn	odd	{"date":"B","end":2,"user":"B","order":2}
+11	brm	odd	{"date":"N","end":1,"user":"N","order":1}
+PREHOOK: query: select id, name from default.ice_v2.branch_b1 where cat = 'odd' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2@branch_b1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from default.ice_v2.branch_b1 where cat = 'odd' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2@branch_b1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	brn
+5	brn
+9	brn
+11	brm
+PREHOOK: query: select id, name from default.ice_v3.branch_b1 where cat = 'odd' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3@branch_b1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name from default.ice_v3.branch_b1 where cat = 'odd' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3@branch_b1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	brn
+5	brn
+9	brn
+11	brm
+PREHOOK: query: select count(*) from ice_v2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from ice_v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6
+PREHOOK: query: select count(*) from ice_v3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_v3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from ice_v3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_v3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6
+PREHOOK: query: create external table mv_src (a int, b int) stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv_src
+POSTHOOK: query: create external table mv_src (a int, b int) stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv_src
+PREHOOK: query: insert into mv_src values (1, 1), (2, 1), (3, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mv_src
+POSTHOOK: query: insert into mv_src values (1, 1), (2, 1), (3, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mv_src
+PREHOOK: query: create materialized view mv_mor stored by iceberg tblproperties ('format-version'='2') as
+select b, count(*) c, sum(a) s from mv_src group by b
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv_mor
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: create materialized view mv_mor stored by iceberg tblproperties ('format-version'='2') as
+select b, count(*) c, sum(a) s from mv_src group by b
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv_mor
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: mv_mor.b SIMPLE [(mv_src)mv_src.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_mor.c EXPRESSION [(mv_src)mv_src.null, ]
+POSTHOOK: Lineage: mv_mor.s EXPRESSION [(mv_src)mv_src.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: insert into mv_src values (4, 1), (5, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mv_src
+POSTHOOK: query: insert into mv_src values (4, 1), (5, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mv_src
+PREHOOK: query: explain alter materialized view mv_mor rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@mv_mor
+PREHOOK: Input: default@mv_src
+PREHOOK: Output: default@mv_mor
+PREHOOK: Output: default@mv_mor
+POSTHOOK: query: explain alter materialized view mv_mor rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@mv_mor
+POSTHOOK: Input: default@mv_src
+POSTHOOK: Output: default@mv_mor
+POSTHOOK: Output: default@mv_mor
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-4 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-0
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-3
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 7 <- Map 6 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv_mor
+                  Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: b (type: int), c (type: bigint), s (type: bigint), true (type: boolean), PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                    Statistics: Num rows: 2 Data size: 536 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 2 Data size: 536 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: boolean), _col4 (type: int), _col5 (type: binary), _col6 (type: string), _col7 (type: bigint)
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: mv_src
+                  Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  Version interval from: #Masked#
+                  Select Operator
+                    expressions: a (type: int), b (type: int)
+                    outputColumnNames: a, b
+                    Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(), sum(a)
+                      keys: b (type: int)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 3 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 3 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint), _col2 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                nullSafes: [true]
+                outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Statistics: Num rows: 3 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col3 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 284 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col4 (type: int), _col5 (type: binary), _col6 (type: string), _col7 (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: binary), _col2 (type: string), _col3 (type: bigint)
+                Filter Operator
+                  predicate: _col3 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 284 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col8 (type: int), CASE WHEN (_col1 is null) THEN (_col9) WHEN (_col9 is null) THEN (_col1) ELSE ((_col9 + _col1)) END (type: bigint), CASE WHEN (_col2 is null) THEN (_col10) WHEN (_col10 is null) THEN (_col2) ELSE ((_col10 + _col2)) END (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.mv_mor
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
+                      outputColumnNames: b, c, s
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(b), max(b), count(1), count(b), compute_bit_vector_hll(b), min(c), max(c), count(c), compute_bit_vector_hll(c), min(s), max(s), count(s), compute_bit_vector_hll(s)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                        Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary)
+                Filter Operator
+                  predicate: _col3 is null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 284 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col8 (type: int), CASE WHEN (_col1 is null) THEN (_col9) WHEN (_col9 is null) THEN (_col1) ELSE ((_col9 + _col1)) END (type: bigint), CASE WHEN (_col2 is null) THEN (_col10) WHEN (_col10 is null) THEN (_col2) ELSE ((_col10 + _col2)) END (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.mv_mor
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
+                      outputColumnNames: b, c, s
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(b), max(b), count(1), count(b), compute_bit_vector_hll(b), min(c), max(c), count(c), compute_bit_vector_hll(c), min(s), max(s), count(s), compute_bit_vector_hll(s)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                        Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: binary), VALUE._col2 (type: string), VALUE._col3 (type: bigint)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 244 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                      output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                      serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                      name: default.mv_mor
+        Reducer 4 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), _col5 (type: bigint), _col6 (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), _col9 (type: bigint), _col10 (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), _col5 (type: bigint), _col6 (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), _col9 (type: bigint), _col10 (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 7 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), sum(VALUE._col1)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
+
+  Stage: Stage-4
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.mv_mor
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: b, c, s
+          Column Types: int, bigint, bigint
+          Table: default.mv_mor
+
+  Stage: Stage-6
+    Materialized View Update
+      name: default.mv_mor
+      update creation metadata: true
+
+PREHOOK: query: alter materialized view mv_mor rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@mv_mor
+PREHOOK: Input: default@mv_src
+PREHOOK: Output: default@mv_mor
+PREHOOK: Output: default@mv_mor
+POSTHOOK: query: alter materialized view mv_mor rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@mv_mor
+POSTHOOK: Input: default@mv_src
+POSTHOOK: Output: default@mv_mor
+POSTHOOK: Output: default@mv_mor
+PREHOOK: query: select * from mv_mor order by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_mor
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mv_mor order by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_mor
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	3	7
+2	1	3
+3	1	5
+PREHOOK: query: select b, count(*) c, sum(a) s from mv_src group by b order by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv_mor
+PREHOOK: Input: default@mv_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select b, count(*) c, sum(a) s from mv_src group by b order by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv_mor
+POSTHOOK: Input: default@mv_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	3	7
+2	1	3
+3	1	5

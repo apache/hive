@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.ListIterator;
 import java.util.Map;
 
@@ -53,10 +54,10 @@ public enum VirtualColumn {
   ROWID("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi),
   ROWISDELETED("ROW__IS__DELETED", TypeInfoFactory.booleanTypeInfo),
   PARTITION_SPEC_ID("PARTITION__SPEC__ID", TypeInfoFactory.intTypeInfo),
-  PARTITION_HASH("PARTITION__HASH", TypeInfoFactory.longTypeInfo),
   FILE_PATH("FILE__PATH", TypeInfoFactory.stringTypeInfo),
   ROW_POSITION("ROW__POSITION", TypeInfoFactory.longTypeInfo),
   SNAPSHOT_ID("SNAPSHOT__ID", TypeInfoFactory.longTypeInfo),
+  PARTITION_KEY("PARTITION__KEY", TypeInfoFactory.binaryTypeInfo, 8),
   PARTITION_NAME("PARTITION__NAME", TypeInfoFactory.stringTypeInfo),
   ROW_LINEAGE_ID("ROW__LINEAGE__ID", TypeInfoFactory.longTypeInfo),
   LAST_UPDATED_SEQUENCE_NUMBER("LAST__UPDATED__SEQUENCE__NUMBER", TypeInfoFactory.longTypeInfo),
@@ -73,8 +74,8 @@ public enum VirtualColumn {
   public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(),
           RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName(), ROWISDELETED.getName(),
-          PARTITION_SPEC_ID.getName(), PARTITION_HASH.getName(), FILE_PATH.getName(), ROW_POSITION.getName(),
-          PARTITION_NAME.getName(), ROW_LINEAGE_ID.getName(),
+          PARTITION_SPEC_ID.getName(), FILE_PATH.getName(), ROW_POSITION.getName(),
+          PARTITION_KEY.getName(), PARTITION_NAME.getName(), ROW_LINEAGE_ID.getName(),
           LAST_UPDATED_SEQUENCE_NUMBER.getName());
 
   public static final ImmutableMap<String, VirtualColumn> VIRTUAL_COLUMN_NAME_MAP =
@@ -92,17 +93,35 @@ public enum VirtualColumn {
   private final TypeInfo typeInfo;
   private final boolean isHidden;
   private final ObjectInspector oi;
+  private final int avgLength;
 
   VirtualColumn(String name, PrimitiveTypeInfo typeInfo) {
-    this(name, typeInfo, true, 
-      PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo));
+    this(name, typeInfo, 0);
+  }
+
+  VirtualColumn(String name, PrimitiveTypeInfo typeInfo, int avgLength) {
+    this(name, typeInfo, true,
+      PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo), avgLength);
   }
 
   VirtualColumn(String name, TypeInfo typeInfo, boolean isHidden, ObjectInspector oi) {
+    this(name, typeInfo, isHidden, oi, 0);
+  }
+
+  VirtualColumn(String name, TypeInfo typeInfo, boolean isHidden, ObjectInspector oi, int avgLength) {
     this.name = name;
     this.typeInfo = typeInfo;
     this.isHidden = isHidden;
     this.oi = oi;
+    this.avgLength = avgLength;
+  }
+
+  /**
+   * The average length in bytes of this column's values, where the column has one that does not
+   * depend on the table. A variable-length column has none, and is sized like any other column.
+   */
+  public OptionalInt getAvgLength() {
+    return avgLength > 0 ? OptionalInt.of(avgLength) : OptionalInt.empty();
   }
 
   public static List<VirtualColumn> getStatsRegistry(Configuration conf) {

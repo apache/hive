@@ -339,4 +339,40 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
     Assert.assertEquals(ROWS, count("SELECT count(*) FROM dv_abort"));
     Assert.assertEquals("left behind", List.of(), rewritableDeletes(new Path(table.location()), shell.getHiveConf()));
   }
+
+  @Test
+  public void testDeleteReadsOnlyFilterColumns() {
+    createTable("dv_narrow_src", PartitionSpec.unpartitioned());
+    shell.executeStatement("CREATE EXTERNAL TABLE dv_narrow (id bigint, name string, amount decimal(10,2), " +
+        "attrs struct<a:int,`date`:string>, tags array<string>) " +
+        "PARTITIONED BY SPEC (bucket(3, id)) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('format-version'='3', 'write.parquet.row-group-size-bytes'='1024')");
+    shell.executeStatement("INSERT INTO dv_narrow SELECT customer_id, first_name, " +
+        "CAST(customer_id AS decimal(10,2)), named_struct('a', CAST(customer_id AS int), 'date', last_name), " +
+        "array(first_name, last_name) FROM dv_narrow_src");
+    // the deleted records take their partition from the reader, not from the partition source columns
+    String delete = "DELETE FROM dv_narrow WHERE CAST(amount AS bigint) % 7 = 0";
+    Assert.assertTrue("reads the filter columns only",
+        shell.executeStatement("EXPLAIN " + delete).stream().map(row -> (String) row[0])
+            .anyMatch(line -> line.contains("default@dv_narrow,") && line.endsWith("Output:[\"amount\"]")));
+    shell.executeStatement(delete);
+    List<Object[]> expected = shell.executeStatement("SELECT customer_id, first_name, " +
+        "CAST(customer_id AS decimal(10,2)), CAST(customer_id AS int), last_name, last_name FROM dv_narrow_src " +
+        "WHERE customer_id % 7 != 0 ORDER BY customer_id");
+    List<Object[]> actual = shell.executeStatement(
+        "SELECT id, name, amount, attrs.a, attrs.`date`, tags[1] FROM dv_narrow ORDER BY id");
+    Assert.assertEquals(ROWS - (ROWS + 6) / 7, actual.size());
+    for (int i = 0; i < expected.size(); i++) {
+      Assert.assertArrayEquals(expected.get(i), actual.get(i));
+    }
+    List<FileScanTask> tasks = planFiles(testTables.loadTable(TableIdentifier.of("default", "dv_narrow")));
+    Assert.assertFalse("no DVs written", dvs(tasks).isEmpty());
+    for (FileScanTask task : tasks) {
+      for (DeleteFile dv : task.deletes()) {
+        Assert.assertEquals(task.file().specId(), dv.specId());
+        Assert.assertEquals(task.spec().partitionToPath(task.file().partition()),
+            task.spec().partitionToPath(dv.partition()));
+      }
+    }
+  }
 }

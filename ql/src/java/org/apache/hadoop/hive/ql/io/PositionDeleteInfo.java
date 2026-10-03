@@ -22,23 +22,17 @@ package org.apache.hadoop.hive.ql.io;
 public class PositionDeleteInfo {
 
   private final int specId;
-  private final long partitionHash;
   private final String filePath;
   private final long filePos;
 
-  public PositionDeleteInfo(int specId, long partitionHash, String filePath, long filePos) {
+  public PositionDeleteInfo(int specId, String filePath, long filePos) {
     this.specId = specId;
-    this.partitionHash = partitionHash;
     this.filePath = filePath;
     this.filePos = filePos;
   }
 
   public int getSpecId() {
     return specId;
-  }
-
-  public long getPartitionHash() {
-    return partitionHash;
   }
 
   public String getFilePath() {
