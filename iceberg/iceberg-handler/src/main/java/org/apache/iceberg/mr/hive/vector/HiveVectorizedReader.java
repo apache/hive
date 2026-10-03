@@ -24,8 +24,10 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -88,7 +90,8 @@ public class HiveVectorizedReader {
   }
 
   public static CloseableIterable<HiveBatchContext> reader(Table table, Path path, FileScanTask task,
-      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual, Schema readSchema) {
+      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual, Schema readSchema,
+      FileMetadataCache metadataCache, Configuration cacheConf) {
 
     HiveDeleteFilter deleteFilter = null;
     Schema requiredSchema = readSchema;
@@ -101,7 +104,7 @@ public class HiveVectorizedReader {
             protected DeleteLoader newDeleteLoader() {
               return new CachingDeleteLoader(
                   deleteFile -> EncryptingFileIO.combine(table.io(), table.encryption()).newInputFile(deleteFile),
-                  context.getConfiguration());
+                  context, metadataCache, cacheConf);
             }
           };
       requiredSchema = deleteFilter.requiredSchema();

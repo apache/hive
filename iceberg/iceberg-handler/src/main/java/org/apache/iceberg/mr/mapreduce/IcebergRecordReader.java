@@ -28,7 +28,9 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.io.IOContextAwareRecordReader;
@@ -73,10 +75,17 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 
 public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T> implements IOContextAwareRecordReader {
+  private final FileMetadataCache metadataCache;
+  private final Configuration cacheConf;
   private Iterator<FileScanTask> tasks;
   private CloseableIterator<T> currentIterator;
   private T current;
   private IOContext ioContext;
+
+  IcebergRecordReader(FileMetadataCache metadataCache, Configuration cacheConf) {
+    this.metadataCache = metadataCache;
+    this.cacheConf = cacheConf;
+  }
 
   @Override
   public void initialize(InputSplit split, TaskAttemptContext newContext) {
@@ -141,7 +150,7 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
 
     // TODO: We have to take care of the EncryptionManager when LLAP and vectorization is used
     CloseableIterable<T> iterator = (CloseableIterable<T>) HiveVectorizedReader.reader(table, path, task,
-        idToConstant, getContext(), residual, readSchema);
+        idToConstant, getContext(), residual, readSchema, metadataCache, cacheConf);
 
     return applyResidualFiltering(iterator, residual, readSchema);
   }

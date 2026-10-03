@@ -756,7 +756,7 @@ public class VectorizedOrcAcidRowBatchReader
    * @return
    */
   private static boolean shouldReadDeleteDeltasWithLlap(Configuration conf, boolean metaDataLevelSufficient) {
-    String ddCacheLevel = HiveConf.getVar(conf, ConfVars.LLAP_IO_CACHE_DELETEDELTAS);
+    String ddCacheLevel = HiveConf.getVar(conf, ConfVars.LLAP_IO_CACHE_DELETES);
     return ("all".equals(ddCacheLevel) || (metaDataLevelSufficient && ddCacheLevel.equals("metadata")))
         && LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon() && LlapProxy.getIo() != null;
   }
