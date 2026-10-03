@@ -9,11 +9,11 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED add_months
 POSTHOOK: type: DESCFUNCTION
 add_months(start_date, num_months, output_date_format) - Returns the date that is num_months after start_date.
 start_date is a string or timestamp indicating a valid date. num_months is a number. output_date_format is an optional String which specifies the format for output.
-The default output format is 'YYYY-MM-dd'.
+The default output format is 'yyyy-MM-dd'.
 Example:
   > SELECT add_months('2009-08-31', 1) FROM src LIMIT 1;
  '2009-09-30'.
-  > SELECT add_months('2017-12-31 14:15:16', 2, 'YYYY-MM-dd HH:mm:ss') LIMIT 1;
+  > SELECT add_months('2017-12-31 14:15:16', 2, 'yyyy-MM-dd HH:mm:ss') LIMIT 1;
 '2018-02-28 14:15:16'.
 
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFAddMonths
