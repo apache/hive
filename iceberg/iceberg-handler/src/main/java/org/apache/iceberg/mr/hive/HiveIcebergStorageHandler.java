@@ -188,6 +188,7 @@ import org.apache.iceberg.mr.hive.stats.IcebergColStatsWriter;
 import org.apache.iceberg.mr.hive.stats.IcebergPartitionStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergStoredStats;
 import org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder;
+import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
@@ -243,6 +244,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       orderBy(PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH, ROW_POSITION);
 
   private static final List<FieldSchema> EMPTY_ORDERING = ImmutableList.of();
+
+  private static final List<FieldSchema> EMPTY_COLUMNS = ImmutableList.of();
+
+  private static final List<FieldSchema> DV_DISTRIBUTION = schema(ImmutableList.of(FILE_PATH));
 
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
@@ -389,6 +394,26 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (catalogName != null) {
       jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
     }
+  }
+
+  /**
+   * The DV writers of a merge-on-read DML merge the previous deletes of the data files they write. These are planned
+   * once per job, while the job is built, and shipped to the writers in a file.
+   */
+  @Override
+  public void configureJobConf(FileSinkDesc sinkDesc, JobConf jobConf) {
+    TableDesc tableDesc = sinkDesc.getTableInfo();
+    configureJobConf(tableDesc, jobConf);
+    Properties props = tableDesc.getProperties();
+    String key = InputFormatConfig.REWRITABLE_DELETES_PREFIX + tableDesc.getTableName();
+    if (sinkDesc.getWriteOperation() != Operation.DELETE || sinkDesc.isCopyOnWrite() ||
+        IcebergTableUtil.formatVersion(Maps.fromProperties(props)) < 3 || jobConf.get(key) != null) {
+      return;
+    }
+    Table table = IcebergTableUtil.getTable(jobConf, props);
+    String location = HiveTableUtil.rewritableDeletesLocation(table.location(), jobConf);
+    WriterBuilder.writeRewritableDeletes(table, props.getProperty(Catalogs.SNAPSHOT_REF), location);
+    jobConf.set(key, location);
   }
 
   @Override
@@ -1617,13 +1642,23 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
     return switch (operation) {
-      case DELETE -> IcebergTableUtil.isFanoutEnabled(table.getParameters()) ?
-        EMPTY_ORDERING : POSITION_DELETE_ORDERING;
+      // a DV writer does not need its deletes ordered
+      case DELETE -> IcebergTableUtil.isFanoutEnabled(table.getParameters()) ||
+          IcebergTableUtil.formatVersion(table.getParameters()) >= 3 ? EMPTY_ORDERING : POSITION_DELETE_ORDERING;
       case MERGE -> POSITION_DELETE_ORDERING;
       // For update operations we use the same sort order defined by
       // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}
       default -> EMPTY_ORDERING;
     };
+  }
+
+  /**
+   * A task writes one DV per data file, so all deletes of a data file must reach the same task.
+   */
+  @Override
+  public List<FieldSchema> acidDistributeColumns(org.apache.hadoop.hive.ql.metadata.Table table,
+      Operation operation) {
+    return IcebergTableUtil.formatVersion(table.getParameters()) >= 3 ? DV_DISTRIBUTION : EMPTY_COLUMNS;
   }
 
   @Override

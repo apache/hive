@@ -37,6 +37,15 @@ abstract class MaterializedViewASTBuilder {
 
   protected abstract List<ASTNode> createAcidSortNodesInternal(String tableName);
 
+  /** The keys that send all the deletes of a data file to one task, or none. */
+  public List<ASTNode> createAcidDistributeNodes(ASTNode inputNode) {
+    return createAcidDistributeNodesInternal(inputNode.getText());
+  }
+
+  protected List<ASTNode> createAcidDistributeNodesInternal(String tableName) {
+    return List.of();
+  }
+
   // .
   //    TOK_TABLE_OR_COL
   //          <tableName>
@@ -67,6 +76,15 @@ abstract class MaterializedViewASTBuilder {
     ASTNode sortExprNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_SORTBY, "TOK_SORTBY");
     sortKeyNodes.forEach(sortKeyNode -> ParseDriver.adaptor.addChild(sortExprNode, createSortNode(sortKeyNode)));
     return sortExprNode;
+  }
+
+  //       TOK_DISTRIBUTEBY
+  //         <distributeKeyNode>
+  public ASTNode createDistributeNodes(List<ASTNode> distributeKeyNodes) {
+    ASTNode distributeExprNode = (ASTNode) ParseDriver.adaptor.create(
+            HiveParser.TOK_DISTRIBUTEBY, "TOK_DISTRIBUTEBY");
+    distributeKeyNodes.forEach(keyNode -> ParseDriver.adaptor.addChild(distributeExprNode, keyNode));
+    return distributeExprNode;
   }
 
   //       TOK_SORTBY

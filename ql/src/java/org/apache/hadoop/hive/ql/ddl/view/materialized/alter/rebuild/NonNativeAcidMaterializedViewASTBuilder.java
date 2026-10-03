@@ -61,6 +61,14 @@ public class NonNativeAcidMaterializedViewASTBuilder extends MaterializedViewAST
     }
   }
 
+  // a DV writer writes one DV per data file
+  @Override
+  protected List<ASTNode> createAcidDistributeNodesInternal(String tableName) {
+    return mvTable.getStorageHandler().acidDistributeColumns(mvTable, Context.Operation.DELETE).stream()
+            .map(fieldSchema -> createQualifiedColumnNode(tableName, fieldSchema.getName()))
+            .collect(Collectors.toList());
+  }
+
   @Override
   protected List<ASTNode> createAcidSortNodesInternal(String tableName) {
     return mvTable.getStorageHandler().acidSortColumns(mvTable, Context.Operation.DELETE).stream()

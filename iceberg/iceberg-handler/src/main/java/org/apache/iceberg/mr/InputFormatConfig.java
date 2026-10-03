@@ -65,6 +65,7 @@ public class InputFormatConfig {
   public static final String CONFIG_SERIALIZATION_DISABLED = "iceberg.mr.config.serialization.disabled";
   public static final boolean CONFIG_SERIALIZATION_DISABLED_DEFAULT = true;
   public static final String OPERATION_TYPE_PREFIX = "iceberg.mr.operation.type.";
+  public static final String REWRITABLE_DELETES_PREFIX = "iceberg.mr.rewritable.deletes.";
   public static final String OUTPUT_TABLES = "iceberg.mr.output.tables";
   public static final String OUTPUT_TABLE_SNAPSHOT_REF = "iceberg.mr.output.table.snapshot.ref";
   public static final String COMMIT_TABLE_THREAD_POOL_SIZE = "iceberg.mr.commit.table.thread.pool.size";

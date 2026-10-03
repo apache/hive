@@ -35,6 +35,9 @@ import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addRowLineageCo
 
 public class SplitMergeRewriter extends MergeRewriter {
 
+  // The update clause whose deletes go through the branch of the delete clause
+  private MergeStatement.UpdateClause singleDeleteBranchUpdate;
+
   public SplitMergeRewriter(Hive db, HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     super(db, conf, sqlGeneratorFactory);
   }
@@ -42,19 +45,49 @@ public class SplitMergeRewriter extends MergeRewriter {
   @Override
   protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
       MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
+    // all deletes of a data file must reach one writer, so a distributed MERGE has a single delete branch
+    boolean distributed = !sqlGenerator.getDistributeKeys(Context.Operation.DELETE).isEmpty();
+    boolean hasDelete = mergeStatement.getWhenClauses().stream()
+        .anyMatch(MergeStatement.DeleteClause.class::isInstance);
+    singleDeleteBranchUpdate = !distributed || !hasDelete ? null : mergeStatement.getWhenClauses().stream()
+        .filter(MergeStatement.UpdateClause.class::isInstance)
+        .map(MergeStatement.UpdateClause.class::cast)
+        .findFirst().orElse(null);
     return new SplitMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement, isRowLineageSupported,
         mergeStatement.getTargetTable().hasNonNativePartitionSupport() ?
-            new PartitionSetValuesClause(conf) : new SetValuesClause(conf));
+            new PartitionSetValuesClause(conf) : new SetValuesClause(conf), singleDeleteBranchUpdate);
   }
 
   static class SplitMergeWhenClauseSqlGenerator extends MergeWhenClauseSqlGenerator {
     private final boolean isRowLineageSupported;
+    private final MergeStatement.UpdateClause singleDeleteBranchUpdate;
 
     SplitMergeWhenClauseSqlGenerator(
         HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement,
-        boolean isRowLineageSupported, SetValuesClauseBase setValuesClause) {
+        boolean isRowLineageSupported, SetValuesClauseBase setValuesClause,
+        MergeStatement.UpdateClause singleDeleteBranchUpdate) {
       super(conf, sqlGenerator, mergeStatement, isRowLineageSupported, setValuesClause);
       this.isRowLineageSupported = isRowLineageSupported;
+      this.singleDeleteBranchUpdate = singleDeleteBranchUpdate;
+    }
+
+    @Override
+    public void appendWhenMatchedDeleteClause(MergeStatement.DeleteClause deleteClause) {
+      if (singleDeleteBranchUpdate == null) {
+        super.appendWhenMatchedDeleteClause(deleteClause);
+        return;
+      }
+      sqlGenerator.append("    -- update clause (delete part) and delete clause\n");
+      String matched = "((" + matched(singleDeleteBranchUpdate.getExtraPredicate(),
+          singleDeleteBranchUpdate.getDeleteExtraPredicate()) + ") OR (" +
+          matched(deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate()) + "))";
+      handleWhenMatchedDelete(mergeStatement.getOnClauseAsText(), matched, null, hintStr, sqlGenerator);
+      hintStr = null;
+    }
+
+    private static String matched(String extraPredicate, String otherExtraPredicate) {
+      String predicate = extraPredicate == null ? "true" : extraPredicate;
+      return otherExtraPredicate == null ? predicate : predicate + " AND NOT(" + otherExtraPredicate + ")";
     }
 
     @Override
@@ -75,6 +108,9 @@ public class SplitMergeRewriter extends MergeRewriter {
 
       sqlGenerator.append("\n");
 
+      if (singleDeleteBranchUpdate != null) {
+        return;
+      }
       sqlGenerator.append("    -- update clause (delete part)\n");
       handleWhenMatchedDelete(onClauseAsString,
           updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), hintStr, sqlGenerator);
@@ -88,6 +124,11 @@ public class SplitMergeRewriter extends MergeRewriter {
 
   @Override
   public int addDestNamePrefixOfUpdate(int pos, Context context) {
+    if (singleDeleteBranchUpdate != null) {
+      // the single delete branch counts the updated rows, so the insert branch of the update does not
+      context.addDeleteOfUpdateDestNamePrefix(pos, Context.DestClausePrefix.INSERT);
+      return 1;
+    }
     context.addDestNamePrefix(pos, Context.DestClausePrefix.INSERT);
     context.addDeleteOfUpdateDestNamePrefix(pos + 1, Context.DestClausePrefix.DELETE);
     return 2;

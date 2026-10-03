@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -330,6 +331,17 @@ public class HiveTableUtil {
   public static String jobLocation(String location, Configuration conf, JobID jobId) {
     String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     return location + "/temp/" + queryId + "-" + jobId;
+  }
+
+  /**
+   * Generates a new location for the rewritable deletes of a job: an execution of the query builds a new job.
+   * @param location The location of the table.
+   * @param conf The job's configuration.
+   * @return The file path for storing the rewritable deletes.
+   */
+  public static String rewritableDeletesLocation(String location, Configuration conf) {
+    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
+    return location + "/temp/" + queryId + "-" + UUID.randomUUID() + "-rewritable-deletes";
   }
 
   /**

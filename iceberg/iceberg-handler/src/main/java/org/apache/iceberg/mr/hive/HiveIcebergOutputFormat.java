@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.io.NullWritable;
@@ -67,8 +68,10 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
     setWriterLevelConfiguration(jc, table);
     boolean shouldAddRowLineageColumns = jc.getBoolean(SessionStateUtil.ROW_LINEAGE, false);
 
+    String queryId = jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     return WriterBuilder.builderFor(table, jc::get)
-        .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
+        .queryId(queryId)
+        .objectCache(() -> ObjectCacheFactory.getCache(jc, queryId, false, true))
         .attemptID(taskAttemptID)
         .addRowLineageColumns(shouldAddRowLineageColumns)
         .build();
