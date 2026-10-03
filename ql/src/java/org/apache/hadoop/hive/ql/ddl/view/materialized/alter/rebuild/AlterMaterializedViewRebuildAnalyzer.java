@@ -656,6 +656,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     ASTNode sortExprNode = astBuilder.createSortNodes(
             astBuilder.createAcidSortNodes((ASTNode) subqueryNodeInputROJ.getChild(1)));
     ParseDriver.adaptor.addChild(updateDeleteNode, sortExprNode);
+    addAcidDistribution(updateDeleteNode, subqueryNodeInputROJ, astBuilder);
     // 5) Modify INSERT branch condition. In particular, we need to modify the
     // WHERE clause and pick up the disjunct for the Insert branch.
     ASTNode whereClauseInInsert = findWhereClause(insertNode);
@@ -765,6 +766,17 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     // 4) Add filter condition to delete
     ASTNode whereClauseInDelete = findWhereClause(deleteNode);
     ParseDriver.adaptor.setChild(whereClauseInDelete, 0, predicate);
+    addAcidDistribution(deleteNode, subqueryNodeInputROJ, astBuilder);
+  }
+
+  // all the deletes of a data file reach one task, as for a DELETE statement
+  private static void addAcidDistribution(ASTNode deleteNode, ASTNode subqueryNodeInputROJ,
+      MaterializedViewASTBuilder astBuilder) {
+    List<ASTNode> distributeKeyNodes =
+        astBuilder.createAcidDistributeNodes((ASTNode) subqueryNodeInputROJ.getChild(1));
+    if (!distributeKeyNodes.isEmpty()) {
+      ParseDriver.adaptor.addChild(deleteNode, astBuilder.createDistributeNodes(distributeKeyNodes));
+    }
   }
 
   private void fixUpASTJoinInsertIncrementalRebuild(ASTNode newAST) throws SemanticException {

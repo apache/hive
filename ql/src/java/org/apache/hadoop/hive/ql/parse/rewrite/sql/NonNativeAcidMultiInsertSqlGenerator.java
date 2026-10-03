@@ -94,4 +94,13 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
             HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
         .collect(Collectors.toList());
   }
+
+  @Override
+  public List<String> getDistributeKeys(Operation operation) {
+    return targetTable.getStorageHandler().acidDistributeColumns(targetTable, operation)
+        .stream()
+        .map(fieldSchema -> qualify(
+            HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
+        .collect(Collectors.toList());
+  }
 }

@@ -1,0 +1,210 @@
+PREHOOK: query: create external table mv3_src (a int, b int) stored by iceberg tblproperties ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv3_src
+POSTHOOK: query: create external table mv3_src (a int, b int) stored by iceberg tblproperties ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv3_src
+PREHOOK: query: insert into mv3_src select pos, pos % 50 from (select posexplode(split(space(999), ' '))) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mv3_src
+POSTHOOK: query: insert into mv3_src select pos, pos % 50 from (select posexplode(split(space(999), ' '))) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mv3_src
+PREHOOK: query: create materialized view mv3 stored by iceberg tblproperties ('format-version'='3') as
+select b, count(*) c, sum(a) s from mv3_src group by b
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv3_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: create materialized view mv3 stored by iceberg tblproperties ('format-version'='3') as
+select b, count(*) c, sum(a) s from mv3_src group by b
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv3_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: mv3.b SIMPLE [(mv3_src)mv3_src.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: mv3.c EXPRESSION [(mv3_src)mv3_src.null, ]
+POSTHOOK: Lineage: mv3.s EXPRESSION [(mv3_src)mv3_src.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: insert into mv3_src select pos + 1000, pos % 50 from (select posexplode(split(space(99), ' '))) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mv3_src
+POSTHOOK: query: insert into mv3_src select pos + 1000, pos % 50 from (select posexplode(split(space(99), ' '))) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mv3_src
+PREHOOK: query: explain alter materialized view mv3 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@mv3
+PREHOOK: Input: default@mv3_src
+PREHOOK: Output: default@mv3
+PREHOOK: Output: default@mv3
+POSTHOOK: query: explain alter materialized view mv3 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@mv3
+POSTHOOK: Input: default@mv3_src
+POSTHOOK: Output: default@mv3
+POSTHOOK: Output: default@mv3
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+Reducer 7 <- Map 6 (SIMPLE_EDGE)
+
+Stage-6
+  Materialized View Update{"name:":"default.mv3","update creation metadata:":"true"}
+    Stage-5
+      Stats Work{}
+        Stage-0
+          Move Operator
+            table:{"name:":"default.mv3"}
+            Stage-4
+              Dependency Collection{}
+                Stage-3
+                  Reducer 3 vectorized
+                  File Output Operator [FS_45]
+                    table:{"name:":"default.mv3"}
+                    Select Operator [SEL_44] (rows=1 width=244)
+                      Output:["_col0","_col1","_col2","_col3"]
+                    <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
+                      PARTITION_ONLY_SHUFFLE [RS_13]
+                        PartitionCols:_col2
+                        Select Operator [SEL_12] (rows=1 width=244)
+                          Output:["_col0","_col1","_col2","_col3"]
+                          Filter Operator [FIL_11] (rows=1 width=284)
+                            predicate:_col3
+                            Merge Join Operator [MERGEJOIN_36] (rows=50 width=284)
+                              Conds:RS_38._col0=RS_43._col0(Right Outer),Output:["_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"]
+                            <-Map 1 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_38]
+                                PartitionCols:_col0
+                                Select Operator [SEL_37] (rows=50 width=268)
+                                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
+                                  TableScan [TS_0] (rows=50 width=20)
+                                    default@mv3,default.mv3,Tbl:COMPLETE,Col:COMPLETE,Output:["b","c","s"]
+                            <-Reducer 7 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_43]
+                                PartitionCols:_col0
+                                Group By Operator [GBY_42] (rows=50 width=20)
+                                  Output:["_col0","_col1","_col2"],aggregations:["count(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
+                                <-Map 6 [SIMPLE_EDGE] vectorized
+                                  SHUFFLE [RS_41]
+                                    PartitionCols:_col0
+                                    Group By Operator [GBY_40] (rows=50 width=20)
+                                      Output:["_col0","_col1","_col2"],aggregations:["count()","sum(a)"],keys:b
+                                      Select Operator [SEL_39] (rows=1100 width=8)
+                                        Output:["a","b"]
+                                        TableScan [TS_2] (rows=1100 width=8)
+                                          default@mv3_src,mv3_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+                  Reducer 4 vectorized
+                  File Output Operator [FS_48]
+                    Select Operator [SEL_47] (rows=1 width=792)
+                      Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
+                      Group By Operator [GBY_46] (rows=1 width=504)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
+                      <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
+                        PARTITION_ONLY_SHUFFLE [RS_22]
+                          Group By Operator [GBY_21] (rows=1 width=504)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(b)","max(b)","count(1)","count(b)","compute_bit_vector_hll(b)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)","min(s)","max(s)","count(s)","compute_bit_vector_hll(s)"]
+                            Select Operator [SEL_20] (rows=1 width=20)
+                              Output:["b","c","s"]
+                              Select Operator [SEL_17] (rows=1 width=20)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_16] (rows=1 width=284)
+                                  predicate:_col3
+                                   Please refer to the previous Merge Join Operator [MERGEJOIN_36]
+                  Reducer 5 vectorized
+                  File Output Operator [FS_51]
+                    Select Operator [SEL_50] (rows=1 width=792)
+                      Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
+                      Group By Operator [GBY_49] (rows=1 width=504)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
+                      <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
+                        PARTITION_ONLY_SHUFFLE [RS_32]
+                          Group By Operator [GBY_31] (rows=1 width=504)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(b)","max(b)","count(1)","count(b)","compute_bit_vector_hll(b)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)","min(s)","max(s)","count(s)","compute_bit_vector_hll(s)"]
+                            Select Operator [SEL_30] (rows=1 width=20)
+                              Output:["b","c","s"]
+                              Select Operator [SEL_27] (rows=1 width=20)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_26] (rows=1 width=284)
+                                  predicate:_col3 is null
+                                   Please refer to the previous Merge Join Operator [MERGEJOIN_36]
+
+PREHOOK: query: alter materialized view mv3 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@mv3
+PREHOOK: Input: default@mv3_src
+PREHOOK: Output: default@mv3
+PREHOOK: Output: default@mv3
+POSTHOOK: query: alter materialized view mv3 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@mv3
+POSTHOOK: Input: default@mv3_src
+POSTHOOK: Output: default@mv3
+POSTHOOK: Output: default@mv3
+PREHOOK: query: select count(*), count(distinct file_path) from default.mv3.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*), count(distinct file_path) from default.mv3.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1
+PREHOOK: query: select count(*) from default.mv3.delete_files where file_path like '%merged-dvs%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from default.mv3.delete_files where file_path like '%merged-dvs%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: select sum(c), sum(s), count(*) from mv3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum(c), sum(s), count(*) from mv3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1100	604450	50
+PREHOOK: query: select sum(c), sum(s), count(distinct b) from (select b, count(*) c, sum(a) s from mv3_src group by b) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv3
+PREHOOK: Input: default@mv3_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum(c), sum(s), count(distinct b) from (select b, count(*) c, sum(a) s from mv3_src group by b) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv3
+POSTHOOK: Input: default@mv3_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1100	604450	50
+PREHOOK: query: drop materialized view mv3
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv3
+PREHOOK: Output: default@mv3
+POSTHOOK: query: drop materialized view mv3
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv3
+POSTHOOK: Output: default@mv3
+PREHOOK: query: drop table mv3_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@mv3_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv3_src
+POSTHOOK: query: drop table mv3_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@mv3_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv3_src

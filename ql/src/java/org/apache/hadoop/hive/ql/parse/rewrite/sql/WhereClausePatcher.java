@@ -32,29 +32,16 @@ public class WhereClausePatcher {
     // TOK_QUERY -> TOK_FROM
     //          \-> TOK_INSERT -> TOK_INSERT_INTO
     //                        \-> TOK_SELECT
-    //                        \-> TOK_SORTBY
-    // Or
-    // TOK_QUERY -> TOK_FROM
-    //          \-> TOK_INSERT -> TOK_INSERT_INTO
-    //                        \-> TOK_SELECT
+    //                        \-> [TOK_DISTRIBUTEBY]
+    //                        \-> [TOK_SORTBY]
     //
     // The following adds the TOK_WHERE and its subtree from the original query as a child of
-    // TOK_INSERT, which is where it would have landed if it had been there originally in the
+    // TOK_INSERT right after TOK_SELECT, which is where it would have landed if it had been there originally in the
     // string.  We do it this way because it's easy then turning the original AST back into a
     // string and reparsing it.
-    if (rewrittenInsert.getChildren().size() == 3) {
-      // We have to move the SORT_BY over one, so grab it and then push it to the second slot,
-      // and put the where in the first slot
-      ASTNode sortBy = (ASTNode) rewrittenInsert.getChildren().get(2);
-      assert sortBy.getToken().getType() == HiveParser.TOK_SORTBY :
-          "Expected TOK_SORTBY to be third child of TOK_INSERT, but found " + sortBy.getName();
-      rewrittenInsert.addChild(sortBy);
-      rewrittenInsert.setChild(2, whereTree);
-    } else {
-      ASTNode select = (ASTNode) rewrittenInsert.getChildren().get(1);
-      assert select.getToken().getType() == HiveParser.TOK_SELECT :
-          "Expected TOK_SELECT to be second child of TOK_INSERT, but found " + select.getName();
-      rewrittenInsert.addChild(whereTree);
-    }
+    ASTNode select = (ASTNode) rewrittenInsert.getChildren().get(1);
+    assert select.getToken().getType() == HiveParser.TOK_SELECT :
+        "Expected TOK_SELECT to be second child of TOK_INSERT, but found " + select.getName();
+    rewrittenInsert.insertChild(2, whereTree);
   }
 }
