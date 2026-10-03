@@ -29,10 +29,13 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -166,6 +169,7 @@ public class StatsOptimizer extends Transform {
     enum StatType{
       Integer,
       Double,
+      Decimal,
       String,
       Boolean,
       Binary,
@@ -219,6 +223,9 @@ public class StatsOptimizer extends Transform {
         return StatType.String;
       } else if (origType.equals(serdeConstants.DATE_TYPE_NAME)) {
         return StatType.Date;
+      } else if (origType.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+        // the type name carries precision and scale, as decimal(5,2)
+        return StatType.Decimal;
       }
       return StatType.Unsupported;
     }
@@ -227,6 +234,7 @@ public class StatsOptimizer extends Transform {
       return switch (type) {
         case Integer -> statData.getLongStats().getNumNulls();
         case Double -> statData.getDoubleStats().getNumNulls();
+        case Decimal -> statData.getDecimalStats().getNumNulls();
         case String -> statData.getStringStats().getNumNulls();
         case Boolean -> statData.getBooleanStats().getNumNulls();
         case Binary -> statData.getBinaryStats().getNumNulls();
@@ -246,6 +254,7 @@ public class StatsOptimizer extends Transform {
       return switch (type) {
         case Integer -> ColumnStatisticsData.longStats(new LongColumnStatsData());
         case Double -> ColumnStatisticsData.doubleStats(new DoubleColumnStatsData());
+        case Decimal -> ColumnStatisticsData.decimalStats(new DecimalColumnStatsData());
         case String -> ColumnStatisticsData.stringStats(new StringColumnStatsData());
         case Boolean -> ColumnStatisticsData.booleanStats(new BooleanColumnStatsData());
         case Binary -> ColumnStatisticsData.binaryStats(new BinaryColumnStatsData());
@@ -500,6 +509,14 @@ public class StatsOptimizer extends Transform {
                 boolean isSet = high ? dstats.isSetHighValue() : dstats.isSetLowValue();
                 Date bound = high ? dstats.getHighValue() : dstats.getLowValue();
                 oneRow.add(isSet ? DateSubType.DAYS.cast(bound.getDaysSinceEpoch()) : null);
+              }
+              case Decimal -> {
+                // no SubType cast: a decimal's type name carries precision and scale, so it names no
+                // constant, and the bound already has the column's type
+                DecimalColumnStatsData dstats = statData.getDecimalStats();
+                boolean isSet = high ? dstats.isSetHighValue() : dstats.isSetLowValue();
+                Decimal bound = high ? dstats.getHighValue() : dstats.getLowValue();
+                oneRow.add(isSet ? DecimalUtils.getHiveDecimal(bound) : null);
               }
               default -> {
                 Logger.debug("Unsupported type: {} encountered in metadata optimizer for column: {}",
