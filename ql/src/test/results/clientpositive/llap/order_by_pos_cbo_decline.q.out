@@ -1,0 +1,28 @@
+PREHOOK: query: create table hive30037_ob_t (d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive30037_ob_t
+POSTHOOK: query: create table hive30037_ob_t (d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive30037_ob_t
+PREHOOK: query: insert into hive30037_ob_t values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive30037_ob_t
+POSTHOOK: query: insert into hive30037_ob_t values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive30037_ob_t
+POSTHOOK: Lineage: hive30037_ob_t.d SCRIPT []
+PREHOOK: query: select d from hive30037_ob_t tablesample (5 rows) s order by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive30037_ob_t
+#### A masked pattern was here ####
+POSTHOOK: query: select d from hive30037_ob_t tablesample (5 rows) s order by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive30037_ob_t
+#### A masked pattern was here ####
+3
+2
+1
