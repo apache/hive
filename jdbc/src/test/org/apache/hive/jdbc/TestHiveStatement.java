@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
 import org.apache.hive.service.rpc.thrift.TExecuteStatementReq;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.junit.Test;
 
@@ -172,8 +173,8 @@ public class TestHiveStatement {
     AtomicInteger callCount = new AtomicInteger(0);
     when(client.ExecuteStatement(any(TExecuteStatementReq.class))).thenAnswer(invocation -> {
       if (callCount.getAndIncrement() == 0) {
-        throw new SQLException(
-            "Unable to run new queries as HiveServer2 is decommissioned or inactive");
+        throw new SQLException("Unable to run new queries as HiveServer2 is decommissioned or inactive", null,
+            ErrorMsg.HS2_DECOMMISSIONED_OR_INACTIVE.getErrorCode());
       }
       throw new SQLException("Some other error after reconnect");
     });
@@ -185,7 +186,7 @@ public class TestHiveStatement {
       if (persistableEnabled) {
         assertEquals("Some other error after reconnect", e.getMessage());
       } else {
-        assertTrue(e.getMessage().contains("decommissioned or inactive"));
+        assertEquals(e.getErrorCode(), ErrorMsg.HS2_DECOMMISSIONED_OR_INACTIVE.getErrorCode());
       }
     }
 

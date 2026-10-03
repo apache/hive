@@ -21,6 +21,7 @@ package org.apache.hive.jdbc;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
@@ -40,11 +41,15 @@ import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
+import org.apache.http.ConnectionClosedException;
+import org.apache.http.NoHttpResponseException;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.SocketException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -59,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.net.ssl.SSLException;
 
 import static org.apache.hadoop.hive.ql.ErrorMsg.CLIENT_POLLING_OPSTATUS_INTERRUPTED;
 
@@ -246,37 +252,10 @@ public class HiveStatement implements java.sql.Statement {
     if (status == null) {
       return false;
     }
-    if (status.isSetErrorMessage()) {
-      String errorMsg = status.getErrorMessage();
-      if (errorMsg.contains("Invalid OperationHandle") || errorMsg.contains("Operation does not exist")) {
-        LOG.warn("Ignoring benign close operation error: {}", errorMsg);
-        return true;
-      }
-    }
-    List<String> messages = status.getInfoMessages();
-    if (messages != null && !messages.isEmpty()) {
-      /*
-       * Here we need to handle 2 different cases, which can happen in CLIService.closeOperation, which actually does:
-       * sessionManager.getOperationManager().getOperation(opHandle).getParentSession().closeOperation(opHandle);
-       */
-      String message = messages.getFirst();
-      if (message.contains("Invalid OperationHandle")) {
-        /*
-         * This happens when the first request properly removes the operation handle, then second request arrives, calls
-         * sessionManager.getOperationManager().getOperation(opHandle), and it doesn't find the handle.
-         */
-        LOG.warn("'Invalid OperationHandle' on server side (messages: " + messages + ")");
-        return true;
-      } else if (message.contains("Operation does not exist")) {
-        /*
-         * This is an extremely rare case, which represents a race condition when the first and second request
-         * arrives almost at the same time, both can get the OperationHandle instance
-         * from sessionManager's OperationManager, but the second fails, because it cannot get it again from the
-         * session's OperationManager, because it has been already removed in the meantime.
-         */
-        LOG.warn("'Operation does not exist' on server side (messages: " + messages + ")");
-        return true;
-      }
+    if (status.getErrorCode() == ErrorMsg.INVALID_OPERATION_HANDLE.getErrorCode() ||
+        status.getErrorCode() == ErrorMsg.OPERATION_NOT_EXIST.getErrorCode()) {
+      LOG.warn("Ignoring benign close operation error: {}", status.getErrorMessage());
+      return true;
     }
     return false;
   }
@@ -364,8 +343,6 @@ public class HiveStatement implements java.sql.Statement {
     return true;
   }
 
-  private static final String DECOMMISSIONED_ERROR = "HiveServer2 is decommissioned or inactive";
-
   private void runAsyncOnServer(String sql) throws SQLException {
     checkConnection("execute");
 
@@ -429,8 +406,7 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   private static boolean isDecommissionedError(SQLException e) {
-    String msg = e.getMessage();
-    return msg != null && msg.contains(DECOMMISSIONED_ERROR);
+    return e.getErrorCode() == ErrorMsg.HS2_DECOMMISSIONED_OR_INACTIVE.getErrorCode();
   }
 
   /**
@@ -594,8 +570,7 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   private static boolean isInvalidOperationHandleError(SQLException e) {
-    String msg = e.getMessage();
-    return msg != null && msg.contains("Invalid OperationHandle");
+    return e.getErrorCode() == ErrorMsg.INVALID_OPERATION_HANDLE.getErrorCode();
   }
 
   private static boolean isRetriableExecutionError(SQLException e) {
@@ -605,13 +580,11 @@ public class HiveStatement implements java.sql.Statement {
 
   private static boolean isTransportError(Throwable t) {
     while (t != null) {
-      String name = t.getClass().getName();
-      if (name.contains("NoHttpResponseException")
-          || name.contains("SocketException")
-          || name.contains("ConnectException")
-          || name.contains("TTransportException")
-          || name.contains("SSLException")
-          || name.contains("ConnectionClosedException")) {
+      if (t instanceof NoHttpResponseException
+          || t instanceof SocketException
+          || t instanceof TTransportException
+          || t instanceof SSLException
+          || t instanceof ConnectionClosedException) {
         return true;
       }
       t = t.getCause();

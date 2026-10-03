@@ -32,6 +32,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.service.cli.HiveErrorCodeRuntimeException;
 import org.apache.hive.service.cli.HiveSQLException;
 
 public class HiveSessionProxy implements InvocationHandler {
@@ -90,6 +91,8 @@ public class HiveSessionProxy implements InvocationHandler {
         // TODO: maybe we should throw this as-is too. ThriftCLIService currently catches Exception,
         //       so the combination determines what would kill the HS2 executor thread. For now,
         //       let's only allow OOM to propagate.
+      } else if (e.getCause() instanceof HiveErrorCodeRuntimeException) {
+        throw (HiveErrorCodeRuntimeException)e.getCause();
       }
       throw new RuntimeException(e.getCause());
     } catch (IllegalArgumentException e) {
