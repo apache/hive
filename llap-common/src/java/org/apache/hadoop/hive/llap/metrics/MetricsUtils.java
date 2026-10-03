@@ -18,8 +18,7 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import org.apache.hadoop.hive.common.ServerUtils;
 import java.util.UUID;
 
 /**
@@ -29,13 +28,12 @@ public class MetricsUtils {
   private static final String LOCALHOST = "localhost";
   public static final String METRICS_PROCESS_NAME = "LlapDaemon";
 
-
+  /**
+   * @deprecated Use {@link org.apache.hadoop.hive.common.ServerUtils#hostname()} instead.
+   */
+  @Deprecated
   public static String getHostName() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      return LOCALHOST;
-    }
+    return ServerUtils.hostname();
   }
 
   public static String getUUID() {

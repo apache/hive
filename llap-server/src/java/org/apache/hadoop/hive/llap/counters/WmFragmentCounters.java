@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.llap.counters;
 
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounters;
@@ -138,7 +139,7 @@ public class WmFragmentCounters {
     // add queue and runtime (together with task count) on a "per daemon" level
     // to the Tez counters.
     if (addTaskTimeCounters) {
-      String hostName = MetricsUtils.getHostName();
+      String hostName = ServerUtils.hostname();
       long queued = fixedCounters.get(LlapWmCounters.GUARANTEED_QUEUED_NS.ordinal())
                     + fixedCounters.get(LlapWmCounters.SPECULATIVE_QUEUED_NS.ordinal());
       long running = fixedCounters.get(LlapWmCounters.GUARANTEED_RUNNING_NS.ordinal())

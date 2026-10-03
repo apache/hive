@@ -18,37 +18,27 @@
  */
 package org.apache.hadoop.hive.registry;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import org.apache.hadoop.hive.common.ServerUtils;
 import java.util.UUID;
 
 public class RegistryUtilities {
   private static final String LOCALHOST = "localhost";
 
   /**
-   * Will return hostname stored in InetAddress.
-   *
+   * @deprecated Use {@link org.apache.hadoop.hive.common.ServerUtils#hostname()} instead.
    * @return hostname
    */
+  @Deprecated
   public static String getHostName() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      return LOCALHOST;
-    }
+    return ServerUtils.hostname();
   }
 
   /**
-   * Will return FQDN of the host after doing reverse DNS lookip.
-   *
-   * @return FQDN of host
+   * @deprecated Use {@link org.apache.hadoop.hive.common.ServerUtils#canonicalHostname()} instead.
    */
+  @Deprecated
   public static String getCanonicalHostName() {
-    try {
-      return InetAddress.getLocalHost().getCanonicalHostName();
-    } catch (UnknownHostException e) {
-      return LOCALHOST;
-    }
+    return ServerUtils.canonicalHostname();
   }
 
   public static String getUUID() {

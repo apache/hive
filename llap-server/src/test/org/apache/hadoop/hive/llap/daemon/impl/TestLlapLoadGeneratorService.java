@@ -22,11 +22,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Test;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,12 +32,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class TestLlapLoadGeneratorService {
   @Test
-  public void testLoadGeneratorStops() throws InterruptedException, UnknownHostException {
+  public void testLoadGeneratorStops() throws InterruptedException {
     LlapLoadGeneratorService service = new LlapLoadGeneratorService();
 
     HiveConf conf = new HiveConf();
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES,
-        InetAddress.getLocalHost().getHostName() + ",???");
+      ServerUtils.hostname() + ",???");
     HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION, 0.5f);
     HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_INTERVAL, 5, TimeUnit.MILLISECONDS);
 
@@ -59,12 +57,12 @@ public class TestLlapLoadGeneratorService {
   }
 
   @Test(expected = RuntimeException.class)
-  public void testLoadGeneratorFails() throws InterruptedException, UnknownHostException {
+  public void testLoadGeneratorFails() throws InterruptedException {
     LlapLoadGeneratorService service = new LlapLoadGeneratorService();
 
     HiveConf conf = new HiveConf();
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_HOSTNAMES,
-        InetAddress.getLocalHost().getHostName() + ",???");
+      ServerUtils.hostname() + ",???");
     HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_UTILIZATION, 1.2f);
     HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TEST_LOAD_INTERVAL, 5, TimeUnit.MILLISECONDS);
 

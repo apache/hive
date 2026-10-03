@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class JavaUtils {
   public static final Logger LOG = LoggerFactory.getLogger(JavaUtils.class);
@@ -106,15 +104,11 @@ public class JavaUtils {
   }
 
   /**
-   * @return name of current host
+   * @deprecated Use {@link  org.apache.hadoop.hive.metastore.utils.MetaStoreUtils#getHostname()} instead.
    */
+  @Deprecated
   public static String hostname() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
-    }
+    return MetaStoreUtils.getHostname();
   }
 
   public static <T> void setField(T req, String methodName, Class[] argsCls, Object... args) {

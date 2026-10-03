@@ -18,13 +18,12 @@
  */
 package org.apache.hive.hcatalog.templeton;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.security.Groups;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -88,7 +87,7 @@ final class ProxyUserSupport {
           String[] hostValues = confEnt.getValue().trim().split(",");
           hosts = new HashSet<String>();
           for(String hostname : hostValues) {
-            String nhn = normalizeHostname(hostname);
+            String nhn = ServerUtils.canonicalHostname(hostname);
             if(nhn != null) {
               hosts.add(nhn);
             }
@@ -132,7 +131,7 @@ final class ProxyUserSupport {
     LOG.debug(MessageFormat.format("Authorization check proxyuser [{0}] host [{1}] doAs [{2}]",
         proxyUser, proxyHost, doAsUser));
     if (proxyUserHosts.containsKey(proxyUser)) {
-      proxyHost = normalizeHostname(proxyHost);
+      proxyHost = ServerUtils.canonicalHostname(proxyHost);
       validateRequestorHost(proxyUser, proxyHost);
       validateGroup(proxyUser, doAsUser);
     }
@@ -185,17 +184,6 @@ final class ProxyUserSupport {
             proxyUser, doAsUser));
   }
 
-  private static String normalizeHostname(String name) {
-    try {
-      InetAddress address = InetAddress.getByName( 
-          "localhost".equalsIgnoreCase(name) ? null : name);
-      return address.getCanonicalHostName();
-    }
-    catch (UnknownHostException ex) {
-      LOG.warn(MessageFormat.format("Unable to normalize hostname [{0}]", name));
-      return null;
-    }
-  }
   /**
    * Check that a string is not null and not empty. If null or empty 
    * throws an IllegalArgumentException.

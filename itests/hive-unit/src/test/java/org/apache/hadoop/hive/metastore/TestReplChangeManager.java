@@ -580,7 +580,7 @@ public class TestReplChangeManager {
     }
     builder.append(IPStackUtils.resolveLoopbackAddress());
     builder.append(",");
-    builder.append(InetAddress.getLocalHost().getCanonicalHostName());
+    builder.append(ServerUtils.canonicalHostname());
     conf.setStrings(DefaultImpersonationProvider.getTestProvider().getProxySuperuserIpConfKey(superUserShortName),
       builder.toString());
   }

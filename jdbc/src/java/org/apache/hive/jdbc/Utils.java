@@ -20,9 +20,7 @@
 package org.apache.hive.jdbc;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -836,19 +835,11 @@ public class Utils {
   }
 
   /**
-   * Method to get canonical-ized hostname, given a hostname (possibly a CNAME).
-   * This should allow for service-principals to use simplified CNAMEs.
-   * @param hostName The hostname to be canonical-ized.
-   * @return Given a CNAME, the canonical-ized hostname is returned. If not found, the original hostname is returned.
+   * @deprecated Use {@link org.apache.hadoop.hive.common.ServerUtils#hostname()} instead.
    */
+  @Deprecated
   public static String getCanonicalHostName(String hostName) {
-    try {
-      return InetAddress.getByName(hostName).getCanonicalHostName();
-    }
-    catch(UnknownHostException exception) {
-      LOG.warn("Could not retrieve canonical hostname for " + hostName, exception);
-      return hostName;
-    }
+    return ServerUtils.canonicalHostname(hostName);
   }
 
   /**

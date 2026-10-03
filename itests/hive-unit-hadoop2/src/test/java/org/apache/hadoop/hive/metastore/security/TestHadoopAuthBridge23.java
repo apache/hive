@@ -133,7 +133,7 @@ public class TestHadoopAuthBridge23 {
     }
     builder.append(IPStackUtils.resolveLoopbackAddress());
     builder.append(",");
-    builder.append(InetAddress.getLocalHost().getCanonicalHostName());
+    builder.append(ServerUtils.canonicalHostname());
     conf.setStrings(DefaultImpersonationProvider.getTestProvider().getProxySuperuserIpConfKey(superUserShortName),
         builder.toString());
   }
@@ -329,7 +329,7 @@ public class TestHadoopAuthBridge23 {
                              .set(AuthenticationMethod.KERBEROS);
     return
         HiveMetaStore.getDelegationToken(ownerUgi.getShortUserName(),
-            realUgi.getShortUserName(), InetAddress.getLocalHost().getHostAddress());
+            realUgi.getShortUserName(), ServerUtils.getHostAddressString(ServerUtils.hostname()));
   }
 
   /**

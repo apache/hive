@@ -41,8 +41,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -109,7 +107,7 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
   @Override
   public void takeLeadership(LeaderElection election) throws Exception {
     HiveMetaStore.LOG.info("Became the LEADER for {}", election.getName());
-    String hostName = getHostname();
+    String hostName = MetaStoreUtils.getHostname();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     String message = "{\"leader_host\": \"" + hostName + "\", \"leader_type\": \""
         + election.getName() + "\", \"elected_time\": \"" + LocalDateTime.now().format(formatter) + "\"} \n";
@@ -153,15 +151,6 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
       }
     } catch (Exception e) {
       HiveMetaStore.LOG.error("Error while writing the leader info into file: " + path, e);
-    }
-  }
-
-  // copy from HiveMetaStore
-  private static String getHostname() {
-    try {
-      return "" + InetAddress.getLocalHost();
-    } catch(UnknownHostException uhe) {
-      return "" + uhe;
     }
   }
 

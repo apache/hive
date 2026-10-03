@@ -23,11 +23,11 @@ import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.net.InetAddress;
 import java.util.List;
 
 /**
@@ -68,7 +68,7 @@ public class TestLockRequestBuilder {
     List<LockComponent> locks = req.getComponent();
     Assert.assertEquals(2, locks.size());
     Assert.assertEquals("fred", req.getUser());
-    Assert.assertEquals(InetAddress.getLocalHost().getHostName(), req.getHostname());
+    Assert.assertEquals(MetaStoreUtils.getHostname(), req.getHostname());
   }
 
   // Test that database and table don't coalesce.
