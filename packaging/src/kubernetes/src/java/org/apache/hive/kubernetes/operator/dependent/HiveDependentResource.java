@@ -38,6 +38,8 @@ import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy;
+import io.fabric8.kubernetes.api.model.apps.DeploymentStrategyBuilder;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
@@ -58,6 +60,7 @@ import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
+import org.apache.hive.kubernetes.operator.model.spec.UpdateStrategy;
 
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
 import org.apache.hive.kubernetes.operator.model.spec.ProbeSpec;
@@ -974,6 +977,29 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       break;
     }
     return sb.toString();
+  }
+
+  protected static DeploymentStrategy buildDeploymentUpdateStrategy(UpdateStrategy updateStrategy) {
+    UpdateStrategy strategy = updateStrategy != null ? updateStrategy : UpdateStrategy.ROLLING_UPDATE;
+    if (strategy == UpdateStrategy.RECREATE) {
+      return new DeploymentStrategyBuilder().withType("Recreate").build();
+    }
+    return new DeploymentStrategyBuilder()
+            .withType("RollingUpdate")
+            .withNewRollingUpdate()
+            .withMaxSurge(new IntOrString(0))
+            .withMaxUnavailable(new IntOrString(1))
+            .endRollingUpdate()
+            .build();
+  }
+
+  protected static UpdateStrategy tezAmUpdateStrategy(HiveClusterSpec clusterSpec, LlapSpec llap) {
+    LlapSpec.LlapTezAmSpec perClusterSpec = llap.tezAm();
+    if (perClusterSpec != null && perClusterSpec.updateStrategy() != null) {
+      return perClusterSpec.updateStrategy();
+    }
+    UpdateStrategy clusterTezAmStrategy = clusterSpec.tezAm().updateStrategy();
+    return clusterTezAmStrategy != null ? clusterTezAmStrategy : UpdateStrategy.ROLLING_UPDATE;
   }
 
 }

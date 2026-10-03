@@ -254,6 +254,14 @@ spec:
                       type: object
                     type: array
                     x-kubernetes-preserve-unknown-fields: true
+                  updateStrategy:
+                    default: RollingUpdate
+                    description: "Update strategy for HiveServer2: RollingUpdate (one\
+                      \ by one) or Recreate (all at once)"
+                    enum:
+                    - Recreate
+                    - RollingUpdate
+                    type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               image:
@@ -527,6 +535,14 @@ spec:
                             type: object
                           type: array
                           x-kubernetes-preserve-unknown-fields: true
+                        updateStrategy:
+                          description: "Update strategy for this LLAP Cluster's TezAM:\
+                            \ RollingUpdate (one by one) or Recreate (all at once),\
+                            \ overriding spec.tezAm.updateStrategy"
+                          enum:
+                          - Recreate
+                          - RollingUpdate
+                          type: string
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
                     tolerations:
@@ -535,6 +551,14 @@ spec:
                         type: object
                       type: array
                       x-kubernetes-preserve-unknown-fields: true
+                    updateStrategy:
+                      default: RollingUpdate
+                      description: "Update strategy for LLAP Cluster: RollingUpdate\
+                        \ (one by one) or Recreate (all at once)"
+                      enum:
+                      - Recreate
+                      - RollingUpdate
+                      type: string
                   required:
                   - name
                   type: object
@@ -749,6 +773,14 @@ spec:
                       type: object
                     type: array
                     x-kubernetes-preserve-unknown-fields: true
+                  updateStrategy:
+                    default: RollingUpdate
+                    description: "Update strategy for Metastore: RollingUpdate (one\
+                      \ by one) or Recreate (all at once)"
+                    enum:
+                    - Recreate
+                    - RollingUpdate
+                    type: string
                   warehouseDir:
                     default: /hive/warehouse
                     description: Warehouse directory path
@@ -897,6 +929,14 @@ spec:
                       type: object
                     type: array
                     x-kubernetes-preserve-unknown-fields: true
+                  updateStrategy:
+                    default: RollingUpdate
+                    description: "Update strategy for the TezAM: RollingUpdate (one\
+                      \ by one) or Recreate (all at once)"
+                    enum:
+                    - Recreate
+                    - RollingUpdate
+                    type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               volumeMounts:
