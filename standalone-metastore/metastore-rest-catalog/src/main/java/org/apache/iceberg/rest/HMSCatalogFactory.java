@@ -32,16 +32,21 @@ import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.ServletServerBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.rest.metrics.IcebergMetricsReporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Catalog &amp; servlet factory.
  */
 public class HMSCatalogFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogFactory.class);
   private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
+  private static final String CLIENT_POOL_USER_CACHE_KEY = "user_name";
 
   private final Configuration configuration;
   private final int port;
@@ -80,6 +85,16 @@ public class HMSCatalogFactory {
     // This tells HiveCatalog to use Thrift connection to external HMS
     if (!StringUtils.isEmpty(configUri)) {
       properties.put(CatalogProperties.URI, configUri);
+      // Remote HMS: isolate metastore client pools per authenticated REST user so set_ugi matches the caller.
+      if (configuration.get(SERVLET_ID_KEY) == null) {
+        properties.put(CatalogProperties.CLIENT_POOL_CACHE_KEYS, CLIENT_POOL_USER_CACHE_KEY);
+      }
+      if (UserGroupInformation.isSecurityEnabled()) {
+        LOG.info(
+            "Remote Iceberg REST catalog will use per-user HMS client pools with delegation tokens "
+                + "for authenticated proxy users; ensure Hadoop proxy-user rules allow the catalog "
+                + "service to impersonate REST users.");
+      }
     }
     final String configWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE);
     if (!StringUtils.isEmpty(configWarehouse)) {
