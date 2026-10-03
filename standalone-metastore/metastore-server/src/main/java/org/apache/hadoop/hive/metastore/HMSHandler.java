@@ -3887,6 +3887,7 @@ public class HMSHandler extends PrivilegeHandler {
     boolean success = false;
     RawStore ms = getMS();
     try {
+      authorizeProxyPrivilege();
       ms.openTransaction();
       ms.addRuntimeStat(stat);
       success = ms.commitTransaction();
@@ -3907,9 +3908,10 @@ public class HMSHandler extends PrivilegeHandler {
     startFunction("get_runtime_stats");
     Exception ex = null;
     try {
+      authorizeProxyPrivilege();
       List<RuntimeStat> res = getMS().getRuntimeStats(rqst.getMaxWeight(), rqst.getMaxCreateTime());
       return res;
-    } catch (MetaException e) {
+    } catch (Exception e) {
       LOG.error("Caught exception", e);
       ex = e;
       throw e;
@@ -4030,6 +4032,7 @@ public class HMSHandler extends PrivilegeHandler {
     startFunction("add_replication_metrics");
     Exception ex = null;
     try {
+      authorizeProxyPrivilege();
       getMS().addReplicationMetrics(replicationMetricList);
     } catch (Exception e) {
       LOG.error("Caught exception", e);
@@ -4046,6 +4049,7 @@ public class HMSHandler extends PrivilegeHandler {
     startFunction("get_replication_metrics");
     Exception ex = null;
     try {
+      authorizeProxyPrivilege();
       return getMS().getReplicationMetrics(getReplicationMetricsRequest);
     } catch (Exception e) {
       LOG.error("Caught exception", e);
@@ -4193,9 +4197,10 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
     startFunction("get_all_write_event_info");
     Exception ex = null;
     try {
+      authorizeProxyPrivilege();
       List<WriteEventInfo> writeEventInfoList =
           getMS().getAllWriteEventInfo(request.getTxnId(), request.getDbName(), request.getTableName());
-      return writeEventInfoList == null ? Collections.emptyList() : writeEventInfoList;
+      return FilterUtils.filterWriteEventInfoIfEnabled(isServerFilterEnabled, filterHook, writeEventInfoList);
     } catch (Exception e) {
       LOG.error("Caught exception", e);
       ex = e;
