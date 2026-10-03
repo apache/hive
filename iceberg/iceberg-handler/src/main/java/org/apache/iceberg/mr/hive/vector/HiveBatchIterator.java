@@ -72,7 +72,8 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
     this.specId = task.file().specId();
     this.partitionHash = IcebergAcidUtil.computeHash(task.file().partition());
     this.filePath = task.file().location();
-    this.partitionName = IcebergTableUtil.toPartitionName(task.spec(), task.file().partition());
+    this.partitionName = IcebergTableUtil.formatPartitionNameForDisplay(
+        IcebergTableUtil.toPartitionName(task.spec(), task.file().partition()));
 
     this.firstRowId = task.file().firstRowId();
     this.fileSequenceNumber = task.file().fileSequenceNumber();

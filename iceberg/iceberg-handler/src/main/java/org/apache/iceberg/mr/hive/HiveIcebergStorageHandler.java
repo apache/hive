@@ -2373,6 +2373,27 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public Object parsePartitionLiteralForExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      FieldSchema partCol, String pathEncodedValue) throws SemanticException {
+    Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    Types.NestedField field = icebergTable.schema().caseInsensitiveFindField(partCol.getName());
+    if (field == null) {
+      throw new SemanticException("No column by the name: " + partCol.getName());
+    }
+    return IcebergTableUtil.parsePartitionLiteralFromPath(field.type(), pathEncodedValue);
+  }
+
+  @Override
+  public String formatPartitionNameForDisplay(String pathPartitionName) {
+    return IcebergTableUtil.formatPartitionNameForDisplay(pathPartitionName);
+  }
+
+  @Override
+  public String formatPartitionNameForPath(String displayPartitionName) {
+    return IcebergTableUtil.formatPartitionNameForPath(displayPartitionName);
+  }
+
+  @Override
   public List<Partition> getPartitionsByExpr(org.apache.hadoop.hive.ql.metadata.Table hmsTable, ExprNodeDesc filter,
       Boolean latestSpecOnly) throws SemanticException {
     Expression exp = HiveIcebergInputFormat.getFilterExpr(conf, (ExprNodeGenericFuncDesc) filter);
@@ -2404,10 +2425,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
             PartitionSpec spec = task.spec();
             PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
             String partName = IcebergTableUtil.toPartitionName(spec, partitionData);
-
-            DummyPartition partition =
-                new DummyPartition(hmsTable, partName, IcebergTableUtil.specFromName(partName));
-            partitions.add(partition);
+            partitions.add(IcebergTableUtil.toMetastorePartition(hmsTable, partName));
           });
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));

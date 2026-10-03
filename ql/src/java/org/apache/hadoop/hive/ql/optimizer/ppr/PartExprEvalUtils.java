@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -56,48 +58,52 @@ public class PartExprEvalUtils {
     Map<String, String> partSpec = p.getSpec();
     Properties partProps = p.getSchema();
     
-    String[] partKeyTypes;
-    if (p.getTable().hasNonNativePartitionSupport()) {
-      if (!partSpec.keySet().containsAll(expr.getCols())) {
-        return null;
-      }
-      partKeyTypes = p.getTable().getPartCols().stream().map(FieldSchema::getType)
-          .toArray(String[]::new);
-    } else {
-      String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
-      partKeyTypes = pcolTypes.trim().split(":");
-    }
-    
-    if (partSpec.size() != partKeyTypes.length) {
-      if (DDLUtils.isIcebergTable(p.getTable())) {
-        return null;
-      }
-      throw new HiveException("Internal error : Partition Spec size, " + partSpec.size() +
-          " doesn't match partition key definition size, " + partKeyTypes.length);
-    }
+    boolean icebergTable = DDLUtils.isIcebergTable(p.getTable());
     String defaultPartitionName = HiveConf.getVar(SessionState.getSessionConf(),
         HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
 
-    // Create the row object
     List<String> partNames = new ArrayList<>();
     List<Object> partValues = new ArrayList<>();
     List<ObjectInspector> partObjectInspectors = new ArrayList<>();
-    int i = 0;
-    for (Map.Entry<String, String> entry : partSpec.entrySet()) {
-      partNames.add(entry.getKey());
-      ObjectInspector oi = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector
-          (TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i++]));
 
-      String partitionValue = entry.getValue();
-      if (partitionValue.equals(defaultPartitionName)) {
-        partValues.add(null); // Null for default partition.
-      } else {
-        partValues.add(ObjectInspectorConverters.getConverter(
-            PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi)
-            .convert(partitionValue));
+    if (icebergTable && p.getTable().hasNonNativePartitionSupport()) {
+      if (!populateIcebergPcrRow(expr, p, partSpec, defaultPartitionName, partNames, partValues,
+          partObjectInspectors)) {
+        return null;
       }
-      partObjectInspectors.add(oi);
+    } else {
+      String[] partKeyTypes;
+      if (p.getTable().hasNonNativePartitionSupport()) {
+        if (!partSpec.keySet().containsAll(expr.getCols())) {
+          return null;
+        }
+        partKeyTypes = p.getTable().getPartCols().stream().map(FieldSchema::getType)
+            .toArray(String[]::new);
+      } else {
+        String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
+        partKeyTypes = pcolTypes.trim().split(":");
+      }
+      if (partSpec.size() != partKeyTypes.length) {
+        throw new HiveException("Internal error : Partition Spec size, " + partSpec.size() +
+            " doesn't match partition key definition size, " + partKeyTypes.length);
+      }
+      int i = 0;
+      for (Map.Entry<String, String> entry : partSpec.entrySet()) {
+        partNames.add(entry.getKey());
+        String partitionValue = entry.getValue();
+        ObjectInspector oi = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector
+            (TypeInfoFactory.getPrimitiveTypeInfo(partKeyTypes[i++]));
+        if (partitionValue.equals(defaultPartitionName)) {
+          partValues.add(null); // Null for default partition.
+        } else {
+          partValues.add(ObjectInspectorConverters.getConverter(
+              PrimitiveObjectInspectorFactory.javaStringObjectInspector, oi)
+              .convert(partitionValue));
+        }
+        partObjectInspectors.add(oi);
+      }
     }
+
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);
 
@@ -109,6 +115,98 @@ public class PartExprEvalUtils {
     
     return ((PrimitiveObjectInspector) evaluateResultOI)
         .getPrimitiveJavaObject(evaluateResultO);
+  }
+
+  private static boolean populateIcebergPcrRow(ExprNodeDesc expr, Partition p, Map<String, String> pathSpec,
+      String defaultPartitionName, List<String> partNames, List<Object> partValues,
+      List<ObjectInspector> partObjectInspectors) throws HiveException {
+    List<String> exprPartCols = expr.getCols();
+    if (exprPartCols == null || exprPartCols.isEmpty()) {
+      return false;
+    }
+    Table table = p.getTable();
+    for (String colName : exprPartCols) {
+      FieldSchema partCol = table.getPartColByName(colName);
+      Integer pathIdx = null;
+      if (partCol == null) {
+        pathIdx = pathSpecKeyIndex(pathSpec, colName);
+        if (pathIdx == null) {
+          return false;
+        }
+        List<FieldSchema> partCols = table.getPartCols();
+        if (pathIdx >= partCols.size()) {
+          return false;
+        }
+        partCol = partCols.get(pathIdx);
+      }
+      String partitionValue = pathSpecValue(table, partCol, pathSpec, pathIdx);
+      if (partitionValue == null) {
+        return false;
+      }
+      partNames.add(colName);
+      PrimitiveTypeInfo partTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType());
+      ObjectInspector partOi =
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(partTypeInfo);
+      partObjectInspectors.add(partOi);
+      if (partitionValue.equals(defaultPartitionName)) {
+        partValues.add(null);
+      } else {
+        try {
+          Object javaValue = table.getStorageHandler().parsePartitionLiteralForExpr(
+              table, partCol, partitionValue);
+          partValues.add(ObjectInspectorConverters.getConverter(
+              PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(partTypeInfo),
+              partOi).convert(javaValue));
+        } catch (SemanticException e) {
+          throw new HiveException(e);
+        }
+      }
+    }
+    return true;
+  }
+
+  /** Index of a path segment key, or null if no case-insensitive match. */
+  private static Integer pathSpecKeyIndex(Map<String, String> pathSpec, String key) {
+    int idx = 0;
+    for (String pathKey : pathSpec.keySet()) {
+      if (pathKey.equalsIgnoreCase(key)) {
+        return idx;
+      }
+      idx++;
+    }
+    return null;
+  }
+
+  /** Literal from a path spec for a logical partition column (handles renames). */
+  private static String pathSpecValue(Table table, FieldSchema partCol, Map<String, String> pathSpec,
+      Integer knownPathIdx) {
+    for (Map.Entry<String, String> entry : pathSpec.entrySet()) {
+      if (entry.getKey().equalsIgnoreCase(partCol.getName())) {
+        return entry.getValue();
+      }
+    }
+    int idx = knownPathIdx != null ? knownPathIdx : partColIndex(table, partCol);
+    if (idx < 0) {
+      return null;
+    }
+    int seg = 0;
+    for (String pathKey : pathSpec.keySet()) {
+      if (seg == idx) {
+        return pathSpec.get(pathKey);
+      }
+      seg++;
+    }
+    return null;
+  }
+
+  private static int partColIndex(Table table, FieldSchema partCol) {
+    List<FieldSchema> partCols = table.getPartCols();
+    for (int i = 0; i < partCols.size(); i++) {
+      if (partCols.get(i).getName().equalsIgnoreCase(partCol.getName())) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   public static Pair<PrimitiveObjectInspector, ExprNodeEvaluator> prepareExpr(
