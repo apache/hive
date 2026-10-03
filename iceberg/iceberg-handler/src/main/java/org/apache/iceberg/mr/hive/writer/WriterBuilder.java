@@ -33,6 +33,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.TaskAttemptID;
@@ -154,7 +155,9 @@ public class WriterBuilder {
   }
 
   private Map<String, DeleteFileSet> rewritableDeletes(UnaryOperator<String> ops) {
-    Snapshot snapshot = SnapshotUtil.latestSnapshot(table, ops.apply(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF));
+    // the target ref of the write, a reducer does not see the ref of the scan
+    String ref = HiveUtils.getTableSnapshotRef(ops.apply(Catalogs.SNAPSHOT_REF));
+    Snapshot snapshot = SnapshotUtil.latestSnapshot(table, ref);
     boolean caseSensitive = ObjectUtils.defaultIfNull(
         Boolean.parseBoolean(ops.apply(InputFormatConfig.CASE_SENSITIVE)),
         InputFormatConfig.CASE_SENSITIVE_DEFAULT);
