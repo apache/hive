@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.List;
+import org.apache.hadoop.hive.ql.io.AffectedRowsProvidingRecordWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -37,10 +38,12 @@ import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
-class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter {
+class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter
+    implements AffectedRowsProvidingRecordWriter {
 
   private final GenericRecord rowDataTemplate;
   private final List<DataFile> replacedDataFiles;
+  private long affectedRows;
 
   HiveIcebergCopyOnWriteRecordWriter(Table table, HiveFileWriterFactory writerFactory,
       OutputFileFactory deleteFileFactory, boolean shouldAddRowLineage, Context context) {
@@ -58,6 +61,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter {
     Record rowData = positionDelete.row();
 
     if (positionDelete.pos() < 0) {
+      affectedRows += -positionDelete.pos();
       int specId = IcebergAcidUtil.parseSpecId(record);
       DataFile dataFile =
           DataFiles.builder(specs.get(specId))
@@ -70,6 +74,11 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter {
     } else {
       write(rowData);
     }
+  }
+
+  @Override
+  public long getAffectedRows() {
+    return affectedRows;
   }
 
   @Override

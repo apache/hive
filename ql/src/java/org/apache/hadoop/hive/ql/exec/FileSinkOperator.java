@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AffectedRowsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -149,6 +150,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient String counterGroup;
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
   public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
+  private transient long affectedRowCount;
+  private transient boolean allWritersProvideAffectedRows;
+  private transient boolean hasAffectedRowsWriter;
   private transient Set<String> dynamicPartitionSpecs = new HashSet<>();
 
   /**
@@ -232,6 +236,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (outWriters[idx] != null) {
           try {
             outWriters[idx].close(abort);
+            recordAffectedRows(outWriters[idx]);
             updateProgress();
           } catch (IOException e) {
             exception = e;
@@ -743,6 +748,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       numRows = 0;
       cntr = 1;
+      affectedRowCount = 0;
+      allWritersProvideAffectedRows = true;
+      hasAffectedRowsWriter = false;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
       statsMap.put(getCounterName(Counter.RECORDS_OUT), row_count);
@@ -1184,6 +1192,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fpaths.addToStat(StatsSetupConst.ROW_COUNT, 1);
       }
 
+
       if ((++numRows == cntr) && LOG.isInfoEnabled()) {
         cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
         if (cntr < 0 || numRows < 0) {
@@ -1487,10 +1496,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     return FileUtils.makePartName(dpColNames, row);
   }
 
+  private void recordAffectedRows(RecordWriter writer) {
+    if (writer instanceof AffectedRowsProvidingRecordWriter) {
+      affectedRowCount += ((AffectedRowsProvidingRecordWriter) writer).getAffectedRows();
+      hasAffectedRowsWriter = true;
+    } else {
+      allWritersProvideAffectedRows = false;
+    }
+  }
+
+  private boolean hasAffectedRows() {
+    return hasAffectedRowsWriter && allWritersProvideAffectedRows;
+  }
+
   @Override
   public void closeOp(boolean abort) throws HiveException {
-
-    row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : numRows);
 
     LOG.info("{}: {} written - {}",
             this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
@@ -1565,6 +1585,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (isNativeTable()) {
           fsp.commit(fs, commitPaths, deleteDeltas);
         }
+      }
+      if (conf.isDeleteOfSplitUpdate()) {
+        row_count.set(0);
+      } else if (hasAffectedRows()) {
+        row_count.set(affectedRowCount);
+      } else {
+        row_count.set(numRows);
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {
         boolean isDelete = AcidUtils.Operation.DELETE.equals(conf.getAcidOperation());

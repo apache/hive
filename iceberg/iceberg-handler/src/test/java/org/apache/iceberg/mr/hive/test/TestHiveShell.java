@@ -163,6 +163,18 @@ public class TestHiveShell {
     }
   }
 
+  public long executeStatementAndGetNumModifiedRows(String statement) {
+    Preconditions.checkState(session.get() != null,
+            "You have to start TestHiveShell and open a session first, before running a query.");
+    try {
+      OperationHandle handle = client.executeStatement(session.get().getSessionHandle(), statement,
+          Collections.emptyMap());
+      return client.getOperationStatus(handle, false).getNumModifiedRows();
+    } catch (HiveSQLException e) {
+      throw new IllegalArgumentException("Failed to execute Hive query '" + statement + "': " + e.getMessage(), e);
+    }
+  }
+
   /**
    * Used for debugging. Please do not remove even if unused in the codebase.
    * @param statement The statement to execute

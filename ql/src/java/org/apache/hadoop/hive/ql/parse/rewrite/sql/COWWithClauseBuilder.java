@@ -37,10 +37,13 @@ public class COWWithClauseBuilder {
       String whereClause, boolean skipPrefix, boolean isRowLineageSupported, String rowLineagePrefix) {
     sqlGenerator.newCteExpr();
 
+    final String matchedRowCountCol = "cow_matched_row_count";
+
     sqlGenerator.append("t AS (");
     sqlGenerator.append("\n").indent();
     sqlGenerator.append("select ");
-    sqlGenerator.appendAcidSelectColumnsForDeletedRecords(Context.Operation.DELETE, skipPrefix);
+    sqlGenerator.appendAcidSelectColumnsForDeletedRecords(
+        Context.Operation.DELETE, skipPrefix, "-" + matchedRowCountCol);
     sqlGenerator.removeLastChar();
     addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, rowLineagePrefix, sqlGenerator.conf);
     sqlGenerator.append(" from (");
@@ -50,6 +53,8 @@ public class COWWithClauseBuilder {
     sqlGenerator.removeLastChar();
     addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, rowLineagePrefix, sqlGenerator.conf);
     sqlGenerator.append(", row_number() OVER (partition by ").append(filePathCol).append(") rn");
+    sqlGenerator.append(", count(*) OVER (partition by ").append(filePathCol).append(") ")
+        .append(matchedRowCountCol);
     sqlGenerator.append(" from ");
     sqlGenerator.append(sourceName == null ? sqlGenerator.getTargetTableFullName() : sourceName);
     sqlGenerator.append("\n").indent().indent();
