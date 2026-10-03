@@ -60,7 +60,7 @@ public class TestLlapDaemonProtocolServerImpl {
     LlapProtocolServerImpl server =
         new LlapProtocolServerImpl(null, numHandlers, containerRunnerMock,
            new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
-           0, 0, 0, null, null);
+           0, 0, null, null);
     when(containerRunnerMock.submitWork(any(SubmitWorkRequestProto.class))).thenReturn(
         SubmitWorkResponseProto
             .newBuilder()
@@ -95,7 +95,7 @@ public class TestLlapDaemonProtocolServerImpl {
     LlapProtocolServerImpl server =
         new LlapProtocolServerImpl(null, numHandlers, null,
             new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
-            0, 0, 0, null, executorMetrics);
+            0, 0, null, executorMetrics);
     executorMetrics.addMetricsFallOffFailedTimeLost(10);
     executorMetrics.addMetricsFallOffKilledTimeLost(11);
     executorMetrics.addMetricsFallOffSuccessTimeLost(12);
@@ -166,7 +166,7 @@ public class TestLlapDaemonProtocolServerImpl {
     LlapProtocolServerImpl server =
         new LlapProtocolServerImpl(null, numHandlers, containerRunnerMock,
             new AtomicReference<InetSocketAddress>(), new AtomicReference<InetSocketAddress>(),
-            0, 0, 0, null, executorMetrics);
+            0, 0, null, executorMetrics);
 
     try {
       server.init(new Configuration());
