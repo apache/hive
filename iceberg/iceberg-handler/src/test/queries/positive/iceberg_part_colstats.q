@@ -164,6 +164,27 @@ drop table ice_tbl_level;
 
 set hive.iceberg.stats.collect.partlevel=true;
 
+-- HIVE-30131: a decimal column answers MIN, MAX and COUNT from its statistics, folded across the
+-- partitions by the handler; 40.60 is stored as 40.6 and comes back padded to the column's scale
+create external table ice_dec_stats (d decimal(5,2), p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2');
+
+insert into ice_dec_stats values (-10.40, 'a'), (1.50, 'a'), (40.60, 'b'), (null, 'b');
+analyze table ice_dec_stats compute statistics for columns;
+
+explain
+select min(d), max(d), count(d) from ice_dec_stats;
+
+select min(d), max(d), count(d) from ice_dec_stats;
+
+explain
+select min(d), max(d), count(d) from ice_dec_stats where p = 'b';
+
+select min(d), max(d), count(d) from ice_dec_stats where p = 'b';
+
+drop table ice_dec_stats;
+
 -- with the statistics kept by the metastore there are no per-partition numbers to answer from
 set hive.iceberg.stats.source=metastore;
 
