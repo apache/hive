@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
@@ -228,6 +230,11 @@ public class CoreBeeLineDriver extends CliAdapter {
       long startTime = System.currentTimeMillis();
       System.err.println(">>> STARTED " + qFile.getName());
 
+      qOutProcessor.initMasks(FileUtils.readFileToString(qFile.getInputFile(), StandardCharsets.UTF_8));
+      setupAdditionalPartialMasks();
+      QOutProcessor.MaskingFoldState maskingFoldState = new QOutProcessor.MaskingFoldState();
+      beeLineClient.setOutputMasking(qOutProcessor, maskingFoldState);
+
       beeLineClient.execute(qFile, preCommands);
 
       long queryEndTime = System.currentTimeMillis();
@@ -238,7 +245,6 @@ public class CoreBeeLineDriver extends CliAdapter {
       long filterEndTime = System.currentTimeMillis();
       System.err.println(">>> FILTERED " + qFile.getName() + ": " + (filterEndTime - queryEndTime)
           + "ms");
-      qOutProcessor.maskPatterns(qFile.getOutputFile().getPath());
 
       if (!overwrite) {
         QTestProcessExecResult result = qFile.compareResults();
@@ -260,11 +266,38 @@ public class CoreBeeLineDriver extends CliAdapter {
         qFile.overwriteResults();
         System.err.println(">>> PASSED " + qFile.getName());
       }
+      resetAdditionalPartialMasks();
     } catch (Exception e) {
+      resetAdditionalPartialMasks();
       throw new Exception("Exception running or analyzing the results of the query file: " + qFile
           + "\n" + qFile.getDebugHint(), e);
     }
 
+  }
+
+  private void setupAdditionalPartialMasks() {
+    if (miniHS2 == null) {
+      return;
+    }
+    HiveConf conf = miniHS2.getHiveConf();
+    String patternStr = HiveConf.getVar(conf, ConfVars.HIVE_ADDITIONAL_PARTIAL_MASKS_PATTERN);
+    String replacementStr = HiveConf.getVar(conf, ConfVars.HIVE_ADDITIONAL_PARTIAL_MASKS_REPLACEMENT_TEXT);
+    if (patternStr != null && replacementStr != null && !replacementStr.isEmpty()
+        && !patternStr.isEmpty()) {
+      String[] patterns = patternStr.split(",");
+      String[] replacements = replacementStr.split(",");
+      if (patterns.length != replacements.length) {
+        throw new RuntimeException("Count mismatch for additional partial masks and their replacements");
+      }
+      for (int i = 0; i < patterns.length; i++) {
+        qOutProcessor.addPatternWithMaskComment(patterns[i],
+            String.format("### %s ###", replacements[i]));
+      }
+    }
+  }
+
+  private void resetAdditionalPartialMasks() {
+    qOutProcessor.resetPatternwithMaskComments();
   }
 
   public void runTest(QFile qFile) throws Exception {
