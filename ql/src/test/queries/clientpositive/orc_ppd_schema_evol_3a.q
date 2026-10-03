@@ -64,7 +64,6 @@ insert overwrite table orc_ppd_n3 select t, si, i, b, f, d, bo, s, cast(s as cha
 cast(s as varchar(50)) as v, da, `dec`, bin from orc_ppd_staging_n2 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin;
 
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
-SET hive.optimize.index.filter=false;
 
 -- Row group statistics for column t:
 -- Entry 0: count: 994 hasNull: true min: -10 max: 54 sum: 26014 positions: 0,0,0,0,0,0,0
@@ -73,176 +72,129 @@ SET hive.optimize.index.filter=false;
 
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > 127;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > 127;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = 55;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = 55;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = 54;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = 54;
 
 alter table orc_ppd_n3 change column t t smallint; 
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > 127;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > 127;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = 55;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = 55;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = 54;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = 54;
 
 alter table orc_ppd_n3 change column t t int;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > 127;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > 127;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = 55;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = 55;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = 54;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = 54;
 
 alter table orc_ppd_n3 change column t t bigint;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > 127;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > 127;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = 55;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = 55;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = 54;
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = 54;
 
 alter table orc_ppd_n3 change column t t string;
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > '127';
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 0 (no row groups)
 select count(*) from orc_ppd_n3 where t > '127';
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = '55';
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 1000 (1 row group)
 select count(*) from orc_ppd_n3 where t = '55';
 
-SET hive.optimize.index.filter=false;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = '54';
-SET hive.optimize.index.filter=true;
 -- INPUT_RECORDS: 2000 (2 row groups)
 select count(*) from orc_ppd_n3 where t = '54';
 
-SET hive.optimize.index.filter=false;
 -- float tests
 select count(*) from orc_ppd_n3 where f = 74.72;
-SET hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n3 where f = 74.72;
 
 alter table orc_ppd_n3 change column f f double;
 
-SET hive.optimize.index.filter=false;
 select count(*) from orc_ppd_n3 where f = 74.72000122070312;
-SET hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n3 where f = 74.72000122070312;
 
 alter table orc_ppd_n3 change column f f string;
 
-SET hive.optimize.index.filter=false;
 select count(*) from orc_ppd_n3 where f = '74.72000122070312';
-SET hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n3 where f = '74.72000122070312';
 
-SET hive.optimize.index.filter=false;
 -- string tests
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
-SET hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
 
 alter table orc_ppd_n3 change column s s char(50);
 
-SET hive.optimize.index.filter=false;
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
-SET hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
 
 alter table orc_ppd_n3 change column s s varchar(50);
 
-SET hive.optimize.index.filter=false;
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
-SET hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
 
 alter table orc_ppd_n3 change column s s char(50);
 
-SET hive.optimize.index.filter=false;
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
-SET hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
 
 alter table orc_ppd_n3 change column s s string;
 
-SET hive.optimize.index.filter=false;
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
-SET hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n3 where s = 'bob davidson';
 
 alter table orc_ppd_n3 add columns (boo boolean);
 
-SET hive.optimize.index.filter=false;
 -- ppd on newly added column
 select count(*) from orc_ppd_n3 where si = 442;
 select count(*) from orc_ppd_n3 where si = 442 or boo is not null or boo = false;
-SET hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n3 where si = 442;
 select count(*) from orc_ppd_n3 where si = 442 or boo is not null or boo = false;

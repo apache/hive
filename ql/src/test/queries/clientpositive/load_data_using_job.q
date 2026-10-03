@@ -98,7 +98,6 @@ drop table srcbucket_mapjoin_n8;
 -- Load into ACID table using ORC files
 set hive.mapred.mode=nonstrict;
 set hive.optimize.ppd=true;
-set hive.optimize.index.filter=true;
 set hive.tez.bucket.pruning=true;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
