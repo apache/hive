@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
@@ -66,6 +67,9 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     LlapCacheOnlyInputFormatInterface.VectorizedOnly {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergInputFormat.class);
+
+  private FileMetadataCache metadataCache;
+  private Configuration cacheConf;
 
   /**
    * Encapsulates planning-time and reader-time Iceberg filter expressions derived from Hive predicates.
@@ -222,9 +226,10 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
       job.setBoolean(InputFormatConfig.SKIP_RESIDUAL_FILTERING, true);
 
       IcebergSplit icebergSplit = ((IcebergSplitContainer) split).icebergSplit();
+      boolean useLlapCache = HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon());
       // bogus cast for favouring code reuse over syntax
       return (RecordReader) new HiveIcebergVectorizedRecordReader(
-          new IcebergInputFormat<>(),
+          useLlapCache ? new IcebergInputFormat<>(metadataCache, cacheConf) : new IcebergInputFormat<>(),
           icebergSplit,
           job,
           reporter);
@@ -244,8 +249,10 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   }
 
   @Override
-  public void injectCaches(FileMetadataCache metadataCache, DataCache dataCache, Configuration cacheConf) {
-    // no-op for Iceberg
+  public void injectCaches(FileMetadataCache fileMetadataCache, DataCache dataCache, Configuration daemonConf) {
+    // Used for deletes; data file readers get the LLAP caches in HiveVectorizedReader.
+    this.metadataCache = fileMetadataCache;
+    this.cacheConf = daemonConf;
   }
 
   @Override
