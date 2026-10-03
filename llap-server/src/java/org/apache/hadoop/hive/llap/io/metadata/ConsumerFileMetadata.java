@@ -25,6 +25,7 @@ import org.apache.orc.FileFormatException;
 import org.apache.orc.OrcFile;
 import org.apache.orc.OrcProto.CalendarKind;
 import org.apache.orc.OrcProto.Type;
+import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
 
 public interface ConsumerFileMetadata {
@@ -34,4 +35,7 @@ public interface ConsumerFileMetadata {
   TypeDescription getSchema() throws FileFormatException;
   OrcFile.Version getFileVersion();
   CalendarKind getCalendar();
+  /** Every stripe of the file in order, or empty when the data has no file positions (re-encoded input). */
+  List<StripeInformation> getStripes();
+  int getRowIndexStride();
 }

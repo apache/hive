@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -59,6 +60,7 @@ import org.apache.orc.OrcProto.ColumnEncoding;
 import org.apache.orc.OrcProto.RowIndex;
 import org.apache.orc.OrcProto.RowIndexEntry;
 import org.apache.orc.OrcProto.Type;
+import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
 
 public class GenericColumnVectorProducer implements ColumnVectorProducer {
@@ -303,6 +305,16 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     @Override
     public CalendarKind getCalendar() {
       return CalendarKind.JULIAN_GREGORIAN;
+    }
+
+    @Override
+    public List<StripeInformation> getStripes() {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public int getRowIndexStride() {
+      return 0;
     }
   }
 }

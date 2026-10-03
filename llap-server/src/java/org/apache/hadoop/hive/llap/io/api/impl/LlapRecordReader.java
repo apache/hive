@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketIdentifier;
+import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
@@ -85,7 +86,8 @@ import org.slf4j.MDC;
 
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
-class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
+class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch>,
+    RowPositionAwareVectorizedRecordReader {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRecordReader.class);
   private static final Object DONE_OBJECT = new Object();
@@ -579,6 +581,14 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       LlapIoImpl.LOG.trace("Processing will receive vector {}", lastCvb);
     }
     return lastCvb;
+  }
+
+  @Override
+  public long getRowNumber() {
+    if (lastCvb.startRowInFile < 0) {
+      throw new IllegalStateException("Row positions are not provided by " + rp.getClass().getSimpleName());
+    }
+    return lastCvb.startRowInFile;
   }
 
   @Override

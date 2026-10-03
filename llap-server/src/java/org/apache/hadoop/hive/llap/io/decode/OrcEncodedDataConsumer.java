@@ -70,6 +70,7 @@ public class OrcEncodedDataConsumer
   private TypeReader[] columnReaders;
   private int previousStripeIndex = -1;
   private ConsumerFileMetadata fileMetadata; // We assume one request is only for one file.
+  private long[] stripeStartRows; // file row of each stripe's first row; null without file positions
   private CompressionCodec codec;
   private List<ConsumerStripeMetadata> stripes;
   private SchemaEvolution evolution;
@@ -95,6 +96,12 @@ public class OrcEncodedDataConsumer
   public void setFileMetadata(ConsumerFileMetadata f) {
     assert fileMetadata == null;
     fileMetadata = f;
+    if (!f.getStripes().isEmpty()) {
+      stripeStartRows = new long[f.getStripes().size()];
+      for (int i = 1; i < stripeStartRows.length; ++i) {
+        stripeStartRows[i] = stripeStartRows[i - 1] + f.getStripes().get(i - 1).getNumberOfRows();
+      }
+    }
     stripes = new ArrayList<>(f.getStripeCount());
     codec = WriterImpl.createCodec(fileMetadata.getCompressionKind());
   }
@@ -137,6 +144,8 @@ public class OrcEncodedDataConsumer
       }
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
+      long rgStartRow = stripeStartRows == null ? -1 : stripeStartRows[currentStripeIndex]
+          + ((rgIdx == OrcEncodedColumnBatch.ALL_RGS || noIndex) ? 0 : (long) rgIdx * fileMetadata.getRowIndexStride());
       TypeDescription fileSchema = fileMetadata.getSchema();
 
       if (columnReaders == null || !sameStripe || noIndex) {
@@ -155,6 +164,7 @@ public class OrcEncodedDataConsumer
 
         ColumnVectorBatch cvb = takeBatch(batchSize);
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
+        cvb.startRowInFile = rgStartRow < 0 ? -1 : rgStartRow + (long) i * VectorizedRowBatch.DEFAULT_SIZE;
         for (int idx = 0; idx < columnReaders.length; ++idx) {
           /*
            * Currently, ORC's TreeReaderFactory class does this:
