@@ -46,8 +46,6 @@ import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
@@ -93,20 +91,14 @@ public class MapRecordProcessor extends RecordProcessor {
   private final ExecMapperContext execContext;
   private MapWork mapWork;
   private List<MapWork> mergeWorkList;
-  private final List<String> cacheKeys = new ArrayList<>();
-  private final List<String> dynamicValueCacheKeys = new ArrayList<>();
-  private final ObjectCache cache, dynamicValueCache;
   // is this part of the query-based compaction process
   private final boolean isInCompaction;
 
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
-    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVE_QUERY_ID);
     if (LlapProxy.isDaemon()) {
       setLlapOfFragmentId(context);
     }
-    cache = ObjectCacheFactory.getCache(jconf, queryId, true);
-    dynamicValueCache = ObjectCacheFactory.getCache(jconf, queryId, false, true);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     isInCompaction = CompactorUtil.COMPACTOR.equalsIgnoreCase(
@@ -129,12 +121,10 @@ public class MapRecordProcessor extends RecordProcessor {
 
 
     String key = processorContext.getTaskVertexName() + MAP_PLAN_KEY;
-    cacheKeys.add(key);
-
 
     // create map and fetch operators
     if (!isInCompaction) {
-      mapWork = cache.retrieve(key, () -> Utilities.getMapWork(jconf));
+      mapWork = planCache.retrieve(key, () -> Utilities.getMapWork(jconf));
     } else {
       // During query-based compaction, we don't want to retrieve old MapWork from the cache, we want a new mapper
       // and new UDF validate_acid_sort_order instance for each bucket, otherwise validate_acid_sort_order will fail.
@@ -160,11 +150,10 @@ public class MapRecordProcessor extends RecordProcessor {
         }
 
         key = processorContext.getTaskVertexName() + prefix;
-        cacheKeys.add(key);
 
         checkAbortCondition();
         mergeWorkList.add(
-            (MapWork) cache.retrieve(key, () -> Utilities.getMergeWork(jconf, prefix)));
+            (MapWork) planCache.retrieve(key, () -> Utilities.getMergeWork(jconf, prefix)));
       }
     }
 
@@ -307,9 +296,8 @@ public class MapRecordProcessor extends RecordProcessor {
       checkAbortCondition();
       String valueRegistryKey = DynamicValue.DYNAMIC_VALUE_REGISTRY_CACHE_KEY;
       // On LLAP dynamic value registry might already be cached.
-      final DynamicValueRegistryTez registryTez = dynamicValueCache.retrieve(valueRegistryKey,
-          () -> new DynamicValueRegistryTez());
-      dynamicValueCacheKeys.add(valueRegistryKey);
+      final DynamicValueRegistryTez registryTez =
+          dynamicValueCache.retrieve(valueRegistryKey, () -> new DynamicValueRegistryTez());
       RegistryConfTez registryConf = new RegistryConfTez(jconf, mapWork, processorContext, inputs);
       registryTez.init(registryConf);
 
@@ -442,17 +430,7 @@ public class MapRecordProcessor extends RecordProcessor {
       setAborted(execContext.getIoCxt().getIOExceptions());
     }
 
-    if (cache != null) {
-      for (String k: cacheKeys) {
-        cache.release(k);
-      }
-    }
-
-    if (dynamicValueCache != null) {
-      for (String k: dynamicValueCacheKeys) {
-        dynamicValueCache.release(k);
-      }
-    }
+    releaseCache();
 
     // detecting failed executions by exceptions thrown by the operator tree
     try {
