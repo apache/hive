@@ -20,6 +20,8 @@
 package org.apache.hadoop.hive.llap.io.api;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.SortedMap;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -79,6 +81,20 @@ public interface LlapIo<T> {
    */
   MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey)
       throws IOException;
+
+  /**
+   * Returns the buffers holding the given bloom filters of the Parquet file on the given path, reading and
+   * caching the ones not held yet. The buffers come back locked, so the caller releases each of them with
+   * {@code decRefBuffer} once it has read them.
+   *
+   * @param path Parquet file path
+   * @param conf job conf
+   * @param fileKey fileId of the Parquet file (either the Long fileId of HDFS or the SyntheticFileId)
+   * @param ranges offset to length of every wanted bloom filter, as the footer records them
+   * @return the buffers by offset, or null if there is nothing to serve them for
+   */
+  Map<Long, MemoryBufferOrBuffers> getParquetBloomFilterBuffersFromCache(Path path, JobConf conf,
+      @Nullable Object fileKey, SortedMap<Long, Integer> ranges) throws IOException;
 
   /**
    * Handles request to evict entities specified in the request object.
