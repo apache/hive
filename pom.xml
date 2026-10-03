@@ -1968,6 +1968,7 @@
             <eclude>.gitattributes</eclude>
             <exclude>*.patch</exclude>
             <exclude>**/pull_request_template.md</exclude>
+            <exclude>**/homebrew/README.md</exclude>
             <exclude>data/**</exclude>
             <exclude>checkstyle/**</exclude>
             <exclude>docs/Gemfile</exclude>
