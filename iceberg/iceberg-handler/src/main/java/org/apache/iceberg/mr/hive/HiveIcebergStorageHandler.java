@@ -284,8 +284,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     try {
       Table table =
           IcebergVendedCredentialUtil.getTableWithVendedCredentials(tableDesc.getProperties(), conf);
-      String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
-      IcebergVendedCredentialUtil.propagateToJob(table, catalogName, null, secrets, conf);
+      IcebergVendedCredentialUtil.propagateToJob(
+          table, tableDesc.getProperty(InputFormatConfig.CATALOG_NAME), null, secrets, conf);
     } catch (NoSuchTableException ex) {
       // Table may not exist yet for CTAS; credentials will not be available.
     }
@@ -343,6 +343,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
     configureOutputTableJobConf(tableDesc, jobConf);
+    if (tableDesc != null && tableDesc.getProperties() != null) {
+      RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(
+          conf, tableDesc.getProperty(InputFormatConfig.CATALOG_NAME), jobConf);
+    }
     if (IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
       IcebergVendedCredentialUtil.refreshVendedCredentialsIfMissing(tableDesc, jobConf, conf);
     }
@@ -382,7 +386,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
     jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
 
-    String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
+    String catalogName = tableDesc.getProperty(InputFormatConfig.CATALOG_NAME);
     if (catalogName != null) {
       jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
     }
@@ -1794,6 +1798,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       spec = PartitionSpec.unpartitioned();
     }
     props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
+
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+    RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(configuration, catalogName, map);
 
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
