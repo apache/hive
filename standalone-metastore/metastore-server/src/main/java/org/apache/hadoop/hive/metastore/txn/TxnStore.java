@@ -553,6 +553,15 @@ public interface TxnStore extends Configurable {
   void cleanupRecords(HiveObjectType type, Database db, Table table,
       Iterator<Partition> partitionIterator, long txnId) throws MetaException;
 
+  /**
+   * Clean compaction related records for the given table partitions.
+   * Used for non-transactional tables (e.g. Iceberg) where partition lifecycle is managed outside HMS.
+   */
+  @SqlRetry
+  @Transactional(POOL_TX)
+  @RetrySemantics.Idempotent
+  void cleanupCompactionRecords(Table table, List<String> partitionNames) throws MetaException;
+
   @SqlRetry
   @Transactional(POOL_TX)
   @RetrySemantics.Idempotent
