@@ -35,8 +35,6 @@ public class HiveCustomStorageHandlerUtils {
   public static final String WRITE_OPERATION_IS_SORTED = "file.sink.write.operation.sorted.";
   public static final String IS_COPY_ON_WRITE_CONFIG_PREFIX = "file.sink.is.copy.on.write.";
 
-  public static final String MERGE_TASK_ENABLED = "file.sink.merge.task.enabled.";
-
   public static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties) {
     StringBuilder properties = new StringBuilder();
     for (Map.Entry<String, String> serdeMap : tableProperties.entrySet()) {
@@ -83,18 +81,6 @@ public class HiveCustomStorageHandlerUtils {
 
   public static boolean getWriteOperationIsSorted(UnaryOperator<String> ops, String tableName) {
     String operation = ops.apply(WRITE_OPERATION_IS_SORTED + tableName);
-    return Boolean.parseBoolean(operation);
-  }
-
-  public static void setMergeTaskEnabled(Configuration conf, String tableName, boolean isMerge) {
-    if (conf == null || tableName == null) {
-      return;
-    }
-    conf.set(MERGE_TASK_ENABLED + tableName, Boolean.toString(isMerge));
-  }
-
-  public static boolean isMergeTaskEnabled(UnaryOperator<String> ops, String tableName) {
-    String operation = ops.apply(MERGE_TASK_ENABLED + tableName);
     return Boolean.parseBoolean(operation);
   }
 

@@ -74,6 +74,14 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public abstract List<String> getDeleteValues(Operation operation);
+
+  /**
+   * Appends the columns of the records a DELETE statement deletes.
+   */
+  public void appendDeletedRecordColumns() {
+    appendAcidSelectColumns(Operation.DELETE);
+  }
+
   public abstract List<String> getSortKeys(Operation operation);
 
   public List<String> getDistributeKeys(Operation operation) {
@@ -110,7 +118,7 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendDeleteBranch(String hintStr) {
-    List<String> deleteValues = getDeleteValues(Operation.DELETE);
+    List<String> deleteValues = getDeleteValues(Operation.MERGE);
     appendInsertBranch(hintStr, deleteValues);
   }
 
