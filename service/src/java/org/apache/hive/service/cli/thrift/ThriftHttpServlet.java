@@ -82,6 +82,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.server.TServlet;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.thrift.transport.TTransport;
 import org.ietf.jgss.GSSContext;
@@ -162,6 +163,11 @@ public class ThriftHttpServlet extends HttpServlet {
       this.jwtValidator = new JWTValidator(hiveConf);
     }
     this.httpAuthService = new HttpAuthService(cookieDomain, cookiePath, cookieMaxAge, isCookieSecure, AUTH_COOKIE);
+  }
+
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    doPost(req, resp);
   }
 
   @Override
