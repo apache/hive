@@ -126,6 +126,13 @@ public class TMessageSizeTransport extends TEndpointTransport {
   @Override
   public void consumeBuffer(int len) {
     wrapped.consumeBuffer(len);
+    if (len > 0) {
+      try {
+        countConsumedMessageBytes(len);
+      } catch (TTransportException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Override
