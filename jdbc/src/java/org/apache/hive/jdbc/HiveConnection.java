@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -95,6 +96,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.hive.common.IPStackUtils;
+import org.apache.hc.client5.http.classic.ExecChain;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -111,12 +113,15 @@ import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.NoHttpResponseException;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.io.entity.HttpEntityWrapper;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.util.Args;
@@ -168,6 +173,10 @@ import java.util.function.Supplier;
  */
 public class HiveConnection implements java.sql.Connection {
   private static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class);
+
+  // Additional attributes to retry logic
+  private static final String HIVE_REQUEST_SENT_ATTR = "hive.request_sent";
+  private static final String HIVE_REQUEST_SENT_EXEC_ID = "hive-request-sent-tracker";
 
   private String jdbcUriString;
   private String host;
@@ -709,9 +718,18 @@ public class HiveConnection implements java.sql.Connection {
     }
     final boolean cookieAuthEnabled = isCookieEnabled;
 
-    httpClientBuilder.addRequestInterceptorLast((request, entity, context) ->
-      context.setAttribute("hive.request_sent", Boolean.TRUE)
-    );
+    // Add retry attributes
+    httpClientBuilder.addExecInterceptorLast(HIVE_REQUEST_SENT_EXEC_ID,
+        (ClassicHttpRequest request, ExecChain.Scope scope, ExecChain chain) -> {
+          // The HttpClientContext is reused across retry attempts, so clear any flag
+          // left over from a previous attempt before this attempt runs.
+          scope.clientContext.removeAttribute(HIVE_REQUEST_SENT_ATTR);
+          HttpEntity wrapped = wrapEntityForSentTracking(request.getEntity(), scope.clientContext);
+          if (wrapped != null) {
+            request.setEntity(wrapped);
+          }
+          return chain.proceed(request, scope);
+        });
 
     // Beeline <------> LB <------> Reverse Proxy <-----> Hiveserver2
     // In case of deployments like above, the LoadBalancer (LB) can be configured with Idle Timeout after which the LB
@@ -775,7 +793,7 @@ public class HiveConnection implements java.sql.Connection {
           return true;
         }
 
-        Boolean isSent = (Boolean) context.getAttribute("hive.request_sent");
+        Boolean isSent = (Boolean) context.getAttribute(HIVE_REQUEST_SENT_ATTR);
         if (isSent == null || !isSent) {
           LOG.info("Retrying unsent request. Attempt " + executionCount + " of " + maxRetries);
           // Retry if the request has not been sent fully or
@@ -894,7 +912,9 @@ public class HiveConnection implements java.sql.Connection {
         final Registry<ConnectionSocketFactory> registry =
             RegistryBuilder.<ConnectionSocketFactory> create().register("https", socketFactory)
                 .build();
-        httpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
+        BasicHttpClientConnectionManager sslCm = new BasicHttpClientConnectionManager(registry);
+        sslCm.setConnectionConfig(connectionConfig);
+        httpClientBuilder.setConnectionManager(sslCm);
       } catch (Exception e) {
         String msg =
             "Could not create an https connection to " + jdbcUriString + ". " + e.getMessage();
@@ -902,6 +922,21 @@ public class HiveConnection implements java.sql.Connection {
       }
     }
     return httpClientBuilder.build();
+  }
+
+  private static HttpEntity wrapEntityForSentTracking(HttpEntity entity, HttpContext context) {
+    if (entity == null) {
+      return null;
+    }
+
+    return new HttpEntityWrapper(entity) {
+      @Override
+      public void writeTo(OutputStream outStream) throws IOException {
+        super.writeTo(outStream);
+        // Only reached if the full entity was written without throwing.
+        context.setAttribute(HIVE_REQUEST_SENT_ATTR, Boolean.TRUE);
+      }
+    };
   }
 
   private boolean isRequestTrackingEnabled() {
@@ -1199,7 +1234,7 @@ public class HiveConnection implements java.sql.Connection {
     // switch the database
     LOG.debug("Default database: {}", connParams.getDbName());
     openConf.put("use:database", connParams.getDbName());
-    
+
     if (wmPool != null) {
       openConf.put("set:hivevar:wmpool", wmPool);
     }
