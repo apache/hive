@@ -192,13 +192,16 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       try {
         performDataRead();
         consumer.setDone();
-      } catch (Exception e) {
+      } catch (Throwable t) {
+        // Throwable, not Exception: an OutOfMemoryError or a failed assertion from the allocation
+        // and decode path would otherwise escape without ever reaching the consumer, which then
+        // waits for a setDone that is not coming.
         // A shutdown-triggered InterruptedException must not be silently reported as an ordinary
         // consumer error: preserve the interrupt on the thread so any caller sees it.
-        if (e instanceof InterruptedException) {
+        if (t instanceof InterruptedException) {
           Thread.currentThread().interrupt();
         }
-        consumer.setError(e);
+        consumer.setError(t);
       } finally {
         counters.incrWallClockCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
       }
@@ -235,14 +238,24 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     try (FSDataInputStream fileStream = openFile(fs)) {
       ParquetRangeBuffers buffers = ParquetRangeBuffers.forStream(fileStream);
       Deque<RowGroupFetch> inFlight = new ArrayDeque<>();
+      // Latched the first time a fetch comes back with every vectored request already complete:
+      // that stream read inline on this thread, so a lookahead has nothing to overlap with and
+      // only doubles how much cache memory the fragment holds locked at once. Self-detected
+      // rather than read off hasCapability(VECTOREDIO_*), which says nothing about asynchrony.
+      boolean readsInline = false;
       try {
         for (int i = 0; i < selected.size() && !isStopped.get(); ++i) {
           if (inFlight.isEmpty()) {
-            inFlight.add(startFetch(fileStream, buffers, allocator, projected, selected.get(i),
-                rowGroupOf.get(selected.get(i))));
+            RowGroupFetch started = startFetch(fileStream, buffers, allocator, projected,
+                selected.get(i), rowGroupOf.get(selected.get(i)));
+            inFlight.add(started);
+            if (!readsInline && !started.readRanges.isEmpty() && readAlreadyComplete(started)) {
+              readsInline = true;
+            }
           }
           // The next row group's requests go out now so its transfer overlaps this one's decode.
-          if (i + 1 < selected.size() && !isStopped.get()
+          // Not once readsInline: that stream would do the transfer right here, before the decode.
+          if (!readsInline && i + 1 < selected.size() && !isStopped.get()
               && projectedChunkBytes(inFlight.peek()) + projectedChunkBytes(projected, selected.get(i + 1)) <= lookaheadBudget) {
             inFlight.add(startFetch(fileStream, buffers, allocator, projected, selected.get(i + 1),
                 rowGroupOf.get(selected.get(i + 1))));
@@ -390,9 +403,11 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       long hdfsStart = counters.startTimeCounter();
       requestMisses(fileStream, buffers, fetch, layout.maxRangeBytes());
       counters.recordHdfsTime(hdfsStart);
-    } catch (Exception e) {
+    } catch (Throwable t) {
+      // Throwable: a failed allocation throws an Error, and the buffers planned so far are the
+      // only reference to cache memory that is already locked.
       abandon(allocator, fetch);
-      throw e;
+      throw t;
     }
     return fetch;
   }
@@ -412,10 +427,22 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       }
       // consumeData returns the batch on success; after a throw it is still ours.
       consumer.consumeData(fetch.batch);
-    } catch (Exception e) {
+    } catch (Throwable t) {
+      // Throwable: decode and allocation both throw Errors, and this fetch's buffers are locked
+      // cache memory that nothing else holds a reference to.
       abandon(allocator, fetch);
-      throw e;
+      throw t;
     }
+  }
+
+  /** Whether every vectored request this fetch issued had already finished when it returned. */
+  private static boolean readAlreadyComplete(RowGroupFetch fetch) {
+    for (ReadRange readRange : fetch.readRanges) {
+      if (!readRange.range.getData().isDone()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** Drops a fetch that will not be decoded: outstanding requests are cancelled, buffers released. */
@@ -469,15 +496,16 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
           planGap(allocator, current, column, allMisses);
         }
       }
-    } catch (Exception e) {
-      // Hits past the failure point are still locked by getFileData; the caller only knows about
-      // the parts already recorded.
+    } catch (Throwable t) {
+      // Throwable: a failed allocation in planGap throws an Error, and the hits past the failure
+      // point are still locked by getFileData; the caller only knows about the parts already
+      // recorded.
       for (current = current.next; current != null; current = current.next) {
         if (current.hasData()) {
           bufferManager.decRefBuffer(((CacheChunk) current).getBuffer());
         }
       }
-      throw e;
+      throw t;
     }
   }
 
