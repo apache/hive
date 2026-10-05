@@ -179,6 +179,7 @@ public class SymlinkTextInputFormat extends SymbolicInputFormat implements
   private static void getTargetPathsFromSymlinksDirs(
       Configuration conf, Path[] symlinksDirs,
       List<Path> targetPaths, List<Path> symlinkPaths) throws IOException {
+    List<Path> allowedRoots = getAllowedRoots(conf);
     for (Path symlinkDir : symlinksDirs) {
       FileSystem fileSystem = symlinkDir.getFileSystem(conf);
       FileStatus[] symlinks = fileSystem.listStatus(symlinkDir, FileUtils.HIDDEN_FILES_PATH_FILTER);
@@ -192,8 +193,14 @@ public class SymlinkTextInputFormat extends SymbolicInputFormat implements
                   fileSystem.open(symlink.getPath())));
           String line;
           while ((line = reader.readLine()) != null) {
-            targetPaths.add(new Path(line));
-            symlinkPaths.add(symlink.getPath());
+            List<Path> matches = resolveTargets(conf, symlink.getPath(), allowedRoots, line);
+            if (matches.isEmpty()) {
+              throw new IOException("Symlink target " + line + " does not match any path");
+            }
+            for (Path match : matches) {
+              targetPaths.add(match);
+              symlinkPaths.add(symlink.getPath());
+            }
           }
         } finally {
           org.apache.hadoop.io.IOUtils.closeStream(reader);

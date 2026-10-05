@@ -3600,6 +3600,9 @@ public class HiveConf extends Configuration {
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
         "This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time."),
+    HIVE_SYMLINK_ALLOWED_TARGET_PATHS("hive.symlink.allowed.target.paths", "",
+        "Comma separated list of directories SymlinkTextInputFormat is allowed to read target files from,\n" +
+        "in addition to the location holding the symlink files themselves."),
 
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
@@ -5563,7 +5566,8 @@ public class HiveConf extends Configuration {
             "hive.hook.proto.base-directory," +
             "hive.rewrite.data.policy," +
             "hive.query.history.enabled," + // Query History service is initialized on HS2 startup (HIVE-29170)
-            "hive.llap.cluster.routing.rules",
+            "hive.llap.cluster.routing.rules," +
+            "hive.symlink.allowed.target.paths",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTORE_PWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
