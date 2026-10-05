@@ -51,7 +51,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
-/** Embedded REST server tests for the Hive executor reload path for server-side scan planning. */
+/**
+ * Integration tests for Hive server-side REST catalog scan planning via
+ * {@link HiveTableUtil#resolveTableForScanPlanning}: with catalog settings propagated from HS2 into
+ * the executor job conf, split generation reloads a live {@link RESTTable} from the embedded REST
+ * server instead of the serialized metadata snapshot ({@link SerializableTable}).
+ *
+ * <p>Without propagation, or when reload guards apply, executors keep the snapshot; those cases are
+ * unit-tested in {@code TestHiveIcebergServerSideScanPlanning} ({@code iceberg-handler}). Iceberg
+ * REST client {@code POST /plan} behavior is in {@code TestRestCatalogScanPlanningServerIT}.
+ */
 class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServer {
 
   private static final String CATALOG_NAME = "hive-iceberg-scan-planning";
@@ -99,8 +108,8 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
   protected Map<String, String> additionalCatalogProperties() {
     Configuration conf = new Configuration();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, CATALOG_NAME);
-    RestCatalogScanPlanningUtil.setScanPlanningMode(conf, CATALOG_NAME, "server");
-    RestCatalogScanPlanningUtil.setHiveRestScanPlanningMode(conf, "server");
+    RestCatalogScanPlanningUtil.setCatalogMode(conf, CATALOG_NAME, "server");
+    RestCatalogScanPlanningUtil.setHiveMode(conf, "server");
     return IcebergCatalogProperties.getCatalogProperties(conf, CATALOG_NAME);
   }
 
@@ -185,8 +194,8 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
     sessionConf.set(
         IcebergCatalogProperties.catalogPropertyConfigKey(CATALOG_NAME, CatalogProperties.URI),
         httpServer.getURI().toString());
-    RestCatalogScanPlanningUtil.setScanPlanningMode(sessionConf, CATALOG_NAME, "server");
-    RestCatalogScanPlanningUtil.setHiveRestScanPlanningMode(sessionConf, "server");
+    RestCatalogScanPlanningUtil.setCatalogMode(sessionConf, CATALOG_NAME, "server");
+    RestCatalogScanPlanningUtil.setHiveMode(sessionConf, "server");
     return sessionConf;
   }
 
