@@ -76,8 +76,9 @@ import org.apache.parquet.schema.PrimitiveType;
  *       {@link DataPageV2} and {@link DictionaryPage}, and the page checksum check
  *       ({@link #verifyCrc}, upstream's {@code Chunk.verifyCrc}). A new page type, a new header
  *       field or a changed page constructor lands here.</li>
- *   <li>{@link CachedChunkPageReader} mirrors {@code ColumnChunkPageReader}: page queueing and
- *       lazy decompression. New {@link PageReader} behaviour lands here.</li>
+ *   <li>{@link CachedChunkPageReader} mirrors {@code ColumnChunkPageReader}: page queueing, lazy
+ *       decompression, and carrying each page's checksum onto its decompressed copy
+ *       ({@link #carryCrc}). New {@link PageReader} behaviour lands here.</li>
  * </ul>
  * Also check whether {@link PageReadStore} gained or changed a {@code default} method, since this
  * class implements none of them ({@code getRowIndexOffset}, {@code getRowIndexes} and
@@ -305,6 +306,19 @@ class ParquetCachedPageReadStore implements PageReadStore {
     }
   }
 
+  /**
+   * Carries a page's checksum onto the decompressed copy of it, which is a new object and would
+   * otherwise report no checksum at all. Upstream's chunk reader does this at each of its three
+   * decompression sites, and the page parity test compares {@code getCrc()}, so a page that lost it
+   * here would read back differently from the same page off a file.
+   */
+  private static <T extends Page> T carryCrc(Page from, T to) {
+    if (from.getCrc().isPresent()) {
+      to.setCrc(from.getCrc().getAsInt());
+    }
+    return to;
+  }
+
   @Override
   public long getRowCount() {
     return rowCount;
@@ -353,9 +367,10 @@ class ParquetCachedPageReadStore implements PageReadStore {
       return compressedPage.accept(new DataPage.Visitor<DataPage>() {
         @Override
         public DataPage visit(DataPageV1 page) {
-          return new DataPageV1(decompress(page.getBytes(), page.getUncompressedSize(), "page"),
-              page.getValueCount(), page.getUncompressedSize(), page.getStatistics(),
-              page.getRlEncoding(), page.getDlEncoding(), page.getValueEncoding());
+          return carryCrc(page,
+              new DataPageV1(decompress(page.getBytes(), page.getUncompressedSize(), "page"),
+                  page.getValueCount(), page.getUncompressedSize(), page.getStatistics(),
+                  page.getRlEncoding(), page.getDlEncoding(), page.getValueEncoding()));
         }
 
         @Override
@@ -370,9 +385,9 @@ class ParquetCachedPageReadStore implements PageReadStore {
           int uncompressedSize = Math.toIntExact(page.getUncompressedSize()
               - page.getDefinitionLevels().size() - page.getRepetitionLevels().size());
           BytesInput data = decompress(page.getData(), uncompressedSize, "page");
-          return DataPageV2.uncompressed(page.getRowCount(), page.getNullCount(), page.getValueCount(),
-              page.getRepetitionLevels(), page.getDefinitionLevels(), page.getDataEncoding(), data,
-              page.getStatistics());
+          return carryCrc(page, DataPageV2.uncompressed(page.getRowCount(), page.getNullCount(),
+              page.getValueCount(), page.getRepetitionLevels(), page.getDefinitionLevels(),
+              page.getDataEncoding(), data, page.getStatistics()));
         }
       });
     }
@@ -384,8 +399,8 @@ class ParquetCachedPageReadStore implements PageReadStore {
       }
       BytesInput bytes = decompress(compressedDictionaryPage.getBytes(),
           compressedDictionaryPage.getUncompressedSize(), "dictionary page");
-      return new DictionaryPage(bytes, compressedDictionaryPage.getDictionarySize(),
-          compressedDictionaryPage.getEncoding());
+      return carryCrc(compressedDictionaryPage, new DictionaryPage(bytes,
+          compressedDictionaryPage.getDictionarySize(), compressedDictionaryPage.getEncoding()));
     }
 
     private BytesInput decompress(BytesInput bytes, int uncompressedSize, String what) {

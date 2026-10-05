@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -290,6 +291,47 @@ Example code to test specific scenarios:
     }
 
 
+  }
+
+  /**
+   * A put that collides with a cached buffer of a different length throws, and leaves neither buffer
+   * locked. Both are locked when the check runs - the incoming one since it entered putFileData, the
+   * cached one so the lengths can be compared - and the caller is handed an exception rather than the
+   * usual collision bitmask, so it has no way to learn which buffers to release. Left locked, the
+   * cached buffer can never be evicted again and the new one is pinned memory nobody owns: two leaks
+   * per collision, for as long as the daemon lives.
+   */
+  @Test
+  public void testCollisionWithDifferentLengthUnlocksBothBuffers() {
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), true, -1); // no cleanup thread
+
+    long fileKey = 1;
+    LlapDataBuffer cached = fb();
+    LlapDataBuffer colliding = fb();
+
+    assertNull(cache.putFileData(fileKey, new DiskRange[] { new DiskRange(0, 1) },
+        new LlapDataBuffer[] { cached }, 0, Priority.NORMAL, null, null));
+    // Refcounts rather than isLocked: both buffers legitimately hold a reference at this point - the
+    // cached one is in the cache, and fb() takes the one a caller would - so what has to be true of
+    // a failed put is that it changed neither.
+    int cachedRefs = cached.getRefCount();
+    int collidingRefs = colliding.getRefCount();
+
+    // Same offset, two bytes rather than one: the "most basic check" in putFileData.
+    RuntimeException collision = assertThrows(RuntimeException.class,
+        () -> cache.putFileData(fileKey, new DiskRange[] { new DiskRange(0, 2) },
+            new LlapDataBuffer[] { colliding }, 0, Priority.NORMAL, null, null));
+    assertTrue(collision.getMessage(),
+        collision.getMessage().startsWith("Found a block with different length at the same offset"));
+
+    assertEquals("the cached buffer was left locked, so it can never be evicted",
+        cachedRefs, cached.getRefCount());
+    assertEquals("the rejected buffer was left locked", collidingRefs, colliding.getRefCount());
+    // Not freed along with the unlock: it is still the caller's raw allocation, and the caller's own
+    // cleanup deallocates it. Freeing it here as well would be a double free.
+    assertEquals(LlapDataBuffer.UNKNOWN_CACHED_LENGTH, colliding.declaredCachedLength);
   }
 
   @Test

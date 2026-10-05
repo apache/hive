@@ -1,0 +1,304 @@
+PREHOOK: query: CREATE TABLE parquet_llap_staging_n0(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           `dec` decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_llap_staging_n0
+POSTHOOK: query: CREATE TABLE parquet_llap_staging_n0(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           `dec` decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_llap_staging_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE parquet_llap_staging_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_llap_staging_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE parquet_llap_staging_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_llap_staging_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE parquet_llap_staging_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_llap_staging_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE parquet_llap_staging_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_llap_staging_n0
+PREHOOK: query: CREATE TABLE parquet_llap_n0(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           da date,
+           `dec` decimal(4,2),
+           st1 struct<c1:int, c2:string>)
+STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_llap_n0
+POSTHOOK: query: CREATE TABLE parquet_llap_n0(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           da date,
+           `dec` decimal(4,2),
+           st1 struct<c1:int, c2:string>)
+STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_llap_n0
+PREHOOK: query: insert overwrite table parquet_llap_n0 select t, si, i, b, f, d, bo, s, cast(ts as date) as da,
+`dec`, named_struct('c1', i, 'c2', s) from parquet_llap_staging_n0
+order by t, si, i, b, f, d, bo, s, da, `dec`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_llap_staging_n0
+PREHOOK: Output: default@parquet_llap_n0
+POSTHOOK: query: insert overwrite table parquet_llap_n0 select t, si, i, b, f, d, bo, s, cast(ts as date) as da,
+`dec`, named_struct('c1', i, 'c2', s) from parquet_llap_staging_n0
+order by t, si, i, b, f, d, bo, s, da, `dec`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_llap_staging_n0
+POSTHOOK: Output: default@parquet_llap_n0
+POSTHOOK: Lineage: parquet_llap_n0.b SIMPLE [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.bo SIMPLE [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.d SIMPLE [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.da EXPRESSION [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.dec SIMPLE [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.f SIMPLE [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.i SIMPLE [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.s SIMPLE [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.si SIMPLE [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.st1 EXPRESSION [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:i, type:int, comment:null), (parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_llap_n0.t SIMPLE [(parquet_llap_staging_n0)parquet_llap_staging_n0.FieldSchema(name:t, type:tinyint, comment:null), ]
+PREHOOK: query: select count(*) from parquet_llap_n0 where t > -100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_llap_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 1581
+   HDFS_BYTES_WRITTEN: 104
+   HDFS_READ_OPS: 4
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2098
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2092
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2092
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2092
+   RECORDS_OUT_OPERATOR_SEL_9: 2092
+   RECORDS_OUT_OPERATOR_TS_0: 2098
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   ALLOCATED_BYTES: 4096
+   ALLOCATED_USED_BYTES: 873
+   CACHE_MISS_BYTES: 873
+   METADATA_CACHE_MISS: 1
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 2098
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2092
+PREHOOK: query: select count(*) from parquet_llap_n0 where t > -100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_llap_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 104
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2098
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2092
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2092
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2092
+   RECORDS_OUT_OPERATOR_SEL_9: 2092
+   RECORDS_OUT_OPERATOR_TS_0: 2098
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 873
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 1
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 2098
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2092
+PREHOOK: query: select count(*), sum(i), max(s) from parquet_llap_n0 where t > -100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_llap_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 126
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2098
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2092
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2092
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2092
+   RECORDS_OUT_OPERATOR_SEL_9: 2092
+   RECORDS_OUT_OPERATOR_TS_0: 2098
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   ALLOCATED_BYTES: 20480
+   ALLOCATED_USED_BYTES: 14570
+   CACHE_HIT_BYTES: 873
+   CACHE_MISS_BYTES: 14570
+   METADATA_CACHE_HIT: 1
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 2098
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2092	137368470	zach zipper
+PREHOOK: query: select count(st1.c1), sum(i), max(d) from parquet_llap_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_llap_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 24685
+   HDFS_BYTES_WRITTEN: 120
+   HDFS_READ_OPS: 5
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2098
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2098
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_9: 1
+   RECORDS_OUT_OPERATOR_GBY_8: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_7: 2098
+   RECORDS_OUT_OPERATOR_SEL_6: 2098
+   RECORDS_OUT_OPERATOR_TS_0: 2098
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   METADATA_CACHE_HIT: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2098	137762102	49.85
+PREHOOK: query: select count(*), sum(i), max(d) from parquet_llap_n0 where t > -100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_llap_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 120
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2098
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2092
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2092
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2092
+   RECORDS_OUT_OPERATOR_SEL_9: 2092
+   RECORDS_OUT_OPERATOR_TS_0: 2098
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 14177
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 1
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 2098
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2092	137368470	49.85
+PREHOOK: query: DROP TABLE parquet_llap_staging_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_llap_staging_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_llap_staging_n0
+PREHOOK: query: DROP TABLE parquet_llap_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_llap_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_llap_n0
