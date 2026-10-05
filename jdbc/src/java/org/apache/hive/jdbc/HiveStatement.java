@@ -549,7 +549,7 @@ public class HiveStatement implements java.sql.Statement {
       } catch (SQLException e) {
         if (connection.isPersistableSession() && lastSql != null
             && failoverRetries < maxFailoverRetries
-            && (isInvalidOperationHandleError(e) || isRetriableExecutionError(e))) {
+            && isInvalidOperationHandleError(e)) {
           failoverRetries++;
           LOG.info("Operation lost after failover, reconnecting and re-executing (attempt {} of {}): {}",
               failoverRetries, maxFailoverRetries, lastSql);
@@ -603,11 +603,6 @@ public class HiveStatement implements java.sql.Statement {
 
   private static boolean isInvalidOperationHandleError(SQLException e) {
     return e.getErrorCode() == ErrorMsg.INVALID_OPERATION_HANDLE.getErrorCode();
-  }
-
-  private static boolean isRetriableExecutionError(SQLException e) {
-    String msg = e.getMessage();
-    return msg != null && msg.contains("Execution Error");
   }
 
   private static boolean isTransportError(Throwable t) {
