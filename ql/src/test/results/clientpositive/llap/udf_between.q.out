@@ -84,9 +84,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          filterExpr: (UDFToDouble(key) + 100.0D) NOT BETWEEN 100.0D AND 200.0D (type: boolean)
+          filterExpr: (((UDFToDouble(key) + 100.0D) < 100.0D) or ((UDFToDouble(key) + 100.0D) > 200.0D)) (type: boolean)
           Filter Operator
-            predicate: (UDFToDouble(key) + 100.0D) NOT BETWEEN 100.0D AND 200.0D (type: boolean)
+            predicate: (((UDFToDouble(key) + 100.0D) < 100.0D) or ((UDFToDouble(key) + 100.0D) > 200.0D)) (type: boolean)
             Limit
               Number of rows: 20
               Select Operator

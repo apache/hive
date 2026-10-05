@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.stats;
@@ -29,7 +30,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
-import org.apache.hadoop.hive.ql.stats.BasicStats;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -63,6 +63,33 @@ public class TestBasicStats {
       doReturn(params).when(tpartition).getParameters();
       return Partish.buildFor(null, partition);
     }
+  }
+
+  @Test
+  public void testProvidedStatsTakePrecedenceOverPartitionParameters() {
+    Map<String, String> partParams = new HashMap<>();
+    partParams.put(StatsSetupConst.ROW_COUNT, "7");
+    Partish partish = partitionPartish(partParams);
+
+    // Stats provided explicitly (e.g. batched via HiveStorageHandler#getAggrBasicStatsFor):
+    // used as-is, no partition parameter reads or mutation.
+    Map<String, String> providedStats = new HashMap<>();
+    providedStats.put(StatsSetupConst.ROW_COUNT, "42");
+
+    assertEquals(42, new BasicStats(partish, providedStats).getNumRows());
+    assertEquals("7", partParams.get(StatsSetupConst.ROW_COUNT));
+
+    // Without provided stats, the partition parameters are read.
+    assertEquals(7, new BasicStats(partish).getNumRows());
+  }
+
+  private static Partish partitionPartish(Map<String, String> params) {
+    Partition partition = Mockito.mock(Partition.class);
+    org.apache.hadoop.hive.metastore.api.Partition tPartition =
+        Mockito.mock(org.apache.hadoop.hive.metastore.api.Partition.class);
+    doReturn(tPartition).when(partition).getTPartition();
+    doReturn(params).when(tPartition).getParameters();
+    return Partish.buildFor(null, partition);
   }
 
   @Test

@@ -31,19 +31,64 @@ env:
   DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
 jobs:
-  macos-jdk21:
-    name: 'macOS (JDK 21)'
-    runs-on: macos-latest
+  build:
+    name: '${{ matrix.os }} (JDK 21)'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: 'Set up JDK 21'
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
-            java-version: '21'
-            distribution: temurin
-            cache: maven
-      - name: 'Build project'
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Cache Thrift 0.16.0
+        if: runner.os == 'Linux'
+        id: cache-thrift
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/thrift-0.16.0-install
+          key: thrift-0.16.0-${{ runner.os }}-${{ runner.arch }}
+      - name: Install Thrift 0.16.0
+        if: runner.os == 'Linux' && steps.cache-thrift.outputs.cache-hit != 'true'
         run: |
-          mvn clean install -DskipTests -Pitests
+          sudo apt-get update && sudo apt-get install -y bison flex g++ libboost-all-dev libevent-dev libssl-dev make pkg-config
+          curl -fSL --retry 3 --retry-delay 5 -o thrift-0.16.0.tar.gz https://archive.apache.org/dist/thrift/0.16.0/thrift-0.16.0.tar.gz
+          tar xzf thrift-0.16.0.tar.gz
+          cd thrift-0.16.0
+          ./configure --prefix=${{ github.workspace }}/thrift-0.16.0-install \
+            --without-java --without-python --without-py3 --without-ruby \
+            --without-nodejs --without-go --without-erlang --without-lua \
+            --without-perl --without-php --without-php_extension --without-dart \
+            --without-dotnetcore --without-swift --without-rs \
+            --without-cl --without-haskell --without-d \
+            --without-cpp --without-c_glib --without-netstd
+          make -j$(nproc)
+          make install
+          mkdir -p ${{ github.workspace }}/thrift-0.16.0-install/share/fb303/if
+          cp contrib/fb303/if/fb303.thrift ${{ github.workspace }}/thrift-0.16.0-install/share/fb303/if/
+          cd ..
+          rm -rf thrift-0.16.0 thrift-0.16.0.tar.gz
+      - name: Build with Maven
+        run: |
+          PROFILES="-Pitests"
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            PROFILES+=",thriftif -Dthrift.home=${{ github.workspace }}/thrift-0.16.0-install"
+          fi
+          mvn clean install -DskipTests $PROFILES
+      - name: Thrift validation
+        if: runner.os == 'Linux'
+        run: |
+          n=$(git status -s -- '*/src/gen/thrift/*' | wc -l)
+          if [ "$n" != 0 ]; then
+            echo "ERROR: Thrift generated code is out of date!" >&2
+            echo "The following files differ:" >&2
+            git diff --stat -- '*/src/gen/thrift/*' >&2
+            exit 1
+          fi
+          echo "Thrift generated code is up to date."
       - name: 'Dependency tree'
         run: mvn dependency:tree -Pitests

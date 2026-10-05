@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.stats;
@@ -25,7 +26,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,7 +65,11 @@ public class BasicStats {
     }
 
     public BasicStats build(Partish p) {
-      BasicStats ret = new BasicStats(p);
+      return build(p, null);
+    }
+
+    public BasicStats build(Partish p, Map<String, String> providedStats) {
+      BasicStats ret = new BasicStats(p, providedStats);
       for (IStatsEnhancer enhancer : enhancers) {
         ret.apply(enhancer);
       }
@@ -73,39 +77,27 @@ public class BasicStats {
     }
 
     public List<BasicStats> buildAll(HiveConf conf, Collection<Partish> parts) {
-      LOG.info("Number of partishes : " + parts.size());
+      LOG.info("Number of partishes : {}", parts.size());
 
-      final List<BasicStats> ret = new ArrayList<>(parts.size());
       if (parts.size() <= 1) {
-        for (Partish partish : parts) {
-          ret.add(build(partish));
-        }
-        return ret;
+        return parts.stream().map(this::build).toList();
       }
-
-      List<Future<BasicStats>> futures = new ArrayList<>();
-
       int threads = conf.getIntVar(ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT);
+      ExecutorService pool = threads <= 1 ? MoreExecutors.newDirectExecutorService() :
+          Executors.newFixedThreadPool(threads,
+              new ThreadFactoryBuilder()
+                  .setDaemon(true)
+                  .setNameFormat("Get-Partitions-Size-%d")
+                  .build());
 
-      final ExecutorService pool;
-      if (threads <= 1) {
-        pool = MoreExecutors.newDirectExecutorService();
-      } else {
-        pool = Executors.newFixedThreadPool(threads, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Get-Partitions-Size-%d").build());
-      }
+      List<Future<BasicStats>> futures = parts.stream()
+          .map(part -> pool.submit(() -> build(part)))
+          .toList();
 
-      for (final Partish part : parts) {
-        futures.add(pool.submit(new Callable<BasicStats>() {
-          @Override
-          public BasicStats call() throws Exception {
-            return build(part);
-          }
-        }));
-      }
-
+      List<BasicStats> ret = new ArrayList<>(parts.size());
       try {
-        for (int i = 0; i < futures.size(); i++) {
-          ret.add(i, futures.get(i).get());
+        for (Future<BasicStats> future : futures) {
+          ret.add(future.get());
         }
       } catch (InterruptedException | ExecutionException e) {
         LOG.warn("Exception in processing files ", e);
@@ -219,6 +211,7 @@ public class BasicStats {
   }
 
   private Partish partish;
+  private Map<String, String> params;
 
   private long rowCount;
   private long totalSize;
@@ -230,8 +223,20 @@ public class BasicStats {
   private Statistics.State state;
 
   public BasicStats(Partish p) {
+    this(p, null);
+  }
+
+  /**
+   * Creates the basic stats for the given partish.
+   *
+   * @param p the table/partition wrapper object
+   * @param providedStats pre-fetched basic statistics, e.g. obtained from the storage handler in batch via
+   *     {@link org.apache.hadoop.hive.ql.metadata.HiveStorageHandler#getAggrBasicStatsFor};
+   *     when null, the stats are read from the partish parameters
+   */
+  public BasicStats(Partish p, Map<String, String> providedStats) {
     partish = p;
-    tryGetBasicStatsFromStorageHandler();
+    params = providedStats != null ? providedStats : partish.getPartParameters();
 
     rowCount = parseLong(StatsSetupConst.ROW_COUNT);
     rawDataSize = parseLong(StatsSetupConst.RAW_DATA_SIZE);
@@ -272,16 +277,15 @@ public class BasicStats {
 
   }
 
-  private void tryGetBasicStatsFromStorageHandler() {
-    if (partish.getTable() != null && partish.getTable().isNonNative() &&
-        partish.getTable().getStorageHandler().canProvideBasicStatistics()) {
-      partish.getPartParameters().putAll(
-          partish.getTable().getStorageHandler().getBasicStatistics(partish));
-    }
-  }
-
   public long getNumRows() {
     return currentNumRows;
+  }
+
+  /**
+   * @return the row count parsed from the stats source, before any enhancer-based estimation
+   */
+  public long getRawNumRows() {
+    return rowCount;
   }
 
   public long getDataSize() {
@@ -317,7 +321,6 @@ public class BasicStats {
   }
 
   private long parseLong(String fieldName) {
-    Map<String, String> params = partish.getPartParameters();
     long result = -1;
 
     if (params != null) {

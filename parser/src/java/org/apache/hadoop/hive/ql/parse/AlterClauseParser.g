@@ -516,8 +516,8 @@ alterStatementSuffixSetOwner
 alterStatementSuffixSetPartSpec
 @init { gParent.pushMsg("alter table set partition spec", state); }
 @after { gParent.popMsg(state); }
-    : KW_SET KW_PARTITION KW_SPEC LPAREN (spec = partitionTransformSpec) RPAREN
-    -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec)
+    : KW_SET KW_PARTITION KW_SPEC LPAREN (spec = partitionTransformSpec)? RPAREN
+    -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec?)
     ;
 
 alterStatementSuffixConvert
@@ -534,6 +534,8 @@ alterStatementSuffixExecute
     -> ^(TOK_ALTERTABLE_EXECUTE KW_ROLLBACK $rollbackParam)
     | KW_EXECUTE KW_EXPIRE_SNAPSHOTS (LPAREN (expireParam=expression) RPAREN)?
     -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam?)
+    | KW_EXECUTE KW_REWRITE_MANIFESTS
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_REWRITE_MANIFESTS)
     | KW_EXECUTE KW_SET_CURRENT_SNAPSHOT LPAREN (snapshotParam=expression) RPAREN
     -> ^(TOK_ALTERTABLE_EXECUTE KW_SET_CURRENT_SNAPSHOT $snapshotParam)
     | KW_EXECUTE KW_FAST_FORWARD sourceBranch=StringLiteral (targetBranch=StringLiteral)?

@@ -9,19 +9,19 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
+
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,19 +39,16 @@ public class ST_AsShape extends ST_Geometry {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry jtsGeom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (jtsGeom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
     try {
-      // Get Esri shape representation
-      Geometry esriGeometry = ogcGeometry.getEsriGeometry();
-      byte[] esriShape = GeometryEngine.geometryToEsriShape(esriGeometry);
-      return new BytesWritable(esriShape);
+      return new BytesWritable(EsriShapeConverter.toEsriShape(jtsGeom));
     } catch (Exception e) {
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_AsShape: " + e);
       return null;
     }
   }

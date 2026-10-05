@@ -6,14 +6,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.exec;
 
@@ -125,8 +126,8 @@ public class SerializationUtilities {
     private Hook globalHook;
     // this should be set on-the-fly after borrowing this instance and needs to be reset on release
     private Configuration configuration;
-    // default false, should be reset on release
-    private boolean isExprNodeFirst = false;
+    // when non-null, the first class read must be compatible with this type
+    private Class<?> rootType = null;
     // total classes we have met during (de)serialization, should be reset on release
     private long classCounter = 0;
 
@@ -236,27 +237,26 @@ public class SerializationUtilities {
 
     @Override
     public com.esotericsoftware.kryo.kryo5.Registration getRegistration(Class type) {
-      // If PartitionExpressionForMetastore performs deserialization at remote HMS,
-      // the first class encountered during deserialization must be an ExprNodeDesc,
-      // throw exception to avoid potential security problem if it is not.
-      if (isExprNodeFirst && classCounter == 0) {
-        if (!ExprNodeDesc.class.isAssignableFrom(type)) {
-          throw new UnsupportedOperationException(
-              "The object to be deserialized must be an ExprNodeDesc, but encountered: " + type);
-        }
+      // If this instance deserializes a payload that a remote client controls (e.g. PartitionExpressionForMetastore at
+      // a remote HMS) or that a client can persist (e.g. a table property copied into the job conf), the first class
+      // encountered during deserialization must be compatible with the expected root type.
+      if (rootType != null && classCounter == 0 && !rootType.isAssignableFrom(type)) {
+        throw new UnsupportedOperationException("The object to be deserialized must be a "
+            + rootType.getName() + ", but encountered: " + type);
       }
       classCounter++;
       return super.getRegistration(type);
     }
 
-    public void setExprNodeFirst(boolean isPartFilter) {
-      this.isExprNodeFirst = isPartFilter;
+    void setRootType(Class<?> rootType) {
+      this.rootType = rootType;
+      this.classCounter = 0;
     }
 
     // reset the fields on release
     public void restore() {
       setConf(null);
-      isExprNodeFirst = false;
+      rootType = null;
       classCounter = 0;
     }
   }
@@ -867,7 +867,7 @@ public class SerializationUtilities {
   public static <T> T deserializeObjectWithTypeInformation(byte[] bytes,
       boolean isPartFilter) {
     KryoWithHooks kryo = (KryoWithHooks) borrowKryo();
-    kryo.setExprNodeFirst(isPartFilter);
+    kryo.setRootType(isPartFilter ? ExprNodeDesc.class : null);
     try (Input inp = new Input(new ByteArrayInputStream(bytes))) {
       return (T) kryo.readClassAndObject(inp);
     } finally {
@@ -898,17 +898,14 @@ public class SerializationUtilities {
     return baos.toByteArray();
   }
 
-  public static <T extends Serializable> T deserializeObjectFromKryo(byte[] bytes, Class<T> clazz) {
-    Input inp = new Input(new ByteArrayInputStream(bytes));
-    Kryo kryo = borrowKryo();
-    T func = null;
-    try {
-      func = kryo.readObject(inp, clazz);
+  public static <T> T deserializeObjectFromKryo(byte[] bytes, Class<T> clazz) {
+    KryoWithHooks kryo = (KryoWithHooks) borrowKryo();
+    kryo.setRootType(clazz);
+    try (Input inp = new Input(new ByteArrayInputStream(bytes))) {
+      return kryo.readObject(inp, clazz);
     } finally {
       releaseKryo(kryo);
     }
-    inp.close();
-    return func;
   }
 
   public static String serializeObject(Serializable expr) {

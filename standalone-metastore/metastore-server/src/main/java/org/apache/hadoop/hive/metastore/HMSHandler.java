@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore;
 
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.AppendPartitionHandler;
 import org.apache.hadoop.hive.metastore.handler.BaseHandler;
 import org.apache.hadoop.hive.metastore.handler.DropPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.ExchangePartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.GetPartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.GetTableHandler;
 import org.apache.hadoop.hive.metastore.handler.PrivilegeHandler;
@@ -81,7 +83,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependNotNullCatToDbName;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 /**
@@ -206,78 +207,11 @@ public class HMSHandler extends PrivilegeHandler {
   @Override
   public void create_catalog(CreateCatalogRequest rqst)
       throws AlreadyExistsException, InvalidObjectException, MetaException {
-    Catalog catalog = rqst.getCatalog();
-    startFunction("create_catalog", ": " + catalog.toString());
+    startFunction("create_catalog", ": " + rqst.getCatalog().toString());
     boolean success = false;
     Exception ex = null;
     try {
-      try {
-        getMS().getCatalog(catalog.getName());
-        throw new AlreadyExistsException("Catalog " + catalog.getName() + " already exists");
-      } catch (NoSuchObjectException e) {
-        // expected
-      }
-
-      if (!MetaStoreUtils.validateName(catalog.getName(), null)) {
-        throw new InvalidObjectException(catalog.getName() + " is not a valid catalog name");
-      }
-
-      if (catalog.getLocationUri() == null) {
-        throw new InvalidObjectException("You must specify a path for the catalog");
-      }
-
-      RawStore ms = getMS();
-      Path catPath = new Path(catalog.getLocationUri());
-      boolean madeDir = false;
-      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
-      try {
-        firePreEvent(new PreCreateCatalogEvent(this, catalog));
-        if (!wh.isDir(catPath)) {
-          if (!wh.mkdirs(catPath)) {
-            throw new MetaException("Unable to create catalog path " + catPath +
-                ", failed to create catalog " + catalog.getName());
-          }
-          madeDir = true;
-        }
-        // set the create time of catalog
-        long time = System.currentTimeMillis() / 1000;
-        catalog.setCreateTime((int) time);
-        ms.openTransaction();
-        ms.createCatalog(catalog);
-
-        // Create a default database inside the catalog
-        CreateDatabaseRequest cdr = new CreateDatabaseRequest(DEFAULT_DATABASE_NAME);
-        cdr.setCatalogName(catalog.getName());
-        cdr.setLocationUri(catalog.getLocationUri());
-        cdr.setParameters(Collections.emptyMap());
-        cdr.setDescription("Default database for catalog " + catalog.getName());
-        AbstractRequestHandler.offer(this, cdr).getResult();
-
-        if (!transactionalListeners.isEmpty()) {
-          transactionalListenersResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.CREATE_CATALOG,
-                  new CreateCatalogEvent(true, this, catalog));
-        }
-
-        success = ms.commitTransaction();
-      } finally {
-        if (!success) {
-          ms.rollbackTransaction();
-          if (madeDir) {
-            wh.deleteDir(catPath, false, false);
-          }
-        }
-
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.CREATE_CATALOG,
-              new CreateCatalogEvent(success, this, catalog),
-              null,
-              transactionalListenersResponses, ms);
-        }
-      }
-      success = true;
+      success = AbstractRequestHandler.offer(this, rqst).success();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -293,44 +227,14 @@ public class HMSHandler extends PrivilegeHandler {
     startFunction("alter_catalog " + rqst.getName());
     boolean success = false;
     Exception ex = null;
-    RawStore ms = getMS();
-    Map<String, String> transactionalListenersResponses = Collections.emptyMap();
-    GetCatalogResponse oldCat = null;
-
     try {
-      oldCat = get_catalog(new GetCatalogRequest(rqst.getName()));
-      // Above should have thrown NoSuchObjectException if there is no such catalog
-      assert oldCat != null && oldCat.getCatalog() != null;
-      firePreEvent(new PreAlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), this));
-
-      ms.openTransaction();
-      ms.alterCatalog(rqst.getName(), rqst.getNewCat());
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenersResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ALTER_CATALOG,
-                new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), true, this));
-      }
-
-      success = ms.commitTransaction();
-    } catch (MetaException|NoSuchObjectException e) {
+      success = AbstractRequestHandler.offer(this, rqst).success();
+    } catch (Exception e) {
       ex = e;
-      throw e;
+      throw handleException(e).defaultTException();
     } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      }
-
-      if ((null != oldCat) && (!listeners.isEmpty())) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ALTER_CATALOG,
-            new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), success, this),
-            null, transactionalListenersResponses, ms);
-      }
       endFunction("alter_catalog", success, ex);
     }
-
   }
 
   @Override
@@ -373,19 +277,11 @@ public class HMSHandler extends PrivilegeHandler {
   @Override
   public void drop_catalog(DropCatalogRequest rqst)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
-    String catName = rqst.getName();
-    boolean ifExists = rqst.isIfExists();
-    startFunction("drop_catalog", ": " + catName);
-    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(catName)) {
-      endFunction("drop_catalog", false, null);
-      throw new MetaException("Can not drop " + DEFAULT_CATALOG_NAME + " catalog");
-    }
-
+    startFunction("drop_catalog", ": " + rqst.getName());
     boolean success = false;
     Exception ex = null;
     try {
-      dropCatalogCore(catName, ifExists);
-      success = true;
+      success = AbstractRequestHandler.offer(this, rqst).success();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -393,73 +289,6 @@ public class HMSHandler extends PrivilegeHandler {
           .defaultMetaException();
     } finally {
       endFunction("drop_catalog", success, ex);
-    }
-
-  }
-
-  private void dropCatalogCore(String catName, boolean ifExists)
-      throws MetaException, NoSuchObjectException, InvalidOperationException {
-    boolean success = false;
-    Catalog cat = null;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    RawStore ms = getMS();
-    try {
-      ms.openTransaction();
-      cat = ms.getCatalog(catName);
-
-      firePreEvent(new PreDropCatalogEvent(this, cat));
-
-      List<String> allDbs = get_databases(prependNotNullCatToDbName(catName, null));
-      if (allDbs != null && !allDbs.isEmpty()) {
-        // It might just be the default, in which case we can drop that one if it's empty
-        if (allDbs.size() == 1 && allDbs.get(0).equals(DEFAULT_DATABASE_NAME)) {
-          try {
-            DropDatabaseRequest req = new DropDatabaseRequest();
-            req.setName(DEFAULT_DATABASE_NAME);
-            req.setCatalogName(catName);
-            req.setDeleteData(true);
-            req.setCascade(false);
-            drop_database_req(req);
-          } catch (InvalidOperationException e) {
-            // This means there are tables of something in the database
-            throw new InvalidOperationException("There are still objects in the default " +
-                "database for catalog " + catName);
-          }
-        } else {
-          throw new InvalidOperationException("There are non-default databases in the catalog " +
-              catName + " so it cannot be dropped.");
-        }
-      }
-
-      ms.dropCatalog(catName);
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.DROP_CATALOG,
-                new DropCatalogEvent(true, this, cat));
-      }
-
-      success = ms.commitTransaction();
-    } catch (NoSuchObjectException e) {
-      if (!ifExists) {
-        throw new NoSuchObjectException(e.getMessage());
-      } else {
-        ms.rollbackTransaction();
-      }
-    } finally {
-      if (success) {
-        wh.deleteDir(wh.getDnsPath(new Path(cat.getLocationUri())), false, false);
-      } else {
-        ms.rollbackTransaction();
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.DROP_CATALOG,
-            new DropCatalogEvent(success, this, cat),
-            null,
-            transactionalListenerResponses, ms);
-      }
     }
   }
 
@@ -1607,16 +1436,6 @@ public class HMSHandler extends PrivilegeHandler {
   }
 
   @Override
-  public Partition exchange_partition(Map<String, String> partitionSpecs,
-                                      String sourceDbName, String sourceTableName, String destDbName,
-                                      String destTableName) throws TException {
-    exchange_partitions(partitionSpecs, sourceDbName, sourceTableName, destDbName, destTableName);
-    // Wouldn't it make more sense to return the first element of the list returned by the
-    // previous call?
-    return new Partition();
-  }
-
-  @Override
   public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
                                              String sourceDbName, String sourceTableName, String destDbName,
                                              String destTableName) throws TException {
@@ -1631,168 +1450,21 @@ public class HMSHandler extends PrivilegeHandler {
     if (!parsedDestDbName[CAT_NAME].equals(parsedSourceDbName[CAT_NAME])) {
       throw new MetaException("You cannot move a partition across catalogs");
     }
+    org.apache.hadoop.hive.metastore.api.TableName srcTbl =
+        new org.apache.hadoop.hive.metastore.api.TableName(parsedSourceDbName[DB_NAME], sourceTableName);
+    srcTbl.setCat_name(parsedSourceDbName[CAT_NAME]);
+    org.apache.hadoop.hive.metastore.api.TableName destTbl =
+        new org.apache.hadoop.hive.metastore.api.TableName(parsedDestDbName[DB_NAME], destTableName);
+    destTbl.setCat_name(parsedDestDbName[CAT_NAME]);
 
-    boolean success = false;
-    boolean pathCreated = false;
-    RawStore ms = getMS();
-    ms.openTransaction();
-
-    Table destinationTable =
-        ms.getTable(
-            parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME], destTableName, null);
-    if (destinationTable == null) {
-      throw new MetaException( "The destination table " +
-          TableName.getQualified(parsedDestDbName[CAT_NAME],
-              parsedDestDbName[DB_NAME], destTableName) + " not found");
-    }
-    Table sourceTable =
-        ms.getTable(
-            parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME], sourceTableName, null);
-    if (sourceTable == null) {
-      throw new MetaException("The source table " +
-          TableName.getQualified(parsedSourceDbName[CAT_NAME],
-              parsedSourceDbName[DB_NAME], sourceTableName) + " not found");
-    }
-
-    List<String> partVals = MetaStoreUtils.getPvals(sourceTable.getPartitionKeys(),
-        partitionSpecs);
-    List<String> partValsPresent = new ArrayList<> ();
-    List<FieldSchema> partitionKeysPresent = new ArrayList<> ();
-    int i = 0;
-    for (FieldSchema fs: sourceTable.getPartitionKeys()) {
-      String partVal = partVals.get(i);
-      if (partVal != null && !partVal.equals("")) {
-        partValsPresent.add(partVal);
-        partitionKeysPresent.add(fs);
-      }
-      i++;
-    }
-    // Passed the unparsed DB name here, as get_partitions_ps expects to parse it
-    List<Partition> partitionsToExchange = get_partitions_ps(sourceDbName, sourceTableName,
-        partVals, (short)-1);
-    if (partitionsToExchange == null || partitionsToExchange.isEmpty()) {
-      throw new MetaException("No partition is found with the values " + partitionSpecs
-          + " for the table " + sourceTableName);
-    }
-    boolean sameColumns = MetaStoreUtils.compareFieldColumns(
-        sourceTable.getSd().getCols(), destinationTable.getSd().getCols());
-    boolean samePartitions = MetaStoreUtils.compareFieldColumns(
-        sourceTable.getPartitionKeys(), destinationTable.getPartitionKeys());
-    if (!sameColumns || !samePartitions) {
-      throw new MetaException("The tables have different schemas." +
-          " Their partitions cannot be exchanged.");
-    }
-    Path sourcePath = new Path(sourceTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
-    Path destPath = new Path(destinationTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
-    List<Partition> destPartitions = new ArrayList<>();
-
-    Map<String, String> transactionalListenerResponsesForAddPartition = Collections.emptyMap();
-    List<Map<String, String>> transactionalListenerResponsesForDropPartition =
-        Lists.newArrayListWithCapacity(partitionsToExchange.size());
-
-    // Check if any of the partitions already exists in destTable.
-    List<String> destPartitionNames = ms.listPartitionNames(parsedDestDbName[CAT_NAME],
-        parsedDestDbName[DB_NAME], destTableName, (short) -1);
-    if (destPartitionNames != null && !destPartitionNames.isEmpty()) {
-      for (Partition partition : partitionsToExchange) {
-        String partToExchangeName =
-            Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues());
-        if (destPartitionNames.contains(partToExchangeName)) {
-          throw new MetaException("The partition " + partToExchangeName
-              + " already exists in the table " + destTableName);
-        }
-      }
-    }
-
-    Database srcDb = ms.getDatabase(parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME]);
-    Database destDb = ms.getDatabase(parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME]);
-    if (!HiveMetaStore.isRenameAllowed(srcDb, destDb)) {
-      throw new MetaException("Exchange partition not allowed for " +
-          TableName.getQualified(parsedSourceDbName[CAT_NAME],
-              parsedSourceDbName[DB_NAME], sourceTableName) + " Dest db : " + destDbName);
-    }
+    ExchangePartitionsRequest request = new ExchangePartitionsRequest(partitionSpecs, srcTbl, destTbl);
+    ExchangePartitionsHandler exchangePartitionsHandler = null;
     try {
-      for (Partition partition: partitionsToExchange) {
-        Partition destPartition = new Partition(partition);
-        destPartition.setDbName(parsedDestDbName[DB_NAME]);
-        destPartition.setTableName(destinationTable.getTableName());
-        Path destPartitionPath = new Path(destinationTable.getSd().getLocation(),
-            Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues()));
-        destPartition.getSd().setLocation(destPartitionPath.toString());
-        ms.addPartition(destPartition);
-        destPartitions.add(destPartition);
-        ms.dropPartition(parsedSourceDbName[CAT_NAME], partition.getDbName(), sourceTable.getTableName(),
-            Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues()));
-      }
-      Path destParentPath = destPath.getParent();
-      if (!wh.isDir(destParentPath)) {
-        if (!wh.mkdirs(destParentPath)) {
-          throw new MetaException("Unable to create path " + destParentPath);
-        }
-      }
-      /*
-       * TODO: Use the hard link feature of hdfs
-       * once https://issues.apache.org/jira/browse/HDFS-3370 is done
-       */
-      pathCreated = wh.renameDir(sourcePath, destPath, false);
-
-      // Setting success to false to make sure that if the listener fails, rollback happens.
-      success = false;
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponsesForAddPartition =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ADD_PARTITION,
-                new AddPartitionEvent(destinationTable, destPartitions, true, this));
-
-        for (Partition partition : partitionsToExchange) {
-          DropPartitionEvent dropPartitionEvent =
-              new DropPartitionEvent(sourceTable, partition, true, true, this);
-          transactionalListenerResponsesForDropPartition.add(
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.DROP_PARTITION,
-                  dropPartitionEvent));
-        }
-      }
-
-      success = ms.commitTransaction();
-      return destPartitions;
-    } finally {
-      if (!success || !pathCreated) {
-        ms.rollbackTransaction();
-        if (pathCreated) {
-          wh.renameDir(destPath, sourcePath, false);
-        }
-      }
-
-      if (!listeners.isEmpty()) {
-        AddPartitionEvent addPartitionEvent = new AddPartitionEvent(destinationTable, destPartitions, success, this);
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ADD_PARTITION,
-            addPartitionEvent,
-            null,
-            transactionalListenerResponsesForAddPartition, ms);
-
-        i = 0;
-        for (Partition partition : partitionsToExchange) {
-          DropPartitionEvent dropPartitionEvent =
-              new DropPartitionEvent(sourceTable, partition, success, true, this);
-          Map<String, String> parameters =
-              (transactionalListenerResponsesForDropPartition.size() > i)
-                  ? transactionalListenerResponsesForDropPartition.get(i)
-                  : null;
-
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.DROP_PARTITION,
-              dropPartitionEvent,
-              null,
-              parameters, ms);
-          i++;
-        }
-      }
+      exchangePartitionsHandler = AbstractRequestHandler.offer(this, request);
+    } catch (IOException e) {
+      throwMetaException(e);
     }
+    return exchangePartitionsHandler.getResult().partitions();
   }
 
   @Override
@@ -1901,9 +1573,11 @@ public class HMSHandler extends PrivilegeHandler {
       GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], tableName);
       getTableRequest.setCatName(catName);
       Table table = get_table_core(getTableRequest);
+      firePreEvent(new PreReadTableEvent(table, this));
       List<Partition> partitions = getMS()
           .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
               request.getFilterSpec());
+      partitions = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, partitions);
       List<String> processorCapabilities = request.getProcessorCapabilities();
       String processorId = request.getProcessorIdentifier();
       if (processorCapabilities == null || processorCapabilities.size() == 0 ||
@@ -2552,73 +2226,17 @@ public class HMSHandler extends PrivilegeHandler {
     startFunction("delete_column_statistics_req", ": table=" +
         TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
         " partitions=" + req.getPart_names() + " column=" + colNames + " engine=" + engine);
-    boolean ret = false, committed = false;
-    List<ListenerEvent> events = new ArrayList<>();
-    EventType eventType = null;
-    final RawStore rawStore = getMS();
-    rawStore.openTransaction();
+    Exception ex = null;
+    boolean ret = false;
     try {
-      Table table = rawStore.getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-      boolean isPartitioned = table.getPartitionKeysSize() > 0;
-      if (TxnUtils.isTransactionalTable(table)) {
-        throw new MetaException("Cannot delete stats via this API for a transactional table");
-      }
-      if (!isPartitioned || req.isTableLevel()) {
-        ret = rawStore.deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colNames, engine);
-        if (ret) {
-          eventType = EventType.DELETE_TABLE_COLUMN_STAT;
-          for (String colName : colNames == null || colNames.isEmpty() ?
-              table.getSd().getCols().stream().map(FieldSchema::getName).toList() : colNames) {
-            if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType,
-                  new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine, this));
-            }
-            events.add(new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine, this));
-          }
-        }
-      } else {
-        List<String> partNames = new ArrayList<>();
-        if (req.getPart_namesSize() > 0) {
-          partNames.addAll(req.getPart_names());
-        } else {
-          partNames.addAll(rawStore.listPartitionNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, (short) -1));
-        }
-        if (partNames.isEmpty()) {
-          // no partition found, bail out early
-          return true;
-        }
-        ret = rawStore.deletePartitionColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                partNames, colNames, engine);
-        if (ret) {
-          eventType = EventType.DELETE_PARTITION_COLUMN_STAT;
-          for (String colName : colNames == null || colNames.isEmpty() ?
-              table.getSd().getCols().stream().map(FieldSchema::getName).toList() : colNames) {
-            for (String partName : partNames) {
-              List<String> partVals = getPartValsFromName(table, partName);
-              if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-                MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType,
-                    new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                        partName, partVals, colName, engine, this));
-              }
-              events.add(new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                  partName, partVals, colName, engine, this));
-            }
-          }
-        }
-      }
-      committed = rawStore.commitTransaction();
+      ret = AbstractRequestHandler.offer(this, req).success();
+      return ret;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).defaultTException();
     } finally {
-      if (!committed) {
-        rawStore.rollbackTransaction();
-      }
-      if (!listeners.isEmpty()) {
-        for (ListenerEvent event : events) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType, event);
-        }
-      }
-      endFunction("delete_column_statistics_req", ret, null, tableName);
+      endFunction("delete_column_statistics_req", ret, ex, tableName);
     }
-    return ret;
   }
 
   @Override
@@ -3253,12 +2871,47 @@ public class HMSHandler extends PrivilegeHandler {
 
   @Override
   public void update_table_params(List<TableParamsUpdate> updates) throws TException {
+    RawStore ms = getMS();
+    boolean success = false;
+    List<AlterTableEvent> alterEvents = new ArrayList<>(updates.size());
+    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    List<Map.Entry<TableParamsUpdate, Table>> entries = new ArrayList<>(updates.size());
     for (TableParamsUpdate update : updates) {
-      if (!update.isSetCat_name()) {
-        update.setCat_name(getDefaultCatalog(conf));
+      if (update.getParamsSize() == 0) {
+        continue;
+      }
+      org.apache.hadoop.hive.metastore.api.TableName tableName = update.getTable_name();
+      if (!tableName.isSetCat_name()) {
+        tableName.setCat_name(getDefaultCatalog(conf));
+      }
+      GetTableRequest getTableRequest = new GetTableRequest(tableName.getDb_name(), tableName.getTbl_name());
+      getTableRequest.setCatName(tableName.getCat_name());
+      Table oldTable = get_table_core(getTableRequest);
+      Table newTable = new Table(oldTable);
+      newTable.setParameters(update.getParams());
+      firePreEvent(new PreAlterTableEvent(oldTable, newTable, this));
+      alterEvents.add(new AlterTableEvent(oldTable, newTable, false, true, -1L, this, false));
+      entries.add(Map.entry(update, oldTable));
+    }
+    try {
+      ms.openTransaction();
+      ms.updateTableParams(entries);
+      for (AlterTableEvent event : alterEvents) {
+        transactionalListenerResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ALTER_TABLE, event);
+      }
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+      for (AlterTableEvent event : alterEvents) {
+        AlterTableEvent newEvent = new AlterTableEvent(event.getOldTable(), event.getNewTable(),
+            false, success, -1L, this, false);
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_TABLE,
+            newEvent, null, transactionalListenerResponses, ms);
       }
     }
-    getMS().updateTableParams(updates);
   }
 
   public AggrStats get_aggr_stats_for(PartitionsStatsRequest request) throws TException {

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.kubernetes.operator.autoscaling;
@@ -93,8 +94,13 @@ public class ComponentAutoscaler {
 
     int target;
     if (clamped > currentReplicas) {
-      // Scale up: use stabilized max (highest recommendation in window — don't under-scale)
-      target = scaleUpWindow.stabilizedMax();
+      if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
+        // HS2 sessions activation gate scales up the LLAP pods to atleast 1
+        // in presence of sessions. Avoid stabilizedMin in this start-up case.
+        target = currentReplicas == 0 ? clamped : scaleUpWindow.stabilizedMin();
+      } else {
+        target = scaleUpWindow.stabilizedMax();
+      }
     } else if (clamped < currentReplicas) {
       // Scale down: use stabilized max (highest/most conservative recommendation in window —
       // prevents premature scale-down, matches HPA selectPolicy: Max behavior).

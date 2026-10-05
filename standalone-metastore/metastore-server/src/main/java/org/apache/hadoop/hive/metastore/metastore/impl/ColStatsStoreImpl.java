@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore.metastore.impl;
@@ -483,7 +484,6 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     validateTableCols(table, colNames);
 
     List<MTableColumnStatistics> result = Collections.emptyList();
-    Query query = pm.newQuery(MTableColumnStatistics.class);
     result =
         Batchable.runBatched(batchSize, colNames, new Batchable<String, MTableColumnStatistics>() {
           @Override
@@ -504,6 +504,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
               params[i + 4] = input.get(i);
             }
             filter.append(")");
+            Query query = pm.newQuery(MTableColumnStatistics.class);
             query.setFilter(filter.toString());
             query.declareParameters(paramStr.toString());
             List<MTableColumnStatistics> paritial = (List<MTableColumnStatistics>) query.executeWithArray(params);

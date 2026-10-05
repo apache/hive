@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore.properties;
 
@@ -75,14 +76,14 @@ public abstract class PropertyManager {
   /** A Jexl engine for convenience. */
   static final JexlEngine JEXL;
   static {
-    JexlFeatures features = new JexlFeatures()
+    JexlFeatures features = JexlFeatures.createDefault()
         .sideEffect(false)
         .sideEffectGlobal(false);
-    JexlPermissions p = JexlPermissions.RESTRICTED
-        .compose("org.apache.hadoop.hive.metastore.properties.*");
+    JexlPermissions permissions = JexlPermissions.RESTRICTED
+        .compose("org.apache.hadoop.hive.metastore.properties.*", "com.google.gson.internal.*");
     JEXL = new JexlBuilder()
         .features(features)
-        .permissions(p)
+        .permissions(permissions)
         .create();
   }
 

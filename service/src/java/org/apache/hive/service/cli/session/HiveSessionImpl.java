@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.service.cli.session;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -64,6 +66,7 @@ import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.session.store.HiveSessionSnapshot;
 import org.apache.hive.service.cli.operation.ExecuteStatementOperation;
 import org.apache.hive.service.cli.operation.GetCatalogsOperation;
 import org.apache.hive.service.cli.operation.GetColumnsOperation;
@@ -819,6 +822,25 @@ public class HiveSessionImpl implements HiveSession {
     }
   }
 
+  public void onOperationFinished(String statement) {
+    if (sessionManager == null || !sessionManager.isPersistableSessionsEnabled()) {
+      return;
+    }
+    notifyIfStateChanging(statement);
+  }
+
+  private void notifyIfStateChanging(String statement) {
+    if (PersistableSessionUtils.shouldPersistSnapshot(statement, sessionState)
+        && sessionManager != null) {
+      sessionManager.notifySessionStateChanged(sessionHandle);
+    }
+  }
+
+  public HiveSessionSnapshot captureSnapshot() {
+    return PersistableSessionUtils.captureSnapshot(sessionHandle, username, ipAddress,
+        sessionState, getProtocolVersion(), creationTime, lastAccessTime);
+  }
+
   @Override
   public SessionState getSessionState() {
     return sessionState;
@@ -1034,8 +1056,14 @@ public class HiveSessionImpl implements HiveSession {
   @Override
   public void setApplicationName(String value) {
     String oldName = sessionState.getHiveVariables().put("wmapp", value);
-    if (oldName != null && !oldName.equals(value)) {
+    if (Objects.equals(oldName, value)) {
+      return;
+    }
+    if (oldName != null) {
       LOG.info("ApplicationName changed from " + oldName + " to " + value);
+    }
+    if (sessionManager != null && sessionManager.isPersistableSessionsEnabled()) {
+      sessionManager.notifySessionStateChanged(sessionHandle);
     }
   }
 

@@ -352,7 +352,7 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -363,7 +363,7 @@ PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -505,7 +505,7 @@ STAGE PLANS:
 
 PREHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -515,7 +515,7 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -527,7 +527,7 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -538,7 +538,7 @@ PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -693,7 +693,7 @@ STAGE PLANS:
 
 PREHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -703,7 +703,7 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -936,7 +936,7 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -947,7 +947,7 @@ PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -967,7 +967,7 @@ STAGE PLANS:
 
 PREHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -977,7 +977,7 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -1393,7 +1393,7 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -1404,7 +1404,7 @@ PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -1564,7 +1564,7 @@ STAGE PLANS:
 
 PREHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -1574,7 +1574,7 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -1586,7 +1586,7 @@ POSTHOOK: Input: default@src
 PREHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -1597,7 +1597,7 @@ PREHOOK: Input: default@src
 POSTHOOK: query: explain
 select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -1770,7 +1770,7 @@ STAGE PLANS:
 
 PREHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key
@@ -1780,7 +1780,7 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select *
 from src src1 right outer join (
-  select *
+  select src2.key, src2.value, src3.key as key3, src3.value as value3
   from src src2 left outer join src src3
   on src2.value = src3.value) src2
 on src1.key = src2.key

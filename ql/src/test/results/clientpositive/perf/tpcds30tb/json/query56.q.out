@@ -1826,27 +1826,27 @@
               "name": "$17"
             },
             {
-              "literal": "chiffon",
+              "literal": "chiffon             ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 7
+                "precision": 20
               }
             },
             {
-              "literal": "lace",
+              "literal": "lace                ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 4
+                "precision": 20
               }
             },
             {
-              "literal": "orchid",
+              "literal": "orchid              ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 6
+                "precision": 20
               }
             }
           ]
@@ -2779,27 +2779,27 @@
               "name": "$17"
             },
             {
-              "literal": "chiffon",
+              "literal": "chiffon             ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 7
+                "precision": 20
               }
             },
             {
-              "literal": "lace",
+              "literal": "lace                ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 4
+                "precision": 20
               }
             },
             {
-              "literal": "orchid",
+              "literal": "orchid              ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 6
+                "precision": 20
               }
             }
           ]
@@ -3735,27 +3735,27 @@
               "name": "$17"
             },
             {
-              "literal": "chiffon",
+              "literal": "chiffon             ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 7
+                "precision": 20
               }
             },
             {
-              "literal": "lace",
+              "literal": "lace                ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 4
+                "precision": 20
               }
             },
             {
-              "literal": "orchid",
+              "literal": "orchid              ",
               "type": {
                 "type": "CHAR",
                 "nullable": false,
-                "precision": 6
+                "precision": 20
               }
             }
           ]

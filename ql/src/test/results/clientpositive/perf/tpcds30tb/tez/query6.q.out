@@ -274,7 +274,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 11 Data size: 2310 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: CAST( CAST( (_col1 / _col2) AS decimal(11,6)) AS decimal(16,6)) is not null (type: boolean)
+                  predicate: CAST( (_col1 / _col2) AS decimal(11,6)) is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 2310 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: char(50)), (1.2 * CAST( CAST( (_col1 / _col2) AS decimal(11,6)) AS decimal(16,6))) (type: decimal(14,7))

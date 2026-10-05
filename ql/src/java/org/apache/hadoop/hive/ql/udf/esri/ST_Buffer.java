@@ -9,18 +9,19 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +38,15 @@ import org.slf4j.LoggerFactory;
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geometryref1);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geometryref1);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
-    OGCGeometry bufferedGeometry = ogcGeometry.buffer(distance.get());
-    // TODO persist type information (polygon vs multipolygon)
+    // 24 quadrant segments approximates the curve density the ESRI library produced,
+    // keeping results close to the previous implementation.
+    Geometry bufferedGeometry = geom.buffer(distance.get(), 24);
     return GeometryUtils.geometryToEsriShapeBytesWritable(bufferedGeometry);
   }
 }

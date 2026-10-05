@@ -1,0 +1,251 @@
+PREHOOK: query: DROP TABLE IF EXISTS union_src_today
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS union_src_today
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS union_src_prev
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS union_src_prev
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS union_output
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS union_output
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE union_src_today (id INT, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_src_today
+POSTHOOK: query: CREATE TABLE union_src_today (id INT, val STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_src_today
+PREHOOK: query: CREATE TABLE union_src_prev (id INT, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_src_prev
+POSTHOOK: query: CREATE TABLE union_src_prev (id INT, val STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_src_prev
+PREHOOK: query: CREATE TABLE union_output (id INT, val STRING)
+PARTITIONED BY (run_dt STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_output
+POSTHOOK: query: CREATE TABLE union_output (id INT, val STRING)
+PARTITIONED BY (run_dt STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_output
+PREHOOK: query: INSERT INTO union_src_prev VALUES (1,'aaa'), (2,'bbb'), (3,'ccc')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_src_prev
+POSTHOOK: query: INSERT INTO union_src_prev VALUES (1,'aaa'), (2,'bbb'), (3,'ccc')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_src_prev
+POSTHOOK: Lineage: union_src_prev.id SCRIPT []
+POSTHOOK: Lineage: union_src_prev.val SCRIPT []
+PREHOOK: query: INSERT INTO union_src_today VALUES (3,'ccc_new'), (4,'ddd')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_src_today
+POSTHOOK: query: INSERT INTO union_src_today VALUES (3,'ccc_new'), (4,'ddd')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_src_today
+POSTHOOK: Lineage: union_src_today.id SCRIPT []
+POSTHOOK: Lineage: union_src_today.val SCRIPT []
+PREHOOK: query: INSERT OVERWRITE TABLE union_output PARTITION (run_dt='2024-01-02')
+SELECT p.id, p.val
+FROM union_src_prev p
+LEFT OUTER JOIN union_src_today t ON p.id = t.id
+WHERE t.id IS NULL
+UNION ALL
+SELECT id, val
+FROM union_src_today
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_src_prev
+PREHOOK: Input: default@union_src_today
+PREHOOK: Output: default@union_output@run_dt=2024-01-02
+POSTHOOK: query: INSERT OVERWRITE TABLE union_output PARTITION (run_dt='2024-01-02')
+SELECT p.id, p.val
+FROM union_src_prev p
+LEFT OUTER JOIN union_src_today t ON p.id = t.id
+WHERE t.id IS NULL
+UNION ALL
+SELECT id, val
+FROM union_src_today
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_src_prev
+POSTHOOK: Input: default@union_src_today
+POSTHOOK: Output: default@union_output@run_dt=2024-01-02
+POSTHOOK: Lineage: union_output PARTITION(run_dt=2024-01-02).id EXPRESSION [(union_src_prev)p.FieldSchema(name:id, type:int, comment:null), (union_src_today)union_src_today.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union_output PARTITION(run_dt=2024-01-02).val EXPRESSION [(union_src_prev)p.FieldSchema(name:val, type:string, comment:null), (union_src_today)union_src_today.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT id, val FROM union_output WHERE run_dt='2024-01-02' ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_output
+PREHOOK: Input: default@union_output@run_dt=2024-01-02
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, val FROM union_output WHERE run_dt='2024-01-02' ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_output
+POSTHOOK: Input: default@union_output@run_dt=2024-01-02
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	aaa
+2	bbb
+3	ccc_new
+4	ddd
+Found 2 items
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+PREHOOK: query: TRUNCATE TABLE union_src_prev
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@union_src_prev
+POSTHOOK: query: TRUNCATE TABLE union_src_prev
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@union_src_prev
+PREHOOK: query: TRUNCATE TABLE union_src_today
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@union_src_today
+POSTHOOK: query: TRUNCATE TABLE union_src_today
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@union_src_today
+PREHOOK: query: INSERT INTO union_src_prev VALUES (3,'ccc'), (4,'ddd')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_src_prev
+POSTHOOK: query: INSERT INTO union_src_prev VALUES (3,'ccc'), (4,'ddd')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_src_prev
+POSTHOOK: Lineage: union_src_prev.id SCRIPT []
+POSTHOOK: Lineage: union_src_prev.val SCRIPT []
+PREHOOK: query: INSERT INTO union_src_today VALUES (3,'ccc_new'), (4,'ddd_new')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union_src_today
+POSTHOOK: query: INSERT INTO union_src_today VALUES (3,'ccc_new'), (4,'ddd_new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union_src_today
+POSTHOOK: Lineage: union_src_today.id SCRIPT []
+POSTHOOK: Lineage: union_src_today.val SCRIPT []
+PREHOOK: query: INSERT OVERWRITE TABLE union_output PARTITION (run_dt='2024-01-03')
+SELECT p.id, p.val
+FROM union_src_prev p
+LEFT OUTER JOIN union_src_today t ON p.id = t.id
+WHERE t.id IS NULL
+UNION ALL
+SELECT id, val
+FROM union_src_today
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_src_prev
+PREHOOK: Input: default@union_src_today
+PREHOOK: Output: default@union_output@run_dt=2024-01-03
+POSTHOOK: query: INSERT OVERWRITE TABLE union_output PARTITION (run_dt='2024-01-03')
+SELECT p.id, p.val
+FROM union_src_prev p
+LEFT OUTER JOIN union_src_today t ON p.id = t.id
+WHERE t.id IS NULL
+UNION ALL
+SELECT id, val
+FROM union_src_today
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_src_prev
+POSTHOOK: Input: default@union_src_today
+POSTHOOK: Output: default@union_output@run_dt=2024-01-03
+POSTHOOK: Lineage: union_output PARTITION(run_dt=2024-01-03).id EXPRESSION [(union_src_prev)p.FieldSchema(name:id, type:int, comment:null), (union_src_today)union_src_today.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union_output PARTITION(run_dt=2024-01-03).val EXPRESSION [(union_src_prev)p.FieldSchema(name:val, type:string, comment:null), (union_src_today)union_src_today.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT id, val FROM union_output WHERE run_dt='2024-01-03' ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_output
+PREHOOK: Input: default@union_output@run_dt=2024-01-03
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, val FROM union_output WHERE run_dt='2024-01-03' ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_output
+POSTHOOK: Input: default@union_output@run_dt=2024-01-03
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	ccc_new
+4	ddd_new
+Found 1 items
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+PREHOOK: query: INSERT OVERWRITE TABLE union_output PARTITION (run_dt='2024-01-03')
+SELECT p.id, p.val
+FROM union_src_prev p
+LEFT OUTER JOIN union_src_today t ON p.id = t.id
+WHERE t.id IS NULL
+UNION ALL
+SELECT id, val
+FROM union_src_today
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_src_prev
+PREHOOK: Input: default@union_src_today
+PREHOOK: Output: default@union_output@run_dt=2024-01-03
+POSTHOOK: query: INSERT OVERWRITE TABLE union_output PARTITION (run_dt='2024-01-03')
+SELECT p.id, p.val
+FROM union_src_prev p
+LEFT OUTER JOIN union_src_today t ON p.id = t.id
+WHERE t.id IS NULL
+UNION ALL
+SELECT id, val
+FROM union_src_today
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_src_prev
+POSTHOOK: Input: default@union_src_today
+POSTHOOK: Output: default@union_output@run_dt=2024-01-03
+POSTHOOK: Lineage: union_output PARTITION(run_dt=2024-01-03).id EXPRESSION [(union_src_prev)p.FieldSchema(name:id, type:int, comment:null), (union_src_today)union_src_today.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union_output PARTITION(run_dt=2024-01-03).val EXPRESSION [(union_src_prev)p.FieldSchema(name:val, type:string, comment:null), (union_src_today)union_src_today.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT id, val FROM union_output WHERE run_dt='2024-01-03' ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_output
+PREHOOK: Input: default@union_output@run_dt=2024-01-03
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, val FROM union_output WHERE run_dt='2024-01-03' ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_output
+POSTHOOK: Input: default@union_output@run_dt=2024-01-03
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	ccc_new
+4	ddd_new
+Found 1 items
+-rw-rw-rw-   3 ### USER ### ### GROUP ###         ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+PREHOOK: query: DROP TABLE IF EXISTS union_src_today
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_src_today
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_src_today
+POSTHOOK: query: DROP TABLE IF EXISTS union_src_today
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_src_today
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_src_today
+PREHOOK: query: DROP TABLE IF EXISTS union_src_prev
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_src_prev
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_src_prev
+POSTHOOK: query: DROP TABLE IF EXISTS union_src_prev
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_src_prev
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_src_prev
+PREHOOK: query: DROP TABLE IF EXISTS union_output
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_output
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_output
+POSTHOOK: query: DROP TABLE IF EXISTS union_output
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_output
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_output

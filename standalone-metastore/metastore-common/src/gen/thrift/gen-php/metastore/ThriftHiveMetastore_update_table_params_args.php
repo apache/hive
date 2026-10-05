@@ -69,14 +69,14 @@ class ThriftHiveMetastore_update_table_params_args
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->updates = array();
-                        $_size1620 = 0;
-                        $_etype1623 = 0;
-                        $xfer += $input->readListBegin($_etype1623, $_size1620);
-                        for ($_i1624 = 0; $_i1624 < $_size1620; ++$_i1624) {
-                            $elem1625 = null;
-                            $elem1625 = new \metastore\TableParamsUpdate();
-                            $xfer += $elem1625->read($input);
-                            $this->updates []= $elem1625;
+                        $_size1629 = 0;
+                        $_etype1632 = 0;
+                        $xfer += $input->readListBegin($_etype1632, $_size1629);
+                        for ($_i1633 = 0; $_i1633 < $_size1629; ++$_i1633) {
+                            $elem1634 = null;
+                            $elem1634 = new \metastore\TableParamsUpdate();
+                            $xfer += $elem1634->read($input);
+                            $this->updates []= $elem1634;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class ThriftHiveMetastore_update_table_params_args
             }
             $xfer += $output->writeFieldBegin('updates', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->updates));
-            foreach ($this->updates as $iter1626) {
-                $xfer += $iter1626->write($output);
+            foreach ($this->updates as $iter1635) {
+                $xfer += $iter1635->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

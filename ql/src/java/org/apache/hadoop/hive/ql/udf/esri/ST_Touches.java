@@ -9,17 +9,18 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.OperatorSimpleRelation;
-import com.esri.core.geometry.OperatorTouches;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
 
 @Description(name = "ST_Touches",
     value = "_FUNC_(geometry1, geometry2) - return true if geometry1 touches geometry2",
@@ -30,8 +31,13 @@ import org.apache.hadoop.hive.ql.exec.Description;
 public class ST_Touches extends ST_GeometryRelational {
 
   @Override
-  protected OperatorSimpleRelation getRelationOperator() {
-    return OperatorTouches.local();
+  protected boolean executeRelation(Geometry geom1, Geometry geom2) {
+    return geom1.touches(geom2);
+  }
+
+  @Override
+  protected boolean executeRelationPrepared(PreparedGeometry prepGeom1, Geometry geom2) {
+    return prepGeom1.touches(geom2);
   }
 
   @Override

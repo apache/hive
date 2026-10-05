@@ -2322,9 +2322,7 @@ struct AlterTableResponse {
 }
 
 struct TableParamsUpdate {
-    1: optional string cat_name
-    2: required string db_name
-    3: required string table_name
+    1: required TableName table_name,
     4: required map<string, string> params
     5: optional string expected_param_key
     6: optional string expected_param_value
@@ -2554,6 +2552,18 @@ struct DeleteColumnStatisticsRequest {
 
 struct ReplayedTxnsForPolicyResult {
   1: map<string, string> replTxnMapEntry
+}
+
+struct ExchangePartitionsRequest {
+  1: required map<string, string> partitionSpecs,
+  2: required TableName sourceTable,
+  3: required TableName targetTable,
+}
+
+struct TableName {
+  1: optional string cat_name,
+  2: required string db_name,
+  3: required string tbl_name
 }
 
 // Exceptions.
@@ -3405,7 +3415,6 @@ const string TABLE_IS_TRANSACTIONAL = "transactional",
 const string NO_AUTO_COMPACT = "no_auto_compaction",
 const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
 const string TABLE_BUCKETING_VERSION = "bucketing_version",
-const string DRUID_CONFIG_PREFIX = "druid.",
 const string JDBC_CONFIG_PREFIX = "hive.sql.",
 const string TABLE_IS_CTAS = "created_with_ctas",
 const string TABLE_IS_CTLT = "created_with_ctlt",

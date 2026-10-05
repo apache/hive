@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.kubernetes.operator.autoscaling;
@@ -78,6 +79,25 @@ public class HiveClusterAutoscaler {
   public static void setManagedReplicas(String namespace, String clusterName,
       String component, int replicas) {
     MANAGED_REPLICAS.put(cacheKey(namespace, clusterName, component), replicas);
+  }
+
+  /**
+   * Removes the autoscaler-managed replica count for a component. Used when autoscaling is disabled so
+   * a pre-existing in-memory scale decision if any is cleared up.
+   */
+  public static void cleanupManagedReplicas(String namespace, String clusterName, String component) {
+    MANAGED_REPLICAS.remove(cacheKey(namespace, clusterName, component));
+  }
+
+  /**
+   * Clears all in-memory autoscaling state for a component when autoscaling is disabled.
+   */
+  public void resetComponentAutoscalingState(String namespace, String clusterName, String component) {
+    String key = cacheKey(namespace, clusterName, component);
+    MANAGED_REPLICAS.remove(key);
+    pendingScaleDowns.remove(key);
+    autoscalers.remove(key);
+    lastScaleTimes.remove(key);
   }
 
   private record PendingScaleDown(int targetReplicas, Instant annotatedAt, List<String> podsToDeregister) {}
@@ -318,6 +338,21 @@ public class HiveClusterAutoscaler {
     String key = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_HIVESERVER2;
     int maxStale = cluster.getSpec().hiveServer2().autoscaling().metricsScrapeIntervalSeconds() * 3;
     return metricsCache.getOrEmpty(key, maxStale);
+  }
+
+  /**
+   * Returns cached TezAM metrics for the given LLAP cluster (used by LlapScalingStrategy).
+   */
+  public List<PodMetrics> getTezAmMetricsFromCache(HiveCluster cluster, String llapName) {
+    String namespace = cluster.getMetadata().getNamespace();
+    String clusterName = cluster.getMetadata().getName();
+    int maxStale = cluster.getSpec().llapClusters().stream()
+        .filter(l -> llapName.equals(l.name()))
+        .findFirst()
+        .map(l -> l.tezAm().autoscaling().metricsScrapeIntervalSeconds() * 3)
+        .orElse(30);
+    return metricsCache.getOrEmpty(
+        cacheKey(namespace, clusterName, ConfigUtils.tezAmComponentKey(llapName)), maxStale);
   }
 
   private void evaluateComponent(HiveCluster cluster, KubernetesClient client,

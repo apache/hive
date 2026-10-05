@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
@@ -31,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 
 public class TestStAsShape {
 
-  private final static double Epsilon = 0.0001;
+  private final static double EPSILON = 1e-9;
 
   @Test
   public void testPointAsShape() {
@@ -51,7 +52,7 @@ public class TestStAsShape {
     assertTrue("Geometry type point expected!", esriGeometry instanceof Point);
 
     Point esriPoint = (Point) esriGeometry;
-    assertEquals("Longitude is different!", longitude, esriPoint.getX(), Epsilon);
-    assertEquals("Latitude is different!", latitude, esriPoint.getY(), Epsilon);
+    assertEquals("Longitude is different!", longitude, esriPoint.getX(), EPSILON);
+    assertEquals("Latitude is different!", latitude, esriPoint.getY(), EPSILON);
   }
 }

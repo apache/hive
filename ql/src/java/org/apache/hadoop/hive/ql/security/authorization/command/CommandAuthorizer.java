@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.security.authorization.command;
@@ -75,14 +76,15 @@ public final class CommandAuthorizer {
 
   private static Set<ReadEntity> getInputs(BaseSemanticAnalyzer sem) {
     Set<ReadEntity> additionalInputs = new HashSet<ReadEntity>();
-    for (Entity e : sem.getInputs()) {
+    for (Entity e : sem.getAllInputs()) {
       if (e.getType() == Entity.Type.PARTITION) {
         additionalInputs.add(new ReadEntity(e.getTable()));
       }
     }
 
+    // getAllInputs() includes tables read by materialized CTE sub-analyzers.
     // Sets.union keeps the values from the first set if they are present in both
-    return Sets.union(sem.getInputs(), additionalInputs);
+    return Sets.union(sem.getAllInputs(), additionalInputs);
   }
 
   private static Set<WriteEntity> getOutputs(BaseSemanticAnalyzer sem) {

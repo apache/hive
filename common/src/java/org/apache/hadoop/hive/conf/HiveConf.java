@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.conf;
@@ -401,9 +402,10 @@ public class HiveConf extends Configuration {
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
     REPL_CM_DIR("hive.repl.cmrootdir","/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
-    REPL_CM_RETAIN("hive.repl.cm.retain","10d",
-        new TimeValidator(TimeUnit.DAYS),
-        "Time to retain removed files in cmrootdir."),
+    REPL_CM_RETAIN("hive.repl.cm.retain","240h",
+        new TimeValidator(TimeUnit.HOURS),
+        "Time to retain removed files in cmrootdir. A unit-less value is interpreted in hours, "
+            + "matching the metastore counterpart metastore.repl.cm.retain. Default is 240h (10 days)."),
     REPL_CM_ENCRYPTED_DIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPL_CM_FALLBACK_NONENCRYPTED_DIR("hive.repl.cm.nonencryptionzone.rootdir",
@@ -2128,6 +2130,22 @@ public class HiveConf extends Configuration {
         "Whether to use codec pool in ORC. Disable if there are bugs with codec reuse."),
     HIVE_ICEBERG_STATS_SOURCE("hive.iceberg.stats.source", "iceberg",
         "Use stats from iceberg table snapshot for query planning. This has two values metastore and iceberg"),
+    HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL("hive.iceberg.stats.collect.partlevel", false,
+        "Whether column statistics of a partitioned Iceberg table are kept per partition, letting\n" +
+        "the planner estimate from the partitions a query scans. ANALYZE writes the partitions it\n" +
+        "reads, CTAS and INSERT OVERWRITE write the partitions they replace, and a major\n" +
+        "compaction of one current-spec partition refreshes it. Plain INSERT maintains no\n" +
+        "partition-level statistics: its partitions read as stale until recomputed. After changing\n" +
+        "this, statistics of the other granularity are ignored until recomputed.\n" +
+        "A scan reads a partition's statistics whole, so what it moves is the partitions it reads\n" +
+        "times the width of the table, whatever columns it asked about. That pays where a query\n" +
+        "prunes hard, which is what these are for, and stops paying where it does not: a scan\n" +
+        "reading every partition of a wide table moves more than the table-level statistics would,\n" +
+        "however few columns it wants."),
+    HIVE_ICEBERG_STATS_MAX_SNAPSHOT_LOOKBACK("hive.iceberg.stats.max.snapshot.lookback", 20,
+        "How many snapshots a read of per partition column statistics walks back through to tell\n" +
+        "which partitions the writes since have changed. Each one costs reading the manifests it\n" +
+        "wrote, so a file further back than this cannot be judged and is not served."),
     HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS("hive.iceberg.expire.snapshot.numthreads", 4,
         "The number of threads to be used for deleting files during expire snapshot. If set to 0 or below it uses the" +
             " default DirectExecutorService"),
@@ -3382,72 +3400,6 @@ public class HiveConf extends Configuration {
     OPTIMIZE_ACID_META_COLUMNS("hive.optimize.acid.meta.columns", true,
         "If true, don't decode Acid metadata columns from storage unless" +
         " they are needed."),
-
-    // For Druid storage handler
-    HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "DAY",
-            new PatternSet("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND"),
-            "Granularity for the segments created by the Druid storage handler"
-    ),
-    HIVE_DRUID_MAX_PARTITION_SIZE("hive.druid.indexer.partition.size.max", 5000000,
-            "Maximum number of records per segment partition"
-    ),
-    HIVE_DRUID_MAX_ROW_IN_MEMORY("hive.druid.indexer.memory.rownum.max", 75000,
-            "Maximum number of records in memory while storing data in Druid"
-    ),
-    HIVE_DRUID_BROKER_DEFAULT_ADDRESS("hive.druid.broker.address.default", "localhost:8082",
-            "Address of the Druid broker. If we are querying Druid from Hive, this address needs to be\n"
-                    +
-                    "declared"
-    ),
-    HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS("hive.druid.coordinator.address.default", "localhost:8081",
-            "Address of the Druid coordinator. It is used to check the load status of newly created segments"
-    ),
-    HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS("hive.druid.overlord.address.default", "localhost:8090",
-        "Address of the Druid overlord. It is used to submit indexing tasks to druid."
-    ),
-    HIVE_DRUID_SELECT_THRESHOLD("hive.druid.select.threshold", 10000,
-        "Takes only effect when hive.druid.select.distribute is set to false. \n" +
-        "When we can split a Select query, this is the maximum number of rows that we try to retrieve\n" +
-        "per query. In order to do that, we obtain the estimated size for the complete result. If the\n" +
-        "number of records of the query results is larger than this threshold, we split the query in\n" +
-        "total number of rows/threshold parts across the time dimension. Note that we assume the\n" +
-        "records to be split uniformly across the time dimension."),
-    HIVE_DRUID_NUM_HTTP_CONNECTION("hive.druid.http.numConnection", 20, "Number of connections used by\n" +
-        "the HTTP client."),
-    HIVE_DRUID_HTTP_READ_TIMEOUT("hive.druid.http.read.timeout", "PT1M", "Read timeout period for the HTTP\n" +
-        "client in ISO8601 format (for example P2W, P3M, PT1H30M, PT0.750S), default is period of 1 minute."),
-    HIVE_DRUID_SLEEP_TIME("hive.druid.sleep.time", "PT10S",
-            "Sleep time between retries in ISO8601 format (for example P2W, P3M, PT1H30M, PT0.750S), default is period of 10 seconds."
-    ),
-    HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersistDirectory", "",
-            "Local temporary directory used to persist intermediate indexing state, will default to JVM system property java.io.tmpdir."
-    ),
-    HIVE_DRUID_ROLLUP("hive.druid.rollup", true, "Whether to rollup druid rows or not."),
-    DRUID_SEGMENT_DIRECTORY("hive.druid.storage.storageDirectory", "/druid/segments"
-            , "druid deep storage location."),
-    DRUID_METADATA_BASE("hive.druid.metadata.base", "druid", "Default prefix for metadata tables"),
-    DRUID_METADATA_DB_TYPE("hive.druid.metadata.db.type", "mysql",
-            new PatternSet("mysql", "postgresql", "derby"), "Type of the metadata database."
-    ),
-    DRUID_METADATA_DB_USERNAME("hive.druid.metadata.username", "",
-            "Username to connect to Type of the metadata DB."
-    ),
-    DRUID_METADATA_DB_PASSWORD("hive.druid.metadata.password", "",
-            "Password to connect to Type of the metadata DB."
-    ),
-    DRUID_METADATA_DB_URI("hive.druid.metadata.uri", "",
-            "URI to connect to the database (for example jdbc:mysql://hostname:port/DBName)."
-    ),
-    DRUID_WORKING_DIR("hive.druid.working.directory", "/tmp/workingDirectory",
-            "Default hdfs working directory used to store some intermediate metadata"
-    ),
-    HIVE_DRUID_MAX_TRIES("hive.druid.maxTries", 5, "Maximum number of retries before giving up"),
-    HIVE_DRUID_PASSIVE_WAIT_TIME("hive.druid.passiveWaitTimeMs", 30000L,
-            "Wait time in ms default to 30 seconds."
-    ),
-    HIVE_DRUID_BITMAP_FACTORY_TYPE("hive.druid.bitmap.type", "roaring", new PatternSet("roaring", "concise"), "Coding algorithm use to encode the bitmaps"),
-    HIVE_DRUID_KERBEROS_ENABLE("hive.druid.kerberos.enable", true,
-        "Enable/Disable Kerberos authentication explicitly while connecting to a druid cluster."),
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +
@@ -3608,7 +3560,7 @@ public class HiveConf extends Configuration {
         "session in background when running CLI with Tez, allowing CLI to be available earlier. " +
         "If hive.cli.tez.initialize.session is set to false, this value is ignored."),
 
-    HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS("hive.disable.unsafe.external.table.operations", true,
+    HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS("hive.disable.unsafe.external.table.operations", false,
         "Whether to disable certain optimizations and operations on external tables," +
         " on the assumption that data changes by external applications may have negative effects" +
         " on these operations."),
@@ -3952,8 +3904,26 @@ public class HiveConf extends Configuration {
       "hs2ActivePassiveHA",
       "When HiveServer2 Active/Passive High Availability is enabled, uses this namespace for registering HS2\n" +
         "instances with zookeeper"),
-    HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT("hive.server2.active.passive.ha.healthcheck.port", 11002, 
+    HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT("hive.server2.active.passive.ha.healthcheck.port", 11002,
         "The port the HiveServer2 ha-healthcheck web app will listen on"),
+
+    // Persistable session state store configs
+    HIVE_SERVER2_SESSION_STATE_STORE_CLASS("hive.server2.session.state.store.class",
+        "",
+        "Implementation class for the session state store. Empty means disabled. Options:\n" +
+        "  org.apache.hive.service.cli.session.store.ZooKeeperSessionStateStore\n" +
+        "  org.apache.hive.service.cli.session.store.RedisSessionStateStore"),
+    HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY("hive.server2.session.state.store.fetch.strategy",
+        "NEVER",
+        new StringSet("NEVER", "ALWAYS", "FETCH_WHEN_MISSING"),
+        "Session fetch strategy from shared store:\n" +
+        "  NEVER - only use local session state\n" +
+        "  ALWAYS - on every access, compare local lastAccessTime with remote; if remote is newer, re-hydrate\n" +
+        "  FETCH_WHEN_MISSING - fetch from store only when session not found locally"),
+    HIVE_SERVER2_SESSION_STATE_STORE_TTL("hive.server2.session.state.store.ttl", "24h",
+        new TimeValidator(TimeUnit.SECONDS),
+        "TTL for session snapshots in the state store. Abandoned sessions auto-expire after this duration."),
+
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
         "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
         "workload management is enabled and used for these sessions."),
@@ -4006,6 +3976,15 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_QUEUE_ACCESS_CHECK("hive.server2.tez.queue.access.check", false,
         "Whether to check user access to explicitly specified YARN queues. " +
           "yarn.resourcemanager.webapp.address must be configured to use this."),
+    HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL("hive.tez.queue.metrics.refresh.interval", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Interval for refreshing YARN queue resource metrics during Tez query execution. " +
+        "When set to a positive value (e.g. 10s), displays real-time memory, vCore, capacity " +
+        "and application metrics for the YARN queue being used. " +
+        "Set to 0 or negative to disable. Minimum effective value is 1 second."),
+    HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS("hive.server2.tez.queue.metrics.refresh.threads", 4,
+        "Number of threads in the scheduled thread pool for refreshing YARN queue metrics. " +
+        "This pool is used by HiveServer2 to periodically collect queue resource information from YARN RM."),
     HIVE_SERVER2_TEZ_SESSION_LIFETIME("hive.server2.tez.session.lifetime", "162h",
         new TimeValidator(TimeUnit.HOURS),
         "The lifetime of the Tez sessions launched by HS2 when default sessions are enabled.\n" +
@@ -5570,8 +5549,6 @@ public class HiveConf extends Configuration {
             "hive.privilege.synchronizer," +
             "hive.privilege.synchronizer.interval," +
             "hive.query.max.length," +
-            "hive.druid.broker.address.default," +
-            "hive.druid.coordinator.address.default," +
             "hikaricp.," +
             "hadoop.bin.path," +
             "yarn.bin.path," +
@@ -5591,7 +5568,6 @@ public class HiveConf extends Configuration {
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTORE_PWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
         + "," + HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname
-        + "," + DRUID_METADATA_DB_PASSWORD.varname
         // Adding the S3 credentials from Hadoop config to be hidden
         + ",fs.s3.awsAccessKeyId"
         + ",fs.s3.awsSecretAccessKey"
@@ -5605,6 +5581,23 @@ public class HiveConf extends Configuration {
         + ",s3.access-key-id"
         + ",s3.secret-access-key"
         + ",s3.session-token"
+        // Iceberg FileIO vended credential keys (GCS, ADLS, OSS)
+        + ",gcs.oauth2.token"
+        + ",adls.auth.shared-key.account.key"
+        + ",adls.sas-token."
+        + ",adls.token"
+        + ",client.access-key-id"
+        + ",client.access-key-secret"
+        + ",client.security-token"
+        + ",oss-access-key-id"
+        + ",oss-secret-access-key"
+        + ",oss.security-token"
+        // Hadoop connector keys materialized from vended credentials (ADLS, OSS)
+        + ",fs.azure.account.key."
+        + ",fs.azure.sas.fixed.token."
+        + ",fs.oss.accessKeyId"
+        + ",fs.oss.accessKeySecret"
+        + ",fs.oss.securityToken"
         + ",dfs.adls.oauth2.credential"
         + ",fs.adl.oauth2.credential"
         + ",fs.azure.account.oauth2.client.secret"
@@ -6787,7 +6780,6 @@ public class HiveConf extends Configuration {
     "hive\\.auto\\..*",
     "hive\\.cbo\\..*",
     "hive\\.convert\\..*",
-    "hive\\.druid\\..*",
     "hive\\.exec\\.dynamic\\.partition.*",
     "hive\\.exec\\.max\\.dynamic\\.partitions.*",
     "hive\\.exec\\.compress\\..*",

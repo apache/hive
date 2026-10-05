@@ -97,6 +97,8 @@ serdeConstants::serdeConstants() {
 
   VARIANT_TYPE_NAME = "variant";
 
+  UNKNOWN_TYPE_NAME = "unknown";
+
   LIST_COLUMNS = "columns";
 
   LIST_COLUMN_TYPES = "columns.types";

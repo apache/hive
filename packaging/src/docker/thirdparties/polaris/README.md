@@ -124,7 +124,7 @@ docker-compose down -v
     
     <property>
       <name>metastore.client.impl</name>
-      <value>org.apache.iceberg.hive.client.HiveRESTCatalogClient</value>
+      <value>org.apache.iceberg.hive.rest.catalog.client.HiveRESTCatalogClient</value>
       <description>Specifies the client implementation to use for accessing Iceberg via REST.</description>
     </property>
     

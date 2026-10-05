@@ -1289,6 +1289,7 @@ struct TProgressUpdateResp {
   4: required TJobExecutionStatus status
   5: required string footerSummary
   6: required i64 startTime
+  7: optional string queueMetrics
 }
 
 struct TGetQueryIdReq {

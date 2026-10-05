@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -52,6 +53,16 @@ class TestRESTCatalogOAuth2Jwt extends BaseRESTCatalogTests {
         "rest.auth.type", "oauth2",
         "oauth2-server-uri", REST_CATALOG_EXTENSION.getOAuth2TokenEndpoint(),
         "credential", REST_CATALOG_EXTENSION.getOAuth2ClientCredentialForPermissionTest()
+    ));
+  }
+
+  @Override
+  protected Optional<Map<String, String>> getPermissionReadOnlyClientConfiguration() {
+    return Optional.of(Map.of(
+        "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
+        "rest.auth.type", "oauth2",
+        "oauth2-server-uri", REST_CATALOG_EXTENSION.getOAuth2TokenEndpoint(),
+        "credential", REST_CATALOG_EXTENSION.getOAuth2ClientCredentialForPermissionReadOnly()
     ));
   }
 

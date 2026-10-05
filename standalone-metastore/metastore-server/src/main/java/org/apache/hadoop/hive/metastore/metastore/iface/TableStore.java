@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore.metastore.iface;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
@@ -475,6 +477,12 @@ public interface TableStore {
       throws MetaException, NoSuchObjectException;
 
   MPartition ensureGetMPartition(TableName tableName, List<String> partVals) throws MetaException;
+
+  /**
+   * Multi-table table-parameter update.
+   * @param updates updates to apply.
+   */
+  void updateTableParams(List<Map.Entry<TableParamsUpdate, Table>> updates) throws MetaException, NoSuchObjectException;
 
   class AttachedMTableInfo {
     public MTable mtbl;

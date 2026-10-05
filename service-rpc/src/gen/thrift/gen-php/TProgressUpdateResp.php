@@ -62,6 +62,11 @@ class TProgressUpdateResp
             'isRequired' => true,
             'type' => TType::I64,
         ),
+        7 => array(
+            'var' => 'queueMetrics',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -88,6 +93,10 @@ class TProgressUpdateResp
      * @var int
      */
     public $startTime = null;
+    /**
+     * @var string
+     */
+    public $queueMetrics = null;
 
     public function __construct($vals = null)
     {
@@ -109,6 +118,9 @@ class TProgressUpdateResp
             }
             if (isset($vals['startTime'])) {
                 $this->startTime = $vals['startTime'];
+            }
+            if (isset($vals['queueMetrics'])) {
+                $this->queueMetrics = $vals['queueMetrics'];
             }
         }
     }
@@ -201,6 +213,13 @@ class TProgressUpdateResp
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->queueMetrics);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -261,6 +280,11 @@ class TProgressUpdateResp
         if ($this->startTime !== null) {
             $xfer += $output->writeFieldBegin('startTime', TType::I64, 6);
             $xfer += $output->writeI64($this->startTime);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->queueMetrics !== null) {
+            $xfer += $output->writeFieldBegin('queueMetrics', TType::STRING, 7);
+            $xfer += $output->writeString($this->queueMetrics);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

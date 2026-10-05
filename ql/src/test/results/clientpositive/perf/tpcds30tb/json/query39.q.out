@@ -1143,7 +1143,11 @@
                                     }
                                   ]
                                 }
-                              ]
+                              ],
+                              "type": {
+                                "type": "DOUBLE",
+                                "nullable": true
+                              }
                             },
                             {
                               "op": {
@@ -1197,7 +1201,11 @@
                                         "nullable": false
                                       }
                                     }
-                                  ]
+                                  ],
+                                  "type": {
+                                    "type": "BIGINT",
+                                    "nullable": true
+                                  }
                                 }
                               ]
                             }
@@ -1429,7 +1437,11 @@
                                   }
                                 ]
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "DOUBLE",
+                              "nullable": true
+                            }
                           },
                           {
                             "op": {
@@ -1483,7 +1495,11 @@
                                       "nullable": false
                                     }
                                   }
-                                ]
+                                ],
+                                "type": {
+                                  "type": "BIGINT",
+                                  "nullable": true
+                                }
                               }
                             ]
                           }
@@ -2034,7 +2050,11 @@
                                     }
                                   ]
                                 }
-                              ]
+                              ],
+                              "type": {
+                                "type": "DOUBLE",
+                                "nullable": true
+                              }
                             },
                             {
                               "op": {
@@ -2088,7 +2108,11 @@
                                         "nullable": false
                                       }
                                     }
-                                  ]
+                                  ],
+                                  "type": {
+                                    "type": "BIGINT",
+                                    "nullable": true
+                                  }
                                 }
                               ]
                             }
@@ -2320,7 +2344,11 @@
                                   }
                                 ]
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "DOUBLE",
+                              "nullable": true
+                            }
                           },
                           {
                             "op": {
@@ -2374,7 +2402,11 @@
                                       "nullable": false
                                     }
                                   }
-                                ]
+                                ],
+                                "type": {
+                                  "type": "BIGINT",
+                                  "nullable": true
+                                }
                               }
                             ]
                           }

@@ -75,8 +75,6 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   TABLE_BUCKETING_VERSION = "bucketing_version";
 
-  DRUID_CONFIG_PREFIX = "druid.";
-
   JDBC_CONFIG_PREFIX = "hive.sql.";
 
   TABLE_IS_CTAS = "created_with_ctas";

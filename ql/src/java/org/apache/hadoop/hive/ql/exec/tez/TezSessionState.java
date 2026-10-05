@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
@@ -73,6 +74,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.common.TezUtils;
@@ -119,6 +121,7 @@ public class TezSessionState implements TezSession {
   Path tezScratchDir;
   protected LocalResource appJarLr;
   private TezClient session;
+  private YarnClient yarnClient;
   private Future<TezClient> sessionFuture;
   /** Console used for user feedback during async session opening. */
   private LogHelper console;
@@ -582,7 +585,7 @@ public class TezSessionState implements TezSession {
     }
 
     String mrAmJavaOpts = conf.get(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, MRHelpers.getJavaOptsForMRAM(conf));
-    conf.set(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts + JavaVersionUtils.getAddOpensFlagsIfNeeded());
+    conf.set(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts + JavaVersionUtils.getAddOpensFlags());
 
     String queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
     conf.setIfUnset(TezConfiguration.TEZ_QUEUE_NAME, queueName);
@@ -752,6 +755,17 @@ public class TezSessionState implements TezSession {
           closeClient(asyncSession);
         }
       }
+
+      // Stop YarnClient if it was initialized
+      if (yarnClient != null) {
+        try {
+          LOG.info("Stopping YarnClient for session: {}", sessionId);
+          yarnClient.stop();
+          yarnClient = null;
+        } catch (Exception e) {
+          LOG.warn("Error stopping YarnClient for session {}: {}", sessionId, e.getMessage());
+        }
+      }
     } finally {
       try {
         cleanupScratchDir();
@@ -820,6 +834,37 @@ public class TezSessionState implements TezSession {
       }
     }
     return session;
+  }
+
+  @Override
+  public YarnClient getYarnClient() {
+    // Lazy initialization: only create YarnClient when queue metrics are enabled
+    if (yarnClient == null && session != null) {
+      long refreshInterval = HiveConf.getTimeVar(conf,
+          ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, TimeUnit.MILLISECONDS);
+
+      // Only initialize if metrics are enabled (interval > 0)
+      if (refreshInterval > 0) {
+        synchronized (this) {
+          // Double-check locking pattern
+          if (yarnClient == null) {
+            try {
+              yarnClient = YarnClient.createYarnClient();
+              yarnClient.init(conf);
+              yarnClient.start();
+              LOG.info("YarnClient lazily initialized for session: {} (queue metrics enabled with interval: {}ms)",
+                  sessionId, refreshInterval);
+            } catch (Exception e) {
+              LOG.warn("Failed to initialize YarnClient for metrics collection", e);
+              yarnClient = null;
+            }
+          }
+        }
+      } else {
+        LOG.debug("YarnClient not initialized: queue metrics disabled (interval: {}ms)", refreshInterval);
+      }
+    }
+    return yarnClient;
   }
 
   @Override

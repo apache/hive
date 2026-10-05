@@ -48,10 +48,10 @@ catch (RecognitionException e) {
 //-----------------------------------------------------------------------------------
 
 tableAllColumns
-    : STAR
-        -> ^(TOK_ALLCOLREF)
-    | tableName DOT STAR
-        -> ^(TOK_ALLCOLREF tableName)
+    : STAR (KW_EXCLUDE LPAREN columnNameList RPAREN)?
+        -> ^(TOK_ALLCOLREF columnNameList?)
+    | tableName DOT STAR (KW_EXCLUDE LPAREN columnNameList RPAREN)?
+        -> ^(TOK_ALLCOLREF tableName columnNameList?)
     ;
 
 // (table|column)

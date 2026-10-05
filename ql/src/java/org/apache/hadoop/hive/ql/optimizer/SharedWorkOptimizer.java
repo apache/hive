@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
@@ -2067,44 +2068,48 @@ public class SharedWorkOptimizer extends Transform {
     return visited;
   }
 
-  private static Set<Operator<?>> findDescendantWorkOperators(ParseContext pctx,
+  @VisibleForTesting
+  static Set<Operator<?>> findDescendantWorkOperators(ParseContext pctx,
           SharedWorkOptimizerCache optimizerCache, Operator<?> start,
           Set<Operator<?>> excludeOps) {
-    // Find operators in work
-    Set<Operator<?>> workOps = findWorkOperators(optimizerCache, start);
-    // Gather output works operators
-    Set<Operator<?>> result = new HashSet<Operator<?>>();
-    Set<Operator<?>> set;
-    while (!workOps.isEmpty()) {
-      set = new HashSet<Operator<?>>();
-      for (Operator<?> op : workOps) {
-        if (excludeOps.contains(op)) {
-          continue;
-        }
-        if (op instanceof ReduceSinkOperator) {
-          if (op.getChildOperators() != null) {
-            // All children of RS are descendants
-            for (Operator<?> child : op.getChildOperators()) {
-              set.addAll(findWorkOperators(optimizerCache, child));
-            }
-          }
-          // Semijoin DPP work is considered a descendant because work needs
-          // to finish for it to execute
-          SemiJoinBranchInfo sjbi = pctx.getRsToSemiJoinBranchInfo().get(op);
-          if (sjbi != null) {
-            set.addAll(findWorkOperators(optimizerCache, sjbi.getTsOp()));
-          }
-        } else if(op.getConf() instanceof DynamicPruningEventDesc) {
-          // DPP work is considered a descendant because work needs
-          // to finish for it to execute
-          set.addAll(findWorkOperators(
-                  optimizerCache, ((DynamicPruningEventDesc) op.getConf()).getTableScan()));
-        }
+
+    // Gather input operators
+    Set<Operator<?>> startWorkOperators = findWorkOperators(optimizerCache, start);
+    Set<Operator<?>> visited = new HashSet<>();
+    Queue<Operator<?>> remaining = new LinkedList<>(startWorkOperators);
+    while (!remaining.isEmpty()) {
+      Operator<?> op = remaining.poll();
+
+      if (excludeOps.contains(op)) {
+        continue;
       }
-      workOps = set;
-      result.addAll(set);
+
+      if (!visited.add(op)) {
+        continue;
+      }
+
+      if (op instanceof ReduceSinkOperator) {
+        if (op.getChildOperators() != null) {
+          // All children of RS are descendants
+          for (Operator<?> child : op.getChildOperators()) {
+            remaining.addAll(findWorkOperators(optimizerCache, child));
+          }
+        }
+        // Semijoin DPP work is considered a descendant because work needs
+        // to finish for it to execute
+        SemiJoinBranchInfo sjbi = pctx.getRsToSemiJoinBranchInfo().get(op);
+        if (sjbi != null) {
+          remaining.addAll(findWorkOperators(optimizerCache, sjbi.getTsOp()));
+        }
+      } else if (op.getConf() instanceof DynamicPruningEventDesc) {
+        // DPP work is considered a descendant because work needs
+        // to finish for it to execute
+        remaining.addAll(findWorkOperators(optimizerCache, ((DynamicPruningEventDesc) op.getConf()).getTableScan()));
+      }
     }
-    return result;
+
+    visited.removeAll(startWorkOperators);
+    return visited;
   }
 
   // Stores result in cache

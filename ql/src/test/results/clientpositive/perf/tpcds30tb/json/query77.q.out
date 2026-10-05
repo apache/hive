@@ -1676,7 +1676,13 @@ Warning: Map Join MAPJOIN[213][bigTable=?] in task 'Reducer 9' is a cross produc
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 18,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 5.077429615006786E24
@@ -3007,7 +3013,13 @@ Warning: Map Join MAPJOIN[213][bigTable=?] in task 'Reducer 9' is a cross produc
                 "input": 4,
                 "name": "$4"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 18,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 1.0602495705939385E13
@@ -4507,7 +4519,13 @@ Warning: Map Join MAPJOIN[213][bigTable=?] in task 'Reducer 9' is a cross produc
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 18,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 3.2896973217973334E23

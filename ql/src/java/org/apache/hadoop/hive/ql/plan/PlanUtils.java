@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.plan;
@@ -1114,16 +1115,10 @@ public final class PlanUtils {
       currentAlias = currentAlias.replace(SemanticAnalyzer.SUBQUERY_TAG_1, "")
           .replace(SemanticAnalyzer.SUBQUERY_TAG_2, "");
       ReadEntity input = viewAliasToInput.get(currentAlias);
-      if (input == null && currentInput != null) {
-        // To handle the case of - select * from (select * from V1) A;
-        // the currentInput != null check above is needed.
-        // the alias list that case would be A:V1:T. Lookup on A would return null,
-        // we need to go further to find the view inside it.
-        return currentInput;
+      if (input != null) {
+        currentInput = input;
       }
-      currentInput = input;
     }
-
     return currentInput;
   }
 

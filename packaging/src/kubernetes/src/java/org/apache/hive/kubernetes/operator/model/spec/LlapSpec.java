@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.kubernetes.operator.model.spec;
@@ -27,6 +28,10 @@ import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
 import io.fabric8.generator.annotation.Default;
 import io.fabric8.generator.annotation.Required;
+import io.fabric8.kubernetes.api.model.Affinity;
+import io.fabric8.kubernetes.api.model.EnvVar;
+import io.fabric8.kubernetes.api.model.ResourceRequirements;
+import io.fabric8.kubernetes.api.model.Toleration;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
@@ -40,7 +45,9 @@ public record LlapSpec(
     @Default("1")
     Integer replicas,
     @JsonPropertyDescription("Resource requirements for pods")
-    ResourceRequirementsSpec resources,
+    @Default("{\"requests\": {\"cpu\": \"500m\", \"memory\": \"1Gi\"}}")
+    @SchemaFrom(type = Object.class) @PreserveUnknownFields
+    ResourceRequirements resources,
     @JsonPropertyDescription("Additional configuration overrides as key-value pairs")
     Map<String, String> configOverrides,
     @JsonPropertyDescription("Additional volumes to attach to the pod (e.g., for keytabs or truststores)")
@@ -49,6 +56,15 @@ public record LlapSpec(
     @JsonPropertyDescription("Additional volume mounts for the container")
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
     List<VolumeMount> extraVolumeMounts,
+    @JsonPropertyDescription("Tolerations for scheduling onto tainted nodes")
+    @SchemaFrom(type = Object[].class) @PreserveUnknownFields
+    List<Toleration> tolerations,
+    @JsonPropertyDescription("Affinity override; replaces the default spread anti-affinity when set")
+    @SchemaFrom(type = Object.class) @PreserveUnknownFields
+    Affinity affinity,
+    @JsonPropertyDescription("Component-scoped env vars, appended after the cluster-wide envVars")
+    @SchemaFrom(type = Object[].class) @PreserveUnknownFields
+    List<EnvVar> envVars,
     @JsonPropertyDescription("Whether LLAP is enabled")
     @Default("true")
     Boolean enabled,
@@ -75,12 +91,21 @@ public record LlapSpec(
       @Default("1")
       Integer replicas,
       @JsonPropertyDescription("Autoscaling configuration for this LLAP cluster's TezAM")
-      AutoscalingSpec autoscaling) {
+      AutoscalingSpec autoscaling,
+      @JsonPropertyDescription("Affinity for this LLAP cluster's TezAM, overriding "
+          + "spec.tezAm.affinity. Set it with more than one LLAP cluster.")
+      @SchemaFrom(type = Object.class)
+      @PreserveUnknownFields
+      Affinity affinity,
+      @JsonPropertyDescription("Tolerations for this LLAP cluster's TezAM, overriding spec.tezAm.tolerations")
+      @SchemaFrom(type = Object[].class)
+      @PreserveUnknownFields
+      List<Toleration> tolerations) {
 
     public LlapTezAmSpec {
       replicas = replicas != null ? replicas : 1;
       autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-          false, 0, 0, 60, 600, 120, 10, 0, 0, null);
+          false, 0, 0, 0, 60, 600, 120, 10, 0, 0, null);
     }
   }
 
@@ -100,9 +125,11 @@ public record LlapSpec(
     serviceHosts = serviceHosts != null ? serviceHosts : "@" + name;
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
+    tolerations = tolerations != null ? tolerations : List.of();
+    envVars = envVars != null ? envVars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-        false, 0, 1, 60, 900, 600, 10, 0, 0, null);
-    tezAm = tezAm != null ? tezAm : new LlapTezAmSpec(null, null);
+        false, 0, 1, 20, 60, 900, 600, 10, 0, 0, null);
+    tezAm = tezAm != null ? tezAm : new LlapTezAmSpec(null, null, null, null);
   }
 
   public boolean isEnabled() {

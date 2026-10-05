@@ -500,43 +500,6 @@
             },
             "operands": [
               {
-                "input": 8,
-                "name": "$8"
-              },
-              {
-                "literal": "CA",
-                "type": {
-                  "type": "CHAR",
-                  "nullable": false,
-                  "precision": 2
-                }
-              },
-              {
-                "literal": "GA",
-                "type": {
-                  "type": "CHAR",
-                  "nullable": false,
-                  "precision": 2
-                }
-              },
-              {
-                "literal": "WA",
-                "type": {
-                  "type": "CHAR",
-                  "nullable": false,
-                  "precision": 2
-                }
-              }
-            ]
-          },
-          {
-            "op": {
-              "name": "IN",
-              "kind": "OTHER_FUNCTION",
-              "syntax": "SPECIAL"
-            },
-            "operands": [
-              {
                 "op": {
                   "name": "substr",
                   "kind": "OTHER_FUNCTION",
@@ -572,7 +535,7 @@
                 "dynamic": false
               },
               {
-                "literal": "85669",
+                "literal": "80348",
                 "type": {
                   "type": "VARCHAR",
                   "nullable": false,
@@ -580,15 +543,7 @@
                 }
               },
               {
-                "literal": "86197",
-                "type": {
-                  "type": "VARCHAR",
-                  "nullable": false,
-                  "precision": 2147483647
-                }
-              },
-              {
-                "literal": "88274",
+                "literal": "81792",
                 "type": {
                   "type": "VARCHAR",
                   "nullable": false,
@@ -597,14 +552,6 @@
               },
               {
                 "literal": "83405",
-                "type": {
-                  "type": "VARCHAR",
-                  "nullable": false,
-                  "precision": 2147483647
-                }
-              },
-              {
-                "literal": "86475",
                 "type": {
                   "type": "VARCHAR",
                   "nullable": false,
@@ -628,7 +575,7 @@
                 }
               },
               {
-                "literal": "80348",
+                "literal": "85669",
                 "type": {
                   "type": "VARCHAR",
                   "nullable": false,
@@ -636,11 +583,64 @@
                 }
               },
               {
-                "literal": "81792",
+                "literal": "86197",
                 "type": {
                   "type": "VARCHAR",
                   "nullable": false,
                   "precision": 2147483647
+                }
+              },
+              {
+                "literal": "86475",
+                "type": {
+                  "type": "VARCHAR",
+                  "nullable": false,
+                  "precision": 2147483647
+                }
+              },
+              {
+                "literal": "88274",
+                "type": {
+                  "type": "VARCHAR",
+                  "nullable": false,
+                  "precision": 2147483647
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "IN",
+              "kind": "OTHER_FUNCTION",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": "CA",
+                "type": {
+                  "type": "CHAR",
+                  "nullable": false,
+                  "precision": 2
+                }
+              },
+              {
+                "literal": "GA",
+                "type": {
+                  "type": "CHAR",
+                  "nullable": false,
+                  "precision": 2
+                }
+              },
+              {
+                "literal": "WA",
+                "type": {
+                  "type": "CHAR",
+                  "nullable": false,
+                  "precision": 2
                 }
               }
             ]
@@ -1750,12 +1750,12 @@
                   "name": "$4"
                 },
                 {
-                  "input": 9,
-                  "name": "$9"
-                },
-                {
                   "input": 5,
                   "name": "$5"
+                },
+                {
+                  "input": 9,
+                  "name": "$9"
                 }
               ]
             }

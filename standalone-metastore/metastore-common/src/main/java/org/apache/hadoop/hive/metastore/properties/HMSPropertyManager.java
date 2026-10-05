@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore.properties;
@@ -25,7 +26,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 /**
- * A property manager tailored for the HiveMetaStore.
+ * A property manager tailored for the HiveMetaStore operating on Iceberg tables.
  * It describes properties for cluster, database and table based on declared schemas.
  * A property is of the form:
  * <ul>
@@ -101,14 +102,14 @@ public class HMSPropertyManager extends PropertyManager {
    */
   public static final PropertyType<MaintenanceOpType> MAINTENANCE_OPERATION = new PropertyType<MaintenanceOpType>("MaintenanceOperation"){
     @Override public MaintenanceOpType cast(Object value) {
-      if (value instanceof MaintenanceOpType) {
-        return (MaintenanceOpType) value;
+      if (value instanceof MaintenanceOpType op) {
+        return op;
       }
       if (value == null) {
         return null;
       }
-      if (value instanceof Number) {
-        return findOpType(((Number) value).intValue());
+      if (value instanceof Number n) {
+        return findOpType(n.intValue());
       }
       return parse(value.toString());
     }
@@ -121,8 +122,8 @@ public class HMSPropertyManager extends PropertyManager {
     }
 
     @Override public String format(Object value) {
-      if (value instanceof MaintenanceOpType) {
-        return value.toString();
+      if (value instanceof MaintenanceOpType op) {
+        return op.toString();
       }
       return null;
     }
@@ -133,14 +134,14 @@ public class HMSPropertyManager extends PropertyManager {
    */
   public static final PropertyType<MaintenanceOpStatus> MAINTENANCE_STATUS = new PropertyType<MaintenanceOpStatus>("MaintenanceStatus"){
     @Override public MaintenanceOpStatus cast(Object value) {
-      if (value instanceof MaintenanceOpStatus) {
-        return (MaintenanceOpStatus) value;
+      if (value instanceof MaintenanceOpStatus op) {
+        return op;
       }
       if (value == null) {
         return null;
       }
-      if (value instanceof Number) {
-        return findOpStatus(((Number) value).intValue());
+      if (value instanceof Number n) {
+        return findOpStatus(n.intValue());
       }
       return parse(value.toString());
     }
@@ -153,8 +154,8 @@ public class HMSPropertyManager extends PropertyManager {
     }
 
     @Override public String format(Object value) {
-      if (value instanceof MaintenanceOpStatus) {
-        return value.toString();
+      if (value instanceof MaintenanceOpStatus op) {
+        return op.toString();
       }
       return null;
     }
@@ -247,12 +248,12 @@ public class HMSPropertyManager extends PropertyManager {
    */
   @Override
   public PropertySchema getSchema(String schemaName) {
-    switch(schemaName) {
-      case CLUSTER_PREFIX: return CLUSTER_SCHEMA;
-      case DATABASE_PREFIX: return DATABASE_SCHEMA;
-      case TABLE_PREFIX: return TABLE_SCHEMA;
-      default: return null;
-    }
+    return switch (schemaName) {
+      case CLUSTER_PREFIX -> CLUSTER_SCHEMA;
+      case DATABASE_PREFIX -> DATABASE_SCHEMA;
+      case TABLE_PREFIX -> TABLE_SCHEMA;
+      default -> null;
+    };
   }
 
   /**

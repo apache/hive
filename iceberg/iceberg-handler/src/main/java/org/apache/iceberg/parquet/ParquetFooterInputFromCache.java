@@ -40,8 +40,6 @@ import org.apache.parquet.io.SeekableInputStream;
 public final class ParquetFooterInputFromCache
     extends SeekableInputStream implements InputFile {
   public static final int FOOTER_LENGTH_SIZE = 4; // For the file size check.
-  private static final int TAIL_LENGTH = ParquetFileWriter.MAGIC.length + FOOTER_LENGTH_SIZE;
-  private static final int FAKE_PREFIX_LENGTH = ParquetFileWriter.MAGIC.length;
   private final int length;
   private final int footerLength;
   private int position = 0;
@@ -51,27 +49,37 @@ public final class ParquetFooterInputFromCache
   private final int[] positions;
 
   public ParquetFooterInputFromCache(MemoryBufferOrBuffers footerData) {
+    this(footerData, ParquetFileWriter.MAGIC);
+  }
+
+  public ParquetFooterInputFromCache(MemoryBufferOrBuffers footerData, byte[] magic) {
     MemoryBuffer oneBuffer = footerData.getSingleBuffer();
+    MemoryBuffer[] footerBuffers;
     if (oneBuffer != null) {
-      cacheData = new MemoryBuffer[2];
-      cacheData[0] = oneBuffer;
+      footerBuffers = new MemoryBuffer[] { oneBuffer };
     } else {
-      MemoryBuffer[] bufs = footerData.getMultipleBuffers();
-      cacheData = new MemoryBuffer[bufs.length + 1];
-      System.arraycopy(bufs, 0, cacheData, 0, bufs.length);
+      footerBuffers = footerData.getMultipleBuffers();
     }
+
+    // Layout: [prefix magic] [footer data buffers...] [tail: footer length + magic]
+    cacheData = new MemoryBuffer[1 + footerBuffers.length + 1];
+    cacheData[0] = new ByteArrayBuffer(magic);
+    System.arraycopy(footerBuffers, 0, cacheData, 1, footerBuffers.length);
+
     int footerLen = 0;
     positions = new int[cacheData.length];
-    for (int i = 0; i < cacheData.length - 1; ++i) {
-      positions[i] = footerLen;
+    positions[0] = 0;
+    positions[1] = magic.length;
+    for (int i = 1; i <= footerBuffers.length; ++i) {
       int dataLen = cacheData[i].getByteBufferRaw().remaining();
       assert dataLen > 0;
       footerLen += dataLen;
+      positions[i + 1] = magic.length + footerLen;
     }
-    positions[cacheData.length - 1] = footerLen;
-    cacheData[cacheData.length - 1] = new FooterEndBuffer(footerLen);
+
+    cacheData[cacheData.length - 1] = new FooterEndBuffer(footerLen, magic);
     this.footerLength = footerLen;
-    this.length = footerLen + FAKE_PREFIX_LENGTH + TAIL_LENGTH;
+    this.length = magic.length + footerLen + FOOTER_LENGTH_SIZE + magic.length;
   }
 
   @Override
@@ -94,17 +102,16 @@ public final class ParquetFooterInputFromCache
   @Override
   public void seek(long pos) throws IOException {
     this.position = (int) pos;
-    long targetPos = pos - FAKE_PREFIX_LENGTH;
     // Not efficient, but we don't expect this to be called frequently.
     for (int i = 1; i <= positions.length; ++i) {
-      int endPos = (i == positions.length) ? (length - FAKE_PREFIX_LENGTH) : positions[i];
-      if (endPos > targetPos) {
+      int endPos = (i == positions.length) ? length : positions[i];
+      if (endPos > pos) {
         bufferIx = i - 1;
-        bufferPos = (int) (targetPos - positions[i - 1]);
+        bufferPos = (int) (pos - positions[i - 1]);
         return;
       }
     }
-    throw new IOException("Incorrect seek " + targetPos + "; footer length " + footerLength +
+    throw new IOException("Incorrect seek " + pos + "; footer length " + footerLength +
         Arrays.toString(positions));
   }
 
@@ -138,6 +145,7 @@ public final class ParquetFooterInputFromCache
       }
       argPos += toConsume;
     }
+    position += len;
     return len;
   }
 
@@ -185,20 +193,41 @@ public final class ParquetFooterInputFromCache
   }
 
   /**
+   * Simple MemoryBuffer backed by a byte array.
+   */
+  private static final class ByteArrayBuffer implements MemoryBuffer {
+    private final ByteBuffer bb;
+
+    ByteArrayBuffer(byte[] data) {
+      bb = ByteBuffer.wrap(data);
+    }
+
+    @Override
+    public ByteBuffer getByteBufferRaw() {
+      return bb;
+    }
+
+    @Override
+    public ByteBuffer getByteBufferDup() {
+      return bb.duplicate();
+    }
+  }
+
+  /**
    * The fake buffer that emulates end of file, with footer length and magic. Given that these
    * can be generated based on the footer buffer itself, we don't cache them.
    */
   private static final class FooterEndBuffer implements MemoryBuffer {
     private final ByteBuffer bb;
 
-    FooterEndBuffer(int footerLength) {
-      byte[] bytes = new byte[8];
+    FooterEndBuffer(int footerLength, byte[] magic) {
+      byte[] bytes = new byte[FOOTER_LENGTH_SIZE + magic.length];
       bytes[0] = (byte) ((footerLength >>>  0) & 0xFF);
       bytes[1] = (byte) ((footerLength >>>  8) & 0xFF);
       bytes[2] = (byte) ((footerLength >>> 16) & 0xFF);
       bytes[3] = (byte) ((footerLength >>> 24) & 0xFF);
-      for (int i = 0; i < ParquetFileWriter.MAGIC.length; ++i) {
-        bytes[4 + i] = ParquetFileWriter.MAGIC[i];
+      for (int i = 0; i < magic.length; ++i) {
+        bytes[FOOTER_LENGTH_SIZE + i] = magic[i];
       }
       bb = ByteBuffer.wrap(bytes);
     }

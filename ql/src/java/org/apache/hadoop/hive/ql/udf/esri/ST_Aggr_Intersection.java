@@ -9,21 +9,21 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +37,7 @@ public class ST_Aggr_Intersection extends UDAF {
 
   public static class AggrIntersectionBinaryEvaluator implements UDAFEvaluator {
 
-    private OGCGeometry isectGeom = null;
-    SpatialReference spatialRef = null;
+    private Geometry isectGeom = null;
     int firstWKID = -2;
 
     /*
@@ -60,27 +59,26 @@ public class ST_Aggr_Intersection extends UDAF {
 
       if (firstWKID == -2) {
         firstWKID = GeometryUtils.getWKID(geomref);
-        if (firstWKID != GeometryUtils.WKID_UNKNOWN) {
-          spatialRef = SpatialReference.create(firstWKID);
-        }
       } else if (firstWKID != GeometryUtils.getWKID(geomref)) {
         LogUtils.Log_SRIDMismatch(LOG, geomref, firstWKID);
         return false;
       }
 
       try {
-        OGCGeometry rowGeom = GeometryUtils.geometryFromEsriShape(geomref);
-        rowGeom.setSpatialReference(spatialRef);
-        if (isectGeom == null)
+        Geometry rowGeom = GeometryUtils.geometryFromEsriShape(geomref);
+        if (rowGeom == null) {
+          return false;
+        }
+        if (isectGeom == null) {
           isectGeom = rowGeom;
-        else
+        } else {
           isectGeom = isectGeom.intersection(rowGeom);
+        }
         return true;
       } catch (Exception e) {
         LogUtils.Log_InternalError(LOG, "ST_Aggr_Intersection: " + e);
         return false;
       }
-
     }
 
     /*
@@ -97,9 +95,9 @@ public class ST_Aggr_Intersection extends UDAF {
     public BytesWritable terminatePartial() throws HiveException {
       if (isectGeom == null) {
         return null;
-      } else {
-        return GeometryUtils.geometryToEsriShapeBytesWritable(isectGeom);
       }
+      int wkid = (firstWKID == -2) ? GeometryUtils.WKID_UNKNOWN : firstWKID;
+      return GeometryUtils.geometryToEsriShapeBytesWritable(isectGeom, wkid);
     }
 
     public BytesWritable terminate() throws HiveException {

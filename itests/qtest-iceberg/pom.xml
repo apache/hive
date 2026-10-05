@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <!--
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
 
       http://www.apache.org/licenses/LICENSE-2.0
 
@@ -96,17 +100,6 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-registry</artifactId>
       <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-druid-handler</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-druid-handler</artifactId>
-      <classifier>tests</classifier>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -284,10 +277,6 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-iceberg-handler</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-iceberg-handler</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -385,6 +374,40 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-gcp</artifactId>
+      <version>${iceberg.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- GCSFileIO runtime deps (google-cloud-storage, google-api-client); iceberg-gcp is compileOnly -->
+    <dependency>
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-gcp-bundle</artifactId>
+      <version>${iceberg.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Hadoop FileSystem for gs:// staging paths (INSERT/CTAS), analogous to hadoop-azure for abfs:// -->
+    <dependency>
+      <groupId>com.google.cloud.bigdataoss</groupId>
+      <artifactId>gcs-connector</artifactId>
+      <version>hadoop3-2.2.25</version>
+      <classifier>shaded</classifier>
+      <scope>test</scope>
+    </dependency>
+    <!-- google-cloud-storage (iceberg-gcp-bundle) + OpenCensus need disruptor >= 3.4 -->
+    <dependency>
+      <groupId>com.lmax</groupId>
+      <artifactId>disruptor</artifactId>
+      <version>3.4.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-azure</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-tests</artifactId>
       <classifier>tests</classifier>
@@ -436,29 +459,6 @@
         <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-it-druid</artifactId>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-bundle</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -573,6 +573,13 @@
             </goals>
             <configuration>
               <target>
+                <copy file="/etc/hosts" tofile="${project.build.directory}/gcs-test-hosts" failonerror="false"/>
+                <exec executable="hostname" outputproperty="local.hostname"/>
+                <exec executable="sh" outputproperty="local.fqdn">
+                  <arg value="-c"/>
+                  <arg value="hostname -f || hostname"/>
+                </exec>
+                <echo file="${project.build.directory}/gcs-test-hosts" append="true">${line.separator}127.0.0.1 host.testcontainers.internal${line.separator}127.0.0.1 ${local.hostname}${line.separator}127.0.0.1 ${local.fqdn}${line.separator}</echo>
                 <mkdir dir="${test.tmp.dir}/scripts/metastore"/>
                 <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
                   <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
@@ -601,7 +608,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${maven.test.jvm.args}</argLine>
+          <argLine>${maven.test.jvm.args} -Xshare:off -Djdk.net.hosts.file=${project.build.directory}/gcs-test-hosts</argLine>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
@@ -625,6 +632,67 @@
                   <artifactId>h2</artifactId>
                   <version>${h2database.version}</version>
                   <destFileName>h2-driver.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.gravitino</groupId>
+                  <artifactId>gravitino-iceberg-azure-bundle</artifactId>
+                  <version>1.2.1</version>
+                  <destFileName>gravitino-iceberg-azure-bundle.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.iceberg</groupId>
+                  <artifactId>iceberg-azure-bundle</artifactId>
+                  <version>${iceberg.version}</version>
+                  <destFileName>iceberg-azure-bundle.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.hadoop</groupId>
+                  <artifactId>hadoop-azure</artifactId>
+                  <version>2.10.2</version>
+                  <destFileName>gravitino-hadoop-azure.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>com.microsoft.azure</groupId>
+                  <artifactId>azure-storage</artifactId>
+                  <version>7.0.1</version>
+                  <destFileName>azure-storage.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>com.microsoft.azure</groupId>
+                  <artifactId>azure-keyvault-core</artifactId>
+                  <version>1.0.0</version>
+                  <destFileName>azure-keyvault-core.jar</destFileName>
+                </artifactItem>
+                <!-- hadoop-azure 2.10.2 uses org.mortbay.util.ajax.JSON; Gravitino ships Jetty 9 only. -->
+                <artifactItem>
+                  <groupId>org.mortbay.jetty</groupId>
+                  <artifactId>jetty-util</artifactId>
+                  <version>6.1.26</version>
+                  <destFileName>mortbay-jetty-util.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.gravitino</groupId>
+                  <artifactId>gravitino-iceberg-gcp-bundle</artifactId>
+                  <version>1.2.1</version>
+                  <destFileName>gravitino-iceberg-gcp-bundle.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.gravitino</groupId>
+                  <artifactId>gravitino-gcp</artifactId>
+                  <version>1.2.1</version>
+                  <destFileName>gravitino-gcp.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.iceberg</groupId>
+                  <artifactId>iceberg-gcp</artifactId>
+                  <version>${iceberg.version}</version>
+                  <destFileName>iceberg-gcp.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.iceberg</groupId>
+                  <artifactId>iceberg-gcp-bundle</artifactId>
+                  <version>${iceberg.version}</version>
+                  <destFileName>iceberg-gcp-bundle.jar</destFileName>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}/test-dependencies</outputDirectory>

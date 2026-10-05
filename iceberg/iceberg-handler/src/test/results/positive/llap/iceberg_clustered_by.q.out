@@ -491,7 +491,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"product_id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"category\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"price\",\"required\":false,\"type\":\"decimal(10, 2)\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"manifests-created\":\"1\",\"manifests-kept\":\"0\",\"manifests-replaced\":\"0\",\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
 #### A masked pattern was here ####

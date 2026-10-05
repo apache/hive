@@ -74,7 +74,6 @@
         <include>contrib/**/*</include>
         <include>data/**/*</include>
         <include>dev-support/**/*</include>
-        <include>druid-handler/**/*</include>
         <include>iceberg-catalog/**/*</include>
         <include>iceberg-handler/**/*</include>
         <include>jdbc-handler/**/*</include>
@@ -101,6 +100,7 @@
         <include>ql/**/*</include>
         <include>serde/**/*</include>
         <include>service-rpc/**/*</include>
+        <include>service-session-store/**/*</include>
         <include>service/**/*</include>
         <include>shims/**/*</include>
         <include>storage-api/**/*</include>
@@ -119,6 +119,7 @@
         <include>parser/**/*</include>
         <include>udf/**/*</include>
         <include>iceberg/iceberg-catalog/**/*</include>
+        <include>iceberg/iceberg-rest-catalog-client/**/*</include>
         <include>iceberg/iceberg-handler/**/*</include>
         <include>iceberg/iceberg-shading/**/*</include>
         <include>iceberg/patched-iceberg-api/**/*</include>
