@@ -231,11 +231,12 @@ public class TestParquetCachedPageReadStore {
     ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
     CompressionCodecFactory codecFactory = options.getCodecFactory();
     ParquetMetadataConverter converter = new ParquetMetadataConverter(options);
+    boolean verifyChecksums = options.usePageChecksumVerification();
     try (PageReadStore plain = new ParquetCachedPageReadStore(footer,
-             singleChunkBatch(chunk, chunkBytes), codecFactory, converter);
+             singleChunkBatch(chunk, chunkBytes), codecFactory, converter, verifyChecksums);
          PageReadStore spliced = new ParquetCachedPageReadStore(footer,
              singleChunkBatch(chunkWithTotalSize(chunk, splicedBytes.size()), splicedBytes.toByteArray()),
-             codecFactory, converter)) {
+             codecFactory, converter, verifyChecksums)) {
       assertPageReaderParity("chunk behind an index page", plain.getPageReader(descriptor),
           spliced.getPageReader(descriptor), new Coverage());
     } finally {
@@ -300,7 +301,8 @@ public class TestParquetCachedPageReadStore {
         ParquetEncodedColumnBatch batch =
             cachedBatch(footer, rowGroupIx, projection, fileBytes, grain, coverage);
         PageReadStore actual =
-            new ParquetCachedPageReadStore(footer, batch, codecFactory, converter);
+            new ParquetCachedPageReadStore(footer, batch, codecFactory, converter,
+                options.usePageChecksumVerification());
 
         assertEquals("row group " + rowGroupIx + ": row count",
             expected.getRowCount(), actual.getRowCount());
@@ -486,7 +488,7 @@ public class TestParquetCachedPageReadStore {
     ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
     CompressionCodecFactory codecFactory = options.getCodecFactory();
     try (PageReadStore store = new ParquetCachedPageReadStore(footer, batch, codecFactory,
-        new ParquetMetadataConverter(options))) {
+        new ParquetMetadataConverter(options), options.usePageChecksumVerification())) {
       assertNotNull(store);
     } finally {
       codecFactory.release();
