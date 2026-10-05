@@ -302,7 +302,10 @@ public class MapWork extends BaseWork {
         Class<? extends InputFormat> inputFormatClass = part.getInputFileFormatClass();
         boolean isUsingLlapIo = canWrapAny && (HiveInputFormat.canWrapForLlap(inputFormatClass, doCheckIfs)
                 || HiveInputFormat.checkInputFormatForLlapEncode(conf, inputFormatClass.getCanonicalName())
-                || HiveInputFormat.usesNativeParquetLlapIo(inputFormatClass, conf));
+                // doCheckIfs means the query is not vectorized and we are counting on the
+                // non-vector wrapper; the native Parquet reader produces batches and has no
+                // wrapper, so the daemon will not take that split.
+                || (!doCheckIfs && HiveInputFormat.usesNativeParquetLlapIo(inputFormatClass, conf)));
         if (isUsingLlapIo) {
           if (part.getTableDesc() != null &&
               AcidUtils.isTablePropertyTransactional(part.getTableDesc().getProperties())) {

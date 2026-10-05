@@ -112,14 +112,6 @@ public interface LlapIo<T> {
       List<Integer> tableIncludedCols, JobConf conf, long offset, long length, Reporter reporter) throws IOException;
 
   /**
-   * Parquet counterpart of {@link #llapVectorizedOrcReaderForPath}: reads the column chunks of the split through the
-   * LLAP data cache. Returns null when the file cannot be served this way (native Parquet IO disabled, no MapWork,
-   * unsupported schema). See {@link LlapParquetReadRequest} for the identity / split / projection fields.
-   */
-  RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedParquetReaderForPath(
-      LlapParquetReadRequest request, JobConf conf, Reporter reporter) throws IOException;
-
-  /**
    * Extract and return the cache content metadata.
    */
   LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo();

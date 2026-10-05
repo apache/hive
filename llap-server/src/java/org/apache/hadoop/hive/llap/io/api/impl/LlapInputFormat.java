@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.AvoidSplitCombination;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat.NullRowsRecordReader;
@@ -173,7 +174,9 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   private RecordReader<NullWritable, VectorizedRowBatch> fallback(
       InputSplit split, JobConf job, Reporter reporter) throws IOException {
     if (sourceInputFormat instanceof LlapCacheOnlyInputFormatInterface) {
-      LlapProxy.getIo().initCacheOnlyInputFormat(sourceInputFormat);
+      // injectLlapCaches rather than initCacheOnlyInputFormat: it also pins
+      // parquet.read.allocation.size, so the reader asks for each column chunk in one read.
+      HiveInputFormat.injectLlapCaches(bogusCast(sourceInputFormat), LlapProxy.getIo(), job);
     }
     return sourceInputFormat.getRecordReader(split, job, reporter);
   }
@@ -206,6 +209,13 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   @SuppressWarnings("unchecked")
   private static <A, B, C, D> RecordReader<A, B> bogusCast(RecordReader<C, D> rr) {
     return (RecordReader<A, B>)rr;
+  }
+
+  // Same break, for the format itself: injectLlapCaches is written against the row-shaped
+  // signature HiveInputFormat deals in, and this class holds the vectorized one.
+  @SuppressWarnings("unchecked")
+  private static <A, B, C, D> InputFormat<A, B> bogusCast(InputFormat<C, D> inputFormat) {
+    return (InputFormat<A, B>)inputFormat;
   }
 
   @Override
