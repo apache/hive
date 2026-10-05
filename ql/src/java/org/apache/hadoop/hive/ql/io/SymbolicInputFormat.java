@@ -23,28 +23,35 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 public class SymbolicInputFormat implements ReworkMapredInputFormat {
 
+  private static final Pattern GLOB_METACHARS = Pattern.compile("[\\\\{}\\[\\]*?]");
+
   public void rework(HiveConf job, MapredWork work) throws IOException {
     Map<Path, PartitionDesc> pathToParts = work.getMapWork().getPathToPartitionInfo();
     List<Path> toRemovePaths = new ArrayList<>();
     Map<Path, PartitionDesc> toAddPathToPart = new HashMap<>();
     Map<Path, List<String>> pathToAliases = work.getMapWork().getPathToAliases();
+    List<Path> allowedRoots = getAllowedRoots(job);
 
     for (Map.Entry<Path, PartitionDesc> pathPartEntry : pathToParts.entrySet()) {
       Path path = pathPartEntry.getKey();
@@ -74,11 +81,8 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
 
             String line;
             while ((line = reader.readLine()) != null) {
-              // no check for the line? How to check?
-              // if the line is invalid for any reason, the job will fail.
-              FileStatus[] matches = fileSystem.globStatus(new Path(line));
-              for (FileStatus fileStatus : matches) {
-                Path schemaLessPath = Path.getPathWithoutSchemeAndAuthority(fileStatus.getPath());
+              for (Path match : resolveTargets(job, symlink.getPath(), allowedRoots, line)) {
+                Path schemaLessPath = Path.getPathWithoutSchemeAndAuthority(match);
                 StringInternUtils.internUriStringsInPath(schemaLessPath);
                 toAddPathToPart.put(schemaLessPath, partDesc);
                 pathToAliases.put(schemaLessPath, aliases);
@@ -97,5 +101,59 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
     for (Path toRemove : toRemovePaths) {
       work.getMapWork().removePathToPartitionInfo(toRemove);
     }
+  }
+
+  /**
+   * Expands a symlink file line, accepting only matches under the symlink file's directory or an allowed root.
+   */
+  static List<Path> resolveTargets(Configuration conf, Path symlinkFile, List<Path> allowedRoots, String line)
+      throws IOException {
+    // Qualified against the default filesystem, so no filesystem is created for an arbitrary scheme.
+    FileSystem defaultFs = FileSystem.get(conf);
+    List<Path> roots = new ArrayList<>(allowedRoots);
+    roots.add(qualify(defaultFs, symlinkFile.getParent()));
+    Path pattern = qualify(defaultFs, new Path(line));
+    // Matches are checked too, as a glob can climb out of the root.
+    checkAllowed(pattern, roots);
+    FileStatus[] statuses = pattern.getFileSystem(conf).globStatus(pattern);
+    if (statuses == null) {
+      return Collections.emptyList();
+    }
+    List<Path> matches = new ArrayList<>();
+    for (FileStatus status : statuses) {
+      Path match = qualify(defaultFs, status.getPath());
+      checkAllowed(match, roots);
+      // FileInputFormat globs the match again, so it must not contain glob metacharacters.
+      if (GLOB_METACHARS.matcher(match.toUri().getPath()).find()) {
+        throw new IOException("Symlink target " + match + " contains glob metacharacters");
+      }
+      matches.add(match);
+    }
+    return matches;
+  }
+
+  private static void checkAllowed(Path target, List<Path> roots) throws IOException {
+    for (Path root : roots) {
+      if (FileUtils.isPathWithinSubtree(target, root)) {
+        return;
+      }
+    }
+    throw new IOException("Symlink target " + target + " is outside of the allowed locations. Additional locations"
+        + " can be configured with " + ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname);
+  }
+
+  static List<Path> getAllowedRoots(Configuration conf) throws IOException {
+    List<Path> allowedRoots = new ArrayList<>();
+    for (String root : HiveConf.getTrimmedStringsVar(conf, ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS)) {
+      if (!root.isEmpty()) {
+        Path rootPath = new Path(root);
+        allowedRoots.add(qualify(rootPath.getFileSystem(conf), rootPath));
+      }
+    }
+    return allowedRoots;
+  }
+
+  private static Path qualify(FileSystem fs, Path path) {
+    return new Path(path.makeQualified(fs.getUri(), fs.getWorkingDirectory()).toUri().normalize());
   }
 }

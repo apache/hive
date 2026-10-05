@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.compute.query.using.stats=false;
+set hive.symlink.allowed.target.paths=${system:hive.root}data/files;
 
 DROP TABLE IF EXISTS symlink_text_input_format;
 
