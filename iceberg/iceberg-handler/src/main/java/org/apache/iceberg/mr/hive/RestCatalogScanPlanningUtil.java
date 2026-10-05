@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -46,6 +47,13 @@ import org.apache.iceberg.rest.RESTCatalogProperties;
  * tests {@code TestRestCatalogScanPlanningServerIT} and {@code TestHiveIcebergServerSideScanPlanningServerIT}
  * in {@code itests/hive-iceberg-rest-server}.
  *
+ * <p>{@link #setCatalogMode(Configuration, String, String)},
+ * {@link #isCatalogServerMode(Configuration, String)}, and
+ * {@link #setHiveMode(Configuration, String)} are public so tests in other Maven modules
+ * (for example {@code itests/hive-iceberg-rest-server}) can configure scan planning; those modules
+ * compile against this artifact as a JAR and cannot call package-private members. They are not
+ * intended as a general operator or application API.
+ *
  * @see <a href="https://iceberg.apache.org/docs/latest/catalog-properties/">REST catalog properties</a>
  */
 public final class RestCatalogScanPlanningUtil {
@@ -53,50 +61,50 @@ public final class RestCatalogScanPlanningUtil {
   private RestCatalogScanPlanningUtil() {
   }
 
-  public static String catalogPropertyKey(String catalogName) {
-    return IcebergCatalogProperties.catalogPropertyConfigKey(
-        catalogName, RESTCatalogProperties.SCAN_PLANNING_MODE);
-  }
-
-  public static void setScanPlanningMode(
+  private static void setCatalogMode(
       Configuration conf, String catalogName, RESTCatalogProperties.ScanPlanningMode mode) {
-    conf.set(catalogPropertyKey(catalogName), mode.modeName());
+    conf.set(
+        IcebergCatalogProperties.catalogPropertyConfigKey(
+            catalogName, RESTCatalogProperties.SCAN_PLANNING_MODE),
+        mode.modeName());
   }
 
-  public static void setScanPlanningMode(Configuration conf, String catalogName, String mode) {
-    setScanPlanningMode(conf, catalogName, RESTCatalogProperties.ScanPlanningMode.fromString(mode));
+  public static void setCatalogMode(Configuration conf, String catalogName, String mode) {
+    setCatalogMode(conf, catalogName, RESTCatalogProperties.ScanPlanningMode.fromString(mode));
   }
 
-  public static RESTCatalogProperties.ScanPlanningMode getScanPlanningMode(
+  static RESTCatalogProperties.ScanPlanningMode getCatalogMode(
       Configuration conf, String catalogName) {
     String mode = conf.get(
-        catalogPropertyKey(catalogName), RESTCatalogProperties.SCAN_PLANNING_MODE_DEFAULT.modeName());
+        IcebergCatalogProperties.catalogPropertyConfigKey(
+            catalogName, RESTCatalogProperties.SCAN_PLANNING_MODE),
+        RESTCatalogProperties.SCAN_PLANNING_MODE_DEFAULT.modeName());
     return RESTCatalogProperties.ScanPlanningMode.fromString(mode);
   }
 
-  public static boolean isServerMode(Configuration conf, String catalogName) {
-    return getScanPlanningMode(conf, catalogName) == RESTCatalogProperties.ScanPlanningMode.SERVER;
+  public static boolean isCatalogServerMode(Configuration conf, String catalogName) {
+    return getCatalogMode(conf, catalogName) == RESTCatalogProperties.ScanPlanningMode.SERVER;
   }
 
   /**
    * Returns true when Hive server-side REST scan planning is enabled in configuration.
    */
-  public static boolean isHiveServerSideScanPlanningEnabled(Configuration conf) {
+  static boolean isHiveServerMode(Configuration conf) {
     if (conf == null) {
       return false;
     }
     return RESTCatalogProperties.ScanPlanningMode.SERVER ==
-        RESTCatalogProperties.ScanPlanningMode.fromString(getHiveRestScanPlanningMode(conf));
+        RESTCatalogProperties.ScanPlanningMode.fromString(getHiveMode(conf));
   }
 
-  public static String getHiveRestScanPlanningMode(Configuration conf) {
+  static String getHiveMode(Configuration conf) {
     if (conf == null) {
       return RESTCatalogProperties.SCAN_PLANNING_MODE_DEFAULT.modeName();
     }
     return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SCAN_PLANNING_MODE);
   }
 
-  public static void setHiveRestScanPlanningMode(Configuration conf, String mode) {
+  public static void setHiveMode(Configuration conf, String mode) {
     HiveConf.setVar(
         conf,
         HiveConf.ConfVars.HIVE_ICEBERG_REST_SCAN_PLANNING_MODE,
@@ -106,19 +114,19 @@ public final class RestCatalogScanPlanningUtil {
   /**
    * Returns true when the catalog is configured for server-side scan planning and the Hive feature flag is on.
    */
-  public static boolean requestsServerSidePlanning(String catalogName, Configuration conf) {
+  static boolean isServerSidePlanningEnabled(String catalogName, Configuration conf) {
     if (conf == null || StringUtils.isEmpty(catalogName)) {
       return false;
     }
-    return isHiveServerSideScanPlanningEnabled(conf) && isServerMode(conf, catalogName);
+    return isHiveServerMode(conf) && isCatalogServerMode(conf, catalogName);
   }
 
   /**
-   * Returns true when catalog properties should be copied into the Tez/MR job configuration so
+   * Returns true when catalog properties should be copied into the Tez job configuration so
    * executors can reload a live REST catalog table for server-side scan planning.
    */
-  public static boolean shouldPropagateCatalogPropertiesToJob(String catalogName, Configuration conf) {
-    String resolvedCatalogName = resolveCatalogName(conf, catalogName);
+  static boolean shouldPropagateCatalogPropertiesToJob(String catalogName, Configuration conf) {
+    String resolvedCatalogName = HiveTableUtil.resolveCatalogName(conf, catalogName);
     if (StringUtils.isEmpty(resolvedCatalogName) || conf == null) {
       return false;
     }
@@ -126,24 +134,11 @@ public final class RestCatalogScanPlanningUtil {
         IcebergCatalogProperties.getCatalogType(conf, resolvedCatalogName))) {
       return false;
     }
-    return requestsServerSidePlanning(resolvedCatalogName, conf);
+    return isServerSidePlanningEnabled(resolvedCatalogName, conf);
   }
 
   /**
-   * Resolves the catalog name from per-table {@code iceberg.catalog} or the session default catalog.
-   */
-  public static String resolveCatalogName(Configuration conf, String catalogNameFromTable) {
-    if (StringUtils.isNotBlank(catalogNameFromTable)) {
-      return catalogNameFromTable;
-    }
-    if (conf == null) {
-      return null;
-    }
-    return IcebergCatalogProperties.getCatalogName(conf);
-  }
-
-  /**
-   * Copies {@code iceberg.catalog.<catalog>.*} entries from the HS2 session configuration into Tez/MR
+   * Copies {@code iceberg.catalog.<catalog>.*} entries from the HS2 session configuration into Tez
    * job properties so executors can reload a live REST catalog table for server-side scan planning.
    *
    * <p>Session-level {@code SET} commands and {@code hive-site.xml} catalog settings are not
@@ -155,12 +150,7 @@ public final class RestCatalogScanPlanningUtil {
     if (sessionConf == null || jobProperties == null) {
       return;
     }
-
-    if (!shouldPropagateCatalogPropertiesToJob(catalogName, sessionConf)) {
-      return;
-    }
-
-    propagateCatalogProperties(sessionConf, catalogName, (key, value) -> jobProperties.putIfAbsent(key, value));
+    propagateCatalogPropertiesToJob(sessionConf, catalogName, jobProperties::putIfAbsent);
   }
 
   /**
@@ -173,32 +163,35 @@ public final class RestCatalogScanPlanningUtil {
     if (sessionConf == null || jobConf == null) {
       return;
     }
-    propagateCatalogProperties(sessionConf, catalogName, (key, value) -> {
-      if (jobConf.get(key) == null) {
-        jobConf.set(key, value);
-      }
-    });
+    propagateCatalogPropertiesToJob(
+        sessionConf,
+        catalogName,
+        (key, value) -> {
+          if (jobConf.get(key) == null) {
+            jobConf.set(key, value);
+          }
+        });
   }
 
-  private static void propagateCatalogProperties(
-      Configuration sessionConf, String catalogName, PropertyConsumer consumer) {
-    String resolvedCatalogName = resolveCatalogName(sessionConf, catalogName);
+  private static void propagateCatalogPropertiesToJob(
+      Configuration sessionConf, String catalogName, BiConsumer<String, String> jobPropertySink) {
+    if (!shouldPropagateCatalogPropertiesToJob(catalogName, sessionConf)) {
+      return;
+    }
+
+    String resolvedCatalogName = HiveTableUtil.resolveCatalogName(sessionConf, catalogName);
     if (StringUtils.isEmpty(resolvedCatalogName)) {
       return;
     }
 
-    if (!shouldPropagateCatalogPropertiesToJob(resolvedCatalogName, sessionConf)) {
-      return;
-    }
-
-    consumer.accept(
+    jobPropertySink.accept(
         HiveConf.ConfVars.HIVE_ICEBERG_REST_SCAN_PLANNING_MODE.varname,
-        getHiveRestScanPlanningMode(sessionConf));
+        getHiveMode(sessionConf));
 
     String sessionDefaultCatalog =
         MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     if (StringUtils.isNotBlank(sessionDefaultCatalog)) {
-      consumer.accept(MetastoreConf.ConfVars.CATALOG_DEFAULT.getVarname(), sessionDefaultCatalog);
+      jobPropertySink.accept(MetastoreConf.ConfVars.CATALOG_DEFAULT.getVarname(), sessionDefaultCatalog);
     }
 
     String catalogPrefix =
@@ -206,12 +199,8 @@ public final class RestCatalogScanPlanningUtil {
     sessionConf.forEach(
         entry -> {
           if (entry.getKey().startsWith(catalogPrefix)) {
-            consumer.accept(entry.getKey(), entry.getValue());
+            jobPropertySink.accept(entry.getKey(), entry.getValue());
           }
         });
-  }
-
-  private interface PropertyConsumer {
-    void accept(String key, String value);
   }
 }
