@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hadoop.hive.llap;
+package org.apache.hadoop.hive.llap.io.encoded;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
@@ -32,11 +32,11 @@ import org.apache.hadoop.fs.Seekable;
 import org.apache.hadoop.fs.StreamCapabilities;
 import org.junit.Test;
 
-public class TestParquetRangeBuffers {
+public class TestVectoredReadBuffers {
 
   @Test
   public void anExclusiveStreamsBuffersAreReusedAndLimitedToTheRange() {
-    ParquetRangeBuffers buffers = ParquetRangeBuffers.forStream(stream(false));
+    VectoredReadBuffers buffers = VectoredReadBuffers.forStream(stream(false));
     ByteBuffer first = buffers.allocate(100);
     assertEquals(100, first.limit());
     buffers.release(first);
@@ -50,7 +50,7 @@ public class TestParquetRangeBuffers {
 
   @Test
   public void aSlicingStreamsBuffersAreNeverPooled() {
-    ParquetRangeBuffers buffers = ParquetRangeBuffers.forStream(stream(true));
+    VectoredReadBuffers buffers = VectoredReadBuffers.forStream(stream(true));
     ByteBuffer first = buffers.allocate(100);
     buffers.release(first);
     ByteBuffer second = buffers.allocate(50);

@@ -42,10 +42,15 @@ import org.apache.parquet.schema.Type;
 
 /**
  * Reusable, stateless helper that builds the {@link VectorizedColumnReader} array for one Parquet
- * row group, given an already-read {@link PageReadStore}. The logic here was lifted verbatim from
+ * row group, given an already-read {@link PageReadStore}. The logic here came from
  * {@link VectorizedParquetRecordReader} so that both the row-by-split reader and the LLAP
- * cache-backed consumer ({@code ParquetEncodedDataConsumer}) can share a single, behavior-preserving
- * implementation of the Hive-type-driven Parquet column-reader construction.
+ * cache-backed consumer ({@code ParquetEncodedDataConsumer}) share one implementation of the
+ * Hive-type-driven Parquet column-reader construction.
+ *
+ * <p>Behaviour-preserving, not character-for-character: the schema errors that were
+ * {@code RuntimeException} there are the {@link InvalidSchemaException} and
+ * {@link UnsupportedOperationException} parquet already defines for them, which is what the
+ * callers' decline paths catch.
  *
  * <p>The instance only carries per-file state (the file's leaf columns, used for the
  * schema-evolution check), so it is built once per file and reused for every row group; all
@@ -105,10 +110,13 @@ public class ParquetRowGroupDecoder {
     if (!readAllColumns && colsToInclude.isEmpty()) {
       return columnReaders;
     }
+    // Hoisted: getColumns() walks the schema and rebuilds the whole leaf list on every call, and
+    // this one is the same list for every column of every row group of the split.
+    List<ColumnDescriptor> requestedLeaves = requestedSchema.getColumns();
     for (int i = 0; i < types.size(); ++i) {
       int tableCol = readAllColumns ? i : colsToInclude.get(i);
       columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(tableCol), types.get(i),
-          pages, requestedSchema.getColumns(), options, 0, 0);
+          pages, requestedLeaves, options, 0, 0);
     }
     return columnReaders;
   }
@@ -201,7 +209,9 @@ public class ParquetRowGroupDecoder {
       return listReader(descriptor, pages, options, listElementType(type), typeInfo);
     case MAP:
       // Parquet has more than one on-disk shape for MAP; walk down until we find the
-      // {key, value} group, tolerating up to MAX_MAP_WRAPPER_GROUPS wrapping groups.
+      // {key, value} group. The check below fires after the counter is bumped, so the walk
+      // unwraps one group more than MAX_MAP_WRAPPER_GROUPS before giving up - kept as it was, since
+      // a schema with that many wrappers was being read before this code moved here.
       // See parquet-format's LogicalTypes spec for the MAP annotation for the shapes.
       int nestGroup = 0;
       GroupType groupType = type.asGroupType();
@@ -236,9 +246,10 @@ public class ParquetRowGroupDecoder {
   }
 
   /**
-   * Check if the element type in list is supported by vectorization read.
-   * Supported type: INT, BYTE, SHORT, DATE, INTERVAL_YEAR_MONTH, LONG, BOOLEAN, DOUBLE, BINARY,
-   *                 STRING, CHAR, VARCHAR, FLOAT, DECIMAL
+   * Rejects the list element types the vectorized readers cannot decode: anything that is not a
+   * primitive, and of the primitives TIMESTAMP and INTERVAL_DAY_TIME. Every other primitive is
+   * accepted, so a new one needs no change here - which is the reason this is a reject list rather
+   * than the accept list the javadoc used to claim it was.
    */
   private static void checkListColumnSupport(TypeInfo elementType) {
     if (elementType instanceof PrimitiveTypeInfo primitiveTypeInfo) {

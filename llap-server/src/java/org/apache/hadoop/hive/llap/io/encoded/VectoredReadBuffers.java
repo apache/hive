@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hadoop.hive.llap;
+package org.apache.hadoop.hive.llap.io.encoded;
 
 import java.nio.ByteBuffer;
 
@@ -32,30 +32,39 @@ import org.apache.hadoop.io.ElasticByteBufferPool;
  * so ({@link StreamCapabilities#VECTOREDIO_BUFFERS_SLICED}); those alias each other and are left
  * to the collector. Other streams' buffers are exclusive and pooled for reuse across the file's
  * row groups. The pool is per stream, not per JVM: {@link ElasticByteBufferPool} never evicts
- * and has one lock, so a shared one would pin every executor's peak for the daemon's life.
+ * and has one lock, so a shared one would pin one IO thread's peak for the daemon's life.
+ *
+ * <p>In Hadoop 3.4.2 the only filesystem that declares {@code VECTOREDIO_BUFFERS_SLICED} is the
+ * local checksum one, so S3A and HDFS both take the pooled path and the unpooled one is exercised
+ * by tests. It is still the branch that has to exist: a stream handing back slices of one buffer
+ * would have them recycled under each other by a pool.
+ *
+ * <p>Nothing here is Parquet-specific; it is the staging area for
+ * {@link org.apache.hadoop.fs.FSDataInputStream#readVectored}, and the Parquet reader happens to be
+ * its only caller.
  */
-public final class ParquetRangeBuffers {
+final class VectoredReadBuffers {
   private final ElasticByteBufferPool pool;
 
   /** Pooled: the stream fills buffers we own, so they can be reused across the split's row groups. */
-  static ParquetRangeBuffers pooled() {
-    return new ParquetRangeBuffers(new ElasticByteBufferPool());
+  static VectoredReadBuffers pooled() {
+    return new VectoredReadBuffers(new ElasticByteBufferPool());
   }
 
   /** Unpooled: the stream may hand back slices of a larger buffer; slices alias, so they go to the GC. */
-  static ParquetRangeBuffers unpooled() {
-    return new ParquetRangeBuffers(null);
+  static VectoredReadBuffers unpooled() {
+    return new VectoredReadBuffers(null);
   }
 
-  public static ParquetRangeBuffers forStream(FSDataInputStream stream) {
+  static VectoredReadBuffers forStream(FSDataInputStream stream) {
     return stream.hasCapability(StreamCapabilities.VECTOREDIO_BUFFERS_SLICED) ? unpooled() : pooled();
   }
 
-  private ParquetRangeBuffers(@Nullable ElasticByteBufferPool pool) {
+  private VectoredReadBuffers(@Nullable ElasticByteBufferPool pool) {
     this.pool = pool;
   }
 
-  public ByteBuffer allocate(int length) {
+  ByteBuffer allocate(int length) {
     if (pool == null) {
       return ByteBuffer.allocate(length);
     }
@@ -66,7 +75,7 @@ public final class ParquetRangeBuffers {
     return buffer;
   }
 
-  public void release(ByteBuffer buffer) {
+  void release(ByteBuffer buffer) {
     if (pool != null) {
       pool.putBuffer(buffer);
     }

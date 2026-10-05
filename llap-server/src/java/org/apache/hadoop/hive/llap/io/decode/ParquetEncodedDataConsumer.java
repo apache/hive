@@ -193,7 +193,10 @@ public class ParquetEncodedDataConsumer
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, batches);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
     } catch (IOException | RuntimeException e) {
-      // parquet reports decode failures as runtime ParquetDecodingException.
+      // Narrower than Exception on purpose: consumeData above throws InterruptedException, which is
+      // the stop signal and has to propagate rather than be reported as a decode failure. Wider
+      // than ORC's IOException-only catch, though, because parquet reports decode failures as the
+      // runtime ParquetDecodingException, and letting one through would skip the buffer return.
       // Not logged here: setError logs the throwable with its stack at WARN, and next() rethrows it.
       downstreamConsumer.setError(new IOException(
           String.format("Parquet decode failed for row group %d of %s", batch.rowGroupIx(), path), e));

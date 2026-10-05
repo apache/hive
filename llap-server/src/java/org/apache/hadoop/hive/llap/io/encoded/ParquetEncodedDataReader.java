@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.ParquetCacheLayout;
-import org.apache.hadoop.hive.llap.ParquetRangeBuffers;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
@@ -238,7 +237,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
 
     FileSystem fs = path.getFileSystem(jobConf);
     try (FSDataInputStream fileStream = openFile(fs)) {
-      ParquetRangeBuffers buffers = ParquetRangeBuffers.forStream(fileStream);
+      VectoredReadBuffers buffers = VectoredReadBuffers.forStream(fileStream);
       Deque<RowGroupFetch> inFlight = new ArrayDeque<>();
       // Latched the first time a fetch comes back with every vectored request already complete:
       // that stream read inline on this thread, so a lookahead has nothing to overlap with and
@@ -385,7 +384,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private record ReadRange(FileRange range, List<Part> parts) {
   }
 
-  private RowGroupFetch startFetch(FSDataInputStream fileStream, ParquetRangeBuffers buffers, Allocator allocator,
+  private RowGroupFetch startFetch(FSDataInputStream fileStream, VectoredReadBuffers buffers, Allocator allocator,
       int[] projected, BlockMetaData block, int rg)
       throws IOException {
     RowGroupFetch fetch = new RowGroupFetch();
@@ -414,7 +413,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     return fetch;
   }
 
-  private void finishFetch(Allocator allocator, ParquetRangeBuffers buffers, RowGroupFetch fetch)
+  private void finishFetch(Allocator allocator, VectoredReadBuffers buffers, RowGroupFetch fetch)
       throws IOException, InterruptedException {
     try {
       // Awaiting the vectored futures is where the miss bytes actually arrive from HDFS.
@@ -546,7 +545,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
    * several concurrent requests rather than one. A filesystem without a vectored implementation
    * reads the ranges in turn.
    */
-  private static void requestMisses(FSDataInputStream fileStream, ParquetRangeBuffers buffers, RowGroupFetch fetch,
+  private static void requestMisses(FSDataInputStream fileStream, VectoredReadBuffers buffers, RowGroupFetch fetch,
       int maxRange) throws IOException {
     List<Part> misses = fetch.misses;
     if (misses.isEmpty()) {
@@ -579,7 +578,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /** Waits for the requested ranges and copies each into the cache buffers it covers. */
-  private static void receiveMisses(ParquetRangeBuffers buffers, RowGroupFetch fetch) throws IOException {
+  private static void receiveMisses(VectoredReadBuffers buffers, RowGroupFetch fetch) throws IOException {
     for (ReadRange readRange : fetch.readRanges) {
       ByteBuffer data = FutureIO.awaitFuture(readRange.range.getData());
       for (Part part : readRange.parts) {

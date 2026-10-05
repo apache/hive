@@ -506,7 +506,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       cacheHit.value = footerData != null;
     }
     if (footerData != null) {
-      LOG.info("Found the footer in cache for " + fileKey);
+      LOG.debug("Found the footer in cache for {}", fileKey);
       try {
         return footerData;
       } finally {
@@ -527,7 +527,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       stream.seek(footerLengthIndex);
       int footerLength = BytesUtils.readIntLittleEndian(stream);
       stream.seek(footerLengthIndex - footerLength);
-      LOG.info("Caching the footer of length " + footerLength + " for " + fileKey);
+      LOG.debug("Caching the footer of length {} for {}", footerLength, fileKey);
       // Note: we don't pass in isStopped here - this is not on an IO thread.
       footerData = fileMetadataCache.putFileMetadata(fileKey, footerLength, stream, tag, null);
       try {
