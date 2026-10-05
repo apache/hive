@@ -2157,10 +2157,9 @@ public class HiveConf extends Configuration {
     HIVE_ICEBERG_REST_SCAN_PLANNING_MODE(
         "hive.iceberg.rest.scan-planning-mode", "client",
         new StringSet("client", "server"),
-        "Hive-wide default for Iceberg REST catalog scan planning in Tez/MR split generation, aligned with\n" +
-        "catalog property scan-planning-mode. In server mode, catalog settings are propagated to jobs and\n" +
-        "executors reload a REST table so planning can use POST /plan. In client mode (default), split\n" +
-        "generation uses the serialized table snapshot even if a catalog requests server-side scan planning."),
+        "Hive-wide default for Iceberg REST catalog scan planning in Tez split generation, aligned with\n" +
+        "catalog property scan-planning-mode. In server mode, scan planning is done by Iceberg REST Server.\n" +
+        "In client mode (default), split generation is done by Hive."),
     HIVE_USE_EXPLICIT_RCFILE_HEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +

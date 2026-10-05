@@ -277,7 +277,7 @@ public class HiveTableUtil {
     if (shouldReloadForServerSideScanPlanning(conf)) {
       Table table = Catalogs.loadTable(conf);
       checkAndSetIoConfig(conf, table);
-      IcebergVendedCredentialUtil.applyFromJobConf(table, catalogNameForScan(conf), conf);
+      IcebergVendedCredentialUtil.applyFromJobConf(table, resolveCatalogName(conf), conf);
       return table;
     }
 
@@ -293,7 +293,7 @@ public class HiveTableUtil {
     if (StringUtils.isNotBlank(conf.get(InputFormatConfig.TABLE_METADATA_LOCATION))) {
       return false;
     }
-    String catalogName = catalogNameForScan(conf);
+    String catalogName = resolveCatalogName(conf);
     if (StringUtils.isBlank(catalogName)) {
       return false;
     }
@@ -301,13 +301,27 @@ public class HiveTableUtil {
         IcebergCatalogProperties.getCatalogType(conf, catalogName))) {
       return false;
     }
-    return RestCatalogScanPlanningUtil.requestsServerSidePlanning(catalogName, conf);
+    return RestCatalogScanPlanningUtil.isServerSidePlanningEnabled(catalogName, conf);
   }
 
-  private static String catalogNameForScan(Configuration conf) {
-    String catalogFromTable = conf.get(InputFormatConfig.CATALOG_NAME);
-    if (StringUtils.isNotBlank(catalogFromTable)) {
-      return catalogFromTable;
+  /**
+   * Resolves the Iceberg catalog name from {@link InputFormatConfig#CATALOG_NAME} on the
+   * configuration, or the session default ({@link IcebergCatalogProperties#getCatalogName(Configuration)}).
+   */
+  public static String resolveCatalogName(Configuration conf) {
+    return resolveCatalogName(conf, conf != null ? conf.get(InputFormatConfig.CATALOG_NAME) : null);
+  }
+
+  /**
+   * Resolves the Iceberg catalog name from a per-table {@link InputFormatConfig#CATALOG_NAME} value
+   * (e.g. {@code TableDesc} properties) or the session default when that value is absent.
+   */
+  public static String resolveCatalogName(Configuration conf, String catalogNameFromTable) {
+    if (StringUtils.isNotBlank(catalogNameFromTable)) {
+      return catalogNameFromTable;
+    }
+    if (conf == null) {
+      return null;
     }
     return IcebergCatalogProperties.getCatalogName(conf);
   }
