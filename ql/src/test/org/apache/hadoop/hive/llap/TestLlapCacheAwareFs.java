@@ -32,15 +32,7 @@ import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.junit.Test;
 
-/**
- * What cache misses the fallback Parquet reader's shim filesystem is willing to serve.
- *
- * <p>These used to be geometry assertions: the shim tiled a chunk into buffers of exactly the
- * allocator's maximum plus a tail, and then demanded that every miss it was handed start and end on
- * that same grid. The native Parquet reader caches the same chunks on {@link ParquetCacheLayout}'s
- * power-of-two boundaries, so once both readers write to the cache, a file read by one and then the
- * other hands this class misses off its grid. Those are now normal.
- */
+/** Tests for {@link LlapCacheAwareFs}, the filesystem shim that serves reads through the LLAP cache. */
 public class TestLlapCacheAwareFs {
   private static final int MB = 1 << 20;
   /** Not a power of two, as getMaxAllocation() may return; the layout rounds it down to 4MB. */

@@ -231,7 +231,7 @@ public class HiveVectorizedReader {
     // TODO: add support for reading files with positional deletes with LLAP (LLAP would need to provide file row num)
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null && task.deletes().isEmpty() && !InputFormatConfig.fetchVirtualColumns(job)) {
-      recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, path, null, readColumnIds,
+      recordReader = LlapProxy.getIo().orc().vectorizedReaderForPath(fileId, path, null, readColumnIds,
           job, start, length, reporter);
     }
 
@@ -256,7 +256,7 @@ public class HiveVectorizedReader {
       LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
       // No per-fragment counters on the Iceberg vectorized path yet; footer lookups are
       // recorded as cache traffic but not as META hits/misses in the LLAP IO summary.
-      footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId, null);
+      footerData = LlapProxy.getIo().parquet().getFooterBuffersFromCache(path, job, fileId, null);
     }
 
     ParquetMetadata parquetMetadata = HiveParquetUtil.readFooter(task.file(), io, job, footerData);

@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileRange;
@@ -78,7 +79,9 @@ import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
+import org.apache.hadoop.hive.llap.io.decode.ParquetColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
+import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -100,6 +103,7 @@ import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -155,7 +159,16 @@ public class TestParquetEncodedDataReader {
   private static final int ROW_GROUPS = 3;
   private static final int ROWS = ROWS_PER_GROUP * ROW_GROUPS;
   // Smaller than every column chunk so each chunk spans several cache buffers.
+
   private static final int MAX_ALLOC = 4096;
+  /**
+   * hive.llap.io.encode.alloc.size: the size below which {@link ParquetCacheLayout} stops splitting a
+   * remainder into smaller power-of-two buffers. Set below {@link #MAX_ALLOC} so a chunk's remainder
+   * splits, leaving buffer boundaries that are not multiples of MAX_ALLOC, as on a daemon (256KB floor,
+   * 16MB maximum); testFallbackReaderRefillsAHoleOnTheNativeReaderBoundaries needs one. At the 256KB
+   * default the layout would cap the floor at 4KB, and each chunk would be 4KB buffers plus one tail.
+   */
+  private static final int FLOOR = 1024;
   /** Padding around a range's bytes when a vectored read returns them inside a bigger buffer. */
   private static final int RANGE_PAD = 29;
   private static final byte RANGE_POISON = (byte) 0xAB;
@@ -183,22 +196,15 @@ public class TestParquetEncodedDataReader {
 
   private LowLevelCacheImpl cache;
   private Ledger ledger;
-  /**
-   * hive.llap.io.encode.alloc.size: the size below which {@link ParquetCacheLayout} stops splitting a
-   * remainder into smaller power-of-two buffers. Set below {@link #MAX_ALLOC} so a chunk's remainder
-   * splits, leaving buffer boundaries that are not multiples of MAX_ALLOC, as on a daemon (256KB floor,
-   * 16MB maximum); testFallbackReaderRefillsAHoleOnTheNativeReaderBoundaries needs one. At the 256KB
-   * default the layout would cap the floor at 4KB, and each chunk would be 4KB buffers plus one tail.
-   */
-  private static final int FLOOR = 1024;
+
   /** Hands every job its own plan path, which is the key its MapWork is cached under. */
   private static final AtomicInteger PLAN_ID = new AtomicInteger();
 
   private boolean failFirstRange;
   private boolean unslicedBuffers;
-  /** Fulfils every vectored range from a buffer positioned {@link #RANGE_PAD} bytes in. */
+  /** Fulfills every vectored range from a buffer positioned {@link #RANGE_PAD} bytes in. */
   private boolean positionedRangeBuffers;
-  /** Fulfils every vectored range before returning, as a filesystem without async IO does. */
+  /** Fulfills every vectored range before returning, as a filesystem without async IO does. */
   private boolean inlineRanges;
   private boolean stopAfterFirstBatch;
   private boolean failDecode;
@@ -555,7 +561,7 @@ public class TestParquetEncodedDataReader {
   /**
    * A filesystem may hand a range back as a view into a bigger buffer of its own, positioned at the
    * range's bytes rather than at zero - readVectored's contract says nothing about the position. The
-   * local filesystem always returns position zero, so this stream fulfils the ranges itself, from a
+   * local filesystem always returns position zero, so this stream fulfills the ranges itself, from a
    * poisoned array with the bytes in the middle.
    */
   @Test
@@ -679,6 +685,17 @@ public class TestParquetEncodedDataReader {
     for (MemoryBuffer b : warm.buffers) {
       assertFalse(b.toString(), ((LlapAllocatorBuffer) b).isLocked());
     }
+  }
+
+  /** A split the cache serves whole never opens the file; a cold one opens it once. */
+  @Test
+  public void testFullyCachedReadDoesNotOpenTheFile() throws Exception {
+    Run cold = read(jobConf(COLUMNS, TYPES, 1, 3), wholeFile());
+    Run warm = read(jobConf(COLUMNS, TYPES, 1, 3), wholeFile());
+
+    assertEquals(1, cold.opens);
+    assertEquals(0, warm.opens);
+    assertEquals(ROWS, warm.rows.size());
   }
 
   /**
@@ -991,6 +1008,51 @@ public class TestParquetEncodedDataReader {
         ParquetEncodedDataReader.findLeafIndexes(requested, fileSchema));
   }
 
+  /**
+   * A row-lineage projection must decline: this pipeline cannot fill the slot, and the -1 it would
+   * leave is the sentinel HiveBatchIterator reads as "synthesize the id", so the query would answer
+   * with plausible wrong ids. Only reachable once HIVE-30103 lands.
+   */
+  @Test
+  public void testRowLineageProjectionDeclined() throws Exception {
+    for (VirtualColumn lineageColumn : new VirtualColumn[] {
+        VirtualColumn.ROW_LINEAGE_ID, VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER}) {
+      assertNull("expected a fallback for " + lineageColumn.getName(),
+          readPipelineFor(withNeededVirtualColumn(jobConf(COLUMNS, TYPES, 0, 3), lineageColumn)));
+    }
+    // Control: the same projection without the virtual column is served natively, so the declines
+    // above are attributable to the lineage column.
+    assertNotNull(readPipelineFor(jobConf(COLUMNS, TYPES, 0, 3)));
+  }
+
+  /** Runs the producer's split-admission decision; null means the split was declined. */
+  private ReadPipeline readPipelineFor(JobConf job) throws Exception {
+    ParquetColumnVectorProducer producer =
+        new ParquetColumnVectorProducer(ledger, ledger, daemonConf, CACHE_METRICS, IO_METRICS);
+    return producer.createReadPipeline(new CapturingConsumer(), wholeFile(),
+        includes(ColumnProjectionUtils.getReadColumnIDs(job)), null,
+        new QueryFragmentCounters(job, new TezCounters()), null, null, null, null, job, null);
+  }
+
+  /**
+   * Re-plans the job with one needed virtual column. Rebuilt rather than mutated: both
+   * {@link VectorizedRowBatchCtx#init} overloads hardcode an empty needed-virtual-column array, so
+   * the ctx {@link #mapWorkFor} produces cannot express one.
+   */
+  private static JobConf withNeededVirtualColumn(JobConf job, VirtualColumn vc) throws Exception {
+    VectorizedRowBatchCtx dataOnly = Utilities.getMapWork(job).getVectorizedRowBatchCtx();
+    String[] names = ArrayUtils.add(dataOnly.getRowColumnNames(), vc.getName());
+    TypeInfo[] types = ArrayUtils.add(dataOnly.getRowColumnTypeInfos(), vc.getTypeInfo());
+    DataTypePhysicalVariation[] variations =
+        ArrayUtils.add(dataOnly.getRowdataTypePhysicalVariations(), DataTypePhysicalVariation.NONE);
+    MapWork mapWork = new MapWork();
+    mapWork.setVectorMode(true);
+    mapWork.setVectorizedRowBatchCtx(new VectorizedRowBatchCtx(names, types, variations, null, 0, 1,
+        new VirtualColumn[] {vc}, new String[0], null));
+    Utilities.setMapWork(job, mapWork);
+    return job;
+  }
+
   // ---- fixture ----
 
   private static void writeFile(Path path, Configuration conf) throws IOException {
@@ -1156,10 +1218,12 @@ public class TestParquetEncodedDataReader {
     };
     edc.setInitialDefaults(initialDefaults);
     List<long[]> reads = new ArrayList<>();
+    AtomicInteger opens = new AtomicInteger();
     ParquetEncodedDataReader parquetReader = new ParquetEncodedDataReader(
         ledger, ledger, readerDaemonConf, job, split, edc, counters) {
       @Override
       FSDataInputStream openFile(FileSystem fs) throws IOException {
+        opens.incrementAndGet();
         return new RecordingStream(super.openFile(fs), reads);
       }
     };
@@ -1167,7 +1231,7 @@ public class TestParquetEncodedDataReader {
     edc.init(parquetReader, parquetReader);
     parquetReader.readFooter();
     parquetReader.call();
-    Run run = new Run(downstream, counters, tezCounters, buffers, reads, ledger);
+    Run run = new Run(downstream, counters, tezCounters, buffers, reads, opens.get(), ledger);
     boolean whole = run.error == null && !stopAfterFirstBatch;
     if (!skipExpectedRows) {
       assertExpectedRows(run, job, whole);
@@ -1431,9 +1495,9 @@ public class TestParquetEncodedDataReader {
         throws IOException {
       recordRanges(ranges);
       if (positionedRangeBuffers) {
-        fulfilAtNonZeroPosition(ranges);
+        fulfillAtNonZeroPosition(ranges);
       } else if (inlineRanges) {
-        fulfilInline(ranges);
+        fulfillInline(ranges);
       } else {
         super.readVectored(ranges, allocate);
       }
@@ -1445,9 +1509,9 @@ public class TestParquetEncodedDataReader {
         java.util.function.Consumer<ByteBuffer> release) throws IOException {
       recordRanges(ranges);
       if (positionedRangeBuffers) {
-        fulfilAtNonZeroPosition(ranges);
+        fulfillAtNonZeroPosition(ranges);
       } else if (inlineRanges) {
-        fulfilInline(ranges);
+        fulfillInline(ranges);
       } else {
         super.readVectored(ranges, allocate, release);
       }
@@ -1460,7 +1524,7 @@ public class TestParquetEncodedDataReader {
      * readVectored's contract rules this out, and a reader that assumes position zero picks up the
      * padding instead of the data.
      */
-    private void fulfilAtNonZeroPosition(List<? extends FileRange> ranges) throws IOException {
+    private void fulfillAtNonZeroPosition(List<? extends FileRange> ranges) throws IOException {
       for (FileRange range : ranges) {
         byte[] backing = new byte[RANGE_PAD + range.getLength() + RANGE_PAD];
         Arrays.fill(backing, RANGE_POISON);
@@ -1480,7 +1544,7 @@ public class TestParquetEncodedDataReader {
      * default {@code readVectored} over a plain positioned read, which is what most of Hadoop's
      * filesystems still have - and it is the case where a lookahead has nothing to overlap with.
      */
-    private void fulfilInline(List<? extends FileRange> ranges) throws IOException {
+    private void fulfillInline(List<? extends FileRange> ranges) throws IOException {
       for (FileRange range : ranges) {
         byte[] bytes = new byte[range.getLength()];
         readFully(range.getOffset(), bytes);
@@ -1662,10 +1726,12 @@ public class TestParquetEncodedDataReader {
     final TezCounters counters;
     final List<MemoryBuffer> buffers;
     final List<long[]> reads;
+    /** How many times the reader opened the file. */
+    final int opens;
     final Ledger ledger;
 
     Run(CapturingConsumer c, QueryFragmentCounters fragmentCounters, TezCounters counters,
-        List<MemoryBuffer> buffers, List<long[]> reads, Ledger ledger) {
+        List<MemoryBuffer> buffers, List<long[]> reads, int opens, Ledger ledger) {
       this.rows = c.rows;
       this.batchSizes = c.batchSizes;
       this.firstBatchCols = c.firstBatchCols;
@@ -1675,6 +1741,7 @@ public class TestParquetEncodedDataReader {
       this.counters = counters;
       this.buffers = buffers;
       this.reads = reads;
+      this.opens = opens;
       this.ledger = ledger;
     }
 

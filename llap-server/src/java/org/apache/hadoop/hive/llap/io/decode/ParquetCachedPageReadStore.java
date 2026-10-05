@@ -78,7 +78,7 @@ import org.apache.parquet.schema.PrimitiveType;
  *       field or a changed page constructor lands here.</li>
  *   <li>{@link CachedChunkPageReader} mirrors {@code ColumnChunkPageReader}: page queueing, lazy
  *       decompression, and carrying each page's checksum onto its decompressed copy
- *       ({@link #carryCrc}). New {@link PageReader} behaviour lands here.</li>
+ *       ({@link #withCrc(Page, Page)}). New {@link PageReader} behaviour lands here.</li>
  * </ul>
  * Also check whether {@link PageReadStore} gained or changed a {@code default} method, since this
  * class implements none of them ({@code getRowIndexOffset}, {@code getRowIndexes} and
@@ -218,22 +218,19 @@ class ParquetCachedPageReadStore implements PageReadStore {
           List<ByteBuffer> dictBytes = stream.sliceBuffers(compressedSize);
           verifyCrc(crc, header, dictBytes,
               "could not verify dictionary page integrity, CRC checksum verification failed");
-          dictionaryPage = new DictionaryPage(BytesInput.from(dictBytes),
-              uncompressedSize, dictHeader.getNum_values(), converter.getEncoding(dictHeader.getEncoding()));
-          copyCrc(header, dictionaryPage);
+          dictionaryPage = withCrc(header, new DictionaryPage(BytesInput.from(dictBytes),
+              uncompressedSize, dictHeader.getNum_values(), converter.getEncoding(dictHeader.getEncoding())));
           break;
         case DATA_PAGE:
           DataPageHeader v1 = header.getData_page_header();
           List<ByteBuffer> v1Bytes = stream.sliceBuffers(compressedSize);
           verifyCrc(crc, header, v1Bytes,
               "could not verify page integrity, CRC checksum verification failed");
-          DataPageV1 pageV1 = new DataPageV1(BytesInput.from(v1Bytes), v1.getNum_values(),
+          pages.add(withCrc(header, new DataPageV1(BytesInput.from(v1Bytes), v1.getNum_values(),
               uncompressedSize, converter.fromParquetStatistics(createdBy, v1.getStatistics(), type),
               converter.getEncoding(v1.getRepetition_level_encoding()),
               converter.getEncoding(v1.getDefinition_level_encoding()),
-              converter.getEncoding(v1.getEncoding()));
-          copyCrc(header, pageV1);
-          pages.add(pageV1);
+              converter.getEncoding(v1.getEncoding()))));
           valuesRead += v1.getNum_values();
           break;
         case DATA_PAGE_V2:
@@ -253,13 +250,11 @@ class ParquetCachedPageReadStore implements PageReadStore {
             verifyCrc(crc, header, v2Bytes,
                 "could not verify page integrity, CRC checksum verification failed");
           }
-          DataPageV2 pageV2 = new DataPageV2(v2.getNum_rows(), v2.getNum_nulls(), v2.getNum_values(),
+          pages.add(withCrc(header, new DataPageV2(v2.getNum_rows(), v2.getNum_nulls(), v2.getNum_values(),
               BytesInput.from(repetitionBytes), BytesInput.from(definitionBytes),
               converter.getEncoding(v2.getEncoding()), BytesInput.from(valueBytes),
               uncompressedSize, converter.fromParquetStatistics(createdBy, v2.getStatistics(), type),
-              v2.isIs_compressed());
-          copyCrc(header, pageV2);
-          pages.add(pageV2);
+              v2.isIs_compressed())));
           valuesRead += v2.getNum_values();
           break;
         default:
@@ -300,10 +295,11 @@ class ParquetCachedPageReadStore implements PageReadStore {
   }
 
   /** Carries the header's checksum onto the page, as upstream does, so tests can compare it. */
-  private static void copyCrc(PageHeader header, Page page) {
-    if (header.isSetCrc()) {
-      page.setCrc(header.getCrc());
+  private static <T extends Page> T withCrc(PageHeader from, T to) {
+    if (from.isSetCrc()) {
+      to.setCrc(from.getCrc());
     }
+    return to;
   }
 
   /**
@@ -312,7 +308,7 @@ class ParquetCachedPageReadStore implements PageReadStore {
    * decompression sites, and the page parity test compares {@code getCrc()}, so a page that lost it
    * here would read back differently from the same page off a file.
    */
-  private static <T extends Page> T carryCrc(Page from, T to) {
+  private static <T extends Page> T withCrc(Page from, T to) {
     if (from.getCrc().isPresent()) {
       to.setCrc(from.getCrc().getAsInt());
     }
@@ -364,10 +360,10 @@ class ParquetCachedPageReadStore implements PageReadStore {
       if (compressedPage == null) {
         return null;
       }
-      return compressedPage.accept(new DataPage.Visitor<DataPage>() {
+      return compressedPage.accept(new DataPage.Visitor<>() {
         @Override
         public DataPage visit(DataPageV1 page) {
-          return carryCrc(page,
+          return withCrc(page,
               new DataPageV1(decompress(page.getBytes(), page.getUncompressedSize(), "page"),
                   page.getValueCount(), page.getUncompressedSize(), page.getStatistics(),
                   page.getRlEncoding(), page.getDlEncoding(), page.getValueEncoding()));
@@ -385,7 +381,7 @@ class ParquetCachedPageReadStore implements PageReadStore {
           int uncompressedSize = Math.toIntExact(page.getUncompressedSize()
               - page.getDefinitionLevels().size() - page.getRepetitionLevels().size());
           BytesInput data = decompress(page.getData(), uncompressedSize, "page");
-          return carryCrc(page, DataPageV2.uncompressed(page.getRowCount(), page.getNullCount(),
+          return withCrc(page, DataPageV2.uncompressed(page.getRowCount(), page.getNullCount(),
               page.getValueCount(), page.getRepetitionLevels(), page.getDefinitionLevels(),
               page.getDataEncoding(), data, page.getStatistics()));
         }
@@ -399,7 +395,7 @@ class ParquetCachedPageReadStore implements PageReadStore {
       }
       BytesInput bytes = decompress(compressedDictionaryPage.getBytes(),
           compressedDictionaryPage.getUncompressedSize(), "dictionary page");
-      return carryCrc(compressedDictionaryPage, new DictionaryPage(bytes,
+      return withCrc(compressedDictionaryPage, new DictionaryPage(bytes,
           compressedDictionaryPage.getDictionarySize(), compressedDictionaryPage.getEncoding()));
     }
 

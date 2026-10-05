@@ -6398,6 +6398,17 @@ public class HiveConf extends Configuration {
     return encoderDecoder.decode(getVar(conf, var));
   }
 
+  /**
+   * Whether {@link ConfVars#HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED} names the
+   * {@link #HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64} token, i.e. whether a reader or writer
+   * should build DECIMAL_64 column vectors. A null conf counts as not enabled - ORC readers and
+   * writers can be constructed outside Hive, and that is how those call sites already read it.
+   */
+  public static boolean isDecimal64VectorizationEnabled(Configuration conf) {
+    return conf != null && getVar(conf, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+        .equalsIgnoreCase(HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
+  }
+
   public String getLogIdVar(String defaultValue) {
     String retval = getVar(ConfVars.HIVE_LOG_TRACE_ID);
     if (StringUtils.EMPTY.equals(retval)) {

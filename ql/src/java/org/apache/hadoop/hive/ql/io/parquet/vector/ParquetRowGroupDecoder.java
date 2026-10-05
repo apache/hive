@@ -58,6 +58,12 @@ import org.apache.parquet.schema.Type;
  */
 public class ParquetRowGroupDecoder {
 
+  /**
+   * Group levels the MAP case unwraps looking for the {key, value} group. parquet-format puts
+   * exactly one between the MAP-annotated group and that pair, in the canonical layout and in every
+   * backward-compatible one; three is inherited slack, not a spec limit. Off by one in practice:
+   * the bound is tested before the counter is bumped, so a fourth wrapper still reads.
+   */
   private static final int MAX_MAP_WRAPPER_GROUPS = 3;
 
   /**
@@ -190,47 +196,42 @@ public class ParquetRowGroupDecoder {
           initialDefaults == null ? null : initialDefaults.get(descriptor.getPath()[0]));
     }
     switch (typeInfo.getCategory()) {
-    case PRIMITIVE:
-      return new VectorizedPrimitiveColumnReader(descriptor, pages.getPageReader(descriptor),
-          options.skipTimestampConversion(), options.writerTimezone(),
-          options.skipProlepticConversion(), options.legacyConversionEnabled(), type, typeInfo);
-    case STRUCT:
-      StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-      List<VectorizedColumnReader> fieldReaders = new ArrayList<>();
-      List<TypeInfo> fieldTypes = structTypeInfo.getAllStructFieldTypeInfos();
-      List<Type> types = type.asGroupType().getFields();
-      for (int i = 0; i < fieldTypes.size(); i++) {
-        fieldReaders.add(buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages,
-            descriptors, options, depth + 1, typeDefLevel));
-      }
-      return new VectorizedStructColumnReader(fieldReaders, typeDefLevel);
-    case LIST:
-      checkListColumnSupport(((ListTypeInfo) typeInfo).getListElementTypeInfo());
-      return listReader(descriptor, pages, options, listElementType(type), typeInfo);
-    case MAP:
-      // Parquet has more than one on-disk shape for MAP; walk down until we find the
-      // {key, value} group. The check below fires after the counter is bumped, so the walk
-      // unwraps one group more than MAX_MAP_WRAPPER_GROUPS before giving up - kept as it was, since
-      // a schema with that many wrappers was being read before this code moved here.
-      // See parquet-format's LogicalTypes spec for the MAP annotation for the shapes.
-      int nestGroup = 0;
-      GroupType groupType = type.asGroupType();
-      // if FieldCount == 2, get types for key & value,
-      // otherwise, continue to get the group type until MAX_MAP_WRAPPER_GROUPS.
-      while (groupType.getFieldCount() < 2) {
-        if (nestGroup > MAX_MAP_WRAPPER_GROUPS) {
-          throw new InvalidSchemaException(
-              "More than " + MAX_MAP_WRAPPER_GROUPS + " level is found in Map definition, "
-                  + "Failed to get the field types for Map with type " + type);
+      case PRIMITIVE:
+        return new VectorizedPrimitiveColumnReader(descriptor, pages.getPageReader(descriptor),
+            options.skipTimestampConversion(), options.writerTimezone(),
+            options.skipProlepticConversion(), options.legacyConversionEnabled(), type, typeInfo);
+      case STRUCT:
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        List<VectorizedColumnReader> fieldReaders = new ArrayList<>();
+        List<TypeInfo> fieldTypes = structTypeInfo.getAllStructFieldTypeInfos();
+        List<Type> types = type.asGroupType().getFields();
+        for (int i = 0; i < fieldTypes.size(); i++) {
+          fieldReaders.add(buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages,
+              descriptors, options, depth + 1, typeDefLevel));
         }
-        groupType = groupType.getFields().getFirst().asGroupType();
-        nestGroup++;
-      }
-      List<Type> kvTypes = groupType.getFields();
-      return new VectorizedMapColumnReader(
-          listReader(descriptor, pages, options, kvTypes.getFirst(), typeInfo),
-          listReader(descriptors.get(1), pages, options, kvTypes.get(1), typeInfo));
-    case UNION:
+        return new VectorizedStructColumnReader(fieldReaders, typeDefLevel);
+      case LIST:
+        checkListColumnSupport(((ListTypeInfo) typeInfo).getListElementTypeInfo());
+        return listReader(descriptor, pages, options, listElementType(type), typeInfo);
+      case MAP:
+        // Unwrap group levels until the {key, value} group - see MAX_MAP_WRAPPER_GROUPS, and
+        // parquet-format's LogicalTypes spec for the shapes the MAP annotation allows.
+        int nestGroup = 0;
+        GroupType groupType = type.asGroupType();
+        while (groupType.getFieldCount() < 2) {
+          if (nestGroup > MAX_MAP_WRAPPER_GROUPS) {
+            throw new InvalidSchemaException(
+                "More than " + MAX_MAP_WRAPPER_GROUPS + " level is found in Map definition, "
+                    + "Failed to get the field types for Map with type " + type);
+          }
+          groupType = groupType.getFields().getFirst().asGroupType();
+          nestGroup++;
+        }
+        List<Type> kvTypes = groupType.getFields();
+        return new VectorizedMapColumnReader(
+            listReader(descriptor, pages, options, kvTypes.getFirst(), typeInfo),
+            listReader(descriptors.get(1), pages, options, kvTypes.get(1), typeInfo));
+      case UNION:
     default:
       throw new UnsupportedOperationException("Unsupported category " + typeInfo.getCategory().name());
     }

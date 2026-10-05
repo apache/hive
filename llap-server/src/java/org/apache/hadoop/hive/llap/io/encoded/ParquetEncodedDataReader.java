@@ -18,6 +18,7 @@
  */
 package org.apache.hadoop.hive.llap.io.encoded;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
@@ -86,6 +87,7 @@ import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 import org.apache.tez.common.CallableWithNdc;
+import org.apache.tez.common.counters.TezCounters;
 
 /**
  * Reads one Parquet split through the LLAP cache on an IO thread. Row groups whose first data
@@ -97,7 +99,7 @@ import org.apache.tez.common.CallableWithNdc;
  * consumed batch carries exactly one ref, owned by the batch until returnData.
  */
 public class ParquetEncodedDataReader extends CallableWithNdc<Void>
-    implements ConsumerFeedback<ParquetEncodedColumnBatch> {
+    implements ConsumerFeedback<ParquetEncodedColumnBatch>, TezCounterSource {
 
   private static final BufferObjectFactory DATA_BUFFER_FACTORY = LlapDataBuffer::new;
 
@@ -152,7 +154,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       // Parquet footer lookup the same way it does for ORC's file tail.
       BooleanRef cacheHit = new BooleanRef();
       MemoryBufferOrBuffers footerData =
-          LlapProxy.getIo().getParquetFooterBuffersFromCache(path, jobConf, fileKey, cacheHit);
+          LlapProxy.getIo().parquet().getFooterBuffersFromCache(path, jobConf, fileKey, cacheHit);
       counters.incrCounter(cacheHit.value
           ? LlapIOCounters.METADATA_CACHE_HIT : LlapIOCounters.METADATA_CACHE_MISS);
       footer = ParquetFileReader.readFooter(
@@ -235,9 +237,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     counters.setDesc(QueryFragmentCounters.Desc.STRIPES, "0," + selected.size());
     counters.incrCounter(LlapIOCounters.SELECTED_ROWGROUPS, selected.size());
 
-    FileSystem fs = path.getFileSystem(jobConf);
-    try (FSDataInputStream fileStream = openFile(fs)) {
-      VectoredReadBuffers buffers = VectoredReadBuffers.forStream(fileStream);
+    try (LazyFile file = new LazyFile(path.getFileSystem(jobConf))) {
       Deque<RowGroupFetch> inFlight = new ArrayDeque<>();
       // Latched the first time a fetch comes back with every vectored request already complete:
       // that stream read inline on this thread, so a lookahead has nothing to overlap with and
@@ -247,7 +247,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       try {
         for (int i = 0; i < selected.size() && !isStopped.get(); ++i) {
           if (inFlight.isEmpty()) {
-            RowGroupFetch started = startFetch(fileStream, buffers, allocator, projected,
+            RowGroupFetch started = startFetch(file, allocator, projected,
                 selected.get(i), rowGroupOf.get(selected.get(i)));
             inFlight.add(started);
             if (!readsInline && !started.readRanges.isEmpty() && readAlreadyComplete(started)) {
@@ -258,10 +258,10 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
           // Not once readsInline: that stream would do the transfer right here, before the decode.
           if (!readsInline && i + 1 < selected.size() && !isStopped.get()
               && projectedChunkBytes(inFlight.peek()) + projectedChunkBytes(projected, selected.get(i + 1)) <= lookaheadBudget) {
-            inFlight.add(startFetch(fileStream, buffers, allocator, projected, selected.get(i + 1),
+            inFlight.add(startFetch(file, allocator, projected, selected.get(i + 1),
                 rowGroupOf.get(selected.get(i + 1))));
           }
-          finishFetch(allocator, buffers, inFlight.poll());
+          finishFetch(allocator, file, inFlight.poll());
         }
       } finally {
         for (RowGroupFetch fetch : inFlight) {
@@ -276,8 +276,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
    * Parquet's own input format assigns them, minus any the pushed-down predicate rules out on its
    * statistics. Returned in file order, since the fetch pipeline reads them in that order.
    */
-  private List<BlockMetaData> selectRowGroups(List<BlockMetaData> blocks, MessageType fileSchema)
-      throws IOException {
+  private List<BlockMetaData> selectRowGroups(List<BlockMetaData> blocks, MessageType fileSchema) {
     long splitStart = split.getStart();
     long splitEnd = splitStart + split.getLength();
     List<BlockMetaData> selected = new ArrayList<>();
@@ -305,12 +304,9 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /**
-   * Leaf-column positions of the requested fields; {@code BlockMetaData.getColumns()} is a flat list
-   * of leaves in file-schema order, so a top-level primitive at ordinal {@code k} in the file schema
-   * may sit at a very different leaf index (e.g. a nested group of two leaves before it shifts it
-   * from {@code 1} to {@code 2}). We only reach this method when every requested field is a
-   * top-level primitive ({@link #projectsNestedTypes()} would have forced a fallback otherwise), so
-   * each requested field maps to exactly one leaf whose path is a single segment.
+   * Leaf ordinals in {@code fileSchema.getColumns()}, which {@link #startFetch} uses to index
+   * {@code BlockMetaData.getColumns()} - sound only because a row group lists its chunks in
+   * file-schema leaf order, which parquet's own reader does not rely on.
    */
   static int[] findLeafIndexes(MessageType requestedSchema, MessageType fileSchema) {
     List<ColumnDescriptor> allLeaves = fileSchema.getColumns();
@@ -384,12 +380,12 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private record ReadRange(FileRange range, List<Part> parts) {
   }
 
-  private RowGroupFetch startFetch(FSDataInputStream fileStream, VectoredReadBuffers buffers, Allocator allocator,
-      int[] projected, BlockMetaData block, int rg)
-      throws IOException {
+  private RowGroupFetch startFetch(LazyFile file, Allocator allocator, int[] projected,
+      BlockMetaData block, int rg) throws IOException {
     RowGroupFetch fetch = new RowGroupFetch();
     ColumnChunkMetaData[] chunks = new ColumnChunkMetaData[projected.length];
     for (int pc = 0; pc < projected.length; ++pc) {
+      // Positional - see findLeafIndexes for the chunk-order assumption behind it.
       chunks[pc] = block.getColumns().get(projected[pc]);
     }
     fetch.batch.init(fileKey, rg, chunks);
@@ -402,7 +398,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       }
       // The vectored dispatch is where non-async FS impls actually read; count it under HDFS_TIME.
       long hdfsStart = counters.startTimeCounter();
-      requestMisses(fileStream, buffers, fetch, layout.maxRangeBytes());
+      requestMisses(file, fetch, layout.maxRangeBytes());
       counters.recordHdfsTime(hdfsStart);
     } catch (Throwable t) {
       // Throwable: a failed allocation throws an Error, and the buffers planned so far are the
@@ -413,12 +409,12 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     return fetch;
   }
 
-  private void finishFetch(Allocator allocator, VectoredReadBuffers buffers, RowGroupFetch fetch)
+  private void finishFetch(Allocator allocator, LazyFile file, RowGroupFetch fetch)
       throws IOException, InterruptedException {
     try {
       // Awaiting the vectored futures is where the miss bytes actually arrive from HDFS.
       long hdfsStart = counters.startTimeCounter();
-      receiveMisses(buffers, fetch);
+      receiveMisses(file, fetch);
       counters.recordHdfsTime(hdfsStart);
       for (ChunkPlan column : fetch.columns) {
         cacheChunk(allocator, column);
@@ -458,6 +454,41 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
         } else {
           allocator.deallocate(part.buffer);
         }
+      }
+    }
+  }
+
+  /**
+   * The split's file, opened on the first miss: a split the cache serves whole never opens it, which
+   * on HDFS saves a NameNode round trip.
+   */
+  private final class LazyFile implements Closeable {
+    private final FileSystem fs;
+    private FSDataInputStream stream;
+    private VectoredReadBuffers buffers;
+
+    LazyFile(FileSystem fs) {
+      this.fs = fs;
+    }
+
+    FSDataInputStream stream() throws IOException {
+      if (stream == null) {
+        stream = openFile(fs);
+        buffers = VectoredReadBuffers.forStream(stream);
+      }
+      return stream;
+    }
+
+    /** The staging buffers for this stream's vectored reads; opens the stream to pick them. */
+    VectoredReadBuffers buffers() throws IOException {
+      stream();
+      return buffers;
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (stream != null) {
+        stream.close();
       }
     }
   }
@@ -545,8 +576,8 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
    * several concurrent requests rather than one. A filesystem without a vectored implementation
    * reads the ranges in turn.
    */
-  private static void requestMisses(FSDataInputStream fileStream, VectoredReadBuffers buffers, RowGroupFetch fetch,
-      int maxRange) throws IOException {
+  private static void requestMisses(LazyFile file, RowGroupFetch fetch, int maxRange)
+      throws IOException {
     List<Part> misses = fetch.misses;
     if (misses.isEmpty()) {
       return;
@@ -572,13 +603,14 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     }
     List<FileRange> ranges =
         readRanges.stream().map(ReadRange::range).collect(Collectors.toList());
-    fileStream.readVectored(ranges, buffers::allocate, buffers::release);
+    VectoredReadBuffers buffers = file.buffers();
+    file.stream().readVectored(ranges, buffers::allocate, buffers::release);
     // Only requests the stream accepted are the fetch's to wait for or cancel.
     fetch.readRanges.addAll(readRanges);
   }
 
   /** Waits for the requested ranges and copies each into the cache buffers it covers. */
-  private static void receiveMisses(VectoredReadBuffers buffers, RowGroupFetch fetch) throws IOException {
+  private static void receiveMisses(LazyFile file, RowGroupFetch fetch) throws IOException {
     for (ReadRange readRange : fetch.readRanges) {
       ByteBuffer data = FutureIO.awaitFuture(readRange.range.getData());
       for (Part part : readRange.parts) {
@@ -588,7 +620,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
         src.limit(src.position() + length);
         part.buffer.getByteBufferRaw().duplicate().put(src);
       }
-      buffers.release(data);
+      file.buffers().release(data);
     }
   }
 
@@ -664,5 +696,10 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   @Override
   public void stop() {
     isStopped.set(true);
+  }
+
+  @Override
+  public TezCounters getTezCounters() {
+    return counters.getTezCounters();
   }
 }
