@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
@@ -110,6 +111,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private final ParquetEncodedDataConsumer consumer;
   private final QueryFragmentCounters counters;
   private final UserGroupInformation ugi;
+  /** The split's real path: what the cache tag is derived from and what diagnostics name. */
   private final Path path;
   private final boolean cacheOnly;
   /** Bytes of column chunks one IO thread may hold across the row group in decode and the next. */
@@ -461,9 +463,13 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  /** Package-private so a test can observe the read pattern. */
+  /**
+   * Opens the file through its inode path when it has one, so a rename or a re-create since the
+   * footer read cannot hand back another file's bytes. {@code fs} is still the real path's, since
+   * the inode path has no scheme. Package-private so a test can observe the read pattern.
+   */
   FSDataInputStream openFile(FileSystem fs) throws IOException {
-    return fs.open(path);
+    return fs.open(HdfsUtils.getFileIdPath(path, fileKey, daemonConf));
   }
 
   /** Lets the allocator abandon a wait for memory once the fragment is cancelled. */
