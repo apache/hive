@@ -32,8 +32,8 @@
   <modules>
     <module>metastore-common</module>
     <module>metastore-client</module>
-    <module>metastore-tools</module>
     <module>metastore-server</module>
+    <module>metastore-tools</module>
     <module>metastore-rest-catalog</module>
     <module>packaging</module>
   </modules>

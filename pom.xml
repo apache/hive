@@ -1965,7 +1965,6 @@
         <configuration>
           <excludes>
             <exclude>.m2/**</exclude>
-            <exclude>.claude/**</exclude>
             <eclude>.gitattributes</eclude>
             <exclude>*.patch</exclude>
             <exclude>**/pull_request_template.md</exclude>
