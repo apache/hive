@@ -511,11 +511,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private void ensureOrcReader() throws IOException {
     if (orcReader != null) return;
-    path = split.getPath();
-    if (fileKey instanceof Long && HiveConf.getBoolVar(
-        daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
-      path = HdfsUtils.getFileIdPath(path, (long)fileKey);
-    }
+    path = HdfsUtils.getFileIdPath(split.getPath(), fileKey, daemonConf);
     LlapIoImpl.ORC_LOGGER.trace("Creating reader for {} ({})", path, split.getPath());
     long startTime = counters.startTimeCounter();
     ReaderOptions opts = EncodedOrcFile.readerOptions(jobConf).filesystem(fsSupplier).fileMetadata(fileMetadata);

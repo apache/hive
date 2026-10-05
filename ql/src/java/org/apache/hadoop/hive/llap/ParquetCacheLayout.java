@@ -36,15 +36,26 @@ public final class ParquetCacheLayout {
   /**
    * An object store fetches separate ranges concurrently but never splits one, so cutting buys
    * parallelism while a large range amortises the request. Measured against S3 the knee is here:
-   * below 4 Mb throughput drops sharply, above 8 Mb it is flat. Trino also splits at 8 Mb.
+   * below 4 MB throughput drops sharply, above 8 MB it is flat, per stream rather than per daemon.
+   * Trino also splits at 8 MB.
+   *
+   * <p>A floor rather than the cap itself, because a buffer is always fetched whole and so a cap
+   * below the allocator's maximum would not be one. At the 16 MB default for
+   * {@code hive.llap.allocator.max.alloc} the maximum wins and this never binds; it is what keeps
+   * the cap sane for a daemon configured with a small allocator.
    */
   private static final int MAX_RANGE_FLOOR_BYTES = 8 << 20;
 
-  public static final DiskRangeListFactory CACHE_CHUNK_FACTORY = CacheChunk::new;
-
   private final int maxBuffer;
   private final int minBuffer;
-  private final int maxRange;
+  private final int rangeCapBytes;
+
+  /**
+   * The factory every reader passes to {@code getFileData}, so a cache hit on a Parquet chunk comes
+   * back as the {@link CacheChunk} both readers' gap planning expects. Here rather than duplicated
+   * at each call site for the same reason the sizes are: one layout, one chunk type.
+   */
+  public static final DiskRangeListFactory CACHE_CHUNK_FACTORY = CacheChunk::new;
 
   /** The layout for a daemon: its allocator's maximum and the grain it caches non-ORC data at. */
   public ParquetCacheLayout(Allocator allocator, Configuration conf) {
@@ -61,7 +72,7 @@ public final class ParquetCacheLayout {
     this.maxBuffer = Integer.highestOneBit(maxAlloc);
     // Clamped, not cast: the key is validated as a size but not against the allocator's maximum.
     this.minBuffer = (int) Math.min(splitFloor, maxBuffer);
-    this.maxRange = Math.max(MAX_RANGE_FLOOR_BYTES, maxAlloc);
+    this.rangeCapBytes = Math.max(MAX_RANGE_FLOOR_BYTES, maxAlloc);
   }
 
   /**
@@ -70,13 +81,13 @@ public final class ParquetCacheLayout {
    * shrinking the cache should not shrink reads.
    */
   public int maxRangeBytes() {
-    return maxRange;
+    return rangeCapBytes;
   }
 
   /**
    * Cuts a range into power-of-two buffers, largest first, so each fills its buddy allocation
-   * exactly; caching a chunk whole leaves the allocator to round it up, and a 5 Mb chunk then
-   * occupies 8 Mb. Below the floor the remainder stays one buffer, since splitting a small tail
+   * exactly; caching a chunk whole leaves the allocator to round it up, and a 5 MB chunk then
+   * occupies 8 MB. Below the floor the remainder stays one buffer, since splitting a small tail
    * costs a key, a refcount and an eviction to save very little. ORC caches in fixed parts of its
    * compression buffer size instead, which needs no decomposition but many more buffers.
    *
@@ -85,17 +96,25 @@ public final class ParquetCacheLayout {
    */
   public int[] bufferSizes(long length) {
     int count = 0;
-    long remaining = length;
-    while (remaining > 0) {
-      remaining -= remaining < minBuffer ? remaining : Math.min(maxBuffer, Long.highestOneBit(remaining));
-      ++count;
+    for (long remaining = length; remaining > 0; ++count) {
+      remaining -= nextPiece(remaining);
     }
     int[] sizes = new int[count];
     long left = length;
     for (int i = 0; i < count; ++i) {
-      sizes[i] = left < minBuffer ? (int) left : (int) Math.min(maxBuffer, Long.highestOneBit(left));
+      sizes[i] = nextPiece(left);
       left -= sizes[i];
     }
     return sizes;
+  }
+
+  /**
+   * The first buffer of a range this long. Called twice per range - once to count the buffers and
+   * once to fill the array - so the two passes cannot drift apart.
+   */
+  private int nextPiece(long remaining) {
+    return remaining < minBuffer
+        ? (int) remaining
+        : (int) Math.min(maxBuffer, Long.highestOneBit(remaining));
   }
 }

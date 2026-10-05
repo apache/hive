@@ -68,6 +68,7 @@ import org.apache.parquet.hadoop.metadata.ColumnChunkMetaData;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.HadoopInputFile;
+import org.apache.parquet.io.ParquetDecodingException;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
@@ -88,9 +89,10 @@ import org.junit.Test;
  * headers and page payloads end up split across buffers, which is the interesting case here.
  *
  * <p>The comparison covers the dictionary page and every data page of every projected column:
- * value/row/null counts, encodings, sizes, statistics and the decompressed bytes. {@code getCrc()}
- * is left out because the native reader does no page checksum verification at all, while the stock
- * reader does when {@code parquet.page.verify-checksum.enabled} is set.
+ * value/row/null counts, encodings, sizes, statistics, the stored checksum and the decompressed
+ * bytes. Checksum <em>verification</em> is off in the parity runs, as it is by default on both sides
+ * ({@code parquet.page.verify-checksum.enabled}); it has its own test below, which is where a
+ * corrupt cache buffer has to be rejected rather than decoded.
  */
 public class TestParquetCachedPageReadStore {
 
@@ -231,11 +233,12 @@ public class TestParquetCachedPageReadStore {
     ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
     CompressionCodecFactory codecFactory = options.getCodecFactory();
     ParquetMetadataConverter converter = new ParquetMetadataConverter(options);
+    boolean verifyChecksums = options.usePageChecksumVerification();
     try (PageReadStore plain = new ParquetCachedPageReadStore(footer,
-             singleChunkBatch(chunk, chunkBytes), codecFactory, converter);
+             singleChunkBatch(chunk, chunkBytes), codecFactory, converter, verifyChecksums);
          PageReadStore spliced = new ParquetCachedPageReadStore(footer,
              singleChunkBatch(chunkWithTotalSize(chunk, splicedBytes.size()), splicedBytes.toByteArray()),
-             codecFactory, converter)) {
+             codecFactory, converter, verifyChecksums)) {
       assertPageReaderParity("chunk behind an index page", plain.getPageReader(descriptor),
           spliced.getPageReader(descriptor), new Coverage());
     } finally {
@@ -277,6 +280,42 @@ public class TestParquetCachedPageReadStore {
     assertTrue(tail.getMessage(), tail.getMessage().contains("the chunk ends at"));
   }
 
+  /**
+   * A page whose cached bytes no longer match the checksum its header carries is rejected, under the
+   * same {@code parquet.page.verify-checksum.enabled} the file reader obeys. The corruption is
+   * applied to the bytes the simulated cache buffers are filled from, which is the failure this is
+   * about: the footer and the page headers are intact and only the cached payload has rotted, so
+   * nothing else on the path has any way to notice. Decoding it instead would not raise an error
+   * anywhere - it would answer the query with wrong values.
+   */
+  @Test
+  public void testCorruptCachedPageIsRejectedWhenChecksumsAreVerified() throws Exception {
+    Path file = new Path(tmpDir.toString(), "corrupt-page.parquet");
+    writeFile(file, WriterVersion.PARQUET_1_0, CompressionCodecName.SNAPPY);
+    ParquetMetadata footer = footerOf(file);
+    MessageType projection = new MessageType(SCHEMA.getName(), SCHEMA.getType("name"));
+    ColumnChunkMetaData chunk = chunkFor(footer.getBlocks().getFirst(), projection.getColumns().getFirst());
+
+    byte[] corrupted = Files.readAllBytes(Paths.get(file.toUri().getPath()));
+    // The chunk's last byte, which is inside the last page's payload rather than in a header: a
+    // header flip would fail the walk itself, which is a different error and not the one at issue.
+    int flipAt = (int) (chunk.getStartingPos() + chunk.getTotalSize()) - 1;
+    corrupted[flipAt] ^= 0x01;
+
+    ParquetEncodedColumnBatch batch =
+        cachedBatch(footer, 0, projection, corrupted, BUFFER_GRAIN, new Coverage());
+    ParquetDecodingException corrupt = assertThrows(ParquetDecodingException.class,
+        () -> cachedStore(footer, batch, true));
+    assertEquals("could not verify page integrity, CRC checksum verification failed",
+        corrupt.getMessage());
+
+    // With verification off the same bytes must build a store, which proves the rejection above came
+    // from the checksum check. No assertion: a throw here fails the test. A fresh batch, as the store
+    // above consumed the first one.
+    cachedStore(footer, cachedBatch(footer, 0, projection, corrupted, BUFFER_GRAIN, new Coverage()),
+        false);
+  }
+
   private static void assertParity(WriterVersion version, CompressionCodecName codec,
       int grain, MessageType projection) throws Exception {
     Path file = new Path(tmpDir.toString(), version + "-" + codec + "-" + grain + ".parquet");
@@ -300,7 +339,8 @@ public class TestParquetCachedPageReadStore {
         ParquetEncodedColumnBatch batch =
             cachedBatch(footer, rowGroupIx, projection, fileBytes, grain, coverage);
         PageReadStore actual =
-            new ParquetCachedPageReadStore(footer, batch, codecFactory, converter);
+            new ParquetCachedPageReadStore(footer, batch, codecFactory, converter,
+                options.usePageChecksumVerification());
 
         assertEquals("row group " + rowGroupIx + ": row count",
             expected.getRowCount(), actual.getRowCount());
@@ -362,7 +402,11 @@ public class TestParquetCachedPageReadStore {
     assertEquals(column + ": dictionary size", expected.getDictionarySize(), actual.getDictionarySize());
     assertEquals(column + ": dictionary uncompressed size",
         expected.getUncompressedSize(), actual.getUncompressedSize());
+    assertEquals(column + ": dictionary crc", expected.getCrc(), actual.getCrc());
     assertBytes(column + ": dictionary bytes", expected.getBytes(), actual.getBytes());
+    if (actual.getCrc().isPresent()) {
+      ++coverage.pagesWithCrc;
+    }
     ++coverage.dictionaryPages;
   }
 
@@ -376,6 +420,13 @@ public class TestParquetCachedPageReadStore {
         expected.getCompressedSize(), actual.getCompressedSize());
     assertEquals(what + ": index row count", expected.getIndexRowCount(), actual.getIndexRowCount());
     assertEquals(what + ": first row index", expected.getFirstRowIndex(), actual.getFirstRowIndex());
+    // The checksum the writer stored, carried from the page header onto the page. Compared even
+    // though nothing downstream reads it, because it is what the verification below hashes against:
+    // a page whose crc this store failed to carry over would verify against a checksum of zero.
+    assertEquals(what + ": crc", expected.getCrc(), actual.getCrc());
+    if (actual.getCrc().isPresent()) {
+      ++coverage.pagesWithCrc;
+    }
     if (expected instanceof DataPageV1 expectedV1 && actual instanceof DataPageV1 actualV1) {
       assertEquals(what + ": repetition level encoding",
           expectedV1.getRlEncoding(), actualV1.getRlEncoding());
@@ -484,9 +535,15 @@ public class TestParquetCachedPageReadStore {
   private static void cachedStore(ParquetMetadata footer, ParquetEncodedColumnBatch batch)
       throws IOException {
     ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
+    cachedStore(footer, batch, options.usePageChecksumVerification());
+  }
+
+  private static void cachedStore(ParquetMetadata footer, ParquetEncodedColumnBatch batch,
+      boolean verifyChecksums) throws IOException {
+    ParquetReadOptions options = HadoopReadOptions.builder(conf).build();
     CompressionCodecFactory codecFactory = options.getCodecFactory();
     try (PageReadStore store = new ParquetCachedPageReadStore(footer, batch, codecFactory,
-        new ParquetMetadataConverter(options))) {
+        new ParquetMetadataConverter(options), verifyChecksums)) {
       assertNotNull(store);
     } finally {
       codecFactory.release();
@@ -633,6 +690,7 @@ public class TestParquetCachedPageReadStore {
     private int maxPagesPerColumn;
     private int maxBuffersPerChunk;
     private long v2RepetitionLevelBytes;
+    private int pagesWithCrc;
 
     void assertCovered(WriterVersion version, int grain, int columnsPerRowGroup) {
       assertTrue("no row groups compared", rowGroups > 0);
@@ -642,6 +700,10 @@ public class TestParquetCachedPageReadStore {
       assertTrue("no dictionary page compared", dictionaryPages > 0);
       assertTrue("every chunk had a single page, so the multi-page path was not exercised",
           maxPagesPerColumn > 1);
+      // Without this the crc comparison would be comparing empty against empty: parquet writes page
+      // checksums by default, and a fixture that stopped carrying them would quietly take the
+      // checksum assertions, and the corrupt-page test, down with it.
+      assertEquals("every page should carry a checksum", dataPages + dictionaryPages, pagesWithCrc);
       if (version == WriterVersion.PARQUET_2_0) {
         assertTrue("no V2 page carried repetition levels, so the order the rep/def/value slices are"
             + " taken in was not exercised", v2RepetitionLevelBytes > 0);

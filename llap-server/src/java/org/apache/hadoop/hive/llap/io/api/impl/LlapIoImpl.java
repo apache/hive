@@ -75,12 +75,10 @@ import org.apache.hadoop.hive.llap.cache.SimpleBufferManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
-import org.apache.hadoop.hive.llap.io.api.LlapParquetReadRequest;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ParquetColumnVectorProducer;
-import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
@@ -97,7 +95,6 @@ import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -281,8 +278,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         metadataCache, dataCache, pathCache, bufferManager, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
         serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
-    // Native Parquet IO is gated per query by the job conf at the dispatch sites.
-    this.parquetCvp = new ParquetColumnVectorProducer(dataCache, bufferManager, conf, cacheMetrics, ioMetrics);
+    // Native Parquet IO is gated per query by the job conf at the dispatch sites, but it only has
+    // somewhere to put the column chunks in cache mode: with memory.mode=none there is no
+    // dataCache and no bufferManager, so leave the producer null and let getInputFormat decline.
+    this.parquetCvp = useLowLevelCache ? new ParquetColumnVectorProducer(
+        dataCache, bufferManager, conf, cacheMetrics, ioMetrics) : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();
@@ -492,25 +492,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   }
 
   @Override
-  public RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedParquetReaderForPath(
-      LlapParquetReadRequest request, JobConf conf, Reporter reporter) throws IOException {
-    FileSplit split = new FileSplit(request.path(), request.offset(), request.length(), (String[]) null);
-    try {
-      LlapRecordReader rr = LlapRecordReader.create(conf, split, request.tableIncludedCols(),
-          HiveStringUtils.getHostname(), parquetCvp, executor, null, null, reporter, daemonConf);
-      if (rr == null) {  // NOSONAR - S2583: create() has null-return paths Sonar's data-flow does not model.
-        return null;
-      }
-      ((ParquetEncodedDataConsumer) rr.getReadPipeline()).setInitialDefaults(request.initialDefaults());
-      rr.setPartitionValues(null);
-      rr.start();
-      return rr;
-    } catch (HiveException e) {
-      throw new IOException(e);
-    }
-  }
-
-  @Override
   public MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey,
       @Nullable BooleanRef cacheHit) throws IOException {
 
@@ -525,7 +506,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       cacheHit.value = footerData != null;
     }
     if (footerData != null) {
-      LOG.info("Found the footer in cache for " + fileKey);
+      LOG.debug("Found the footer in cache for {}", fileKey);
       try {
         return footerData;
       } finally {
@@ -546,7 +527,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       stream.seek(footerLengthIndex);
       int footerLength = BytesUtils.readIntLittleEndian(stream);
       stream.seek(footerLengthIndex - footerLength);
-      LOG.info("Caching the footer of length " + footerLength + " for " + fileKey);
+      LOG.debug("Caching the footer of length {} for {}", footerLength, fileKey);
       // Note: we don't pass in isStopped here - this is not on an IO thread.
       footerData = fileMetadataCache.putFileMetadata(fileKey, footerLength, stream, tag, null);
       try {

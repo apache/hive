@@ -166,10 +166,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
         if (cacheKey != null) {
           cacheTag = cacheTagOfParquetFile(filePath, cacheConf, conf);
           // If we are going to use cache, change the path to depend on file ID for extra consistency.
-          if (cacheKey instanceof Long && HiveConf.getBoolVar(
-              cacheConf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
-            filePath = HdfsUtils.getFileIdPath(filePath, (long)cacheKey);
-          }
+          filePath = HdfsUtils.getFileIdPath(filePath, cacheKey, cacheConf);
         }
       }
 

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.zip.CRC32;
 
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.io.encoded.ParquetEncodedColumnBatch;
@@ -36,6 +37,7 @@ import org.apache.parquet.column.page.DataPage;
 import org.apache.parquet.column.page.DataPageV1;
 import org.apache.parquet.column.page.DataPageV2;
 import org.apache.parquet.column.page.DictionaryPage;
+import org.apache.parquet.column.page.Page;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.column.page.PageReader;
 import org.apache.parquet.compression.CompressionCodecFactory;
@@ -70,11 +72,13 @@ import org.apache.parquet.schema.PrimitiveType;
  * to diff against the new release:
  * <ul>
  *   <li>{@link #readAllPages} mirrors {@code ParquetFileReader.Chunk.readAllPages}: the page-header
- *       walk, the page-type switch and the mapping of header fields onto {@link DataPageV1},
- *       {@link DataPageV2} and {@link DictionaryPage}. A new page type, a new header field or a
- *       changed page constructor lands here.</li>
- *   <li>{@link CachedChunkPageReader} mirrors {@code ColumnChunkPageReader}: page queueing and
- *       lazy decompression. New {@link PageReader} behaviour lands here.</li>
+ *       walk, the page-type switch, the mapping of header fields onto {@link DataPageV1},
+ *       {@link DataPageV2} and {@link DictionaryPage}, and the page checksum check
+ *       ({@link #verifyCrc}, upstream's {@code Chunk.verifyCrc}). A new page type, a new header
+ *       field or a changed page constructor lands here.</li>
+ *   <li>{@link CachedChunkPageReader} mirrors {@code ColumnChunkPageReader}: page queueing, lazy
+ *       decompression, and carrying each page's checksum onto its decompressed copy
+ *       ({@link #carryCrc}). New {@link PageReader} behaviour lands here.</li>
  * </ul>
  * Also check whether {@link PageReadStore} gained or changed a {@code default} method, since this
  * class implements none of them ({@code getRowIndexOffset}, {@code getRowIndexes} and
@@ -83,8 +87,14 @@ import org.apache.parquet.schema.PrimitiveType;
  * rather than passing with a divergence.
  *
  * <p>Deliberately unsupported, because LLAP's Parquet path does not use them: the offset index (so
- * {@code getFirstRowIndex} and {@code getIndexRowCount} keep their no-offset-index defaults),
- * column encryption, and page checksum verification.
+ * {@code getFirstRowIndex} and {@code getIndexRowCount} keep their no-offset-index defaults), and
+ * column encryption.
+ *
+ * <p>Page checksums <em>are</em> verified, under the same {@code parquet.page.verify-checksum.enabled}
+ * the file reader obeys. That flag is worth more here than it is over a file: these bytes have been
+ * through LLAP's allocator and may have been sitting in off-heap memory for hours, so this path has
+ * strictly more ways to hand back a corrupt page than a fresh read does, and a corrupt page that is
+ * not caught is a wrong query answer rather than an error.
  *
  * <p>How it works:
  * <ol>
@@ -109,7 +119,8 @@ class ParquetCachedPageReadStore implements PageReadStore {
   private final long rowCount;
 
   ParquetCachedPageReadStore(ParquetMetadata footer, ParquetEncodedColumnBatch batch,
-      CompressionCodecFactory codecFactory, ParquetMetadataConverter converter) throws IOException {
+      CompressionCodecFactory codecFactory, ParquetMetadataConverter converter,
+      boolean verifyChecksums) throws IOException {
     BlockMetaData block = footer.getBlocks().get(batch.rowGroupIx());
     this.rowCount = block.getRowCount();
     String createdBy = footer.getFileMetaData().getCreatedBy();
@@ -120,7 +131,7 @@ class ParquetCachedPageReadStore implements PageReadStore {
     for (int pc = 0; pc < chunks.length; ++pc) {
       ColumnChunkMetaData chunk = chunks[pc];
       readers.put(chunk.getPath(), readAllPages(chunk, sliceChunk(batch, pc), createdBy,
-          codecFactory.getDecompressor(chunk.getCodec()), converter));
+          codecFactory.getDecompressor(chunk.getCodec()), converter, verifyChecksums));
     }
   }
 
@@ -179,8 +190,8 @@ class ParquetCachedPageReadStore implements PageReadStore {
   }
 
   private static PageReader readAllPages(ColumnChunkMetaData chunk, List<ByteBuffer> buffers,
-      String createdBy, BytesInputDecompressor decompressor, ParquetMetadataConverter converter)
-      throws IOException {
+      String createdBy, BytesInputDecompressor decompressor, ParquetMetadataConverter converter,
+      boolean verifyChecksums) throws IOException {
     // Reads across the buffer boundaries as if the chunk were contiguous, which it is not: a page
     // header or a payload can straddle two cache buffers. sliceBuffers below hands out views into
     // these same buffers, so every page this method builds points at cache memory for as long as it
@@ -189,6 +200,8 @@ class ParquetCachedPageReadStore implements PageReadStore {
     PrimitiveType type = chunk.getPrimitiveType();
     List<DataPage> pages = new ArrayList<>();
     DictionaryPage dictionaryPage = null;
+    // One instance for the whole chunk, reset per page, as upstream's chunk reader keeps one.
+    CRC32 crc = verifyChecksums ? new CRC32() : null;
     long valuesRead = 0;
     // Only data pages count towards valuesRead, so the dictionary page and any page type skipped
     // below do not end the walk early; the footer's value count is the only terminator.
@@ -202,16 +215,25 @@ class ParquetCachedPageReadStore implements PageReadStore {
             throw new ParquetDecodingException("more than one dictionary page in column " + chunk.getPath());
           }
           DictionaryPageHeader dictHeader = header.getDictionary_page_header();
-          dictionaryPage = new DictionaryPage(BytesInput.from(stream.sliceBuffers(compressedSize)),
+          List<ByteBuffer> dictBytes = stream.sliceBuffers(compressedSize);
+          verifyCrc(crc, header, dictBytes,
+              "could not verify dictionary page integrity, CRC checksum verification failed");
+          dictionaryPage = new DictionaryPage(BytesInput.from(dictBytes),
               uncompressedSize, dictHeader.getNum_values(), converter.getEncoding(dictHeader.getEncoding()));
+          copyCrc(header, dictionaryPage);
           break;
         case DATA_PAGE:
           DataPageHeader v1 = header.getData_page_header();
-          pages.add(new DataPageV1(BytesInput.from(stream.sliceBuffers(compressedSize)), v1.getNum_values(),
+          List<ByteBuffer> v1Bytes = stream.sliceBuffers(compressedSize);
+          verifyCrc(crc, header, v1Bytes,
+              "could not verify page integrity, CRC checksum verification failed");
+          DataPageV1 pageV1 = new DataPageV1(BytesInput.from(v1Bytes), v1.getNum_values(),
               uncompressedSize, converter.fromParquetStatistics(createdBy, v1.getStatistics(), type),
               converter.getEncoding(v1.getRepetition_level_encoding()),
               converter.getEncoding(v1.getDefinition_level_encoding()),
-              converter.getEncoding(v1.getEncoding())));
+              converter.getEncoding(v1.getEncoding()));
+          copyCrc(header, pageV1);
+          pages.add(pageV1);
           valuesRead += v1.getNum_values();
           break;
         case DATA_PAGE_V2:
@@ -220,13 +242,24 @@ class ParquetCachedPageReadStore implements PageReadStore {
           // after them is codec output. The three slices have to be taken in this order.
           int dataSize = compressedSize
               - v2.getRepetition_levels_byte_length() - v2.getDefinition_levels_byte_length();
-          BytesInput repetitionLevels = BytesInput.from(stream.sliceBuffers(v2.getRepetition_levels_byte_length()));
-          BytesInput definitionLevels = BytesInput.from(stream.sliceBuffers(v2.getDefinition_levels_byte_length()));
-          BytesInput values = BytesInput.from(stream.sliceBuffers(dataSize));
-          pages.add(new DataPageV2(v2.getNum_rows(), v2.getNum_nulls(), v2.getNum_values(),
-              repetitionLevels, definitionLevels, converter.getEncoding(v2.getEncoding()), values,
+          List<ByteBuffer> repetitionBytes = stream.sliceBuffers(v2.getRepetition_levels_byte_length());
+          List<ByteBuffer> definitionBytes = stream.sliceBuffers(v2.getDefinition_levels_byte_length());
+          List<ByteBuffer> valueBytes = stream.sliceBuffers(dataSize);
+          if (crc != null && header.isSetCrc()) {
+            // The checksum is over the three parts concatenated, in the order the page holds them.
+            List<ByteBuffer> v2Bytes = new ArrayList<>(repetitionBytes);
+            v2Bytes.addAll(definitionBytes);
+            v2Bytes.addAll(valueBytes);
+            verifyCrc(crc, header, v2Bytes,
+                "could not verify page integrity, CRC checksum verification failed");
+          }
+          DataPageV2 pageV2 = new DataPageV2(v2.getNum_rows(), v2.getNum_nulls(), v2.getNum_values(),
+              BytesInput.from(repetitionBytes), BytesInput.from(definitionBytes),
+              converter.getEncoding(v2.getEncoding()), BytesInput.from(valueBytes),
               uncompressedSize, converter.fromParquetStatistics(createdBy, v2.getStatistics(), type),
-              v2.isIs_compressed()));
+              v2.isIs_compressed());
+          copyCrc(header, pageV2);
+          pages.add(pageV2);
           valuesRead += v2.getNum_values();
           break;
         default:
@@ -240,6 +273,50 @@ class ParquetCachedPageReadStore implements PageReadStore {
           + " at offset " + chunk.getStartingPos() + " but got " + valuesRead + " over " + pages.size() + " pages");
     }
     return new CachedChunkPageReader(decompressor, pages, dictionaryPage);
+  }
+
+  /**
+   * Checks a page's bytes against the CRC32 its header carries, mirroring
+   * {@code ParquetFileReader.Chunk.verifyCrc} down to the message, and does nothing when
+   * verification is off ({@code crc == null}) or the writer stored no checksum.
+   *
+   * <p>Fed the slices rather than the {@link BytesInput} built from them: upstream has to
+   * materialize one buffer to hash and borrows an allocator to do it, while here the slices are
+   * cache memory that can be hashed where it lies. {@link CRC32#update(ByteBuffer)} consumes the
+   * buffer it is handed, so each one is duplicated first.
+   */
+  private static void verifyCrc(CRC32 crc, PageHeader header, List<ByteBuffer> pageBytes,
+      String message) {
+    if (crc == null || !header.isSetCrc()) {
+      return;
+    }
+    crc.reset();
+    for (ByteBuffer bb : pageBytes) {
+      crc.update(bb.duplicate());
+    }
+    if (crc.getValue() != (header.getCrc() & 0xffffffffL)) {
+      throw new ParquetDecodingException(message);
+    }
+  }
+
+  /** Carries the header's checksum onto the page, as upstream does, so tests can compare it. */
+  private static void copyCrc(PageHeader header, Page page) {
+    if (header.isSetCrc()) {
+      page.setCrc(header.getCrc());
+    }
+  }
+
+  /**
+   * Carries a page's checksum onto the decompressed copy of it, which is a new object and would
+   * otherwise report no checksum at all. Upstream's chunk reader does this at each of its three
+   * decompression sites, and the page parity test compares {@code getCrc()}, so a page that lost it
+   * here would read back differently from the same page off a file.
+   */
+  private static <T extends Page> T carryCrc(Page from, T to) {
+    if (from.getCrc().isPresent()) {
+      to.setCrc(from.getCrc().getAsInt());
+    }
+    return to;
   }
 
   @Override
@@ -290,9 +367,10 @@ class ParquetCachedPageReadStore implements PageReadStore {
       return compressedPage.accept(new DataPage.Visitor<DataPage>() {
         @Override
         public DataPage visit(DataPageV1 page) {
-          return new DataPageV1(decompress(page.getBytes(), page.getUncompressedSize(), "page"),
-              page.getValueCount(), page.getUncompressedSize(), page.getStatistics(),
-              page.getRlEncoding(), page.getDlEncoding(), page.getValueEncoding());
+          return carryCrc(page,
+              new DataPageV1(decompress(page.getBytes(), page.getUncompressedSize(), "page"),
+                  page.getValueCount(), page.getUncompressedSize(), page.getStatistics(),
+                  page.getRlEncoding(), page.getDlEncoding(), page.getValueEncoding()));
         }
 
         @Override
@@ -307,9 +385,9 @@ class ParquetCachedPageReadStore implements PageReadStore {
           int uncompressedSize = Math.toIntExact(page.getUncompressedSize()
               - page.getDefinitionLevels().size() - page.getRepetitionLevels().size());
           BytesInput data = decompress(page.getData(), uncompressedSize, "page");
-          return DataPageV2.uncompressed(page.getRowCount(), page.getNullCount(), page.getValueCount(),
-              page.getRepetitionLevels(), page.getDefinitionLevels(), page.getDataEncoding(), data,
-              page.getStatistics());
+          return carryCrc(page, DataPageV2.uncompressed(page.getRowCount(), page.getNullCount(),
+              page.getValueCount(), page.getRepetitionLevels(), page.getDefinitionLevels(),
+              page.getDataEncoding(), data, page.getStatistics()));
         }
       });
     }
@@ -321,8 +399,8 @@ class ParquetCachedPageReadStore implements PageReadStore {
       }
       BytesInput bytes = decompress(compressedDictionaryPage.getBytes(),
           compressedDictionaryPage.getUncompressedSize(), "dictionary page");
-      return new DictionaryPage(bytes, compressedDictionaryPage.getDictionarySize(),
-          compressedDictionaryPage.getEncoding());
+      return carryCrc(compressedDictionaryPage, new DictionaryPage(bytes,
+          compressedDictionaryPage.getDictionarySize(), compressedDictionaryPage.getEncoding()));
     }
 
     private BytesInput decompress(BytesInput bytes, int uncompressedSize, String what) {

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.llap.io.encoded;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -48,21 +49,26 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.StreamCapabilities;
 import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.Allocator.BufferObjectFactory;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapCacheAwareFs;
 import org.apache.hadoop.hive.llap.ParquetCacheLayout;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LlapAllocatorBuffer;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
+import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheCounters;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.LowLevelLrfuCachePolicy;
@@ -84,6 +90,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
@@ -102,7 +109,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.TypeDescription;
 import org.apache.parquet.example.data.Group;
 import org.apache.parquet.example.data.simple.SimpleGroupFactory;
@@ -172,8 +183,14 @@ public class TestParquetEncodedDataReader {
 
   private LowLevelCacheImpl cache;
   private Ledger ledger;
-  /** hive.llap.io.encode.alloc.size at its default, the grain these expectations assume. */
-  private static final int FLOOR = 256 * 1024;
+  /**
+   * hive.llap.io.encode.alloc.size: the size below which {@link ParquetCacheLayout} stops splitting a
+   * remainder into smaller power-of-two buffers. Set below {@link #MAX_ALLOC} so a chunk's remainder
+   * splits, leaving buffer boundaries that are not multiples of MAX_ALLOC, as on a daemon (256KB floor,
+   * 16MB maximum); testFallbackReaderRefillsAHoleOnTheNativeReaderBoundaries needs one. At the 256KB
+   * default the layout would cap the floor at 4KB, and each chunk would be 4KB buffers plus one tail.
+   */
+  private static final int FLOOR = 1024;
   /** Hands every job its own plan path, which is the key its MapWork is cached under. */
   private static final AtomicInteger PLAN_ID = new AtomicInteger();
 
@@ -181,8 +198,12 @@ public class TestParquetEncodedDataReader {
   private boolean unslicedBuffers;
   /** Fulfils every vectored range from a buffer positioned {@link #RANGE_PAD} bytes in. */
   private boolean positionedRangeBuffers;
+  /** Fulfils every vectored range before returning, as a filesystem without async IO does. */
+  private boolean inlineRanges;
   private boolean stopAfterFirstBatch;
   private boolean failDecode;
+  /** Fails the decode with an {@link Error} rather than an exception. */
+  private boolean failDecodeWithError;
   /** Opts out of the expectedRow(i) check, for tests whose Hive schema is not the fixture's. */
   private boolean skipExpectedRows;
   /** Opts out of the A/B check, for tests the stock reader cannot reproduce. */
@@ -204,6 +225,7 @@ public class TestParquetEncodedDataReader {
     HiveConf.setVar(daemonConf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE, "64Mb");
     HiveConf.setBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE, false);
     HiveConf.setIntVar(daemonConf, ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE, 1);
+    HiveConf.setVar(daemonConf, ConfVars.LLAP_IO_ENCODE_ALLOC_SIZE, FLOOR + "b");
 
     tmpDir = Files.createTempDirectory("llap-parquet-native");
     file = new Path(tmpDir.toString(), "data.parquet");
@@ -236,8 +258,10 @@ public class TestParquetEncodedDataReader {
     failFirstRange = false;
     unslicedBuffers = false;
     positionedRangeBuffers = false;
+    inlineRanges = false;
     stopAfterFirstBatch = false;
     failDecode = false;
+    failDecodeWithError = false;
     skipExpectedRows = false;
     skipNonNativeParity = false;
     decoded = 0;
@@ -489,6 +513,25 @@ public class TestParquetEncodedDataReader {
     assertEquals(Arrays.asList(0, 1, 2), decodedAtRequest);
   }
 
+  /**
+   * A stream that does its vectored reads on the calling thread gets no lookahead. There is nothing
+   * to overlap with - the bytes are already there when readVectored returns - so starting the next
+   * row group early would only double the cache memory the fragment holds locked, and buy nothing.
+   * The reader has to notice that from the futures it got back: VECTOREDIO_BUFFERS_SLICED and the
+   * other stream capabilities say nothing about whether the implementation is asynchronous.
+   */
+  @Test
+  public void testNoLookaheadWhenTheStreamReadsInline() throws Exception {
+    inlineRanges = true;
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
+
+    assertEquals(ROWS, run.rows.size());
+    // One request per row group, each going out only after the previous group was decoded. The same
+    // read over the local filesystem's asynchronous readVectored is [0, 0, 1], as the test above
+    // asserts, so this is the lookahead being dropped and not the fixture failing to reach it.
+    assertEquals(Arrays.asList(0, 1, 2), decodedAtRequest);
+  }
+
   /** An allocator that hands back whole pooled buffers instead of exact slices still reads every row. */
   @Test
   public void testPooledBuffersReadEveryRow() throws Exception {
@@ -557,6 +600,24 @@ public class TestParquetEncodedDataReader {
     ledger.assertNothingLeaked();
   }
 
+  /**
+   * An {@link Error} on the decode path is reported like any other failure. It would be easy to
+   * catch only Exception here, and an OutOfMemoryError or a failed assertion out of the allocator or
+   * the column readers would then escape the IO thread without ever reaching the consumer: the
+   * buffers it had been handed stay locked, and {@code next()} waits forever for a setDone that is
+   * not coming. So an Error has to arrive as an error, and the buffers have to come back.
+   */
+  @Test
+  public void testDecodeErrorIsReportedAndReleasesBuffers() throws Exception {
+    failDecodeWithError = true;
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2), wholeFile());
+
+    assertTrue(String.valueOf(run.error), run.error instanceof AssertionError);
+    assertEquals("decode exploded", run.error.getMessage());
+    assertFalse("setDone must not be reached after a failure", run.done);
+    ledger.assertNothingLeaked();
+  }
+
   /** When another writer wins the race to cache a chunk, our copy is freed and the cached one is used. */
   @Test
   public void testCollisionKeepsTheCachedCopyAndFreesOurs() throws Exception {
@@ -618,6 +679,123 @@ public class TestParquetEncodedDataReader {
     for (MemoryBuffer b : warm.buffers) {
       assertFalse(b.toString(), ((LlapAllocatorBuffer) b).isLocked());
     }
+  }
+
+  /**
+   * A file the native reader cached is found whole by the fallback reader. Both readers write into
+   * the same cache - the fallback one through {@link LlapCacheAwareFs}, which splits parquet's
+   * positioned reads along the column-chunk boundaries and looks each piece up - and both cut a chunk
+   * into buffers with {@link ParquetCacheLayout}, so each finds what the other cached.
+   *
+   * <p>Both orders are tested: here the fallback reader finds what the native reader wrote, and in
+   * the test below the native reader finds what the fallback reader wrote.
+   */
+  @Test
+  public void testFallbackReaderFindsWhatTheNativeReaderCached() throws Exception {
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5);
+    Run nativeRun = read(job, wholeFile());
+    assertEquals(ROWS, nativeRun.rows.size());
+
+    int allocatedBefore = ledger.allocated.size();
+    List<Object[]> fallbackRows = readThroughCacheAwareFs(job, wholeFile());
+
+    assertEquals(ROWS, fallbackRows.size());
+    for (int i = 0; i < ROWS; ++i) {
+      assertArrayEquals("row " + i, expectedRow(i), fallbackRows.get(i));
+    }
+    // Every byte came out of the cache: an allocation here would mean the fallback reader found a
+    // gap in what the native reader cached, so the two cut the chunk differently.
+    assertEquals("the fallback read allocated instead of hitting the cache",
+        allocatedBefore, ledger.allocated.size());
+    ledger.assertNothingLeaked();
+  }
+
+  /** And the other way round: the native reader finds what the fallback reader cached. */
+  @Test
+  public void testNativeReaderFindsWhatTheFallbackReaderCached() throws Exception {
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5);
+    long chunkBytes = projectedChunkBytes(0, 1, 2, 3, 4, 5);
+    List<Object[]> fallbackRows = readThroughCacheAwareFs(job, wholeFile());
+    assertEquals(ROWS, fallbackRows.size());
+
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
+
+    assertEquals(ROWS, run.rows.size());
+    // Not just "some hits": every projected chunk byte of every row group has to be found, since a
+    // chunk the native reader cannot match whole is one it fetches and caches again.
+    assertEquals(chunkBytes, run.counter(LlapIOCounters.CACHE_HIT_BYTES));
+    assertEquals(0, run.counter(LlapIOCounters.CACHE_MISS_BYTES));
+    assertTrue("nothing should have been read from the file", run.reads.isEmpty());
+  }
+
+  /**
+   * The fallback reader re-caches a hole in a chunk the native reader cached, on the boundaries the
+   * native reader used. This is the case the two tests above cannot reach: with the whole chunk
+   * cached the fallback reader never has a gap to fill, and a gap is the only thing that makes it
+   * look at where the buffer boundaries are. One buffer is evicted here to produce exactly that, as
+   * a loaded cache does on its own.
+   *
+   * <p>The evicted buffer is one whose start is not a multiple of the allocator's maximum, a boundary
+   * the layout leaves wherever it splits a chunk's remainder, so the fallback reader has to accept a
+   * hole that starts there.
+   */
+  @Test
+  public void testFallbackReaderRefillsAHoleOnTheNativeReaderBoundaries() throws Exception {
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5);
+    Run nativeRun = read(job, wholeFile());
+    assertEquals(ROWS, nativeRun.rows.size());
+
+    long holeAt = evictBufferOnAnUnalignedBoundary();
+    assertNotEquals("the hole should start on a split boundary, not a multiple of MAX_ALLOC",
+        0, holeAt % MAX_ALLOC);
+
+    List<Object[]> fallbackRows = readThroughCacheAwareFs(job, wholeFile());
+
+    assertEquals(ROWS, fallbackRows.size());
+    for (int i = 0; i < ROWS; ++i) {
+      assertArrayEquals("row " + i, expectedRow(i), fallbackRows.get(i));
+    }
+    ledger.assertNothingLeaked();
+  }
+
+  /**
+   * Evicts one cached buffer whose chunk-relative start is not a multiple of {@link #MAX_ALLOC},
+   * returning that absolute offset. Which buffer that is comes from the layout rather than from
+   * guesswork: the chunk is decomposed exactly as whoever cached it decomposed it, and the first
+   * boundary that is not a multiple of MAX_ALLOC is the one taken.
+   */
+  private long evictBufferOnAnUnalignedBoundary() {
+    ParquetCacheLayout layout = new ParquetCacheLayout(MAX_ALLOC, FLOOR);
+    for (BlockMetaData block : footer.getBlocks()) {
+      for (ColumnChunkMetaData chunk : block.getColumns()) {
+        long offset = 0;
+        for (int size : layout.bufferSizes(chunk.getTotalSize())) {
+          if (offset > 0 && offset % MAX_ALLOC != 0) {
+            long absolute = chunk.getStartingPos() + offset;
+            evictBufferAt(absolute);
+            return absolute;
+          }
+          offset += size;
+        }
+      }
+    }
+    throw new AssertionError("no chunk in the fixture has a buffer boundary that is not a multiple of " + MAX_ALLOC);
+  }
+
+  /** Drops the cached buffer that starts at this offset, as the eviction policy would. */
+  private void evictBufferAt(long offset) {
+    assertNotNull("nothing has been cached yet", ledger.lastFileKey);
+    DiskRangeList probe = new DiskRangeList(offset, offset + 1);
+    DiskRangeList got = cache.getFileData(ledger.lastFileKey, probe, 0,
+        ParquetCacheLayout.CACHE_CHUNK_FACTORY, null, new BooleanRef());
+    assertTrue("offset " + offset + " is not cached", got.hasData());
+    LlapAllocatorBuffer buffer = (LlapAllocatorBuffer) ((CacheChunk) got).getBuffer();
+    assertEquals("the probe did not land on a buffer boundary", offset, got.getOffset());
+    // The lock getFileData just took, then the eviction itself. Invalidate leaves the entry in the
+    // cache's map; the next getFileData that cannot lock it drops it and reports the range missing,
+    // which is the state this test wants to hand the fallback reader.
+    cache.decRefBuffer(buffer);
+    assertEquals(LlapAllocatorBuffer.INVALIDATE_OK, buffer.invalidate());
   }
 
   /** A Hive column the file does not have reads back as nulls instead of failing the split. */
@@ -967,6 +1145,9 @@ public class TestParquetEncodedDataReader {
         if (failDecode) {
           throw new IllegalStateException("decode failed");
         }
+        if (failDecodeWithError) {
+          throw new AssertionError("decode exploded");
+        }
         super.decodeBatch(batch, consumer);
         if (++decoded == 1 && stopAfterFirstBatch) {
           reader.stop();
@@ -1050,21 +1231,131 @@ public class TestParquetEncodedDataReader {
   private static List<Object[]> readNonNative(JobConf job, FileSplit split) throws Exception {
     // The vectorized plan jobConf() installed is what makes both readers agree on the batch shape.
     JobConf mrJob = new JobConf(job);
-    List<Integer> colsToInclude = ColumnProjectionUtils.getReadColumnIDs(mrJob);
-    List<Object[]> rows = new ArrayList<>();
     try (VectorizedParquetRecordReader mrReader = new VectorizedParquetRecordReader(split, mrJob)) {
-      VectorizedRowBatch batch = mrReader.createValue();
-      while (mrReader.next(NullWritable.get(), batch)) {
-        for (int r = 0; r < batch.size; ++r) {
-          Object[] row = new Object[colsToInclude.size()];
-          for (int i = 0; i < colsToInclude.size(); ++i) {
-            row[i] = CapturingConsumer.value(batch.cols[colsToInclude.get(i)], r);
-          }
-          rows.add(row);
+      return drain(mrReader, ColumnProjectionUtils.getReadColumnIDs(mrJob));
+    }
+  }
+
+  /**
+   * Reads the split with the stock reader and this test's cache behind it, which is the fallback
+   * path a split the native reader declines takes: {@link LlapCacheAwareFs} stands between parquet
+   * and the file, splits parquet's positioned reads along the registered column-chunk boundaries,
+   * serves what the cache has and caches what it had to read.
+   */
+  private List<Object[]> readThroughCacheAwareFs(JobConf job, FileSplit split) throws Exception {
+    JobConf mrJob = new JobConf(job);
+    try (VectorizedParquetRecordReader mrReader = new VectorizedParquetRecordReader(
+        split, mrJob, daemonMetadataCache(), new LedgerDataCache(ledger), daemonConf)) {
+      return drain(mrReader, ColumnProjectionUtils.getReadColumnIDs(mrJob));
+    }
+  }
+
+  private static List<Object[]> drain(VectorizedParquetRecordReader mrReader,
+      List<Integer> colsToInclude) throws IOException {
+    List<Object[]> rows = new ArrayList<>();
+    VectorizedRowBatch batch = mrReader.createValue();
+    while (mrReader.next(NullWritable.get(), batch)) {
+      for (int r = 0; r < batch.size; ++r) {
+        Object[] row = new Object[colsToInclude.size()];
+        for (int i = 0; i < colsToInclude.size(); ++i) {
+          row[i] = CapturingConsumer.value(batch.cols[colsToInclude.get(i)], r);
         }
+        rows.add(row);
       }
     }
     return rows;
+  }
+
+  /**
+   * The footer cache the daemon injects into a cache-only input format. The fallback reader needs
+   * one before it will derive a file key at all, and so before it consults the data cache; there is
+   * no getter for it, so it is taken the way the daemon hands it out.
+   */
+  private static FileMetadataCache daemonMetadataCache() {
+    CacheProbe probe = new CacheProbe();
+    LlapProxy.getIo().initCacheOnlyInputFormat(probe);
+    assertNotNull(probe.metadataCache);
+    return probe.metadataCache;
+  }
+
+  /** Only injectCaches is reached; initCacheOnlyInputFormat needs an InputFormat to call it on. */
+  private static final class CacheProbe
+      implements InputFormat<NullWritable, VectorizedRowBatch>, LlapCacheOnlyInputFormatInterface {
+    private FileMetadataCache metadataCache;
+
+    @Override
+    public void injectCaches(FileMetadataCache metadataCache, DataCache dataCache,
+        Configuration cacheConf) {
+      this.metadataCache = metadataCache;
+    }
+
+    @Override
+    public InputSplit[] getSplits(JobConf job, int numSplits) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public RecordReader<NullWritable, VectorizedRowBatch> getRecordReader(
+        InputSplit split, JobConf job, Reporter reporter) {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  /**
+   * The {@link DataCache} face of the test's {@link Ledger}, as the daemon's GenericDataCache is of
+   * its own caches. This is what puts the fallback reader on the very cache the native reader uses,
+   * which is the whole point of the two interop tests - and it keeps the fallback reader's buffers
+   * under the same accounting, so {@link Ledger#assertNothingLeaked} covers them too.
+   */
+  private static final class LedgerDataCache implements DataCache, BufferObjectFactory {
+    private final Ledger ledger;
+
+    LedgerDataCache(Ledger ledger) {
+      this.ledger = ledger;
+    }
+
+    @Override
+    public DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
+        DiskRangeListFactory factory, BooleanRef gotAllData) {
+      return ledger.getFileData(fileKey, range, baseOffset, factory, null, gotAllData);
+    }
+
+    @Override
+    public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] data,
+        long baseOffset) {
+      return putFileData(fileKey, ranges, data, baseOffset, null);
+    }
+
+    @Override
+    public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] data,
+        long baseOffset, CacheTag tag) {
+      return ledger.putFileData(fileKey, ranges, data, baseOffset, Priority.NORMAL, null, tag);
+    }
+
+    @Override
+    public void releaseBuffer(MemoryBuffer buffer) {
+      ledger.decRefBuffer(buffer);
+    }
+
+    @Override
+    public void reuseBuffer(MemoryBuffer buffer) {
+      assertTrue("buffer could not be reused: " + buffer, ledger.incRefBuffer(buffer));
+    }
+
+    @Override
+    public Allocator getAllocator() {
+      return ledger.getAllocator();
+    }
+
+    @Override
+    public BufferObjectFactory getDataBufferFactory() {
+      return this;
+    }
+
+    @Override
+    public MemoryBuffer create() {
+      return new LlapDataBuffer();
+    }
   }
 
   /**
@@ -1141,6 +1432,8 @@ public class TestParquetEncodedDataReader {
       recordRanges(ranges);
       if (positionedRangeBuffers) {
         fulfilAtNonZeroPosition(ranges);
+      } else if (inlineRanges) {
+        fulfilInline(ranges);
       } else {
         super.readVectored(ranges, allocate);
       }
@@ -1153,6 +1446,8 @@ public class TestParquetEncodedDataReader {
       recordRanges(ranges);
       if (positionedRangeBuffers) {
         fulfilAtNonZeroPosition(ranges);
+      } else if (inlineRanges) {
+        fulfilInline(ranges);
       } else {
         super.readVectored(ranges, allocate, release);
       }
@@ -1176,6 +1471,20 @@ public class TestParquetEncodedDataReader {
         CompletableFuture<ByteBuffer> done = new CompletableFuture<>();
         done.complete(data);
         range.setData(done);
+      }
+    }
+
+    /**
+     * Reads every range on the calling thread, so each future is already complete by the time
+     * readVectored returns. That is what a filesystem with no asynchronous IO of its own does - the
+     * default {@code readVectored} over a plain positioned read, which is what most of Hadoop's
+     * filesystems still have - and it is the case where a lookahead has nothing to overlap with.
+     */
+    private void fulfilInline(List<? extends FileRange> ranges) throws IOException {
+      for (FileRange range : ranges) {
+        byte[] bytes = new byte[range.getLength()];
+        readFully(range.getOffset(), bytes);
+        range.setData(CompletableFuture.completedFuture(ByteBuffer.wrap(bytes)));
       }
     }
 
@@ -1209,6 +1518,8 @@ public class TestParquetEncodedDataReader {
     private final Set<MemoryBuffer> hits = Collections.newSetFromMap(new IdentityHashMap<>());
     /** Inserts its own copy of every range first, so the reader's put collides. */
     boolean collide;
+    /** The key the readers derived, so a test can reach into the cache the way they filled it. */
+    Object lastFileKey;
 
     Ledger(LowLevelCacheImpl cache) {
       this.cache = cache;
@@ -1230,6 +1541,7 @@ public class TestParquetEncodedDataReader {
     @Override
     public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks, long baseOffset,
         Priority priority, LowLevelCacheCounters qfCounters, CacheTag tag) {
+      lastFileKey = fileKey;
       if (collide) {
         MemoryBuffer[] copies = new MemoryBuffer[chunks.length];
         for (int i = 0; i < chunks.length; ++i) {

@@ -357,9 +357,16 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
             // We don't do proper overlap checking because it would cost cycles and we
             // think it will never happen. We do perform the most basic check here.
             if (oldVal.declaredCachedLength != buffer.declaredCachedLength) {
+              long oldLength = oldVal.declaredCachedLength, newLength = buffer.declaredCachedLength;
+              // Both buffers are locked here, and the caller gets an exception instead of a return
+              // value, so nothing downstream can tell that it has to release them. Unwind first.
+              // As on the success path below, the new buffer is only decref'd and not freed: it is
+              // still the caller's raw allocation to deallocate.
+              buffer.declaredCachedLength = LlapDataBuffer.UNKNOWN_CACHED_LENGTH;
+              unlockBuffer(buffer, false);
+              unlockBuffer(oldVal, true);
               throw new RuntimeException("Found a block with different length at the same offset: "
-                  + oldVal.declaredCachedLength + " vs " + buffer.declaredCachedLength + " @" + offset
-                  + " (base " + baseOffset + ")");
+                  + oldLength + " vs " + newLength + " @" + offset + " (base " + baseOffset + ")");
             }
             // We found an old, valid block for this key in the cache.
             if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {

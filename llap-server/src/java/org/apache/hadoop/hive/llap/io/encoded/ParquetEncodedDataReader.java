@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.ParquetCacheLayout;
-import org.apache.hadoop.hive.llap.ParquetRangeBuffers;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
@@ -59,6 +58,7 @@ import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
@@ -110,6 +110,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private final ParquetEncodedDataConsumer consumer;
   private final QueryFragmentCounters counters;
   private final UserGroupInformation ugi;
+  /** The split's real path: what the cache tag is derived from and what diagnostics name. */
   private final Path path;
   private final boolean cacheOnly;
   /** Bytes of column chunks one IO thread may hold across the row group in decode and the next. */
@@ -192,13 +193,16 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       try {
         performDataRead();
         consumer.setDone();
-      } catch (Exception e) {
+      } catch (Throwable t) {
+        // Throwable, not Exception: an OutOfMemoryError or a failed assertion from the allocation
+        // and decode path would otherwise escape without ever reaching the consumer, which then
+        // waits for a setDone that is not coming.
         // A shutdown-triggered InterruptedException must not be silently reported as an ordinary
         // consumer error: preserve the interrupt on the thread so any caller sees it.
-        if (e instanceof InterruptedException) {
+        if (t instanceof InterruptedException) {
           Thread.currentThread().interrupt();
         }
-        consumer.setError(e);
+        consumer.setError(t);
       } finally {
         counters.incrWallClockCounter(LlapIOCounters.TOTAL_IO_TIME_NS, startTime);
       }
@@ -233,16 +237,26 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
 
     FileSystem fs = path.getFileSystem(jobConf);
     try (FSDataInputStream fileStream = openFile(fs)) {
-      ParquetRangeBuffers buffers = ParquetRangeBuffers.forStream(fileStream);
+      VectoredReadBuffers buffers = VectoredReadBuffers.forStream(fileStream);
       Deque<RowGroupFetch> inFlight = new ArrayDeque<>();
+      // Latched the first time a fetch comes back with every vectored request already complete:
+      // that stream read inline on this thread, so a lookahead has nothing to overlap with and
+      // only doubles how much cache memory the fragment holds locked at once. Self-detected
+      // rather than read off hasCapability(VECTOREDIO_*), which says nothing about asynchrony.
+      boolean readsInline = false;
       try {
         for (int i = 0; i < selected.size() && !isStopped.get(); ++i) {
           if (inFlight.isEmpty()) {
-            inFlight.add(startFetch(fileStream, buffers, allocator, projected, selected.get(i),
-                rowGroupOf.get(selected.get(i))));
+            RowGroupFetch started = startFetch(fileStream, buffers, allocator, projected,
+                selected.get(i), rowGroupOf.get(selected.get(i)));
+            inFlight.add(started);
+            if (!readsInline && !started.readRanges.isEmpty() && readAlreadyComplete(started)) {
+              readsInline = true;
+            }
           }
           // The next row group's requests go out now so its transfer overlaps this one's decode.
-          if (i + 1 < selected.size() && !isStopped.get()
+          // Not once readsInline: that stream would do the transfer right here, before the decode.
+          if (!readsInline && i + 1 < selected.size() && !isStopped.get()
               && projectedChunkBytes(inFlight.peek()) + projectedChunkBytes(projected, selected.get(i + 1)) <= lookaheadBudget) {
             inFlight.add(startFetch(fileStream, buffers, allocator, projected, selected.get(i + 1),
                 rowGroupOf.get(selected.get(i + 1))));
@@ -370,7 +384,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private record ReadRange(FileRange range, List<Part> parts) {
   }
 
-  private RowGroupFetch startFetch(FSDataInputStream fileStream, ParquetRangeBuffers buffers, Allocator allocator,
+  private RowGroupFetch startFetch(FSDataInputStream fileStream, VectoredReadBuffers buffers, Allocator allocator,
       int[] projected, BlockMetaData block, int rg)
       throws IOException {
     RowGroupFetch fetch = new RowGroupFetch();
@@ -390,14 +404,16 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       long hdfsStart = counters.startTimeCounter();
       requestMisses(fileStream, buffers, fetch, layout.maxRangeBytes());
       counters.recordHdfsTime(hdfsStart);
-    } catch (Exception e) {
+    } catch (Throwable t) {
+      // Throwable: a failed allocation throws an Error, and the buffers planned so far are the
+      // only reference to cache memory that is already locked.
       abandon(allocator, fetch);
-      throw e;
+      throw t;
     }
     return fetch;
   }
 
-  private void finishFetch(Allocator allocator, ParquetRangeBuffers buffers, RowGroupFetch fetch)
+  private void finishFetch(Allocator allocator, VectoredReadBuffers buffers, RowGroupFetch fetch)
       throws IOException, InterruptedException {
     try {
       // Awaiting the vectored futures is where the miss bytes actually arrive from HDFS.
@@ -412,10 +428,22 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       }
       // consumeData returns the batch on success; after a throw it is still ours.
       consumer.consumeData(fetch.batch);
-    } catch (Exception e) {
+    } catch (Throwable t) {
+      // Throwable: decode and allocation both throw Errors, and this fetch's buffers are locked
+      // cache memory that nothing else holds a reference to.
       abandon(allocator, fetch);
-      throw e;
+      throw t;
     }
+  }
+
+  /** Whether every vectored request this fetch issued had already finished when it returned. */
+  private static boolean readAlreadyComplete(RowGroupFetch fetch) {
+    for (ReadRange readRange : fetch.readRanges) {
+      if (!readRange.range.getData().isDone()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** Drops a fetch that will not be decoded: outstanding requests are cancelled, buffers released. */
@@ -434,9 +462,13 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  /** Package-private so a test can observe the read pattern. */
+  /**
+   * Opens the file through its inode path when it has one, so a rename or a re-create since the
+   * footer read cannot hand back another file's bytes. {@code fs} is still the real path's, since
+   * the inode path has no scheme. Package-private so a test can observe the read pattern.
+   */
   FSDataInputStream openFile(FileSystem fs) throws IOException {
-    return fs.open(path);
+    return fs.open(HdfsUtils.getFileIdPath(path, fileKey, daemonConf));
   }
 
   /** Lets the allocator abandon a wait for memory once the fragment is cancelled. */
@@ -469,15 +501,16 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
           planGap(allocator, current, column, allMisses);
         }
       }
-    } catch (Exception e) {
-      // Hits past the failure point are still locked by getFileData; the caller only knows about
-      // the parts already recorded.
+    } catch (Throwable t) {
+      // Throwable: a failed allocation in planGap throws an Error, and the hits past the failure
+      // point are still locked by getFileData; the caller only knows about the parts already
+      // recorded.
       for (current = current.next; current != null; current = current.next) {
         if (current.hasData()) {
           bufferManager.decRefBuffer(((CacheChunk) current).getBuffer());
         }
       }
-      throw e;
+      throw t;
     }
   }
 
@@ -512,7 +545,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
    * several concurrent requests rather than one. A filesystem without a vectored implementation
    * reads the ranges in turn.
    */
-  private static void requestMisses(FSDataInputStream fileStream, ParquetRangeBuffers buffers, RowGroupFetch fetch,
+  private static void requestMisses(FSDataInputStream fileStream, VectoredReadBuffers buffers, RowGroupFetch fetch,
       int maxRange) throws IOException {
     List<Part> misses = fetch.misses;
     if (misses.isEmpty()) {
@@ -545,7 +578,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /** Waits for the requested ranges and copies each into the cache buffers it covers. */
-  private static void receiveMisses(ParquetRangeBuffers buffers, RowGroupFetch fetch) throws IOException {
+  private static void receiveMisses(VectoredReadBuffers buffers, RowGroupFetch fetch) throws IOException {
     for (ReadRange readRange : fetch.readRanges) {
       ByteBuffer data = FutureIO.awaitFuture(readRange.range.getData());
       for (Part part : readRange.parts) {

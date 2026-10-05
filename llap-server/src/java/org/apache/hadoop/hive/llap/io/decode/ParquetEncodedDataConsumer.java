@@ -72,6 +72,8 @@ public class ParquetEncodedDataConsumer
   private final Configuration jobConf;
   private final CompressionCodecFactory codecFactory;
   private final ParquetMetadataConverter converter;
+  /** parquet.page.verify-checksum.enabled, as the file reader reads it. */
+  private final boolean verifyChecksums;
   private ParquetMetadata footer;
   private MessageType requestedSchema;
   private Path path;
@@ -93,6 +95,7 @@ public class ParquetEncodedDataConsumer
     ParquetReadOptions options = HadoopReadOptions.builder(jobConf).build();
     this.codecFactory = options.getCodecFactory();
     this.converter = new ParquetMetadataConverter(options);
+    this.verifyChecksums = options.usePageChecksumVerification();
   }
 
   public void setFileMetadata(ParquetMetadata footer, MessageType requestedSchema, Path path) {
@@ -157,7 +160,8 @@ public class ParquetEncodedDataConsumer
     // NOSONAR - S2093 does not apply: codecFactory is a per-consumer field with a per-batch
     // release() (not close()); try-with-resources would tie it to this scope, which is wrong.
     try { // NOSONAR
-      PageReadStore pages = new ParquetCachedPageReadStore(footer, batch, codecFactory, converter);
+      PageReadStore pages = new ParquetCachedPageReadStore(
+          footer, batch, codecFactory, converter, verifyChecksums);
 
       VectorizedColumnReader[] columnReaders = rowGroupDecoder.buildColumnReaders(
           pages, requestedSchema, columnTypesList, colsToInclude, readAllColumns, conversions);
@@ -189,7 +193,10 @@ public class ParquetEncodedDataConsumer
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, batches);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
     } catch (IOException | RuntimeException e) {
-      // parquet reports decode failures as runtime ParquetDecodingException.
+      // Narrower than Exception on purpose: consumeData above throws InterruptedException, which is
+      // the stop signal and has to propagate rather than be reported as a decode failure. Wider
+      // than ORC's IOException-only catch, though, because parquet reports decode failures as the
+      // runtime ParquetDecodingException, and letting one through would skip the buffer return.
       // Not logged here: setError logs the throwable with its stack at WARN, and next() rethrows it.
       downstreamConsumer.setError(new IOException(
           String.format("Parquet decode failed for row group %d of %s", batch.rowGroupIx(), path), e));

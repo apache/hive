@@ -62,7 +62,6 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
       SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) {
     try {
-      cacheMetrics.incrCacheReadRequests();
       ParquetEncodedDataConsumer edc =
           new ParquetEncodedDataConsumer(consumer, includes, counters, ioMetrics, job);
       ParquetEncodedDataReader reader = new ParquetEncodedDataReader(
@@ -72,15 +71,25 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
       // fallback still caches (footer via LlapProxy, data via LlapCacheAwareFs); what's lost for
       // this split is vectored reads, row-group lookahead, and its LLAP IO summary counters.
       if (reader.projectsNestedTypes()) {
-        LlapIoImpl.LOG.info("Parquet native cache: falling back to normal reader for {} due to "
+        // DEBUG, not INFO: this is the planned outcome for a whole class of queries, and it fires
+        // once per split, so at INFO a nested-type scan fills the daemon log with a line per split
+        // saying nothing went wrong.
+        LlapIoImpl.LOG.debug("Parquet native cache: falling back to normal reader for {} due to "
             + "nested types in the projection", split.getPath());
         return null;
       }
+      // Counted here rather than on entry: a split that declines above, or that throws on the way
+      // to this point, never reads the cache at all, and counting it would make the daemon's cache
+      // hit ratio a ratio over requests that were never made.
+      cacheMetrics.incrCacheReadRequests();
       edc.init(reader, reader);
       return edc;
     } catch (IOException e) {
-      LlapIoImpl.LOG.info("Parquet native cache: falling back to normal reader for {} due to {}",
-          split.getPath(), e.toString());
+      // WARN with the throwable, unlike the decline above: the query still answers, but reading the
+      // footer failed and nobody downstream will report it, so the stack is the only record of why
+      // this split lost its vectored reads and its IO counters. e.toString() dropped it.
+      LlapIoImpl.LOG.warn("Parquet native cache: falling back to normal reader for {}",
+          split.getPath(), e);
       return null;
     }
   }
