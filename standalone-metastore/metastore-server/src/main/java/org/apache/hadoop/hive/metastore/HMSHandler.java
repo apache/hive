@@ -632,15 +632,18 @@ public class HMSHandler extends PrivilegeHandler {
   public DataConnector get_dataconnector_req(GetDataConnectorRequest request) throws NoSuchObjectException, MetaException {
     startFunction("get_dataconnector", ": " + request.getConnectorName());
     DataConnector connector = null;
+    boolean success = false;
     Exception ex = null;
     try {
       connector = get_dataconnector_core(request.getConnectorName());
+      firePreEvent(new PreReadDataConnectorEvent(connector, this));
+      success = true;
     } catch (Exception e) {
       ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
           .defaultRuntimeException();
     } finally {
-      endFunction("get_dataconnector", connector != null, ex);
+      endFunction("get_dataconnector", success, ex);
     }
     return connector;
   }
