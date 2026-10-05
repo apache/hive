@@ -208,8 +208,8 @@ public class HiveSQLException extends SQLException {
       return ((HiveSQLException) e).toTStatus();
     }
     TStatus tStatus = new TStatus(TStatusCode.ERROR_STATUS);
-    if (e instanceof HiveErrorCodeRuntimeException) {
-      tStatus.setErrorCode(((HiveErrorCodeRuntimeException) e).getErrorCode());
+    if (e instanceof HiveErrorCodeRuntimeException hiveErrorCodeRuntimeException) {
+      tStatus.setErrorCode(hiveErrorCodeRuntimeException.getErrorCode());
     }
     tStatus.setErrorMessage(e.getMessage());
     tStatus.setInfoMessages(DEFAULT_INFO);
