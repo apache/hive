@@ -95,7 +95,7 @@ public class TestOrcEncodedDataReaderIOCacheDisabled {
     JobConf job = buildJobConf(orcFile);
     long fileLen = orcFile.getFileSystem(job).getFileStatus(orcFile).getLen();
 
-    RecordReader<NullWritable, VectorizedRowBatch> reader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(
+    RecordReader<NullWritable, VectorizedRowBatch> reader = LlapProxy.getIo().orc().vectorizedReaderForPath(
         null, orcFile, null, Arrays.asList(0, 1), job, 0, fileLen, Reporter.NULL);
     assertNotNull("LLAP should handle this ORC read", reader);
 

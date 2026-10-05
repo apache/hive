@@ -736,7 +736,7 @@ public class VectorizedOrcAcidRowBatchReader
     ReaderData readerData = new ReaderData();
     if (shouldReadDeleteDeltasWithLlap(conf, true)) {
       try {
-        readerData.orcTail = LlapProxy.getIo().getOrcTailFromCache(path, conf, cacheTag, fileKey);
+        readerData.orcTail = LlapProxy.getIo().orc().getTailFromCache(path, conf, cacheTag, fileKey);
         readerData.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).orcTail(readerData.orcTail));
         return readerData;
       } catch (IllegalCacheConfigurationException icce) {
@@ -1664,7 +1664,7 @@ public class VectorizedOrcAcidRowBatchReader
           c.set(ConvertAstToSearchArg.SARG_PUSHDOWN, sargToKryo(deleteDeltaSarg));
         }
         return wrapLlapVectorizedRecordReader(
-            LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, deleteDeltaFile, tag,
+            LlapProxy.getIo().orc().vectorizedReaderForPath(fileId, deleteDeltaFile, tag,
             DELETE_DELTA_INCLUDE_COLUMNS, c, 0L, Long.MAX_VALUE, null)
         );
       }

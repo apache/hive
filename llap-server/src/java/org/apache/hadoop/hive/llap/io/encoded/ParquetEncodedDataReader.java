@@ -152,7 +152,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       // Parquet footer lookup the same way it does for ORC's file tail.
       BooleanRef cacheHit = new BooleanRef();
       MemoryBufferOrBuffers footerData =
-          LlapProxy.getIo().getParquetFooterBuffersFromCache(path, jobConf, fileKey, cacheHit);
+          LlapProxy.getIo().parquet().getFooterBuffersFromCache(path, jobConf, fileKey, cacheHit);
       counters.incrCounter(cacheHit.value
           ? LlapIOCounters.METADATA_CACHE_HIT : LlapIOCounters.METADATA_CACHE_MISS);
       footer = ParquetFileReader.readFooter(
