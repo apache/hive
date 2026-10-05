@@ -240,14 +240,17 @@ class CompactionTxnHandler extends TxnHandler {
     LOG.info("Start to clean empty aborted or committed TXNS");
     //after that, so READ COMMITTED is sufficient.
     /*
-     * Only delete aborted / committed transaction in a way that guarantees two things:
+     * Only delete aborted / committed transaction in a way that guarantees:
      * 1. never deletes anything that is inside the TXN_OPENTXN_TIMEOUT window
      * 2. never deletes the maximum txnId even if it is before the TXN_OPENTXN_TIMEOUT window
+     * 3. never deletes a txn still mapped in TXN_TO_WRITE_ID (OCR-2541: removing those rows
+     *    lets open-txn HWM fall below committed writers and hide ACID data from readers)
      */
     try {
       long lowWaterMark = jdbcResource.execute(new OpenTxnTimeoutLowBoundaryTxnIdHandler(openTxnTimeOutMillis));
       jdbcResource.execute(
           "DELETE FROM \"TXNS\" WHERE \"TXN_ID\" NOT IN (SELECT \"TC_TXNID\" FROM \"TXN_COMPONENTS\") " +
+              "AND NOT EXISTS (SELECT 1 FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" = \"TXNS\".\"TXN_ID\") " +
               "AND (\"TXN_STATE\" = :abortedState OR \"TXN_STATE\" = :committedState) AND \"TXN_ID\" < :txnId",
           new MapSqlParameterSource()
               .addValue("txnId", lowWaterMark)
