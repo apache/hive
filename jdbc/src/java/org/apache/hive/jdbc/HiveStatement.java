@@ -257,6 +257,38 @@ public class HiveStatement implements java.sql.Statement {
       LOG.warn("Ignoring benign close operation error: {}", status.getErrorMessage());
       return true;
     }
+    if (status.isSetErrorMessage()) {
+      String errorMsg = status.getErrorMessage();
+      if (errorMsg.contains("Invalid OperationHandle") || errorMsg.contains("Operation does not exist")) {
+        LOG.warn("Ignoring benign close operation error: {}", errorMsg);
+        return true;
+      }
+    }
+    List<String> messages = status.getInfoMessages();
+    if (messages != null && !messages.isEmpty()) {
+      /*
+       * Here we need to handle 2 different cases, which can happen in CLIService.closeOperation, which actually does:
+       * sessionManager.getOperationManager().getOperation(opHandle).getParentSession().closeOperation(opHandle);
+       */
+      String message = messages.getFirst();
+      if (message.contains("Invalid OperationHandle")) {
+        /*
+         * This happens when the first request properly removes the operation handle, then second request arrives, calls
+         * sessionManager.getOperationManager().getOperation(opHandle), and it doesn't find the handle.
+         */
+        LOG.warn("'Invalid OperationHandle' on server side (messages: " + messages + ")");
+        return true;
+      } else if (message.contains("Operation does not exist")) {
+        /*
+         * This is an extremely rare case, which represents a race condition when the first and second request
+         * arrives almost at the same time, both can get the OperationHandle instance
+         * from sessionManager's OperationManager, but the second fails, because it cannot get it again from the
+         * session's OperationManager, because it has been already removed in the meantime.
+         */
+        LOG.warn("'Operation does not exist' on server side (messages: " + messages + ")");
+        return true;
+      }
+    }
     return false;
   }
 
