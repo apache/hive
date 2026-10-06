@@ -908,7 +908,7 @@
         "table:alias": "customer_address",
         "inputs": [],
         "rowCount": 40000000,
-        "avgRowSize": 607,
+        "avgRowSize": 675,
         "rowType": {
           "fields": [
             {
@@ -917,9 +917,9 @@
               "name": "ca_address_sk"
             },
             {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 16,
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
               "name": "ca_address_id"
             },
             {
@@ -1056,11 +1056,11 @@
           },
           {
             "name": "ca_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "ca_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "ca_city",
@@ -1068,11 +1068,11 @@
           },
           {
             "name": "ca_county",
-            "ndv": 1930
+            "ndv": 1928
           },
           {
             "name": "ca_state",
-            "ndv": 53
+            "ndv": 52
           },
           {
             "name": "ca_zip",
@@ -1080,11 +1080,11 @@
           },
           {
             "name": "ca_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "ca_location_type",
-            "ndv": 4
+            "ndv": 3
           }
         ]
       },
@@ -1419,7 +1419,7 @@
           },
           {
             "name": "i_class",
-            "ndv": 99
+            "ndv": 97
           },
           {
             "name": "i_category_id",
@@ -1429,7 +1429,7 @@
           },
           {
             "name": "i_category",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "i_manufact_id",
@@ -1443,7 +1443,7 @@
           },
           {
             "name": "i_size",
-            "ndv": 8
+            "ndv": 7
           },
           {
             "name": "i_formulation",
@@ -1451,15 +1451,15 @@
           },
           {
             "name": "i_color",
-            "ndv": 95
+            "ndv": 94
           },
           {
             "name": "i_units",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "i_container",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "i_manager_id",
@@ -1707,7 +1707,7 @@
           },
           {
             "name": "i_category",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "i_item_sk",
@@ -1761,7 +1761,7 @@
           },
           {
             "name": "i_class",
-            "ndv": 99
+            "ndv": 97
           },
           {
             "name": "i_category_id",
@@ -1781,7 +1781,7 @@
           },
           {
             "name": "i_size",
-            "ndv": 8
+            "ndv": 7
           },
           {
             "name": "i_formulation",
@@ -1789,15 +1789,15 @@
           },
           {
             "name": "i_color",
-            "ndv": 95
+            "ndv": 94
           },
           {
             "name": "i_units",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "i_container",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "i_manager_id",

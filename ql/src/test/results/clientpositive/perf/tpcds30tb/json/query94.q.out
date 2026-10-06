@@ -11,7 +11,7 @@
         "table:alias": "customer_address",
         "inputs": [],
         "rowCount": 40000000,
-        "avgRowSize": 607,
+        "avgRowSize": 675,
         "rowType": {
           "fields": [
             {
@@ -20,9 +20,9 @@
               "name": "ca_address_sk"
             },
             {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 16,
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
               "name": "ca_address_id"
             },
             {
@@ -141,7 +141,7 @@
           },
           {
             "name": "ca_state",
-            "ndv": 53
+            "ndv": 52
           },
           {
             "name": "ca_address_id",
@@ -157,11 +157,11 @@
           },
           {
             "name": "ca_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "ca_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "ca_city",
@@ -169,7 +169,7 @@
           },
           {
             "name": "ca_county",
-            "ndv": 1930
+            "ndv": 1928
           },
           {
             "name": "ca_zip",
@@ -177,7 +177,7 @@
           },
           {
             "name": "ca_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "ca_gmt_offset",
@@ -187,7 +187,7 @@
           },
           {
             "name": "ca_location_type",
-            "ndv": 4
+            "ndv": 3
           }
         ]
       },
@@ -1512,7 +1512,7 @@
           },
           {
             "name": "web_company_name",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "web_site_id",
@@ -1532,7 +1532,7 @@
           },
           {
             "name": "web_name",
-            "ndv": 15
+            "ndv": 14
           },
           {
             "name": "web_open_date_sk",
@@ -1548,11 +1548,11 @@
           },
           {
             "name": "web_class",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "web_manager",
-            "ndv": 60
+            "ndv": 59
           },
           {
             "name": "web_mkt_id",
@@ -1562,7 +1562,7 @@
           },
           {
             "name": "web_mkt_class",
-            "ndv": 65
+            "ndv": 64
           },
           {
             "name": "web_mkt_desc",
@@ -1570,7 +1570,7 @@
           },
           {
             "name": "web_market_manager",
-            "ndv": 66
+            "ndv": 65
           },
           {
             "name": "web_company_id",
@@ -1580,11 +1580,11 @@
           },
           {
             "name": "web_street_number",
-            "ndv": 58
+            "ndv": 57
           },
           {
             "name": "web_street_name",
-            "ndv": 80
+            "ndv": 79
           },
           {
             "name": "web_street_type",
@@ -1596,11 +1596,11 @@
           },
           {
             "name": "web_city",
-            "ndv": 52
+            "ndv": 51
           },
           {
             "name": "web_county",
-            "ndv": 58
+            "ndv": 57
           },
           {
             "name": "web_state",
@@ -1612,7 +1612,7 @@
           },
           {
             "name": "web_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "web_gmt_offset",

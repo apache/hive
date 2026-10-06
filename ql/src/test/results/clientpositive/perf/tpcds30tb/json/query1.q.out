@@ -11,7 +11,7 @@
         "table:alias": "customer",
         "inputs": [],
         "rowCount": 80000000,
-        "avgRowSize": 517,
+        "avgRowSize": 585,
         "rowType": {
           "fields": [
             {
@@ -20,9 +20,9 @@
               "name": "c_customer_sk"
             },
             {
-              "type": "CHAR",
+              "type": "VARCHAR",
               "nullable": false,
-              "precision": 16,
+              "precision": 2147483647,
               "name": "c_customer_id"
             },
             {
@@ -195,7 +195,7 @@
           },
           {
             "name": "c_salutation",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "c_first_name",
@@ -207,7 +207,7 @@
           },
           {
             "name": "c_preferred_cust_flag",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "c_birth_day",
@@ -229,7 +229,7 @@
           },
           {
             "name": "c_birth_country",
-            "ndv": 216
+            "ndv": 214
           },
           {
             "name": "c_login",
@@ -1366,7 +1366,7 @@
           },
           {
             "name": "s_state",
-            "ndv": 44
+            "ndv": 43
           },
           {
             "name": "s_store_id",
@@ -1392,7 +1392,7 @@
           },
           {
             "name": "s_store_name",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "s_number_employees",
@@ -1408,11 +1408,11 @@
           },
           {
             "name": "s_hours",
-            "ndv": 4
+            "ndv": 3
           },
           {
             "name": "s_manager",
-            "ndv": 1245
+            "ndv": 1243
           },
           {
             "name": "s_market_id",
@@ -1422,7 +1422,7 @@
           },
           {
             "name": "s_geography_class",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_market_desc",
@@ -1440,7 +1440,7 @@
           },
           {
             "name": "s_division_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_company_id",
@@ -1450,7 +1450,7 @@
           },
           {
             "name": "s_company_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_street_number",
@@ -1462,19 +1462,19 @@
           },
           {
             "name": "s_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "s_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "s_city",
-            "ndv": 267
+            "ndv": 266
           },
           {
             "name": "s_county",
-            "ndv": 128
+            "ndv": 127
           },
           {
             "name": "s_zip",
@@ -1482,7 +1482,7 @@
           },
           {
             "name": "s_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_gmt_offset",
@@ -1569,35 +1569,6 @@
       },
       {
         "id": "16",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 2,
-              "name": "$2"
-            },
-            {
-              "input": 0,
-              "name": "$0"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "1",
-          "15"
-        ],
-        "rowCount": 4.1340954178402635E20
-      },
-      {
-        "id": "17",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1640,7 +1611,7 @@
         "rowCount": 6.749402524290001E9
       },
       {
-        "id": "18",
+        "id": "17",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "sr_customer_sk",
@@ -1669,7 +1640,7 @@
         "rowCount": 6.749402524290001E9
       },
       {
-        "id": "19",
+        "id": "18",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1697,7 +1668,7 @@
         "rowCount": 10957.35
       },
       {
-        "id": "20",
+        "id": "19",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "d_date_sk"
@@ -1711,7 +1682,7 @@
         "rowCount": 10957.35
       },
       {
-        "id": "21",
+        "id": "20",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -1734,13 +1705,13 @@
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "18",
-          "20"
+          "17",
+          "19"
         ],
         "rowCount": 1.1093334862429357E13
       },
       {
-        "id": "22",
+        "id": "21",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
         "group": [
           0,
@@ -1769,7 +1740,7 @@
         "rowCount": 1.1093334862429358E12
       },
       {
-        "id": "23",
+        "id": "22",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "sr_customer_sk",
@@ -1793,7 +1764,7 @@
         "rowCount": 1.1093334862429358E12
       },
       {
-        "id": "24",
+        "id": "23",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
         "group": [
           1
@@ -1837,7 +1808,7 @@
         "rowCount": 1.1093334862429358E11
       },
       {
-        "id": "25",
+        "id": "24",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1883,7 +1854,7 @@
         "rowCount": 9.984001376186423E10
       },
       {
-        "id": "26",
+        "id": "25",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "_o__c0",
@@ -1948,7 +1919,7 @@
         "rowCount": 9.984001376186423E10
       },
       {
-        "id": "27",
+        "id": "26",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -1965,12 +1936,12 @@
               },
               "operands": [
                 {
-                  "input": 3,
-                  "name": "$3"
+                  "input": 1,
+                  "name": "$1"
                 },
                 {
-                  "input": 7,
-                  "name": "$7"
+                  "input": 5,
+                  "name": "$5"
                 }
               ]
             },
@@ -1982,12 +1953,12 @@
               },
               "operands": [
                 {
-                  "input": 4,
-                  "name": "$4"
+                  "input": 2,
+                  "name": "$2"
                 },
                 {
-                  "input": 6,
-                  "name": "$6"
+                  "input": 4,
+                  "name": "$4"
                 }
               ]
             }
@@ -1997,7 +1968,36 @@
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "16",
+          "15",
+          "25"
+        ],
+        "rowCount": 2.5796758963126983E23
+      },
+      {
+        "id": "27",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 0,
+              "name": "$0"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "1",
           "26"
         ],
         "rowCount": 3.0956110755752376E30

@@ -1,7 +1,7 @@
-Warning: Map Join MAPJOIN[294][bigTable=?] in task 'Map 21' is a cross product
-Warning: Map Join MAPJOIN[291][bigTable=?] in task 'Map 21' is a cross product
-Warning: Map Join MAPJOIN[292][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[289][bigTable=?] in task 'Reducer 12' is a cross product
+Warning: Map Join MAPJOIN[290][bigTable=?] in task 'Map 5' is a cross product
+Warning: Map Join MAPJOIN[284][bigTable=?] in task 'Map 5' is a cross product
+Warning: Map Join MAPJOIN[283][bigTable=?] in task 'Map 1' is a cross product
 {
   "CBOPlan": {
     "rels": [
@@ -961,6 +961,671 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
       },
       {
         "id": "13",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "date_dim"
+        ],
+        "table:alias": "date_dim",
+        "inputs": [],
+        "rowCount": 73049,
+        "avgRowSize": 347,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "d_date_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "d_date_id"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "d_date"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_month_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_week_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dow"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_moy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_qoy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_week_seq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 9,
+              "name": "d_day_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 6,
+              "name": "d_quarter_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_holiday"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_weekend"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_following_holiday"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_first_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_last_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_ly"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_lq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_day"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_week"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_month"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_quarter"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_year"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "d_date_sk",
+            "ndv": 67850,
+            "minValue": 2415022,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_date_id",
+            "ndv": 71022
+          },
+          {
+            "name": "d_date",
+            "ndv": 76511,
+            "minValue": -25566,
+            "maxValue": 47482
+          },
+          {
+            "name": "d_month_seq",
+            "ndv": 2439,
+            "minValue": 0,
+            "maxValue": 2400
+          },
+          {
+            "name": "d_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_dow",
+            "ndv": 7,
+            "minValue": 0,
+            "maxValue": 6
+          },
+          {
+            "name": "d_moy",
+            "ndv": 12,
+            "minValue": 1,
+            "maxValue": 12
+          },
+          {
+            "name": "d_dom",
+            "ndv": 31,
+            "minValue": 1,
+            "maxValue": 31
+          },
+          {
+            "name": "d_qoy",
+            "ndv": 4,
+            "minValue": 1,
+            "maxValue": 4
+          },
+          {
+            "name": "d_fy_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_fy_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_fy_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_day_name",
+            "ndv": 7
+          },
+          {
+            "name": "d_quarter_name",
+            "ndv": 800
+          },
+          {
+            "name": "d_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_weekend",
+            "ndv": 2
+          },
+          {
+            "name": "d_following_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_first_dom",
+            "ndv": 2332,
+            "minValue": 2415021,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_last_dom",
+            "ndv": 2401,
+            "minValue": 2415020,
+            "maxValue": 2488372
+          },
+          {
+            "name": "d_same_day_ly",
+            "ndv": 67791,
+            "minValue": 2414657,
+            "maxValue": 2487705
+          },
+          {
+            "name": "d_same_day_lq",
+            "ndv": 67904,
+            "minValue": 2414930,
+            "maxValue": 2487978
+          },
+          {
+            "name": "d_current_day",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_week",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_month",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_quarter",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_year",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "14",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IS NOT NULL",
+            "kind": "IS_NOT_NULL",
+            "syntax": "POSTFIX"
+          },
+          "operands": [
+            {
+              "input": 3,
+              "name": "$3"
+            }
+          ]
+        },
+        "rowCount": 65744.1
+      },
+      {
+        "id": "15",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "d_date_sk",
+          "d_month_seq"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ],
+        "rowCount": 65744.1
+      },
+      {
+        "id": "16",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "$6"
+                },
+                {
+                  "literal": 1999,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 8,
+                  "name": "$8"
+                },
+                {
+                  "literal": 3,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 3,
+                  "name": "$3"
+                }
+              ]
+            }
+          ]
+        },
+        "inputs": [
+          "3"
+        ],
+        "rowCount": 1479.24225
+      },
+      {
+        "id": "17",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "+",
+              "kind": "PLUS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 3,
+                "name": "$3"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 1479.24225
+      },
+      {
+        "id": "18",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          0
+        ],
+        "aggs": [],
+        "rowCount": 147.924225
+      },
+      {
+        "id": "19",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 147.924225
+      },
+      {
+        "id": "20",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "<=",
+            "kind": "LESS_THAN_OR_EQUAL",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 1,
+              "name": "$1"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "15",
+          "19"
+        ],
+        "rowCount": 4862572.520411251
+      },
+      {
+        "id": "21",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "$6"
+                },
+                {
+                  "literal": 1999,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 8,
+                  "name": "$8"
+                },
+                {
+                  "literal": 3,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 3,
+                  "name": "$3"
+                }
+              ]
+            }
+          ]
+        },
+        "inputs": [
+          "3"
+        ],
+        "rowCount": 1479.24225
+      },
+      {
+        "id": "22",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "+",
+              "kind": "PLUS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 3,
+                "name": "$3"
+              },
+              {
+                "literal": 3,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 1479.24225
+      },
+      {
+        "id": "23",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          0
+        ],
+        "aggs": [],
+        "rowCount": 147.924225
+      },
+      {
+        "id": "24",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 147.924225
+      },
+      {
+        "id": "25",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1017,7 +1682,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1643.6025
       },
       {
-        "id": "14",
+        "id": "26",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "$f0"
@@ -1047,7 +1712,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1643.6025
       },
       {
-        "id": "15",
+        "id": "27",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
         "group": [
           0
@@ -1056,7 +1721,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 164.36025
       },
       {
-        "id": "16",
+        "id": "28",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "$f0"
@@ -1070,7 +1735,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 164.36025
       },
       {
-        "id": "17",
+        "id": "29",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
         "group": [],
         "aggs": [
@@ -1092,7 +1757,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1
       },
       {
-        "id": "18",
+        "id": "30",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "cnt"
@@ -1106,7 +1771,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1
       },
       {
-        "id": "19",
+        "id": "31",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1131,7 +1796,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1
       },
       {
-        "id": "20",
+        "id": "32",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "cnt"
@@ -1145,7 +1810,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1
       },
       {
-        "id": "21",
+        "id": "33",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "literal": true,
@@ -1158,13 +1823,124 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "12",
-          "20"
+          "24",
+          "32"
         ],
-        "rowCount": 6.6833812750590004E10
+        "rowCount": 147.924225
       },
       {
-        "id": "22",
+        "id": "34",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "cnt"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 147.924225
+      },
+      {
+        "id": "35",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "<=",
+            "kind": "LESS_THAN_OR_EQUAL",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 3,
+              "name": "$3"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "20",
+          "34"
+        ],
+        "rowCount": 3.5964613579406554E8
+      },
+      {
+        "id": "36",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "d_date_sk",
+          "d_month_seq",
+          "$f0",
+          "$f00",
+          "cnt"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          }
+        ],
+        "rowCount": 3.5964613579406554E8
+      },
+      {
+        "id": "37",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 4,
+              "name": "$4"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "12",
+          "36"
+        ],
+        "rowCount": 3605478374420076032
+      },
+      {
+        "id": "38",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -1173,7 +1949,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "table:alias": "customer_address",
         "inputs": [],
         "rowCount": 40000000,
-        "avgRowSize": 607,
+        "avgRowSize": 675,
         "rowType": {
           "fields": [
             {
@@ -1182,9 +1958,9 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
               "name": "ca_address_sk"
             },
             {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 16,
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
               "name": "ca_address_id"
             },
             {
@@ -1303,11 +2079,11 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "ca_county",
-            "ndv": 1930
+            "ndv": 1928
           },
           {
             "name": "ca_state",
-            "ndv": 53
+            "ndv": 52
           },
           {
             "name": "ca_address_id",
@@ -1323,11 +2099,11 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "ca_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "ca_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "ca_city",
@@ -1339,7 +2115,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "ca_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "ca_gmt_offset",
@@ -1349,12 +2125,12 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "ca_location_type",
-            "ndv": 4
+            "ndv": 3
           }
         ]
       },
       {
-        "id": "23",
+        "id": "39",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1371,8 +2147,8 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
               },
               "operands": [
                 {
-                  "input": 7,
-                  "name": "$7"
+                  "input": 8,
+                  "name": "$8"
                 }
               ]
             },
@@ -1384,8 +2160,8 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
               },
               "operands": [
                 {
-                  "input": 8,
-                  "name": "$8"
+                  "input": 7,
+                  "name": "$7"
                 }
               ]
             }
@@ -1394,7 +2170,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 3.2400000000000004E7
       },
       {
-        "id": "24",
+        "id": "40",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "ca_address_sk",
@@ -1418,7 +2194,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 3.2400000000000004E7
       },
       {
-        "id": "25",
+        "id": "41",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -1640,11 +2416,11 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "colStats": [
           {
             "name": "s_county",
-            "ndv": 128
+            "ndv": 127
           },
           {
             "name": "s_state",
-            "ndv": 44
+            "ndv": 43
           },
           {
             "name": "s_store_sk",
@@ -1676,7 +2452,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "s_store_name",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "s_number_employees",
@@ -1692,11 +2468,11 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "s_hours",
-            "ndv": 4
+            "ndv": 3
           },
           {
             "name": "s_manager",
-            "ndv": 1245
+            "ndv": 1243
           },
           {
             "name": "s_market_id",
@@ -1706,7 +2482,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "s_geography_class",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_market_desc",
@@ -1724,7 +2500,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "s_division_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_company_id",
@@ -1734,7 +2510,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "s_company_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_street_number",
@@ -1746,15 +2522,15 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "s_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "s_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "s_city",
-            "ndv": 267
+            "ndv": 266
           },
           {
             "name": "s_zip",
@@ -1762,7 +2538,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "s_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_gmt_offset",
@@ -1779,7 +2555,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         ]
       },
       {
-        "id": "26",
+        "id": "42",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1796,8 +2572,8 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
               },
               "operands": [
                 {
-                  "input": 23,
-                  "name": "$23"
+                  "input": 24,
+                  "name": "$24"
                 }
               ]
             },
@@ -1809,8 +2585,8 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
               },
               "operands": [
                 {
-                  "input": 24,
-                  "name": "$24"
+                  "input": 23,
+                  "name": "$23"
                 }
               ]
             }
@@ -1819,7 +2595,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1380.24
       },
       {
-        "id": "27",
+        "id": "43",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "s_county",
@@ -1838,7 +2614,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1380.24
       },
       {
-        "id": "28",
+        "id": "44",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -1887,13 +2663,13 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "24",
-          "27"
+          "40",
+          "43"
         ],
         "rowCount": 1.0061949600000001E9
       },
       {
-        "id": "29",
+        "id": "45",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -1902,7 +2678,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "table:alias": "customer",
         "inputs": [],
         "rowCount": 80000000,
-        "avgRowSize": 517,
+        "avgRowSize": 585,
         "rowType": {
           "fields": [
             {
@@ -1911,9 +2687,9 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
               "name": "c_customer_sk"
             },
             {
-              "type": "CHAR",
+              "type": "VARCHAR",
               "nullable": false,
-              "precision": 16,
+              "precision": 2147483647,
               "name": "c_customer_id"
             },
             {
@@ -2086,7 +2862,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "c_salutation",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "c_first_name",
@@ -2098,7 +2874,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "c_preferred_cust_flag",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "c_birth_day",
@@ -2120,7 +2896,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "c_birth_country",
-            "ndv": 216
+            "ndv": 214
           },
           {
             "name": "c_login",
@@ -2139,7 +2915,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         ]
       },
       {
-        "id": "30",
+        "id": "46",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -2157,7 +2933,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 72000000
       },
       {
-        "id": "31",
+        "id": "47",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "c_customer_sk",
@@ -2176,7 +2952,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 72000000
       },
       {
-        "id": "32",
+        "id": "48",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -2639,7 +3415,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         ]
       },
       {
-        "id": "33",
+        "id": "49",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -2679,7 +3455,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 3.483413831025E10
       },
       {
-        "id": "34",
+        "id": "50",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "sold_date_sk",
@@ -2703,7 +3479,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 3.483413831025E10
       },
       {
-        "id": "35",
+        "id": "51",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -3166,7 +3942,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         ]
       },
       {
-        "id": "36",
+        "id": "52",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -3206,7 +3982,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1.7491657141260002E10
       },
       {
-        "id": "37",
+        "id": "53",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "sold_date_sk",
@@ -3230,17 +4006,17 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1.7491657141260002E10
       },
       {
-        "id": "38",
+        "id": "54",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion",
         "all": true,
         "inputs": [
-          "34",
-          "37"
+          "50",
+          "53"
         ],
         "rowCount": 5.232579545151E10
       },
       {
-        "id": "39",
+        "id": "55",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "sold_date_sk",
@@ -3264,7 +4040,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 5.232579545151E10
       },
       {
-        "id": "40",
+        "id": "56",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -3617,7 +4393,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         ]
       },
       {
-        "id": "41",
+        "id": "57",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -3671,7 +4447,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1643.6025
       },
       {
-        "id": "42",
+        "id": "58",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "d_date_sk"
@@ -3685,7 +4461,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 1643.6025
       },
       {
-        "id": "43",
+        "id": "59",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -3708,13 +4484,13 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "39",
-          "42"
+          "55",
+          "58"
         ],
         "rowCount": 1.290042123278857E13
       },
       {
-        "id": "44",
+        "id": "60",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -3901,11 +4677,11 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "i_class",
-            "ndv": 99
+            "ndv": 97
           },
           {
             "name": "i_category",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "i_item_id",
@@ -3973,7 +4749,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "i_size",
-            "ndv": 8
+            "ndv": 7
           },
           {
             "name": "i_formulation",
@@ -3981,15 +4757,15 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           {
             "name": "i_color",
-            "ndv": 95
+            "ndv": 94
           },
           {
             "name": "i_units",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "i_container",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "i_manager_id",
@@ -4004,7 +4780,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         ]
       },
       {
-        "id": "45",
+        "id": "61",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -4060,7 +4836,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 10395
       },
       {
-        "id": "46",
+        "id": "62",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "i_item_sk"
@@ -4074,7 +4850,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 10395
       },
       {
-        "id": "47",
+        "id": "63",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -4097,13 +4873,13 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "43",
-          "46"
+          "59",
+          "62"
         ],
         "rowCount": 20114981807225576
       },
       {
-        "id": "48",
+        "id": "64",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "customer_sk"
@@ -4117,7 +4893,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 20114981807225576
       },
       {
-        "id": "49",
+        "id": "65",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin",
         "condition": {
           "op": {
@@ -4138,13 +4914,13 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         },
         "joinType": "semi",
         "inputs": [
-          "31",
-          "48"
+          "47",
+          "64"
         ],
         "rowCount": 29524.5
       },
       {
-        "id": "50",
+        "id": "66",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "c_customer_sk",
@@ -4163,7 +4939,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 29524.5
       },
       {
-        "id": "51",
+        "id": "67",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -4186,13 +4962,13 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "28",
-          "50"
+          "44",
+          "66"
         ],
         "rowCount": 4456110464478
       },
       {
-        "id": "52",
+        "id": "68",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "ca_address_sk",
@@ -4236,7 +5012,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 4456110464478
       },
       {
-        "id": "53",
+        "id": "69",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -4246,8 +5022,8 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
           },
           "operands": [
             {
-              "input": 10,
-              "name": "$10"
+              "input": 14,
+              "name": "$14"
             },
             {
               "input": 0,
@@ -4259,768 +5035,16 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "21",
-          "52"
+          "37",
+          "68"
         ],
-        "rowCount": 4.467282785683009E22
+        "rowCount": 2.4099614870553646E30
       },
       {
-        "id": "54",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
-        "table": [
-          "default",
-          "date_dim"
-        ],
-        "table:alias": "date_dim",
-        "inputs": [],
-        "rowCount": 73049,
-        "avgRowSize": 347,
-        "rowType": {
-          "fields": [
-            {
-              "type": "BIGINT",
-              "nullable": false,
-              "name": "d_date_sk"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": false,
-              "precision": 2147483647,
-              "name": "d_date_id"
-            },
-            {
-              "type": "DATE",
-              "nullable": true,
-              "name": "d_date"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_month_seq"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_week_seq"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_quarter_seq"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_year"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_dow"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_moy"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_dom"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_qoy"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_fy_year"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_fy_quarter_seq"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_fy_week_seq"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 9,
-              "name": "d_day_name"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 6,
-              "name": "d_quarter_name"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_holiday"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_weekend"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_following_holiday"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_first_dom"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_last_dom"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_same_day_ly"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "d_same_day_lq"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_day"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_week"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_month"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_quarter"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 1,
-              "name": "d_current_year"
-            },
-            {
-              "type": "BIGINT",
-              "nullable": true,
-              "name": "BLOCK__OFFSET__INSIDE__FILE"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 2147483647,
-              "name": "INPUT__FILE__NAME"
-            },
-            {
-              "fields": [
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "writeid"
-                },
-                {
-                  "type": "INTEGER",
-                  "nullable": true,
-                  "name": "bucketid"
-                },
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "rowid"
-                }
-              ],
-              "nullable": true,
-              "name": "ROW__ID"
-            },
-            {
-              "type": "BOOLEAN",
-              "nullable": true,
-              "name": "ROW__IS__DELETED"
-            }
-          ],
-          "nullable": false
-        },
-        "colStats": [
-          {
-            "name": "d_date_sk",
-            "ndv": 67850,
-            "minValue": 2415022,
-            "maxValue": 2488070
-          },
-          {
-            "name": "d_date_id",
-            "ndv": 71022
-          },
-          {
-            "name": "d_date",
-            "ndv": 76511,
-            "minValue": -25566,
-            "maxValue": 47482
-          },
-          {
-            "name": "d_month_seq",
-            "ndv": 2439,
-            "minValue": 0,
-            "maxValue": 2400
-          },
-          {
-            "name": "d_week_seq",
-            "ndv": 11297,
-            "minValue": 1,
-            "maxValue": 10436
-          },
-          {
-            "name": "d_quarter_seq",
-            "ndv": 808,
-            "minValue": 1,
-            "maxValue": 801
-          },
-          {
-            "name": "d_year",
-            "ndv": 199,
-            "minValue": 1900,
-            "maxValue": 2100
-          },
-          {
-            "name": "d_dow",
-            "ndv": 7,
-            "minValue": 0,
-            "maxValue": 6
-          },
-          {
-            "name": "d_moy",
-            "ndv": 12,
-            "minValue": 1,
-            "maxValue": 12
-          },
-          {
-            "name": "d_dom",
-            "ndv": 31,
-            "minValue": 1,
-            "maxValue": 31
-          },
-          {
-            "name": "d_qoy",
-            "ndv": 4,
-            "minValue": 1,
-            "maxValue": 4
-          },
-          {
-            "name": "d_fy_year",
-            "ndv": 199,
-            "minValue": 1900,
-            "maxValue": 2100
-          },
-          {
-            "name": "d_fy_quarter_seq",
-            "ndv": 808,
-            "minValue": 1,
-            "maxValue": 801
-          },
-          {
-            "name": "d_fy_week_seq",
-            "ndv": 11297,
-            "minValue": 1,
-            "maxValue": 10436
-          },
-          {
-            "name": "d_day_name",
-            "ndv": 7
-          },
-          {
-            "name": "d_quarter_name",
-            "ndv": 800
-          },
-          {
-            "name": "d_holiday",
-            "ndv": 2
-          },
-          {
-            "name": "d_weekend",
-            "ndv": 2
-          },
-          {
-            "name": "d_following_holiday",
-            "ndv": 2
-          },
-          {
-            "name": "d_first_dom",
-            "ndv": 2332,
-            "minValue": 2415021,
-            "maxValue": 2488070
-          },
-          {
-            "name": "d_last_dom",
-            "ndv": 2401,
-            "minValue": 2415020,
-            "maxValue": 2488372
-          },
-          {
-            "name": "d_same_day_ly",
-            "ndv": 67791,
-            "minValue": 2414657,
-            "maxValue": 2487705
-          },
-          {
-            "name": "d_same_day_lq",
-            "ndv": 67904,
-            "minValue": 2414930,
-            "maxValue": 2487978
-          },
-          {
-            "name": "d_current_day",
-            "ndv": 1
-          },
-          {
-            "name": "d_current_week",
-            "ndv": 1
-          },
-          {
-            "name": "d_current_month",
-            "ndv": 2
-          },
-          {
-            "name": "d_current_quarter",
-            "ndv": 2
-          },
-          {
-            "name": "d_current_year",
-            "ndv": 2
-          }
-        ]
-      },
-      {
-        "id": "55",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
-            "name": "IS NOT NULL",
-            "kind": "IS_NOT_NULL",
-            "syntax": "POSTFIX"
-          },
-          "operands": [
-            {
-              "input": 3,
-              "name": "$3"
-            }
-          ]
-        },
-        "rowCount": 65744.1
-      },
-      {
-        "id": "56",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "d_date_sk",
-          "d_month_seq"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 3,
-            "name": "$3"
-          }
-        ],
-        "rowCount": 65744.1
-      },
-      {
-        "id": "57",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
-            "name": "AND",
-            "kind": "AND",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "op": {
-                "name": "=",
-                "kind": "EQUALS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 6,
-                  "name": "$6"
-                },
-                {
-                  "literal": 1999,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "=",
-                "kind": "EQUALS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 8,
-                  "name": "$8"
-                },
-                {
-                  "literal": 3,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "IS NOT NULL",
-                "kind": "IS_NOT_NULL",
-                "syntax": "POSTFIX"
-              },
-              "operands": [
-                {
-                  "input": 3,
-                  "name": "$3"
-                }
-              ]
-            }
-          ]
-        },
-        "inputs": [
-          "3"
-        ],
-        "rowCount": 1479.24225
-      },
-      {
-        "id": "58",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "$f0"
-        ],
-        "exprs": [
-          {
-            "op": {
-              "name": "+",
-              "kind": "PLUS",
-              "syntax": "BINARY"
-            },
-            "operands": [
-              {
-                "input": 3,
-                "name": "$3"
-              },
-              {
-                "literal": 1,
-                "type": {
-                  "type": "INTEGER",
-                  "nullable": false
-                }
-              }
-            ]
-          }
-        ],
-        "rowCount": 1479.24225
-      },
-      {
-        "id": "59",
+        "id": "70",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
         "group": [
-          0
-        ],
-        "aggs": [],
-        "rowCount": 147.924225
-      },
-      {
-        "id": "60",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "$f0"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          }
-        ],
-        "rowCount": 147.924225
-      },
-      {
-        "id": "61",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "<=",
-            "kind": "LESS_THAN_OR_EQUAL",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 2,
-              "name": "$2"
-            },
-            {
-              "input": 1,
-              "name": "$1"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "56",
-          "60"
-        ],
-        "rowCount": 4862572.520411251
-      },
-      {
-        "id": "62",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
-            "name": "AND",
-            "kind": "AND",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "op": {
-                "name": "=",
-                "kind": "EQUALS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 6,
-                  "name": "$6"
-                },
-                {
-                  "literal": 1999,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "=",
-                "kind": "EQUALS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 8,
-                  "name": "$8"
-                },
-                {
-                  "literal": 3,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "IS NOT NULL",
-                "kind": "IS_NOT_NULL",
-                "syntax": "POSTFIX"
-              },
-              "operands": [
-                {
-                  "input": 3,
-                  "name": "$3"
-                }
-              ]
-            }
-          ]
-        },
-        "inputs": [
-          "3"
-        ],
-        "rowCount": 1479.24225
-      },
-      {
-        "id": "63",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "$f0"
-        ],
-        "exprs": [
-          {
-            "op": {
-              "name": "+",
-              "kind": "PLUS",
-              "syntax": "BINARY"
-            },
-            "operands": [
-              {
-                "input": 3,
-                "name": "$3"
-              },
-              {
-                "literal": 3,
-                "type": {
-                  "type": "INTEGER",
-                  "nullable": false
-                }
-              }
-            ]
-          }
-        ],
-        "rowCount": 1479.24225
-      },
-      {
-        "id": "64",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
-        "group": [
-          0
-        ],
-        "aggs": [],
-        "rowCount": 147.924225
-      },
-      {
-        "id": "65",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "$f0"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          }
-        ],
-        "rowCount": 147.924225
-      },
-      {
-        "id": "66",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "<=",
-            "kind": "LESS_THAN_OR_EQUAL",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 1,
-              "name": "$1"
-            },
-            {
-              "input": 3,
-              "name": "$3"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "61",
-          "65"
-        ],
-        "rowCount": 3.5964613579406554E8
-      },
-      {
-        "id": "67",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "d_date_sk",
-          "d_month_seq",
-          "$f0",
-          "$f00"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 1,
-            "name": "$1"
-          },
-          {
-            "input": 2,
-            "name": "$2"
-          },
-          {
-            "input": 3,
-            "name": "$3"
-          }
-        ],
-        "rowCount": 3.5964613579406554E8
-      },
-      {
-        "id": "68",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 2,
-              "name": "$2"
-            },
-            {
-              "input": 12,
-              "name": "$12"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "53",
-          "67"
-        ],
-        "rowCount": 2.409961487055364E30
-      },
-      {
-        "id": "69",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
-        "group": [
-          10
+          14
         ],
         "aggs": [
           {
@@ -5045,7 +5069,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 29524.5
       },
       {
-        "id": "70",
+        "id": "71",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "$f0"
@@ -5090,7 +5114,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 29524.5
       },
       {
-        "id": "71",
+        "id": "72",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
         "group": [
           0
@@ -5114,7 +5138,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 11527.107150205546
       },
       {
-        "id": "72",
+        "id": "73",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "segment",
@@ -5154,7 +5178,7 @@ Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
         "rowCount": 11527.107150205546
       },
       {
-        "id": "73",
+        "id": "74",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit",
         "collation": [
           {

@@ -917,7 +917,7 @@
         "table:alias": "customer_address",
         "inputs": [],
         "rowCount": 40000000,
-        "avgRowSize": 607,
+        "avgRowSize": 675,
         "rowType": {
           "fields": [
             {
@@ -926,9 +926,9 @@
               "name": "ca_address_sk"
             },
             {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 16,
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
               "name": "ca_address_id"
             },
             {
@@ -1065,11 +1065,11 @@
           },
           {
             "name": "ca_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "ca_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "ca_city",
@@ -1077,11 +1077,11 @@
           },
           {
             "name": "ca_county",
-            "ndv": 1930
+            "ndv": 1928
           },
           {
             "name": "ca_state",
-            "ndv": 53
+            "ndv": 52
           },
           {
             "name": "ca_zip",
@@ -1089,11 +1089,11 @@
           },
           {
             "name": "ca_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "ca_location_type",
-            "ndv": 4
+            "ndv": 3
           }
         ]
       },
@@ -1148,7 +1148,7 @@
         "table:alias": "customer",
         "inputs": [],
         "rowCount": 80000000,
-        "avgRowSize": 517,
+        "avgRowSize": 585,
         "rowType": {
           "fields": [
             {
@@ -1157,9 +1157,9 @@
               "name": "c_customer_sk"
             },
             {
-              "type": "CHAR",
+              "type": "VARCHAR",
               "nullable": false,
-              "precision": 16,
+              "precision": 2147483647,
               "name": "c_customer_id"
             },
             {
@@ -1332,7 +1332,7 @@
           },
           {
             "name": "c_salutation",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "c_first_name",
@@ -1344,7 +1344,7 @@
           },
           {
             "name": "c_preferred_cust_flag",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "c_birth_day",
@@ -1366,7 +1366,7 @@
           },
           {
             "name": "c_birth_country",
-            "ndv": 216
+            "ndv": 214
           },
           {
             "name": "c_login",

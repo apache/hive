@@ -61,10 +61,10 @@ STAGE PLANS:
                 TableScan
                   alias: promotion
                   filterExpr: ((p_channel_email = 'Y') or (p_channel_tv = 'Y') or (p_channel_dmail = 'Y')) (type: boolean)
-                  Statistics: Num rows: 2300 Data size: 604900 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2300 Data size: 598525 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((p_channel_email = 'Y') or (p_channel_tv = 'Y') or (p_channel_dmail = 'Y')) (type: boolean)
-                    Statistics: Num rows: 2300 Data size: 604900 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2300 Data size: 598525 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_promo_sk (type: bigint)
                       outputColumnNames: _col0
@@ -82,26 +82,26 @@ STAGE PLANS:
                 TableScan
                   alias: item
                   filterExpr: (i_category = 'Electronics                                       ') (type: boolean)
-                  Statistics: Num rows: 462000 Data size: 45276000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 462000 Data size: 45175920 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (i_category = 'Electronics                                       ') (type: boolean)
-                    Statistics: Num rows: 42000 Data size: 4116000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 46200 Data size: 4517700 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: i_item_sk (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 42000 Data size: 336000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 46200 Data size: 369600 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 42000 Data size: 336000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 46200 Data size: 369600 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 42000 Data size: 336000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 46200 Data size: 369600 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 3 
@@ -157,7 +157,7 @@ STAGE PLANS:
                           outputColumnNames: _col1, _col2, _col3, _col4
                           input vertices:
                             1 Reducer 13
-                          Statistics: Num rows: 118561176 Data size: 136 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 130417292 Data size: 136 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -167,7 +167,7 @@ STAGE PLANS:
                             outputColumnNames: _col1, _col3, _col4
                             input vertices:
                               1 Reducer 10
-                            Statistics: Num rows: 23754047 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 26129451 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
                                    Inner Join 0 to 1
@@ -177,7 +177,7 @@ STAGE PLANS:
                               outputColumnNames: _col1, _col4
                               input vertices:
                                 1 Map 11
-                              Statistics: Num rows: 23754047 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 26129451 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                               Map Join Operator
                                 condition map:
                                      Inner Join 0 to 1
@@ -187,7 +187,7 @@ STAGE PLANS:
                                 outputColumnNames: _col7
                                 input vertices:
                                   0 Reducer 2
-                                Statistics: Num rows: 3959008 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                                Statistics: Num rows: 4354909 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                                 Group By Operator
                                   aggregations: sum(_col7)
                                   minReductionHashAggr: 0.99
@@ -225,7 +225,7 @@ STAGE PLANS:
                           outputColumnNames: _col1, _col2, _col3
                           input vertices:
                             1 Map 12
-                          Statistics: Num rows: 121414971 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 133556467 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -235,7 +235,7 @@ STAGE PLANS:
                             outputColumnNames: _col1, _col3
                             input vertices:
                               1 Map 9
-                            Statistics: Num rows: 24325812 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 26758393 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
                                    Inner Join 0 to 1
@@ -245,7 +245,7 @@ STAGE PLANS:
                               outputColumnNames: _col6
                               input vertices:
                                 0 Map 1
-                              Statistics: Num rows: 4054303 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 4459733 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                               Group By Operator
                                 aggregations: sum(_col6)
                                 minReductionHashAggr: 0.99
@@ -352,7 +352,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 42000 Data size: 336000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 46200 Data size: 369600 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
