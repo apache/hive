@@ -55,7 +55,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter {
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(record, rowDataTemplate, false);
-    Record rowData = positionDelete.row();
+    Record rowData = positionDelete.get(2, Record.class);
 
     if (positionDelete.pos() < 0) {
       int specId = IcebergAcidUtil.parseSpecId(record);

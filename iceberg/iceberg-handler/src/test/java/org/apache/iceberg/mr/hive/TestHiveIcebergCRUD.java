@@ -622,6 +622,8 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
     PositionDelete<T> positionDelete = PositionDelete.create();
-    return positionDelete.set(path, pos, row);
+    positionDelete.set(path, pos);
+    positionDelete.set(2, row);
+    return positionDelete;
   }
 }

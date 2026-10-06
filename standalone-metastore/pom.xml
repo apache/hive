@@ -91,7 +91,7 @@
     <guava.version>22.0</guava.version>
     <hadoop.version>3.4.2</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
-    <iceberg.version>1.11.0</iceberg.version>
+    <iceberg.version>1.12.0</iceberg.version>
     <jexl.version>3.7.0</jexl.version>
     <jackson.version>2.21.5</jackson.version>
     <javolution.version>5.5.1</javolution.version>
