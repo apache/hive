@@ -41,7 +41,6 @@ import org.apache.iceberg.util.DeleteFileSet;
 class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
   private final GenericRecord rowDataTemplate;
-  private final boolean skipRowData;
   private final boolean isMergeTask;
 
   HiveIcebergDeleteWriter(
@@ -51,7 +50,6 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
     super(table, newDeleteWriter(table, rewritableDeletes, writerFactory, deleteFileFactory, context));
 
     this.rowDataTemplate = GenericRecord.create(table.schema());
-    this.skipRowData = context.skipRowData();
     this.isMergeTask = context.isMergeTask();
   }
 
@@ -62,10 +60,6 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
     int specId = IcebergAcidUtil.parseSpecId(rec);
     PartitionKey partitionKey = isMergeTask ? IcebergAcidUtil.parsePartitionKey(rec) :
         partition(rowDataTemplate, specId);
-    if (skipRowData) {
-      // Set null as the row data as we intend to avoid writing the actual row data in the delete file.
-      positionDelete.set(positionDelete.path(), positionDelete.pos());
-    }
     writer.write(positionDelete, specs.get(specId), partitionKey);
   }
 

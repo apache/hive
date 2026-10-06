@@ -86,24 +86,16 @@ public class HiveIcebergWriterTestBase {
   @Parameterized.Parameter(1)
   public boolean partitioned;
 
-  @Parameterized.Parameter(2)
-  public boolean skipRowData;
-
-  @Parameterized.Parameters(name = "fileFormat={0}, partitioned={1}, skipRowData={2}")
+  @Parameterized.Parameters(name = "fileFormat={0}, partitioned={1}")
   public static Collection<Object[]> parameters() {
     return Lists.newArrayList(new Object[][] {
-        { FileFormat.PARQUET, true, true },
-        { FileFormat.ORC, true, true },
-        { FileFormat.AVRO, true, true },
-        { FileFormat.PARQUET, false, true },
-        { FileFormat.PARQUET, true, false },
-        { FileFormat.ORC, true, false },
-        { FileFormat.AVRO, true, false },
-        { FileFormat.PARQUET, false, false },
+        { FileFormat.PARQUET, true },
+        { FileFormat.ORC, true },
+        { FileFormat.AVRO, true },
+        { FileFormat.PARQUET, false },
 // Skip this until the ORC reader is fixed - test only issue
 //        { FileFormat.ORC, false },
-        { FileFormat.AVRO, false, true },
-        { FileFormat.AVRO, false, false }
+        { FileFormat.AVRO, false }
     });
   }
 
@@ -117,7 +109,7 @@ public class HiveIcebergWriterTestBase {
             .bucket("data", 3)
             .build();
     this.helper = new TestHelper(new HiveConf(), tables, location.toString(), SCHEMA, spec, fileFormat,
-        Collections.singletonMap(WriterBuilder.ICEBERG_DELETE_SKIPROWDATA, String.valueOf(skipRowData)), temp);
+        Collections.emptyMap(), temp);
     this.table = helper.createTable();
     helper.appendToTable(RECORDS);
 
