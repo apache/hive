@@ -16,12 +16,15 @@
 #
 FROM postgres:18-alpine
 
-ADD https://github.com/thomasrebele/hive-postgres-metastore/releases/download/tpcds-30tb-histogram-1.0/metastore_tpcds30tb_with_histograms.raw_db.zstd /tmp/metastore_db.zstd
-RUN echo '0423efc0cbc554611ac3bbf5e7919b050767bf96  /tmp/metastore_db.zstd' > /tmp/metastore_db.sha1; sha1sum -c /tmp/metastore_db.sha1
+RUN wget -O /tmp/metastore_db.zstd https://github.com/thomasrebele/hive-postgres-metastore/releases/download/tpcds-30tb-histogram-1.1/metastore_tpcds30tb_with_histograms.raw_db.zstd \
+ && echo 'bc9e206d5f963a14451dad6f499ab069800be9ce  /tmp/metastore_db.zstd' > /tmp/metastore_db.sha1 \
+ && sha1sum -c /tmp/metastore_db.sha1 \
+ && chown postgres:postgres /tmp/metastore_db.zstd
+
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod u+x /usr/local/bin/entrypoint.sh
 COPY postgresql.conf /etc/postgresql/postgresql.conf
-RUN chown postgres:postgres /tmp/metastore_db.zstd /etc/postgresql/postgresql.conf
+RUN chown postgres:postgres /etc/postgresql/postgresql.conf
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 

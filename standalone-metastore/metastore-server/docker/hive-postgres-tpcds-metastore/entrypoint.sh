@@ -16,8 +16,11 @@
 # limitations under the License.
 
 if [ -f /tmp/metastore_db.zstd ]; then
+  echo "The following tar command might print warnings (leading '/' and no such file or directory)."
+  echo "The cause is due to the way the dump was created. Please ignore these warnings."
   zstdcat /tmp/metastore_db.zstd | tar -C /var/lib/postgresql/ -x
   rm /tmp/metastore_db.zstd
 fi
 
 /usr/local/bin/docker-entrypoint.sh "$@"
+
