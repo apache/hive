@@ -40,6 +40,20 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorAbstractSum<D
   }
 
   @Override
+  protected void accumulatePartitionOnlyBatch(int batchSize) {
+    if(partitionOnlyConstantValue == null){
+      return;
+    }
+    double increment = ((Double)partitionOnlyConstantValue) * batchSize;
+    if (isGroupResultNull) {
+      sum = increment;
+      isGroupResultNull = false;
+    } else {
+      sum += increment;
+    }
+  }
+
+  @Override
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
@@ -51,6 +65,10 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorAbstractSum<D
 
     final int size = batch.size;
     if (size == 0) {
+      return;
+    }
+    if (usePartitionOnlyConstant) {
+      accumulatePartitionOnlyBatch(size);
       return;
     }
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
