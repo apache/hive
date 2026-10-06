@@ -36,6 +36,7 @@ import com.google.common.base.Preconditions;
 public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorAbstractSum<HiveDecimalWritable> {
 
   protected HiveDecimalWritable temp;
+  private final HiveDecimalWritable partitionOnlyDecimalConstant = new HiveDecimalWritable();
 
   public VectorPTFEvaluatorDecimalSum(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
       int outputColumnNum) {
@@ -43,6 +44,22 @@ public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorAbstractSum<
     sum = new HiveDecimalWritable();
     temp = new HiveDecimalWritable();
     resetEvaluator();
+  }
+
+  @Override
+  protected void accumulatePartitionOnlyBatch(int batchSize) throws HiveException {
+    if(partitionOnlyConstantValue == null){
+      return;
+    }
+    partitionOnlyDecimalConstant.set((HiveDecimalWritable)partitionOnlyConstantValue);
+    temp.setFromLong(batchSize);
+    temp.mutateMultiply(partitionOnlyDecimalConstant);
+    if (isGroupResultNull) {
+      sum.set(temp);
+      isGroupResultNull = false;
+    } else {
+      sum.mutateAdd(temp);
+    }
   }
 
   @Override
@@ -57,6 +74,10 @@ public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorAbstractSum<
 
     final int size = batch.size;
     if (size == 0) {
+      return;
+    }
+    if(usePartitionOnlyConstant){
+      accumulatePartitionOnlyBatch(size);
       return;
     }
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
