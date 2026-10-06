@@ -57,6 +57,8 @@ import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
+import org.apache.iceberg.rest.RESTCatalogProperties;
+import java.util.Locale;
 import org.apache.iceberg.rest.metrics.IcebergMetricsReporter;
 import org.apache.iceberg.rest.requests.CommitTransactionRequest;
 import org.apache.iceberg.rest.requests.CreateNamespaceRequest;
@@ -375,7 +377,12 @@ public class HMSCatalogAdapter implements Closeable {
 
   private LoadTableResponse loadTable(Map<String, String> vars) {
     TableIdentifier ident = identFromPathVars(vars);
-    return CatalogHandlers.loadTable(catalog, ident);
+    String snapshots = vars.get(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER);
+    RESTCatalogProperties.SnapshotMode mode = RESTCatalogProperties.SNAPSHOT_LOADING_MODE_DEFAULT;
+    if (snapshots != null) {
+      mode = RESTCatalogProperties.SnapshotMode.valueOf(snapshots.toUpperCase(Locale.ROOT));
+    }
+    return CatalogHandlers.loadTable(catalog, ident, mode);
   }
 
   private LoadTableResponse registerTable(Map<String, String> vars, Object body) {

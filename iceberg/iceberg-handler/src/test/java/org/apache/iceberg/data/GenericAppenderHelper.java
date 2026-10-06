@@ -25,12 +25,12 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
-import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Files;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.io.FileAppender;
+import org.apache.iceberg.io.DataWriter;
+import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
@@ -84,27 +84,23 @@ public class GenericAppenderHelper {
   private static DataFile appendToLocalFile(Table table, File file, FileFormat format, StructLike partition,
       List<Record> records, Configuration conf)
       throws IOException {
-    GenericAppenderFactory appenderFactory = new GenericAppenderFactory(table.schema());
+    GenericFileWriterFactory.Builder builder = new GenericFileWriterFactory.Builder(table).dataFileFormat(format);
 
     // Push down ORC related settings to appender
     if (FileFormat.ORC.equals(format)) {
-      appenderFactory.setAll(conf.getValByRegex(ORC_CONFIG_PREFIX));
+      builder.writerProperties(conf.getValByRegex(ORC_CONFIG_PREFIX));
     }
 
-    FileAppender<Record> appender = appenderFactory.newAppender(
-        Files.localOutput(file), format);
-    try (FileAppender<Record> fileAppender = appender) {
-      fileAppender.addAll(records);
+    FileWriterFactory<Record> writerFactory = builder.build();
+    DataWriter<Record> appender = writerFactory.newDataWriter(
+        table.encryption().encrypt(Files.localOutput(file)), table.spec(), partition);
+    try (appender) {
+      for (Record r : records) {
+        appender.write(r);
+      }
     }
 
-    return DataFiles.builder(table.spec())
-        .withRecordCount(records.size())
-        .withFileSizeInBytes(file.length())
-        .withPath(Files.localInput(file).location())
-        .withMetrics(appender.metrics())
-        .withFormat(format)
-        .withPartition(partition)
-        .withSplitOffsets(appender.splitOffsets())
-        .build();
+    return appender.toDataFile();
+
   }
 }

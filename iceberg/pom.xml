@@ -41,7 +41,7 @@
     <assertj.version>3.27.3</assertj.version>
     <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
-    <caffeine.version>2.9.3</caffeine.version>
+    <caffeine.version>3.2.4</caffeine.version>
   </properties>
   <modules>
     <module>patched-iceberg-api</module>
