@@ -159,7 +159,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   private static final List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> EMPTY_FILTER =
       Lists.newArrayList(org.apache.commons.lang3.tuple.Pair.of(1, new byte[0]));
   static final String MIGRATED_TO_ICEBERG = "MIGRATED_TO_ICEBERG";
-  static final String DECIMAL64_VECTORIZATION = "iceberg.decimal64.vectorization";
   static final String MANUAL_ICEBERG_METADATA_LOCATION_CHANGE = "MANUAL_ICEBERG_METADATA_LOCATION_CHANGE";
 
   private boolean deleteIcebergTable;
