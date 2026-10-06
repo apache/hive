@@ -31,8 +31,11 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.encoded.ParquetEncodedDataReader;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.FileSplit;
@@ -61,6 +64,15 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
       Includes includes, SearchArgument sarg, QueryFragmentCounters counters,
       SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) {
+    // Before the footer read, so a decline costs no IO. This pipeline cannot fill a row-lineage
+    // slot, and an unfilled one is not a visible failure: the -1 it leaves is the sentinel
+    // HiveBatchIterator reads as "synthesize the id from the manifest", so the query would answer
+    // with plausible wrong ids. Only the fallback reader augments its schema for these columns.
+    if (projectsRowLineage(job)) {
+      LlapIoImpl.LOG.debug("Parquet native cache: falling back to normal reader for {} due to "
+          + "row-lineage virtual columns", split.getPath());
+      return null;
+    }
     try {
       ParquetEncodedDataConsumer edc =
           new ParquetEncodedDataConsumer(consumer, includes, counters, ioMetrics, job);
@@ -92,5 +104,20 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
           split.getPath(), e);
       return null;
     }
+  }
+
+  /**
+   * Whether the query projects {@code ROW__LINEAGE__ID} or
+   * {@code LAST__UPDATED__SEQUENCE__NUMBER}. The projection only, not whether the file carries the
+   * columns - that would need the footer, to recover a split both readers answer the same way.
+   *
+   * <p>Only Iceberg tables can project these, and their Parquet reads do not come here yet.
+   * HIVE-30103 changes that, and should replace this with real support rather than drop it.
+   */
+  private static boolean projectsRowLineage(JobConf job) {
+    VectorizedRowBatchCtx rbCtx = Utilities.getVectorizedRowBatchCtx(job);
+    return rbCtx != null
+        && (rbCtx.isVirtualColumnNeeded(VirtualColumn.ROW_LINEAGE_ID.getName())
+            || rbCtx.isVirtualColumnNeeded(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName()));
   }
 }

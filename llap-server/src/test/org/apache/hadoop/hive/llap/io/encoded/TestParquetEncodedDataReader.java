@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileRange;
@@ -78,7 +79,9 @@ import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
+import org.apache.hadoop.hive.llap.io.decode.ParquetColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
+import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -100,6 +103,7 @@ import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -989,6 +993,51 @@ public class TestParquetEncodedDataReader {
 
     assertArrayEquals(new int[] {1},
         ParquetEncodedDataReader.findLeafIndexes(requested, fileSchema));
+  }
+
+  /**
+   * A row-lineage projection must decline: this pipeline cannot fill the slot, and the -1 it would
+   * leave is the sentinel HiveBatchIterator reads as "synthesize the id", so the query would answer
+   * with plausible wrong ids. Only reachable once HIVE-30103 lands.
+   */
+  @Test
+  public void testRowLineageProjectionDeclined() throws Exception {
+    for (VirtualColumn lineageColumn : new VirtualColumn[] {
+        VirtualColumn.ROW_LINEAGE_ID, VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER}) {
+      assertNull("expected a fallback for " + lineageColumn.getName(),
+          readPipelineFor(withNeededVirtualColumn(jobConf(COLUMNS, TYPES, 0, 3), lineageColumn)));
+    }
+    // Control: the same projection without the virtual column is served natively, so the declines
+    // above are attributable to the lineage column.
+    assertNotNull(readPipelineFor(jobConf(COLUMNS, TYPES, 0, 3)));
+  }
+
+  /** Runs the producer's split-admission decision; null means the split was declined. */
+  private ReadPipeline readPipelineFor(JobConf job) throws Exception {
+    ParquetColumnVectorProducer producer =
+        new ParquetColumnVectorProducer(ledger, ledger, daemonConf, CACHE_METRICS, IO_METRICS);
+    return producer.createReadPipeline(new CapturingConsumer(), wholeFile(),
+        includes(ColumnProjectionUtils.getReadColumnIDs(job)), null,
+        new QueryFragmentCounters(job, new TezCounters()), null, null, null, null, job, null);
+  }
+
+  /**
+   * Re-plans the job with one needed virtual column. Rebuilt rather than mutated: both
+   * {@link VectorizedRowBatchCtx#init} overloads hardcode an empty needed-virtual-column array, so
+   * the ctx {@link #mapWorkFor} produces cannot express one.
+   */
+  private static JobConf withNeededVirtualColumn(JobConf job, VirtualColumn vc) throws Exception {
+    VectorizedRowBatchCtx dataOnly = Utilities.getMapWork(job).getVectorizedRowBatchCtx();
+    String[] names = ArrayUtils.add(dataOnly.getRowColumnNames(), vc.getName());
+    TypeInfo[] types = ArrayUtils.add(dataOnly.getRowColumnTypeInfos(), vc.getTypeInfo());
+    DataTypePhysicalVariation[] variations =
+        ArrayUtils.add(dataOnly.getRowdataTypePhysicalVariations(), DataTypePhysicalVariation.NONE);
+    MapWork mapWork = new MapWork();
+    mapWork.setVectorMode(true);
+    mapWork.setVectorizedRowBatchCtx(new VectorizedRowBatchCtx(names, types, variations, null, 0, 1,
+        new VirtualColumn[] {vc}, new String[0], null));
+    Utilities.setMapWork(job, mapWork);
+    return job;
   }
 
   // ---- fixture ----
