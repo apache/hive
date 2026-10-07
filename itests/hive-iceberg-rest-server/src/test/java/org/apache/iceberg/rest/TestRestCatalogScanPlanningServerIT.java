@@ -122,7 +122,7 @@ class TestRestCatalogScanPlanningServerIT extends TestBaseWithRESTServer {
    * {@code planTasks()} on a scan issues a {@link PlanTableScanRequest} to the embedded REST server.
    */
   @Test
-  void hiveCatalogConfigurationIssuesPlanTableScanRequest() throws IOException {
+  void hiveCatalogConfigurationIssuesPlanTableScanRequest() {
     Configuration conf = new Configuration();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, CATALOG_NAME);
     RestCatalogScanPlanningUtil.setCatalogMode(conf, CATALOG_NAME, "server");
