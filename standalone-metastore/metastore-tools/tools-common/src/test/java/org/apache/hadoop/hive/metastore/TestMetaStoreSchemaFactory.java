@@ -56,7 +56,8 @@ public class TestMetaStoreSchemaFactory {
     Class<?> clasz = null;
     try {
       clasz = conf.getClassByName(className);
-      clasz.getConstructor(String.class, String.class);
+      var unused = clasz.getConstructor(String.class, String.class);
+      Assert.assertNotNull(unused);
     } catch (NoSuchMethodException | IllegalArgumentException | ClassNotFoundException e) {
       throw new IllegalArgumentException(e);
     }
