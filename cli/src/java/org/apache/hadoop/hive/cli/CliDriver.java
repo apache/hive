@@ -842,7 +842,7 @@ public class CliDriver {
       console.printInfo(HiveConf.generateMrDeprecationWarning());
     }
 
-    setupLineReader();
+    cli.setupLineReader();
 
     String line;
     CommandProcessorResponse response = new CommandProcessorResponse();
@@ -851,7 +851,7 @@ public class CliDriver {
     String curPrompt = prompt + curDB;
     String dbSpaces = spacesForString(curDB);
 
-    while ((line = reader.readLine(curPrompt + "> ")) != null) {
+    while ((line = cli.readLine(curPrompt + "> ")) != null) {
       if (!prefix.toString().equals("")) {
         prefix.append('\n');
       }
@@ -921,6 +921,13 @@ public class CliDriver {
       builder.variable(LineReader.HISTORY_FILE, historyFile);
     }
     reader = builder.build();
+  }
+
+  /**
+   * Reads a line from the interactive command line without exposing the underlying reader.
+   */
+  private String readLine(String prompt) {
+    return reader.readLine(prompt);
   }
 
   static DefaultParser getDefaultParser() {
