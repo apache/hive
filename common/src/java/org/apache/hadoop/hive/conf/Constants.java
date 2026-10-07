@@ -18,6 +18,10 @@
  */
 package org.apache.hadoop.hive.conf;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Constants {
@@ -53,6 +57,25 @@ public class Constants {
   public static final String JDBC_NUM_PARTITIONS = JDBC_CONFIG_PREFIX + ".numPartitions";
   public static final String JDBC_LOW_BOUND = JDBC_CONFIG_PREFIX + ".lowerBound";
   public static final String JDBC_UPPER_BOUND = JDBC_CONFIG_PREFIX + ".upperBound";
+
+  /**
+   * The DBCP credentials a JDBC-backed table carries in TBLPROPERTIES, or a data connector in
+   * DCPROPERTIES. Explain output drops these keys (HIVE-28838), and the connector description
+   * withholds their values, so that they round-trip only through the metastore rather than back to
+   * whoever asked. The keys that merely point at a credential -- {@link #JDBC_PASSWORD_URI},
+   * {@link #JDBC_KEYSTORE} and {@link #JDBC_KEY} -- are deliberately not included: they exist so
+   * that the password need not be stored here, and seeing where one resolves from is exactly what
+   * an administrator needs.
+   */
+  public static final Set<String> JDBC_CONNECTION_CREDENTIALS = Collections.unmodifiableSet(
+      new HashSet<>(Arrays.asList(JDBC_USERNAME, JDBC_PASSWORD)));
+
+  /**
+   * Stands in for a withheld {@link #JDBC_CONNECTION_CREDENTIALS} value where a property map is
+   * listed back to the user. A property whose value is withheld keeps its key, so that the listing
+   * says "this is set, but not shown here" rather than implying the property is absent.
+   */
+  public static final String WITHHELD_VALUE = "(withheld)";
 
   public static final String HIVE_SERVER2_JOB_CREDSTORE_PASSWORD_ENVVAR = "HIVE_JOB_CREDSTORE_PASSWORD";
   public static final String HADOOP_CREDENTIAL_PASSWORD_ENVVAR = "HADOOP_CREDSTORE_PASSWORD";

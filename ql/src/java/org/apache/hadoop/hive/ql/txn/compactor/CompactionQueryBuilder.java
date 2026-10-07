@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.CompactionOrderByValidator;
 import org.apache.hadoop.hive.ql.exec.DDLPlanUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -144,6 +145,9 @@ abstract class CompactionQueryBuilder {
    * @param orderByClause The ORDER BY clause to use for data reordering.
    */
   public CompactionQueryBuilder setOrderByClause(String orderByClause) {
+    // The clause travels through the client-writable compaction queue; allow only a plain ORDER BY
+    // over column names before it is concatenated into a compaction query.
+    CompactionOrderByValidator.validate(orderByClause);
     this.orderByClause = orderByClause;
     return this;
   }

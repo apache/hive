@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -70,9 +69,7 @@ implements BigTableSelectorForAutoSMJ {
         else {
           // For partitioned tables, get the size of all the partitions
           PrunedPartitionList partsList = PartitionPruner.prune(topOp, parseCtx, null);
-          for (Partition part : partsList.getNotDeniedPartns()) {
-            currentSize += getSize(conf, part);
-          }
+          currentSize = getSize(conf, table, partsList.getNotDeniedPartns());
         }
 
         if (currentSize > maxSize) {
