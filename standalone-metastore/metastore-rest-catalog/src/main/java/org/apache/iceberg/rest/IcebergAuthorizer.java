@@ -195,7 +195,10 @@ class IcebergAuthorizer {
   /**
    * Enforces authorization for DROP_TABLE with {@code purge=true}. Purge deletes every file referenced by the
    * table's current metadata using the catalog's shared, service-level {@code FileIO}, so the location must be
-   * authorized like any other DFS_URI access.
+   * authorized like any other DFS_URI access. The location is passed as both an input and an output so that
+   * authorizers which only enforce write/delete privileges on outputs (e.g. Ranger, where a DFS_URI input is
+   * READ-checked and a DFS_URI output is WRITE-checked) require WRITE on the location rather than READ alone,
+   * matching the fact that purge deletes files there.
    *
    * <p>Unlike {@link #validateRegisterTable}, there is no namespace-containment fallback here: the structural
    * fence in {@code HiveCatalog.dropTable} already restricts purge deletions to files under the table's own
@@ -218,10 +221,12 @@ class IcebergAuthorizer {
 
     var inputs = Collections.singletonList(
         new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
+    var outputs = Collections.singletonList(
+        new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
     var builder = new HiveAuthzContext.Builder();
     builder.setCommandString("drop table " + identifier.name());
     try {
-      authorizer.checkPrivileges(HiveOperationType.DROPTABLE, inputs, Collections.emptyList(), builder.build());
+      authorizer.checkPrivileges(HiveOperationType.DROPTABLE, inputs, outputs, builder.build());
     } catch (HiveAccessControlException e) {
       throw new ForbiddenException(e, e.getMessage());
     } catch (HiveAuthzPluginException e) {

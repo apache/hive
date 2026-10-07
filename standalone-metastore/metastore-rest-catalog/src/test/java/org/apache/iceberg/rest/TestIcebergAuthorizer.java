@@ -356,10 +356,13 @@ class TestIcebergAuthorizer {
 
     Assertions.assertEquals(HiveOperationType.DROPTABLE, operation.getValue());
     Assertions.assertEquals(1, inputs.getValue().size());
-    var location = (HivePrivilegeObject) inputs.getValue().getFirst();
-    assertThat(location.getType()).isEqualTo(HivePrivilegeObjectType.DFS_URI);
-    assertThat(location.getObjectName()).isEqualTo(LOCATION);
-    Assertions.assertEquals(List.of(), outputs.getValue());
+    var inputLocation = (HivePrivilegeObject) inputs.getValue().getFirst();
+    assertThat(inputLocation.getType()).isEqualTo(HivePrivilegeObjectType.DFS_URI);
+    assertThat(inputLocation.getObjectName()).isEqualTo(LOCATION);
+    Assertions.assertEquals(1, outputs.getValue().size());
+    var outputLocation = (HivePrivilegeObject) outputs.getValue().getFirst();
+    assertThat(outputLocation.getType()).isEqualTo(HivePrivilegeObjectType.DFS_URI);
+    assertThat(outputLocation.getObjectName()).isEqualTo(LOCATION);
     Assertions.assertEquals("drop table " + TABLE_NAME, context.getValue().getCommandString());
   }
 
