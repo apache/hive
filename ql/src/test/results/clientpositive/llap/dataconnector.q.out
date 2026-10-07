@@ -152,7 +152,7 @@ PREHOOK: Input: connector:mysql_test
 POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_test
 POSTHOOK: type: DESCDATACONNECTOR
 POSTHOOK: Input: connector:mysql_test
-mysql_test	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_test_user	USER	test connector	{hive.sql.dbcp.password=hive1, hive.sql.dbcp.username=hive1}
+mysql_test	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_test_user	USER	test connector	{hive.sql.dbcp.password=(withheld), hive.sql.dbcp.username=(withheld)}
 PREHOOK: query: alter connector mysql_test set DCPROPERTIES("hive.sql.dbcp.username"="hive2","hive.sql.dbcp.password"="hive2")
 PREHOOK: type: ALTERDATACONNECTOR
 PREHOOK: Output: connector:mysql_test
@@ -165,7 +165,7 @@ PREHOOK: Input: connector:mysql_test
 POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_test
 POSTHOOK: type: DESCDATACONNECTOR
 POSTHOOK: Input: connector:mysql_test
-mysql_test	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_test_user	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
+mysql_test	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_test_user	USER	test connector	{hive.sql.dbcp.password=(withheld), hive.sql.dbcp.username=(withheld)}
 PREHOOK: query: alter connector mysql_test set OWNER USER newuser
 PREHOOK: type: ALTERDATABASE_OWNER
 PREHOOK: Output: connector:mysql_test
@@ -178,7 +178,7 @@ PREHOOK: Input: connector:mysql_test
 POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_test
 POSTHOOK: type: DESCDATACONNECTOR
 POSTHOOK: Input: connector:mysql_test
-mysql_test	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	newuser	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
+mysql_test	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	newuser	USER	test connector	{hive.sql.dbcp.password=(withheld), hive.sql.dbcp.username=(withheld)}
 PREHOOK: query: DROP DATABASE db_derby
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:db_derby
