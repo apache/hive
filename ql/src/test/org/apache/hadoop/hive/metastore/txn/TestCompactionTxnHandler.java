@@ -998,6 +998,86 @@ public class TestCompactionTxnHandler {
     assertEquals(1, potentials.size());
   }
 
+  /**
+   * If the number of candidates is bigger than the compactor.fetch.size value, it can happen that the
+   * Initiator doesn't schedule all tables for compaction.
+   * For example: we have 4 tables, which are all eligible for compaction, but the fetch size is 2.
+   * In the first initiator run, it will pick two of these tables. It would be expected that during the second
+   * run of the initiator it would pick the other two tables, so all 4 tables have been scheduled for compaction.
+   * Since there was no ordering when selecting the tables for compaction, this was not always the case.
+   * It could happen that some tables never got compacted.
+   *
+   * Changing the initiator to pick the tables ordered by CTC_TXNID, so the tables with the oldest TXNID would be
+   * picked first. This way we can be sure that all tables will be scheduled for compaction at some point.
+   */
+  @Test
+  public void testFindPotentialCompactionsFairness() throws Exception {
+    MetastoreConf.setLongVar(conf, COMPACTOR_FETCH_SIZE, 3);
+
+    commitOrAbortOneTableUpdate("table_c", false);
+    commitOrAbortOneTableUpdate("table_a", false);
+    commitOrAbortOneTableUpdate("table_d", false);
+    commitOrAbortOneTableUpdate("table_b", false); // newest — must be dropped by the LIMIT
+
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
+    assertEquals(3, potentials.size());
+
+    Set<String> names = potentials.stream().map(ci -> ci.tableName).collect(Collectors.toSet());
+    assertTrue("oldest (table_c) must be picked", names.contains("table_c"));
+    assertTrue("second-oldest (table_a) must be picked", names.contains("table_a"));
+    assertTrue("third-oldest (table_d) must be picked", names.contains("table_d"));
+    assertFalse("newest (table_b) must be excluded by the fetch.size window",
+        names.contains("table_b"));
+  }
+
+  /**
+   * If the number of candidates is bigger than the compactor.fetch.size limit, the aborted
+   * txn candidates will never be picked up by the initiator. Because the "remaining budget" will always
+   * be 0 in the FindPotentialCompactionsFunction. This affects only the cases when the aborted txn clean-up
+   * is done by the compaction cycle and not just the cleaner.
+   *
+   * Changing how the compaction candidates are fetched to be sure that the aborted txn are also picked up.
+   */
+  @Test
+  public void testFindPotentialCompactionsIncludesAbortsUnderFetchSizePressure() throws Exception {
+    // Route aborted-txn cleanup through the compaction path
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, false);
+    MetastoreConf.setLongVar(conf, COMPACTOR_FETCH_SIZE, 2);
+
+    // Two committed candidates — fills the entire fetch.size budget.
+    commitOrAbortOneTableUpdate("committed_a", false);
+    commitOrAbortOneTableUpdate("committed_b", false);
+
+    // One aborted candidate with enough aborts to exceed abortedThreshold=0.
+    commitOrAbortOneTableUpdate("aborted_only", true);
+
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(0, -1L);
+
+    Set<String> names = potentials.stream().map(ci -> ci.tableName).collect(Collectors.toSet());
+    assertTrue("committed candidates must be picked", names.contains("committed_a")
+        && names.contains("committed_b"));
+    assertTrue("aborted candidate must not be starved by fetch.size pressure",
+        names.contains("aborted_only"));
+  }
+
+  /**
+   * Opens one txn, takes a SHARED_WRITE lock on the (db,table), and commits or aborts.
+   * This produces exactly one COMPLETED_TXN_COMPONENTS row.
+   */
+  private void commitOrAbortOneTableUpdate(String table, boolean abort) throws Exception {
+    long txnId = openTxn();
+    LockComponent lc = createLockComponent(
+        LockType.SHARED_WRITE, LockLevel.DB, "default", table, null, DataOperationType.UPDATE);
+    LockRequest req = new LockRequest(Collections.singletonList(lc), "me", "localhost");
+    req.setTxnid(txnId);
+    assertSame(LockState.ACQUIRED, txnHandler.lock(req).getState());
+    if (abort) {
+      txnHandler.abortTxn(new AbortTxnRequest(txnId));
+    } else {
+      txnHandler.commitTxn(new CommitTxnRequest(txnId));
+    }
+  }
+
   @Test
   public void testFindNextToClean_limitFetchSize() throws Exception {
     MetastoreConf.setLongVar(conf, COMPACTOR_FETCH_SIZE, 1);

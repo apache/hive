@@ -24,12 +24,16 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.SharedWorkOptimizerCache;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.TSComparator;
 import org.apache.hadoop.hive.ql.parse.JoinType;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -49,9 +53,11 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.FIXED;
@@ -276,6 +282,71 @@ public class TestSharedWorkOptimizer {
     assertTrue(c.getWorkGroup(ops.get(50)).isEmpty());
     assertFalse(c.getWorkGroup(ops.get(51)).contains(ops.get(50)));
 
+  }
+
+  @Test
+  public void testFindDescendantWorkOperatorsTerminatesOnSemiJoinCycle() {
+    // Map 1
+    TableScanOperator ts1 = getTsOp();
+    Operator<?> rs1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), ts1);
+
+    // Reducer 2 <- Map1
+    Operator<?> fil = OperatorFactory.getAndMakeChild(getFilterDesc(0), rs1);
+    Operator<?> rs2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), fil);
+
+    // Add semi join edge
+    ParseContext pctx = new ParseContext();
+    pctx.getRsToSemiJoinBranchInfo().put((ReduceSinkOperator) rs2, new SemiJoinBranchInfo(ts1));
+
+    Set<Operator<?>> descendants = SharedWorkOptimizer.findDescendantWorkOperators(
+        pctx, new SharedWorkOptimizerCache(), ts1, Collections.emptySet());
+
+    assertEquals(2, descendants.size());
+    assertTrue(descendants.contains(fil));
+    assertTrue(descendants.contains(rs2));
+  }
+
+  @Test
+  public void testFindDescendantWorkOperatorsTerminatesOnDppCycle() {
+    // Map 1
+    TableScanOperator ts1 = getTsOp();
+    Operator<?> rs1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), ts1);
+
+    // Reducer 2 <- Map 1
+    Operator<?> fil = OperatorFactory.getAndMakeChild(getFilterDesc(0), rs1);
+    DynamicPruningEventDesc dppDesc = new DynamicPruningEventDesc();
+    dppDesc.setTableScan(ts1);
+    Operator<?> eventOp = OperatorFactory.getAndMakeChild(dppDesc, fil);
+
+    Set<Operator<?>> descendants = SharedWorkOptimizer.findDescendantWorkOperators(
+        new ParseContext(), new SharedWorkOptimizerCache(), ts1, Collections.emptySet());
+
+    assertEquals(2, descendants.size());
+    assertTrue(descendants.contains(fil));
+    assertTrue(descendants.contains(eventOp));
+  }
+
+  @Test
+  public void testFindDescendantWorkOperatorsDoesNotReturnExcludedOperators() {
+    // Map 1
+    TableScanOperator ts1 = getTsOp();
+    Operator<?> rs1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), ts1);
+
+    // Reducer 2 <- Map 1
+    Operator<?> fil = OperatorFactory.getAndMakeChild(getFilterDesc(0), rs1);
+    Operator<?> exclFil = OperatorFactory.getAndMakeChild(getFilterDesc(0), fil);
+    Operator<?> rs2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), fil);
+
+    Set<Operator<?>> descendants = SharedWorkOptimizer.findDescendantWorkOperators(
+        new ParseContext(), new SharedWorkOptimizerCache(), ts1, Set.of(exclFil));
+
+    assertEquals(2, descendants.size());
+    assertTrue(descendants.contains(fil));
+    assertTrue(descendants.contains(rs2));
+  }
+
+  private FilterDesc getFilterDesc(int constVal) {
+    return new FilterDesc(new ExprNodeConstantDesc(constVal), true);
   }
 
   private ReduceSinkDesc getReduceSinkDesc() {

@@ -19,6 +19,10 @@
 
 package org.apache.hive.kubernetes.operator.dependent;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -26,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
+
 import io.fabric8.kubernetes.api.model.AffinityBuilder;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -49,7 +55,9 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernete
 import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
+import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
+import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
 
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
 import org.apache.hive.kubernetes.operator.model.spec.ProbeSpec;
@@ -73,6 +81,9 @@ public abstract class HiveDependentResource<R extends HasMetadata,
 
   private static final Logger LOG =
       LoggerFactory.getLogger(HiveDependentResource.class);
+
+  /** Closed set of valid schematool -dbType values. */
+  private static final Pattern DB_TYPE_PATTERN = Pattern.compile("derby|mysql|postgres|mssql|oracle");
 
   protected static final String CONF_MOUNT_PATH = "/etc/hive/conf";
   protected static final String HIVE_CONF_DIR = "/opt/hive/conf";
@@ -361,12 +372,103 @@ public abstract class HiveDependentResource<R extends HasMetadata,
   }
 
   /**
+   * Validates CR-provided database fields before they are embedded into
+   * shell command lines (schematool -dbType in the schema-init Job) and
+   * into SERVICE_OPTS, which the image entrypoint expands into JVM arguments.
+   */
+  protected static void validateDatabaseConfig(DatabaseConfig db) {
+    if (!DB_TYPE_PATTERN.matcher(db.type()).matches()) {
+      throw new IllegalArgumentException(
+          "spec.metastore.database.type must be one of derby, mysql, postgres, mssql, oracle");
+    }
+    validateOptValue("spec.metastore.database.url", db.url());
+    validateOptValue("spec.metastore.database.driver", db.driver());
+    validateOptValue("spec.metastore.database.username", db.username());
+  }
+
+  /**
+   * Validates CR-provided string fields before they are embedded into
+   * HiveServer2 SERVICE_OPTS and related env vars.
+   */
+  protected static void validateHiveServer2EmbeddedValues(HiveClusterSpec spec) {
+    if (!spec.metastore().isEnabled()) {
+      validateOptValue("spec.metastore.externalUri", spec.metastore().externalUri());
+    }
+    if (spec.tezAm().isEnabled()) {
+      validateOptValue("spec.zookeeper.quorum", spec.zookeeper().quorum());
+    }
+    spec.llapClusters().stream()
+        .filter(LlapSpec::isEnabled)
+        .forEach(llap -> validateOptValue("spec.llapClusters.serviceHosts", llap.serviceHosts()));
+  }
+
+  /**
+   * Validates CR-provided string fields before they are embedded into
+   * LLAP / TezAM env vars of llap cluster.
+   */
+  public static void validateLlapEmbeddedValues(HiveClusterSpec spec, LlapSpec llap) {
+    validateOptValue("spec.zookeeper.quorum", spec.zookeeper().quorum());
+    validateOptValue("spec.llapClusters.serviceHosts", llap.serviceHosts());
+  }
+
+  private static void validateOptValue(String field, String value) {
+    if (containsUnsafeShellChars(value) || (value != null && value.contains("$("))) {
+      throw new IllegalArgumentException(field + " must not contain whitespace, quotes, backslashes, "
+          + "control characters or Kubernetes variable references");
+    }
+  }
+
+  /**
+   * Validates a CR-provided external JAR location before it is embedded
+   * into a bash download command.
+   */
+  protected static void validateJarUrl(String jarUrl) {
+    validateOptValue("external JAR location", jarUrl);
+
+    if (jarUrl != null && (jarUrl.startsWith("http://") || jarUrl.startsWith("https://"))) {
+      // Normalizing parse: rejects malformed URLs early instead of
+      // letting wget interpret them, preventing the init containers
+      // from crashing and the spun-up pods from entering CrashLoopBackOff.
+      try {
+        URL url = new URI(jarUrl).toURL();
+
+        String host = url.getHost();
+        if (host == null || host.isEmpty()) {
+          throw new IllegalArgumentException("HTTP/HTTPS external JAR URL must specify a host");
+        }
+
+        int port = url.getPort();
+        if (port != -1 && (port < 1 || port > 65535)) {
+          throw new IllegalArgumentException("HTTP/HTTPS external JAR URL has invalid port");
+        }
+
+      } catch (MalformedURLException | URISyntaxException e) {
+        throw new IllegalArgumentException("Malformed HTTP/HTTPS external JAR URL");
+      }
+    }
+  }
+
+  private static boolean containsUnsafeShellChars(String value) {
+    if (value == null) {
+      return false;
+    }
+    for (int i = 0; i < value.length(); i++) {
+      char c = value.charAt(i);
+      if (Character.isWhitespace(c) || c == '\'' || c == '"' || c == '\\' || c == '`' || Character.isISOControl(c)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Builds the database connection env vars: DB_DRIVER, DBPASSWORD
    * (from SecretKeyRef), and SERVICE_OPTS with javax.jdo connection
    * properties. Shared by MetastoreDeploymentDependent and
    * SchemaInitJobDependent.
    */
   protected static List<EnvVar> buildDbEnvVars(DatabaseConfig db) {
+    validateDatabaseConfig(db);
     List<EnvVar> envVars = new ArrayList<>();
     envVars.add(new EnvVar("DB_DRIVER", db.type(), null));
 
@@ -511,6 +613,7 @@ public abstract class HiveDependentResource<R extends HasMetadata,
     cmd.append("export HADOOP_CONF_DIR=").append(CONF_MOUNT_PATH).append(" && ");
 
     for (String jarUrl : externalJars) {
+      validateJarUrl(jarUrl);
       if (jarUrl.startsWith("http://") || jarUrl.startsWith("https://")) {
         cmd.append("wget -q --tries=3 --waitretry=5 -P ").append(targetDir)
             .append(" '").append(jarUrl).append("' && ");

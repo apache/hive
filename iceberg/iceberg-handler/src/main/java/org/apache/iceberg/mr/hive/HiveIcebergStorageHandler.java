@@ -503,6 +503,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       boolean quickStats) {
     Map<String, String> stats;
 
+    if (hmsTable.getMetaTable() != null) {
+      return Map.of();
+    }
     // For write queries where rows got modified, don't fetch from cache as values could have changed.
     Table table = getTable(hmsTable);
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
@@ -511,8 +514,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       stats = emptyStatsMap();
 
     } else if (!HiveMetaHook.ICEBERG.equals(getStatsSource()) && !quickStats &&
-        hmsTable.getSnapshotRef() == null) {
-      // the metastore parameters describe the table, not a branch: use the snapshot's counters
+        hmsTable.getQualifier().isEmpty()) {
+      // the metastore holds one unversioned set of parameters describing the current table, so a
+      // branch, a tag or a point in time is not answered from it - only a plain scan is
       stats = hmsTable.getParameters();
 
     } else {
@@ -724,6 +728,17 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public boolean areColumnStatsUptoDate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<String> colNames) {
+    if (canSetColStatistics(hmsTable)) {
+      return IcebergStoredStats.colStatsAccurate(hmsTable, colNames, conf);
+    }
+    // the metastore holds them, and its single row describes the current table: a scan of a
+    // branch, a tag, a point in time or a metadata table is not described by it
+    return hmsTable.getQualifier().isEmpty() &&
+        StatsSetupConst.areColumnStatsUptoDate(hmsTable.getParameters(), colNames);
+  }
+
+  @Override
   public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Iterator<ColumnStatistics> colStats) {
     Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -812,9 +827,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return new AggrStats(aggregated, partNames.size());
     }
 
+    Set<String> columns = Sets.newHashSet(colNames);
     Map<String, List<ColumnStatisticsObj>> statsByPart = IcebergColStatsReader.readPart(table, statsFile,
-        partition -> partitions.contains(partition) && upToDate.test(partition),
-        Sets.newHashSet(colNames), conf);
+        partition -> partitions.contains(partition) && upToDate.test(partition), columns, conf);
 
     List<ColumnStatistics> partStats = Lists.newArrayList();
     statsByPart.forEach((partition, statsObjs) -> {
@@ -841,7 +856,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (hmsTable.getMetaTable() != null) {
       return null;
     }
-    return getStatsSource().equals(HiveMetaHook.ICEBERG) || hmsTable.getSnapshotRef() != null ?
+    return getStatsSource().equals(HiveMetaHook.ICEBERG) || !hmsTable.getQualifier().isEmpty() ?
         snapshotRowCount(hmsTable) : metastoreRowCount(hmsTable);
   }
 
@@ -877,6 +892,14 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (partNames.stream().anyMatch(DummyPartition::isVoid)) {
       // rows that belong to no partition are never pruned, so their count may include rows the predicate
       // does not select
+      return Map.of();
+    }
+    // an equality delete under an unpartitioned spec applies to every data file, so no partition's
+    // entry accounts for it. By spec, not the void name: a dropped field leaves a void transform
+    boolean globalDeletes = getOrCachePartitionStats(table, snapshot).values().stream()
+        .anyMatch(stats -> table.specs().get(stats.specId()).isUnpartitioned() &&
+            stats.equalityDeleteRecordCount() > 0);
+    if (globalDeletes) {
       return Map.of();
     }
     Map<String, Long> rowCounts = Maps.newHashMapWithExpectedSize(partNames.size());
