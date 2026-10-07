@@ -2835,7 +2835,7 @@ public class StatsRulesProcFactory {
       if (distinctVals.isEmpty()) {
         return 2;
       }
-      // a single unknown (-1) NDV translates to an unknown denominoator
+      // a single unknown (-1) NDV translates to an unknown denominator
       if (StatsUtils.containsUnknownNDV(distinctVals)) {
         return -1L;
       }

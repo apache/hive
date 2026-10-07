@@ -23,7 +23,6 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.convert.Converter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Spool;
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistinctRowCount;
 import org.apache.calcite.rel.metadata.RelMdUtil;
@@ -42,6 +41,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import com.google.common.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +63,9 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     List<ColStatistics> colStats = htRel.getColStat(projIndxLst);
     Double noDistinctRows = 1.0;
     for (ColStatistics cStat : colStats) {
+      // unknown (< 0) or zero NDV yields 0; null (Calcite's
+      // "unknown") would need matching guards in
+      // HiveRelMdRowCount's PK-FK analysis
       if (cStat.getCountDistint() <= 0) {
         return 0.0;
       }

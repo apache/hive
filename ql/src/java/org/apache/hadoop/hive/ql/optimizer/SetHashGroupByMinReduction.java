@@ -71,7 +71,7 @@ public class SetHashGroupByMinReduction implements SemanticNodeProcessor {
     long ndvProduct = StatsUtils.computeNDVGroupingColumns(
         colStats, parentStats, true);
     if (ndvProduct < 0) {
-      // unknown product - same fallback as old "overloaded NDV=0" path
+      // unknown NDV product: keep the configured minimum reduction
       return null;
     }
 

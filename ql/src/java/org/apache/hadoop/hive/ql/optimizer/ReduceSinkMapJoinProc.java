@@ -189,7 +189,8 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
           ColStatistics cs =
               StatsUtils.getColStatisticsFromExpression(context.conf, stats, realCol);
           if (cs == null || cs.getCountDistint() < 0) {
-            // unknown: same fallback as old "no stats / overloaded NDV=0" path
+            // missing stats or unknown NDV: the key columns cannot bound
+            // the key count, so it stays at the row count
             maxKeyCount = Long.MAX_VALUE;
             break;
           }
