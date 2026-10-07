@@ -12,7 +12,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
         "table:alias": "customer",
         "inputs": [],
         "rowCount": 80000000,
-        "avgRowSize": 585,
+        "avgRowSize": 517,
         "rowType": {
           "fields": [
             {
@@ -21,9 +21,9 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
               "name": "c_customer_sk"
             },
             {
-              "type": "VARCHAR",
+              "type": "CHAR",
               "nullable": false,
-              "precision": 2147483647,
+              "precision": 16,
               "name": "c_customer_id"
             },
             {
@@ -295,7 +295,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
         "table:alias": "customer_address",
         "inputs": [],
         "rowCount": 40000000,
-        "avgRowSize": 675,
+        "avgRowSize": 607,
         "rowType": {
           "fields": [
             {
@@ -304,9 +304,9 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
               "name": "ca_address_sk"
             },
             {
-              "type": "VARCHAR",
+              "type": "CHAR",
               "nullable": false,
-              "precision": 2147483647,
+              "precision": 16,
               "name": "ca_address_id"
             },
             {

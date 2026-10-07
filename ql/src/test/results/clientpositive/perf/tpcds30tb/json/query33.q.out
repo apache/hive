@@ -908,7 +908,7 @@
         "table:alias": "customer_address",
         "inputs": [],
         "rowCount": 40000000,
-        "avgRowSize": 675,
+        "avgRowSize": 607,
         "rowType": {
           "fields": [
             {
@@ -917,9 +917,9 @@
               "name": "ca_address_sk"
             },
             {
-              "type": "VARCHAR",
+              "type": "CHAR",
               "nullable": false,
-              "precision": 2147483647,
+              "precision": 16,
               "name": "ca_address_id"
             },
             {

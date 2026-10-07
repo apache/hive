@@ -63,7 +63,7 @@ STAGE PLANS:
                   alias: customer
                   Statistics: Num rows: 80000000 Data size: 8640000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: c_customer_sk (type: bigint), c_customer_id (type: string)
+                    expressions: c_customer_sk (type: bigint), c_customer_id (type: char(16))
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 80000000 Data size: 8640000000 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -72,7 +72,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: bigint)
                       Statistics: Num rows: 80000000 Data size: 8640000000 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: string)
+                      value expressions: _col1 (type: char(16))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 5 
@@ -321,16 +321,16 @@ STAGE PLANS:
                 DynamicPartitionHashJoin: true
                 Top N Key Operator
                   sort order: +
-                  keys: _col7 (type: string)
+                  keys: _col7 (type: char(16))
                   null sort order: z
                   Statistics: Num rows: 11608261 Data size: 1160826100 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 100
                   Select Operator
-                    expressions: _col7 (type: string)
+                    expressions: _col7 (type: char(16))
                     outputColumnNames: _col0
                     Statistics: Num rows: 11608261 Data size: 1160826100 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: string)
+                      key expressions: _col0 (type: char(16))
                       null sort order: z
                       sort order: +
                       Statistics: Num rows: 11608261 Data size: 1160826100 Basic stats: COMPLETE Column stats: COMPLETE
@@ -338,7 +338,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string)
+                expressions: KEY.reducesinkkey0 (type: char(16))
                 outputColumnNames: _col0
                 Statistics: Num rows: 11608261 Data size: 1160826100 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit

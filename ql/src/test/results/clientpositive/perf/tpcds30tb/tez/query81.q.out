@@ -29,7 +29,7 @@ STAGE PLANS:
                     predicate: c_current_addr_sk is not null (type: boolean)
                     Statistics: Num rows: 80000000 Data size: 29892558349 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: c_customer_sk (type: bigint), c_customer_id (type: string), c_current_addr_sk (type: bigint), c_salutation (type: char(10)), c_first_name (type: char(20)), c_last_name (type: char(30))
+                      expressions: c_customer_sk (type: bigint), c_customer_id (type: char(16)), c_current_addr_sk (type: bigint), c_salutation (type: char(10)), c_first_name (type: char(20)), c_last_name (type: char(30))
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                       Statistics: Num rows: 80000000 Data size: 29892558349 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
@@ -48,7 +48,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: bigint)
                           Statistics: Num rows: 1538463 Data size: 1592137965 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col1 (type: string), _col3 (type: char(10)), _col4 (type: char(20)), _col5 (type: char(30)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: char(15)), _col10 (type: char(10)), _col11 (type: varchar(60)), _col12 (type: varchar(30)), _col13 (type: char(10)), _col14 (type: varchar(20)), _col15 (type: decimal(5,2)), _col16 (type: char(20))
+                          value expressions: _col1 (type: char(16)), _col3 (type: char(10)), _col4 (type: char(20)), _col5 (type: char(30)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: char(15)), _col10 (type: char(10)), _col11 (type: varchar(60)), _col12 (type: varchar(30)), _col13 (type: char(10)), _col14 (type: varchar(20)), _col15 (type: decimal(5,2)), _col16 (type: char(20))
                         Select Operator
                           expressions: _col0 (type: bigint)
                           outputColumnNames: _col0
@@ -371,16 +371,16 @@ STAGE PLANS:
                         Statistics: Num rows: 236260128 Data size: 361806357143 Basic stats: COMPLETE Column stats: COMPLETE
                         Top N Key Operator
                           sort order: +++++++++++++++
-                          keys: _col1 (type: string), _col3 (type: char(10)), _col4 (type: char(20)), _col5 (type: char(30)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: char(15)), _col10 (type: char(10)), _col11 (type: varchar(60)), _col12 (type: varchar(30)), _col13 (type: char(10)), _col14 (type: varchar(20)), _col15 (type: decimal(5,2)), _col16 (type: char(20)), _col19 (type: decimal(17,2))
+                          keys: _col1 (type: char(16)), _col3 (type: char(10)), _col4 (type: char(20)), _col5 (type: char(30)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: char(15)), _col10 (type: char(10)), _col11 (type: varchar(60)), _col12 (type: varchar(30)), _col13 (type: char(10)), _col14 (type: varchar(20)), _col15 (type: decimal(5,2)), _col16 (type: char(20)), _col19 (type: decimal(17,2))
                           null sort order: zzzzzzzzzzzzzzz
                           Statistics: Num rows: 236260128 Data size: 361806357143 Basic stats: COMPLETE Column stats: COMPLETE
                           top n: 100
                           Select Operator
-                            expressions: _col1 (type: string), _col3 (type: char(10)), _col4 (type: char(20)), _col5 (type: char(30)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: char(15)), _col10 (type: char(10)), _col11 (type: varchar(60)), _col12 (type: varchar(30)), _col13 (type: char(10)), _col14 (type: varchar(20)), _col15 (type: decimal(5,2)), _col16 (type: char(20)), _col19 (type: decimal(17,2))
+                            expressions: _col1 (type: char(16)), _col3 (type: char(10)), _col4 (type: char(20)), _col5 (type: char(30)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: char(15)), _col10 (type: char(10)), _col11 (type: varchar(60)), _col12 (type: varchar(30)), _col13 (type: char(10)), _col14 (type: varchar(20)), _col15 (type: decimal(5,2)), _col16 (type: char(20)), _col19 (type: decimal(17,2))
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
                             Statistics: Num rows: 236260128 Data size: 335201062646 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator
-                              key expressions: _col0 (type: string), _col1 (type: char(10)), _col2 (type: char(20)), _col3 (type: char(30)), _col4 (type: char(10)), _col5 (type: varchar(60)), _col6 (type: char(15)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: varchar(30)), _col10 (type: char(10)), _col11 (type: varchar(20)), _col12 (type: decimal(5,2)), _col13 (type: char(20)), _col14 (type: decimal(17,2))
+                              key expressions: _col0 (type: char(16)), _col1 (type: char(10)), _col2 (type: char(20)), _col3 (type: char(30)), _col4 (type: char(10)), _col5 (type: varchar(60)), _col6 (type: char(15)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: varchar(30)), _col10 (type: char(10)), _col11 (type: varchar(20)), _col12 (type: decimal(5,2)), _col13 (type: char(20)), _col14 (type: decimal(17,2))
                               null sort order: zzzzzzzzzzzzzzz
                               sort order: +++++++++++++++
                               Statistics: Num rows: 236260128 Data size: 335201062646 Basic stats: COMPLETE Column stats: COMPLETE
@@ -388,14 +388,14 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: char(10)), KEY.reducesinkkey2 (type: char(20)), KEY.reducesinkkey3 (type: char(30)), KEY.reducesinkkey4 (type: char(10)), KEY.reducesinkkey5 (type: varchar(60)), KEY.reducesinkkey6 (type: char(15)), KEY.reducesinkkey7 (type: char(10)), KEY.reducesinkkey8 (type: varchar(60)), KEY.reducesinkkey9 (type: varchar(30)), KEY.reducesinkkey10 (type: char(10)), KEY.reducesinkkey11 (type: varchar(20)), KEY.reducesinkkey12 (type: decimal(5,2)), KEY.reducesinkkey13 (type: char(20)), KEY.reducesinkkey14 (type: decimal(17,2))
+                expressions: KEY.reducesinkkey0 (type: char(16)), KEY.reducesinkkey1 (type: char(10)), KEY.reducesinkkey2 (type: char(20)), KEY.reducesinkkey3 (type: char(30)), KEY.reducesinkkey4 (type: char(10)), KEY.reducesinkkey5 (type: varchar(60)), KEY.reducesinkkey6 (type: char(15)), KEY.reducesinkkey7 (type: char(10)), KEY.reducesinkkey8 (type: varchar(60)), KEY.reducesinkkey9 (type: varchar(30)), KEY.reducesinkkey10 (type: char(10)), KEY.reducesinkkey11 (type: varchar(20)), KEY.reducesinkkey12 (type: decimal(5,2)), KEY.reducesinkkey13 (type: char(20)), KEY.reducesinkkey14 (type: decimal(17,2))
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
                 Statistics: Num rows: 236260128 Data size: 335201062646 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 100
                   Statistics: Num rows: 100 Data size: 142000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col0 (type: string), _col1 (type: char(10)), _col2 (type: char(20)), _col3 (type: char(30)), _col4 (type: char(10)), _col5 (type: varchar(60)), _col6 (type: char(15)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: varchar(30)), 'IL' (type: char(2)), _col10 (type: char(10)), _col11 (type: varchar(20)), _col12 (type: decimal(5,2)), _col13 (type: char(20)), _col14 (type: decimal(17,2))
+                    expressions: _col0 (type: char(16)), _col1 (type: char(10)), _col2 (type: char(20)), _col3 (type: char(30)), _col4 (type: char(10)), _col5 (type: varchar(60)), _col6 (type: char(15)), _col7 (type: char(10)), _col8 (type: varchar(60)), _col9 (type: varchar(30)), 'IL' (type: char(2)), _col10 (type: char(10)), _col11 (type: varchar(20)), _col12 (type: decimal(5,2)), _col13 (type: char(20)), _col14 (type: decimal(17,2))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
                     Statistics: Num rows: 100 Data size: 150600 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
