@@ -305,12 +305,9 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /**
-   * Leaf-column positions of the requested fields; {@code BlockMetaData.getColumns()} is a flat list
-   * of leaves in file-schema order, so a top-level primitive at ordinal {@code k} in the file schema
-   * may sit at a very different leaf index (e.g. a nested group of two leaves before it shifts it
-   * from {@code 1} to {@code 2}). We only reach this method when every requested field is a
-   * top-level primitive ({@link #projectsNestedTypes()} would have forced a fallback otherwise), so
-   * each requested field maps to exactly one leaf whose path is a single segment.
+   * Leaf ordinals in {@code fileSchema.getColumns()}, which {@link #startFetch} uses to index
+   * {@code BlockMetaData.getColumns()} - sound only because a row group lists its chunks in
+   * file-schema leaf order, which parquet's own reader does not rely on.
    */
   static int[] findLeafIndexes(MessageType requestedSchema, MessageType fileSchema) {
     List<ColumnDescriptor> allLeaves = fileSchema.getColumns();
@@ -390,6 +387,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     RowGroupFetch fetch = new RowGroupFetch();
     ColumnChunkMetaData[] chunks = new ColumnChunkMetaData[projected.length];
     for (int pc = 0; pc < projected.length; ++pc) {
+      // Positional - see findLeafIndexes for the chunk-order assumption behind it.
       chunks[pc] = block.getColumns().get(projected[pc]);
     }
     fetch.batch.init(fileKey, rg, chunks);
