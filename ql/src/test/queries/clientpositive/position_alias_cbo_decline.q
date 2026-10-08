@@ -38,6 +38,11 @@ select d, s from pacd_t tablesample (5 rows) cluster by 1;
 explain select d, s from pacd_t tablesample (5 rows) distribute by 1 sort by 2 desc;
 select d, s from pacd_t tablesample (5 rows) distribute by 1 sort by 2 desc;
 
+-- with the return path enabled, CBO declines lateral views
+set hive.cbo.returnpath.hiveop=true;
+select s, t.c from pacd_t lateral view explode(array(d, -d)) t as c order by 2 desc;
+set hive.cbo.returnpath.hiveop=false;
+
 -- a number is a constant when position aliases are disabled
 set hive.orderby.position.alias=false;
 select d from pacd_t tablesample (5 rows) order by 1 desc;

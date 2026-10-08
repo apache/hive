@@ -734,10 +734,17 @@ public class TestSemanticAnalyzer {
 
   @Test
   public void testOrderByPositionResolvedWhenCboDeclines() throws Exception {
-    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
-        "select value, key from table1 tablesample (2 rows) order by 2 desc");
-    assertColumns(rs.getKeyCols(), "_col1");
-    assertEquals("-", rs.getOrder());
+    String[][] queryAndOrder = {
+        {"select value, key from table1 tablesample (2 rows) order by 2 desc", "-"},
+        {"select * from table1 tablesample (2 rows) order by 2", "+"},
+        // CBO declines scripts; positions count the script output columns
+        {"select transform(key, value) using 'cat' as (x, y) from table1 order by 2 desc", "-"},
+    };
+    for (String[] c : queryAndOrder) {
+      ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(c[0]);
+      assertColumns(rs.getKeyCols(), "_col1");
+      assertEquals(c[0], c[1], rs.getOrder());
+    }
   }
 
   @Test
@@ -747,31 +754,6 @@ public class TestSemanticAnalyzer {
         "select t.c, value from table1 lateral view explode(array(key)) t as c order by 2 desc", true);
     assertColumns(rs.getKeyCols(), "_col1");
     assertEquals("-", rs.getOrder());
-  }
-
-  @Test
-  public void testOrderByPositionOverSelectStarResolvedWhenCboDeclines() throws Exception {
-    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery("select * from table1 tablesample (2 rows) order by 2");
-    assertColumns(rs.getKeyCols(), "_col1");
-    assertEquals("+", rs.getOrder());
-  }
-
-  @Test
-  public void testDistributeBySortByPositionsResolvedWhenCboDeclines() throws Exception {
-    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
-        "select key, value from table1 tablesample (2 rows) distribute by 2 sort by 1 desc");
-    assertColumns(rs.getPartitionCols(), "_col1");
-    assertColumns(rs.getKeyCols(), "_col0");
-    assertEquals("-", rs.getOrder());
-  }
-
-  @Test
-  public void testClusterByPositionResolvedWhenCboDeclines() throws Exception {
-    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
-        "select key, value from table1 tablesample (2 rows) cluster by 2");
-    assertColumns(rs.getPartitionCols(), "_col1");
-    assertColumns(rs.getKeyCols(), "_col1");
-    assertEquals("+", rs.getOrder());
   }
 
   @Test
@@ -787,11 +769,20 @@ public class TestSemanticAnalyzer {
   }
 
   @Test
-  public void testOrderByPositionOverTransformOutputResolvedWhenCboDeclines() throws Exception {
-    // CBO declines scripts; positions count the script output columns
+  public void testClusterByPositionResolvedWhenCboDeclines() throws Exception {
     ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
-        "select transform(key, value) using 'cat' as (x, y) from table1 order by 2 desc");
+        "select key, value from table1 tablesample (2 rows) cluster by 2");
+    assertColumns(rs.getPartitionCols(), "_col1");
     assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("+", rs.getOrder());
+  }
+
+  @Test
+  public void testDistributeBySortByPositionsResolvedWhenCboDeclines() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select key, value from table1 tablesample (2 rows) distribute by 2 sort by 1 desc");
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertColumns(rs.getKeyCols(), "_col0");
     assertEquals("-", rs.getOrder());
   }
 

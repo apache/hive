@@ -398,6 +398,20 @@ POSTHOOK: Input: default@pacd_t
 3	c
 2	b
 1	a
+PREHOOK: query: select s, t.c from pacd_t lateral view explode(array(d, -d)) t as c order by 2 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select s, t.c from pacd_t lateral view explode(array(d, -d)) t as c order by 2 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+c	3
+b	2
+a	1
+a	-1
+b	-2
+c	-3
 PREHOOK: query: select d from pacd_t tablesample (5 rows) order by 1 desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pacd_t
