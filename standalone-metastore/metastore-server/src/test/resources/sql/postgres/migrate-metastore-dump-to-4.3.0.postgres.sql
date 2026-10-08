@@ -1,4 +1,4 @@
--- The file has some overlapping with upgrade-3.2.0-to-4.0.0.postgres.sql
+-- The file has some overlapping with upgrade-3.2.0-to-4.0.0-alpha-1.postgres.sql
 SELECT 'Upgrading MetaStore schema from 3.1.3000 to 4.3.0';
 
 -- The dump was created from a metastore where some columns had the wrong types.
