@@ -558,6 +558,11 @@
       <artifactId>jaxb-runtime</artifactId>
       <version>${jaxb-runtime.version}</version>
     </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>apache5-client</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

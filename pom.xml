@@ -289,6 +289,11 @@
         <scope>provided</scope>
       </dependency>
       <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>apache5-client</artifactId>
+        <version>${aws-java-sdk.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.amazonaws.secretsmanager</groupId>
         <artifactId>aws-secretsmanager-caching-java</artifactId>
         <version>${aws-secretsmanager-caching.version}</version>
