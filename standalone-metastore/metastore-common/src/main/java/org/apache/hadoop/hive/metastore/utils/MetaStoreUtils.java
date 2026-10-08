@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.sql.Date;
@@ -81,6 +83,8 @@ public class MetaStoreUtils {
   private static final DateTimeFormatter DATE_FORMATTER = createDateTimeFormatter("uuuu-MM-dd");
 
   private static final DateTimeFormatter TIMESTAMP_FORMATTER = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
+
+  private static final String LOCALHOST = "localhost";
 
   private static DateTimeFormatter createDateTimeFormatter(String format) {
     return DateTimeFormatter.ofPattern(format).withZone(TimeZone.getTimeZone("UTC").toZoneId())
@@ -1312,5 +1316,72 @@ public class MetaStoreUtils {
 
   public static boolean isDatabaseRemote(Database db) {
     return db != null && db.getType() == DatabaseType.REMOTE;
+  }
+
+  /**
+   * Get the string value of Inet address of this machine.
+   * @return  string value of Inet address
+   */
+  public static String getLocalHost() {
+    try {
+      return InetAddress.getLocalHost().toString();
+    } catch (UnknownHostException e) {
+      LOG.warn("Failed to retrieve host address! Falling back to localhost.{}", e.getMessage());
+      return LOCALHOST;
+    }
+  }
+
+  /**
+   * Return hostname without throwing exception.
+   * @return hostname
+   */
+  public static String getHostname() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      LOG.warn("Machine hostname is misconfigured! Falling back to localhost.{}", e.getMessage());
+      return LOCALHOST;
+    }
+  }
+
+  /**
+   * Get the IP address string (e.g. "192.168.1.50").
+   * @return The network address of the host and UNKNOWN if resolution fails
+   */
+  public static String getHostAddressString() {
+    try {
+      return InetAddress.getLocalHost().getHostAddress();
+    } catch (UnknownHostException e) {
+      LOG.warn("Error trying to get host address : {}", e.getMessage());
+      return LOCALHOST;
+    }
+  }
+
+  /**
+   * Method to get canonical-ized hostname of localhost
+   * @return the canonical-ized hostname of localhost is returned. If not found, fallback to localhost.
+   */
+  public static String getCanonicalHostname() {
+    try {
+      return InetAddress.getLocalHost().getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      LOG.warn("Error fetching canonical hostname! Falling back to localhost.{}", e.getMessage());
+      return LOCALHOST;
+    }
+  }
+
+  /**
+   * Method to get canonical-ized hostname, given a hostname (possibly a CNAME).
+   * This should allow for service-principals to use simplified CNAMEs.
+   * @param hostname The hostname to be canonical-ized.
+   * @return Given a CNAME, the canonical-ized hostname is returned. If not found, fallback to UNKNOWN.
+   */
+  public static String getCanonicalHostname(String hostname) {
+    try {
+      return InetAddress.getByName(hostname).getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      LOG.warn("Error fetching canonical hostname! Falling back to UNKNOWN.{}", e.getMessage());
+      return "UNKNOWN";
+    }
   }
 }

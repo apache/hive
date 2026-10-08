@@ -680,7 +680,7 @@ public class TestCompactionTxnHandler {
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> filteredToPartition = resp.getCompacts().stream()
             .filter(e -> e.getDbname().equals(dbName) && e.getTablename().equals(tableName) &&
-                    (partition == null || partition.equals(e.getPartitionname()))).collect(Collectors.toList());
+                    (partition == null || partition.equals(e.getPartitionname()))).toList();
 
     assertEquals(expectedSucceeded, filteredToPartition.stream().filter(e -> e.getState().equals(TxnStore.SUCCEEDED_RESPONSE)).count());
     assertEquals(expectedFailed, filteredToPartition.stream().filter(e -> e.getState().equals(TxnStore.FAILED_RESPONSE)).count());

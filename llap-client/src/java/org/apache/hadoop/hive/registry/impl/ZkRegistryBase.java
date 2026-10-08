@@ -48,13 +48,13 @@ import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.registry.ClusterNotReadyException;
-import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -129,7 +129,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private PathChildrenCache instancesCache; // Created on demand.
 
   /** Local hostname. */
-  protected static final String hostname = RegistryUtilities.getCanonicalHostName();
+  protected static final String hostname = ServerUtils.canonicalHostname();
 
   /**
    * @param rootNs A single root namespace override. Not recommended.

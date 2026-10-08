@@ -19,11 +19,10 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
 
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.Context;
@@ -52,7 +51,7 @@ public class PrivateHookContext extends HookContext {
   public PrivateHookContext(DriverContext driverContext, Context context) throws Exception {
     this(driverContext.getPlan(), driverContext.getQueryState(),
         context.getPathToCS(), SessionState.get().getUserName(), SessionState.get().getUserIpAddress(),
-        InetAddress.getLocalHost().getHostAddress(), driverContext.getOperationId(),
+        ServerUtils.hostname(), driverContext.getOperationId(),
         SessionState.get().getSessionId(), Thread.currentThread().getName(), SessionState.get().isHiveServerQuery(),
         SessionState.getPerfLogger(), driverContext.getQueryInfo(), context);
   }
