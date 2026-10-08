@@ -121,10 +121,12 @@ public class ParquetEncodedDataConsumer
         DataWritableReadSupport.getColumnTypes(jobConf.get(IOConstants.COLUMNS_TYPES));
     this.colsToInclude = ColumnProjectionUtils.getReadColumnIDs(jobConf);
     this.readAllColumns = ColumnProjectionUtils.isReadAllColumns(jobConf);
-    // The vectorizer already decided per column whether it wants a DECIMAL_64 vector; honouring that
-    // is what keeps the batch shape identical to the one the operator pipeline was planned for.
-    // A split that arrives without a vectorized plan on the conf carries no such decision, so every
-    // column then gets the default vector for its type.
+    /*
+     * The vectorizer already decided per column whether it wants a DECIMAL_64 vector, and honouring
+     * that is what keeps the batch shape identical to the plan the operator pipeline was built for.
+     * A split arriving without a vectorized plan carries no such decision: variations stays null and
+     * every column gets its type's default vector.
+     */
     VectorizedRowBatchCtx rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
     this.variations = rbCtx == null ? null : rbCtx.getRowdataTypePhysicalVariations();
 
