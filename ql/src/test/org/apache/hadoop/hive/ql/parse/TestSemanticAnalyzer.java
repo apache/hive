@@ -741,6 +741,15 @@ public class TestSemanticAnalyzer {
   }
 
   @Test
+  public void testOrderByPositionResolvedWhenReturnPathDeclinesLateralView() throws Exception {
+    // with hive.cbo.returnpath.hiveop=true, CBO declines lateral views
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select t.c, value from table1 lateral view explode(array(key)) t as c order by 2 desc", true);
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
   public void testOrderByPositionOverSelectStarResolvedWhenCboDeclines() throws Exception {
     ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery("select * from table1 tablesample (2 rows) order by 2");
     assertColumns(rs.getKeyCols(), "_col1");
@@ -757,23 +766,81 @@ public class TestSemanticAnalyzer {
   }
 
   @Test
+  public void testClusterByPositionResolvedWhenCboDeclines() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select key, value from table1 tablesample (2 rows) cluster by 2");
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("+", rs.getOrder());
+  }
+
+  @Test
+  public void testSortByPositionResolvedInExtraLimitStepWhenCboDeclines() throws Exception {
+    // SORT BY + LIMIT in a subquery declines CBO and adds a second reduce sink for the limit
+    List<ReduceSinkDesc> reduceSinks = reduceSinksOfCboDeclinedQuery(
+        "select * from (select value, key from table1 sort by 2 desc limit 5) q", false);
+    assertEquals(2, reduceSinks.size());
+    for (ReduceSinkDesc rs : reduceSinks) {
+      assertColumns(rs.getKeyCols(), "_col1");
+      assertEquals("-", rs.getOrder());
+    }
+  }
+
+  @Test
+  public void testOrderByPositionOverTransformOutputResolvedWhenCboDeclines() throws Exception {
+    // CBO declines scripts; positions count the script output columns
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select transform(key, value) using 'cat' as (x, y) from table1 order by 2 desc");
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testFloatLiteralNotReadAsPositionWhenCboPlansStatement() throws Exception {
+    // the AST regenerated from the CBO plan goes through the same reduce sink code
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(
+        "select cast(1.5 as float) as x, value from table1 order by x, 2 desc");
+    assertFalse(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO"));
+    List<ReduceSinkDesc> reduceSinks = reduceSinks(analyzer);
+    assertEquals(1, reduceSinks.size());
+    for (ExprNodeDesc key : reduceSinks.get(0).getKeyCols()) {
+      assertTrue(key.toString(), key instanceof ExprNodeColumnDesc);
+    }
+  }
+
+  @Test
   public void testOutOfRangePositionRejectedWhenCboDeclines() {
-    SemanticException e = assertThrows(SemanticException.class,
-        () -> analyzeWithCbo("select key from table1 tablesample (2 rows) order by 2"));
-    assertTrue(e.getMessage(), e.getMessage().contains("Position alias: 2 does not exist"));
+    for (int pos : new int[] {0, 2}) {
+      SemanticException e = assertThrows(SemanticException.class,
+          () -> analyzeWithCbo("select key from table1 tablesample (2 rows) order by " + pos));
+      assertTrue(e.getMessage(), e.getMessage().contains("Position alias: " + pos + " does not exist"));
+    }
   }
 
   private ReduceSinkDesc reduceSinkOfCboDeclinedQuery(String query) throws Exception {
-    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(query);
+    return reduceSinkOfCboDeclinedQuery(query, false);
+  }
+
+  private ReduceSinkDesc reduceSinkOfCboDeclinedQuery(String query, boolean returnPath) throws Exception {
+    List<ReduceSinkDesc> reduceSinks = reduceSinksOfCboDeclinedQuery(query, returnPath);
+    assertEquals(1, reduceSinks.size());
+    return reduceSinks.get(0);
+  }
+
+  private List<ReduceSinkDesc> reduceSinksOfCboDeclinedQuery(String query, boolean returnPath) throws Exception {
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(query, returnPath);
     assertTrue(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO because"));
+    return reduceSinks(analyzer);
+  }
+
+  private static List<ReduceSinkDesc> reduceSinks(SemanticAnalyzer analyzer) {
     List<ReduceSinkDesc> reduceSinks = new ArrayList<>();
     for (Operator<?> op : analyzer.opParseCtx.keySet()) {
       if (op instanceof ReduceSinkOperator) {
         reduceSinks.add(((ReduceSinkOperator) op).getConf());
       }
     }
-    assertEquals(1, reduceSinks.size());
-    return reduceSinks.get(0);
+    return reduceSinks;
   }
 
   private static void assertColumns(List<ExprNodeDesc> exprs, String... expectedColumns) {
