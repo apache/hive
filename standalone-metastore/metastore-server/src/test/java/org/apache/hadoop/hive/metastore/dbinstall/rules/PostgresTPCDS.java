@@ -22,15 +22,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
@@ -69,13 +65,7 @@ public class PostgresTPCDS extends Postgres {
     // Upgrade the metastore to latest by running explicitly a script.
     String hiveSchemaVer = MetaStoreSchemaInfoFactory.get(new Configuration()).getHiveSchemaVersion();
     try (InputStream script = PostgresTPCDS.class.getClassLoader()
-        .getResourceAsStream("sql/postgres/upgrade-3.1.3000-to-" + hiveSchemaVer + ".postgres.sql")) {
-      // The dump was created from a metastore where some columns had the wrong types.
-      // Fix those that some tests verify.
-      String fixColumnTypes =
-          "UPDATE \"COLUMNS_V2\" c SET \"TYPE_NAME\" = 'char(16)' WHERE \"COLUMN_NAME\" in ('c_customer_id', 'ca_address_id')" + "AND EXISTS (SELECT * FROM \"SDS\" s WHERE s.\"CD_ID\" = c.\"CD_ID\");\n";
-      InputStream script2 =
-          new SequenceInputStream(new ByteArrayInputStream(fixColumnTypes.getBytes(StandardCharsets.UTF_8)), script);
+        .getResourceAsStream("sql/postgres/migrate-metastore-dump-to-" + hiveSchemaVer + ".postgres.sql")) {
       new MetastoreSchemaTool().runScript(
           buildArray(
               "-upgradeSchema",
@@ -84,7 +74,7 @@ public class PostgresTPCDS extends Postgres {
               "-passWord", getHivePassword(),
               "-url", getJdbcUrl(),
               "-driver", getJdbcDriver()),
-          script2);
+          script);
     } catch (IOException exception) {
       throw new UncheckedIOException(exception);
     }

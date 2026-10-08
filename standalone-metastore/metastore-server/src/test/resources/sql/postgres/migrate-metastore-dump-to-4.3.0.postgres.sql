@@ -1,6 +1,13 @@
 -- The file has some overlapping with upgrade-3.2.0-to-4.0.0.postgres.sql
 SELECT 'Upgrading MetaStore schema from 3.1.3000 to 4.3.0';
 
+-- The dump was created from a metastore where some columns had the wrong types.
+-- Fix those column types that some tests verify.
+UPDATE "COLUMNS_V2" c
+SET "TYPE_NAME" = 'char(16)'
+WHERE "COLUMN_NAME" in ('c_customer_id', 'ca_address_id')
+AND EXISTS (SELECT * FROM "SDS" s WHERE s."CD_ID" = c."CD_ID");
+
 -- HIVE-20793
 ALTER TABLE "WM_RESOURCEPLAN" ADD "NS" character varying(128);
 UPDATE "WM_RESOURCEPLAN" SET "NS" = 'default' WHERE "NS" IS NULL;
