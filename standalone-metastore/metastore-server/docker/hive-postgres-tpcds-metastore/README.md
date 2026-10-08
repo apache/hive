@@ -19,7 +19,10 @@ limitations under the License.
 # Postgres TPC-DS metastore
 
 A dockerized Postgres database with a Hive metastore dump from a
-[TPC-DS 30TB dataset](https://github.com/thomasrebele/hive-postgres-metastore/releases/download/tpcds-30tb-histogram-1.0/metastore_tpcds30tb_with_histograms.raw_db.zstd), including histograms. The dump has been created with a fresh Postgres database, importing a dump with `pg_restore`, stopping Postgres, and then compressing the Postgres database files. More details can be found [here](https://github.com/thomasrebele/hive-postgres-metastore/tree/tpcds-30tb-histogram-1.0).
+[TPC-DS 30TB dataset](https://nightlies.apache.org/hive/datasets/tpcds-metastore-30tb-1.0.zstd), including histograms.
+The dump has been created with a fresh Postgres database, importing a
+dump with `pg_restore`, stopping Postgres, and then compressing the Postgres database files. More details can be
+found [here](https://github.com/thomasrebele/hive-postgres-metastore).
 
 ## Build and deploy 
 
