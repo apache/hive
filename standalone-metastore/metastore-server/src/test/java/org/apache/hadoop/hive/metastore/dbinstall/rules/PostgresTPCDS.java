@@ -35,7 +35,7 @@ import java.time.temporal.ChronoUnit;
  */
 public class PostgresTPCDS extends Postgres {
   public PostgresTPCDS() {
-    super(DockerImageName.parse("docker.io/thomasrebele/postgres-tpcds-metastore:1.5")
+    super(DockerImageName.parse("docker.io/apache/hive-postgres-tpcds-metastore:1.5")
         .asCompatibleSubstituteFor("postgres"));
     container.withUsername("postgres");
     // the image restores a raw database dump directly, so the database restore phase is skipped,
