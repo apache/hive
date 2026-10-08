@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongLastValue
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongMax;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongSum;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorNTile;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorPercentRank;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorRank;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorRowNumber;
@@ -98,6 +99,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     DENSE_RANK,
     PERCENT_RANK, 
     CUME_DIST,
+    NTILE,
     MIN,
     MAX,
     SUM,
@@ -143,7 +145,8 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
           SupportedFunctionType.RANK,
           SupportedFunctionType.DENSE_RANK,
           SupportedFunctionType.PERCENT_RANK,
-          SupportedFunctionType.CUME_DIST);
+          SupportedFunctionType.CUME_DIST,
+          SupportedFunctionType.NTILE);
 
   private TypeInfo[] reducerBatchTypeInfos;
   private DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations;
@@ -221,6 +224,11 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       break;
     case CUME_DIST:
       evaluator = new VectorPTFEvaluatorCumeDist(windowFrameDef, outputColumnNum);
+      break;
+    case NTILE:
+      // ntile(n) receives the number of buckets as a constant integer expression
+      evaluator = new VectorPTFEvaluatorNTile(windowFrameDef, inputVectorExpression,
+          outputColumnNum);
       break;
     case MIN:
       switch (columnVectorType) {
