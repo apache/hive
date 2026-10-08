@@ -16,9 +16,9 @@
 #
 FROM postgres:18-alpine
 
-RUN wget -O /tmp/metastore_db.zstd https://github.com/thomasrebele/hive-postgres-metastore/releases/download/tpcds-30tb-histogram-1.1/metastore_tpcds30tb_with_histograms.raw_db.zstd \
- && echo 'bc9e206d5f963a14451dad6f499ab069800be9ce  /tmp/metastore_db.zstd' > /tmp/metastore_db.sha1 \
- && sha1sum -c /tmp/metastore_db.sha1 \
+RUN wget -O /tmp/metastore_db.zstd https://nightlies.apache.org/hive/datasets/tpcds-metastore-30tb-1.0.zstd \
+ && echo 'dbeb9f4572dc001d84e10c47817a10166cdf1ac2f6fefd7a78f825f8afd4f3ab  /tmp/metastore_db.zstd' > /tmp/metastore_db.sha256 \
+ && sha256sum -c /tmp/metastore_db.sha256 \
  && chown postgres:postgres /tmp/metastore_db.zstd
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
