@@ -58,6 +58,12 @@ import org.apache.parquet.schema.Type;
  */
 public class ParquetRowGroupDecoder {
 
+  /**
+   * Group levels the MAP case unwraps looking for the {key, value} group. parquet-format puts
+   * exactly one between the MAP-annotated group and that pair, in the canonical layout and in every
+   * backward-compatible one; three is inherited slack, not a spec limit. Off by one in practice:
+   * the bound is tested before the counter is bumped, so a fourth wrapper still reads.
+   */
   private static final int MAX_MAP_WRAPPER_GROUPS = 3;
 
   /**
@@ -208,15 +214,10 @@ public class ParquetRowGroupDecoder {
       checkListColumnSupport(((ListTypeInfo) typeInfo).getListElementTypeInfo());
       return listReader(descriptor, pages, options, listElementType(type), typeInfo);
     case MAP:
-      // Parquet has more than one on-disk shape for MAP; walk down until we find the
-      // {key, value} group. The check below fires after the counter is bumped, so the walk
-      // unwraps one group more than MAX_MAP_WRAPPER_GROUPS before giving up - kept as it was, since
-      // a schema with that many wrappers was being read before this code moved here.
-      // See parquet-format's LogicalTypes spec for the MAP annotation for the shapes.
+      // Unwrap group levels until the {key, value} group - see MAX_MAP_WRAPPER_GROUPS, and
+      // parquet-format's LogicalTypes spec for the shapes the MAP annotation allows.
       int nestGroup = 0;
       GroupType groupType = type.asGroupType();
-      // if FieldCount == 2, get types for key & value,
-      // otherwise, continue to get the group type until MAX_MAP_WRAPPER_GROUPS.
       while (groupType.getFieldCount() < 2) {
         if (nestGroup > MAX_MAP_WRAPPER_GROUPS) {
           throw new InvalidSchemaException(
