@@ -260,9 +260,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       LOG.debug("From {}, the file includes are {}", includes, DebugUtils.toString(fileIncludes));
     }
 
-    consumer.setUseDecimal64ColumnVectors(HiveConf.getVar(jobConf,
-        ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
-        .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64));
+    consumer.setUseDecimal64ColumnVectors(HiveConf.isDecimal64VectorizationEnabled(jobConf));
     consumer.setFileMetadata(fileMetadata);
     consumer.setSchemaEvolution(evolution);
     isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);

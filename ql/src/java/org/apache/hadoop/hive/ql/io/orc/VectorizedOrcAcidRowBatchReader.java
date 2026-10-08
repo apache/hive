@@ -211,9 +211,7 @@ public class VectorizedOrcAcidRowBatchReader
         return innerReader.getProgress();
       }
     };
-    final boolean useDecimal64ColumnVectors = HiveConf
-        .getVar(conf, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
-        .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
+    final boolean useDecimal64ColumnVectors = HiveConf.isDecimal64VectorizationEnabled(conf);
     if (useDecimal64ColumnVectors) {
       this.vectorizedRowBatchBase = ((RecordReaderImpl) innerReader).createRowBatch(true);
     } else {
@@ -1518,9 +1516,7 @@ public class VectorizedOrcAcidRowBatchReader
 
         this.bucketForSplit = bucket;
 
-        final boolean useDecimal64ColumnVector = HiveConf.getVar(conf, ConfVars
-            .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
-            .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
+        final boolean useDecimal64ColumnVector = HiveConf.isDecimal64VectorizationEnabled(conf);
         if (useDecimal64ColumnVector) {
           this.batch = acidEmptyStructSchema.createRowBatchV2();
         } else {

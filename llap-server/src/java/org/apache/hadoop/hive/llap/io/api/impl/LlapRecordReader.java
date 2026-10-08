@@ -185,10 +185,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     int queueLimitMin = getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_MIN, job, daemonConf);
     long bestEffortSize = getLongQueueVar(ConfVars.LLAP_IO_CVB_BUFFERED_SIZE, job, daemonConf);
 
-    final boolean
-        decimal64Support =
-        HiveConf.getVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
-            .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
+    final boolean decimal64Support = HiveConf.isDecimal64VectorizationEnabled(job);
     int
         limit =
         determineQueueLimit(bestEffortSize,

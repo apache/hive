@@ -231,10 +231,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     this.sourceSerDe = sourceSerDe;
     this.reporter = reporter;
     this.jobConf = jobConf;
-    final boolean useDecimal64ColumnVectors = HiveConf.getVar(jobConf, ConfVars
-        .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
-        .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
-    consumer.setUseDecimal64ColumnVectors(useDecimal64ColumnVectors);
+    consumer.setUseDecimal64ColumnVectors(HiveConf.isDecimal64VectorizationEnabled(jobConf));
     this.schema = schema;
     this.writerIncludes = OrcInputFormat.genIncludedColumns(schema, columnIds);
     SchemaEvolution evolution = new SchemaEvolution(schema, null,
