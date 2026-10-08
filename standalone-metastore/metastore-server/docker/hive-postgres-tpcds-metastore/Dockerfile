@@ -28,5 +28,7 @@ RUN chown postgres:postgres /etc/postgresql/postgresql.conf
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
+# The testcontainers framework will overwrite the command,
+# so this is only used when creating a container manually.
 CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
 
