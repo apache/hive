@@ -200,9 +200,9 @@ public class TestParquetEncodedDataReader {
 
   private boolean failFirstRange;
   private boolean unslicedBuffers;
-  /** Fulfils every vectored range from a buffer positioned {@link #RANGE_PAD} bytes in. */
+  /** Fulfills every vectored range from a buffer positioned {@link #RANGE_PAD} bytes in. */
   private boolean positionedRangeBuffers;
-  /** Fulfils every vectored range before returning, as a filesystem without async IO does. */
+  /** Fulfills every vectored range before returning, as a filesystem without async IO does. */
   private boolean inlineRanges;
   private boolean stopAfterFirstBatch;
   private boolean failDecode;
@@ -559,7 +559,7 @@ public class TestParquetEncodedDataReader {
   /**
    * A filesystem may hand a range back as a view into a bigger buffer of its own, positioned at the
    * range's bytes rather than at zero - readVectored's contract says nothing about the position. The
-   * local filesystem always returns position zero, so this stream fulfils the ranges itself, from a
+   * local filesystem always returns position zero, so this stream fulfills the ranges itself, from a
    * poisoned array with the bytes in the middle.
    */
   @Test
@@ -1480,9 +1480,9 @@ public class TestParquetEncodedDataReader {
         throws IOException {
       recordRanges(ranges);
       if (positionedRangeBuffers) {
-        fulfilAtNonZeroPosition(ranges);
+        fulfillAtNonZeroPosition(ranges);
       } else if (inlineRanges) {
-        fulfilInline(ranges);
+        fulfillInline(ranges);
       } else {
         super.readVectored(ranges, allocate);
       }
@@ -1494,9 +1494,9 @@ public class TestParquetEncodedDataReader {
         java.util.function.Consumer<ByteBuffer> release) throws IOException {
       recordRanges(ranges);
       if (positionedRangeBuffers) {
-        fulfilAtNonZeroPosition(ranges);
+        fulfillAtNonZeroPosition(ranges);
       } else if (inlineRanges) {
-        fulfilInline(ranges);
+        fulfillInline(ranges);
       } else {
         super.readVectored(ranges, allocate, release);
       }
@@ -1509,7 +1509,7 @@ public class TestParquetEncodedDataReader {
      * readVectored's contract rules this out, and a reader that assumes position zero picks up the
      * padding instead of the data.
      */
-    private void fulfilAtNonZeroPosition(List<? extends FileRange> ranges) throws IOException {
+    private void fulfillAtNonZeroPosition(List<? extends FileRange> ranges) throws IOException {
       for (FileRange range : ranges) {
         byte[] backing = new byte[RANGE_PAD + range.getLength() + RANGE_PAD];
         Arrays.fill(backing, RANGE_POISON);
@@ -1529,7 +1529,7 @@ public class TestParquetEncodedDataReader {
      * default {@code readVectored} over a plain positioned read, which is what most of Hadoop's
      * filesystems still have - and it is the case where a lookahead has nothing to overlap with.
      */
-    private void fulfilInline(List<? extends FileRange> ranges) throws IOException {
+    private void fulfillInline(List<? extends FileRange> ranges) throws IOException {
       for (FileRange range : ranges) {
         byte[] bytes = new byte[range.getLength()];
         readFully(range.getOffset(), bytes);
