@@ -24,7 +24,8 @@ int _kTProtocolVersionValues[] = {
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V8,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V9,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V10,
-  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V11
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V11,
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V12
 };
 const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V1",
@@ -37,9 +38,10 @@ const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V8",
   "HIVE_CLI_SERVICE_PROTOCOL_V9",
   "HIVE_CLI_SERVICE_PROTOCOL_V10",
-  "HIVE_CLI_SERVICE_PROTOCOL_V11"
+  "HIVE_CLI_SERVICE_PROTOCOL_V11",
+  "HIVE_CLI_SERVICE_PROTOCOL_V12"
 };
-const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(11, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(12, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const TProtocolVersion::type& val) {
   std::map<int, const char*>::const_iterator it = _TProtocolVersion_VALUES_TO_NAMES.find(val);

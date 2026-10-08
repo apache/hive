@@ -28,6 +28,7 @@ class TProtocolVersion(object):
     HIVE_CLI_SERVICE_PROTOCOL_V9 = 8
     HIVE_CLI_SERVICE_PROTOCOL_V10 = 9
     HIVE_CLI_SERVICE_PROTOCOL_V11 = 10
+    HIVE_CLI_SERVICE_PROTOCOL_V12 = 11
 
     _VALUES_TO_NAMES = {
         0: "HIVE_CLI_SERVICE_PROTOCOL_V1",
@@ -41,6 +42,7 @@ class TProtocolVersion(object):
         8: "HIVE_CLI_SERVICE_PROTOCOL_V9",
         9: "HIVE_CLI_SERVICE_PROTOCOL_V10",
         10: "HIVE_CLI_SERVICE_PROTOCOL_V11",
+        11: "HIVE_CLI_SERVICE_PROTOCOL_V12",
     }
 
     _NAMES_TO_VALUES = {
@@ -55,6 +57,7 @@ class TProtocolVersion(object):
         "HIVE_CLI_SERVICE_PROTOCOL_V9": 8,
         "HIVE_CLI_SERVICE_PROTOCOL_V10": 9,
         "HIVE_CLI_SERVICE_PROTOCOL_V11": 10,
+        "HIVE_CLI_SERVICE_PROTOCOL_V12": 11,
     }
 
 
@@ -3180,7 +3183,7 @@ class TOpenSessionReq(object):
     """
 
 
-    def __init__(self, client_protocol=9, username=None, password=None, configuration=None,):
+    def __init__(self, client_protocol=11, username=None, password=None, configuration=None,):
         self.client_protocol = client_protocol
         self.username = username
         self.password = password
@@ -7597,7 +7600,7 @@ TOperationHandle.thrift_spec = (
 all_structs.append(TOpenSessionReq)
 TOpenSessionReq.thrift_spec = (
     None,  # 0
-    (1, TType.I32, 'client_protocol', None, 9, ),  # 1
+    (1, TType.I32, 'client_protocol', None, 11, ),  # 1
     (2, TType.STRING, 'username', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'password', 'UTF8', None, ),  # 3
     (4, TType.MAP, 'configuration', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 4

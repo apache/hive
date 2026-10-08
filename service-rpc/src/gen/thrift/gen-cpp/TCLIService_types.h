@@ -33,7 +33,8 @@ struct TProtocolVersion {
     HIVE_CLI_SERVICE_PROTOCOL_V8 = 7,
     HIVE_CLI_SERVICE_PROTOCOL_V9 = 8,
     HIVE_CLI_SERVICE_PROTOCOL_V10 = 9,
-    HIVE_CLI_SERVICE_PROTOCOL_V11 = 10
+    HIVE_CLI_SERVICE_PROTOCOL_V11 = 10,
+    HIVE_CLI_SERVICE_PROTOCOL_V12 = 11
   };
 };
 
@@ -2150,10 +2151,10 @@ class TOpenSessionReq : public virtual ::apache::thrift::TBase {
   TOpenSessionReq(const TOpenSessionReq&);
   TOpenSessionReq& operator=(const TOpenSessionReq&);
   TOpenSessionReq() noexcept
-                  : client_protocol((TProtocolVersion::type)9),
+                  : client_protocol((TProtocolVersion::type)11),
                     username(),
                     password() {
-    client_protocol = (TProtocolVersion::type)9;
+    client_protocol = (TProtocolVersion::type)11;
 
   }
 
