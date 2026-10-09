@@ -45,10 +45,12 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMet
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.rest.extension.MockHiveAuthorizer;
 import org.apache.iceberg.rest.extension.MockHiveAuthorizerFactory;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
+import org.apache.iceberg.rest.requests.ImmutableRegisterTableRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -264,5 +266,137 @@ class TestIcebergAuthorizer {
         icebergAuthorizer.validateStageCreateTable(CATALOG_NAME, NAMESPACE, Map.of(), request));
     Assertions.assertEquals("Failed to check privileges stage-create", exception.getMessage());
     Assertions.assertSame(failure, exception.getCause());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testValidateRegisterTableAuthorized() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    var metadataLocation = LOCATION + "/metadata/v1.metadata.json";
+    var request = ImmutableRegisterTableRequest.builder().name(TABLE_NAME).metadataLocation(metadataLocation).build();
+
+    icebergAuthorizer.validateRegisterTable(CATALOG_NAME, NAMESPACE, Map.of(), request);
+
+    var operation = ArgumentCaptor.forClass(HiveOperationType.class);
+    var inputs = ArgumentCaptor.forClass(List.class);
+    var context = ArgumentCaptor.forClass(HiveAuthzContext.class);
+    verify(hiveAuthorizer).checkPrivileges(operation.capture(), inputs.capture(), anyList(), context.capture());
+
+    Assertions.assertEquals(HiveOperationType.CREATETABLE, operation.getValue());
+    Assertions.assertEquals("register table " + TABLE_NAME, context.getValue().getCommandString());
+
+    var checkedLocation = (HivePrivilegeObject) inputs.getValue().getFirst();
+    assertThat(checkedLocation.getType()).isEqualTo(HivePrivilegeObjectType.DFS_URI);
+    assertThat(checkedLocation.getObjectName()).isEqualTo(metadataLocation);
+  }
+
+  @Test
+  void testValidateRegisterTableDeniedMetadataLocation() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var failure = new HiveAccessControlException("access denied");
+    doThrow(failure).when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    var request = ImmutableRegisterTableRequest.builder().name(TABLE_NAME).metadataLocation(LOCATION).build();
+    var exception = Assertions.assertThrows(ForbiddenException.class, () ->
+        icebergAuthorizer.validateRegisterTable(CATALOG_NAME, NAMESPACE, Map.of(), request));
+    Assertions.assertEquals("access denied", exception.getMessage());
+  }
+
+  @Test
+  void testValidateRegisterTableWithMultiLevelNamespace() {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+    var nestedNamespace = Namespace.of("db", "nested");
+    var request = ImmutableRegisterTableRequest.builder().name(TABLE_NAME).metadataLocation(LOCATION).build();
+
+    var exception = Assertions.assertThrows(IllegalArgumentException.class, () ->
+        icebergAuthorizer.validateRegisterTable(CATALOG_NAME, nestedNamespace, Map.of(), request));
+    Assertions.assertEquals("Hive does not support multi-level namespaces", exception.getMessage());
+    Mockito.verifyNoInteractions(hiveAuthorizer);
+  }
+
+  @Test
+  void testValidateRegisterTableNoAuthorizerFallbackAllowed() {
+    var icebergAuthorizer = new IcebergAuthorizer(() -> null);
+
+    var externalRoot = "file:/warehouse/external";
+    var namespaceMetadata = Map.of("location", externalRoot);
+    var metadataLocation = externalRoot + "/table/metadata/v1.metadata.json";
+    var request = ImmutableRegisterTableRequest.builder().name(TABLE_NAME).metadataLocation(metadataLocation).build();
+
+    icebergAuthorizer.validateRegisterTable(CATALOG_NAME, NAMESPACE, namespaceMetadata, request);
+  }
+
+  @Test
+  void testValidateRegisterTableNoAuthorizerFallbackDenied() {
+    var icebergAuthorizer = new IcebergAuthorizer(() -> null);
+
+    var request = ImmutableRegisterTableRequest.builder().name(TABLE_NAME).metadataLocation(LOCATION).build();
+    Assertions.assertThrows(ForbiddenException.class, () ->
+        icebergAuthorizer.validateRegisterTable(CATALOG_NAME, NAMESPACE, Map.of(), request));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testValidateDropTablePurgeAuthorized() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+    var identifier = TableIdentifier.of(NAMESPACE, TABLE_NAME);
+
+    icebergAuthorizer.validateDropTablePurge(CATALOG_NAME, identifier, LOCATION);
+
+    var operation = ArgumentCaptor.forClass(HiveOperationType.class);
+    var inputs = ArgumentCaptor.forClass(List.class);
+    var outputs = ArgumentCaptor.forClass(List.class);
+    var context = ArgumentCaptor.forClass(HiveAuthzContext.class);
+    verify(hiveAuthorizer).checkPrivileges(operation.capture(), inputs.capture(), outputs.capture(), context.capture());
+
+    Assertions.assertEquals(HiveOperationType.DROPTABLE, operation.getValue());
+    Assertions.assertEquals(1, inputs.getValue().size());
+    var inputLocation = (HivePrivilegeObject) inputs.getValue().getFirst();
+    assertThat(inputLocation.getType()).isEqualTo(HivePrivilegeObjectType.DFS_URI);
+    assertThat(inputLocation.getObjectName()).isEqualTo(LOCATION);
+    Assertions.assertEquals(1, outputs.getValue().size());
+    var outputLocation = (HivePrivilegeObject) outputs.getValue().getFirst();
+    assertThat(outputLocation.getType()).isEqualTo(HivePrivilegeObjectType.DFS_URI);
+    assertThat(outputLocation.getObjectName()).isEqualTo(LOCATION);
+    Assertions.assertEquals("drop table " + TABLE_NAME, context.getValue().getCommandString());
+  }
+
+  @Test
+  void testValidateDropTablePurgeDenied() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var failure = new HiveAccessControlException("access denied");
+    doThrow(failure).when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+    var identifier = TableIdentifier.of(NAMESPACE, TABLE_NAME);
+
+    var exception = Assertions.assertThrows(ForbiddenException.class, () ->
+        icebergAuthorizer.validateDropTablePurge(CATALOG_NAME, identifier, LOCATION));
+    Assertions.assertEquals("access denied", exception.getMessage());
+    Assertions.assertSame(failure, exception.getCause());
+  }
+
+  @Test
+  void testValidateDropTablePurgeTranslatesPluginException() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var failure = new HiveAuthzPluginException("plugin failure");
+    doThrow(failure).when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+    var identifier = TableIdentifier.of(NAMESPACE, TABLE_NAME);
+
+    var exception = Assertions.assertThrows(IllegalStateException.class, () ->
+        icebergAuthorizer.validateDropTablePurge(CATALOG_NAME, identifier, LOCATION));
+    Assertions.assertEquals("Failed to check privileges drop-table-purge", exception.getMessage());
+    Assertions.assertSame(failure, exception.getCause());
+  }
+
+  @Test
+  void testValidateDropTablePurgeWithoutAuthorizer() {
+    var icebergAuthorizer = new IcebergAuthorizer(() -> null);
+    icebergAuthorizer.validateDropTablePurge(CATALOG_NAME, TableIdentifier.of(NAMESPACE, TABLE_NAME), LOCATION);
   }
 }
