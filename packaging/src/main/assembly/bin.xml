@@ -139,7 +139,6 @@
         <include>README.txt</include>
         <include>NOTICE</include>
         <include>CHANGELOG</include>
-        <include>RELEASE_NOTES.txt</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
