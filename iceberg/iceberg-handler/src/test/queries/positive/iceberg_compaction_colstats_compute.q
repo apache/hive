@@ -11,7 +11,7 @@ set hive.iceberg.stats.collect.partlevel=true;
 -- describes the whole of it
 create external table ice_comp_unpart (id bigint, p string)
 stored by iceberg stored as orc
-tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1000');
 
 insert into ice_comp_unpart values (1, 'a');
 insert into ice_comp_unpart values (2, 'a');
@@ -33,7 +33,7 @@ drop table ice_comp_unpart;
 create external table ice_comp (id bigint, p string)
     partitioned by spec (p)
 stored by iceberg stored as orc
-tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500',
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1000',
     -- a compaction runs long after the session that queued it, so the granularity it keeps
     -- statistics at is asked for the way the compactor takes any of its settings
     'compactor.hive.iceberg.stats.collect.partlevel'='true');

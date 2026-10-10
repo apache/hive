@@ -229,6 +229,22 @@ POSTHOOK: query: insert into part_tbl values (5,'p5', 10)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: ice_comp_all@part_tbl
+PREHOOK: query: insert into part_tbl values (5,'p5', 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp_all@part_tbl
+POSTHOOK: query: insert into part_tbl values (5,'p5', 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp_all@part_tbl
+PREHOOK: query: insert into part_tbl values (6,'p6', 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp_all@part_tbl
+POSTHOOK: query: insert into part_tbl values (6,'p6', 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp_all@part_tbl
 PREHOOK: query: insert into part_tbl values (6,'p6', 20)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -254,7 +270,9 @@ POSTHOOK: Input: ice_comp_all@part_tbl
 3	p3	20	2	3
 4	p4	20	3	4
 5	p5	10	11	9
-6	p6	20	16	10
+5	p5	10	16	10
+6	p6	20	17	11
+6	p6	20	18	12
 PREHOOK: query: alter table part_tbl compact 'minor' and wait pool 'iceberg'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: ice_comp_all@part_tbl
@@ -280,7 +298,9 @@ POSTHOOK: Input: ice_comp_all@part_tbl
 3	p3	20	2	3
 4	p4	20	3	4
 5	p5	10	11	9
-6	p6	20	16	10
+5	p5	10	16	10
+6	p6	20	17	11
+6	p6	20	18	12
 PREHOOK: query: show compactions
 PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions
