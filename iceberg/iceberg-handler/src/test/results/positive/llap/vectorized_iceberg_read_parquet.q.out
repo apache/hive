@@ -22,6 +22,53 @@ POSTHOOK: query: insert into table tbl_ice_parquet values (1, 'one'), (2, 'two')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_parquet
+PREHOOK: query: explain vectorization only analyze table tbl_ice_parquet compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@tbl_ice_parquet
+PREHOOK: Output: default@tbl_ice_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization only analyze table tbl_ice_parquet compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@tbl_ice_parquet
+POSTHOOK: Output: default@tbl_ice_parquet
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+
+  Stage: Stage-2
+
 PREHOOK: query: analyze table tbl_ice_parquet compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tbl_ice_parquet
