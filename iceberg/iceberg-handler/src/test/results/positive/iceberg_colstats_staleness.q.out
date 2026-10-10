@@ -1,0 +1,595 @@
+PREHOOK: query: create external table ice_stale_unpart (id bigint, p string)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_stale_unpart
+POSTHOOK: query: create external table ice_stale_unpart (id bigint, p string)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_stale_unpart
+PREHOOK: query: insert into ice_stale_unpart values (1, 'a'), (2, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_stale_unpart
+POSTHOOK: query: insert into ice_stale_unpart values (1, 'a'), (2, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_stale_unpart
+PREHOOK: query: analyze table ice_stale_unpart compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_stale_unpart
+PREHOOK: Output: default@ice_stale_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_stale_unpart compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_stale_unpart
+POSTHOOK: Output: default@ice_stale_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain select id from ice_stale_unpart where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_stale_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_stale_unpart where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_stale_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_stale_unpart
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into ice_stale_unpart values (3, 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_stale_unpart
+POSTHOOK: query: insert into ice_stale_unpart values (3, 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_stale_unpart
+PREHOOK: query: explain select id from ice_stale_unpart where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_stale_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_stale_unpart where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_stale_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_stale_unpart
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table ice_stale_unpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_stale_unpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_stale_unpart
+POSTHOOK: query: drop table ice_stale_unpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_stale_unpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_stale_unpart
+PREHOOK: query: create external table ice_stale_tbllevel (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_stale_tbllevel
+POSTHOOK: query: create external table ice_stale_tbllevel (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_stale_tbllevel
+PREHOOK: query: insert into ice_stale_tbllevel values (1, 'a'), (7, 'b'), (3, 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_stale_tbllevel
+POSTHOOK: query: insert into ice_stale_tbllevel values (1, 'a'), (7, 'b'), (3, 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_stale_tbllevel
+PREHOOK: query: analyze table ice_stale_tbllevel compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_stale_tbllevel
+PREHOOK: Output: default@ice_stale_tbllevel
+PREHOOK: Output: default@ice_stale_tbllevel@p=a
+PREHOOK: Output: default@ice_stale_tbllevel@p=b
+PREHOOK: Output: default@ice_stale_tbllevel@p=c
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_stale_tbllevel compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_stale_tbllevel
+POSTHOOK: Output: default@ice_stale_tbllevel
+POSTHOOK: Output: default@ice_stale_tbllevel@p=a
+POSTHOOK: Output: default@ice_stale_tbllevel@p=b
+POSTHOOK: Output: default@ice_stale_tbllevel@p=c
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain select id from ice_stale_tbllevel where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_stale_tbllevel
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_stale_tbllevel where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_stale_tbllevel
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_stale_tbllevel
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into ice_stale_tbllevel values (9, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_stale_tbllevel
+POSTHOOK: query: insert into ice_stale_tbllevel values (9, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_stale_tbllevel
+PREHOOK: query: explain select id from ice_stale_tbllevel where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_stale_tbllevel
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_stale_tbllevel where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_stale_tbllevel
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_stale_tbllevel
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table ice_stale_tbllevel
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_stale_tbllevel
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_stale_tbllevel
+POSTHOOK: query: drop table ice_stale_tbllevel
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_stale_tbllevel
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_stale_tbllevel
+PREHOOK: query: create external table ice_stale_partlevel (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_stale_partlevel
+POSTHOOK: query: create external table ice_stale_partlevel (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_stale_partlevel
+PREHOOK: query: insert into ice_stale_partlevel values (1, 'a'), (7, 'b'), (3, 'c'), (5, 'd')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_stale_partlevel
+POSTHOOK: query: insert into ice_stale_partlevel values (1, 'a'), (7, 'b'), (3, 'c'), (5, 'd')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_stale_partlevel
+PREHOOK: query: analyze table ice_stale_partlevel compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_stale_partlevel
+PREHOOK: Output: default@ice_stale_partlevel
+PREHOOK: Output: default@ice_stale_partlevel@p=a
+PREHOOK: Output: default@ice_stale_partlevel@p=b
+PREHOOK: Output: default@ice_stale_partlevel@p=c
+PREHOOK: Output: default@ice_stale_partlevel@p=d
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_stale_partlevel compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_stale_partlevel
+POSTHOOK: Output: default@ice_stale_partlevel
+POSTHOOK: Output: default@ice_stale_partlevel@p=a
+POSTHOOK: Output: default@ice_stale_partlevel@p=b
+POSTHOOK: Output: default@ice_stale_partlevel@p=c
+POSTHOOK: Output: default@ice_stale_partlevel@p=d
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain select id from ice_stale_partlevel where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_stale_partlevel
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_stale_partlevel where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_stale_partlevel
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_stale_partlevel
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into ice_stale_partlevel values (9, 'a'), (9, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_stale_partlevel
+POSTHOOK: query: insert into ice_stale_partlevel values (9, 'a'), (9, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_stale_partlevel
+PREHOOK: query: explain select id from ice_stale_partlevel where id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_stale_partlevel
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_stale_partlevel where id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_stale_partlevel
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_stale_partlevel
+                  filterExpr: (id > 0L) (type: boolean)
+                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (id > 0L) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table ice_stale_partlevel
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_stale_partlevel
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_stale_partlevel
+POSTHOOK: query: drop table ice_stale_partlevel
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_stale_partlevel
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_stale_partlevel
+PREHOOK: query: create external table ice_stale_newcol (id bigint, v string)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_stale_newcol
+POSTHOOK: query: create external table ice_stale_newcol (id bigint, v string)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_stale_newcol
+PREHOOK: query: insert into ice_stale_newcol values (1, 'a'), (2, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_stale_newcol
+POSTHOOK: query: insert into ice_stale_newcol values (1, 'a'), (2, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_stale_newcol
+PREHOOK: query: analyze table ice_stale_newcol compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_stale_newcol
+PREHOOK: Output: default@ice_stale_newcol
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_stale_newcol compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_stale_newcol
+POSTHOOK: Output: default@ice_stale_newcol
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: alter table ice_stale_newcol add columns (extra int)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@ice_stale_newcol
+PREHOOK: Output: default@ice_stale_newcol
+POSTHOOK: query: alter table ice_stale_newcol add columns (extra int)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@ice_stale_newcol
+POSTHOOK: Output: default@ice_stale_newcol
+PREHOOK: query: explain select id from ice_stale_newcol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_stale_newcol
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id from ice_stale_newcol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_stale_newcol
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_stale_newcol
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: id (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select extra from ice_stale_newcol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_stale_newcol
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select extra from ice_stale_newcol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_stale_newcol
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_stale_newcol
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: extra (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select id, extra from ice_stale_newcol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_stale_newcol
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select id, extra from ice_stale_newcol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_stale_newcol
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_stale_newcol
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: id (type: bigint), extra (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table ice_stale_newcol
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_stale_newcol
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_stale_newcol
+POSTHOOK: query: drop table ice_stale_newcol
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_stale_newcol
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_stale_newcol

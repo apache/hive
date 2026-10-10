@@ -1926,7 +1926,13 @@
                 "input": 4,
                 "name": "$4"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 18,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 5152110310471199
@@ -3500,7 +3506,13 @@
                 "input": 4,
                 "name": "$4"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 18,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 72456986829068304
@@ -5791,7 +5803,13 @@
                 "input": 4,
                 "name": "$4"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 18,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 2.8028234423693355E21

@@ -37,6 +37,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.CommitStateUnknownException;
+import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.hadoop.ConfigProperties;
@@ -205,7 +206,7 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
       } catch (InvalidObjectException e) {
         throw new ValidationException(e, "Invalid Hive object for %s.%s", database, viewName);
 
-      } catch (CommitFailedException | CommitStateUnknownException e) {
+      } catch (CommitFailedException | CommitStateUnknownException | ForbiddenException e) {
         throw e;
 
       } catch (Throwable e) {

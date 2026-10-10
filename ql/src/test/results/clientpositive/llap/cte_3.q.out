@@ -4,6 +4,7 @@ select *
 from q1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@q1
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1 as ( select key from src where key = '5')
@@ -11,6 +12,7 @@ select *
 from q1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@q1
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.
 
@@ -63,12 +65,14 @@ with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@q1
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@q1
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.
 
@@ -120,6 +124,8 @@ q2 as ( select key from src where key = '5')
 select * from (select key from q1) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@q1
+PREHOOK: Input: default@q2
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 with q1 as ( select key from q2 where key = '5'),
@@ -127,6 +133,8 @@ q2 as ( select key from src where key = '5')
 select * from (select key from q1) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@q1
+POSTHOOK: Input: default@q2
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Plan optimized by CBO.
 

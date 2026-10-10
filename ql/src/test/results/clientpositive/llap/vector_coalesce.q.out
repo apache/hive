@@ -154,13 +154,13 @@ STAGE PLANS:
                         predicateExpression: SelectColumnIsNull(col 0:tinyint)
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: col 5:double, col 2:int, IfExprCondExprColumn(col 17:boolean, col 19:double, col 20:double)(children: ColAndCol(col 14:boolean, col 16:boolean)(children: IsNotNull(col 5:double) -> 14:boolean, IsNotNull(col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 16:boolean) -> 17:boolean, DoubleColAddDoubleColumn(col 5:double, col 18:double)(children: FuncLog2LongToDouble(col 2:int) -> 18:double) -> 19:double, ConstantVectorExpression(val 0.0) -> 20:double) -> 21:double
+                          keyExpressions: col 5:double, col 2:int, IfExprCondExprColumn(col 16:boolean, col 18:double, col 19:double)(children: IsNotNull(col 15:double)(children: DoubleColAddDoubleColumn(col 5:double, col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:double) -> 16:boolean, DoubleColAddDoubleColumn(col 5:double, col 17:double)(children: FuncLog2LongToDouble(col 2:int) -> 17:double) -> 18:double, ConstantVectorExpression(val 0.0) -> 19:double) -> 20:double
                           native: true
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [5, 2, 23]
-                            selectExpressions: IfExprCondExprColumn(col 22:boolean, col 18:double, col 15:double)(children: ColAndCol(col 14:boolean, col 16:boolean)(children: IsNotNull(col 5:double) -> 14:boolean, IsNotNull(col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 16:boolean) -> 22:boolean, DoubleColAddDoubleColumn(col 5:double, col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 18:double, ConstantVectorExpression(val 0.0) -> 15:double) -> 23:double
+                            projectedOutputColumnNums: [5, 2, 17]
+                            selectExpressions: IfExprCondExprColumn(col 21:boolean, col 15:double, col 14:double)(children: IsNotNull(col 15:double)(children: DoubleColAddDoubleColumn(col 5:double, col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:double) -> 21:boolean, DoubleColAddDoubleColumn(col 5:double, col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 17:double
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
                               native: true

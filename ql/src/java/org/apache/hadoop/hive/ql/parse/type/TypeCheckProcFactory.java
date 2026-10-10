@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.parse.type;
@@ -595,6 +596,19 @@ public class TypeCheckProcFactory<T> {
   }
 
   /**
+   * Rejects a by-name reference to a column marked ambiguous at a subquery/CTE boundary
+   * (HIVE-29580). Call after each by-name resolution of a user-written column reference;
+   * expression-map resolutions (processGByExpr) stay unchecked so Hive's own rewrites can
+   * reference marked columns.
+   */
+  static void checkAmbiguousName(ColumnInfo colInfo) throws SemanticException {
+    if (colInfo != null && colInfo.hasAmbiguousName()) {
+      throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(
+          colInfo.getAlias() + " in " + colInfo.getTabAlias()));
+    }
+  }
+
+  /**
    * Processor for table columns.
    */
   public class ColumnExprProcessor implements SemanticNodeProcessor {
@@ -659,6 +673,7 @@ public class TypeCheckProcFactory<T> {
             return null;
           }
           // It's a column.
+          checkAmbiguousName(colInfo);
           return exprFactory.toExpr(colInfo, usedRR, offset);
         } else {
           // It's a table alias.
@@ -693,6 +708,7 @@ public class TypeCheckProcFactory<T> {
           }
         } else {
           // It's a column.
+          checkAmbiguousName(colInfo);
           return exprFactory.toExpr(colInfo, usedRR, offset);
         }
       }
@@ -1299,6 +1315,7 @@ public class TypeCheckProcFactory<T> {
             ErrorMsg.INVALID_COLUMN.getMsg(), expr.getChild(1)), expr);
         return null;
       }
+      checkAmbiguousName(colInfo);
       return exprFactory.toExpr(colInfo, usedRR, offset);
     }
 

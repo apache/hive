@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.mr.hive.compaction;
@@ -32,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class IcebergCompactionService extends CompactionService {
-  public static final String PARTITION_PATH = "compaction_partition_path";
+  public static final String PARTITION_NAME = "compaction_partition_name";
   private static final String CLASS_NAME = IcebergCompactionService.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
@@ -73,24 +74,19 @@ public class IcebergCompactionService extends CompactionService {
       ci.runAs = TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf);
     }
 
-    try {
-      CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
-      computeStats = collectGenericStats;
+    CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
+    // no follow-up ANALYZE: basic statistics live in the table metadata, column statistics are
+    // gathered by the compaction query itself, and a compaction commit outdates neither
+    computeStats = false;
 
-      LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
-              ci.id + " with compute stats set to " + computeStats);
+    LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" + ci.id);
 
-      CompactorContext compactorContext = new CompactorContext(conf, table, ci);
-      compactorPipeline.execute(compactorContext);
+    CompactorContext compactorContext = new CompactorContext(conf, table, ci);
+    compactorPipeline.execute(compactorContext);
 
-      LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() +
-          ", marking as compacted.");
-      msc.markCleaned(CompactionInfo.compactionInfoToStruct(ci));
-
-    } catch (Throwable e) {
-      computeStats = false;
-      throw e;
-    }
+    LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() +
+        ", marking as compacted.");
+    msc.markCleaned(CompactionInfo.compactionInfoToStruct(ci));
 
     return true;
   }

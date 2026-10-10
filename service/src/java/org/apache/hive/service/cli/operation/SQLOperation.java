@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.service.cli.operation;
@@ -78,6 +79,8 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.apache.hive.service.cli.session.HiveSessionImpl;
+import org.apache.hive.service.cli.session.PersistableSessionUtils;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 
 import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
@@ -648,6 +651,10 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_SUCCEEDED_QUERIES);
       queryInfo.updateState(state.toString());
+      HiveSessionImpl impl = PersistableSessionUtils.unwrapSession(parentSession);
+      if (impl != null) {
+        impl.onOperationFinished(statement);
+      }
       break;
     case INITIALIZED:
       /* fall through */

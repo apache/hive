@@ -84,7 +84,7 @@ POSTHOOK: Input: default@vw_t2
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(vw_t2.username=[$0])
-  HiveFilter(condition=[>($0, _UTF-16LE'a')])
+  HiveFilter(condition=[>($0, 'a')])
     HiveProject(username=[$0])
       HiveSortLimit(fetch=[1])
         HiveProject(username=[$0])

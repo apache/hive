@@ -58,12 +58,13 @@ select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
+-- Filter on string_col (low-NDV) so the DISTINCT-side row estimate keeps MapJoin-from-Reducer as the cost-model winner.
 explain
 select * from target_table inner join
-(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where string_col = 'pipeline') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 select * from target_table inner join
-(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where string_col = 'pipeline') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
 -- 2. MapJoin
@@ -78,12 +79,13 @@ select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
+-- Filter on string_col (low-NDV) so the DISTINCT-side row estimate keeps MapJoin-from-Reducer as the cost-model winner.
 explain
 select * from target_table inner join
-(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where string_col = 'pipeline') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 select * from target_table inner join
-(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where string_col = 'pipeline') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
 -- 3. VectorBucketMapJoin
@@ -98,12 +100,13 @@ select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
+-- Filter on string_col (low-NDV) so the DISTINCT-side row estimate keeps MapJoin-from-Reducer as the cost-model winner.
 explain
 select * from target_table inner join
-(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where string_col = 'pipeline') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 select * from target_table inner join
-(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where string_col = 'pipeline') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
 -- 4. VectorMapJoin
@@ -118,10 +121,11 @@ select * from target_table inner join
 (select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 
+-- Filter on string_col (low-NDV) so the DISTINCT-side row estimate keeps MapJoin-from-Reducer as the cost-model winner.
 explain
 select * from target_table inner join
-(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where string_col = 'pipeline') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;
 select * from target_table inner join
-(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where string_col = 'pipeline') s
 on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col;

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.metadata;
@@ -42,6 +43,10 @@ public class DummyPartition extends Partition {
    */
   public static final String VOID = "__NO_PARTITION__";
 
+  /**
+   * Whether the name is the synthetic partition's. No statement can name that partition, so
+   * listings shown to users skip it, while planning and statistics keep counting its rows.
+   */
   public static boolean isVoid(String partName) {
     return VOID.equals(partName);
   }

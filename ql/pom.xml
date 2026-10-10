@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
 
       http://www.apache.org/licenses/LICENSE-2.0
 
@@ -38,7 +42,15 @@
     </dependency>
     <dependency>
       <groupId>org.graalvm.js</groupId>
-      <artifactId>js</artifactId>
+      <artifactId>js-language</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.sdk</groupId>
+      <artifactId>graal-sdk</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.truffle</groupId>
+      <artifactId>truffle-runtime</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.atlas</groupId>
@@ -365,6 +377,25 @@
       <artifactId>hadoop-yarn-client</artifactId>
       <optional>true</optional>
     </dependency>
+    <!--
+      Runtime dependencies required by org.apache.calcite.avatica:avatica-core:1.28.0
+      (pulled in by Calcite 1.42+): Avatica now uses Apache HttpComponents 5 for its
+      HTTP/JDBC transport, so hive-exec must bundle httpcore5/httpclient5 or tests fail
+      with "NoClassDefFoundError: org/apache/hc/core5/util/Timeout". On the next
+      Calcite/Avatica upgrade, if it includes calcite-avatica#318 (i.e., CALCITE-7715,
+      which removed HttpCore Timeout references from BuiltInConnectionProperty),
+      these entries would probably be unnecessary and could be removed.
+    -->
+    <dependency>
+      <groupId>org.apache.httpcomponents.core5</groupId>
+      <artifactId>httpcore5</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
+      <scope>runtime</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-tools</artifactId>
@@ -423,6 +454,10 @@
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jodd</groupId>
@@ -799,6 +834,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava-testlib</artifactId>
       <version>${guava.version}</version>
@@ -1108,6 +1148,7 @@
                   <include>org.apache.datasketches:*</include>
                   <include>org.apache.calcite:*</include>
                   <include>org.apache.calcite.avatica:*</include>
+                  <include>org.jooq:joou-java-6</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
                   <include>com.github.luben:zstd-jni</include>
                   <include>org.locationtech.jts:jts-core</include>

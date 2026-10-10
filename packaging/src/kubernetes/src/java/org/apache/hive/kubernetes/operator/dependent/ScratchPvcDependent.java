@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.kubernetes.operator.dependent;
@@ -28,11 +29,12 @@ import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.TezAmSpec;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
 /**
- * Manages the shared scratch PersistentVolumeClaim mounted by both
- * HiveServer2 and TezAM at /opt/hive/scratch.
+ * Manages the shared scratch PersistentVolumeClaim mounted by HiveServer2,
+ * TezAM and LLAP at {@link ConfigUtils#SCRATCH_MOUNT_PATH}.
  * <p>
  * This mirrors the Docker Compose pattern where a named volume
  * {@code scratch:/opt/hive/scratch} is shared between the hs2 and
@@ -49,6 +51,7 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 public class ScratchPvcDependent
     extends HiveDependentResource<PersistentVolumeClaim, HiveCluster> {
 
+  /** Component label value, and the name of the pod volume backed by this PVC. */
   public static final String COMPONENT = "scratch";
 
   public ScratchPvcDependent() {

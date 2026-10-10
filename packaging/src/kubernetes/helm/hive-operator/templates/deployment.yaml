@@ -37,10 +37,5 @@ spec:
         - name: operator
           image: "{{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}"
           imagePullPolicy: {{ .Values.operator.image.pullPolicy }}
-          env:
-            - name: OPERATOR_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
           resources:
             {{- toYaml .Values.operator.resources | nindent 12 }}

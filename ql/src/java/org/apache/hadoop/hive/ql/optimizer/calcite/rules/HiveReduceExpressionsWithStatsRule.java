@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
@@ -302,8 +303,9 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
         if (table != null) {
           ColStatistics colStats =
               table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal()), false).get(0);
-          if (colStats != null && StatsUtils.areColumnStatsUptoDateForQueryAnswering(
-              table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
+          if (colStats != null && !colStats.isPartialAggregate() &&
+              StatsUtils.areColumnStatsUptoDateForQueryAnswering(
+                  table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
             return colStats;
           }
         }
@@ -316,10 +318,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
       if (columnOrigin != null) {
         RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
         if (table != null) {
-          if (StatsUtils.areBasicStatsUptoDateForQueryAnswering(table.getHiveTableMD(),
-              table.getHiveTableMD().getParameters())) {
-            return StatsUtils.getNumRows(table.getHiveTableMD());
-          }
+          return StatsUtils.getRowCnt(table.getHiveTableMD());
         }
       }
       return null;

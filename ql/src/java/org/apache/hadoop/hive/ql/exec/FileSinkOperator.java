@@ -9,17 +9,19 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setCopyOnWrite;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setMergeTaskEnabled;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperationIsSorted;
@@ -639,6 +641,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       jc = new JobConf(hconf);
       setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
+      setCopyOnWrite(jc, getConf().getTableInfo().getTableName(), getConf().isCopyOnWrite());
       setWriteOperationIsSorted(jc, getConf().getTableInfo().getTableName(),
               dpCtx != null && dpCtx.hasCustomPartitionOrSortExpression());
       setMergeTaskEnabled(jc, getConf().getTableInfo().getTableName(),

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.service.cli.session;
@@ -64,6 +65,7 @@ import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.session.store.HiveSessionSnapshot;
 import org.apache.hive.service.cli.operation.ExecuteStatementOperation;
 import org.apache.hive.service.cli.operation.GetCatalogsOperation;
 import org.apache.hive.service.cli.operation.GetColumnsOperation;
@@ -817,6 +819,25 @@ public class HiveSessionImpl implements HiveSession {
         LOG.error("Failed to cleanup session log dir: " + sessionHandle, e);
       }
     }
+  }
+
+  public void onOperationFinished(String statement) {
+    if (sessionManager == null || !sessionManager.isPersistableSessionsEnabled()) {
+      return;
+    }
+    notifyIfStateChanging(statement);
+  }
+
+  private void notifyIfStateChanging(String statement) {
+    if (PersistableSessionUtils.shouldPersistSnapshot(statement, sessionState)
+        && sessionManager != null) {
+      sessionManager.notifySessionStateChanged(sessionHandle);
+    }
+  }
+
+  public HiveSessionSnapshot captureSnapshot() {
+    return PersistableSessionUtils.captureSnapshot(sessionHandle, username, ipAddress,
+        sessionState, getProtocolVersion(), creationTime, lastAccessTime);
   }
 
   @Override

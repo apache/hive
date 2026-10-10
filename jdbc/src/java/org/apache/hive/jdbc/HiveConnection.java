@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.jdbc;
@@ -306,9 +307,21 @@ public class HiveConnection implements java.sql.Connection {
     this.fetchThreads = hiveConnection.fetchThreads;
   }
 
-  @VisibleForTesting
   protected int getNumRetries() {
     return maxRetries;
+  }
+
+  boolean isPersistableSession() {
+    String varname = ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY.varname;
+    String prefixedKey = Utils.JdbcConnectionParams.HIVE_CONF_PREFIX + varname;
+    String fetchStrategy = connParams.getHiveConfs().get(prefixedKey);
+    if (fetchStrategy == null) {
+      fetchStrategy = connParams.getHiveConfs().get(varname);
+    }
+    if (fetchStrategy == null) {
+      fetchStrategy = connParams.getSessionVars().get(prefixedKey);
+    }
+    return fetchStrategy != null && !"NEVER".equalsIgnoreCase(fetchStrategy);
   }
 
   @VisibleForTesting
@@ -558,6 +571,18 @@ public class HiveConnection implements java.sql.Connection {
       transport.open();
     }
     logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
+  }
+
+  void reconnect() throws SQLException {
+    try {
+      if (transport != null && transport.isOpen()) {
+        transport.close();
+      }
+      openTransport();
+      client = newSynchronizedClient(new TCLIService.Client(new TBinaryProtocol(transport)));
+    } catch (Exception e) {
+      throw new SQLException("Failed to reconnect transport", "08S01", e);
+    }
   }
 
   public String getConnectedUrl() {

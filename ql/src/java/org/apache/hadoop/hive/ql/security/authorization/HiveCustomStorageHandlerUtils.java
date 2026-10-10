@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
@@ -32,6 +33,7 @@ public class HiveCustomStorageHandlerUtils {
 
   public static final String WRITE_OPERATION_CONFIG_PREFIX = "file.sink.write.operation.";
   public static final String WRITE_OPERATION_IS_SORTED = "file.sink.write.operation.sorted.";
+  public static final String IS_COPY_ON_WRITE_CONFIG_PREFIX = "file.sink.is.copy.on.write.";
 
   public static final String MERGE_TASK_ENABLED = "file.sink.merge.task.enabled.";
 
@@ -94,5 +96,17 @@ public class HiveCustomStorageHandlerUtils {
   public static boolean isMergeTaskEnabled(UnaryOperator<String> ops, String tableName) {
     String operation = ops.apply(MERGE_TASK_ENABLED + tableName);
     return Boolean.parseBoolean(operation);
+  }
+
+  public static void setCopyOnWrite(Configuration conf, String tableName, boolean copyOnWrite) {
+    if (conf == null || tableName == null) {
+      return;
+    }
+    conf.setBoolean(IS_COPY_ON_WRITE_CONFIG_PREFIX + tableName, copyOnWrite);
+  }
+
+  public static boolean isCopyOnWrite(UnaryOperator<String> ops, String tableName) {
+    String isCopyOnWrite = ops.apply(IS_COPY_ON_WRITE_CONFIG_PREFIX + tableName);
+    return Boolean.parseBoolean(isCopyOnWrite);
   }
 }

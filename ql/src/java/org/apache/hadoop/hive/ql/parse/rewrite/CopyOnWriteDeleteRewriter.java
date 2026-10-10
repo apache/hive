@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.parse.rewrite;
 
@@ -28,6 +29,9 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
+
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addSourceColumnsForRowLineage;
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.supportsRowLineage;
 
 public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
 
@@ -45,6 +49,8 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
   public ParseUtils.ReparseResult rewrite(Context context, DeleteStatement deleteBlock)
       throws SemanticException {
 
+    boolean isRowLineageSupported = supportsRowLineage(deleteBlock.getTargetTable());
+
     ASTNode whereTree = deleteBlock.getWhereTree();
     String whereClause = "true";
     if (whereTree != null) {
@@ -56,7 +62,8 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
 
     MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
-    cowWithClauseBuilder.appendWith(sqlGenerator, filePathCol, whereClause);
+    cowWithClauseBuilder.appendWith(
+        sqlGenerator, null, filePathCol, whereClause, true, isRowLineageSupported, "");
 
     sqlGenerator.append("insert into table ");
     sqlGenerator.append(sqlGenerator.getTargetTableFullName());
@@ -65,6 +72,7 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
     sqlGenerator.append(" select ");
     sqlGenerator.appendAcidSelectColumns(Context.Operation.DELETE);
     sqlGenerator.removeLastChar();
+    addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, "", conf);
 
     sqlGenerator.append(" from ");
     sqlGenerator.append(sqlGenerator.getTargetTableFullName());

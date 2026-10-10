@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
 
       http://www.apache.org/licenses/LICENSE-2.0
 
@@ -47,6 +51,7 @@
     <module>serde</module>
     <module>service-rpc</module>
     <module>service</module>
+    <module>service-session-store</module>
     <module>streaming</module>
     <module>llap-common</module>
     <module>llap-client</module>
@@ -111,8 +116,10 @@
     <antlr4.version>4.9.3</antlr4.version>
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
     <avro.version>1.12.0</avro.version>
+    <awaitility.version>4.2.1</awaitility.version>
+    <azure-storage-file-datalake.version>12.22.0</azure-storage-file-datalake.version>
     <bcprov-jdk18on.version>1.84</bcprov-jdk18on.version>
-    <calcite.version>1.33.0</calcite.version>
+    <calcite.version>1.42.0</calcite.version>
     <datanucleus-api-jdo.version>6.0.5</datanucleus-api-jdo.version>
     <datanucleus-core.version>6.0.11</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
@@ -144,7 +151,7 @@
     <hamcrest.version>1.3</hamcrest.version>
     <hbase.version>2.5.6-hadoop3</hbase.version>
     <hppc.version>0.7.2</hppc.version>
-    <graalvm.version>23.0.8</graalvm.version>
+    <graalvm.version>25.1.3</graalvm.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
     <disruptor.version>3.3.7</disruptor.version>
     <hikaricp.version>4.0.3</hikaricp.version>
@@ -157,7 +164,7 @@
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
     <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
-    <jackson.version>2.18.6</jackson.version>
+    <jackson.version>2.21.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
@@ -165,8 +172,8 @@
     <jettison.version>1.5.4</jettison.version>
     <jetty.version>9.4.57.v20241219</jetty.version>
     <jersey.version>1.19.4</jersey.version>
-    <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
-    <jline.version>3.25.0</jline.version>
+    <jetbrains-annotations.version>26.0.2</jetbrains-annotations.version>
+    <jline.version>3.30.16</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.13.0</joda.version>
     <jodd.version>6.0.0</jodd.version>
@@ -180,23 +187,24 @@
     <kudu.version>1.17.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
+    <!-- Thrift version must be inline with one installed in the CI (Docker image referenced in the Jenkinsfile) -->
     <libthrift.version>0.16.0</libthrift.version>
-    <log4j2.version>2.25.3</log4j2.version>
+    <log4j2.version>2.25.4</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.2.0</mysql.version>
-    <postgres.version>42.7.3</postgres.version>
+    <postgres.version>42.7.12</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>5.9</opencsv.version>
-    <orc.version>2.1.2</orc.version>
+    <orc.version>2.3.0</orc.version>
     <otel.version>1.60.1</otel.version>
     <mockito-core.version>5.17.0</mockito-core.version>
     <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.127.Final</netty.version>
+    <netty.version>4.1.137.Final</netty.version>
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.16.0</parquet.version>
+    <parquet.version>1.18.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.25.5</protobuf.version>
@@ -243,6 +251,7 @@
     <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
     <keycloak.version>26.0.6</keycloak.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
+    <jedis.version>5.1.0</jedis.version>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
@@ -293,6 +302,11 @@
             <artifactId>secretsmanager</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-storage-file-datalake</artifactId>
+        <version>${azure-storage-file-datalake.version}</version>
       </dependency>
       <dependency>
         <groupId>com.esotericsoftware.kryo</groupId>
@@ -429,7 +443,17 @@
       </dependency>
       <dependency>
         <groupId>org.graalvm.js</groupId>
-        <artifactId>js</artifactId>
+        <artifactId>js-language</artifactId>
+        <version>${graalvm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.graalvm.sdk</groupId>
+        <artifactId>graal-sdk</artifactId>
+        <version>${graalvm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.graalvm.truffle</groupId>
+        <artifactId>truffle-runtime</artifactId>
         <version>${graalvm.version}</version>
       </dependency>
       <dependency>
@@ -471,6 +495,11 @@
         <groupId>javolution</groupId>
         <artifactId>javolution</artifactId>
         <version>${javolution.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${jetbrains-annotations.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jline</groupId>
@@ -531,6 +560,11 @@
         <groupId>org.antlr</groupId>
         <artifactId>ST4</artifactId>
         <version>${ST4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -1878,6 +1912,8 @@
             <!-- required by a few tests to find the derby jar -->
             <derby.version>${derby.version}</derby.version>
             <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+            <!-- required by tests to find the postgresql jar -->
+            <postgres.version>${postgres.version}</postgres.version>
             <derby.system.durability>test</derby.system.durability>
             <hadoop.bin.path>${hadoop.bin.path}</hadoop.bin.path>
             <!-- required by Hadoop's JobHistory -->

@@ -1,0 +1,283 @@
+PREHOOK: query: CREATE TABLE test_exclude (
+  id INT,
+  name STRING,
+  email STRING,
+  address STRING,
+  phone STRING
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_exclude
+POSTHOOK: query: CREATE TABLE test_exclude (
+  id INT,
+  name STRING,
+  email STRING,
+  address STRING,
+  phone STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_exclude
+PREHOOK: query: INSERT INTO test_exclude VALUES
+(1, 'Alice', 'alice@test.com', '123 Apple St', '555-0100'),
+(2, 'Bob', 'bob@test.com', '456 Banana Ave', '555-0200')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_exclude
+POSTHOOK: query: INSERT INTO test_exclude VALUES
+(1, 'Alice', 'alice@test.com', '123 Apple St', '555-0100'),
+(2, 'Bob', 'bob@test.com', '456 Banana Ave', '555-0200')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_exclude
+POSTHOOK: Lineage: test_exclude.address SCRIPT []
+POSTHOOK: Lineage: test_exclude.email SCRIPT []
+POSTHOOK: Lineage: test_exclude.id SCRIPT []
+POSTHOOK: Lineage: test_exclude.name SCRIPT []
+POSTHOOK: Lineage: test_exclude.phone SCRIPT []
+col1	col2	col3	col4	col5
+PREHOOK: query: EXPLAIN SELECT * EXCLUDE (email) FROM test_exclude
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT * EXCLUDE (email) FROM test_exclude
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_exclude
+          Select Operator
+            expressions: id (type: int), name (type: string), address (type: string), phone (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: SELECT * EXCLUDE (email) FROM test_exclude
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * EXCLUDE (email) FROM test_exclude
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+test_exclude.id	test_exclude.name	test_exclude.address	test_exclude.phone
+1	Alice	123 Apple St	555-0100
+2	Bob	456 Banana Ave	555-0200
+PREHOOK: query: EXPLAIN SELECT * EXCLUDE (email, address, phone) FROM test_exclude
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT * EXCLUDE (email, address, phone) FROM test_exclude
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_exclude
+          Select Operator
+            expressions: id (type: int), name (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT * EXCLUDE (email, address, phone) FROM test_exclude
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * EXCLUDE (email, address, phone) FROM test_exclude
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+test_exclude.id	test_exclude.name
+1	Alice
+2	Bob
+PREHOOK: query: EXPLAIN SELECT t.* EXCLUDE (id, phone) FROM test_exclude t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT t.* EXCLUDE (id, phone) FROM test_exclude t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t
+          Select Operator
+            expressions: name (type: string), email (type: string), address (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+
+PREHOOK: query: SELECT t.* EXCLUDE (id, phone) FROM test_exclude t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t.* EXCLUDE (id, phone) FROM test_exclude t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_exclude
+#### A masked pattern was here ####
+t.name	t.email	t.address
+Alice	alice@test.com	123 Apple St
+Bob	bob@test.com	456 Banana Ave
+PREHOOK: query: CREATE TABLE test_exclude_join (
+  id INT,
+  department STRING
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_exclude_join
+POSTHOOK: query: CREATE TABLE test_exclude_join (
+  id INT,
+  department STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_exclude_join
+PREHOOK: query: INSERT INTO test_exclude_join VALUES (1, 'Engineering'), (2, 'Sales')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_exclude_join
+POSTHOOK: query: INSERT INTO test_exclude_join VALUES (1, 'Engineering'), (2, 'Sales')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_exclude_join
+POSTHOOK: Lineage: test_exclude_join.department SCRIPT []
+POSTHOOK: Lineage: test_exclude_join.id SCRIPT []
+col1	col2
+PREHOOK: query: EXPLAIN
+SELECT a.* EXCLUDE (address, phone), b.* EXCLUDE (id)
+FROM test_exclude a JOIN test_exclude_join b ON a.id = b.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_exclude
+PREHOOK: Input: default@test_exclude_join
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.* EXCLUDE (address, phone), b.* EXCLUDE (id)
+FROM test_exclude a JOIN test_exclude_join b ON a.id = b.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_exclude
+POSTHOOK: Input: default@test_exclude_join
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 378 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 378 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: int), name (type: string), email (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 378 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 378 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: id is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: int), department (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col4
+                Statistics: Num rows: 2 Data size: 562 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 2 Data size: 562 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 562 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a.* EXCLUDE (address, phone), b.* EXCLUDE (id)
+FROM test_exclude a JOIN test_exclude_join b ON a.id = b.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_exclude
+PREHOOK: Input: default@test_exclude_join
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.* EXCLUDE (address, phone), b.* EXCLUDE (id)
+FROM test_exclude a JOIN test_exclude_join b ON a.id = b.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_exclude
+POSTHOOK: Input: default@test_exclude_join
+#### A masked pattern was here ####
+a.id	a.name	a.email	b.department
+1	Alice	alice@test.com	Engineering
+2	Bob	bob@test.com	Sales

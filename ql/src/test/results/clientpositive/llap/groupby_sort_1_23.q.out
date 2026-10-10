@@ -1532,9 +1532,9 @@ SELECT key, key + 1, count(1) FROM T1_n80 GROUP BY key, key + 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n80
 POSTHOOK: Output: default@outputtbl3_n2
-OPTIMIZED SQL: SELECT `key`, CAST(`key` AS DOUBLE) + 1 AS `_c1`, COUNT(*) AS `_c2`
+OPTIMIZED SQL: SELECT `key`, CAST(`key` AS DOUBLE) + 1.0E0 AS `_c1`, COUNT(*) AS `_c2`
 FROM `default`.`t1_n80`
-GROUP BY `key`, CAST(`key` AS DOUBLE) + 1
+GROUP BY `key`, CAST(`key` AS DOUBLE) + 1.0E0
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

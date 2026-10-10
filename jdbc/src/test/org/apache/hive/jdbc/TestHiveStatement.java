@@ -7,25 +7,34 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hive.jdbc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
+import org.apache.hive.service.rpc.thrift.TExecuteStatementReq;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.junit.Test;
@@ -138,5 +147,50 @@ public class TestHiveStatement {
     try (HiveStatement stmt = new HiveStatement(connection, iface, handle)) {
       stmt.addBatch(null);
     }
+  }
+
+  @Test
+  public void testDecommissionRetryWhenPersistableSessionEnabled() throws Exception {
+    verifyDecommissionRetryBehavior(true);
+  }
+
+  @Test
+  public void testDecommissionNoRetryWhenPersistableSessionDisabled() throws Exception {
+    verifyDecommissionRetryBehavior(false);
+  }
+
+  private void verifyDecommissionRetryBehavior(boolean persistableEnabled) throws Exception {
+    final HiveConnection connection = mock(HiveConnection.class);
+    final Iface client = mock(Iface.class);
+    final TSessionHandle handle = mock(TSessionHandle.class);
+    connection.fetchSize = 100;
+
+    when(connection.getNumRetries()).thenReturn(1);
+    when(connection.isPersistableSession()).thenReturn(persistableEnabled);
+    when(connection.getClient()).thenReturn(client);
+
+    AtomicInteger callCount = new AtomicInteger(0);
+    when(client.ExecuteStatement(any(TExecuteStatementReq.class))).thenAnswer(invocation -> {
+      if (callCount.getAndIncrement() == 0) {
+        throw new SQLException(
+            "Unable to run new queries as HiveServer2 is decommissioned or inactive");
+      }
+      throw new SQLException("Some other error after reconnect");
+    });
+
+    try (HiveStatement stmt = new HiveStatement(connection, client, handle, false, 100)) {
+      stmt.executeAsync("SELECT 1");
+      fail("Expected SQLException");
+    } catch (SQLException e) {
+      if (persistableEnabled) {
+        assertEquals("Some other error after reconnect", e.getMessage());
+      } else {
+        assertTrue(e.getMessage().contains("decommissioned or inactive"));
+      }
+    }
+
+    int expectedCalls = persistableEnabled ? 2 : 1;
+    verify(connection, times(persistableEnabled ? 1 : 0)).reconnect();
+    verify(client, times(expectedCalls)).ExecuteStatement(any(TExecuteStatementReq.class));
   }
 }

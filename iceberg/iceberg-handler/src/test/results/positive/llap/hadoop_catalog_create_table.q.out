@@ -391,10 +391,12 @@ Storage Desc Params:
 PREHOOK: query: delete from orders2 where itemid = 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orders2
+PREHOOK: Output: default@orders2
 #### A masked pattern was here ####
 POSTHOOK: query: delete from orders2 where itemid = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orders2
+POSTHOOK: Output: default@orders2
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from orders2
 PREHOOK: type: QUERY

@@ -53,6 +53,7 @@ import org.apache.iceberg.encryption.StandardEncryptionManager;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.CommitStateUnknownException;
+import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.hadoop.ConfigProperties;
@@ -373,7 +374,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       } catch (InvalidObjectException e) {
         throw new ValidationException(e, "Invalid Hive object for %s.%s", database, tableName);
 
-      } catch (CommitFailedException | CommitStateUnknownException e) {
+      } catch (CommitFailedException | CommitStateUnknownException | ForbiddenException e) {
         throw e;
 
       } catch (Throwable e) {

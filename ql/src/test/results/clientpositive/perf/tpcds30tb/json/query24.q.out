@@ -2479,7 +2479,7 @@ Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Reducer 7' is a cross produc
             "name": null
           }
         ],
-        "rowCount": 6.998796201537001E10
+        "rowCount": 2.1331637755562098E35
       },
       {
         "id": "26",
@@ -2508,7 +2508,7 @@ Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Reducer 7' is a cross produc
             "name": "$3"
           }
         ],
-        "rowCount": 6.998796201537001E10
+        "rowCount": 2.1331637755562098E35
       },
       {
         "id": "27",
@@ -2526,7 +2526,7 @@ Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Reducer 7' is a cross produc
             }
           ]
         },
-        "rowCount": 6.298916581383301E10
+        "rowCount": 1.9198473980005887E35
       },
       {
         "id": "28",
@@ -2555,7 +2555,7 @@ Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Reducer 7' is a cross produc
             "name": "$3"
           }
         ],
-        "rowCount": 6.298916581383301E10
+        "rowCount": 1.9198473980005887E35
       },
       {
         "id": "29",
@@ -3483,7 +3483,7 @@ Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Reducer 7' is a cross produc
           "28",
           "50"
         ],
-        "rowCount": 3.1494582906916504E10
+        "rowCount": 9.599236990002944E34
       },
       {
         "id": "52",
@@ -3512,7 +3512,7 @@ Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Reducer 7' is a cross produc
             "name": "$3"
           }
         ],
-        "rowCount": 3.1494582906916504E10
+        "rowCount": 9.599236990002944E34
       }
     ]
   }

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore.cache;
 
@@ -115,7 +116,10 @@ public class SharedCache {
   private static final Logger LOG = LoggerFactory.getLogger(SharedCache.class.getName());
   private AtomicLong cacheUpdateCount = new AtomicLong(0);
   private long maxCacheSizeInBytes = -1;
-  private HashMap<Class<?>, ObjectEstimator> sizeEstimators = null;
+  // volatile + copy-on-write in getMemorySizeEstimator: tables are cached concurrently during a
+  // multi threaded prewarm, so this map must never be mutated in place while others read it
+  private volatile Map<Class<?>, ObjectEstimator> sizeEstimators = null;
+  private final Object sizeEstimatorsLock = new Object();
   private Set<String> tableToUpdateSize = new ConcurrentHashSet<>();
   private ScheduledExecutorService executor = null;
   private Map<String, Integer> tableSizeMap = null;
@@ -246,14 +250,29 @@ public class SharedCache {
 
   }
 
+  /**
+   * Returns the estimator for the given class, creating it on first use. Estimators are added
+   * copy-on-write under {@link #sizeEstimatorsLock}: callers can run concurrently (prewarm caches
+   * tables in parallel), and readers always see a map that is no longer being mutated.
+   */
   private ObjectEstimator getMemorySizeEstimator(Class<?> clazz) {
-    if (sizeEstimators == null) {
+    Map<Class<?>, ObjectEstimator> estimators = sizeEstimators;
+    if (estimators == null) {
       return null;
     }
-    ObjectEstimator estimator = sizeEstimators.get(clazz);
+    ObjectEstimator estimator = estimators.get(clazz);
     if (estimator == null) {
-      IncrementalObjectSizeEstimator.createEstimators(clazz, sizeEstimators);
-      estimator = sizeEstimators.get(clazz);
+      synchronized (sizeEstimatorsLock) {
+        estimators = sizeEstimators;
+        estimator = estimators.get(clazz);
+        if (estimator == null) {
+          // IncrementalObjectSizeEstimator's API is HashMap typed, hence the casts at its boundary
+          Map<Class<?>, ObjectEstimator> updated = new HashMap<>(estimators);
+          IncrementalObjectSizeEstimator.createEstimators(clazz, (HashMap<Class<?>, ObjectEstimator>) updated);
+          estimator = updated.get(clazz);
+          sizeEstimators = updated;
+        }
+      }
     }
     return estimator;
   }
@@ -265,7 +284,8 @@ public class SharedCache {
 
     try {
       ObjectEstimator oe = getMemorySizeEstimator(clazz);
-      return oe.estimate(obj, sizeEstimators);
+      // Read the field again: getMemorySizeEstimator may have published a map with more entries
+      return oe.estimate(obj, (HashMap<Class<?>, ObjectEstimator>) sizeEstimators);
     } catch (Exception e) {
       LOG.error("Error while getting object size.", e);
     }
@@ -363,7 +383,7 @@ public class SharedCache {
           Object val = field.get(this);
           ObjectEstimator oe = getMemorySizeEstimator(field.getType());
           if (oe != null) {
-            size += oe.estimate(val, sizeEstimators);
+            size += oe.estimate(val, (HashMap<Class<?>, ObjectEstimator>) sizeEstimators);
           }
         } catch (Exception ex) {
           LOG.error("Not able to estimate size.", ex);

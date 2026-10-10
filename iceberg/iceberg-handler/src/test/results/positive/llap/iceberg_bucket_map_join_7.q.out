@@ -74,7 +74,7 @@ Stage-0
                     Filter Operator [FIL_39] (rows=500 width=269)
                       predicate:(key1 is not null and key2 is not null)
                       TableScan [TS_0] (rows=500 width=269)
-                        default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:8,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","value"]
+                        default@srcbucket_big,a,Tbl:COMPLETE,Col:PARTIAL,Grouping Num Buckets:8,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","value"]
 
 PREHOOK: query: SELECT *
 FROM srcbucket_big a
@@ -172,7 +172,7 @@ Stage-0
                     Filter Operator [FIL_39] (rows=500 width=269)
                       predicate:((key1 <> '0') and (key1 <> '100') and key2 is not null)
                       TableScan [TS_0] (rows=500 width=269)
-                        default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:8,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","value"]
+                        default@srcbucket_big,a,Tbl:COMPLETE,Col:PARTIAL,Grouping Num Buckets:8,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","value"]
 
 PREHOOK: query: SELECT *
 FROM srcbucket_big a
@@ -270,7 +270,7 @@ Stage-0
                     Filter Operator [FIL_29] (rows=500 width=269)
                       predicate:key1 is not null
                       TableScan [TS_0] (rows=500 width=269)
-                        default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","key2","value"]
+                        default@srcbucket_big,a,Tbl:COMPLETE,Col:PARTIAL,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","key2","value"]
 
 PREHOOK: query: SELECT *
 FROM srcbucket_big a
@@ -368,7 +368,7 @@ Stage-0
                     Filter Operator [FIL_29] (rows=500 width=269)
                       predicate:((key1 <> '0') and (key1 <> '100'))
                       TableScan [TS_0] (rows=500 width=269)
-                        default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","key2","value"]
+                        default@srcbucket_big,a,Tbl:COMPLETE,Col:PARTIAL,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","key2","value"]
 
 PREHOOK: query: SELECT *
 FROM srcbucket_big a
@@ -468,7 +468,7 @@ Stage-0
                     Filter Operator [FIL_29] (rows=500 width=269)
                       predicate:((key2 <> 'val_0') and (key2 <> 'val_100') and key1 is not null)
                       TableScan [TS_0] (rows=500 width=269)
-                        default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","key2","value"]
+                        default@srcbucket_big,a,Tbl:COMPLETE,Col:PARTIAL,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","key2","value"]
 
 PREHOOK: query: SELECT *
 FROM srcbucket_big a
@@ -566,7 +566,7 @@ Stage-0
                     Filter Operator [FIL_29] (rows=500 width=269)
                       predicate:key2 is not null
                       TableScan [TS_0] (rows=500 width=269)
-                        default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key1","key2","value"]
+                        default@srcbucket_big,a,Tbl:COMPLETE,Col:PARTIAL,Output:["key1","key2","value"]
 
 PREHOOK: query: SELECT *
 FROM srcbucket_big a
@@ -662,7 +662,7 @@ Stage-0
                     Filter Operator [FIL_44] (rows=500 width=269)
                       predicate:(key1 is not null and key2 is not null and value is not null)
                       TableScan [TS_0] (rows=500 width=269)
-                        default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:8,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","value"]
+                        default@srcbucket_big,a,Tbl:COMPLETE,Col:PARTIAL,Grouping Num Buckets:8,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","value"]
 
 PREHOOK: query: SELECT *
 FROM srcbucket_big a

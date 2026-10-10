@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.parse;
 
@@ -22,10 +23,12 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.MergeStatement;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
@@ -134,8 +137,14 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
     OnClauseAnalyzer oca = new OnClauseAnalyzer(onClause, targetTable, targetAlias,
             conf, onClauseAsText);
     oca.analyze();
-    // unresolved columns are not allowed in the on clause to avoid wrong results
-    if (!oca.unresolvedColumns.isEmpty()) {
+
+    boolean copyOnWriteMode = false;
+    HiveStorageHandler storageHandler = targetTable.getStorageHandler();
+    if (storageHandler != null) {
+      copyOnWriteMode = storageHandler.shouldOverwrite(targetTable, Context.Operation.MERGE);
+    }
+    // unresolved columns are not allowed in the on clause to avoid wrong results in Copy-On-Write mode
+    if (copyOnWriteMode && !oca.unresolvedColumns.isEmpty()) {
       throw new SemanticException("UnResolvedColumns exist: " + String.join(",", oca.unresolvedColumns) +
               ". We should assign a table name to each column in the ON clause like tbl.col.");
     }

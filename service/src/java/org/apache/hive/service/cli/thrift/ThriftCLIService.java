@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.service.cli.thrift;
@@ -362,7 +363,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Failed to cancel delegation token [request: {}]", req, e);
+        LOG.error("Failed to cancel delegation token for session {}", req.getSessionHandle(), e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -381,7 +382,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Failed to renew delegation token [request: {}]", e);
+        LOG.error("Failed to renew delegation token for session {}", req.getSessionHandle(), e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -410,6 +411,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       map.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname, Integer.toString(fetchSize));
       map.put(HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname,
           String.valueOf(hiveConf.getBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST)));
+      map.put(HiveConf.ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY.varname,
+          hiveConf.getVar(ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY));
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
       resp.setConfiguration(map);
       resp.setStatus(OK_STATUS);
@@ -549,7 +552,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       throws HiveSQLException, IOException {
     final String ipAddress = getIpAddress();
 
-    LOG.info("Creating Hive session handle for user [{}] from IP {}", req.getUsername(), ipAddress);
+    LOG.info("Creating Hive session handle for user [{}] from IP {}", userName, ipAddress);
 
     TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION,
         req.getClient_protocol());
@@ -813,14 +816,18 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       }
       TJobExecutionStatus executionStatus =
           mapper.forStatus(progressUpdate.status);
-      resp.setProgressUpdateResponse(new TProgressUpdateResp(
+      TProgressUpdateResp tProgressUpdateResp = new TProgressUpdateResp(
           progressUpdate.headers(),
           progressUpdate.rows(),
           progressUpdate.progressedPercentage,
           executionStatus,
           progressUpdate.footerSummary,
           progressUpdate.startTimeMillis
-      ));
+      );
+      if (progressUpdate.queueMetrics() != null && !progressUpdate.queueMetrics().isEmpty()) {
+        tProgressUpdateResp.setQueueMetrics(progressUpdate.queueMetrics());
+      }
+      resp.setProgressUpdateResponse(tProgressUpdateResp);
       if (opException != null) {
         resp.setSqlState(opException.getSQLState());
         resp.setErrorCode(opException.getErrorCode());
