@@ -145,6 +145,20 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
           SupportedFunctionType.PERCENT_RANK,
           SupportedFunctionType.CUME_DIST);
 
+  /**
+   * Window functions allowed to reference a partition-only column in the window function
+   * argument under vector PTF. 
+   */
+  public static final Set<SupportedFunctionType> PARTITION_ONLY_COL_ALLOWED_FUNCTIONS =
+      EnumSet.of(
+          SupportedFunctionType.SUM);
+
+  /**
+   * Per evaluator index: partition expr index for a partition-only column argument, or -1.
+   * Populated during vectorization validation.
+   */
+  private int[] evalPartitionOnlyExprIndices;
+
   private TypeInfo[] reducerBatchTypeInfos;
   private DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations;
 
@@ -171,6 +185,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     isPartitionOrderBy = false;
 
     evaluatorFunctionNames = null;
+    evalPartitionOnlyExprIndices = null;
     evaluatorsAreDistinct = null;
     evaluatorsRespectNulls = null;
     evaluatorInputExprNodeDescLists = null;
@@ -615,5 +630,14 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   public int getVectorizedPTFMaxMemoryBufferingBatchCount() {
     return vectorizedPTFMaxMemoryBufferingBatchCount;
+  }
+
+  public int[] getEvalPartitionOnlyExprIndices() {
+    return evalPartitionOnlyExprIndices;
+  }
+
+  public void setEvalPartitionOnlyExprIndices(
+      int[] evalPartitionOnlyExprIndices) {
+    this.evalPartitionOnlyExprIndices = evalPartitionOnlyExprIndices;
   }
 }

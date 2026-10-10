@@ -140,6 +140,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private transient HiveDecimalWritable[] currentPartitionDecimals;
   private transient Timestamp[] currentPartitionTimestamps;
   private transient HiveIntervalDayTime[] currentPartitionIntervalDayTimes;
+  private transient Object[] currentPartitionValues;
 
   private transient int[] bufferedColumnMap;
   private transient TypeInfo[] bufferedTypeInfos;
@@ -314,6 +315,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     currentPartitionDecimals = new HiveDecimalWritable[partitionKeyCount];
     currentPartitionTimestamps = new Timestamp[partitionKeyCount];
     currentPartitionIntervalDayTimes = new HiveIntervalDayTime[partitionKeyCount];
+    currentPartitionValues = new Object[partitionKeyCount];
 
     /*
      * Setup the overflow batch.
@@ -322,8 +324,13 @@ public class VectorPTFOperator extends Operator<PTFDesc>
         vOutContext.getScratchColumnTypeNames(), outputProjectionColumnMap, outputTypeInfos);
 
     evaluators = VectorPTFDesc.getEvaluators(vectorDesc, vectorPTFInfo);
-    for (VectorPTFEvaluatorBase evaluator : evaluators) {
+    int[] evalPartitionOnlyExprIndices = vectorPTFInfo.getEvalPartitionOnlyExprIndices();
+    for (int i = 0; i < evaluators.length; i++) {
+      VectorPTFEvaluatorBase evaluator = evaluators[i];
       evaluator.setNullsLast(HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
+      if (evalPartitionOnlyExprIndices[i] >= 0) {
+        evaluator.enablePartitionOnlyConstant();
+      }
     }
 
     streamingEvaluatorNums = VectorPTFDesc.getStreamingEvaluatorNums(evaluators);
@@ -710,15 +717,18 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       currentPartitionIsNull[i] = isNull;
 
       if (isNull) {
+        currentPartitionValues[i] = null;
         continue;
       }
 
       switch (partitionColumnVectorTypes[i]) {
       case LONG:
         currentPartitionLongs[i] = ((LongColumnVector) colVector).vector[0];
+        currentPartitionValues[i] = currentPartitionLongs[i];
         break;
       case DOUBLE:
         currentPartitionDoubles[i] = ((DoubleColumnVector) colVector).vector[0];
+        currentPartitionValues[i] = currentPartitionDoubles[i];
         break;
       case BYTES:
         {
@@ -732,6 +742,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
             System.arraycopy(bytes, start, currentPartitionByteArrays[i], 0, length);
           }
           currentPartitionByteLengths[i] = length;
+          currentPartitionValues[i] = Arrays.copyOf(currentPartitionByteArrays[i], length);
         }
         break;
       case DECIMAL:
@@ -739,22 +750,37 @@ public class VectorPTFOperator extends Operator<PTFDesc>
           currentPartitionDecimals[i] = new HiveDecimalWritable();
         }
         currentPartitionDecimals[i].set(((DecimalColumnVector) colVector).vector[0]);
+        currentPartitionValues[i] = currentPartitionDecimals[i];
         break;
       case TIMESTAMP:
         if (currentPartitionTimestamps[i] == null) {
           currentPartitionTimestamps[i] = new Timestamp(0);
         }
         ((TimestampColumnVector) colVector).timestampUpdate(currentPartitionTimestamps[i], 0);
+        currentPartitionValues[i] = currentPartitionTimestamps[i];
         break;
       case INTERVAL_DAY_TIME:
         if (currentPartitionIntervalDayTimes[i] == null) {
           currentPartitionIntervalDayTimes[i] = new HiveIntervalDayTime();
         }
         ((IntervalDayTimeColumnVector) colVector).intervalDayTimeUpdate(currentPartitionIntervalDayTimes[i], 0);
+        currentPartitionValues[i] = currentPartitionIntervalDayTimes[i];
         break;
       default:
         throw new RuntimeException("Unexpected column vector type " + partitionColumnVectorTypes[i]);
       }
+    }
+    refreshEvaluatorPartitionOnlyConstants();
+  }
+
+  private void refreshEvaluatorPartitionOnlyConstants() {
+    int[] evalPartitionOnlyExprIndices = vectorPTFInfo.getEvalPartitionOnlyExprIndices();
+    for (int i = 0; i < evaluators.length; i++) {
+      int partitionIndex = evalPartitionOnlyExprIndices[i];
+      if (partitionIndex < 0) {
+        continue;
+      }
+      evaluators[i].updatePartitionOnlyConstant(currentPartitionValues[partitionIndex]);
     }
   }
 
