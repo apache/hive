@@ -42,7 +42,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: hbase_ppd_keyrange
-          filterExpr: ((key > 8) and (key < 21)) (type: boolean)
+          filterExpr: ((key < 21) and (key > 8)) (type: boolean)
           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: int), value (type: string)
@@ -85,7 +85,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: hbase_ppd_keyrange
-          filterExpr: ((key > 8) and (key <= 17)) (type: boolean)
+          filterExpr: ((key <= 17) and (key > 8)) (type: boolean)
           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: int), value (type: string)
@@ -125,7 +125,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_ppd_keyrange
-            filterExpr: ((key > 8) and (key <= 17)) (type: boolean)
+            filterExpr: ((key <= 17) and (key > 8)) (type: boolean)
             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (value like '%11%') (type: boolean)

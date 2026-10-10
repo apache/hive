@@ -432,10 +432,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_llap
-                  filterExpr: ((cint > 5) and (cint < 10)) (type: boolean)
+                  filterExpr: ((cint < 10) and (cint > 5)) (type: boolean)
                   Statistics: Num rows: 122880 Data size: 9173100 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cint > 5) and (cint < 10)) (type: boolean)
+                    predicate: ((cint < 10) and (cint > 5)) (type: boolean)
                     Statistics: Num rows: 30720 Data size: 2293300 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(cstring2) (type: int)
@@ -924,10 +924,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_llap
-                  filterExpr: ((cint > 5) and (cint < 10)) (type: boolean)
+                  filterExpr: ((cint < 10) and (cint > 5)) (type: boolean)
                   Statistics: Num rows: 245760 Data size: 18346100 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cint > 5) and (cint < 10)) (type: boolean)
+                    predicate: ((cint < 10) and (cint > 5)) (type: boolean)
                     Statistics: Num rows: 61440 Data size: 4586600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hash(cstring2) (type: int)

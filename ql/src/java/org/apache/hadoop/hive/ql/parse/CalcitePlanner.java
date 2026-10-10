@@ -524,8 +524,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS);
     boolean heuristicMaterializationStrategy = HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
+    boolean uniformWithinRange =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_RANGE_SELECTIVITY_UNIFORM_DISTRIBUTION);
     HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy, isExplainPlan),
+        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy, isExplainPlan,
+            uniformWithinRange),
         statsSource);
     RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
     planner.addListener(new RuleEventLogger());
@@ -2292,7 +2295,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 2. Run aggregate-join transpose (cost based)
       //    If it failed because of missing stats, we continue with
       //    the rest of optimizations
-      if (conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE) || conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE_UNIQUE)) {
+      // Agg-join transpose changes the Calcite plan shape; on the CBO return path that plan is
+      // converted directly to Hive operators and can prevent bucket/SMB map join conversion.
+      if ((conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE)
+              || conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE_UNIQUE))
+          && !HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
             new HiveAggregateJoinTransposeRule(noColsMissingStats,
                 conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE),
