@@ -83,7 +83,10 @@ public record LlapSpec(
     AutoscalingSpec autoscaling,
     @JsonPropertyDescription("Per-LLAP TezAM configuration. Each LLAP cluster gets its own TezAM "
         + "with independent replica count and autoscaling.")
-    LlapTezAmSpec tezAm) {
+    LlapTezAmSpec tezAm,
+    @JsonPropertyDescription("Update strategy for LLAP Cluster: RollingUpdate (one by one) or Recreate (all at once)")
+    @Default("RollingUpdate")
+    UpdateStrategy updateStrategy) {
 
   /** Per-LLAP-cluster TezAM replica and autoscaling overrides. */
   public record LlapTezAmSpec(
@@ -100,7 +103,10 @@ public record LlapSpec(
       @JsonPropertyDescription("Tolerations for this LLAP cluster's TezAM, overriding spec.tezAm.tolerations")
       @SchemaFrom(type = Object[].class)
       @PreserveUnknownFields
-      List<Toleration> tolerations) {
+      List<Toleration> tolerations,
+      @JsonPropertyDescription("Update strategy for this LLAP Cluster's TezAM: RollingUpdate (one by one) or "
+          + "Recreate (all at once), overriding spec.tezAm.updateStrategy")
+      UpdateStrategy updateStrategy) {
 
     public LlapTezAmSpec {
       replicas = replicas != null ? replicas : 1;
@@ -129,7 +135,8 @@ public record LlapSpec(
     envVars = envVars != null ? envVars : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 0, 1, 20, 60, 900, 600, 10, 0, 0, null);
-    tezAm = tezAm != null ? tezAm : new LlapTezAmSpec(null, null, null, null);
+    tezAm = tezAm != null ? tezAm : new LlapTezAmSpec(null, null, null, null, null);
+    updateStrategy = updateStrategy != null ? updateStrategy : UpdateStrategy.ROLLING_UPDATE;
   }
 
   public boolean isEnabled() {
