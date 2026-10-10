@@ -102,7 +102,7 @@ public class Retryable {
     try {
       Thread.sleep(seconds * 1000);
     } catch (InterruptedException e) {
-      // no-op.. just proceed
+      Thread.currentThread().interrupt();
     }
   }
 

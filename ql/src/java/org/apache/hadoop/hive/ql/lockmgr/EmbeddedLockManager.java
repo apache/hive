@@ -127,7 +127,7 @@ public class EmbeddedLockManager implements HiveLockManager {
     try {
       Thread.sleep(sleepTime);
     } catch (InterruptedException e) {
-      // ignore
+      Thread.currentThread().interrupt();
     }
   }
 

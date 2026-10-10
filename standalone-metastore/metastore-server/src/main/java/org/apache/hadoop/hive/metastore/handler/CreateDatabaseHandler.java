@@ -173,6 +173,9 @@ public class CreateDatabaseHandler
                 return null;
               });
             } catch (IOException | InterruptedException e) {
+              if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+              }
               LOG.error("Couldn't delete managed directory {} after it was created for database {} {}",
                   dbMgdPath, db.getName(), e.getMessage());
             }
@@ -185,6 +188,9 @@ public class CreateDatabaseHandler
                 return null;
               });
             } catch (IOException | InterruptedException e) {
+              if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+              }
               LOG.error("Couldn't delete external directory {} after it was created for database {} {}",
                   dbExtPath, db.getName(), e.getMessage());
             }

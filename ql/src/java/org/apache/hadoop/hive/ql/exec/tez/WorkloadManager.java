@@ -1681,6 +1681,9 @@ public class WorkloadManager extends AbstractTriggerValidator
     try {
       return future.get();
     } catch (InterruptedException | ExecutionException e) {
+      if (e instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+      }
       LOG.error("Error getting description", e);
       return Lists.newArrayList("Error: " + e.toString());
     }
