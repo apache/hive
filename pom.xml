@@ -159,7 +159,7 @@
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <!-- Upgrade roaringbit version whenever upgrading iceberg version -->
-    <iceberg.version>1.11.0</iceberg.version>
+    <iceberg.version>1.12.0</iceberg.version>
     <immutables.version>2.9.2</immutables.version>
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
     <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
@@ -211,7 +211,7 @@
     <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
     <protoc.path>${env.PROTOC_PATH}</protoc.path>
     <rat.version>0.16.1</rat.version>
-    <roaringbit.version>1.3.0</roaringbit.version>
+    <roaringbit.version>1.6.23</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
@@ -287,6 +287,11 @@
         <artifactId>bundle</artifactId>
         <version>${aws-java-sdk.version}</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>apache5-client</artifactId>
+        <version>${aws-java-sdk.version}</version>
       </dependency>
       <dependency>
         <groupId>com.amazonaws.secretsmanager</groupId>

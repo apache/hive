@@ -19,12 +19,10 @@
 
 package org.apache.iceberg.data;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.apache.iceberg.DataFile;
-import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
@@ -38,8 +36,7 @@ import org.apache.iceberg.deletes.PositionDeleteWriter;
 import org.apache.iceberg.encryption.EncryptedFiles;
 import org.apache.iceberg.encryption.EncryptedOutputFile;
 import org.apache.iceberg.encryption.EncryptionKeyMetadata;
-import org.apache.iceberg.io.FileAppender;
-import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.io.DataWriter;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.io.OutputFileFactory;
@@ -65,14 +62,15 @@ public class FileHelpers {
                                                                     List<Pair<CharSequence, Long>> deletes)
       throws IOException {
     FileFormat format = defaultFormat(table.properties());
-    FileAppenderFactory<Record> factory = new GenericAppenderFactory(table.schema(), table.spec());
+    FileWriterFactory<Record> factory = new GenericFileWriterFactory.Builder(table).dataFileFormat(format).build();
 
     PositionDeleteWriter<Record> writer =
-        factory.newPosDeleteWriter(encrypt(out), format, partition);
+        factory.newPositionDeleteWriter(encrypt(out), table.spec(), partition);
     PositionDelete<Record> posDelete = PositionDelete.create();
-    try (Closeable toClose = writer) {
+    try (writer) {
       for (Pair<CharSequence, Long> delete : deletes) {
-        writer.write(posDelete.set(delete.first(), delete.second(), null));
+        posDelete.set(delete.first(), delete.second());
+        writer.write(posDelete);
       }
     }
 
@@ -89,11 +87,12 @@ public class FileHelpers {
       throws IOException {
     FileFormat format = defaultFormat(table.properties());
     int[] equalityFieldIds = deleteRowSchema.columns().stream().mapToInt(Types.NestedField::fieldId).toArray();
-    FileAppenderFactory<Record> factory = new GenericAppenderFactory(table.schema(), table.spec(),
-        equalityFieldIds, deleteRowSchema, null);
+    FileWriterFactory<Record> factory = new GenericFileWriterFactory.Builder(table).equalityFieldIds(equalityFieldIds)
+        .deleteFileFormat(format).equalityDeleteRowSchema(deleteRowSchema)
+        .build();
 
-    EqualityDeleteWriter<Record> writer = factory.newEqDeleteWriter(encrypt(out), format, partition);
-    try (Closeable toClose = writer) {
+    EqualityDeleteWriter<Record> writer = factory.newEqualityDeleteWriter(encrypt(out), table.spec(), partition);
+    try (writer) {
       writer.write(deletes);
     }
 
@@ -111,9 +110,9 @@ public class FileHelpers {
       OutputFileFactory fileFactory =
               OutputFileFactory.builderFor(table, 1, 1).format(FileFormat.PUFFIN).build();
       DVFileWriter writer = new BaseDVFileWriter(fileFactory, p -> null);
-      try (DVFileWriter closeableWriter = writer) {
+      try (writer) {
         for (Pair<CharSequence, Long> delete : deletes) {
-          closeableWriter.delete(
+          writer.delete(
                   delete.first().toString(), delete.second(), table.spec(), partition);
         }
       }
@@ -122,14 +121,16 @@ public class FileHelpers {
               Iterables.getOnlyElement(writer.result().deleteFiles()),
               writer.result().referencedDataFiles());
     } else {
-      FileWriterFactory<Record> factory = GenericFileWriterFactory.builderFor(table).build();
+      FileFormat format = defaultFormat(table.properties());
+      FileWriterFactory<Record> factory = new GenericFileWriterFactory.Builder(table).deleteFileFormat(format).build();
 
       PositionDeleteWriter<Record> writer =
               factory.newPositionDeleteWriter(encrypt(out), table.spec(), partition);
       PositionDelete<Record> posDelete = PositionDelete.create();
-      try (Closeable toClose = writer) {
+      try (writer) {
         for (Pair<CharSequence, Long> delete : deletes) {
-          writer.write(posDelete.set(delete.first(), delete.second(), null));
+          posDelete.set(delete.first(), delete.second());
+          writer.write(posDelete);
         }
       }
 
@@ -139,40 +140,33 @@ public class FileHelpers {
 
   public static DataFile writeDataFile(Table table, OutputFile out, List<Record> rows) throws IOException {
     FileFormat format = defaultFormat(table.properties());
-    GenericAppenderFactory factory = new GenericAppenderFactory(table.schema());
+    GenericFileWriterFactory factory = new GenericFileWriterFactory.Builder(table).dataFileFormat(format).build();
 
-    FileAppender<Record> writer = factory.newAppender(out, format);
-    try (Closeable toClose = writer) {
-      writer.addAll(rows);
+    DataWriter<Record> writer = factory.newDataWriter(encrypt(out), table.spec(), null);
+    try (writer) {
+      for (Record row : rows) {
+        writer.write(row);
+      }
     }
 
-    return DataFiles.builder(table.spec())
-        .withFormat(format)
-        .withPath(out.location())
-        .withFileSizeInBytes(writer.length())
-        .withSplitOffsets(writer.splitOffsets())
-        .withMetrics(writer.metrics())
-        .build();
+    return writer.toDataFile();
+
   }
 
   public static DataFile writeDataFile(Table table, OutputFile out, StructLike partition, List<Record> rows)
       throws IOException {
     FileFormat format = defaultFormat(table.properties());
-    GenericAppenderFactory factory = new GenericAppenderFactory(table.schema(), table.spec());
+    GenericFileWriterFactory factory = new GenericFileWriterFactory.Builder(table).dataFileFormat(format).build();
 
-    FileAppender<Record> writer = factory.newAppender(out, format);
-    try (Closeable toClose = writer) {
-      writer.addAll(rows);
+    DataWriter<Record> writer = factory.newDataWriter(encrypt(out), table.spec(), partition);
+    try (writer) {
+      for (Record row : rows) {
+        writer.write(row);
+      }
     }
 
-    return DataFiles.builder(table.spec())
-        .withFormat(format)
-        .withPath(out.location())
-        .withPartition(partition)
-        .withFileSizeInBytes(writer.length())
-        .withSplitOffsets(writer.splitOffsets())
-        .withMetrics(writer.metrics())
-        .build();
+    return writer.toDataFile();
+
   }
 
   public static DeleteFile writePosDeleteFile(
@@ -192,22 +186,21 @@ public class FileHelpers {
       OutputFileFactory fileFactory =
               OutputFileFactory.builderFor(table, 1, 1).format(FileFormat.PUFFIN).build();
       DVFileWriter writer = new BaseDVFileWriter(fileFactory, p -> null);
-      try (DVFileWriter closeableWriter = writer) {
+      try (writer) {
         for (PositionDelete<?> delete : deletes) {
-          closeableWriter.delete(delete.path().toString(), delete.pos(), table.spec(), partition);
+          writer.delete(delete.path().toString(), delete.pos(), table.spec(), partition);
         }
       }
 
       return Iterables.getOnlyElement(writer.result().deleteFiles());
     } else {
       FileWriterFactory<Record> factory =
-              GenericFileWriterFactory.builderFor(table)
-                      .positionDeleteRowSchema(table.schema())
+              new GenericFileWriterFactory.Builder(table)
                       .build();
 
       PositionDeleteWriter<?> writer =
               factory.newPositionDeleteWriter(encrypt(out), table.spec(), partition);
-      try (Closeable toClose = writer) {
+      try (writer) {
         for (PositionDelete delete : deletes) {
           writer.write(delete);
         }
