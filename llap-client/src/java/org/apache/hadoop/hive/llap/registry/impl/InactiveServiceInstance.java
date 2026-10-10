@@ -57,16 +57,6 @@ public class InactiveServiceInstance implements LlapServiceInstance {
   }
 
   @Override
-  public String getExternalHostname() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int getExternalClientsRpcPort() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public String getServicesAddress() {
     throw new UnsupportedOperationException();
   }
