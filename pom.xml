@@ -160,6 +160,7 @@
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <!-- Upgrade roaringbit version whenever upgrading iceberg version -->
     <iceberg.version>1.11.0</iceberg.version>
+    <jakarta.servlet-api.version>6.1.0</jakarta.servlet-api.version>
     <immutables.version>2.9.2</immutables.version>
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
     <httpcomponents5.client.version>5.5</httpcomponents5.client.version>

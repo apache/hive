@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.MetricsConfig;
@@ -69,6 +70,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mapping.NameMapping;
@@ -257,6 +259,71 @@ public class HiveTableUtil {
     }
 
     return table;
+  }
+
+  /**
+   * Resolves the Iceberg {@link Table} for split generation ({@code IcebergInputFormat#getSplits}).
+   *
+   * <p>Serialized tables ({@link SerializableTable}) only carry a metadata snapshot and produce
+   * {@link org.apache.iceberg.DataTableScan} (client-side manifest planning). When REST catalog
+   * server-side scan planning is enabled, reload the live table from the catalog so
+   * {@code table.newScan()} returns {@link org.apache.iceberg.rest.RESTTableScan} and issues
+   * {@code POST /plan} on the REST server.
+   *
+   * <p>Intra-transaction read-after-write ({@link InputFormatConfig#TABLE_METADATA_LOCATION}) still
+   * uses the deserialized snapshot so uncommitted metadata is visible.
+   */
+  public static Table resolveTableForScanPlanning(Configuration conf, String tableIdentifier) {
+    if (shouldReloadForServerSideScanPlanning(conf)) {
+      Table table = Catalogs.loadTable(conf);
+      checkAndSetIoConfig(conf, table);
+      IcebergVendedCredentialUtil.applyFromJobConf(table, resolveCatalogName(conf), conf);
+      return table;
+    }
+
+    Table table = deserializeTable(conf, tableIdentifier);
+    if (table == null) {
+      table = Catalogs.loadTable(conf);
+      checkAndSetIoConfig(conf, table);
+    }
+    return table;
+  }
+
+  private static boolean shouldReloadForServerSideScanPlanning(Configuration conf) {
+    if (StringUtils.isNotBlank(conf.get(InputFormatConfig.TABLE_METADATA_LOCATION))) {
+      return false;
+    }
+    String catalogName = resolveCatalogName(conf);
+    if (StringUtils.isBlank(catalogName)) {
+      return false;
+    }
+    if (!CatalogUtil.ICEBERG_CATALOG_TYPE_REST.equals(
+        IcebergCatalogProperties.getCatalogType(conf, catalogName))) {
+      return false;
+    }
+    return RestCatalogScanPlanningUtil.isServerSidePlanningEnabled(catalogName, conf);
+  }
+
+  /**
+   * Resolves the Iceberg catalog name from {@link InputFormatConfig#CATALOG_NAME} on the
+   * configuration, or the session default ({@link IcebergCatalogProperties#getCatalogName(Configuration)}).
+   */
+  public static String resolveCatalogName(Configuration conf) {
+    return resolveCatalogName(conf, conf != null ? conf.get(InputFormatConfig.CATALOG_NAME) : null);
+  }
+
+  /**
+   * Resolves the Iceberg catalog name from a per-table {@link InputFormatConfig#CATALOG_NAME} value
+   * (e.g. {@code TableDesc} properties) or the session default when that value is absent.
+   */
+  public static String resolveCatalogName(Configuration conf, String catalogNameFromTable) {
+    if (StringUtils.isNotBlank(catalogNameFromTable)) {
+      return catalogNameFromTable;
+    }
+    if (conf == null) {
+      return null;
+    }
+    return IcebergCatalogProperties.getCatalogName(conf);
   }
 
   /**
