@@ -505,6 +505,8 @@ public class LlapResourceBuilder
           tezAutoscaling.metricsScrapeIntervalSeconds());
     }
 
+    applyRestrictedSecurityContext(deployment.getSpec().getTemplate().getSpec(),
+        spec.runAsUser());
     return deployment;
   }
 
@@ -672,6 +674,7 @@ public class LlapResourceBuilder
     appendUserVolumes(statefulSet.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),
         llap.extraVolumes(), llap.extraVolumeMounts());
+    applyRestrictedSecurityContext(statefulSet.getSpec().getTemplate().getSpec(), spec.runAsUser());
 
     return statefulSet;
   }

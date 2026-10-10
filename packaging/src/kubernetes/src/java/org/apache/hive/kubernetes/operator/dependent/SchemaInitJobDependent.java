@@ -65,6 +65,8 @@ public class SchemaInitJobDependent
   protected Job desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
+    validateServiceAccountName(context.getClient(),
+        hiveCluster.getMetadata().getNamespace(), spec.serviceAccountName());
     DatabaseConfig db = spec.metastore().database();
 
     List<EnvVar> envVars = new ArrayList<>();
@@ -115,7 +117,7 @@ public class SchemaInitJobDependent
     addExternalJars(spec.image(), jars,
         initContainers, volumeMounts, volumes, envVars);
 
-    return new JobBuilder()
+    Job job = new JobBuilder()
         .withNewMetadata()
           .withName(resourceName(hiveCluster))
           .withNamespace(hiveCluster.getMetadata().getNamespace())
@@ -146,6 +148,8 @@ public class SchemaInitJobDependent
           .endTemplate()
         .endSpec()
         .build();
+    applyRestrictedSecurityContext(job.getSpec().getTemplate().getSpec(), spec.runAsUser());
+    return job;
   }
 
   /** Returns the Job resource name for this HiveCluster. */
