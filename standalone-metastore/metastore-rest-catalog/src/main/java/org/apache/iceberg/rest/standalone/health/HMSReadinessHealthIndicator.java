@@ -39,6 +39,11 @@ public class HMSReadinessHealthIndicator implements HealthIndicator {
 
   private final Configuration conf;
 
+  /**
+   * Creates a health indicator that checks HMS connectivity through {@code conf}.
+   *
+   * @param conf the configuration used to reach HMS
+   */
   public HMSReadinessHealthIndicator(Configuration conf) {
     this.conf = conf;
   }

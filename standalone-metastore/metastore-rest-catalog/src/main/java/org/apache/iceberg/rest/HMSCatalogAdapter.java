@@ -128,6 +128,16 @@ public class HMSCatalogAdapter implements Closeable {
   private final List<IcebergMetricsReporter> metricsReporters;
   private final Clock clock = Clock.systemUTC();
 
+  /**
+   * Creates an adapter that dispatches Iceberg REST Catalog requests to {@code catalog}.
+   *
+   * @param catalogName the catalog name used when checking authorization
+   * @param catalog the underlying catalog, which must implement {@link SupportsNamespaces} and
+   *     {@link ViewCatalog}
+   * @param icebergAuthorizer authorizer used to filter list results and validate table
+   *     locations, or {@code null} to skip authorization
+   * @param metricsReporters reporters notified when a {@code reportMetrics} request is received
+   */
   public HMSCatalogAdapter(String catalogName, Catalog catalog, IcebergAuthorizer icebergAuthorizer,
       List<IcebergMetricsReporter> metricsReporters) {
     Preconditions.checkArgument(catalog instanceof SupportsNamespaces);
@@ -308,7 +318,15 @@ public class HMSCatalogAdapter implements Closeable {
         ? RESTUtil.namespaceFromQueryParam(vars.get(PARENT))
         : Namespace.empty();
     PageRequest page = PageRequest.from(vars);
-    return CatalogHandlers.listNamespaces(asNamespaceCatalog, parent, page.token(), page.size());
+    ListNamespacesResponse response =
+        CatalogHandlers.listNamespaces(asNamespaceCatalog, parent, page.token(), page.size());
+    if (icebergAuthorizer == null) {
+      return response;
+    }
+    return ListNamespacesResponse.builder()
+        .addAll(icebergAuthorizer.filterNamespaces(catalogName, response.namespaces()))
+        .nextPageToken(response.nextPageToken())
+        .build();
   }
 
   private CreateNamespaceResponse createNamespace(Object body) {
@@ -342,7 +360,14 @@ public class HMSCatalogAdapter implements Closeable {
   private ListTablesResponse listTables(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
     PageRequest page = PageRequest.from(vars);
-    return CatalogHandlers.listTables(catalog, namespace, page.token(), page.size());
+    ListTablesResponse response = CatalogHandlers.listTables(catalog, namespace, page.token(), page.size());
+    if (icebergAuthorizer == null) {
+      return response;
+    }
+    return ListTablesResponse.builder()
+        .addAll(icebergAuthorizer.filterTables(catalogName, response.identifiers()))
+        .nextPageToken(response.nextPageToken())
+        .build();
   }
 
   private LoadTableResponse createTable(Map<String, String> vars, Object body) {
@@ -419,7 +444,14 @@ public class HMSCatalogAdapter implements Closeable {
   private ListTablesResponse listViews(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
     PageRequest page = PageRequest.from(vars);
-    return CatalogHandlers.listViews(asViewCatalog, namespace, page.token(), page.size());
+    ListTablesResponse response = CatalogHandlers.listViews(asViewCatalog, namespace, page.token(), page.size());
+    if (icebergAuthorizer == null) {
+      return response;
+    }
+    return ListTablesResponse.builder()
+        .addAll(icebergAuthorizer.filterViews(catalogName, response.identifiers()))
+        .nextPageToken(response.nextPageToken())
+        .build();
   }
 
   private LoadViewResponse createView(Map<String, String> vars, Object body) {
@@ -472,10 +504,9 @@ public class HMSCatalogAdapter implements Closeable {
 
     for (UpdateTableRequest tableChange : request.tableChanges()) {
       Table table = catalog.loadTable(tableChange.identifier());
-      if (table instanceof BaseTable) {
-        Transaction transaction =
-            Transactions.newTransaction(
-                tableChange.identifier().toString(), ((BaseTable) table).operations());
+      if (table instanceof BaseTable baseTable) {
+        Transaction transaction = Transactions.newTransaction(
+                tableChange.identifier().toString(), baseTable.operations());
         transactions.add(transaction);
 
         BaseTransaction.TransactionTable txTable =
@@ -554,9 +585,12 @@ public class HMSCatalogAdapter implements Closeable {
     return null;
   }
 
+  /**
+   * Closes the configured metrics reporters. The caller remains responsible for closing the
+   * underlying catalog backing this REST catalog.
+   */
   @Override
   public void close() {
-    // The caller is responsible for closing the underlying catalog backing this REST catalog.
     for (IcebergMetricsReporter reporter : metricsReporters) {
       try {
         reporter.close();
@@ -573,6 +607,16 @@ public class HMSCatalogAdapter implements Closeable {
     }
   }
 
+  /**
+   * Casts {@code request} to {@code requestType}, throwing a {@code 400 Bad Request} error if
+   * the request body does not match the type expected by the route.
+   *
+   * @param requestType the type expected by the route
+   * @param request the deserialized request body
+   * @param <T> the expected request type
+   * @return {@code request} cast to {@code requestType}
+   * @throws BadRequestType if {@code request} is not an instance of {@code requestType}
+   */
   public static <T> T castRequest(Class<T> requestType, Object request) {
     if (requestType.isInstance(request)) {
       return requestType.cast(request);
@@ -581,6 +625,13 @@ public class HMSCatalogAdapter implements Closeable {
   }
 
 
+  /**
+   * Populates {@code errorBuilder} with the HTTP status, error type, and message derived from
+   * {@code exc}, logging the exception at a level appropriate to its severity.
+   *
+   * @param exc the exception raised while processing the request
+   * @param errorBuilder the builder to populate with the derived error response
+   */
   public static void configureResponseFromException(
       Exception exc, ErrorResponse.Builder errorBuilder) {
     var errorCode = EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500);
