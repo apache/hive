@@ -32,6 +32,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.service.cli.HiveErrorCodeRuntimeException;
 import org.apache.hive.service.cli.HiveSQLException;
 
 public class HiveSessionProxy implements InvocationHandler {
@@ -82,19 +83,19 @@ public class HiveSessionProxy implements InvocationHandler {
     try {
       return method.invoke(base, args);
     } catch (InvocationTargetException e) {
-      if (e.getCause() instanceof HiveSQLException) {
-        throw (HiveSQLException)e.getCause();
-      } else if (e.getCause() instanceof OutOfMemoryError) {
-        throw (OutOfMemoryError)e.getCause();
+      if (e.getCause() instanceof HiveSQLException hiveSqlException) {
+        throw hiveSqlException;
+      } else if (e.getCause() instanceof OutOfMemoryError outOfMemoryError) {
+        throw outOfMemoryError;
       } else if (e.getCause() instanceof Error) {
         // TODO: maybe we should throw this as-is too. ThriftCLIService currently catches Exception,
         //       so the combination determines what would kill the HS2 executor thread. For now,
         //       let's only allow OOM to propagate.
+      } else if (e.getCause() instanceof HiveErrorCodeRuntimeException hiveErrorCodeRuntimeException) {
+        throw hiveErrorCodeRuntimeException;
       }
       throw new RuntimeException(e.getCause());
-    } catch (IllegalArgumentException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
+    } catch (IllegalArgumentException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }

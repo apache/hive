@@ -21,6 +21,7 @@ package org.apache.hive.jdbc;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
@@ -40,11 +41,15 @@ import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
+import org.apache.http.ConnectionClosedException;
+import org.apache.http.NoHttpResponseException;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.SocketException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -59,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.net.ssl.SSLException;
 
 import static org.apache.hadoop.hive.ql.ErrorMsg.CLIENT_POLLING_OPSTATUS_INTERRUPTED;
 
@@ -246,6 +252,11 @@ public class HiveStatement implements java.sql.Statement {
     if (status == null) {
       return false;
     }
+    if (status.getErrorCode() == ErrorMsg.INVALID_OPERATION_HANDLE.getErrorCode() ||
+        status.getErrorCode() == ErrorMsg.OPERATION_NOT_EXIST.getErrorCode()) {
+      LOG.warn("Ignoring benign close operation error: {}", status.getErrorMessage());
+      return true;
+    }
     if (status.isSetErrorMessage()) {
       String errorMsg = status.getErrorMessage();
       if (errorMsg.contains("Invalid OperationHandle") || errorMsg.contains("Operation does not exist")) {
@@ -364,8 +375,6 @@ public class HiveStatement implements java.sql.Statement {
     return true;
   }
 
-  private static final String DECOMMISSIONED_ERROR = "HiveServer2 is decommissioned or inactive";
-
   private void runAsyncOnServer(String sql) throws SQLException {
     checkConnection("execute");
 
@@ -429,8 +438,7 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   private static boolean isDecommissionedError(SQLException e) {
-    String msg = e.getMessage();
-    return msg != null && msg.contains(DECOMMISSIONED_ERROR);
+    return e.getErrorCode() == ErrorMsg.HS2_DECOMMISSIONED_OR_INACTIVE.getErrorCode();
   }
 
   /**
@@ -541,7 +549,7 @@ public class HiveStatement implements java.sql.Statement {
       } catch (SQLException e) {
         if (connection.isPersistableSession() && lastSql != null
             && failoverRetries < maxFailoverRetries
-            && (isInvalidOperationHandleError(e) || isRetriableExecutionError(e))) {
+            && isInvalidOperationHandleError(e)) {
           failoverRetries++;
           LOG.info("Operation lost after failover, reconnecting and re-executing (attempt {} of {}): {}",
               failoverRetries, maxFailoverRetries, lastSql);
@@ -594,24 +602,16 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   private static boolean isInvalidOperationHandleError(SQLException e) {
-    String msg = e.getMessage();
-    return msg != null && msg.contains("Invalid OperationHandle");
-  }
-
-  private static boolean isRetriableExecutionError(SQLException e) {
-    String msg = e.getMessage();
-    return msg != null && msg.contains("Execution Error");
+    return e.getErrorCode() == ErrorMsg.INVALID_OPERATION_HANDLE.getErrorCode();
   }
 
   private static boolean isTransportError(Throwable t) {
     while (t != null) {
-      String name = t.getClass().getName();
-      if (name.contains("NoHttpResponseException")
-          || name.contains("SocketException")
-          || name.contains("ConnectException")
-          || name.contains("TTransportException")
-          || name.contains("SSLException")
-          || name.contains("ConnectionClosedException")) {
+      if (t instanceof NoHttpResponseException
+          || t instanceof SocketException
+          || t instanceof TTransportException
+          || t instanceof SSLException
+          || t instanceof ConnectionClosedException) {
         return true;
       }
       t = t.getCause();

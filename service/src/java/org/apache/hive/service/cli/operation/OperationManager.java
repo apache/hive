@@ -41,12 +41,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.cli.FetchOrientation;
+import org.apache.hive.service.cli.HiveErrorCodeRuntimeException;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.OperationState;
@@ -210,7 +212,8 @@ public class OperationManager extends AbstractService {
   public Operation getOperation(OperationHandle operationHandle) throws HiveSQLException {
     Operation operation = getOperationInternal(operationHandle);
     if (operation == null) {
-      throw new HiveSQLException("Invalid OperationHandle: " + operationHandle);
+      throw new HiveSQLException(ErrorMsg.INVALID_OPERATION_HANDLE.getMsg(String.valueOf(operationHandle)), null,
+          ErrorMsg.INVALID_OPERATION_HANDLE.getErrorCode());
     }
     return operation;
   }
@@ -225,8 +228,8 @@ public class OperationManager extends AbstractService {
 
   private void addOperation(Operation operation) throws HiveSQLException {
     if (getServiceState() != STATE.STARTED) {
-      throw new HiveSQLException("Unable to run new queries as HiveServer2 is decommissioned or inactive,"
-          + " state: " + getServiceState());
+      throw new HiveSQLException(ErrorMsg.HS2_DECOMMISSIONED_OR_INACTIVE.getMsg(String.valueOf(getServiceState())),
+          null, ErrorMsg.HS2_DECOMMISSIONED_OR_INACTIVE.getErrorCode());
     }
     LOG.info("Adding operation: {} {}", operation.getHandle(),
         operation.getParentSession().getSessionHandle());
@@ -247,7 +250,8 @@ public class OperationManager extends AbstractService {
   private Operation removeOperation(OperationHandle opHandle) {
     Operation operation = handleToOperation.remove(opHandle);
     if (operation == null) {
-      throw new RuntimeException("Operation does not exist: " + opHandle);
+      throw new HiveErrorCodeRuntimeException(ErrorMsg.OPERATION_NOT_EXIST.getMsg(String.valueOf(opHandle)),
+          ErrorMsg.OPERATION_NOT_EXIST.getErrorCode());
     }
     String queryId = getQueryId(operation);
     queryIdOperation.remove(queryId);
