@@ -250,7 +250,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_tinyint > 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_both_unset
@@ -399,7 +399,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_smallint < 500
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_both_unset
@@ -548,7 +548,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_int BETWEEN 100 AND 500
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_both_unset
@@ -697,7 +697,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_bigint = 999
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_both_unset
@@ -846,7 +846,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_float > 50.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_both_unset
@@ -995,7 +995,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_double < 500.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_both_unset
@@ -1144,7 +1144,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_tinyint > 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_min_only
@@ -1293,7 +1293,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_smallint > 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_min_only
@@ -1442,7 +1442,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_int > 2000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_min_only
@@ -1591,7 +1591,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_bigint > 20000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_min_only
@@ -1740,7 +1740,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_float > 50.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_min_only
@@ -1889,7 +1889,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_double > 200.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_min_only
@@ -2038,7 +2038,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_tinyint < 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_max_only
@@ -2187,7 +2187,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_smallint < 500
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_max_only
@@ -2336,7 +2336,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_int < 5000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_max_only
@@ -2485,7 +2485,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_bigint < 50000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_max_only
@@ -2634,7 +2634,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_float < 50.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_max_only
@@ -2783,7 +2783,7 @@ num_trues
 num_falses          	                    
 bit_vector          	                    
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
 PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_double < 500.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_max_only
