@@ -34,8 +34,12 @@ import java.io.IOException;
 public class TestMoveTask {
   @Test
   public void flattenUnionSubdirectories() throws IOException, HiveException {
+    // subdir=1, attempt=0 -> attempt = 1 * 100000 + 0 = 100000
     String initialPath = "/table_users/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + "1/000000_0";
-    String flattenPath = "/table_users/1_000000_0";
+    // Flattened name stays in the ORIGINAL_PATTERN ([0-9]+_[0-9]+) namespace so it does not
+    // collide with the HIVE-28822 _copy_<uniqueness-tag> suffix that pickDestFilePath may
+    // later append on a non-atomic-rename filesystem.
+    String flattenPath = "/table_users/000000_100000";
 
     MockFileSystem.MockFile file1 = new MockFileSystem.MockFile("mock://" + initialPath, 0, new byte[1]);
     MockFileSystem fs = new MockFileSystem(new Configuration(), file1);
