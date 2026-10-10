@@ -196,7 +196,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "c_salutation",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "c_first_name",
@@ -208,7 +208,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "c_preferred_cust_flag",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "c_birth_day",
@@ -230,7 +230,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "c_birth_country",
-            "ndv": 216
+            "ndv": 214
           },
           {
             "name": "c_login",
@@ -305,7 +305,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
             },
             {
               "type": "CHAR",
-              "nullable": true,
+              "nullable": false,
               "precision": 16,
               "name": "ca_address_id"
             },
@@ -443,11 +443,11 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "ca_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "ca_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "ca_city",
@@ -455,11 +455,11 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "ca_county",
-            "ndv": 1930
+            "ndv": 1928
           },
           {
             "name": "ca_state",
-            "ndv": 53
+            "ndv": 52
           },
           {
             "name": "ca_zip",
@@ -467,11 +467,11 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "ca_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "ca_location_type",
-            "ndv": 4
+            "ndv": 3
           }
         ]
       },
@@ -1624,7 +1624,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "i_category",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "i_item_id",
@@ -1676,7 +1676,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "i_class",
-            "ndv": 99
+            "ndv": 97
           },
           {
             "name": "i_category_id",
@@ -1696,7 +1696,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "i_size",
-            "ndv": 8
+            "ndv": 7
           },
           {
             "name": "i_formulation",
@@ -1704,15 +1704,15 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "i_color",
-            "ndv": 95
+            "ndv": 94
           },
           {
             "name": "i_units",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "i_container",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "i_manager_id",
@@ -2052,7 +2052,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "s_store_name",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "s_number_employees",
@@ -2068,11 +2068,11 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "s_hours",
-            "ndv": 4
+            "ndv": 3
           },
           {
             "name": "s_manager",
-            "ndv": 1245
+            "ndv": 1243
           },
           {
             "name": "s_market_id",
@@ -2082,7 +2082,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "s_geography_class",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_market_desc",
@@ -2100,7 +2100,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "s_division_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_company_id",
@@ -2110,7 +2110,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "s_company_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_street_number",
@@ -2122,23 +2122,23 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "s_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "s_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "s_city",
-            "ndv": 267
+            "ndv": 266
           },
           {
             "name": "s_county",
-            "ndv": 128
+            "ndv": 127
           },
           {
             "name": "s_state",
-            "ndv": 44
+            "ndv": 43
           },
           {
             "name": "s_zip",
@@ -2146,7 +2146,7 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "s_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_tax_percentage",
@@ -2398,15 +2398,15 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "p_channel_dmail",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "p_channel_email",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_tv",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_promo_id",
@@ -2444,39 +2444,39 @@ Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "p_promo_name",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "p_channel_catalog",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_radio",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_press",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_event",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_demo",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_channel_details",
-            "ndv": 2242
+            "ndv": 2237
           },
           {
             "name": "p_purpose",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "p_discount_active",
-            "ndv": 2
+            "ndv": 1
           }
         ]
       },
