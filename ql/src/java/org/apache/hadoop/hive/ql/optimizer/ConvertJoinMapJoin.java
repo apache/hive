@@ -1068,7 +1068,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     return false;
   }
 
-  private boolean hasOuterJoin(JoinOperator joinOp) throws SemanticException {
+  @VisibleForTesting
+  static boolean hasOuterJoin(JoinOperator joinOp) throws SemanticException {
     boolean hasOuter = false;
     for (JoinCondDesc joinCondDesc : joinOp.getConf().getConds()) {
       switch (joinCondDesc.getType()) {
@@ -1076,7 +1077,6 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         case JoinDesc.LEFT_SEMI_JOIN:
         case JoinDesc.ANTI_JOIN:
         case JoinDesc.UNIQUE_JOIN:
-          hasOuter = false;
           break;
 
         case JoinDesc.FULL_OUTER_JOIN:
