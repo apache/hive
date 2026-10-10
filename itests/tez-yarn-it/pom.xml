@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.hive</groupId>
+    <artifactId>hive-it</artifactId>
+    <version>4.3.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>hive-it-tez-yarn</artifactId>
+  <packaging>jar</packaging>
+  <name>Hive Integration - Tez on YARN Integration tests</name>
+  <properties>
+    <hive.path.to.root>../..</hive.path.to.root>
+    <!-- This module needs Docker; skip by default. Opt in with -Ptez-yarn. -->
+    <skipTests>true</skipTests>
+    <!-- Tez dist input mode: staged (default), local, or download. -->
+    <tez.dist.source>staged</tez.dist.source>
+    <tez.dist.path>${project.build.directory}/tez-libs.tar.gz</tez.dist.path>
+    <tez.dist.prepare.skip>${skipTests}</tez.dist.prepare.skip>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Explicit Tez dependencies: Hive's Tez compilation/execution path needs these classes
+         on the in-process HS2 JVM classpath. In the main Hive build they are often profile-gated. -->
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-api</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-common</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-dag</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-runtime-library</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-runtime-internals</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-mapreduce</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- Provides org.apache.tez.hadoop.shim.HadoopShimsLoader, which DAGAppMaster.serviceInit()
+         loads at Tez AM startup. Normally transitive via tez-api; declared explicitly so it is
+         reliably on the classpath of the in-process HiveServer2 JVM. -->
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>hadoop-shim</artifactId>
+      <version>${tez.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-service</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-jdbc</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-it-util</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-client</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <!-- Copy Tez framework jars (org.apache.tez group) and the Hadoop MR client jars
+           required by the Tez AM into target/tez-stage/. The antrun execution below then
+           packs them into a tez-libs.tar.gz that the integration tests upload to the
+           containerised HDFS cluster and reference via tez.lib.uris. This replaces the
+           previous approach of scanning the test JVM's classpath at runtime, which was
+           fragile and did not resemble real cluster setups. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>stage-tez-framework-jars</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <skip>${tez.dist.prepare.skip}</skip>
+              <outputDirectory>${project.build.directory}/tez-stage</outputDirectory>
+              <includeGroupIds>org.apache.tez</includeGroupIds>
+              <excludeClassifiers>tests</excludeClassifiers>
+              <stripVersion>false</stripVersion>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+          <execution>
+            <id>stage-tez-mr-client-jars</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <skip>${tez.dist.prepare.skip}</skip>
+              <outputDirectory>${project.build.directory}/tez-stage</outputDirectory>
+              <includeGroupIds>org.apache.hadoop,commons-collections</includeGroupIds>
+              <includeArtifactIds>hadoop-mapreduce-client-core,hadoop-mapreduce-client-common,commons-collections</includeArtifactIds>
+              <excludeClassifiers>tests</excludeClassifiers>
+              <stripVersion>false</stripVersion>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>assemble-tez-dist</id>
+            <!-- Must run after the dependency-copy executions in process-test-resources. -->
+            <phase>test-compile</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <skip>${tez.dist.prepare.skip}</skip>
+              <target>
+                <tar destfile="${project.build.directory}/tez-libs.tar.gz" compression="gzip">
+                  <tarfileset dir="${project.build.directory}/tez-stage" includes="*.jar"/>
+                </tar>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-custom-hosts-file</id>
+            <!-- Must run after the parent "setup-test-dirs" execution (process-test-resources). -->
+            <phase>test-compile</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <skip>${skipTests}</skip>
+              <target>
+                <mkdir dir="${test.conf.dir}"/>
+                <copy file="${basedir}/src/test/resources/custom_hosts_file" tofile="${test.conf.dir}/custom_hosts_file" overwrite="true"/>
+                <exec executable="hostname" output="${test.conf.dir}/local_hostname.txt" failonerror="true"/>
+                <loadfile property="hive.tez.yarn.it.local.hostname" srcFile="${test.conf.dir}/local_hostname.txt">
+                  <filterchain>
+                    <striplinebreaks/>
+                  </filterchain>
+                </loadfile>
+                <!--
+                  When -Djdk.net.hosts.file is set, Java hostname resolution uses only that file.
+                  Ensure the local machine hostname is resolvable so Hive can start/compile queries.
+                -->
+                <echo file="${test.conf.dir}/custom_hosts_file" append="true">127.0.0.1 ${hive.tez.yarn.it.local.hostname}</echo>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>validate-tez-dist-source</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireProperty>
+                  <property>tez.dist.source</property>
+                  <regex>(staged|local|download)</regex>
+                  <regexMessage>
+                    Invalid tez.dist.source='${tez.dist.source}'. Use one of: staged, local, download.
+                  </regexMessage>
+                </requireProperty>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- Resolve docker-network hostnames (namenode, resourcemanager, …) to 127.0.0.1
+               so HDFS URIs embedded in Tez LocalResources are reachable from both the host JVM
+               and inside YARN containers (via the shared docker network alias). -->
+          <argLine>${maven.test.jvm.args} -Djdk.net.hosts.file=${test.conf.dir}/custom_hosts_file -Dtez.dist.path=${tez.dist.path} -Dtez.yarn.it.log.file=${project.build.directory}/tez-yarn-it.log</argLine>
+          <!-- StartTezYarnCluster prints a connection banner to System.out; keep it on the live
+               console (the root pom sets this to true) while slf4j logs are routed to
+               target/tez-yarn-it.log via log4j2-test.properties. -->
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
+          <systemPropertyVariables>
+            <!-- Override the root pom's console-appender hive-log4j2.properties with a file-only
+                 config so StartTezYarnCluster's banner is the only console output. -->
+            <log4j.configurationFile>log4j2-test.properties</log4j.configurationFile>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>tez-yarn</id>
+      <properties>
+        <skipTests>false</skipTests>
+      </properties>
+    </profile>
+    <profile>
+      <id>tez-dist-local</id>
+      <activation>
+        <property>
+          <name>tez.dist.source</name>
+          <value>local</value>
+        </property>
+      </activation>
+      <properties>
+        <tez.dist.prepare.skip>true</tez.dist.prepare.skip>
+        <tez.dist.path>${tez.dist.tarball}</tez.dist.path>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>validate-local-tez-dist-tarball</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireProperty>
+                      <property>tez.dist.tarball</property>
+                      <message>
+                        When -Dtez.dist.source=local, also set -Dtez.dist.tarball=/absolute/path/to/tez.tar.gz.
+                      </message>
+                    </requireProperty>
+                    <requireFilesExist>
+                      <files>
+                        <file>${tez.dist.tarball}</file>
+                      </files>
+                      <message>Tez tarball file not found at '${tez.dist.tarball}'.</message>
+                    </requireFilesExist>
+                  </rules>
+                  <fail>true</fail>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>tez-dist-download</id>
+      <activation>
+        <property>
+          <name>tez.dist.source</name>
+          <value>download</value>
+        </property>
+      </activation>
+      <properties>
+        <tez.dist.prepare.skip>true</tez.dist.prepare.skip>
+        <tez.dist.download.path>${project.build.directory}/tez-download/apache-tez-${tez.version}-bin.tar.gz</tez.dist.download.path>
+        <tez.dist.download.url>https://archive.apache.org/dist/tez/${tez.version}/apache-tez-${tez.version}-bin.tar.gz</tez.dist.download.url>
+        <tez.dist.path>${tez.dist.download.path}</tez.dist.path>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>download-tez-dist</id>
+                <phase>process-test-resources</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <skip>${skipTests}</skip>
+                  <target>
+                    <mkdir dir="${project.build.directory}/tez-download"/>
+                    <get src="${tez.dist.download.url}" dest="${tez.dist.download.path}" usetimestamp="true" verbose="true"/>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
