@@ -40,53 +40,41 @@ INSERT INTO TABLE orc_pred select * from staging_n2;
 
 SELECT SUM(HASH(t)) FROM orc_pred;
 
-SET hive.optimize.index.filter=true;
 SELECT SUM(HASH(t)) FROM orc_pred;
-SET hive.optimize.index.filter=false;
 
 EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred;
 
-SET hive.optimize.index.filter=true;
 EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred;
-SET hive.optimize.index.filter=false;
 
 -- all the following queries have predicates which are pushed down to table scan operator if
--- hive.optimize.index.filter is set to true. the explain plan should show filter expression
+-- predicate push-down is enabled. the explain plan should show filter expression
 -- in table scan operator.
 
 SELECT * FROM orc_pred WHERE t<2 limit 1;
-SET hive.optimize.index.filter=true;
 SELECT * FROM orc_pred WHERE t<2 limit 1;
-SET hive.optimize.index.filter=false;
 
 SELECT * FROM orc_pred WHERE t>2 limit 1;
-SET hive.optimize.index.filter=true;
 SELECT * FROM orc_pred WHERE t>2 limit 1;
-SET hive.optimize.index.filter=false;
 
 SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2;
 
-SET hive.optimize.index.filter=true;
 SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2;
-SET hive.optimize.index.filter=false;
 
 EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2;
 
-SET hive.optimize.index.filter=true;
 EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2;
-SET hive.optimize.index.filter=false;
 
 SELECT t, s FROM orc_pred
   WHERE t <=> -1
@@ -94,13 +82,11 @@ SELECT t, s FROM orc_pred
   AND s LIKE 'bob%'
   ;
 
-SET hive.optimize.index.filter=true;
 SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
   ;
-SET hive.optimize.index.filter=false;
 
 EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
@@ -108,13 +94,11 @@ EXPLAIN SELECT t, s FROM orc_pred
   AND s LIKE 'bob%'
   ;
 
-SET hive.optimize.index.filter=true;
 EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
   AND s LIKE 'bob%'
   ;
-SET hive.optimize.index.filter=false;
 
 SELECT t, s FROM orc_pred
   WHERE s IS NOT NULL
@@ -123,14 +107,12 @@ SELECT t, s FROM orc_pred
   AND t BETWEEN 25 AND 30
   SORT BY t,s;
 
-set hive.optimize.index.filter=true;
 SELECT t, s FROM orc_pred
   WHERE s IS NOT NULL
   AND s LIKE 'bob%'
   AND t NOT IN (-1,-2,-3)
   AND t BETWEEN 25 AND 30
   SORT BY t,s;
-set hive.optimize.index.filter=false;
 
 EXPLAIN SELECT t, s FROM orc_pred
   WHERE s IS NOT NULL
@@ -139,14 +121,12 @@ EXPLAIN SELECT t, s FROM orc_pred
   AND t BETWEEN 25 AND 30
   SORT BY t,s;
 
-SET hive.optimize.index.filter=true;
 EXPLAIN SELECT t, s FROM orc_pred
   WHERE s IS NOT NULL
   AND s LIKE 'bob%'
   AND t NOT IN (-1,-2,-3)
   AND t BETWEEN 25 AND 30
   SORT BY t,s;
-SET hive.optimize.index.filter=false;
 
 SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
@@ -159,7 +139,6 @@ SELECT t, si, d, s FROM orc_pred
   ORDER BY s DESC
   LIMIT 3;
 
-SET hive.optimize.index.filter=true;
 SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
   AND d < 12
@@ -170,7 +149,6 @@ SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   ORDER BY s DESC
   LIMIT 3;
-SET hive.optimize.index.filter=false;
 
 EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
@@ -183,7 +161,6 @@ EXPLAIN SELECT t, si, d, s FROM orc_pred
   ORDER BY s DESC
   LIMIT 3;
 
-SET hive.optimize.index.filter=true;
 EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
   AND d < 12
@@ -194,7 +171,6 @@ EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   ORDER BY s DESC
   LIMIT 3;
-SET hive.optimize.index.filter=false;
 
 SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
@@ -209,7 +185,6 @@ SELECT t, si, d, s FROM orc_pred
   SORT BY s DESC
   LIMIT 3;
 
-SET hive.optimize.index.filter=true;
 SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
   AND t <> 101
@@ -222,7 +197,6 @@ SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   SORT BY s DESC
   LIMIT 3;
-SET hive.optimize.index.filter=false;
 
 EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
@@ -237,7 +211,6 @@ EXPLAIN SELECT t, si, d, s FROM orc_pred
   SORT BY s DESC
   LIMIT 3;
 
-SET hive.optimize.index.filter=true;
 EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
   AND t <> 101
@@ -250,4 +223,3 @@ EXPLAIN SELECT t, si, d, s FROM orc_pred
   AND si BETWEEN 300 AND 400
   SORT BY s DESC
   LIMIT 3;
-SET hive.optimize.index.filter=false;
