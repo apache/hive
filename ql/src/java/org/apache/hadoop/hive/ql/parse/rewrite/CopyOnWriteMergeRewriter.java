@@ -180,6 +180,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       }
       sqlGenerator.append(
           StringUtils.join(addRowLineageValuesForAppendWhenNotMatchedClause(isRowLineageSupported, values), ","));
+
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
       sqlGenerator.append("\n   WHERE ");
       
@@ -214,6 +215,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       addValuesForRowLineageForCopyOnMerge(isRowLineageSupported, values,
           "NULL AS " + HiveUtils.unparseIdentifier(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName()), conf);
       sqlGenerator.append(columnRefsFunc.apply(StringUtils.join(values, ",")));
+
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
 
       addWhereClauseOfUpdate(
@@ -243,6 +245,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
         sqlGenerator.append(hintStr);
       }
       sqlGenerator.append(StringUtils.join(deleteValues, ","));
+
       sqlGenerator.append("\nFROM " + sourceName);
       sqlGenerator.indent().append("WHERE ");
 
