@@ -63,12 +63,16 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -726,5 +730,115 @@ public class TestSemanticAnalyzer {
         new HashSet<>(), colSrcRR, colSrcRR, 0, output, new ArrayList<>(Arrays.asList("l", "r")), false);
 
     assertTrue(output.get("l", "c").hasAmbiguousName());
+  }
+
+  @Test
+  public void testOrderByPositionResolvedWhenCboDeclines() throws Exception {
+    String[][] queryAndOrder = {
+        {"select value, key from table1 tablesample (2 rows) order by 2 desc", "-"},
+        {"select * from table1 tablesample (2 rows) order by 2", "+"},
+        // CBO declines scripts; positions count the script output columns
+        {"select transform(key, value) using 'cat' as (x, y) from table1 order by 2 desc", "-"},
+    };
+    for (String[] c : queryAndOrder) {
+      ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(c[0]);
+      assertColumns(rs.getKeyCols(), "_col1");
+      assertEquals(c[0], c[1], rs.getOrder());
+    }
+  }
+
+  @Test
+  public void testOrderByPositionResolvedWhenReturnPathDeclinesLateralView() throws Exception {
+    // with hive.cbo.returnpath.hiveop=true, CBO declines lateral views
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select t.c, value from table1 lateral view explode(array(key)) t as c order by 2 desc", true);
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testSortByPositionResolvedInExtraLimitStepWhenCboDeclines() throws Exception {
+    // SORT BY + LIMIT in a subquery declines CBO and adds a second reduce sink for the limit
+    List<ReduceSinkDesc> reduceSinks = reduceSinksOfCboDeclinedQuery(
+        "select * from (select value, key from table1 sort by 2 desc limit 5) q", false);
+    assertEquals(2, reduceSinks.size());
+    for (ReduceSinkDesc rs : reduceSinks) {
+      assertColumns(rs.getKeyCols(), "_col1");
+      assertEquals("-", rs.getOrder());
+    }
+  }
+
+  @Test
+  public void testClusterByPositionResolvedWhenCboDeclines() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select key, value from table1 tablesample (2 rows) cluster by 2");
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("+", rs.getOrder());
+  }
+
+  @Test
+  public void testDistributeBySortByPositionsResolvedWhenCboDeclines() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select key, value from table1 tablesample (2 rows) distribute by 2 sort by 1 desc");
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertColumns(rs.getKeyCols(), "_col0");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testFloatLiteralNotReadAsPositionWhenCboPlansStatement() throws Exception {
+    // the AST regenerated from the CBO plan goes through the same reduce sink code
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(
+        "select cast(1.5 as float) as x, value from table1 order by x, 2 desc");
+    assertFalse(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO"));
+    List<ReduceSinkDesc> reduceSinks = reduceSinks(analyzer);
+    assertEquals(1, reduceSinks.size());
+    for (ExprNodeDesc key : reduceSinks.get(0).getKeyCols()) {
+      assertTrue(key.toString(), key instanceof ExprNodeColumnDesc);
+    }
+  }
+
+  @Test
+  public void testOutOfRangePositionRejectedWhenCboDeclines() {
+    for (int pos : new int[] {0, 2}) {
+      SemanticException e = assertThrows(SemanticException.class,
+          () -> analyzeWithCbo("select key from table1 tablesample (2 rows) order by " + pos));
+      assertTrue(e.getMessage(), e.getMessage().contains("Position alias: " + pos + " does not exist"));
+    }
+  }
+
+  private ReduceSinkDesc reduceSinkOfCboDeclinedQuery(String query) throws Exception {
+    return reduceSinkOfCboDeclinedQuery(query, false);
+  }
+
+  private ReduceSinkDesc reduceSinkOfCboDeclinedQuery(String query, boolean returnPath) throws Exception {
+    List<ReduceSinkDesc> reduceSinks = reduceSinksOfCboDeclinedQuery(query, returnPath);
+    assertEquals(1, reduceSinks.size());
+    return reduceSinks.get(0);
+  }
+
+  private List<ReduceSinkDesc> reduceSinksOfCboDeclinedQuery(String query, boolean returnPath) throws Exception {
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(query, returnPath);
+    assertTrue(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO because"));
+    return reduceSinks(analyzer);
+  }
+
+  private static List<ReduceSinkDesc> reduceSinks(SemanticAnalyzer analyzer) {
+    List<ReduceSinkDesc> reduceSinks = new ArrayList<>();
+    for (Operator<?> op : analyzer.opParseCtx.keySet()) {
+      if (op instanceof ReduceSinkOperator) {
+        reduceSinks.add(((ReduceSinkOperator) op).getConf());
+      }
+    }
+    return reduceSinks;
+  }
+
+  private static void assertColumns(List<ExprNodeDesc> exprs, String... expectedColumns) {
+    assertEquals(exprs.toString(), expectedColumns.length, exprs.size());
+    for (int i = 0; i < expectedColumns.length; i++) {
+      assertTrue(exprs.get(i).toString(), exprs.get(i) instanceof ExprNodeColumnDesc);
+      assertEquals(expectedColumns[i], ((ExprNodeColumnDesc) exprs.get(i)).getColumn());
+    }
   }
 }

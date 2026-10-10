@@ -1,0 +1,436 @@
+PREHOOK: query: create table pacd_t (d int, s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_t
+POSTHOOK: query: create table pacd_t (d int, s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_t
+PREHOOK: query: insert into pacd_t values (1, 'a'), (3, 'c'), (2, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pacd_t
+POSTHOOK: query: insert into pacd_t values (1, 'a'), (3, 'c'), (2, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pacd_t
+POSTHOOK: Lineage: pacd_t.d SCRIPT []
+POSTHOOK: Lineage: pacd_t.s SCRIPT []
+PREHOOK: query: create table pacd_n (d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_n
+POSTHOOK: query: create table pacd_n (d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_n
+PREHOOK: query: insert into pacd_n values (1), (null), (3), (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pacd_n
+POSTHOOK: query: insert into pacd_n values (1), (null), (3), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pacd_n
+POSTHOOK: Lineage: pacd_n.d SCRIPT []
+PREHOOK: query: create table pacd_mi_a (d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_mi_a
+POSTHOOK: query: create table pacd_mi_a (d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_mi_a
+PREHOOK: query: create table pacd_mi_b (d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_mi_b
+POSTHOOK: query: create table pacd_mi_b (d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_mi_b
+PREHOOK: query: explain select d, s from pacd_t tablesample (5 rows) order by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: explain select d, s from pacd_t tablesample (5 rows) order by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_t
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: d (type: int), s (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: a
+                      sort order: -
+                      Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select d, s from pacd_t tablesample (5 rows) order by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select d, s from pacd_t tablesample (5 rows) order by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+3	c
+2	b
+1	a
+PREHOOK: query: select * from pacd_t tablesample (5 rows) order by 2 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from pacd_t tablesample (5 rows) order by 2 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+3	c
+2	b
+1	a
+PREHOOK: query: select * exclude (s) from pacd_t tablesample (5 rows) order by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select * exclude (s) from pacd_t tablesample (5 rows) order by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+3
+2
+1
+PREHOOK: query: select 2 as c, d from pacd_t tablesample (5 rows) order by 2 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select 2 as c, d from pacd_t tablesample (5 rows) order by 2 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+2	3
+2	2
+2	1
+PREHOOK: query: select s, d from pacd_t tablesample (5 rows) order by 2 desc, 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select s, d from pacd_t tablesample (5 rows) order by 2 desc, 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+c	3
+b	2
+a	1
+PREHOOK: query: select d, s from pacd_t tablesample (5 rows) order by 1 desc, s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select d, s from pacd_t tablesample (5 rows) order by 1 desc, s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+3	c
+2	b
+1	a
+PREHOOK: query: select distinct d from pacd_t tablesample (5 rows) order by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct d from pacd_t tablesample (5 rows) order by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+3
+2
+1
+PREHOOK: query: select d from pacd_n tablesample (5 rows) order by 1 desc nulls first
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_n
+#### A masked pattern was here ####
+POSTHOOK: query: select d from pacd_n tablesample (5 rows) order by 1 desc nulls first
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_n
+#### A masked pattern was here ####
+NULL
+3
+2
+1
+PREHOOK: query: select d, rank() over (order by d desc) as r from pacd_t tablesample (5 rows) order by 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select d, rank() over (order by d desc) as r from pacd_t tablesample (5 rows) order by 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+3	1
+2	2
+1	3
+PREHOOK: query: select s, count(*) as n, max(d) as m from pacd_t tablesample (5 rows) group by s order by 3 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select s, count(*) as n, max(d) as m from pacd_t tablesample (5 rows) group by s order by 3 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+c	1	3
+b	1	2
+a	1	1
+PREHOOK: query: select d from pacd_t tablesample (5 rows) union all select d + 10 from pacd_t order by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select d from pacd_t tablesample (5 rows) union all select d + 10 from pacd_t order by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+13
+12
+11
+3
+2
+1
+PREHOOK: query: select * from (select d, s from pacd_t sort by d limit 5) q order by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select d, s from pacd_t sort by d limit 5) q order by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+3	c
+2	b
+1	a
+PREHOOK: query: create view pacd_v as select d, s from (select d, s from pacd_t sort by d limit 5) q order by 1 desc limit 5
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@pacd_t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_v
+POSTHOOK: query: create view pacd_v as select d, s from (select d, s from pacd_t sort by d limit 5) q order by 1 desc limit 5
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@pacd_t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_v
+POSTHOOK: Lineage: pacd_v.d SIMPLE [(pacd_t)pacd_t.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_v.s SIMPLE [(pacd_t)pacd_t.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: select * from pacd_v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+PREHOOK: Input: default@pacd_v
+#### A masked pattern was here ####
+POSTHOOK: query: select * from pacd_v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+POSTHOOK: Input: default@pacd_v
+#### A masked pattern was here ####
+3	c
+2	b
+1	a
+PREHOOK: query: from (select a.d from pacd_t a join pacd_t b on a.d = b.d) j
+insert overwrite table pacd_mi_a select d order by 1 desc limit 2
+insert overwrite table pacd_mi_b select d order by 1 limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+PREHOOK: Output: default@pacd_mi_a
+PREHOOK: Output: default@pacd_mi_b
+POSTHOOK: query: from (select a.d from pacd_t a join pacd_t b on a.d = b.d) j
+insert overwrite table pacd_mi_a select d order by 1 desc limit 2
+insert overwrite table pacd_mi_b select d order by 1 limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+POSTHOOK: Output: default@pacd_mi_a
+POSTHOOK: Output: default@pacd_mi_b
+POSTHOOK: Lineage: pacd_mi_a.d SIMPLE [(pacd_t)a.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_mi_b.d SIMPLE [(pacd_t)a.FieldSchema(name:d, type:int, comment:null), ]
+PREHOOK: query: select d from pacd_mi_a order by d
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_mi_a
+#### A masked pattern was here ####
+POSTHOOK: query: select d from pacd_mi_a order by d
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_mi_a
+#### A masked pattern was here ####
+2
+3
+PREHOOK: query: select d from pacd_mi_b order by d
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_mi_b
+#### A masked pattern was here ####
+POSTHOOK: query: select d from pacd_mi_b order by d
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_mi_b
+#### A masked pattern was here ####
+1
+2
+PREHOOK: query: select d, s from pacd_t tablesample (5 rows) sort by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select d, s from pacd_t tablesample (5 rows) sort by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+3	c
+2	b
+1	a
+PREHOOK: query: select d, s from pacd_t tablesample (5 rows) cluster by 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select d, s from pacd_t tablesample (5 rows) cluster by 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+1	a
+2	b
+3	c
+PREHOOK: query: explain select d, s from pacd_t tablesample (5 rows) distribute by 1 sort by 2 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: explain select d, s from pacd_t tablesample (5 rows) distribute by 1 sort by 2 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_t
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: d (type: int), s (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string)
+                      null sort order: a
+                      sort order: -
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select d, s from pacd_t tablesample (5 rows) distribute by 1 sort by 2 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select d, s from pacd_t tablesample (5 rows) distribute by 1 sort by 2 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+3	c
+2	b
+1	a
+PREHOOK: query: select s, t.c from pacd_t lateral view explode(array(d, -d)) t as c order by 2 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select s, t.c from pacd_t lateral view explode(array(d, -d)) t as c order by 2 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+c	3
+b	2
+a	1
+a	-1
+b	-2
+c	-3
+PREHOOK: query: select d from pacd_t tablesample (5 rows) order by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select d from pacd_t tablesample (5 rows) order by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+1
+3
+2
+PREHOOK: query: select 2 as c, d from pacd_t order by 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+POSTHOOK: query: select 2 as c, d from pacd_t order by 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_t
+#### A masked pattern was here ####
+2	1
+2	3
+2	2

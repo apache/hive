@@ -1,0 +1,29 @@
+PREHOOK: query: create table pacd_tr (d int, s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_tr
+POSTHOOK: query: create table pacd_tr (d int, s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_tr
+PREHOOK: query: insert into pacd_tr values (1, 'b'), (3, 'a'), (2, 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pacd_tr
+POSTHOOK: query: insert into pacd_tr values (1, 'b'), (3, 'a'), (2, 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pacd_tr
+POSTHOOK: Lineage: pacd_tr.d SCRIPT []
+POSTHOOK: Lineage: pacd_tr.s SCRIPT []
+PREHOOK: query: select transform(d, s) using 'cat' as (x, y) from pacd_tr order by 2 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_tr
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select transform(d, s) using 'cat' as (x, y) from pacd_tr order by 2 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_tr
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	c
+1	b
+3	a
