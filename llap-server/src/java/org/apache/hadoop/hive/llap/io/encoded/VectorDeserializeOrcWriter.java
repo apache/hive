@@ -235,7 +235,8 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
   private static VectorizedRowBatchCtx createVrbCtx(StructObjectInspector oi, final Properties tblProps,
     final Configuration conf) throws IOException {
     final boolean useDecimal64ColumnVectors = HiveConf.getVar(conf, ConfVars
-      .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+        .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+        .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     final String serde = tblProps.getProperty(serdeConstants.SERIALIZATION_LIB);
     final String inputFormat = tblProps.getProperty(hive_metastoreConstants.FILE_INPUT_FORMAT);
     final boolean isTextFormat = TextInputFormat.class.getName().equals(inputFormat)

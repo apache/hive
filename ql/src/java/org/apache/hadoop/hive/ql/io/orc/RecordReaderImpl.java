@@ -76,7 +76,8 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     Reader.Options options, final Configuration conf) throws IOException {
     super(fileReader, options);
     final boolean useDecimal64ColumnVectors = conf != null && HiveConf.getVar(conf,
-      HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+        HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+        .equalsIgnoreCase(HiveConf.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
     if (useDecimal64ColumnVectors){
       batch = this.schema.createRowBatchV2();
     } else {
