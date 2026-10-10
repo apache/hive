@@ -101,14 +101,14 @@ class ReadConf<T> {
       bloomFilter = new ParquetBloomRowGroupFilter(expectedSchema, filter, caseSensitive);
     }
 
-    boolean[] variantRowGroupMayMatch =
-        VariantParquetFilters.variantRowGroupMayMatch(fileSchema, filter, rowGroups);
+    boolean[] mayMatch =
+        VariantParquetFilters.pickRowGroups(fileSchema, filter, rowGroups);
 
     long computedTotalValues = 0L;
     for (int i = 0; i < shouldSkip.length; i += 1) {
       BlockMetaData rowGroup = rowGroups.get(i);
       boolean shouldRead =
-          (variantRowGroupMayMatch == null || variantRowGroupMayMatch[i]) &&
+          (mayMatch == null || mayMatch[i]) &&
           (filter == null ||
               statsFilter.shouldRead(typeWithIds, rowGroup) &&
               dictFilter.shouldRead(typeWithIds, rowGroup, reader.getDictionaryReader(rowGroup)) &&
