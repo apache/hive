@@ -23,6 +23,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
+import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,11 +52,13 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Deadline;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
@@ -146,7 +149,6 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 @SuppressWarnings("unchecked")
 public class TableStoreImpl extends RawStoreBundle implements TableStore {
   private final static Logger LOG = LoggerFactory.getLogger(TableStoreImpl.class);
-  private DatabaseProduct dbType;
   protected int batchSize = NO_BATCHING;
   private boolean areTxnStatsSupported = false;
   private PartitionExpressionProxy expressionProxy = null;
@@ -155,7 +157,6 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   @Override
   public void setBaseStore(RawStore store) {
     super.setBaseStore(store);
-    this.dbType = PersistenceManagerProvider.getDatabaseProduct();
     this.batchSize = MetastoreConf.getIntVar(store.getConf(),
         MetastoreConf.ConfVars.RAWSTORE_PARTITION_BATCH_SIZE);
     this.areTxnStatsSupported = MetastoreConf.getBoolVar(baseStore.getConf(),
@@ -442,7 +443,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       return;
     }
     LOG.debug("execute removeUnusedColumnDescriptor");
-    if (!hasRemainingCDReference(oldCD)) {
+    if (!hasRemainingCDReference(pm, oldCD)) {
       // First remove any constraints that may be associated with this CD
       Query query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
       query.declareParameters("MColumnDescriptor inCD");
@@ -464,8 +465,9 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
    * @param oldCD the column descriptor to check if it has references or not
    * @return true if has references
    */
-  private boolean hasRemainingCDReference(MColumnDescriptor oldCD) {
+  public static boolean hasRemainingCDReference(PersistenceManager pm, MColumnDescriptor oldCD) {
     assert oldCD != null;
+    DatabaseProduct dbType = PersistenceManagerProvider.getDatabaseProduct();
     Query query;
     /**
      * In order to workaround oracle not supporting limit statement caused performance issue, HIVE-9447 makes
@@ -938,7 +940,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     boolean isToTxn = isTxn && !TxnUtils.isTransactionalTable(oldt.getParameters());
     if (!isToTxn && isTxn && areTxnStatsSupported) {
       // Transactional table is altered without a txn. Make sure there are no changes to the flag.
-      String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(name, dbname), oldt.getParameters(),
+      String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name), oldt.getParameters(),
           newTable.getParameters(), newTable.getWriteId(), queryValidWriteIds, false);
       if (errorMsg != null) {
         throw new MetaException(errorMsg);
@@ -1677,7 +1679,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
         // We couldn't do SQL filter pushdown. Get names via normal means.
         List<String> partNames = new LinkedList<>();
         hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
-            catName, dbName, tblName, partitionKeys, expr, args.getDefaultPartName(), (short) args.getMax(), partNames));
+            catName, dbName, tblName, partitionKeys, expr, args.getDefaultPartName(),
+            (short) args.getMax(), partNames));
         GetPartitionsArgs newArgs = new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build();
         return getDirectSql().getPartitionsViaPartNames(catName, dbName, tblName, newArgs);
       }
@@ -1788,7 +1791,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
    * @param result The resulting names.
    * @return Whether the result contains any unknown partitions.
    */
-  private boolean getPartitionNamesPrunedByExprNoTxn(String catName, String dbName, String tblName, List<FieldSchema> partColumns, byte[] expr,
+  private boolean getPartitionNamesPrunedByExprNoTxn(String catName, String dbName, String tblName,
+      List<FieldSchema> partColumns, byte[] expr,
       String defaultPartName, short maxParts, List<String> result) throws MetaException {
     result.addAll(getPartitionNamesNoTxn(catName, dbName, tblName, (short) -1));
     return prunePartitionNamesByExpr(catName, dbName, tblName, result,
@@ -1846,25 +1850,17 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     String dbname = normalizeIdentifier(tableName.getDb());
     String name = normalizeIdentifier(tableName.getTable());
     AtomicReference<MColumnDescriptor> oldCd = new AtomicReference<>();
-    Partition result = alterPartitionNoTxn(catName, dbname, name, part_vals, new_part, queryValidWriteIds, oldCd);
+    MTable table = this.getMTable(new_part.getCatName(), new_part.getDbName(), new_part.getTableName());
+    MPartition oldp = getMPartition(catName, dbname, name, part_vals, table);
+    Partition result = alterPartitionNoTxn(catName, dbname, name, oldp, new_part, queryValidWriteIds, oldCd, table);
     removeUnusedColumnDescriptor(oldCd.get());
     return result;
   }
 
   /**
    * Alters an existing partition. Initiates copy of SD. Returns the old CD.
-   * @param part_vals Partition values (of the original partition instance)
    * @param newPart Partition object containing new information
    */
-  private Partition alterPartitionNoTxn(String catName, String dbname, String name,
-      List<String> part_vals, Partition newPart, String validWriteIds, AtomicReference<MColumnDescriptor> oldCd)
-      throws InvalidObjectException, MetaException {
-    MTable table = this.getMTable(newPart.getCatName(), newPart.getDbName(), newPart.getTableName());
-    MPartition oldp = getMPartition(catName, dbname, name, part_vals, table);
-    return alterPartitionNoTxn(catName, dbname, name, oldp, newPart,
-        validWriteIds, oldCd, table);
-  }
-
   private Partition alterPartitionNoTxn(String catName, String dbname,
       String name, MPartition oldp, Partition newPart,
       String validWriteIds,
@@ -1873,14 +1869,14 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
+    if (oldp == null) {
+      throw new InvalidObjectException("partition does not exist.");
+    }
     MPartition newp = convertToMPart(newPart, table);
     MColumnDescriptor oldCD = null;
     MStorageDescriptor oldSD = oldp.getSd();
     if (oldSD != null) {
       oldCD = oldSD.getCD();
-    }
-    if (newp == null) {
-      throw new InvalidObjectException("partition does not exist.");
     }
     oldp.setValues(newp.getValues());
     oldp.setPartitionName(newp.getPartitionName());
@@ -1969,7 +1965,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
         throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
       }
       if (!tmpPart.getTableName().equalsIgnoreCase(tblName)) {
-        throw new MetaException("Invalid table name : " + tmpPart.getDbName());
+        throw new MetaException("Invalid table name : " + tmpPart.getTableName());
       }
     }
     return new GetListHelper<TableName, Partition>(this, null) {
@@ -2004,8 +2000,9 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       mPartitionList = (List<MPartition>) query.executeWithArray(tblName, dbName, partNames, catName);
       pm.retrieveAll(mPartitionList);
 
-      if (mPartitionList.size() > newParts.size()) {
-        throw new MetaException("Expecting only one partition but more than one partitions are found.");
+      if (mPartitionList.size() != newParts.size()) {
+        throw new MetaException("Expected " + newParts.size() + " partitions but found "
+            + mPartitionList.size());
       }
 
       Map<List<String>, MPartition> mPartsMap = new HashMap();
@@ -2017,8 +2014,9 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       AtomicReference<MColumnDescriptor> oldCdRef = new AtomicReference<>();
       for (Partition tmpPart : newParts) {
         oldCdRef.set(null);
+        MPartition mPart = mPartsMap.get(tmpPart.getValues());
         Partition result = alterPartitionNoTxn(catName, dbName, tblName,
-            mPartsMap.get(tmpPart.getValues()), tmpPart, queryWriteIdList, oldCdRef, table);
+            mPart, tmpPart, queryWriteIdList, oldCdRef, table);
         results.add(result);
         if (oldCdRef.get() != null) {
           oldCds.add(oldCdRef.get());
@@ -2051,7 +2049,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
 
       @Override
       protected boolean canUseDirectSql() throws MetaException {
-        return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, tree, null, filter);
+        return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
+            tree, null, filter);
       }
 
       @Override
@@ -2106,8 +2105,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
           // if the filter mode is BY_EXPR initialize the filter and generate the expression tree
           // if there are more than one filter string we AND them together
           initExpressionTree();
-          return getDirectSql().generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
-              table.getPartitionKeys(), tree, null, filter);
+          return getDirectSql().generateSqlFilterForPushdown(table.getCatName(), table.getDbName(),
+              table.getTableName(), table.getPartitionKeys(), tree, null, filter);
         }
         // BY_VALUES and BY_NAMES are always supported
         return true;
@@ -2363,7 +2362,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   }
 
   @Override
-  public int getNumPartitionsByFilter(TableName tableName, String filter) throws MetaException, NoSuchObjectException {
+  public int getNumPartitionsByFilter(TableName tableName, String filter)
+      throws MetaException, NoSuchObjectException {
     final ExpressionTree exprTree = org.apache.commons.lang3.StringUtils.isNotEmpty(filter)
         ? PartFilterExprUtil.parseFilterTree(filter) : ExpressionTree.EMPTY_TREE;
 
@@ -2383,7 +2383,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
 
       @Override
       protected boolean canUseDirectSql() throws MetaException {
-        return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
+        return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
+            exprTree, null, filter);
       }
 
       @Override
@@ -2397,7 +2398,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     }.run(false);
   }
 
-  private Integer getNumPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree, boolean isValidatedFilter, List<FieldSchema> partitionKeys)
+  private Integer getNumPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree,
+      boolean isValidatedFilter, List<FieldSchema> partitionKeys)
       throws MetaException {
     Map<String, Object> params = new HashMap<>();
     String jdoFilter = makeQueryFilterString(catName, dbName, tblName, tree,
@@ -2852,7 +2854,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   @Override
   public long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
       throws MetaException, NoSuchObjectException {
-    return new GetHelper<TableName, Long>(this, new TableName(table.getCatName(), table.getDbName(), table.getTableName())) {
+    return new GetHelper<TableName, Long>(this,
+        new TableName(table.getCatName(), table.getDbName(), table.getTableName())) {
       @Override
       protected String describeResult() {
         return "Affected rows";
@@ -2892,6 +2895,28 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     result = getMPartition(catName, dbName, tblName, name);
 
     return result;
+  }
+
+  @Override
+  public void updateTableParams(List<Map.Entry<TableParamsUpdate, Table>> updates) throws MetaException, NoSuchObjectException {
+    if (updates == null || updates.isEmpty()) {
+      return;
+    }
+    new GetListHelper<TableName, Void>(this, null) {
+      @Override
+      protected List<Void> getSqlResult() throws MetaException {
+        getDirectSql().updateTableParams(updates);
+        return null;
+      }
+      @Override
+      protected boolean canUseJdoQuery() {
+        return false;
+      }
+      @Override
+      protected List<Void> getJdoResult() {
+        throw new UnsupportedOperationException("UnsupportedOperationException");
+      }
+    }.run(false);
   }
 
   /**
@@ -3109,8 +3134,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
         .isCompressed(), msd.getNumBuckets(),
         (!isAcidTable) ? convertToSerDeInfo(msd.getSerDeInfo(), conf, true)
-            : new SerDeInfo(msd.getSerDeInfo().getName(), msd.getSerDeInfo().getSerializationLib(), Collections.emptyMap()),
-        bucList , orderList, sdParams);
+            : new SerDeInfo(msd.getSerDeInfo().getName(), msd.getSerDeInfo().getSerializationLib(),
+            Collections.emptyMap()), bucList , orderList, sdParams);
     if (!isAcidTable) {
       skewedInfo = new SkewedInfo(convertList(msd.getSkewedColNames()),
           convertToSkewedValues(msd.getSkewedColValues()),

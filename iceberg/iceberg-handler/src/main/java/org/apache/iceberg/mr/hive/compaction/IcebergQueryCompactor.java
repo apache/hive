@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.CompactionOrderByValidator;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -101,7 +102,7 @@ public class IcebergQueryCompactor extends QueryCompactor  {
     org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
         context.getTable().getTableName());
     Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
-    String orderBy = ci.orderByClause == null ? "" : ci.orderByClause;
+    String orderBy = validatedOrderByClause(ci.orderByClause, compactTableName);
     String fileSizePredicate = buildMinorFileSizePredicate(ci, compactTableName, conf, table);
 
     String columnsList = "*";
@@ -250,5 +251,19 @@ public class IcebergQueryCompactor extends QueryCompactor  {
 
       return String.format("`partition`.%s = %s", column, literal);
     }).collect(Collectors.joining(" AND "));
+  }
+
+  /**
+   * The compaction queue is written from a client-settable Thrift field: treat its contents as
+   * untrusted and re-validate here, so a clause injected before (or around) the enqueue-time
+   * check can never be concatenated into the privileged compaction query.
+   */
+  private static String validatedOrderByClause(String orderByClause, String compactTableName) throws HiveException {
+    try {
+      CompactionOrderByValidator.validate(orderByClause);
+    } catch (IllegalArgumentException e) {
+      throw new HiveException("Refusing to compact " + compactTableName + ": " + e.getMessage(), e);
+    }
+    return orderByClause == null ? "" : orderByClause;
   }
 }
