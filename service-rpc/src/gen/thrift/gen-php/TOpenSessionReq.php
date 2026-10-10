@@ -53,7 +53,7 @@ class TOpenSessionReq
     /**
      * @var int
      */
-    public $client_protocol =     9;
+    public $client_protocol =     11;
     /**
      * @var string
      */

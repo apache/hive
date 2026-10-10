@@ -32,7 +32,8 @@ public enum TTypeId implements org.apache.thrift.TEnum {
   INTERVAL_YEAR_MONTH_TYPE(20),
   INTERVAL_DAY_TIME_TYPE(21),
   TIMESTAMPLOCALTZ_TYPE(22),
-  UNKNOWN_TYPE(23);
+  UNKNOWN_TYPE(23),
+  VARIANT_TYPE(24);
 
   private final int value;
 
@@ -102,6 +103,8 @@ public enum TTypeId implements org.apache.thrift.TEnum {
         return TIMESTAMPLOCALTZ_TYPE;
       case 23:
         return UNKNOWN_TYPE;
+      case 24:
+        return VARIANT_TYPE;
       default:
         return null;
     }

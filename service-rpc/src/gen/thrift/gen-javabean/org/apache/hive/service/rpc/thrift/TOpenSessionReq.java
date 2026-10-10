@@ -117,7 +117,7 @@ package org.apache.hive.service.rpc.thrift;
   }
 
   public TOpenSessionReq() {
-    this.client_protocol = org.apache.hive.service.rpc.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10;
+    this.client_protocol = org.apache.hive.service.rpc.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V12;
 
   }
 
@@ -153,7 +153,7 @@ package org.apache.hive.service.rpc.thrift;
 
   @Override
   public void clear() {
-    this.client_protocol = org.apache.hive.service.rpc.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10;
+    this.client_protocol = org.apache.hive.service.rpc.thrift.TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V12;
 
     this.username = null;
     this.password = null;

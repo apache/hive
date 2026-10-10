@@ -24,7 +24,8 @@ int _kTProtocolVersionValues[] = {
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V8,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V9,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V10,
-  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V11
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V11,
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V12
 };
 const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V1",
@@ -37,9 +38,10 @@ const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V8",
   "HIVE_CLI_SERVICE_PROTOCOL_V9",
   "HIVE_CLI_SERVICE_PROTOCOL_V10",
-  "HIVE_CLI_SERVICE_PROTOCOL_V11"
+  "HIVE_CLI_SERVICE_PROTOCOL_V11",
+  "HIVE_CLI_SERVICE_PROTOCOL_V12"
 };
-const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(11, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(12, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const TProtocolVersion::type& val) {
   std::map<int, const char*>::const_iterator it = _TProtocolVersion_VALUES_TO_NAMES.find(val);
@@ -84,7 +86,8 @@ int _kTTypeIdValues[] = {
   TTypeId::INTERVAL_YEAR_MONTH_TYPE,
   TTypeId::INTERVAL_DAY_TIME_TYPE,
   TTypeId::TIMESTAMPLOCALTZ_TYPE,
-  TTypeId::UNKNOWN_TYPE
+  TTypeId::UNKNOWN_TYPE,
+  TTypeId::VARIANT_TYPE
 };
 const char* _kTTypeIdNames[] = {
   "BOOLEAN_TYPE",
@@ -110,9 +113,10 @@ const char* _kTTypeIdNames[] = {
   "INTERVAL_YEAR_MONTH_TYPE",
   "INTERVAL_DAY_TIME_TYPE",
   "TIMESTAMPLOCALTZ_TYPE",
-  "UNKNOWN_TYPE"
+  "UNKNOWN_TYPE",
+  "VARIANT_TYPE"
 };
-const std::map<int, const char*> _TTypeId_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(24, _kTTypeIdValues, _kTTypeIdNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _TTypeId_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(25, _kTTypeIdValues, _kTTypeIdNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const TTypeId::type& val) {
   std::map<int, const char*>::const_iterator it = _TTypeId_VALUES_TO_NAMES.find(val);
