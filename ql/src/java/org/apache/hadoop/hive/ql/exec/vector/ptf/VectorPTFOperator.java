@@ -435,10 +435,11 @@ public class VectorPTFOperator extends Operator<PTFDesc>
      * 1. order columns
      * 2. the non-key input columns
      * 3. any streaming columns that will already have their output values
-     * 4. scratch columns (as they're used by input expressions of evaluators)
+     * 4. scratch columns holding the results of evaluator input expressions
      */
+    final int[] bufferedScratchIndices = getEvaluatorInputScratchIndices();
     int bufferedColumnCount = orderColumnMap.length + nonKeyInputColumnMap.length
-        + streamingEvaluatorNums.length + scratchColumnPositions.length;
+        + streamingEvaluatorNums.length + bufferedScratchIndices.length;
     this.bufferedColumnMap = new int[bufferedColumnCount];
     this.bufferedTypeInfos = new TypeInfo[bufferedColumnCount];
 
@@ -474,11 +475,29 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       bufferedTypeInfos[bufferedMapIndex] = outputTypeInfos[streamingEvaluatorNum];
     }
 
-    for (int i = 0; i < scratchColumnPositions.length; i++) {
+    for (int i = 0; i < bufferedScratchIndices.length; i++) {
+      final int scratchIndex = bufferedScratchIndices[i];
       final int bufferedMapIndex = orderColumnCount + nonKeyInputColumnCount + streamingEvaluatorCount + i;
-      bufferedColumnMap[bufferedMapIndex] = scratchColumnPositions[i];
-      bufferedTypeInfos[bufferedMapIndex] = TypeInfoUtils.getTypeInfoFromTypeString(vOutContext.getScratchColumnTypeNames()[i]);
+      bufferedColumnMap[bufferedMapIndex] = scratchColumnPositions[scratchIndex];
+      bufferedTypeInfos[bufferedMapIndex] =
+          TypeInfoUtils.getTypeInfoFromTypeString(vOutContext.getScratchColumnTypeNames()[scratchIndex]);
     }
+  }
+
+  /**
+   * Returns the indices (into scratchColumnPositions) of the scratch columns written by evaluator
+   * input expressions. Those are evaluated before a batch is buffered, so their results must be
+   * buffered too. The other scratch columns belong to child operators, which recompute them after
+   * the batch is forwarded; buffering them is wasted work and fails for complex types.
+   */
+  private int[] getEvaluatorInputScratchIndices() {
+    final int[] inputExprColumns = Arrays.stream(evaluators)
+        .filter(evaluator -> evaluator.inputVecExpr != null)
+        .mapToInt(evaluator -> evaluator.inputVecExpr.getOutputColumnNum())
+        .toArray();
+    return IntStream.range(0, scratchColumnPositions.length)
+        .filter(i -> Arrays.stream(inputExprColumns).anyMatch(c -> c == scratchColumnPositions[i]))
+        .toArray();
   }
 
   private void initExpressionColumns() {

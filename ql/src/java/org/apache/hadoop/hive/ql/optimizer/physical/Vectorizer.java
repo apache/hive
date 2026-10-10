@@ -125,6 +125,7 @@ import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc.ExprNodeDescEqualityWrapper;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -3011,6 +3012,13 @@ public class Vectorizer implements PhysicalPlanResolver {
         throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
       }
 
+      // Row mode also accepts a non-constant ntile argument (read from the first row of the partition).
+      if (supportedFunctionType == SupportedFunctionType.NTILE &&
+          !isPositiveIntConstant(singleExprNodeDesc)) {
+        setOperatorIssue(functionName + " only a positive integer constant number of buckets is supported");
+        return false;
+      }
+
       if (!VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType)) {
 
         if (exprNodeDescList != null) {
@@ -5040,6 +5048,14 @@ public class Vectorizer implements PhysicalPlanResolver {
       exprNodeDescs[i] = orderExpressions.get(i).getExprNode();
     }
     return exprNodeDescs;
+  }
+
+  private static boolean isPositiveIntConstant(ExprNodeDesc exprNodeDesc) {
+    if (!(exprNodeDesc instanceof ExprNodeConstantDesc)) {
+      return false;
+    }
+    Object value = ((ExprNodeConstantDesc) exprNodeDesc).getValue();
+    return value instanceof Integer && (Integer) value > 0;
   }
 
   // TODO: An evaluator that wants to handle an unbuffered partition-only column in its calculation could
