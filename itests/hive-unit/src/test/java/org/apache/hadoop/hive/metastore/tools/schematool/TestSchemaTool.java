@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.beeline.schematool;
+package org.apache.hadoop.hive.metastore.tools.schematool;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,7 +26,6 @@ import java.io.IOException;
 
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.PostgresCommandParser;
 import org.junit.Assert;
