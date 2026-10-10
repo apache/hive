@@ -83,6 +83,7 @@ class TTypeId(object):
     INTERVAL_DAY_TIME_TYPE = 21
     TIMESTAMPLOCALTZ_TYPE = 22
     UNKNOWN_TYPE = 23
+    VARIANT_TYPE = 24
 
     _VALUES_TO_NAMES = {
         0: "BOOLEAN_TYPE",
@@ -109,6 +110,7 @@ class TTypeId(object):
         21: "INTERVAL_DAY_TIME_TYPE",
         22: "TIMESTAMPLOCALTZ_TYPE",
         23: "UNKNOWN_TYPE",
+        24: "VARIANT_TYPE",
     }
 
     _NAMES_TO_VALUES = {
@@ -136,6 +138,7 @@ class TTypeId(object):
         "INTERVAL_DAY_TIME_TYPE": 21,
         "TIMESTAMPLOCALTZ_TYPE": 22,
         "UNKNOWN_TYPE": 23,
+        "VARIANT_TYPE": 24,
     }
 
 
