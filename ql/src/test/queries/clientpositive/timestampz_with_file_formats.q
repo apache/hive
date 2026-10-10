@@ -17,3 +17,5 @@ stored as orc;
 insert into timestampltz_orc_format select * from timestampltz_formats;
 
 SELECT * FROM timestampltz_orc_format;
+
+SELECT * FROM timestampltz_orc_format ORDER BY formatid;

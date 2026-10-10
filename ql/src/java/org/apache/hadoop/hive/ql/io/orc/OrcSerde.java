@@ -164,9 +164,6 @@ public class OrcSerde extends AbstractSerDe implements SchemaInference {
   }
 
   private String convertPrimitiveType(TypeDescription fieldType) {
-    if (fieldType.getCategory().getName().equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
-      throw new IllegalArgumentException("Unhandled ORC type " + fieldType.getCategory().getName());
-    }
     return fieldType.toString();
   }
 
