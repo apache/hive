@@ -162,12 +162,40 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertNull("Comparing description", createdDatabase.getDescription());
     Assert.assertEquals("Comparing location", metaStore.getExternalWarehouseRoot() + "/" +
                                                   createdDatabase.getName() + ".db", createdDatabase.getLocationUri());
+    Assert.assertNull("Default managed location should not be persisted",
+        createdDatabase.getManagedLocationUri());
+
+    Path defaultManagedPath = new Warehouse(metaStore.getConf())
+        .getDefaultDatabasePath(createdDatabase.getName(), false);
+    Assert.assertTrue("Default managed database directory should be created",
+        metaStore.isPathExists(defaultManagedPath));
     Assert.assertEquals("Comparing parameters", new HashMap<String, String>(),
         createdDatabase.getParameters());
     Assert.assertNull("Comparing privileges", createdDatabase.getPrivileges());
     Assert.assertEquals("Comparing owner name", SecurityUtils.getUser(),
         createdDatabase.getOwnerName());
     Assert.assertEquals("Comparing owner type", PrincipalType.USER, createdDatabase.getOwnerType());
+  }
+
+  @Test
+  public void testCreateDatabaseWithExplicitManagedLocation() throws Exception {
+    String dbName = "test_explicit_managed_location";
+    String managedLocation = MetaStoreTestUtils.getTestWarehouseDir(dbName + "_managed");
+
+    Database database = new DatabaseBuilder()
+        .setName(dbName)
+        .build(metaStore.getConf());
+    database.setManagedLocationUri(managedLocation);
+
+    client.createDatabase(database);
+
+    Database createdDatabase = client.getDatabase(dbName);
+    Warehouse warehouse = new Warehouse(metaStore.getConf());
+    Path expectedManagedLocation = warehouse.getDnsPath(new Path(managedLocation));
+    Assert.assertEquals("Explicit managed location should be persisted",
+        expectedManagedLocation.toString(), createdDatabase.getManagedLocationUri());
+    Assert.assertTrue("Explicit managed database directory should be created",
+        metaStore.isPathExists(expectedManagedLocation));
   }
 
   @Test
