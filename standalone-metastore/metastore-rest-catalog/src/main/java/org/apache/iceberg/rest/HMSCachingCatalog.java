@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.iceberg.CachingCatalog;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
@@ -32,6 +33,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.view.View;
 import org.apache.iceberg.view.ViewBuilder;
@@ -46,6 +48,19 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   public HMSCachingCatalog(HiveCatalog catalog, long expiration) {
     super(catalog, true, expiration, Ticker.systemTicker());
     this.hiveCatalog = catalog;
+  }
+
+  @Override
+  public Table loadTable(TableIdentifier identifier) {
+    if (!hiveCatalog.tableExists(identifier)) {
+      throw new NoSuchTableException("Table does not exist: %s", identifier);
+    }
+    return super.loadTable(identifier);
+  }
+
+  @Override
+  public boolean tableExists(TableIdentifier identifier) {
+    return hiveCatalog.tableExists(identifier);
   }
 
   @Override
