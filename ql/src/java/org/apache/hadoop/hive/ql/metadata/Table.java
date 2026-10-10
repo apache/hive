@@ -642,8 +642,11 @@ public class Table implements Serializable {
   }
 
   public FieldSchema getPartColByName(String colName) {
+    if (colName == null) {
+      return null;
+    }
     return getPartCols().stream()
-        .filter(key -> key.getName().toLowerCase().equals(colName))
+        .filter(key -> key.getName().equalsIgnoreCase(colName))
         .findFirst().orElse(null);
   }
 
