@@ -1,0 +1,211 @@
+PREHOOK: query: create table ice_t1 (i int) stored by iceberg tblproperties ('compactor.threshold.target.size'='1500')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t1
+POSTHOOK: query: create table ice_t1 (i int) stored by iceberg tblproperties ('compactor.threshold.target.size'='1500')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t1
+PREHOOK: query: insert into ice_t1 values(1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t1
+POSTHOOK: query: insert into ice_t1 values(1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t1
+PREHOOK: query: insert into ice_t1 values(3),(4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t1
+POSTHOOK: query: insert into ice_t1 values(3),(4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t1
+PREHOOK: query: alter table ice_t1 compact 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_t1
+PREHOOK: Output: default@ice_t1
+POSTHOOK: query: alter table ice_t1 compact 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_t1
+POSTHOOK: Output: default@ice_t1
+PREHOOK: query: show compactions ice_t1
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions ice_t1
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	ice_t1	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+PREHOOK: query: drop table ice_t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t1
+POSTHOOK: query: drop table ice_t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t1
+PREHOOK: query: show compactions ice_t1
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions ice_t1
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+PREHOOK: query: create table ice_t2 (i int) stored by iceberg tblproperties ('compactor.threshold.target.size'='1500')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t2
+POSTHOOK: query: create table ice_t2 (i int) stored by iceberg tblproperties ('compactor.threshold.target.size'='1500')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t2
+PREHOOK: query: insert into ice_t2 values(1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t2
+POSTHOOK: query: insert into ice_t2 values(1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t2
+PREHOOK: query: insert into ice_t2 values(3),(4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t2
+POSTHOOK: query: insert into ice_t2 values(3),(4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t2
+PREHOOK: query: alter table ice_t2 compact 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_t2
+PREHOOK: Output: default@ice_t2
+POSTHOOK: query: alter table ice_t2 compact 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_t2
+POSTHOOK: Output: default@ice_t2
+PREHOOK: query: show compactions ice_t2
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions ice_t2
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	ice_t2	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+PREHOOK: query: alter table ice_t2 RENAME to ice_t2_new
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@ice_t2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t2
+PREHOOK: Output: default@ice_t2_new
+POSTHOOK: query: alter table ice_t2 RENAME to ice_t2_new
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@ice_t2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t2
+POSTHOOK: Output: default@ice_t2_new
+PREHOOK: query: show compactions ice_t2_new
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions ice_t2_new
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	ice_t2_new	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+PREHOOK: query: drop table ice_t2_new
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_t2_new
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t2_new
+POSTHOOK: query: drop table ice_t2_new
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_t2_new
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t2_new
+PREHOOK: query: create table ice_part (i int) partitioned by (j int) stored by iceberg tblproperties ('compactor.threshold.target.size'='1500')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_part
+POSTHOOK: query: create table ice_part (i int) partitioned by (j int) stored by iceberg tblproperties ('compactor.threshold.target.size'='1500')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_part
+PREHOOK: query: insert into ice_part values (1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_part
+POSTHOOK: query: insert into ice_part values (1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_part
+PREHOOK: query: insert into ice_part values (2,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_part
+POSTHOOK: query: insert into ice_part values (2,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_part
+PREHOOK: query: alter table ice_part partition (j=1) compact 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_part
+PREHOOK: Output: default@ice_part@j=1
+POSTHOOK: query: alter table ice_part partition (j=1) compact 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_part
+POSTHOOK: Output: default@ice_part@j=1
+PREHOOK: query: insert into ice_part values (1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_part
+POSTHOOK: query: insert into ice_part values (1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_part
+PREHOOK: query: insert into ice_part values (2,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_part
+POSTHOOK: query: insert into ice_part values (2,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_part
+PREHOOK: query: alter table ice_part partition (j=2) compact 'major' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_part
+PREHOOK: Output: default@ice_part@j=2
+POSTHOOK: query: alter table ice_part partition (j=2) compact 'major' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_part
+POSTHOOK: Output: default@ice_part@j=2
+PREHOOK: query: show compactions ice_part
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions ice_part
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	ice_part	j=1	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_part	j=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+PREHOOK: query: alter table ice_part drop partition (j=1)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ice_part
+PREHOOK: Output: default@ice_part@j=1
+POSTHOOK: query: alter table ice_part drop partition (j=1)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ice_part
+POSTHOOK: Output: default@ice_part@j=1
+PREHOOK: query: show compactions ice_part
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions ice_part
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	ice_part	j=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+PREHOOK: query: drop table ice_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_part
+POSTHOOK: query: drop table ice_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_part
+PREHOOK: query: show compactions ice_part
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions ice_part
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
