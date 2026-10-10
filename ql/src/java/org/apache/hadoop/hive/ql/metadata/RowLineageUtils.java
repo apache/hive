@@ -163,9 +163,15 @@ public class RowLineageUtils {
         conf.getBoolean(SessionStateUtil.ROW_LINEAGE, false);
   }
 
+  /**
+   * Appends the row lineage columns found in the file to the requested schema, and their batch column numbers to
+   * {@code colsToInclude}, keeping both aligned by position. When no data column is projected, the requested schema
+   * holds every table column, none of which is read, so its fields are dropped.
+   */
   public static MessageType getRequestedSchemaWithRowLineageColumns(VectorizedRowBatchCtx rbCtx,
       MessageType requestedSchema, MessageType fileSchema, List<Integer> colsToInclude) {
-    List<Type> newFields = new ArrayList<>(requestedSchema.getFields());
+    int dataColumnCount = colsToInclude.size();
+    List<Type> newFields = dataColumnCount == 0 ? new ArrayList<>() : new ArrayList<>(requestedSchema.getFields());
     if (isRowLineageColumnPresent(rbCtx, fileSchema, VirtualColumn.ROW_LINEAGE_ID)) {
       colsToInclude.add(rbCtx.findVirtualColumnNum(VirtualColumn.ROW_LINEAGE_ID));
       newFields.add(fileSchema.getType(ROW_LINEAGE_COLUMNS_TO_FILE_NAME.get(VirtualColumn.ROW_LINEAGE_ID)));
@@ -175,7 +181,7 @@ public class RowLineageUtils {
       newFields.add(
           fileSchema.getType(ROW_LINEAGE_COLUMNS_TO_FILE_NAME.get(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER)));
     }
-    if (newFields.size() != requestedSchema.getFields().size()) {
+    if (colsToInclude.size() != dataColumnCount) {
       return new MessageType(requestedSchema.getName(), newFields);
     }
     return requestedSchema;
