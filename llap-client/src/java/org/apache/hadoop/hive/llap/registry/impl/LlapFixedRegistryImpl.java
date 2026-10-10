@@ -38,6 +38,7 @@ import java.util.Set;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
@@ -115,7 +116,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
   @Override
   public String register() throws IOException {
     // nothing to register (return host-<hostname>)
-    return getWorkerIdentity(InetAddress.getLocalHost().getCanonicalHostName());
+    return getWorkerIdentity(ServerUtils.canonicalHostname());
   }
 
   @Override

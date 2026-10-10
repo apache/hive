@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -105,7 +105,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
 
     compactionRequest.setPoolName(poolName);
     compactionRequest.setProperties(desc.getProperties());
-    compactionRequest.setInitiatorId(JavaUtils.hostname() + "-" + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION);
+    compactionRequest.setInitiatorId(MetaStoreUtils.getHostname() + "-" + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION);
     compactionRequest.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
     compactionRequest.setOrderByClause(desc.getOrderByClause());
 

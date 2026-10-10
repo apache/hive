@@ -39,12 +39,12 @@ import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -99,7 +99,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
   public LeaseLeaderElection() throws IOException {
     userName = SecurityUtils.getUser();
-    hostName = InetAddress.getLocalHost().getHostName();
+    hostName = MetaStoreUtils.getHostname();
   }
 
   private synchronized void doWork(LockResponse resp, Configuration conf,

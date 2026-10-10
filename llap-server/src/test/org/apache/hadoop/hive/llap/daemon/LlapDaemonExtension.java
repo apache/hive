@@ -18,6 +18,7 @@
  */
 package org.apache.hadoop.hive.llap.daemon;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
@@ -49,8 +50,8 @@ public class LlapDaemonExtension implements ParameterResolver, BeforeEachCallbac
   private static final ReentrantLock LOCK = new ReentrantLock();
   private static final String[] METRICS_SOURCES = new String[] { 
           "JvmMetrics", 
-          "LlapDaemonExecutorMetrics-" + MetricsUtils.getHostName(),
-          "LlapDaemonJvmMetrics-" + MetricsUtils.getHostName(),
+          "LlapDaemonExecutorMetrics-" + ServerUtils.hostname(),
+          "LlapDaemonJvmMetrics-" + ServerUtils.hostname(),
           MetricsUtils.METRICS_PROCESS_NAME };
   private static LlapDaemon daemon = null;
 

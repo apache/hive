@@ -22,10 +22,8 @@ package org.apache.hive.common.util;
 import com.google.common.base.Splitter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -46,6 +44,7 @@ import org.apache.commons.lang3.text.translate.EntityArrays;
 import org.apache.commons.lang3.text.translate.JavaUnicodeEscaper;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.io.Text;
@@ -779,12 +778,11 @@ public class HiveStringUtils {
   }
 
   /**
-   * Return hostname without throwing exception.
-   * @return hostname
+   * @deprecated Use {@link org.apache.hadoop.hive.common.ServerUtils#hostname()} instead.
    */
+  @Deprecated
   public static String getHostname() {
-    try {return "" + InetAddress.getLocalHost();}
-    catch(UnknownHostException uhe) {return "" + uhe;}
+    return ServerUtils.hostname();
   }
 
   
