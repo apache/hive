@@ -20,10 +20,12 @@
 package org.apache.iceberg.rest;
 
 import java.util.Map;
+import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 import org.apache.iceberg.util.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 
 public class TestHMSCatalogAdapterRoutes {
 
@@ -123,5 +125,32 @@ public class TestHMSCatalogAdapterRoutes {
         route("v1/catalogs/sales/namespaces/db/tables/namespaces");
     Assertions.assertNotNull(loadTableWithPrefix, "Should match LOAD_TABLE with prefix");
     Assertions.assertEquals(HMSCatalogAdapter.Route.LOAD_TABLE, loadTableWithPrefix.first());
+  }
+
+  @Test
+  public void testPathSegmentDecodingWithSpecialCharacters() {
+    // 1. Literal '+' in table name must NOT become a space
+    TableIdentifier identWithPlus = HMSCatalogAdapter.identFromPathVars(
+        Map.of("namespace", "accounting", "table", "sales+taxes"));
+    Assertions.assertEquals("sales+taxes", identWithPlus.name(),
+        "Literal '+' must be preserved in table name");
+
+    // 2. Encoded space '%20' must properly decode to a space
+    TableIdentifier identWithSpace = HMSCatalogAdapter.identFromPathVars(
+        Map.of("namespace", "accounting", "table", "sales%20taxes"));
+    Assertions.assertEquals("sales taxes", identWithSpace.name(),
+        "%20 must decode to space in table name");
+
+    // 3. Multi-level namespace with '+' and '%1F' separator
+    Namespace ns = HMSCatalogAdapter.namespaceFromPathVars(
+        Map.of("namespace", "corp+finance%1Fdept_01"));
+    Assertions.assertEquals(Namespace.of("corp+finance", "dept_01"), ns,
+        "Multi-level namespace must decode per RFC 3986 without converting '+' to space");
+
+    // 4. View identifier with '+'
+    TableIdentifier viewIdent = HMSCatalogAdapter.viewIdentFromPathVars(
+        Map.of("namespace", "accounting", "view", "active+users_view"));
+    Assertions.assertEquals("active+users_view", viewIdent.name(),
+        "Literal '+' must be preserved in view name");
   }
 }
