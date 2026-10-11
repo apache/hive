@@ -139,7 +139,6 @@ public class IcebergAcidUtil {
     }
 
     positionDelete.set(filePath, ObjectUtils.defaultIfNull(filePosition, 0L));
-    positionDelete.set(2, rowData);
     return positionDelete;
   }
 

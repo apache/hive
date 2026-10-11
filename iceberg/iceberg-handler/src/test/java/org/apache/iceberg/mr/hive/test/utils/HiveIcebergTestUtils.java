@@ -416,7 +416,6 @@ public class HiveIcebergTestUtils {
       deletes.forEach(del -> {
         PositionDelete positionDelete = PositionDelete.create();
         positionDelete.set(del.path(), del.pos());
-        positionDelete.set(2, del.get(2, Record.class));
         posWriter.write(positionDelete);
       });
     }

@@ -26,7 +26,6 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericFileWriterFactory;
@@ -50,27 +49,17 @@ class HiveFileWriterFactory implements FileWriterFactory<Record> {
   private Record sampleRecord = null;
 
   HiveFileWriterFactory(
-      Table table,
-      FileFormat dataFileFormat,
-      Schema dataSchema,
-      SortOrder dataSortOrder,
-      FileFormat deleteFileFormat,
-      int[] equalityFieldIds,
-      Schema equalityDeleteRowSchema,
-      SortOrder equalityDeleteSortOrder) {
+      Table table, FileFormat dataFileFormat, Schema dataSchema, FileFormat deleteFileFormat) {
     this.table = table;
     this.dataFileFormat = dataFileFormat;
     this.dataSchema = dataSchema;
     this.properties = table.properties();
 
-    GenericFileWriterFactory.Builder builder = new GenericFileWriterFactory.Builder(table)
-        .dataFileFormat(dataFileFormat)
-        .dataSchema(dataSchema)
-        .dataSortOrder(dataSortOrder)
-        .deleteFileFormat(deleteFileFormat)
-        .equalityFieldIds(equalityFieldIds)
-        .equalityDeleteRowSchema(equalityDeleteRowSchema)
-        .equalityDeleteSortOrder(equalityDeleteSortOrder);
+    GenericFileWriterFactory.Builder builder =
+        new GenericFileWriterFactory.Builder(table)
+            .dataFileFormat(dataFileFormat)
+            .dataSchema(dataSchema)
+            .deleteFileFormat(deleteFileFormat);
 
     this.delegate = builder.build();
   }
@@ -80,8 +69,12 @@ class HiveFileWriterFactory implements FileWriterFactory<Record> {
   }
 
   @Override
-  public DataWriter<Record> newDataWriter(EncryptedOutputFile file, PartitionSpec spec, StructLike partition) {
-    if (dataFileFormat == FileFormat.PARQUET && VariantUtil.shouldUseVariantShredding(properties, dataSchema)) {
+  public DataWriter<Record> newDataWriter(
+      EncryptedOutputFile file, PartitionSpec spec, StructLike partition) {
+    // Iceberg's GenericAppenderFactory/RegistryBasedFileWriterFactory does not currently support
+    // injecting a custom variantShreddingFunc, so we must instantiate Parquet.writeData directly
+    // when variant shredding is enabled for the table.
+    if (VariantUtil.shouldUseVariantShredding(dataFileFormat, properties, dataSchema)) {
       try {
         return Parquet.writeData(file)
             .schema(dataSchema)
@@ -92,6 +85,7 @@ class HiveFileWriterFactory implements FileWriterFactory<Record> {
             .withPartition(partition)
             .withKeyMetadata(file.keyMetadata())
             .variantShreddingFunc(VariantUtil.variantShreddingFunc(sampleRecord, dataSchema))
+            .overwrite()
             .build();
       } catch (IOException e) {
         throw new UncheckedIOException(e);
@@ -138,15 +132,7 @@ class HiveFileWriterFactory implements FileWriterFactory<Record> {
     }
 
     HiveFileWriterFactory build() {
-      return new HiveFileWriterFactory(
-          table,
-          dataFileFormat,
-          dataSchema,
-          null,
-          deleteFileFormat,
-          null,
-          null,
-          null);
+      return new HiveFileWriterFactory(table, dataFileFormat, dataSchema, deleteFileFormat);
     }
   }
 

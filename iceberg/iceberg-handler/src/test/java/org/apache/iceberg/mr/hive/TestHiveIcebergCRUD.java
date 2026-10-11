@@ -620,10 +620,10 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
     Assert.assertEquals(1, res.size());
   }
 
-  private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
+  private static <T> PositionDelete<T> positionDelete(
+      CharSequence path, long pos, @SuppressWarnings("unused") T row) {
     PositionDelete<T> positionDelete = PositionDelete.create();
     positionDelete.set(path, pos);
-    positionDelete.set(2, row);
     return positionDelete;
   }
 }
