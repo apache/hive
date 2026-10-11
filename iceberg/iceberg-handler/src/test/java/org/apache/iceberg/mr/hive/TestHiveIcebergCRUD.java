@@ -21,17 +21,23 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.StreamSupport;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.data.FileHelpers;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.io.DeleteSchemaUtil;
+import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
@@ -142,9 +148,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
     DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedDataFiles(tbl.io()).spliterator(), false)
         .findFirst()
         .orElseThrow(() -> new RuntimeException("Did not find any data files for test table"));
-    List<PositionDelete<Record>> deletes = ImmutableList.of(positionDelete(
-        dataFile.path(), 2L, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(2))
-    );
+    List<PositionDelete<Record>> deletes = ImmutableList.of(positionDelete(dataFile.path(), 2L));
     DeleteFile deleteFile = HiveIcebergTestUtils.createPositionalDeleteFile(tbl, "dummyPath",
         fileFormat, null, deletes);
     tbl.newRowDelta().addDeletes(deleteFile).commit();
@@ -158,44 +162,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
-  public void testReadAndWriteFormatV2Partitioned_PosDelete_RowNotSupplied() throws IOException {
-    Assume.assumeTrue(formatVersion == 2);
-
-    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
-        .identity("customer_id").build();
-    Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
-
-    // add some more data to the same partition
-    shell.executeStatement("insert into customers values (0, 'Laura', 'Yellow'), (0, 'John', 'Green'), " +
-        "(0, 'Blake', 'Blue')");
-    tbl.refresh();
-
-    // delete the first and third rows from the newly-added data file - with row supplied
-    DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedDataFiles(tbl.io()).spliterator(), false)
-        .filter(file -> file.partition().get(0, Long.class) == 0L)
-        .filter(file -> file.recordCount() == 3)
-        .findAny()
-        .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
-    List<PositionDelete<Record>> deletes = ImmutableList.of(
-        positionDelete(dataFile.path(), 0L, null),
-        positionDelete(dataFile.path(), 2L, null)
-    );
-    DeleteFile deleteFile = HiveIcebergTestUtils.createPositionalDeleteFile(tbl, "dummyPath",
-        fileFormat, ImmutableMap.of("customer_id", 0L), deletes);
-    tbl.newRowDelta().addDeletes(deleteFile).commit();
-
-    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, first_name");
-
-    Assert.assertEquals(4, objects.size());
-    Assert.assertArrayEquals(new Object[] {0L, "Alice", "Brown"}, objects.get(0));
-    Assert.assertArrayEquals(new Object[] {0L, "John", "Green"}, objects.get(1));
-    Assert.assertArrayEquals(new Object[] {1L, "Bob", "Green"}, objects.get(2));
-    Assert.assertArrayEquals(new Object[] {2L, "Trudy", "Pink"}, objects.get(3));
-  }
-
-  @Test
-  public void testReadAndWriteFormatV2Partitioned_PosDelete_RowSupplied() throws IOException {
+  public void testReadAndWriteFormatV2Partitioned_PosDelete() throws IOException {
     Assume.assumeTrue(formatVersion == 2);
 
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
@@ -214,11 +181,9 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
         .filter(file -> file.recordCount() == 3)
         .findAny()
         .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
-    List<Record> rowsToDel = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
-        .add(0L, "Laura", "Yellow").add(0L, "Blake", "Blue").build();
     List<PositionDelete<Record>> deletes = ImmutableList.of(
-        positionDelete(dataFile.path(), 0L, rowsToDel.get(0)),
-        positionDelete(dataFile.path(), 2L, rowsToDel.get(1))
+        positionDelete(dataFile.path(), 0L),
+        positionDelete(dataFile.path(), 2L)
     );
     DeleteFile deleteFile = HiveIcebergTestUtils.createPositionalDeleteFile(tbl, "dummyPath",
         fileFormat, ImmutableMap.of("customer_id", 0L), deletes);
@@ -226,6 +191,68 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, first_name");
 
+    Assert.assertEquals(4, objects.size());
+    Assert.assertArrayEquals(new Object[] {0L, "Alice", "Brown"}, objects.get(0));
+    Assert.assertArrayEquals(new Object[] {0L, "John", "Green"}, objects.get(1));
+    Assert.assertArrayEquals(new Object[] {1L, "Bob", "Green"}, objects.get(2));
+    Assert.assertArrayEquals(new Object[] {2L, "Trudy", "Pink"}, objects.get(3));
+  }
+
+  /**
+   * Tests reading/consuming legacy Iceberg V2 tables containing position delete files with embedded
+   * row data. Iceberg 1.12.0 removed writer support for row data in position deletes, but Hive
+   * readers must remain backward compatible and safely ignore the embedded row field when
+   * projecting deleted positions.
+   */
+  @Test
+  public void testConsumeLegacyFormatV2Partitioned_PosDelete_RowSupplied() throws IOException {
+    Assume.assumeTrue(formatVersion == 2 && fileFormat == FileFormat.PARQUET);
+
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("customer_id").build();
+    Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
+
+    // add some more data to the same partition
+    shell.executeStatement("insert into customers values (0, 'Laura', 'Yellow'), (0, 'John', 'Green'), " +
+        "(0, 'Blake', 'Blue')");
+    tbl.refresh();
+
+    // delete the first and third rows from the newly-added data file
+    DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedDataFiles(tbl.io()).spliterator(), false)
+        .filter(file -> file.partition().get(0, Long.class) == 0L)
+        .filter(file -> file.recordCount() == 3)
+        .findAny()
+        .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
+
+    // Construct a legacy position delete file with embedded row data (fields: file_path, pos, row).
+    // FileHelpers.testOnlyPosDeleteFileWithRow writes this directly without using the standard delete writer,
+    // which disallows writing row data in Iceberg 1.12.0+.
+    Schema posDeleteSchema = DeleteSchemaUtil.posDeleteSchema(tbl.schema());
+    List<Record> rowsToDel = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Laura", "Yellow")
+        .add(0L, "Blake", "Blue")
+        .build();
+
+    Record delRecord0 = GenericRecord.create(posDeleteSchema);
+    delRecord0.setField(MetadataColumns.DELETE_FILE_PATH.name(), dataFile.path().toString());
+    delRecord0.setField(MetadataColumns.DELETE_FILE_POS.name(), 0L);
+    delRecord0.setField(MetadataColumns.DELETE_FILE_ROW_FIELD_NAME, rowsToDel.get(0));
+
+    Record delRecord2 = GenericRecord.create(posDeleteSchema);
+    delRecord2.setField(MetadataColumns.DELETE_FILE_PATH.name(), dataFile.path().toString());
+    delRecord2.setField(MetadataColumns.DELETE_FILE_POS.name(), 2L);
+    delRecord2.setField(MetadataColumns.DELETE_FILE_ROW_FIELD_NAME, rowsToDel.get(1));
+
+    OutputFile deleteOutputFile = tbl.io().newOutputFile(
+        tbl.location() + "/data/dummyLegacyPosDelete_" + UUID.randomUUID() + ".parquet");
+    DeleteFile deleteFile = FileHelpers.testOnlyPosDeleteFileWithRow(
+        tbl, deleteOutputFile, dataFile.partition(), ImmutableList.of(delRecord0, delRecord2));
+    tbl.newRowDelta().addDeletes(deleteFile).commit();
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, first_name");
+
+    // Verify that Hive readers successfully filter out deleted rows (0: Alice, 0: John, 1: Bob, 2: Trudy)
     Assert.assertEquals(4, objects.size());
     Assert.assertArrayEquals(new Object[] {0L, "Alice", "Brown"}, objects.get(0));
     Assert.assertArrayEquals(new Object[] {0L, "John", "Green"}, objects.get(1));
@@ -620,8 +647,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
     Assert.assertEquals(1, res.size());
   }
 
-  private static <T> PositionDelete<T> positionDelete(
-      CharSequence path, long pos, @SuppressWarnings("unused") T row) {
+  private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos) {
     PositionDelete<T> positionDelete = PositionDelete.create();
     positionDelete.set(path, pos);
     return positionDelete;
