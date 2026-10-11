@@ -480,13 +480,12 @@ public abstract class TaskCompiler {
     TableSpec tableSpec = new TableSpec(table, partitions);
     tableScan.getConf().getTableMetadata().setTableSpec(tableSpec);
 
-    if (BasicStatsNoJobTask.canUseFooterScan(table, inputFormat)
-        || BasicStatsNoJobTask.storageHandlerOwnsBasicStats(table)) {
+    if (BasicStatsNoJobTask.canUseBasicStats(table, inputFormat)) {
       // basic stats come from the file footers or the storage handler, not the scan
       StatsWork columnStatsWork = new StatsWork(table, parseContext.getConf());
       columnStatsWork.setFooterScan();
       // If partition is specified, get pruned partition list
-      if (partitions.size() > 0) {
+      if (!partitions.isEmpty()) {
         columnStatsWork.addInputPartitions(parseContext.getPrunedPartitions(tableScan).getPartitions());
       }
       return TaskFactory.get(columnStatsWork);

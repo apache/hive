@@ -102,16 +102,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
   public static boolean canUseBasicStats(
       Table table, Class<? extends InputFormat> inputFormat) {
-      return canUseFooterScan(table, inputFormat) || useBasicStatsFromStorageHandler(table);
+      return canUseFooterScan(table, inputFormat) || storageHandlerOwnsBasicStats(table);
   }
 
   public static boolean canUseFooterScan(Table table, Class<? extends InputFormat> inputFormat) {
     return (OrcInputFormat.class.isAssignableFrom(inputFormat) && !AcidUtils.isFullAcidTable(table))
         || MapredParquetInputFormat.class.isAssignableFrom(inputFormat);
-  }
-
-  private static boolean useBasicStatsFromStorageHandler(Table table) {
-    return table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics();
   }
 
   public static boolean storageHandlerOwnsBasicStats(Table table) {
@@ -179,12 +175,6 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     public void run() {
       try {
         Table table = partish.getTable();
-        if (partish.getPartition() != null) {
-          // the storage handler maintains basic statistics for the table as a whole, so no
-          // statement produces a partition partish for it here
-          throw new IllegalStateException("Partition-scoped statistics collection is not supported for "
-              + table.getFullyQualifiedName());
-        }
         Map<String, String> parameters = table.getParameters();
         // computes and publishes the statistics the storage handler maintains (e.g. the Iceberg
         // partition stats file) before reading them back: ANALYZE catches up on writes that
@@ -394,7 +384,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
       List<StatCollector> scs = new ArrayList();
       for (Partish partish : partishes) {
-        if (useBasicStatsFromStorageHandler(table)) {
+        if (storageHandlerOwnsBasicStats(table)) {
           scs.add(new HiveStorageHandlerStatCollector(partish));
         } else {
           scs.add(new FooterStatCollector(jc, partish));

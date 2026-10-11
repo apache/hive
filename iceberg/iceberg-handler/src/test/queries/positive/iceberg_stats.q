@@ -79,9 +79,41 @@ create external table ice06 (id int, key int) Stored by Iceberg stored as ORC
 insert into ice06 values (1,1),(2,1),(3,1),(4,1),(5,1);
 delete from ice06 where id in (2,4);
 analyze table ice06 compute statistics for columns;
+show tblproperties ice06('numRows');
+-- the data files of the snapshot, not every file under the table location
+show tblproperties ice06('numFiles');
 explain select count(*) from ice06;
 select count(*) from ice06;
 
+-- a basic statistics ANALYZE scans as well: the row count the commits recorded includes the deleted rows
+create external table ice07 (id int, key int) Stored by Iceberg stored as ORC
+  TBLPROPERTIES('format-version'='2');
+
+insert into ice07 values (1,1),(2,1),(3,1),(4,1),(5,1);
+delete from ice07 where id in (2,4);
+explain analyze table ice07 compute statistics;
+analyze table ice07 compute statistics;
+show tblproperties ice07('COLUMN_STATS_ACCURATE');
+show tblproperties ice07('numRows');
+select count(*) from ice07;
+
+-- with iceberg.hive.keep.stats the commits keep their row count marked accurate: ANALYZE still replaces it
+-- with the scan's, and an insert's rows are counted once
+set iceberg.hive.keep.stats=true;
+
+create external table ice08 (id int, key int) Stored by Iceberg stored as ORC
+  TBLPROPERTIES('format-version'='2');
+
+insert into ice08 values (1,1),(2,1),(3,1);
+insert into ice08 values (4,1),(5,1);
+show tblproperties ice08('numRows');
+delete from ice08 where id in (2,4);
+analyze table ice08 compute statistics;
+show tblproperties ice08('COLUMN_STATS_ACCURATE');
+show tblproperties ice08('numRows');
+select count(*) from ice08;
+
+set iceberg.hive.keep.stats=false;
 set hive.iceberg.stats.source=iceberg;
 
 drop table ice01;
@@ -90,3 +122,5 @@ drop table ice03;
 drop table ice04;
 drop table ice05;
 drop table ice06;
+drop table ice07;
+drop table ice08;

@@ -269,7 +269,8 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Check if the storage handler can provide basic statistics.
+   * Check if the storage handler can provide basic statistics, whether it keeps them itself (see
+   * {@link #canProvideBasicStatistics(org.apache.hadoop.hive.ql.metadata.Table)}) or reads them from the metastore.
    * @return true if the storage handler can supply the basic statistics
    */
   default boolean canProvideBasicStatistics() {

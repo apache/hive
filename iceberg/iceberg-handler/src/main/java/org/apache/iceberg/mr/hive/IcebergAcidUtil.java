@@ -277,8 +277,8 @@ public class IcebergAcidUtil {
       T next = currentIterator.next();
       GenericRecord rec = (GenericRecord) next;
       IcebergAcidUtil.copyFields(rec, FILE_READ_META_COLS.size(), current.size(), current);
-      ioContext.setPositionDeleteInfo(
-          new PositionDeleteInfo(specId, partitionHash, filePath, rec.get(ROW_POSITION_INDEX, Long.class)));
+      ioContext.setPositionDeleteInfo(new PositionDeleteInfo(
+          specId, partitionHash, filePath, rec.get(ROW_POSITION_INDEX, Long.class)));
       ioContext.setRowLineageInfo(new RowLineageInfo(
           RowLineageReader.readRowId(rec), RowLineageReader.readLastUpdatedSequenceNumber(rec)));
       return (T) current;
