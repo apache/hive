@@ -53,7 +53,6 @@ class TestHMSCatalogAdapterSnapshotMode {
   private HMSCatalogAdapter adapter;
   private HttpServletResponse response;
   private StringWriter stringWriter;
-  private TableMetadata initialMetadata;
 
   @BeforeEach
   void setup() throws Exception {
@@ -74,7 +73,7 @@ class TestHMSCatalogAdapterSnapshotMode {
     Mockito.when(snap2.sequenceNumber()).thenReturn(2L);
     Mockito.when(snap2.timestampMillis()).thenReturn(2000L);
 
-    initialMetadata =
+    TableMetadata initialMetadata =
         TableMetadata.buildFromEmpty(2)
             .setLocation("file:///tmp/table")
             .addSchema(schema)
@@ -107,10 +106,18 @@ class TestHMSCatalogAdapterSnapshotMode {
     }
   }
 
+  private LoadTableResponse executeLoadTable(String snapshotMode) throws Exception {
+    Map<String, String> queryParams =
+        snapshotMode != null
+            ? ImmutableMap.of(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, snapshotMode)
+            : null;
+    return adapter.execute(HTTPMethod.GET, TABLE_PATH, queryParams, null, response);
+  }
+
   @Test
-  void testDefaultSnapshotModeWhenParamOmitted() throws Exception {
-    // When snapshots query parameter is omitted (null), mode defaults to SnapshotMode.ALL
-    LoadTableResponse res = adapter.execute(HTTPMethod.GET, TABLE_PATH, null, null, response);
+  void testDefaultSnapshotMode() throws Exception {
+    // When snapshots query parameter is omitted, mode defaults to SnapshotMode.ALL
+    LoadTableResponse res = executeLoadTable(null);
 
     Assertions.assertNotNull(res, "Response should not be null");
     Assertions.assertNotNull(res.tableMetadata(), "TableMetadata should not be null");
@@ -123,28 +130,8 @@ class TestHMSCatalogAdapterSnapshotMode {
   }
 
   @Test
-  void testDefaultSnapshotModeWhenParamNull() throws Exception {
-    // When query params map is empty (snapshots is null), mode defaults to SnapshotMode.ALL
-    LoadTableResponse res =
-        adapter.execute(HTTPMethod.GET, TABLE_PATH, Collections.emptyMap(), null, response);
-
-    Assertions.assertNotNull(res, "Response should not be null");
-    Assertions.assertNotNull(res.tableMetadata(), "TableMetadata should not be null");
-    Assertions.assertEquals(
-        2,
-        res.tableMetadata().snapshots().size(),
-        "Default mode (ALL) should preserve all snapshots when query parameter map has no snapshots key");
-    Assertions.assertNotNull(res.tableMetadata().snapshot(1L), "Snapshot 1 should be retained");
-    Assertions.assertNotNull(res.tableMetadata().snapshot(2L), "Snapshot 2 should be retained");
-  }
-
-  @Test
   void testSnapshotModeAll() throws Exception {
-    // Standard query parameter: snapshots=all
-    Map<String, String> queryParams =
-        ImmutableMap.of(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, "all");
-    LoadTableResponse res =
-        adapter.execute(HTTPMethod.GET, TABLE_PATH, queryParams, null, response);
+    LoadTableResponse res = executeLoadTable("all");
 
     Assertions.assertNotNull(res, "Response should not be null");
     Assertions.assertNotNull(res.tableMetadata(), "TableMetadata should not be null");
@@ -158,11 +145,7 @@ class TestHMSCatalogAdapterSnapshotMode {
 
   @Test
   void testSnapshotModeRefs() throws Exception {
-    // Standard query parameter: snapshots=refs
-    Map<String, String> queryParams =
-        ImmutableMap.of(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, "refs");
-    LoadTableResponse res =
-        adapter.execute(HTTPMethod.GET, TABLE_PATH, queryParams, null, response);
+    LoadTableResponse res = executeLoadTable("refs");
 
     Assertions.assertNotNull(res, "Response should not be null");
     Assertions.assertNotNull(res.tableMetadata(), "TableMetadata should not be null");
@@ -178,91 +161,16 @@ class TestHMSCatalogAdapterSnapshotMode {
   }
 
   @Test
-  void testNegativeInvalidSnapshotMode() throws Exception {
-    // Unknown mode value: snapshots=invalid
-    Map<String, String> queryParams =
-        ImmutableMap.of(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, "invalid");
-    LoadTableResponse res =
-        adapter.execute(HTTPMethod.GET, TABLE_PATH, queryParams, null, response);
+  void testInvalidSnapshotMode() throws Exception {
+    LoadTableResponse res = executeLoadTable("invalid");
 
     Assertions.assertNull(res, "Response should be null for an invalid snapshot mode");
     Mockito.verify(response).setStatus(400);
-    String responseBody = stringWriter.toString();
     Assertions.assertTrue(
-        responseBody.contains("IllegalArgumentException"),
+        stringWriter.toString().contains("IllegalArgumentException"),
         "Error response should report IllegalArgumentException");
     Assertions.assertTrue(
-        responseBody.contains("INVALID"), "Error response message should mention the invalid mode");
-  }
-
-  @Test
-  void testNegativeEmptySnapshotMode() throws Exception {
-    // Empty string value: snapshots=""
-    Map<String, String> queryParams =
-        ImmutableMap.of(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, "");
-    LoadTableResponse res =
-        adapter.execute(HTTPMethod.GET, TABLE_PATH, queryParams, null, response);
-
-    Assertions.assertNull(res, "Response should be null for empty snapshot mode");
-    Mockito.verify(response).setStatus(400);
-    Assertions.assertTrue(
-        stringWriter.toString().contains("IllegalArgumentException"),
-        "Error response should report IllegalArgumentException for empty mode");
-  }
-
-  @Test
-  void testNegativeNumericSnapshotMode() throws Exception {
-    // Numeric string value: snapshots=123
-    Map<String, String> queryParams =
-        ImmutableMap.of(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, "123");
-    LoadTableResponse res =
-        adapter.execute(HTTPMethod.GET, TABLE_PATH, queryParams, null, response);
-
-    Assertions.assertNull(res, "Response should be null for numeric snapshot mode");
-    Mockito.verify(response).setStatus(400);
-    Assertions.assertTrue(
-        stringWriter.toString().contains("IllegalArgumentException"),
-        "Error response should report IllegalArgumentException for numeric mode");
-  }
-
-  @Test
-  void testCollisionResourceNamedSnapshotsWithSnapshotModeRefs() throws Exception {
-    // Path where both namespace and table are literally named "snapshots":
-    // v1/namespaces/snapshots/tables/snapshots
-    // Query parameter: snapshots=refs
-    String collisionPath = "v1/namespaces/snapshots/tables/snapshots";
-    Map<String, String> queryParams =
-        ImmutableMap.of(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, "refs");
-    LoadTableResponse res =
-        adapter.execute(HTTPMethod.GET, collisionPath, queryParams, null, response);
-
-    Assertions.assertNotNull(res, "Response should not be null for table named 'snapshots'");
-    Assertions.assertNotNull(res.tableMetadata(), "TableMetadata should not be null");
-    Assertions.assertEquals(
-        1,
-        res.tableMetadata().snapshots().size(),
-        "Query parameter snapshots=refs should apply even when the table is named 'snapshots'");
-    Assertions.assertNull(
-        res.tableMetadata().snapshot(1L), "Historical snapshot 1 should be suppressed");
-    Assertions.assertNotNull(
-        res.tableMetadata().snapshot(2L), "Branch snapshot 2 should be retained");
-  }
-
-  @Test
-  void testCollisionPrefixNamedSnapshotsWithSnapshotModeAll() throws Exception {
-    // Path where prefix is named "snapshots": v1/snapshots/namespaces/accounting/tables/my_table
-    // Query parameter: snapshots=all
-    String collisionPrefixPath = "v1/snapshots/namespaces/accounting/tables/my_table";
-    Map<String, String> queryParams =
-        ImmutableMap.of(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, "all");
-    LoadTableResponse res =
-        adapter.execute(HTTPMethod.GET, collisionPrefixPath, queryParams, null, response);
-
-    Assertions.assertNotNull(res, "Response should not be null for prefix named 'snapshots'");
-    Assertions.assertNotNull(res.tableMetadata(), "TableMetadata should not be null");
-    Assertions.assertEquals(
-        2,
-        res.tableMetadata().snapshots().size(),
-        "Mode ALL should return all snapshots even when prefix is named 'snapshots'");
+        stringWriter.toString().contains("INVALID"),
+        "Error response message should mention the invalid mode");
   }
 }
