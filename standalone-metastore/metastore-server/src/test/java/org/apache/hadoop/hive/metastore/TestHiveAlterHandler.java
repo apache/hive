@@ -123,4 +123,39 @@ public class TestHiveAlterHandler {
     handler.deleteTableColumnStats(msdb, oldTable, newTable);
   }
 
+  /**
+   * HIVE-30096: a table level alter forces a stats recompute, which lists every file under the
+   * table location, only when the alter changed the location. A metadata-only alter must reuse
+   * the fast stats already present on the table instead of relisting a potentially huge
+   * directory (formats like Delta/Iceberg/Hudi register as unpartitioned tables with millions
+   * of files).
+   */
+  @Test
+  public void testTableLocationChangeDetection() {
+    StorageDescriptor oldSd = new StorageDescriptor();
+    oldSd.setLocation("gs://bucket/warehouse/t1");
+    Table oldTable = new Table();
+    oldTable.setDbName("default");
+    oldTable.setTableName("test_table");
+    oldTable.setSd(oldSd);
+
+    // same location: metadata-only alter, no recompute
+    StorageDescriptor newSd = new StorageDescriptor(oldSd);
+    Table newTable = new Table(oldTable);
+    newTable.setSd(newSd);
+    org.junit.Assert.assertFalse(HiveAlterHandler.isTableLocationChanged(oldTable, newTable));
+
+    // changed location: stats must be recomputed
+    StorageDescriptor movedSd = new StorageDescriptor(oldSd);
+    movedSd.setLocation("gs://bucket/warehouse/t1_moved");
+    Table movedTable = new Table(oldTable);
+    movedTable.setSd(movedSd);
+    org.junit.Assert.assertTrue(HiveAlterHandler.isTableLocationChanged(oldTable, movedTable));
+
+    // location set where there was none before
+    Table noLocTable = new Table(oldTable);
+    noLocTable.setSd(new StorageDescriptor());
+    org.junit.Assert.assertTrue(HiveAlterHandler.isTableLocationChanged(noLocTable, newTable));
+  }
+
 }
