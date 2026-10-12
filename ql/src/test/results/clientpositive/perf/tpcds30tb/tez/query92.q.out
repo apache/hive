@@ -19,7 +19,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: ws_ext_discount_amt is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_87_container, bigKeyColName:ws_item_sk, smallTablePos:1, keyRatio:1.1253233093375219E-4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_87_container, bigKeyColName:ws_item_sk, smallTablePos:1, keyRatio:0.001012987012987013
                   Statistics: Num rows: 21594638446 Data size: 2763810784048 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_ext_discount_amt is not null (type: boolean)
