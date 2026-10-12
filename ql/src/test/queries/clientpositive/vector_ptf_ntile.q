@@ -134,3 +134,18 @@ from vector_ptf_ntile_int;
 select name, rowindex,
 ntile(rowindex) over (partition by name order by rowindex) as nt
 from vector_ptf_ntile_int;
+
+-- Default reducer batch size: each partition arrives as a single batch spanning several buckets
+set hive.vectorized.testing.reducer.batch.size=-1;
+
+set hive.vectorized.execution.ptf.enabled=false;
+
+select name, rowindex, mynumber,
+ntile(10) over (partition by name) as nt
+from vector_ptf_ntile_int;
+
+set hive.vectorized.execution.ptf.enabled=true;
+
+select name, rowindex, mynumber,
+ntile(10) over (partition by name) as nt
+from vector_ptf_ntile_int;

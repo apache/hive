@@ -226,7 +226,6 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       evaluator = new VectorPTFEvaluatorCumeDist(windowFrameDef, outputColumnNum);
       break;
     case NTILE:
-      // ntile(n) receives the number of buckets as a constant integer expression
       evaluator = new VectorPTFEvaluatorNTile(windowFrameDef, inputVectorExpression,
           outputColumnNum);
       break;

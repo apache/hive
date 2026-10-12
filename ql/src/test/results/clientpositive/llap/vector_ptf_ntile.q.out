@@ -1618,3 +1618,75 @@ second	28	7
 second	29	8
 second	30	9
 second	31	10
+PREHOOK: query: select name, rowindex, mynumber,
+ntile(10) over (partition by name) as nt
+from vector_ptf_ntile_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_ntile_int
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mynumber,
+ntile(10) over (partition by name) as nt
+from vector_ptf_ntile_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_ntile_int
+#### A masked pattern was here ####
+NULL	44	7	1
+NULL	43	7	2
+first	1	1	1
+first	2	1	1
+first	3	1	2
+first	4	2	2
+first	5	3	3
+first	6	3	4
+first	7	4	5
+first	8	4	6
+first	9	5	7
+first	10	5	8
+first	11	NULL	9
+first	12	NULL	10
+second	24	20	1
+second	25	20	2
+second	26	30	3
+second	27	40	4
+second	28	40	5
+second	29	50	6
+second	30	NULL	7
+second	31	NULL	8
+second	23	10	9
+second	22	10	10
+PREHOOK: query: select name, rowindex, mynumber,
+ntile(10) over (partition by name) as nt
+from vector_ptf_ntile_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_ntile_int
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mynumber,
+ntile(10) over (partition by name) as nt
+from vector_ptf_ntile_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_ntile_int
+#### A masked pattern was here ####
+NULL	44	7	1
+NULL	43	7	2
+first	1	1	1
+first	2	1	1
+first	3	1	2
+first	4	2	2
+first	5	3	3
+first	6	3	4
+first	7	4	5
+first	8	4	6
+first	9	5	7
+first	10	5	8
+first	11	NULL	9
+first	12	NULL	10
+second	24	20	1
+second	25	20	2
+second	26	30	3
+second	27	40	4
+second	28	40	5
+second	29	50	6
+second	30	NULL	7
+second	31	NULL	8
+second	23	10	9
+second	22	10	10

@@ -58,7 +58,6 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
   // Replay position within the partition.
   private int currentBucket;
   private int rowsLeftInBucket;
-  private int rowsLeftInPartition;
 
   public VectorPTFEvaluatorNTile(WindowFrameDef windowFrameDef,
       VectorExpression numBucketsExpression, int outputColumnNum) {
@@ -85,13 +84,15 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
 
   @Override
   public void addStreamingGroupResults(List<Integer> groupRowCounts) throws HiveException {
-    if (partitionSize < 0) {
+    if (partitionSize <= 0) {
       throw new HiveException("Partition size must be set before computing ntile");
     }
     // Peer groups are irrelevant: buckets depend only on row position and partition size.
-    bucketSize = partitionSize / numBuckets;
-    largerBucketCount = partitionSize % numBuckets;
-    rowsLeftInPartition = partitionSize;
+    // With more buckets than rows every row gets its own bucket, which is ntile(partitionSize);
+    // capping the bucket count keeps every bucket non-empty.
+    final int buckets = Math.min(numBuckets, partitionSize);
+    bucketSize = partitionSize / buckets;
+    largerBucketCount = partitionSize % buckets;
     currentBucket = 1;
     rowsLeftInBucket = rowsInBucket(currentBucket);
   }
@@ -99,15 +100,6 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
   @Override
   public void evaluateGroupBatch(VectorizedRowBatch batch) throws HiveException {
     final int size = batch.size;
-    if (size > rowsLeftInPartition) {
-      throw new HiveException("ntile received " + size + " rows but only " + rowsLeftInPartition
-          + " remain in the partition (partitionSize=" + partitionSize + ")");
-    }
-    if (size == 0) {
-      return;
-    }
-    rowsLeftInPartition -= size;
-
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     outputColVector.noNulls = true;
 
@@ -124,7 +116,7 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
     long[] vector = outputColVector.vector;
     int i = 0;
     while (i < size) {
-      // rowsLeftInBucket > 0 here: rows remain, so a non-empty bucket remains.
+      // Buckets are never empty, so every run covers at least one row.
       int run = Math.min(rowsLeftInBucket, size - i);
       Arrays.fill(vector, i, i + run, currentBucket);
       i += run;
@@ -157,11 +149,5 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
   @Override
   public void resetEvaluator() {
     partitionSize = -1;
-    rowsLeftInPartition = 0;
-  }
-
-  // Visible for tests: exposes the number of buckets captured at construction.
-  int getNumBuckets() {
-    return numBuckets;
   }
 }
