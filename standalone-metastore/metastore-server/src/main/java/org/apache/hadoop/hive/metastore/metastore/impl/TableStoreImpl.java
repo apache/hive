@@ -2069,7 +2069,12 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   @Override
   public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
       GetProjectionsSpec partitionsProjectSpec,
-      GetPartitionsFilterSpec filterSpec) throws MetaException, NoSuchObjectException {
+      GetPartitionsFilterSpec rawFilterSpec) throws MetaException, NoSuchObjectException {
+    // filterSpec is an optional field on the thrift request (e.g. SHOW TABLE EXTENDED without a
+    // PARTITION clause leaves it unset to mean "no filter"); normalize once here so the SQL/JDO
+    // code paths below can treat it uniformly instead of null-checking at every usage site.
+    final GetPartitionsFilterSpec filterSpec =
+        rawFilterSpec != null ? rawFilterSpec : new GetPartitionsFilterSpec();
     List<String> fieldList = null;
     String inputIncludePattern = null;
     String inputExcludePattern = null;
