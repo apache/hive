@@ -1041,6 +1041,17 @@ public abstract class DeprecatedHandler extends BaseHandler {
     return get_partitions_by_names_req(request).getPartitions();
   }
 
+  @Deprecated
+  @Override
+  public Partition exchange_partition(Map<String, String> partitionSpecs,
+      String sourceDbName, String sourceTableName, String destDbName,
+      String destTableName) throws TException {
+    exchange_partitions(partitionSpecs, sourceDbName, sourceTableName, destDbName, destTableName);
+    // Wouldn't it make more sense to return the first element of the list returned by the
+    // previous call?
+    return new Partition();
+  }
+
   @Override
   public final GetFileMetadataByExprResult get_file_metadata_by_expr(GetFileMetadataByExprRequest req)
       throws TException {

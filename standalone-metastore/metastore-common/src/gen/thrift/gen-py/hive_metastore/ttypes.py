@@ -28294,8 +28294,6 @@ class AlterTableResponse(object):
 class TableParamsUpdate(object):
     """
     Attributes:
-     - cat_name
-     - db_name
      - table_name
      - params
      - expected_param_key
@@ -28304,9 +28302,7 @@ class TableParamsUpdate(object):
     """
 
 
-    def __init__(self, cat_name=None, db_name=None, table_name=None, params=None, expected_param_key=None, expected_param_value=None,):
-        self.cat_name = cat_name
-        self.db_name = db_name
+    def __init__(self, table_name=None, params=None, expected_param_key=None, expected_param_value=None,):
         self.table_name = table_name
         self.params = params
         self.expected_param_key = expected_param_key
@@ -28322,18 +28318,9 @@ class TableParamsUpdate(object):
             if ftype == TType.STOP:
                 break
             if fid == 1:
-                if ftype == TType.STRING:
-                    self.cat_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRING:
-                    self.db_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.STRING:
-                    self.table_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                if ftype == TType.STRUCT:
+                    self.table_name = TableName()
+                    self.table_name.read(iprot)
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
@@ -28367,17 +28354,9 @@ class TableParamsUpdate(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('TableParamsUpdate')
-        if self.cat_name is not None:
-            oprot.writeFieldBegin('cat_name', TType.STRING, 1)
-            oprot.writeString(self.cat_name.encode('utf-8') if sys.version_info[0] == 2 else self.cat_name)
-            oprot.writeFieldEnd()
-        if self.db_name is not None:
-            oprot.writeFieldBegin('db_name', TType.STRING, 2)
-            oprot.writeString(self.db_name.encode('utf-8') if sys.version_info[0] == 2 else self.db_name)
-            oprot.writeFieldEnd()
         if self.table_name is not None:
-            oprot.writeFieldBegin('table_name', TType.STRING, 3)
-            oprot.writeString(self.table_name.encode('utf-8') if sys.version_info[0] == 2 else self.table_name)
+            oprot.writeFieldBegin('table_name', TType.STRUCT, 1)
+            self.table_name.write(oprot)
             oprot.writeFieldEnd()
         if self.params is not None:
             oprot.writeFieldBegin('params', TType.MAP, 4)
@@ -28399,8 +28378,6 @@ class TableParamsUpdate(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.db_name is None:
-            raise TProtocolException(message='Required field db_name is unset!')
         if self.table_name is None:
             raise TProtocolException(message='Required field table_name is unset!')
         if self.params is None:
@@ -31467,6 +31444,186 @@ class ReplayedTxnsForPolicyResult(object):
         oprot.writeStructEnd()
 
     def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ExchangePartitionsRequest(object):
+    """
+    Attributes:
+     - partitionSpecs
+     - sourceTable
+     - targetTable
+
+    """
+
+
+    def __init__(self, partitionSpecs=None, sourceTable=None, targetTable=None,):
+        self.partitionSpecs = partitionSpecs
+        self.sourceTable = sourceTable
+        self.targetTable = targetTable
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.MAP:
+                    self.partitionSpecs = {}
+                    (_ktype1448, _vtype1449, _size1447) = iprot.readMapBegin()
+                    for _i1451 in range(_size1447):
+                        _key1452 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        _val1453 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.partitionSpecs[_key1452] = _val1453
+                    iprot.readMapEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.sourceTable = TableName()
+                    self.sourceTable.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.targetTable = TableName()
+                    self.targetTable.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ExchangePartitionsRequest')
+        if self.partitionSpecs is not None:
+            oprot.writeFieldBegin('partitionSpecs', TType.MAP, 1)
+            oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.partitionSpecs))
+            for kiter1454, viter1455 in self.partitionSpecs.items():
+                oprot.writeString(kiter1454.encode('utf-8') if sys.version_info[0] == 2 else kiter1454)
+                oprot.writeString(viter1455.encode('utf-8') if sys.version_info[0] == 2 else viter1455)
+            oprot.writeMapEnd()
+            oprot.writeFieldEnd()
+        if self.sourceTable is not None:
+            oprot.writeFieldBegin('sourceTable', TType.STRUCT, 2)
+            self.sourceTable.write(oprot)
+            oprot.writeFieldEnd()
+        if self.targetTable is not None:
+            oprot.writeFieldBegin('targetTable', TType.STRUCT, 3)
+            self.targetTable.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.partitionSpecs is None:
+            raise TProtocolException(message='Required field partitionSpecs is unset!')
+        if self.sourceTable is None:
+            raise TProtocolException(message='Required field sourceTable is unset!')
+        if self.targetTable is None:
+            raise TProtocolException(message='Required field targetTable is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class TableName(object):
+    """
+    Attributes:
+     - cat_name
+     - db_name
+     - tbl_name
+
+    """
+
+
+    def __init__(self, cat_name=None, db_name=None, tbl_name=None,):
+        self.cat_name = cat_name
+        self.db_name = db_name
+        self.tbl_name = tbl_name
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.cat_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.db_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.tbl_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('TableName')
+        if self.cat_name is not None:
+            oprot.writeFieldBegin('cat_name', TType.STRING, 1)
+            oprot.writeString(self.cat_name.encode('utf-8') if sys.version_info[0] == 2 else self.cat_name)
+            oprot.writeFieldEnd()
+        if self.db_name is not None:
+            oprot.writeFieldBegin('db_name', TType.STRING, 2)
+            oprot.writeString(self.db_name.encode('utf-8') if sys.version_info[0] == 2 else self.db_name)
+            oprot.writeFieldEnd()
+        if self.tbl_name is not None:
+            oprot.writeFieldBegin('tbl_name', TType.STRING, 3)
+            oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.db_name is None:
+            raise TProtocolException(message='Required field db_name is unset!')
+        if self.tbl_name is None:
+            raise TProtocolException(message='Required field tbl_name is unset!')
         return
 
     def __repr__(self):
@@ -34973,9 +35130,9 @@ AlterTableResponse.thrift_spec = (
 all_structs.append(TableParamsUpdate)
 TableParamsUpdate.thrift_spec = (
     None,  # 0
-    (1, TType.STRING, 'cat_name', 'UTF8', None, ),  # 1
-    (2, TType.STRING, 'db_name', 'UTF8', None, ),  # 2
-    (3, TType.STRING, 'table_name', 'UTF8', None, ),  # 3
+    (1, TType.STRUCT, 'table_name', [TableName, None], None, ),  # 1
+    None,  # 2
+    None,  # 3
     (4, TType.MAP, 'params', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 4
     (5, TType.STRING, 'expected_param_key', 'UTF8', None, ),  # 5
     (6, TType.STRING, 'expected_param_value', 'UTF8', None, ),  # 6
@@ -35236,6 +35393,20 @@ all_structs.append(ReplayedTxnsForPolicyResult)
 ReplayedTxnsForPolicyResult.thrift_spec = (
     None,  # 0
     (1, TType.MAP, 'replTxnMapEntry', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 1
+)
+all_structs.append(ExchangePartitionsRequest)
+ExchangePartitionsRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.MAP, 'partitionSpecs', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 1
+    (2, TType.STRUCT, 'sourceTable', [TableName, None], None, ),  # 2
+    (3, TType.STRUCT, 'targetTable', [TableName, None], None, ),  # 3
+)
+all_structs.append(TableName)
+TableName.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'cat_name', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'db_name', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 3
 )
 all_structs.append(MetaException)
 MetaException.thrift_spec = (

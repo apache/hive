@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -59,6 +60,9 @@ import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.operation.OperationLogManager;
 import org.apache.hive.service.cli.operation.OperationManager;
+import org.apache.hive.service.cli.session.store.HiveSessionSnapshot;
+import org.apache.hive.service.cli.session.store.SessionStateStore;
+import org.apache.hive.service.cli.session.PersistableSessionUtils.FetchStrategy;
 import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
@@ -111,7 +115,12 @@ public class SessionManager extends CompositeService {
   private String sessionImplclassName;
   private CleanupService cleanupService;
   // Tracks which LLAP target gauges have been lazily registered.
-  private final java.util.Set<String> registeredLlapTargetGauges = ConcurrentHashMap.newKeySet();
+  private final Set<String> registeredLlapTargetGauges = ConcurrentHashMap.newKeySet();
+  // Persistable session state store
+  private SessionStateStore sessionStateStore;
+  private FetchStrategy fetchStrategy;
+  private final ThreadLocal<Boolean> recoveringSession = ThreadLocal.withInitial(() -> false);
+  private final ConcurrentHashMap<SessionHandle, HiveSession> recoverySessions = new ConcurrentHashMap<>();
 
   public SessionManager(HiveServer2 hiveServer2, boolean allowSessions) {
     super(SessionManager.class.getSimpleName());
@@ -137,8 +146,8 @@ public class SessionManager extends CompositeService {
     initSessionImplClassName();
     Metrics metrics = MetricsFactory.getInstance();
     if(metrics != null){
-      registerOpenSesssionMetrics(metrics);
-      registerActiveSesssionMetrics(metrics);
+      registerOpenSessionMetrics(metrics);
+      registerActiveSessionMetrics(metrics);
     }
 
     userLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER);
@@ -155,10 +164,36 @@ public class SessionManager extends CompositeService {
       cleanupService = SyncCleanupService.INSTANCE;
     }
     cleanupService.start();
+    initSessionStateStore();
     super.init(hiveConf);
   }
 
-  private void registerOpenSesssionMetrics(Metrics metrics) {
+  private void initSessionStateStore() {
+    String storeClassName = hiveConf.getVar(ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_CLASS);
+    if (storeClassName == null || storeClassName.isEmpty()) {
+      LOG.info("Session state store not configured. Persistable sessions disabled.");
+      this.sessionStateStore = null;
+      this.fetchStrategy = FetchStrategy.NEVER;
+      return;
+    }
+    this.fetchStrategy = FetchStrategy.valueOf(
+        hiveConf.getVar(ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY));
+    try {
+      Class<?> storeClass = Class.forName(storeClassName);
+      this.sessionStateStore = (SessionStateStore) storeClass.getDeclaredConstructor().newInstance();
+      this.sessionStateStore.init(hiveConf);
+      LOG.info("Initialized session state store: {}, fetch strategy: {}", storeClassName, fetchStrategy);
+    } catch (ClassNotFoundException e) {
+      LOG.warn("Session state store class not found: {}. Persistable sessions disabled.", storeClassName);
+      this.sessionStateStore = null;
+      this.fetchStrategy = FetchStrategy.NEVER;
+    } catch (Exception e) {
+      LOG.error("Failed to initialize session state store: {}", storeClassName, e);
+      throw new RuntimeException("Failed to initialize session state store", e);
+    }
+  }
+
+  private void registerOpenSessionMetrics(Metrics metrics) {
     MetricsVariable<Integer> openSessionCnt = new MetricsVariable<Integer>() {
       @Override
       public Integer getValue() {
@@ -181,7 +216,7 @@ public class SessionManager extends CompositeService {
     metrics.addRatio(MetricsConstant.HS2_AVG_OPEN_SESSION_TIME, openSessionTime, openSessionCnt);
   }
 
-  private void registerActiveSesssionMetrics(Metrics metrics) {
+  private void registerActiveSessionMetrics(Metrics metrics) {
     MetricsVariable<Integer> activeSessionCnt = new MetricsVariable<Integer>() {
       @Override
       public Integer getValue() {
@@ -433,6 +468,13 @@ public class SessionManager extends CompositeService {
     }
     cleanupLoggingRootDir();
     logManager.ifPresent(lm -> lm.stop());
+    if (sessionStateStore != null) {
+      try {
+        sessionStateStore.close();
+      } catch (Exception e) {
+        LOG.warn("Error closing session state store", e);
+      }
+    }
   }
 
   private void cleanupLoggingRootDir() {
@@ -578,6 +620,9 @@ public class SessionManager extends CompositeService {
       throw new HiveSQLException(FAIL_CLOSE_ERROR_MESSAGE);
     }
     registerLlapTargetGaugeIfNeeded(session);
+    if (!recoveringSession.get()) {
+      saveSessionSnapshot(session);
+    }
     LOG.info("Session opened, " + session.getSessionHandle()
         + ", current sessions:" + getOpenSessionCount());
     return session;
@@ -685,6 +730,7 @@ public class SessionManager extends CompositeService {
       }
       LOG.info("Session closed, " + sessionHandle + ", current sessions:" + getOpenSessionCount());
     }
+    deleteSessionSnapshot(sessionHandle);
     closeSessionInternal(session);
   }
 
@@ -716,10 +762,80 @@ public class SessionManager extends CompositeService {
 
   public HiveSession getSession(SessionHandle sessionHandle) throws HiveSQLException {
     HiveSession session = handleToSession.get(sessionHandle);
-    if (session == null) {
+    if (session != null) {
+      if (fetchStrategy == FetchStrategy.ALWAYS && sessionStateStore != null) {
+        syncFromRemoteIfStale(session);
+      }
+      return session;
+    }
+    if (fetchStrategy == FetchStrategy.NEVER) {
       throw new HiveSQLException("Invalid SessionHandle: " + sessionHandle);
     }
-    return session;
+    try {
+      return recoverySessions.computeIfAbsent(sessionHandle, handle -> {
+        try {
+          return recoverSession(handle);
+        } catch (HiveSQLException e) {
+          throw new RuntimeException(e);
+        }
+      });
+    } catch (RuntimeException e) {
+      if (e.getCause() instanceof HiveSQLException hivesqlexception) {
+        throw hivesqlexception;
+      }
+      throw e;
+    } finally {
+      recoverySessions.remove(sessionHandle);
+    }
+  }
+
+  private void syncFromRemoteIfStale(HiveSession session) {
+    try {
+      String handleId = PersistableSessionUtils.storeKey(session.getSessionHandle());
+      HiveSessionSnapshot remoteSnapshot = sessionStateStore.getSnapshot(handleId);
+      if (remoteSnapshot == null) {
+        return;
+      }
+      if (remoteSnapshot.getLastAccessTime() > session.getLastAccessTime()) {
+        LOG.info("Remote snapshot is newer for session {}, re-hydrating", session.getSessionHandle());
+        hydrateSession(session, remoteSnapshot);
+      }
+    } catch (Exception e) {
+      LOG.warn("Failed to sync session from remote store: {}", session.getSessionHandle(), e);
+    }
+  }
+
+  private HiveSession recoverSession(SessionHandle sessionHandle) throws HiveSQLException {
+    String handleId = PersistableSessionUtils.storeKey(sessionHandle);
+    HiveSessionSnapshot snapshot = sessionStateStore.getSnapshot(handleId);
+    if (snapshot == null) {
+      throw new HiveSQLException("Invalid SessionHandle: " + sessionHandle);
+    }
+    LOG.info("Recovering session from state store: {}", sessionHandle);
+    TProtocolVersion protocol = TProtocolVersion.findByValue(snapshot.getProtocolVersion());
+    if (protocol == null) {
+      protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1;
+    }
+    SessionHandle recoveredHandle = new SessionHandle(
+        sessionHandle.getHandleIdentifier(), protocol);
+    boolean withImpersonation = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS)
+        && snapshot.getUsername() != null;
+    recoveringSession.set(true);
+    try {
+      HiveSession recovered = createSession(recoveredHandle, protocol,
+          snapshot.getUsername(), null, snapshot.getIpAddress(),
+          null, withImpersonation, null);
+      hydrateSession(recovered, snapshot);
+      saveSessionSnapshot(recovered);
+      LOG.info("Successfully recovered session: {}", sessionHandle);
+      return recovered;
+    } finally {
+      recoveringSession.remove();
+    }
+  }
+
+  private void hydrateSession(HiveSession session, HiveSessionSnapshot snapshot) throws HiveSQLException {
+    PersistableSessionUtils.hydrateSession(session, snapshot);
   }
 
   public OperationManager getOperationManager() {
@@ -838,6 +954,36 @@ public class SessionManager extends CompositeService {
     synchronized (sessionAddLock) {
       this.allowSessions = b;
     }
+  }
+
+  public boolean isPersistableSessionsEnabled() {
+    return sessionStateStore != null;
+  }
+
+
+  public void notifySessionStateChanged(SessionHandle sessionHandle) {
+    HiveSession session = handleToSession.get(sessionHandle);
+    if (session != null) {
+      PersistableSessionUtils.saveSnapshot(sessionStateStore, session);
+    }
+  }
+
+  private void saveSessionSnapshot(HiveSession session) {
+    PersistableSessionUtils.saveSnapshot(sessionStateStore, session);
+  }
+
+  private void deleteSessionSnapshot(SessionHandle sessionHandle) {
+    PersistableSessionUtils.deleteSnapshot(sessionStateStore, sessionHandle);
+  }
+
+  @VisibleForTesting
+  public SessionStateStore getSessionStateStore() {
+    return sessionStateStore;
+  }
+
+  @VisibleForTesting
+  public FetchStrategy getFetchStrategy() {
+    return fetchStrategy;
   }
 }
 

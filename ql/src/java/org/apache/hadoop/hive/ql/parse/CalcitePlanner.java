@@ -634,30 +634,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.info("CBO Succeeded; optimized logical plan.");
           this.ctx.setCboInfo(getOptimizedByCboInfo());
           this.ctx.setCboSucceeded(true);
-          if (this.ctx.isExplainPlan()) {
-            // Enrich explain with information derived from CBO
-            ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
-            if (explainConfig.isCbo()) {
-              if (!explainConfig.isCboJoinCost()) {
-                // Include cost as provided by Calcite
-                newPlan.getCluster().invalidateMetadataQuery();
-                RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
-              }
-              if (explainConfig.isFormatted()) {
-                this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-              } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
-                this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
-              } else {
-                // Do not include join cost
-                this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
-              }
-            } else if (explainConfig.isFormatted()) {
-              this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-              this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
-            } else if (explainConfig.isExtended()) {
-              this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
-            }
-          }
+
+          handleExplainConfiguration(newPlan);
           if (LOG.isTraceEnabled()) {
             LOG.trace(getOptimizedSql(newPlan));
           }
@@ -668,7 +646,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           String cboMsg = "Plan not optimized by CBO.";
           boolean isMissingStats = noColsMissingStats.get() > 0;
           if (isMissingStats) {
-            LOG.error("CBO failed due to missing column stats (see previous errors), skipping CBO");
+            LOG.error("CBO failed due to missing column stats (see previous messages), skipping CBO");
             cboMsg = "Plan not optimized by CBO due to missing statistics. Please check log for more details.";
           } else if (e instanceof CalciteSemanticException) {
             CalciteSemanticException cse = (CalciteSemanticException) e;
@@ -711,6 +689,57 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     return sinkOp;
+  }
+
+  private void handleExplainConfiguration(RelNode newPlan) {
+    ExplainConfiguration explainConfig = this.getExplainConfiguration();
+    if (explainConfig == null) {
+      return;
+    }
+
+    try {
+      if (explainConfig.isCbo()) {
+        if (!explainConfig.isCboJoinCost()) {
+          // Include cost as provided by Calcite
+          newPlan.getCluster().invalidateMetadataQuery();
+          RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+        }
+        if (explainConfig.isFormatted()) {
+          this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+        } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
+          this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+        } else {
+          // Do not include join cost
+          this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
+        }
+      } else if (explainConfig.isFormatted()) {
+        this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+        this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+      } else if (explainConfig.isExtended()) {
+        this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+      }
+    } catch (RuntimeException ex) {
+      if (!this.ctx.isExplainPlan()) {
+        // logging the plan failed; log the exception instead
+        LOG.warn("Exception generating explain output: " + ex, ex);
+      } else {
+        throw ex;
+      }
+    }
+  }
+
+  private ExplainConfiguration getExplainConfiguration() {
+    if (this.ctx.isExplainPlan()) {
+      return this.ctx.getExplainConfig();
+    }
+    if (this.conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
+      ExplainConfiguration explainConfig = new ExplainConfiguration();
+      explainConfig.setCbo(true);
+      explainConfig.setCboJoinCost(true);
+      explainConfig.setFormatted(true);
+      return explainConfig;
+    }
+    return null;
   }
 
   protected ASTNode handlePostCboRewriteContext(PreCboCtx cboCtx, ASTNode newAST)
@@ -3630,6 +3659,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // SEL%SEL% rule.
       ASTNode selExprList = qb.getParseInfo().getSelForClause(destClauseName);
       SubQueryUtils.checkForTopLevelSubqueries(selExprList);
+      List<Integer> clearedAmbiguousPositions = new ArrayList<>();
+      List<ColumnInfo> clearedAmbiguousColumns = null;
       if (selExprList.getToken().getType() == HiveParser.TOK_SELECTDI
           && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
         ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
@@ -3637,6 +3668,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // As we said before, here we use genSelectLogicalPlan to rewrite AllColRef
           srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null, null, true).getKey();
           RowResolver rr = relToHiveRR.get(srcRel);
+          // Clear the HIVE-29580 ambiguity markers on this rewrite-private projection (its
+          // ColumnInfos are genColListRegex copies; the subquery's own RowResolver keeps its
+          // markers) so genSelectDIAST's synthesized by-name references type check; reapplied
+          // to the group by output below so that references crossing this boundary still fail.
+          clearedAmbiguousColumns = rr.getColumnInfos();
+          for (int i = 0; i < clearedAmbiguousColumns.size(); i++) {
+            if (clearedAmbiguousColumns.get(i).hasAmbiguousName()) {
+              clearedAmbiguousPositions.add(i);
+              clearedAmbiguousColumns.get(i).setAmbiguousName(false);
+            }
+          }
           qbp.setSelExprForClause(destClauseName, genSelectDIAST(rr));
         }
       }
@@ -3777,6 +3819,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
         groupByRel = genGBRelNode(groupByExpressions, aggregations, groupingSets, srcRel);
         relToHiveColNameCalcitePosMap.put(groupByRel, buildHiveToCalciteColumnMap(groupByOutputRowResolver));
         relToHiveRR.put(groupByRel, groupByOutputRowResolver);
+        // Reapply the markers cleared for the DISTINCT * rewrite above; its group by output is
+        // positionally one key per input column (no aggregations, no grouping sets). Copy the
+        // user-visible names too, so a rejection resolving against this exprResolver RR (e.g.
+        // a HAVING reference) reads "c in t" rather than the expression tree.
+        for (int position : clearedAmbiguousPositions) {
+          ColumnInfo gbColInfo = groupByOutputRowResolver.getColumnInfos().get(position);
+          gbColInfo.setAmbiguousName(true);
+          gbColInfo.setAlias(clearedAmbiguousColumns.get(position).getAlias());
+          gbColInfo.setTabAlias(clearedAmbiguousColumns.get(position).getTabAlias());
+        }
       }
 
       return groupByRel;
@@ -4452,6 +4504,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
                 TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo),
                 tabAlias, false);
+            if (expression instanceof RexInputRef inputRef) {
+              // Carry the HIVE-29580 marker through this projection. Only expression-map
+              // resolutions (the DISTINCT * rewrite's synthesized references) reach here with a
+              // marked source; user-written ones already failed checkAmbiguousName in genRexNode.
+              ColumnInfo sourceColInfo = inputRR.getColumnInfos().get(inputRef.getIndex());
+              colInfo.setAmbiguousName(sourceColInfo.hasAmbiguousName());
+            }
             outputRR.put(tabAlias, colAlias, colInfo);
 
             pos = Integer.valueOf(pos.intValue() + 1);
@@ -4569,6 +4628,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ColumnInfo colInfo = outputRR.getColumnInfos().get(i);
           ColumnInfo newColInfo = new ColumnInfo(colInfo.getInternalName(),
               colInfo.getType(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+          newColInfo.setAmbiguousName(colInfo.hasAmbiguousName());
           groupByOutputRowResolver.put(colInfo.getTabAlias(), colInfo.getAlias(), newColInfo);
           if (gbyKeyExpressions != null && gbyKeyExpressions.size() == outputRR.getColumnInfos().size()) {
             groupByOutputRowResolver.putExpression(gbyKeyExpressions.get(i), colInfo);
@@ -4906,11 +4966,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ColumnInfo newCi = new ColumnInfo(colInfo);
           newCi.setTabAlias(alias);
           if (i < targetColNames.size()) {
+            // An explicit column list disambiguates positionally; a collision with an unlisted
+            // column is re-marked when that later column's turn reaches the branch below.
             tmp[1] = targetColNames.get(i);
             newCi.setAlias(tmp[1]);
+            newCi.setAmbiguousName(false);
           } else if ("".equals(tmp[0]) || tmp[1] == null) {
             // ast expression is not a valid column name for table
             tmp[1] = colInfo.getInternalName();
+          } else {
+            ColumnInfo clashingColInfo = newRR.get(alias, tmp[1]);
+            if (clashingColInfo != null) {
+              // Duplicate alias escaping the subquery boundary: tolerated for positional use
+              // (HIVE-19770), but poison the name so a later by-name reference fails (HIVE-29580).
+              // Binding the duplicate to its internal name here is deliberate, not redundant:
+              // putWithCheck would otherwise do it via its own fallback AND call keepAmbiguousInfo,
+              // whose reference-time throw in RowResolver.get would then shadow this marker with a
+              // differently formatted message. Do not "simplify" this line away.
+              clashingColInfo.setAmbiguousName(true);
+              tmp[1] = colInfo.getInternalName();
+            }
           }
           newRR.putWithCheck(alias, tmp[1], colInfo.getInternalName(), newCi);
         }

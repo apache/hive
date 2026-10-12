@@ -19,12 +19,15 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -46,6 +49,7 @@ import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -63,6 +67,10 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
   private final VectorizedRowBatch batch;
   private int rowInBatch;
   private long baseRow;
+  // TIMESTAMP WITH LOCAL TIME ZONE is stored on disk as a UTC instant; this is the session's
+  // display zone (hive.local.time.zone) to render that instant in, not the JVM default zone,
+  // since SET TIME ZONE can change the former without touching the latter.
+  private final ZoneId localTimeZone;
 
   protected RecordReaderImpl(ReaderImpl fileReader,
     Reader.Options options, final Configuration conf) throws IOException {
@@ -75,6 +83,8 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       batch = this.schema.createRowBatch();
     }
     rowInBatch = 0;
+    localTimeZone = conf == null ? ZoneId.systemDefault()
+        : TimestampTZUtil.parseTimeZone(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE));
   }
 
   /**
@@ -466,7 +476,29 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static OrcStruct nextStruct(ColumnVector vector,
+  TimestampLocalTZWritable nextTimestampLocalTZ(ColumnVector vector,
+                                                 int row,
+                                                 Object previous) {
+    if (vector.isRepeating) {
+      row = 0;
+    }
+    if (vector.noNulls || !vector.isNull[row]) {
+      TimestampLocalTZWritable result;
+      if (previous == null || previous.getClass() != TimestampLocalTZWritable.class) {
+        result = new TimestampLocalTZWritable();
+      } else {
+        result = (TimestampLocalTZWritable) previous;
+      }
+      TimestampColumnVector tcv = (TimestampColumnVector) vector;
+      long epochSecond = Math.floorDiv(tcv.time[row], 1000L);
+      result.set(new TimestampTZ(epochSecond, tcv.nanos[row], localTimeZone));
+      return result;
+    } else {
+      return null;
+    }
+  }
+
+  OrcStruct nextStruct(ColumnVector vector,
                               int row,
                               TypeDescription schema,
                               Object previous) {
@@ -494,7 +526,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static OrcUnion nextUnion(ColumnVector vector,
+  OrcUnion nextUnion(ColumnVector vector,
                             int row,
                             TypeDescription schema,
                             Object previous) {
@@ -519,7 +551,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static ArrayList<Object> nextList(ColumnVector vector,
+  ArrayList<Object> nextList(ColumnVector vector,
                                     int row,
                                     TypeDescription schema,
                                     Object previous) {
@@ -559,7 +591,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static Map<Object,Object> nextMap(ColumnVector vector,
+  Map<Object,Object> nextMap(ColumnVector vector,
                                     int row,
                                     TypeDescription schema,
                                     Object previous) {
@@ -591,7 +623,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static Object nextValue(ColumnVector vector,
+  Object nextValue(ColumnVector vector,
                           int row,
                           TypeDescription schema,
                           Object previous) {
@@ -624,6 +656,8 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
         return nextDate(vector, row, previous);
       case TIMESTAMP:
         return nextTimestamp(vector, row, previous);
+      case TIMESTAMP_INSTANT:
+        return nextTimestampLocalTZ(vector, row, previous);
       case STRUCT:
         return nextStruct(vector, row, schema, previous);
       case UNION:

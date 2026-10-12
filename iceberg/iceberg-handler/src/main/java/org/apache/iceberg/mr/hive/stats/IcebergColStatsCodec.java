@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.function.IntPredicate;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
@@ -78,49 +79,60 @@ final class IcebergColStatsCodec {
    * entry rather than once for the blob because a merge carries partitions gathered separately -
    * they need not hold the same columns, nor hold them in the same order.
    */
-  static byte[] encodeBlob(List<byte[]> parts, List<Integer> fieldIds) throws IOException {
+  static ByteBuffer encodePartBlob(List<ColumnStatisticsObj> statsObjs, List<Integer> fieldIds)
+      throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     DataOutputStream data = new DataOutputStream(out);
     data.writeInt(BLOB_VERSION);
-    data.writeInt(parts.size());
-    for (int i = 0; i < parts.size(); i++) {
+    data.writeInt(statsObjs.size());
+
+    for (int i = 0; i < statsObjs.size(); i++) {
+      // vectors and histograms alike: what a read wants of them it settles once they are in hand
+      byte[] entry = encodeEntry(statsObjs.get(i));
       data.writeInt(fieldIds.get(i));
-      data.writeInt(parts.get(i).length);
-      data.write(parts.get(i));
+      data.writeInt(entry.length);
+      data.write(entry);
     }
     data.flush();
-    return out.toByteArray();
+    return ByteBuffer.wrap(out.toByteArray());
   }
 
   /**
    * The entries the given places name, the rest skipped rather than copied. A scan of a wide table
-   * asks about a few of its columns, and an entry it does not want costs a read nothing beyond the
+   * asks about a few of its columns, and an entry it does not need costs a read nothing beyond the
    * length it steps over.
    */
-  static List<byte[]> decodeBlob(ByteBuffer buf, IntPredicate wanted) {
+  static List<EncodedStats> decodePartBlob(ByteBuffer buf, IntPredicate needed) {
     ByteBuffer data = buf.duplicate().order(ByteOrder.BIG_ENDIAN);
-    if (data.remaining() < Integer.BYTES || data.getInt() != BLOB_VERSION) {
+    if (data.remaining() < 2 * Integer.BYTES || data.getInt() != BLOB_VERSION) {
       return List.of();
     }
     int count = data.getInt();
-    List<byte[]> parts = Lists.newArrayListWithCapacity(count);
+    Preconditions.checkArgument(count >= 0 && count <= data.remaining() / (2 * Integer.BYTES),
+        "Column statistics blob states %s entries, of which its remaining %s bytes cannot hold " +
+            "even the field and the length each states before its own bytes",
+        count, data.remaining());
+
+    List<EncodedStats> entries = Lists.newArrayListWithCapacity(count);
     for (int i = 0; i < count; i++) {
       int fieldId = data.getInt();
       int length = data.getInt();
-      if (wanted.test(fieldId)) {
+      Preconditions.checkArgument(length >= 0 && length <= data.remaining(),
+          "Entry of field %s states %s bytes, of the %s the blob has left to read or step over",
+          fieldId, length, data.remaining());
+
+      if (needed.test(fieldId)) {
         byte[] part = new byte[length];
         data.get(part);
-        parts.add(part);
+        entries.add(new EncodedStats(fieldId, part));
       } else {
         data.position(data.position() + length);
       }
     }
-    return parts;
+    return entries;
   }
 
-  /** What the blob holds, or nothing where it was written in a shape this does not know. */
-  static List<byte[]> decodeBlob(ByteBuffer buf) {
-    return decodeBlob(buf, fieldId -> true);
+  record EncodedStats(int fieldId, byte[] bytes) {
   }
 
   /**

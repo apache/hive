@@ -1,0 +1,265 @@
+PREHOOK: query: CREATE TABLE swo_hang (
+  a_c string,
+  b_c int
+)
+PARTITIONED BY (
+  day int
+)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@swo_hang
+POSTHOOK: query: CREATE TABLE swo_hang (
+  a_c string,
+  b_c int
+)
+PARTITIONED BY (
+  day int
+)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@swo_hang
+PREHOOK: query: INSERT INTO swo_hang VALUES ('userid1', 1, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@swo_hang
+POSTHOOK: query: INSERT INTO swo_hang VALUES ('userid1', 1, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@swo_hang
+POSTHOOK: Output: default@swo_hang@day=2
+POSTHOOK: Lineage: swo_hang PARTITION(day=2).a_c SCRIPT []
+POSTHOOK: Lineage: swo_hang PARTITION(day=2).b_c SCRIPT []
+PREHOOK: query: explain SELECT
+  u.day
+FROM (
+  SELECT
+    v.day,
+    v.a_c
+  FROM (
+    SELECT day,
+      a_c,
+      MIN(b_c)
+    FROM swo_hang
+    WHERE day >=1
+      AND a_c IS NOT NULL
+    GROUP BY day, a_c
+  ) v
+  JOIN (
+    SELECT day,
+      a_c,
+      MIN(b_c)
+    FROM swo_hang
+    WHERE day >=1
+      AND a_c IS NOT NULL
+    GROUP BY day, a_c
+  ) a
+  ON v.a_c = a.a_c
+    AND v.day = a.day
+  LEFT JOIN (
+    SELECT a_c
+    FROM swo_hang
+    WHERE day >=1
+    AND a_c IS NOT NULL
+  ) p
+  ON v.a_c = p.a_c
+  WHERE p.a_c IS NULL
+) u
+PREHOOK: type: QUERY
+PREHOOK: Input: default@swo_hang
+PREHOOK: Input: default@swo_hang@day=2
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT
+  u.day
+FROM (
+  SELECT
+    v.day,
+    v.a_c
+  FROM (
+    SELECT day,
+      a_c,
+      MIN(b_c)
+    FROM swo_hang
+    WHERE day >=1
+      AND a_c IS NOT NULL
+    GROUP BY day, a_c
+  ) v
+  JOIN (
+    SELECT day,
+      a_c,
+      MIN(b_c)
+    FROM swo_hang
+    WHERE day >=1
+      AND a_c IS NOT NULL
+    GROUP BY day, a_c
+  ) a
+  ON v.a_c = a.a_c
+    AND v.day = a.day
+  LEFT JOIN (
+    SELECT a_c
+    FROM swo_hang
+    WHERE day >=1
+    AND a_c IS NOT NULL
+  ) p
+  ON v.a_c = p.a_c
+  WHERE p.a_c IS NULL
+) u
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@swo_hang
+POSTHOOK: Input: default@swo_hang@day=2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: swo_hang
+                  filterExpr: a_c is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: a_c is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: a_c (type: string), day (type: int)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: a_c (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: swo_hang
+                  filterExpr: a_c is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: a_c is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: a_c (type: string), day (type: int)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: int), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                  Dummy Store
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: int), _col0 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: int)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dynamic Partitioning Event Operator
+                        Target column: day (int)
+                        Target Input: swo_hang
+                        Partition key expr: day
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Target Vertex: Map 4
+                  Merge Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    keys:
+                      0 _col1 (type: string), _col0 (type: int)
+                      1 _col1 (type: string), _col0 (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: string)
+                      Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Anti Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

@@ -232,10 +232,12 @@ POSTHOOK: Output: default@ice_orc
 PREHOOK: query: delete from ice_orc where last_name in ('ln1a', 'ln8a')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
+PREHOOK: Output: default@ice_orc
 #### A masked pattern was here ####
 POSTHOOK: query: delete from ice_orc where last_name in ('ln1a', 'ln8a')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: default@ice_orc
 #### A masked pattern was here ####
 PREHOOK: query: alter table ice_orc create tag v4
 PREHOOK: type: ALTERTABLE_CREATETAG
