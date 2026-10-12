@@ -55,6 +55,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String META_TABLE_SERDE = "serde";
 
+  public static final java.lang.String META_OBJECT_TYPE = "object_type";
+
   public static final java.lang.String META_TABLE_PARTITION_COLUMNS = "partition_columns";
 
   public static final java.lang.String META_TABLE_PARTITION_COLUMN_TYPES = "partition_columns.types";

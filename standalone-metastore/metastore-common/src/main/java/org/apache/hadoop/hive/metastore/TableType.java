@@ -19,6 +19,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  * Typesafe enum for types of tables described by the metastore.
  */
@@ -26,8 +29,15 @@ public enum TableType {
   MANAGED_TABLE,
   EXTERNAL_TABLE,
   VIRTUAL_VIEW,
-  // @deprecated
-  // INDEX_TABLE enum is deprecated
+
+  @Deprecated()
   INDEX_TABLE,
-  MATERIALIZED_VIEW
+  MATERIALIZED_VIEW,
+  EXTERNAL_MATERIALIZED_VIEW;
+
+  public static final EnumSet<TableType> ALL_MATERIALIZED_VIEWS = EnumSet.of(MATERIALIZED_VIEW, EXTERNAL_MATERIALIZED_VIEW);
+  public static final EnumSet<TableType> ALL_EXTERNAL = EnumSet.of(EXTERNAL_TABLE, EXTERNAL_MATERIALIZED_VIEW);
+  public static final EnumSet<TableType> ALL_VIEWS = EnumSet.of(VIRTUAL_VIEW, MATERIALIZED_VIEW, EXTERNAL_MATERIALIZED_VIEW);
+
+  public static final Set<String> ALL_VIEWS_STR = Set.of(VIRTUAL_VIEW.name(), MATERIALIZED_VIEW.name(), EXTERNAL_MATERIALIZED_VIEW.name());
 }
