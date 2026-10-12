@@ -295,6 +295,11 @@ public class TestHiveCli {
   @Before
   public void setup() throws IOException, URISyntaxException {
     System.setProperty("datanucleus.schema.autoCreateAll", "true");
+    // itests/hive-unit's shared hive-site.xml enables hive.support.concurrency with the
+    // default ZooKeeper lock manager; this test uses an embedded, non-MiniHS2 session with
+    // no ZooKeeper running, so it must use the in-process lock manager instead.
+    System.setProperty(HiveConf.ConfVars.HIVE_LOCK_MANAGER.varname,
+        "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
     cli = new HiveCliForTest();
     redirectOutputStream();
     initFromFile();

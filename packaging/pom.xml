@@ -343,6 +343,7 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-beeline</artifactId>
       <version>${project.version}</version>
+      <classifier>standalone</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>

@@ -37,7 +37,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	numFiles            	1                   
+	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	#Masked#
