@@ -212,12 +212,7 @@ public class ColumnValue {
       return stringValue((HiveDecimal)value, typeDescriptor);
     case BINARY_TYPE:
       return stringValue((String)value);
-    case ARRAY_TYPE:
-    case MAP_TYPE:
-    case STRUCT_TYPE:
-    case UNION_TYPE:
-    case USER_DEFINED_TYPE:
-    case VARIANT_TYPE:
+    case ARRAY_TYPE, MAP_TYPE, STRUCT_TYPE, UNION_TYPE, VARIANT_TYPE, USER_DEFINED_TYPE:
       return stringValue((String)value);
     case NULL_TYPE:
       return stringValue((String)value);

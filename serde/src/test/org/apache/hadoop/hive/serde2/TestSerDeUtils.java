@@ -9,12 +9,14 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
+
 package org.apache.hadoop.hive.serde2;
 
 import java.util.Arrays;
@@ -67,14 +69,14 @@ public class TestSerDeUtils {
   }
 
   @Test
-  public void testNonVariantBytesKeepGenericRendering() throws Exception {
-    Object row = Arrays.asList(new byte[] { 2 }, new byte[] { 65 });
+  public void testNonVariantBytesKeepGenericRendering() {
+    Object row = Arrays.asList(new byte[] {2}, new byte[] {65});
     String json = SerDeUtils.getJSONString(row, oi("struct<metadata:binary,value:binary>"), "null", true);
     assertEquals("{\"metadata\":\u0002,\"value\":A}", json);
   }
 
   @Test
-  public void testNullVariantFieldsKeepGenericRendering() throws Exception {
+  public void testNullVariantFieldsKeepGenericRendering() {
     Object row = Arrays.asList(null, null);
     String json = SerDeUtils.getJSONString(row, oi("struct<metadata:binary,value:binary>"), "null", true);
     assertEquals("{\"metadata\":null,\"value\":null}", json);
