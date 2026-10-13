@@ -2151,10 +2151,10 @@ class TOpenSessionReq : public virtual ::apache::thrift::TBase {
   TOpenSessionReq(const TOpenSessionReq&);
   TOpenSessionReq& operator=(const TOpenSessionReq&);
   TOpenSessionReq() noexcept
-                  : client_protocol((TProtocolVersion::type)11),
+                  : client_protocol((TProtocolVersion::type)9),
                     username(),
                     password() {
-    client_protocol = (TProtocolVersion::type)11;
+    client_protocol = (TProtocolVersion::type)9;
 
   }
 

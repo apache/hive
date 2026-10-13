@@ -1146,7 +1146,7 @@ class TOpenSessionReq
   CONFIGURATION = 4
 
   FIELDS = {
-    CLIENT_PROTOCOL => {:type => ::Thrift::Types::I32, :name => 'client_protocol', :default =>     11, :enum_class => ::TProtocolVersion},
+    CLIENT_PROTOCOL => {:type => ::Thrift::Types::I32, :name => 'client_protocol', :default =>     9, :enum_class => ::TProtocolVersion},
     USERNAME => {:type => ::Thrift::Types::STRING, :name => 'username', :optional => true},
     PASSWORD => {:type => ::Thrift::Types::STRING, :name => 'password', :optional => true},
     CONFIGURATION => {:type => ::Thrift::Types::MAP, :name => 'configuration', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
