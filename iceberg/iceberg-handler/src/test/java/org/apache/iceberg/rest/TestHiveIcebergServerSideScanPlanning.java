@@ -22,8 +22,9 @@ package org.apache.iceberg.rest;
 import java.nio.file.Path;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
+import org.apache.iceberg.MetadataTableType;
+import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SerializableTable;
@@ -32,17 +33,18 @@ import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
-import org.apache.iceberg.mr.hive.RestCatalogScanPlanningUtil;
 import org.apache.iceberg.types.Types;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for reload <em>guards</em> on {@link HiveTableUtil#resolveTableForScanPlanning} (see
- * method-level comments). End-to-end Hive server-side scan planning is documented on
- * {@code TestHiveIcebergServerSideScanPlanningServerIT}.
+ * Unit tests for the reload guard {@link HiveTableUtil#shouldReloadForServerSideScanPlanning}. The
+ * Tez AM reloads from the REST catalog only when HS2 set the per-catalog marker
+ * {@link InputFormatConfig#serverSideScanPlanningKey(String)} and the scan can be planned by the
+ * server. End-to-end behavior is in {@code TestHiveIcebergServerSideScanPlanningServerIT}.
  */
 class TestHiveIcebergServerSideScanPlanning {
 
@@ -53,52 +55,79 @@ class TestHiveIcebergServerSideScanPlanning {
   @TempDir
   private Path warehouse;
 
-  /**
-   * Negative path: do not reload from the REST catalog unless {@code scan-planning-mode=server}.
-   * Even with a REST catalog and a serialized table in the job conf, split generation should keep
-   * using the snapshot ({@link SerializableTable}) when server mode is off.
-   */
-  @Test
-  void usesDeserializedTableWhenServerModeDisabled() {
-    Table table = new HadoopTables().create(SCHEMA, PartitionSpec.unpartitioned(), warehouse.toString());
-    Configuration conf = buildTableConf(table, false);
+  private Table table;
 
-    Table resolved = HiveTableUtil.resolveTableForScanPlanning(conf, table.name());
-    assertThat(resolved).isInstanceOf(SerializableTable.class);
+  @BeforeEach
+  void before() {
+    table = new HadoopTables().create(SCHEMA, PartitionSpec.unpartitioned(), warehouse.toString());
+  }
+
+  @Test
+  void reloadsWhenHs2SetMarker() {
+    Configuration conf = buildTableConf(true);
+    assertThat(HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serialized(table))).isTrue();
   }
 
   /**
-   * Negative path: intra-transaction read-after-write must not reload from the catalog even when
-   * server mode is enabled. {@link InputFormatConfig#TABLE_METADATA_LOCATION} points at uncommitted
-   * metadata that only exists in the job conf; reloading from the REST catalog would return stale
-   * committed state and break same-txn visibility (e.g. INSERT then SELECT).
+   * The AM does not re-derive the decision from catalog type, {@code scan-planning-mode} or the Hive
+   * switch: without the HS2 marker it keeps the serialized table.
    */
   @Test
-  void usesDeserializedTableForIntraTxnMetadataEvenInServerMode() {
-    Table table = new HadoopTables().create(SCHEMA, PartitionSpec.unpartitioned(), warehouse.toString());
-    Configuration conf = buildTableConf(table, true);
+  void doesNotReloadWithoutMarker() {
+    Configuration conf = buildTableConf(false);
+    assertThat(HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serialized(table))).isFalse();
+  }
+
+  /** The marker is per catalog, so a table from another catalog in the same job is not reloaded. */
+  @Test
+  void doesNotReloadTableFromOtherCatalog() {
+    Configuration conf = buildTableConf(true);
+    conf.set(InputFormatConfig.CATALOG_NAME, "other");
+    assertThat(HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serialized(table))).isFalse();
+  }
+
+  /**
+   * Intra-transaction read-after-write: {@link InputFormatConfig#TABLE_METADATA_LOCATION} points at
+   * uncommitted metadata that only exists in the job conf; reloading would lose it.
+   */
+  @Test
+  void doesNotReloadForIntraTxnMetadata() {
+    Configuration conf = buildTableConf(true);
     conf.set(InputFormatConfig.TABLE_METADATA_LOCATION, warehouse + "/metadata/snapshot.metadata.json");
-
-    Table resolved = HiveTableUtil.resolveTableForScanPlanning(conf, table.name());
-    assertThat(resolved).isInstanceOf(BaseTable.class);
+    assertThat(HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serialized(table))).isFalse();
   }
 
-  private Configuration buildTableConf(Table table, boolean serverMode) {
+  /** {@code RESTTable} plans incremental append scans locally; reloading would only add drift. */
+  @Test
+  void doesNotReloadForIncrementalAppendScan() {
+    Configuration conf = buildTableConf(true);
+    conf.setLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, 1L);
+    assertThat(HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serialized(table))).isFalse();
+  }
+
+  /** Metadata tables ({@code tbl.files}, {@code tbl.snapshots}, ...) are planned locally. */
+  @Test
+  void doesNotReloadForMetadataTable() {
+    Configuration conf = buildTableConf(true);
+    Table filesTable = MetadataTableUtils.createMetadataTableInstance(table, MetadataTableType.FILES);
+    assertThat(HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serialized(filesTable))).isFalse();
+  }
+
+  private static Table serialized(Table source) {
+    return SerializableTable.copyOf(source);
+  }
+
+  private Configuration buildTableConf(boolean marker) {
     Configuration conf = new Configuration();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, CATALOG_NAME);
     conf.set(InputFormatConfig.TABLE_IDENTIFIER, table.name());
-    conf.set(InputFormatConfig.TABLE_LOCATION, warehouse.toString());
     conf.set(InputFormatConfig.CATALOG_NAME, CATALOG_NAME);
     conf.set(
         IcebergCatalogProperties.catalogPropertyConfigKey(CATALOG_NAME, CatalogUtil.ICEBERG_CATALOG_TYPE),
         CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
-    if (serverMode) {
-      RestCatalogScanPlanningUtil.setCatalogMode(conf, CATALOG_NAME, "server");
-      RestCatalogScanPlanningUtil.setHiveMode(conf, "server");
+    if (marker) {
+      conf.setBoolean(InputFormatConfig.serverSideScanPlanningKey(CATALOG_NAME), true);
     }
-    conf.set(
-        InputFormatConfig.SERIALIZED_TABLE_PREFIX + table.name(),
-        HiveTableUtil.serializeTable(table, conf, null, null));
     return conf;
   }
 }
