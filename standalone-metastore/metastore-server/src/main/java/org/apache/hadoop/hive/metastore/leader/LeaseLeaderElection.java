@@ -433,4 +433,9 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   public boolean enforceMutex() {
     return this.enforceMutex;
   }
+
+  @Override
+  public boolean isDynamic() {
+    return true;
+  }
 }
