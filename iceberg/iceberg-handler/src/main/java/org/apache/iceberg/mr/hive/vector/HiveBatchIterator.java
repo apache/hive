@@ -76,8 +76,6 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
 
     this.firstRowId = task.file().firstRowId();
     this.fileSequenceNumber = task.file().fileSequenceNumber();
-
-    RowLineageUtils.initializeRowLineageColumns(vrbCtx, batch);
   }
 
   @Override
@@ -89,6 +87,9 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
     if (!advanced) {
       try {
 
+        // A reader fills the row lineage columns only from a file that stores them; armed before every batch, the
+        // sentinel tells a batch whose columns it left alone, which then inherit their values.
+        RowLineageUtils.initializeRowLineageColumns(vrbCtx, batch);
         if (!recordReader.next(key, batch)) {
           batch.size = 0;
         }
@@ -142,8 +143,8 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
                 rowIdLcv.isRepeating = true;
                 break;
               }
-              // If vector[0] is still -1, the reader didn't find the column in the file.
-              if (rowIdLcv.vector[0] == -1L) {
+              // If the sentinel is untouched, the reader didn't find the column in the file.
+              if (rowIdLcv.noNulls && rowIdLcv.vector[0] == -1L) {
                 for (int i = 0; i < batch.size; i++) {
                   rowIdLcv.vector[i] = firstRowId + rowOffset + i;
                 }
@@ -169,8 +170,8 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
                 break;
               }
 
-              // If vector[0] is still -1, apply the file-level sequence number to the whole batch.
-              if (lusnLcv.vector[0] == -1L) {
+              // If the sentinel is untouched, apply the file-level sequence number to the whole batch.
+              if (lusnLcv.noNulls && lusnLcv.vector[0] == -1L) {
                 for (int i = 0; i < batch.size; i++) {
                   lusnLcv.vector[i] = fileSequenceNumber;
                 }

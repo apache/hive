@@ -145,15 +145,21 @@ public class RowLineageUtils {
     return insertClauseValues;
   }
 
+  /**
+   * Arms the row lineage columns of the batch with a sentinel (no nulls, -1 at row 0) that a reader replaces when it
+   * reads the column from the file: a column left armed was not in the file.
+   */
   public static void initializeRowLineageColumns(VectorizedRowBatchCtx vrbCtx, VectorizedRowBatch batch) {
     int rowIdIdx = vrbCtx.findVirtualColumnNum(VirtualColumn.ROW_LINEAGE_ID);
     if (rowIdIdx != -1) {
       LongColumnVector rowIdLcv = (LongColumnVector) batch.cols[rowIdIdx];
+      rowIdLcv.noNulls = true;
       rowIdLcv.vector[0] = -1L;
     }
     int lusnIdx = vrbCtx.findVirtualColumnNum(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
     if (lusnIdx != -1) {
       LongColumnVector lusnLcv = (LongColumnVector) batch.cols[lusnIdx];
+      lusnLcv.noNulls = true;
       lusnLcv.vector[0] = -1L;
     }
   }
