@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.exec.vector.ptf;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -491,12 +492,12 @@ public class VectorPTFOperator extends Operator<PTFDesc>
    * the batch is forwarded; buffering them is wasted work and fails for complex types.
    */
   private int[] getEvaluatorInputScratchIndices() {
-    final int[] inputExprColumns = Arrays.stream(evaluators)
+    final Set<Integer> inputExprColumns = Arrays.stream(evaluators)
         .filter(evaluator -> evaluator.inputVecExpr != null)
-        .mapToInt(evaluator -> evaluator.inputVecExpr.getOutputColumnNum())
-        .toArray();
+        .map(evaluator -> evaluator.inputVecExpr.getOutputColumnNum())
+        .collect(Collectors.toSet());
     return IntStream.range(0, scratchColumnPositions.length)
-        .filter(i -> Arrays.stream(inputExprColumns).anyMatch(c -> c == scratchColumnPositions[i]))
+        .filter(i -> inputExprColumns.contains(scratchColumnPositions[i]))
         .toArray();
   }
 
