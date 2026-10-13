@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.BaseTable;
@@ -403,7 +404,12 @@ public class HMSCatalogAdapter implements Closeable {
 
   private LoadTableResponse loadTable(Map<String, String> vars) {
     TableIdentifier ident = identFromPathVars(vars);
-    return CatalogHandlers.loadTable(catalog, ident);
+    String snapshots = vars.get(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER);
+    RESTCatalogProperties.SnapshotMode mode = RESTCatalogProperties.SNAPSHOT_LOADING_MODE_DEFAULT;
+    if (snapshots != null) {
+      mode = RESTCatalogProperties.SnapshotMode.valueOf(snapshots.toUpperCase(Locale.ROOT));
+    }
+    return CatalogHandlers.loadTable(catalog, ident, mode);
   }
 
   private LoadTableResponse registerTable(Map<String, String> vars, Object body) {

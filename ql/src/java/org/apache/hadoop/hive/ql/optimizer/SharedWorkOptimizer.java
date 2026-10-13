@@ -501,7 +501,6 @@ public class SharedWorkOptimizer extends Transform {
           }
 
           DecomposedTs modelR = new DecomposedTs(retainableTsOp);
-          DecomposedTs modelD = new DecomposedTs(discardableTsOp);
 
           // Push filter on top of children for retainable
           pushFilterToTopOfTableScan(optimizerCache, modelR);
@@ -510,6 +509,8 @@ public class SharedWorkOptimizer extends Transform {
             // For RemoveSemiJoin; this will clear the discardable's semijoin filters
             replaceSemijoinExpressions(discardableTsOp, modelR.getSemiJoinFilter());
           }
+          // Decompose after the replacement: the discardable's own semijoin branches are removed below
+          DecomposedTs modelD = new DecomposedTs(discardableTsOp);
 
           modelD.replaceTabAlias(discardableTsOp.getConf().getAlias(), retainableTsOp.getConf().getAlias());
 

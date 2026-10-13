@@ -171,6 +171,10 @@
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>apache5-client</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

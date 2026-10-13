@@ -132,9 +132,6 @@ public class WriterBuilder {
         .dataFileFormat(context.dataFileFormat())
         .dataSchema(shouldAddRowLineageColumns ? MetadataColumns.schemaWithRowLineage(table.schema()) : table.schema())
         .deleteFileFormat(context.deleteFileFormat())
-        .positionDeleteRowSchema(context.skipRowData() || !context.inputOrdered() ?
-            // SortingPositionOnlyDeleteWriter doesn't support rawData in delete schema
-            null : table.schema())
         .build();
 
     HiveIcebergWriter writer;
@@ -234,11 +231,11 @@ public class WriterBuilder {
     Context(Map<String, String> properties, UnaryOperator<String> ops, String tableName) {
       String dataFileFormatName =
           properties.getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT);
-      this.dataFileFormat = FileFormat.valueOf(dataFileFormatName.toUpperCase(Locale.ENGLISH));
+      this.dataFileFormat = FileFormat.valueOf(dataFileFormatName.toUpperCase(Locale.ROOT));
 
       String deleteFileFormatName =
           properties.getOrDefault(DELETE_DEFAULT_FILE_FORMAT, dataFileFormatName);
-      this.deleteFileFormat = FileFormat.valueOf(deleteFileFormatName.toUpperCase(Locale.ENGLISH));
+      this.deleteFileFormat = FileFormat.valueOf(deleteFileFormatName.toUpperCase(Locale.ROOT));
 
       this.targetDataFileSize = PropertyUtil.propertyAsLong(properties,
           TableProperties.WRITE_TARGET_FILE_SIZE_BYTES, TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
