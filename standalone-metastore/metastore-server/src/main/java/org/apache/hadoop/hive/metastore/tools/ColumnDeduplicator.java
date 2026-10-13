@@ -153,8 +153,8 @@ public final class ColumnDeduplicator {
       if (isVerbose) {
         PartitionSdInfo partSd = update.getKey();
         long newCdId = update.getValue();
-        result.addDetail(String.format("table %s.%s.%s: CD %d -> %d",
-            table.catalogName, table.dbName, table.tableName, partSd.cdId, newCdId));
+        result.addDetail(String.format("table %s.%s.%s: partition %d CD %d -> %d",
+            table.catalogName, table.dbName, table.tableName, partSd.partId, partSd.cdId, newCdId));
       }
     }
     if (isDryRun) {
