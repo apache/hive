@@ -245,7 +245,24 @@ public class TestHMSColumnDescriptorReuse {
         new FieldSchema("id", ColumnType.STRING_TYPE_NAME, ""),
         new FieldSchema("fname", ColumnType.STRING_TYPE_NAME, ""));
 
-    validate(Collections.singletonList(new ColumnDeduplicator.PartitionSchemaSnapshot(partId, cols)));
+    validate(Collections.singletonList(new ColumnDeduplicator.PartitionSchemaSnapshot(
+        partId, lookupPartitionCdId(partId), cols)));
+  }
+
+  @Test
+  public void testValidateTableAfterDedupDetectsCdRemapFailure() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.PARTITION_REUSE_COLUMN_DESCRIPTORS, false);
+    createTableWithDuplicateColumnDescriptors();
+    long partId = lookupPartitionId("country=Germany");
+    List<FieldSchema> cols = Arrays.asList(
+        new FieldSchema("id", ColumnType.STRING_TYPE_NAME, ""),
+        new FieldSchema("fname", ColumnType.STRING_TYPE_NAME, ""));
+
+    List<ColumnDeduplicator.PartitionSchemaSnapshot> snapshots = Collections.singletonList(
+        new ColumnDeduplicator.PartitionSchemaSnapshot(partId, -1L, cols));
+
+    MetaException ex = assertThrows(MetaException.class, () -> validate(snapshots));
+    assertTrue(ex.getMessage().contains("expected canonical CD"));
   }
 
   @Test
@@ -255,8 +272,8 @@ public class TestHMSColumnDescriptorReuse {
     long partId = lookupPartitionId("country=Germany");
 
     List<ColumnDeduplicator.PartitionSchemaSnapshot> snapshots = Collections.singletonList(
-        new ColumnDeduplicator.PartitionSchemaSnapshot(partId, Collections.singletonList(
-            new FieldSchema("unexpected", ColumnType.STRING_TYPE_NAME, ""))));
+        new ColumnDeduplicator.PartitionSchemaSnapshot(partId, lookupPartitionCdId(partId),
+            Collections.singletonList(new FieldSchema("unexpected", ColumnType.STRING_TYPE_NAME, ""))));
 
     MetaException ex = assertThrows(MetaException.class, () -> validate(snapshots));
     assertTrue(ex.getMessage().contains("column schema changed for partition " + partId));
@@ -291,6 +308,21 @@ public class TestHMSColumnDescriptorReuse {
       try (ResultSet rs = ps.executeQuery()) {
         if (!rs.next()) {
           throw new IllegalStateException("Partition not found: " + partName);
+        }
+        return rs.getLong(1);
+      }
+    }
+  }
+
+  private long lookupPartitionCdId(long partId) throws Exception {
+    try (Connection c = TestTxnDbUtil.getConnection(conf);
+        PreparedStatement ps = c.prepareStatement(
+            "SELECT s.\"CD_ID\" FROM \"PARTITIONS\" p JOIN \"SDS\" s ON p.\"SD_ID\" = s.\"SD_ID\" "
+                + "WHERE p.\"PART_ID\" = ?")) {
+      ps.setLong(1, partId);
+      try (ResultSet rs = ps.executeQuery()) {
+        if (!rs.next()) {
+          throw new IllegalStateException("Partition CD not found: " + partId);
         }
         return rs.getLong(1);
       }
