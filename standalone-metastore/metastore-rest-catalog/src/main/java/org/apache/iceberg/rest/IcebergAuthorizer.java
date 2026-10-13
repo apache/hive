@@ -428,15 +428,7 @@ class IcebergAuthorizer {
         new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
     var outputs = Collections.singletonList(
         new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
-    var builder = new HiveAuthzContext.Builder();
-    builder.setCommandString("drop table " + identifier.name());
-    try {
-      authorizer.checkPrivileges(HiveOperationType.DROPTABLE, inputs, outputs, builder.build());
-    } catch (HiveAccessControlException e) {
-      throw new ForbiddenException(e, e.getMessage());
-    } catch (HiveAuthzPluginException e) {
-      throw new IllegalStateException("Failed to check privileges drop-table-purge", e);
-    }
+    check(authorizer, HiveOperationType.DROPTABLE, inputs, outputs, "drop table " + identifier.name());
   }
 
   private void checkLocationAuthorized(String catalogName, String databaseName,
@@ -451,15 +443,7 @@ class IcebergAuthorizer {
 
     var inputs = Collections.singletonList(
         new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
-    var builder = new HiveAuthzContext.Builder();
-    builder.setCommandString(commandString);
-    try {
-      authorizer.checkPrivileges(HiveOperationType.CREATETABLE, inputs, Collections.emptyList(), builder.build());
-    } catch (HiveAccessControlException e) {
-      throw new ForbiddenException(e, e.getMessage());
-    } catch (HiveAuthzPluginException e) {
-      throw new IllegalStateException("Failed to check privileges for " + commandString, e);
-    }
+    check(authorizer, HiveOperationType.CREATETABLE, inputs, Collections.emptyList(), commandString);
   }
 
   private void checkContainedInNamespace(String databaseName, Map<String, String> namespaceMetadata,

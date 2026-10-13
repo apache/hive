@@ -529,7 +529,7 @@ class TestIcebergAuthorizer {
 
     var exception = Assertions.assertThrows(IllegalStateException.class, () ->
         icebergAuthorizer.validateDropTablePurge(CATALOG_NAME, identifier, LOCATION));
-    Assertions.assertEquals("Failed to check privileges drop-table-purge", exception.getMessage());
+    Assertions.assertEquals("Failed to check privileges for DROPTABLE", exception.getMessage());
     Assertions.assertSame(failure, exception.getCause());
   }
 
