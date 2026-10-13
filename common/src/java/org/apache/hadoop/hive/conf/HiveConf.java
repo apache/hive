@@ -1795,10 +1795,13 @@ public class HiveConf extends Configuration {
             + "The property is experimental, it can be changed or removed without any notice."),
     HIVE_CBO_SHOW_WARNINGS("hive.cbo.show.warnings", true,
          "Toggle display of CBO warnings like missing column stats"),
+    /**
+     * @deprecated Use {@link HiveConf.ConfVars#HIVE_STATS_MULTI_KEY_JOINS_INDEPENDENCE_FACTOR}
+     */
+    @Deprecated
     HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS("hive.cbo.stats.correlated.multi.key.joins", true,
-        "When CBO estimates output rows for a join involving multiple columns, the default behavior assumes" +
-            "the columns are independent. Setting this flag to true will cause the estimator to assume" +
-            "the columns are correlated."),
+        "Deprecated: use hive.stats.multi.key.joins.independence.factor. Setting this flag to false makes CBO\n" +
+            "estimate the output rows of a join on several keys with the independence factor 0.5."),
     HIVE_CARDINALITY_PRESERVING_JOIN_OPTIMIZATION_FACTOR("hive.cardinality.preserving.join.optimization.factor", 1.0f,
         "Original plan cost multiplier for rewriting when query has tables joined multiple time on primary/unique key and " +
             "projected the majority of columns from these table. This optimization trims fields at root of tree and " +
@@ -2871,10 +2874,20 @@ public class HiveConf extends Configuration {
         "uses column statistics to estimate the number of rows flowing out of it and hence the data size.\n" +
         "In the absence of column statistics, this factor determines the amount of rows that flows out\n" +
         "of JOIN operator."),
+    /**
+     * @deprecated Use {@link HiveConf.ConfVars#HIVE_STATS_MULTI_KEY_JOINS_INDEPENDENCE_FACTOR}
+     */
+    @Deprecated
     HIVE_STATS_CORRELATED_MULTI_KEY_JOINS("hive.stats.correlated.multi.key.joins", true,
-        "When estimating output rows for a join involving multiple columns, the default behavior assumes" +
-        "the columns are independent. Setting this flag to true will cause the estimator to assume" +
-        "the columns are correlated."),
+        "Deprecated: use hive.stats.multi.key.joins.independence.factor. Setting this flag to false makes the\n" +
+        "physical planner estimate the output rows of a join on several keys with the independence factor 0.5."),
+    HIVE_STATS_MULTI_KEY_JOINS_INDEPENDENCE_FACTOR("hive.stats.multi.key.joins .independence.factor", 0.25f,
+          new RangeValidator(0.0f, 1.0f),
+        """
+            Controls how CBO and the physical planner estimate the output rows of a join with multiple equi-join keys.
+            The per-key distinct value counts (NDVs) are sorted in descending order and combined into the NDV of the
+            composite key as ndv1 * ndv2^f * ndv3^(f^2) * ..., where f is this factor. 0 treats the keys as fully
+            correlated (only the largest NDV is used), 1 as fully independent (the product of all NDVs)."""),
     HIVE_STATS_RANGE_SELECTIVITY_UNIFORM_DISTRIBUTION("hive.stats.filter.range.uniform", true,
         "When estimating output rows from a condition, if a range predicate is applied over a column and the\n" +
         "minimum and maximum values for that column are available, assume uniform distribution of values\n" +

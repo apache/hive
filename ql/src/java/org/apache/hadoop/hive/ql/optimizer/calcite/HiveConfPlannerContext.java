@@ -20,20 +20,20 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 public class HiveConfPlannerContext{
 
-  private boolean isCorrelatedColumns;
+  private double multiKeyJoinIndependenceFactor;
   private boolean heuristicMaterializationStrategy;
   private boolean isExplainPlan;
 
 
-  public HiveConfPlannerContext(boolean isCorrelatedColumns, boolean heuristicMaterializationStrategy,
+  public HiveConfPlannerContext(double multiKeyJoinIndependenceFactor, boolean heuristicMaterializationStrategy,
                                 boolean isExplainPlan) {
-    this.isCorrelatedColumns = isCorrelatedColumns;
+    this.multiKeyJoinIndependenceFactor = multiKeyJoinIndependenceFactor;
     this.heuristicMaterializationStrategy = heuristicMaterializationStrategy;
     this.isExplainPlan = isExplainPlan;
   }
 
-  public boolean getIsCorrelatedColumns() {
-    return isCorrelatedColumns;
+  public double getMultiKeyJoinIndependenceFactor() {
+    return multiKeyJoinIndependenceFactor;
   }
 
   public boolean isHeuristicMaterializationStrategy() {

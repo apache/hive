@@ -400,11 +400,11 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_42]
-        Select Operator [SEL_41] (rows=3 width=64)
+        Select Operator [SEL_41] (rows=2 width=49)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_40]
-            Map Join Operator [MAPJOIN_39] (rows=3 width=64)
+            Map Join Operator [MAPJOIN_39] (rows=2 width=49)
               BucketMapJoin:true,Conds:SEL_38._col0, _col1=RS_36._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
             <-Map 3 [CUSTOM_EDGE] vectorized, llap
               MULTICAST [RS_36]
@@ -480,11 +480,11 @@ Stage-0
     Stage-1
       Reducer 2 vectorized, llap
       File Output Operator [FS_47]
-        Select Operator [SEL_46] (rows=6 width=66)
+        Select Operator [SEL_46] (rows=4 width=50)
           Output:["_col0","_col1","_col2"]
         <-Map 1 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_45]
-            Map Join Operator [MAPJOIN_44] (rows=6 width=66)
+            Map Join Operator [MAPJOIN_44] (rows=4 width=50)
               BucketMapJoin:true,Conds:SEL_43._col0, _col1=RS_41._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
             <-Map 3 [CUSTOM_EDGE] vectorized, llap
               MULTICAST [RS_41]

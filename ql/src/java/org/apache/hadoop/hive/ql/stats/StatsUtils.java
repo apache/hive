@@ -1753,18 +1753,44 @@ public class StatsUtils {
             engfd.getTypeInfo());
   }
 
+  /**
+   * Exponential back-off for NDVs: NDV1 * (NDV2 ^ (1/2)) * (NDV3 ^ (1/4)) * ..., largest first.
+   */
   public static Long addWithExpDecay (List<Long> distinctVals) {
-    // Exponential back-off for NDVs.
-    // 1) Descending order sort of NDVs
-    // 2) denominator = NDV1 * (NDV2 ^ (1/2)) * (NDV3 ^ (1/4))) * ....
-    distinctVals.sort(Collections.reverseOrder());
+    return combineDistinctValues(distinctVals, 0.5);
+  }
 
-    long denom = distinctVals.get(0);
+  /**
+   * The distinct value count of the combination of several columns, from their own counts:
+   * largest first, NDV1 * (NDV2 ^ f) * (NDV3 ^ (f^2)) * ...,
+   * where the independence factor f is
+   * <ul>
+   * <li> 0 for fully correlated columns (the largest count alone) and</li>
+   * <li> 1 for independent ones. Sorts {@code distinctVals}.</li>
+   * </ul>
+   */
+  public static long combineDistinctValues(List<Long> distinctVals, double independenceFactor) {
+    distinctVals.sort(Collections.reverseOrder());
+    return combineDistinctValuesInOrder(distinctVals, independenceFactor);
+  }
+
+  /**
+   * {@link #combineDistinctValues} with the columns in the given order instead of largest first.
+   */
+  public static long combineDistinctValuesInOrder(List<Long> distinctVals, double independenceFactor) {
+    long denom = distinctVals.getFirst();
+    double exponent = 1;
     for (int i = 1; i < distinctVals.size(); i++) {
-      denom = (long) (denom * Math.pow(distinctVals.get(i), 1.0 / (1 << i)));
+      exponent *= independenceFactor;
+      denom = (long) (denom * Math.pow(distinctVals.get(i), exponent));
     }
 
     return denom;
+  }
+
+  public static double getMultiKeyJoinIndependenceFactor(HiveConf conf, HiveConf.ConfVars correlatedKeys) {
+    return conf.getBoolVar(correlatedKeys)
+        ? conf.getFloatVar(HiveConf.ConfVars.HIVE_STATS_MULTI_KEY_JOINS_INDEPENDENCE_FACTOR) : 0.5;
   }
 
   private static long getNDVFor(ExprNodeGenericFuncDesc engfd, long numRows, Statistics parentStats) {
