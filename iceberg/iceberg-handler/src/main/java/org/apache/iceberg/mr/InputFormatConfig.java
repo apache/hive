@@ -92,6 +92,16 @@ public class InputFormatConfig {
     return VENDED_STORAGE_CREDENTIALS + "." + tableName;
   }
 
+  /**
+   * Set by HS2 per catalog when split generation should reload the table from the REST catalog and
+   * plan it server-side. Keyed per catalog because one job conf can hold tables from several catalogs.
+   */
+  public static final String SERVER_SIDE_SCAN_PLANNING_PREFIX = "iceberg.mr.server-side-scan-planning.";
+
+  public static String serverSideScanPlanningKey(String catalogName) {
+    return SERVER_SIDE_SCAN_PLANNING_PREFIX + catalogName;
+  }
+
   public static final String SORT_ORDER = "sort.order";
   public static final String SORT_COLUMNS = "sort.columns";
   public static final String ZORDER = "ZORDER";

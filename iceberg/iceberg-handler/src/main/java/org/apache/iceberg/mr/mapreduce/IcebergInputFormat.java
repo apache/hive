@@ -55,6 +55,7 @@ import org.apache.iceberg.TableScan;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.CloseableRestCatalog;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -70,31 +71,36 @@ import org.apache.iceberg.util.ThreadPools;
  */
 public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
-  private static TableScan createTableScan(Table table, Configuration conf) {
+  private static TableScan createTableScan(Table table, Configuration conf, Table serverSidePinTable) {
     TableScan scan = table.newScan();
 
-    long snapshotId = -1;
-    try {
-      snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
-    } catch (NumberFormatException e) {
-      String version = conf.get(InputFormatConfig.SNAPSHOT_ID);
-      SnapshotRef ref = table.refs().get(version);
-      if (ref == null) {
-        throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " + version);
+    if (HiveTableUtil.hasExplicitScanSnapshotBinding(conf)) {
+      long snapshotId = -1;
+      try {
+        snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
+      } catch (NumberFormatException e) {
+        String version = conf.get(InputFormatConfig.SNAPSHOT_ID);
+        Table refsTable = serverSidePinTable != null ? serverSidePinTable : table;
+        SnapshotRef ref = refsTable.refs().get(version);
+        if (ref == null) {
+          throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " + version);
+        }
+        snapshotId = ref.snapshotId();
       }
-      snapshotId = ref.snapshotId();
-    }
-    String refName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
-    if (StringUtils.isNotEmpty(refName)) {
-      scan = scan.useRef(HiveUtils.getTableSnapshotRef(refName));
-    }
-    if (snapshotId != -1) {
-      scan = scan.useSnapshot(snapshotId);
-    }
+      String refName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
+      if (StringUtils.isNotEmpty(refName)) {
+        scan = scan.useRef(HiveUtils.getTableSnapshotRef(refName));
+      }
+      if (snapshotId != -1) {
+        scan = scan.useSnapshot(snapshotId);
+      }
 
-    long asOfTime = conf.getLong(InputFormatConfig.AS_OF_TIMESTAMP, -1);
-    if (asOfTime != -1) {
-      scan = scan.asOfTime(asOfTime);
+      long asOfTime = conf.getLong(InputFormatConfig.AS_OF_TIMESTAMP, -1);
+      if (asOfTime != -1) {
+        scan = scan.asOfTime(asOfTime);
+      }
+    } else if (serverSidePinTable != null) {
+      scan = HiveTableUtil.pinServerSideScanToSerializedTable(conf, serverSidePinTable, scan);
     }
 
     return scan;
@@ -156,28 +162,49 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   public List<InputSplit> getSplits(JobContext context) {
     Configuration conf = context.getConfiguration();
     String tableIdentifier = conf.get(InputFormatConfig.TABLE_IDENTIFIER);
-    Table table = HiveTableUtil.resolveTableForScanPlanning(conf, tableIdentifier);
-    if (StringUtils.isBlank(tableIdentifier)) {
-      tableIdentifier = table.name();
-      conf.set(InputFormatConfig.TABLE_IDENTIFIER, tableIdentifier);
-    }
-    String serializedTableKey = InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableIdentifier;
-    if (conf.get(serializedTableKey) == null) {
-      // planning-local conf only (never shipped): for credential-vending catalogs the loaded
-      // table's FileIO carries secrets, which must not reach a serialized job configuration
-      conf.set(serializedTableKey, SerializationUtil.serializeToBase64(table));
-    }
+    Table serializedTable = HiveTableUtil.deserializeTable(conf, tableIdentifier);
+
     final ExecutorService workerPool =
         ThreadPools.newFixedThreadPool("iceberg-plan-worker-pool",
             conf.getInt(SystemConfigs.WORKER_THREAD_POOL_SIZE.propertyKey(), ThreadPools.WORKER_THREAD_POOL_SIZE));
     try {
-      return planInputSplits(table, conf, workerPool);
+      if (HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serializedTable)) {
+        String catalogName = HiveTableUtil.resolveCatalogName(conf);
+        try (CloseableRestCatalog catalog = CloseableRestCatalog.load(conf, catalogName)) {
+          Table planningTable = catalog.loadTable(tableIdentifier);
+          HiveTableUtil.configureLoadedTable(conf, planningTable, catalogName);
+          return planInputSplits(planningTable, conf, workerPool, tableIdentifier, serializedTable);
+        }
+      }
+
+      Table table;
+      if (serializedTable != null) {
+        table = serializedTable;
+      } else {
+        table = HiveTableUtil.resolveTableForScanPlanning(conf, tableIdentifier);
+      }
+      return planInputSplits(table, conf, workerPool, tableIdentifier, null);
     } finally {
       workerPool.shutdown();
     }
   }
 
-  private List<InputSplit> planInputSplits(Table table, Configuration conf, ExecutorService workerPool) {
+  private List<InputSplit> planInputSplits(
+      Table table,
+      Configuration conf,
+      ExecutorService workerPool,
+      String tableIdentifier,
+      Table serverSidePinTable) {
+    String resolvedTableIdentifier = tableIdentifier;
+    if (StringUtils.isBlank(resolvedTableIdentifier)) {
+      resolvedTableIdentifier = table.name();
+      conf.set(InputFormatConfig.TABLE_IDENTIFIER, resolvedTableIdentifier);
+    }
+    String serializedTableKey = InputFormatConfig.SERIALIZED_TABLE_PREFIX + resolvedTableIdentifier;
+    if (conf.get(serializedTableKey) == null) {
+      Table toSerialize = serverSidePinTable != null ? serverSidePinTable : table;
+      conf.set(serializedTableKey, SerializationUtil.serializeToBase64(toSerialize));
+    }
     List<InputSplit> splits = Lists.newArrayList();
     boolean applyResidual = !conf.getBoolean(InputFormatConfig.SKIP_RESIDUAL_FILTERING, false);
     InputFormatConfig.InMemoryDataModel model = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
@@ -188,7 +215,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     if (fromVersion != -1) {
       scan = applyConfig(conf, createIncrementalAppendScan(table, conf));
     } else {
-      scan = applyConfig(conf, createTableScan(table, conf));
+      scan = applyConfig(conf, createTableScan(table, conf, serverSidePinTable));
     }
     scan = scan.planWith(workerPool);
 

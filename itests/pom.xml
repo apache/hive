@@ -31,6 +31,8 @@
     <hive.path.to.root>..</hive.path.to.root>
     <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
     <assertj.version>3.27.3</assertj.version>
+    <!-- Jetty 12 / EE10 REST catalog ITs (hive-it-iceberg-rest-server) -->
+    <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
   </properties>
   <modules>
     <module>custom-serde</module>
