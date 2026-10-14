@@ -135,7 +135,8 @@ public class TestLlapCacheAwareFsInterop {
     TreeMap<Long, Long> chunks = new TreeMap<>();
     chunks.put(0L, CHUNK_END);
     chunks.put(CHUNK_END, FILE_LENGTH);
-    Path path = LlapCacheAwareFs.registerFile(dataCache, file, FILE_KEY, chunks, conf, null);
+    Path path = LlapCacheAwareFs.registerFile(dataCache, file, FILE_KEY, chunks, conf, null,
+        new ParquetCacheLayout(dataCache.getAllocator(), conf));
     try (FSDataInputStream in = path.getFileSystem(conf).open(path)) {
       byte[] read = new byte[(int) (to - from)];
       in.seek(from);

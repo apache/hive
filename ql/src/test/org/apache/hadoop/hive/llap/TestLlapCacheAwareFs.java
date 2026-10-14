@@ -52,7 +52,7 @@ public class TestLlapCacheAwareFs {
     DataCache cache = mock(DataCache.class);
     when(cache.getAllocator()).thenReturn(allocator);
     return new LlapCacheAwareFs.CacheAwareInputStream(cache, new Configuration(), chunkIndex,
-        new Path("/tmp/does-not-matter"), 1L, -1, null);
+        new Path("/tmp/does-not-matter"), 1L, -1, null, new ParquetCacheLayout(allocator, new Configuration()));
   }
 
   @Test

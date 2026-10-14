@@ -630,6 +630,27 @@ public class TestParquetEncodedDataReader {
   }
 
   /**
+   * The stock reader caches a gap of several pieces as those pieces, on the layout of the daemon's allocator and
+   * configuration: cut at the maximum allocation, a chunk's tail of pieces below it would be one buffer.
+   */
+  @Test
+  public void testStockReadRecachesAnEvictedTailAsItsPieces() throws Exception {
+    JobConf job = jobConfAtDefaultFloor();
+    read(job, wholeFile(), smallFloor);
+    Object fileKey = LlapHiveUtils.createFileIdUsingFS(file.getFileSystem(daemonConf), file, daemonConf);
+    List<long[]> evicted = evictPieces(fileKey, (offset, size, end) -> {
+      List<long[]> tail = new ArrayList<>();
+      for (int piece : SMALL_FLOOR_LAYOUT.bufferSizes(end - offset)) {
+        tail.add(new long[] {offset, offset + piece});
+        offset += piece;
+      }
+      return size < MAX_ALLOC && tail.size() > 1 ? tail : null;
+    });
+
+    assertStockRowsAndCachedPieces(job, fileKey, evicted);
+  }
+
+  /**
    * A job at the default hive.llap.io.encode.alloc.size while the daemon's (smallFloor) is 1Kb: the job conf HS2
    * ships does not have to carry the daemon's setting.
    */

@@ -68,9 +68,10 @@ import org.apache.orc.impl.RecordReaderUtils;
  *
  * <h3>How it works</h3>
  * The reader that wants caching calls {@link #registerFile(DataCache, Path, Object, TreeMap,
- * Configuration, CacheTag)} with the real path, a stable {@code fileKey}, and a chunk index
- * (a {@code TreeMap} of {@code startOffset -> endOffset} boundaries covering the ranges the
- * reader intends to read - typically the column-chunk ranges of the projected columns). The
+ * Configuration, CacheTag, ParquetCacheLayout)} with the real path, a stable {@code fileKey}, a chunk
+ * index (a {@code TreeMap} of {@code startOffset -> endOffset} boundaries covering the ranges the
+ * reader intends to read - typically the column-chunk ranges of the projected columns), and the
+ * daemon's cache layout, the one the native reader caches with. The
  * shim assigns a unique {@code splitId}, stashes the per-split state in a static map, registers
  * itself as the handler for the {@code llapcache} scheme via {@code fs.llapcache.impl}, and
  * returns a virtual {@code llapcache://llapcache/&lt;splitId&gt;} path. The caller hands this
@@ -110,10 +111,11 @@ public class LlapCacheAwareFs extends FileSystem {
       new ConcurrentHashMap<>();
 
   public static Path registerFile(DataCache cache, Path path, Object fileKey,
-      TreeMap<Long, Long> index, Configuration conf, CacheTag tag) throws IOException {
+      TreeMap<Long, Long> index, Configuration conf, CacheTag tag, ParquetCacheLayout layout)
+      throws IOException {
     long splitId = currentSplitId.incrementAndGet();
     CacheAwareInputStream stream = new CacheAwareInputStream(
-        cache, conf, index, path, fileKey, -1, tag);
+        cache, conf, index, path, fileKey, -1, tag, layout);
     if (files.putIfAbsent(splitId, stream) != null) {
       throw new IOException("Record already exists for " + splitId);
     }
@@ -228,7 +230,8 @@ public class LlapCacheAwareFs extends FileSystem {
     private long position = 0;
 
     public CacheAwareInputStream(DataCache cache, Configuration conf,
-        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize, CacheTag tag) {
+        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize, CacheTag tag,
+        ParquetCacheLayout layout) {
       this.cache = cache;
       this.fileKey = fileKey;
       this.chunkIndex = chunkIndex;
@@ -236,14 +239,14 @@ public class LlapCacheAwareFs extends FileSystem {
       this.conf = conf;
       this.bufferSize = bufferSize;
       this.tag = tag;
-      // Built once per stream rather than per read: the layout is what decides the cache keys, so
-      // it has to be the same for every chunk this stream caches, and reading the configuration
-      // again on each read would be pure overhead.
-      this.layout = new ParquetCacheLayout(cache.getAllocator(), conf);
+      // The daemon's layout, not one built from conf: conf is the job's, which need not carry the
+      // daemon's hive.llap.io.encode.alloc.size, and both Parquet readers must cut a chunk into the
+      // same cache pieces.
+      this.layout = layout;
     }
 
     public LlapCacheAwareFs.CacheAwareInputStream cloneWithBufferSize(int bufferSize) {
-      return new CacheAwareInputStream(cache, conf, chunkIndex, path, fileKey, bufferSize, tag);
+      return new CacheAwareInputStream(cache, conf, chunkIndex, path, fileKey, bufferSize, tag, layout);
     }
 
     @Override

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapCacheAwareFs;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.llap.ParquetCacheLayout;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
@@ -295,7 +296,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     // Register the cache-aware path so that Parquet reader would go thru it.
     configuration.set("fs." + LlapCacheAwareFs.SCHEME + ".impl",
         LlapCacheAwareFs.class.getCanonicalName());
-    path = LlapCacheAwareFs.registerFile(cache, path, fileKey, chunkIndex, configuration, tag);
+    path = LlapCacheAwareFs.registerFile(cache, path, fileKey, chunkIndex, configuration, tag,
+        new ParquetCacheLayout(cache.getAllocator(), cacheConf));
     this.cacheFsPath = path;
     return path;
   }
