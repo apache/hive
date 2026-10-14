@@ -37,7 +37,7 @@ PREHOOK: query: create table store_sales (
 )
 partitioned by spec (ss_customer_sk, bucket(3, ss_item_sk))
 stored by ICEBERG stored as PARQUET
- TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='true')
+ TBLPROPERTIES('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@store_sales
@@ -68,7 +68,7 @@ POSTHOOK: query: create table store_sales (
 )
 partitioned by spec (ss_customer_sk, bucket(3, ss_item_sk))
 stored by ICEBERG stored as PARQUET
- TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='true')
+ TBLPROPERTIES('format-version'='2')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_sales

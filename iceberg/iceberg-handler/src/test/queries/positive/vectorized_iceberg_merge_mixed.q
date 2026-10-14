@@ -41,7 +41,7 @@ create table store_sales (
 )
 partitioned by spec (ss_customer_sk, bucket(3, ss_item_sk))
 stored by ICEBERG stored as PARQUET
- TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='true');
+ TBLPROPERTIES('format-version'='2');
  
 insert into store_sales (ss_customer_sk, ss_item_sk, ss_sold_date_sk) values (1,1501,"2451181"), (2,1502,"2451181"), (3,1503,"2451181"), (4,1504,"2451181"), (5,1505,"2451181"); 
 delete from store_sales where ss_customer_sk > 2;

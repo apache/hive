@@ -79,8 +79,6 @@ public class WriterBuilder {
   private static AtomicInteger operationNum = new AtomicInteger(0);
 
   // To specify whether to write the actual row data while writing the delete files.
-  public static final String ICEBERG_DELETE_SKIPROWDATA = "iceberg.delete.skiprowdata";
-  public static final boolean ICEBERG_DELETE_SKIPROWDATA_DEFAULT = true;
   private boolean shouldAddRowLineageColumns = false;
 
   private WriterBuilder(Table table, UnaryOperator<String> ops) {
@@ -224,7 +222,6 @@ public class WriterBuilder {
     private final boolean useFanoutWriter;
     private final boolean inputOrdered;
     private final boolean isMergeTask;
-    private final boolean skipRowData;
     private final boolean useDVs;
     private final Set<String> missingColumns;
 
@@ -249,9 +246,6 @@ public class WriterBuilder {
       this.deleteGranularity = DeleteGranularity.PARTITION;
       this.useDVs = IcebergTableUtil.formatVersion(properties) > 2;
 
-      this.skipRowData = useDVs ||
-          PropertyUtil.propertyAsBoolean(properties,
-            ICEBERG_DELETE_SKIPROWDATA, ICEBERG_DELETE_SKIPROWDATA_DEFAULT);
 
       this.missingColumns = Optional.ofNullable(ops.apply(SessionStateUtil.MISSING_COLUMNS))
           .map(columns -> Arrays.stream(columns.split(",")).collect(Collectors.toCollection(HashSet::new)))
@@ -288,10 +282,6 @@ public class WriterBuilder {
 
     boolean isMergeTask() {
       return isMergeTask;
-    }
-
-    boolean skipRowData() {
-      return skipRowData;
     }
 
     public boolean useDVs() {
