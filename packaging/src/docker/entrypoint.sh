@@ -142,7 +142,9 @@ function run_tezam {
   : "${LOG_DIRS:="/opt/tez/logs"}"
   : "${APP_SUBMIT_TIME_ENV:=$(($(date +%s) * 1000))}"
   : "${TEZ_AM_EXTERNAL_ID:="tez-session-${HOSTNAME:-tezam}"}"
-  export USER LOCAL_DIRS LOG_DIRS APP_SUBMIT_TIME_ENV TEZ_AM_EXTERNAL_ID
+  # HiveServer2 and the metastore get it from hadoop-config.sh, LLAP from runLlapDaemon.sh; the AM starts with plain java
+  : "${MALLOC_ARENA_MAX:=4}"
+  export USER LOCAL_DIRS LOG_DIRS APP_SUBMIT_TIME_ENV TEZ_AM_EXTERNAL_ID MALLOC_ARENA_MAX
 
   export HADOOP_HOME="${HADOOP_HOME:-/opt/hadoop}"
   export TEZ_HOME="${TEZ_HOME:-/opt/tez}"
