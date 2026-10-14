@@ -33,11 +33,15 @@ stored by iceberg stored as orc
 tblproperties ('format-version'='2');
 
 insert into ice_orc VALUES ('fn1','ln1');
-insert into ice_orc VALUES ('fn5','ln5'), ('fn7','ln7'), ('fn4','ln4'), ('fn6','ln6');
-insert into ice_orc VALUES ('fn3','ln3'), ('fn2','ln2');
+insert into ice_orc VALUES ('fn5','ln5');
+insert into ice_orc VALUES ('fn7','ln7');
+insert into ice_orc VALUES ('fn4','ln4');
+insert into ice_orc VALUES ('fn6','ln6');
+insert into ice_orc VALUES ('fn3','ln3');
+insert into ice_orc VALUES ('fn2','ln2');
 
--- File size threshold = fragment size = target_size/fragment_ratio = 2920/8 = 365.
-alter table ice_orc set tblproperties ('compactor.threshold.target.size'='2920', 'compactor.threshold.min.input.files'='2');
+-- File size threshold = fragment size = target_size/fragment_ratio = 4000/8 = 365.
+alter table ice_orc set tblproperties ('compactor.threshold.target.size'='4000', 'compactor.threshold.min.input.files'='2');
 explain alter table ice_orc COMPACT 'minor' and wait pool 'iceberg';
 describe formatted ice_orc;
 

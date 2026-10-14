@@ -10,33 +10,59 @@ TBLPROPERTIES ('external.table.purge'='true', 'format-version'='2', 'compactor.t
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x
-PREHOOK: query: insert into x values 
-('amy', 35, 123412344),
-('adxfvy', 36, 123412534),
-('amsdfyy', 37, 123417234),
-('asafmy', 38, 123412534)
+PREHOOK: query: insert into x values ('amy', 35, 123412344)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@x
-POSTHOOK: query: insert into x values 
-('amy', 35, 123412344),
-('adxfvy', 36, 123412534),
-('amsdfyy', 37, 123417234),
-('asafmy', 38, 123412534)
+POSTHOOK: query: insert into x values ('amy', 35, 123412344)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@x
-PREHOOK: query: insert into x values 
-('amerqwy', 39, 123441234),
-('amyxzcv', 40, 123341234),
-('erweramy', 45, 122341234)
+PREHOOK: query: insert into x values ('adxfvy', 36, 123412534)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@x
-POSTHOOK: query: insert into x values 
-('amerqwy', 39, 123441234),
-('amyxzcv', 40, 123341234),
-('erweramy', 45, 122341234)
+POSTHOOK: query: insert into x values ('adxfvy', 36, 123412534)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x
+PREHOOK: query: insert into x values ('amsdfyy', 37, 123417234)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x
+POSTHOOK: query: insert into x values ('amsdfyy', 37, 123417234)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x
+PREHOOK: query: insert into x values ('asafmy', 38, 123412534)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x
+POSTHOOK: query: insert into x values ('asafmy', 38, 123412534)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x
+PREHOOK: query: insert into x values ('amerqwy', 39, 123441234)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x
+POSTHOOK: query: insert into x values ('amerqwy', 39, 123441234)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x
+PREHOOK: query: insert into x values ('amyxzcv', 40, 123341234)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x
+POSTHOOK: query: insert into x values ('amyxzcv', 40, 123341234)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x
+PREHOOK: query: insert into x values ('erweramy', 45, 122341234)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x
+POSTHOOK: query: insert into x values ('erweramy', 45, 122341234)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@x
@@ -56,7 +82,7 @@ POSTHOOK: query: select count(*) from default.x.data_files
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x
 #### A masked pattern was here ####
-2
+7
 PREHOOK: query: alter table x compact 'major' and wait
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@x
@@ -95,7 +121,7 @@ Table Parameters:
 	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"age\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"num_clicks\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"manifests-created\":\"3\",\"manifests-kept\":\"0\",\"manifests-replaced\":\"2\",\"added-data-files\":\"1\",\"deleted-data-files\":\"2\",\"added-records\":\"7\",\"deleted-records\":\"7\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"7\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"manifests-created\":\"8\",\"manifests-kept\":\"0\",\"manifests-replaced\":\"7\",\"added-data-files\":\"1\",\"deleted-data-files\":\"7\",\"added-records\":\"7\",\"deleted-records\":\"7\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"7\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	external.table.purge	true                
 	format-version      	2                   
@@ -106,7 +132,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	3                   
+	snapshot-count      	8                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
