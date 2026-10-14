@@ -63,10 +63,12 @@ import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapCacheAwareFs;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.ParquetCacheLayout;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LlapAllocatorBuffer;
+import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -82,12 +84,14 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ParquetColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -169,6 +173,7 @@ public class TestParquetEncodedDataReader {
    * default the layout would cap the floor at 4KB, and each chunk would be 4KB buffers plus one tail.
    */
   private static final int FLOOR = 1024;
+  private static final ParquetCacheLayout SMALL_FLOOR_LAYOUT = new ParquetCacheLayout(MAX_ALLOC, 1024);
   /** Padding around a range's bytes when a vectored read returns them inside a bigger buffer. */
   private static final int RANGE_PAD = 29;
   private static final byte RANGE_POISON = (byte) 0xAB;
@@ -189,18 +194,23 @@ public class TestParquetEncodedDataReader {
       LlapDaemonIOMetrics.create("TestParquetEncodedDataReader-io", "1", null);
 
   private static HiveConf daemonConf;
+  /** A daemon at a 1Kb floor: its layout, SMALL_FLOOR_LAYOUT, does not cut at the maximum allocation. */
+  private static Configuration smallFloor;
   private static java.nio.file.Path tmpDir;
   private static Path file;
   private static long fileLength;
   private static ParquetMetadata footer;
 
+  private LowLevelLrfuCachePolicy policy;
+  private BuddyAllocator allocator;
   private LowLevelCacheImpl cache;
   private Ledger ledger;
-
   /** Hands every job its own plan path, which is the key its MapWork is cached under. */
   private static final AtomicInteger PLAN_ID = new AtomicInteger();
 
   private boolean failFirstRange;
+  /** Whether the plan reads decimals up to precision 18 as DECIMAL_64; the stock reader's batch follows the plan. */
+  private static boolean planDecimal64;
   private boolean unslicedBuffers;
   /** Fulfills every vectored range from a buffer positioned {@link #RANGE_PAD} bytes in. */
   private boolean positionedRangeBuffers;
@@ -232,6 +242,8 @@ public class TestParquetEncodedDataReader {
     HiveConf.setBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE, false);
     HiveConf.setIntVar(daemonConf, ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE, 1);
     HiveConf.setVar(daemonConf, ConfVars.LLAP_IO_ENCODE_ALLOC_SIZE, FLOOR + "b");
+    smallFloor = new Configuration(daemonConf);
+    HiveConf.setVar(smallFloor, ConfVars.LLAP_IO_ENCODE_ALLOC_SIZE, "1Kb");
 
     tmpDir = Files.createTempDirectory("llap-parquet-native");
     file = new Path(tmpDir.toString(), "data.parquet");
@@ -257,11 +269,12 @@ public class TestParquetEncodedDataReader {
 
   @Before
   public void setUp() {
-    LowLevelLrfuCachePolicy policy = new LowLevelLrfuCachePolicy(MAX_ALLOC, 64L << 20, daemonConf);
-    BuddyAllocator allocator = TestBuddyAllocatorForceEvict.create(MAX_ALLOC, 2, 8 << 20, true, false);
+    policy = new LowLevelLrfuCachePolicy(MAX_ALLOC, 64L << 20, daemonConf);
+    allocator = TestBuddyAllocatorForceEvict.create(MAX_ALLOC, 2, 8 << 20, true, false);
     cache = new LowLevelCacheImpl(CACHE_METRICS, policy, allocator, true);
     ledger = new Ledger(cache);
     failFirstRange = false;
+    planDecimal64 = true;
     unslicedBuffers = false;
     positionedRangeBuffers = false;
     inlineRanges = false;
@@ -272,6 +285,20 @@ public class TestParquetEncodedDataReader {
     skipNonNativeParity = false;
     decoded = 0;
     decodedAtRequest.clear();
+  }
+
+  /**
+   * Decimals come in the vectors the plan reads them in, not as the job's input format support says: a table
+   * with a partition in a format without DECIMAL_64 reads decimals as plain decimals even when the job's
+   * vectorized input formats support DECIMAL_64.
+   */
+  @Test
+  public void testDecimalsFollowThePlansPhysicalVariation() throws Exception {
+    planDecimal64 = false;
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
+
+    assertEquals(ROWS, run.rows.size());
+    assertTrue(String.valueOf(run.firstBatchCols[2]), run.firstBatchCols[2] instanceof DecimalColumnVector);
   }
 
   /** Whole file, every column: all rows arrive, in DEFAULT_SIZE batches, with decimals as Decimal64. */
@@ -581,6 +608,88 @@ public class TestParquetEncodedDataReader {
     assertNotNull("the failed range must surface", run.error);
     assertTrue(String.valueOf(run.error), String.valueOf(run.error).contains("boom"));
     assertEquals(0, run.rows.size());
+    ledger.assertNothingLeaked();
+  }
+
+  /**
+   * The stock reader, as after a fallback, reads a file the native reader cached and one of whose pieces was
+   * since evicted, a piece that ends where cutting at the maximum allocation has no boundary: it reads the gap
+   * and caches it as that piece.
+   */
+  @Test
+  public void testStockReadOfANativelyCachedFileWithAnEvictedPiece() throws Exception {
+    JobConf job = jobConfAtDefaultFloor();
+    read(job, wholeFile(), smallFloor);
+    Object fileKey = LlapHiveUtils.createFileIdUsingFS(file.getFileSystem(daemonConf), file, daemonConf);
+    List<long[]> evicted = evictPieces(fileKey, (offset, size, end) -> {
+      long pieceEnd = offset + size;
+      return pieceEnd != end && pieceEnd % MAX_ALLOC != 0 ? List.of(new long[] {offset, pieceEnd}) : null;
+    });
+
+    assertStockRowsAndCachedPieces(job, fileKey, evicted);
+  }
+
+  /**
+   * A job at the default hive.llap.io.encode.alloc.size while the daemon's (smallFloor) is 1Kb: the job conf HS2
+   * ships does not have to carry the daemon's setting.
+   */
+  private static JobConf jobConfAtDefaultFloor() throws Exception {
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5);
+    job.set(ConfVars.LLAP_IO_ENCODE_ALLOC_SIZE.varname, ConfVars.LLAP_IO_ENCODE_ALLOC_SIZE.getDefaultValue());
+    return job;
+  }
+
+  /** A choice of cached pieces to evict, given a piece of a column chunk: null to look further. */
+  private interface PieceChoice {
+    List<long[]> choose(long offset, int size, long chunkEnd);
+  }
+
+  /** Evicts the first pieces of the native layout the choice picks; offsets here are relative to a chunk. */
+  private List<long[]> evictPieces(Object fileKey, PieceChoice choice) {
+    for (BlockMetaData block : footer.getBlocks()) {
+      for (ColumnChunkMetaData chunk : block.getColumns()) {
+        long start = chunk.getStartingPos(), offset = 0, end = chunk.getTotalSize();
+        for (int size : SMALL_FLOOR_LAYOUT.bufferSizes(end)) {
+          List<long[]> chosen = choice.choose(offset, size, end);
+          if (chosen != null) {
+            List<long[]> evicted = new ArrayList<>();
+            for (long[] piece : chosen) {
+              evicted.add(new long[] {start + piece[0], start + piece[1]});
+              DiskRangeList hit = cache.getFileData(fileKey, new DiskRangeList(start + piece[0], start + piece[0] + 1),
+                  0, CacheChunk::new, null, new BooleanRef());
+              LlapDataBuffer buffer = (LlapDataBuffer) ((CacheChunk) hit).getBuffer();
+              assertEquals(start + piece[0], hit.getOffset());
+              cache.decRefBuffer(buffer);
+              assertEquals(LlapCacheableBuffer.INVALIDATE_OK, buffer.invalidate());
+              cache.notifyEvicted(buffer);
+            }
+            return evicted;
+          }
+          offset += size;
+        }
+      }
+    }
+    throw new AssertionError("no column chunk has the pieces to evict");
+  }
+
+  /** The stock reader returns every row, and caches each evicted piece again as it was. */
+  private void assertStockRowsAndCachedPieces(JobConf job, Object fileKey, List<long[]> evicted) throws Exception {
+    List<Object[]> rows = readNonNative(job, wholeFile(), smallFloor);
+
+    assertEquals(ROWS, rows.size());
+    for (int i = 0; i < ROWS; ++i) {
+      assertArrayEquals("row " + i, project(expectedRow(i), 0, 1, 2, 3, 4, 5), rows.get(i));
+    }
+    long from = evicted.getFirst()[0], to = evicted.getLast()[1];
+    List<Long> expected = new ArrayList<>(), cached = new ArrayList<>();
+    evicted.forEach(piece -> Collections.addAll(expected, piece[0], piece[1]));
+    for (DiskRangeList hit = cache.getFileData(fileKey, new DiskRangeList(from, to), 0, CacheChunk::new, null,
+        new BooleanRef()); hit != null; hit = hit.next) {
+      assertTrue("re-cached: " + hit, hit.hasData());
+      Collections.addAll(cached, hit.getOffset(), hit.getEnd());
+      cache.decRefBuffer(((CacheChunk) hit).getBuffer());
+    }
+    assertEquals(expected, cached);
     ledger.assertNothingLeaked();
   }
 
@@ -1300,6 +1409,58 @@ public class TestParquetEncodedDataReader {
     }
   }
 
+  /** Reads as the stock reader does in a daemon, through its LLAP caches with the daemon's configuration. */
+  private List<Object[]> readNonNative(JobConf job, FileSplit split, Configuration cacheConf) throws Exception {
+    return readNonNative(job, split, new MetadataCache(allocator, null, policy, false, CACHE_METRICS),
+        new DataCache() {
+          @Override
+          public DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
+              DiskRangeListFactory factory, BooleanRef gotAllData) {
+            return cache.getFileData(fileKey, range, baseOffset, factory, null, gotAllData);
+          }
+
+          @Override
+          public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] data, long baseOffset) {
+            return putFileData(fileKey, ranges, data, baseOffset, null);
+          }
+
+          @Override
+          public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] data, long baseOffset,
+              CacheTag tag) {
+            return cache.putFileData(fileKey, ranges, data, baseOffset, Priority.NORMAL, null, tag);
+          }
+
+          @Override
+          public void releaseBuffer(MemoryBuffer buffer) {
+            cache.decRefBuffer(buffer);
+          }
+
+          @Override
+          public void reuseBuffer(MemoryBuffer buffer) {
+            assertTrue(cache.incRefBuffer(buffer));
+          }
+
+          @Override
+          public Allocator getAllocator() {
+            return allocator;
+          }
+
+          @Override
+          public Allocator.BufferObjectFactory getDataBufferFactory() {
+            return LlapDataBuffer::new;
+          }
+        }, cacheConf);
+  }
+
+  private static List<Object[]> readNonNative(JobConf job, FileSplit split, FileMetadataCache metadataCache,
+      DataCache dataCache, Configuration cacheConf) throws Exception {
+    JobConf mrJob = new JobConf(job);
+    try (VectorizedParquetRecordReader mrReader =
+        new VectorizedParquetRecordReader(split, mrJob, metadataCache, dataCache, cacheConf)) {
+      return drain(mrReader, ColumnProjectionUtils.getReadColumnIDs(mrJob));
+    }
+  }
+
   /**
    * Reads the split with the stock reader and this test's cache behind it, which is the fallback
    * path a split the native reader declines takes: {@link LlapCacheAwareFs} stands between parquet
@@ -1431,21 +1592,28 @@ public class TestParquetEncodedDataReader {
     List<String> names = DataWritableReadSupport.getColumnNames(job.get(IOConstants.COLUMNS));
     StructTypeInfo rowType = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(names, types);
     StructObjectInspector rowInspector = new ArrayWritableObjectInspector(rowType);
-    DataTypePhysicalVariation[] variations = new DataTypePhysicalVariation[types.size()];
-    for (int i = 0; i < types.size(); ++i) {
-      TypeInfo t = types.get(i);
-      variations[i] = (t instanceof DecimalTypeInfo dti
-              && dti.precision() <= TypeDescription.MAX_DECIMAL64_PRECISION)
-          ? DataTypePhysicalVariation.DECIMAL_64
-          : DataTypePhysicalVariation.NONE;
-    }
     VectorizedRowBatchCtx rbCtx = new VectorizedRowBatchCtx();
     rbCtx.init(rowInspector, new String[0]);
-    rbCtx.setRowDataTypePhysicalVariations(variations);
+    rbCtx.setRowDataTypePhysicalVariations(planVariations(types));
     MapWork mapWork = new MapWork();
     mapWork.setVectorMode(true);
     mapWork.setVectorizedRowBatchCtx(rbCtx);
     return mapWork;
+  }
+
+  /**
+   * The physical variations the Vectorizer gives the table's columns: DECIMAL_64 for decimals up to precision 18,
+   * unless {@link #planDecimal64} is off, as for a table with a partition whose format does not support it.
+   */
+  private static DataTypePhysicalVariation[] planVariations(List<TypeInfo> types) {
+    DataTypePhysicalVariation[] variations = new DataTypePhysicalVariation[types.size()];
+    for (int i = 0; i < types.size(); ++i) {
+      variations[i] = planDecimal64 && types.get(i) instanceof DecimalTypeInfo dti
+              && dti.precision() <= TypeDescription.MAX_DECIMAL64_PRECISION
+          ? DataTypePhysicalVariation.DECIMAL_64
+          : DataTypePhysicalVariation.NONE;
+    }
+    return variations;
   }
 
   /**
@@ -1794,6 +1962,10 @@ public class TestParquetEncodedDataReader {
       }
       if (cv instanceof BytesColumnVector b) {
         return b.toString(ix);
+      }
+      if (cv instanceof DecimalColumnVector d) {
+        // The unscaled value a Decimal64ColumnVector holds, so the two variations compare alike.
+        return d.vector[ix].serialize64(d.scale);
       }
       throw new AssertionError("Unexpected vector " + cv.getClass());
     }
