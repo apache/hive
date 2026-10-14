@@ -39,8 +39,7 @@ import java.time.Duration;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.hive.metastore.auth.HttpAuthenticationException;
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * RFC 7662 compliant OAuth2 token introspection based authenticator. This is must when access tokens are opaque, or
@@ -66,14 +65,14 @@ public class TokenIntrospectionAuthenticator implements OAuth2Authenticator {
 
     @Override
     public long expireAfterUpdate(@NonNull String key, @NonNull TokenIntrospectionSuccessResponse value,
-        long currentTime, @NonNegative long currentDuration) {
+        long currentTime, long currentDuration) {
       final var expiresIn = Duration.between(value.getExpirationTime().toInstant(), clock.instant());
       return Math.min(expiresIn.toNanos(), maxExpiration.toNanos());
     }
 
     @Override
     public long expireAfterRead(@NonNull String key, @NonNull TokenIntrospectionSuccessResponse value, long currentTime,
-        @NonNegative long currentDuration) {
+        long currentDuration) {
       return currentDuration;
     }
   }
