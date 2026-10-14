@@ -101,8 +101,7 @@ public class HMSCatalogFactory {
     hiveCatalog.setConf(configuration);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     hiveCatalog.initialize(catalogName, properties);
-    long expiry = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
-    return expiry > 0 ? new HMSCachingCatalog(hiveCatalog, expiry) : hiveCatalog;
+    return hiveCatalog;
   }
 
   /**

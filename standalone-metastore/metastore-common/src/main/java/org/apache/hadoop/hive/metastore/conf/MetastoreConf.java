@@ -1974,10 +1974,6 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.servlet.path", "iceberg",
         "HMS Iceberg Catalog servlet path component of URL endpoint."
     ),
-    ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
-        "hive.metastore.iceberg.catalog.cache.expiry", -1,
-        "HMS Iceberg Catalog cache expiry."
-    ),
     ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION("metastore.iceberg.catalog.unique.table.location",
         "hive.metastore.iceberg.catalog.unique.table.location", false,
         "Whether the HMS Iceberg REST catalog should assign a unique storage location for each new table."

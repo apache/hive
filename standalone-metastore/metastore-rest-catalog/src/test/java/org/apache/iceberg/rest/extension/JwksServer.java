@@ -35,7 +35,6 @@ import java.nio.file.Path;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 
 public class JwksServer {
   private static final String BASE_DIR = System.getProperty("basedir");
@@ -44,20 +43,12 @@ public class JwksServer {
   private static final File JWT_NOAUTHKEY_FILE =
       new File(BASE_DIR, "src/test/resources/auth/jwt/jwt-unauthorized-key.json");
   private static final File JWT_JWKS_FILE = new File(BASE_DIR, "src/test/resources/auth/jwt/jwt-verification-jwks.json");
+  private static final int MOCK_JWKS_SERVER_PORT = 8089;
 
-  private final int port;
   private WireMockRule mockJwksSever;
 
-  JwksServer() {
-    try {
-      port = MetaStoreTestUtils.findFreePort();
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to allocate JWKS server port", e);
-    }
-  }
-
   void start() throws IOException {
-    mockJwksSever = new WireMockRule(port);
+    mockJwksSever = new WireMockRule(MOCK_JWKS_SERVER_PORT);
     byte[] body = Files.readAllBytes(JWT_JWKS_FILE.toPath());
     mockJwksSever.stubFor(WireMock.get("/jwks").willReturn(WireMock.ok().withBody(body)));
     mockJwksSever.start();
@@ -68,7 +59,7 @@ public class JwksServer {
   }
 
   int getPort() {
-    return port;
+    return MOCK_JWKS_SERVER_PORT;
   }
 
   public static String generateValidJWT(String user) throws Exception {
