@@ -65,6 +65,9 @@ public abstract class TestSessionStateStoreBase {
     assertEquals(2, retrieved.getOverriddenConfigurations().size());
     assertEquals("true", retrieved.getOverriddenConfigurations().get("hive.exec.dynamic.partition"));
     assertEquals("nonstrict", retrieved.getOverriddenConfigurations().get("hive.exec.dynamic.partition.mode"));
+    assertEquals(2, retrieved.getHiveVariables().size());
+    assertEquals("test_value_A", retrieved.getHiveVariables().get("test_var_A"));
+    assertEquals("test_value_B", retrieved.getHiveVariables().get("test_var_B"));
     assertEquals(2, retrieved.getAddedJars().size());
     assertEquals("hdfs:///user/hive/udfs/my-udf.jar", retrieved.getAddedJars().get(0));
     assertEquals(2, retrieved.getAddedFiles().size());
@@ -163,12 +166,17 @@ public abstract class TestSessionStateStoreBase {
     Map<String, String> tempTables = new HashMap<>();
     tempTables.put("tmp_t", "CREATE TEMPORARY TABLE tmp_t (col1 STRING, col2 INT)");
 
+    Map<String, String> hiveVariables = new HashMap<>();
+    hiveVariables.put("test_var_A", "test_value_A");
+    hiveVariables.put("test_var_B", "test_value_B");
+
     return HiveSessionSnapshot.builder()
         .sessionHandleId(sessionId)
         .username(username)
         .ipAddress("127.0.0.1")
         .currentDatabase(database)
         .overriddenConfigurations(configs)
+        .hiveVariables(hiveVariables)
         .addedJars(Arrays.asList("hdfs:///user/hive/udfs/my-udf.jar", "hdfs:///user/hive/udfs/other.jar"))
         .addedFiles(Arrays.asList("hdfs:///user/hive/files/data.csv", "/tmp/local_file.txt"))
         .tempTableDefinitions(tempTables)

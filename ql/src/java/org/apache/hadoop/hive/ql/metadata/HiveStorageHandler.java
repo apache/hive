@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
@@ -307,7 +308,12 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Returns an aggregated column statistics for the supplied partition list
+   * Returns an aggregated column statistics for the supplied partition list.
+   *
+   * <p>{@code AggrStats.partsFound} must count only the partitions the aggregate is exact for: a
+   * caller may answer a query from it in place of reading the data once it equals
+   * {@code partNames.size()}.
+   *
    * @param table table object
    * @param colNames list of column names
    * @param partNames list of partition names
@@ -370,6 +376,18 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean canSetColStatistics(org.apache.hadoop.hive.ql.metadata.Table table, boolean partitionLevel) {
     return false;
+  }
+
+  /**
+   * Whether the column statistics the handler holds still describe the table, so that a query may
+   * be answered from them rather than by reading the data. The metastore's accuracy marker only
+   * records what Hive itself wrote, while a handler's table may be written by other engines.
+   * @param table table object
+   * @param colNames the columns being asked about
+   * @return true if the statistics still describe the table for every column asked
+   */
+  default boolean areColumnStatsUptoDate(org.apache.hadoop.hive.ql.metadata.Table table, List<String> colNames) {
+    return StatsSetupConst.areColumnStatsUptoDate(table.getParameters(), colNames);
   }
 
   /**

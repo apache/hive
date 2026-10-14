@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -1055,8 +1056,14 @@ public class HiveSessionImpl implements HiveSession {
   @Override
   public void setApplicationName(String value) {
     String oldName = sessionState.getHiveVariables().put("wmapp", value);
-    if (oldName != null && !oldName.equals(value)) {
+    if (Objects.equals(oldName, value)) {
+      return;
+    }
+    if (oldName != null) {
       LOG.info("ApplicationName changed from " + oldName + " to " + value);
+    }
+    if (sessionManager != null && sessionManager.isPersistableSessionsEnabled()) {
+      sessionManager.notifySessionStateChanged(sessionHandle);
     }
   }
 

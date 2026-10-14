@@ -662,6 +662,35 @@ public class TestGetPartitionsUsingProjectionAndFilterSpecs {
     runGetPartitionsUsingNames();
   }
 
+  private void runGetPartitionsWithNullFilterSpec() throws TException {
+    // a client that never calls setFilterSpec() leaves the field null; the server
+    // must treat that the same as an "accept all partitions" filter instead of throwing NPE
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    request.setFilterSpec(null);
+    request.getProjectionSpec().setFieldList(Arrays.asList("sd.location"));
+
+    GetPartitionsResponse response = client.getPartitionsWithSpecs(request);
+    Assert.assertNotNull(response);
+    Assert.assertEquals(1, response.getPartitionSpecSize());
+    PartitionSpecWithSharedSD partitionSpecWithSharedSD =
+        response.getPartitionSpec().get(0).getSharedSDPartitionSpec();
+    Assert.assertNotNull(partitionSpecWithSharedSD);
+    Assert.assertEquals("All partitions should be returned when filterSpec is null",
+        origPartitions.size(), partitionSpecWithSharedSD.getPartitionsSize());
+  }
+
+  @Test
+  public void testGetPartitionsWithNullFilterSpec() throws Exception {
+    runGetPartitionsWithNullFilterSpec();
+  }
+
+  @Test
+  public void testGetPartitionsWithNullFilterSpecUsingJDO() throws Exception {
+    // disable direct SQL to make sure the JDO code path is exercised
+    client.setMetaConf(ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
+    runGetPartitionsWithNullFilterSpec();
+  }
+
   @Test(expected = MetaException.class)
   public void testInvalidFilterByNames() throws Exception {
     runWithInvalidFilterByNames();

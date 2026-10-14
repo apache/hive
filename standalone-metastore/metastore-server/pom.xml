@@ -35,6 +35,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>metastore-tools-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>${httpcomponents.client.version}</version>
@@ -317,10 +322,6 @@
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>sqlline</groupId>
-      <artifactId>sqlline</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jline</groupId>

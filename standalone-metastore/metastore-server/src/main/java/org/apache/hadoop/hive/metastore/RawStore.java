@@ -663,7 +663,9 @@ public interface RawStore extends Configurable {
    * Multi-table table-parameter update.
    * @param updates updates to apply.
    */
-  void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException;
+  default void updateTableParams(List<Map.Entry<TableParamsUpdate, Table>> updates) throws MetaException, NoSuchObjectException {
+    unwrap(TableStore.class).updateTableParams(updates);
+  }
 
 
   /**

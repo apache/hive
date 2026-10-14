@@ -18,15 +18,24 @@
 
 package org.apache.hive.service.cli.session;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.service.cli.SessionHandle;
+import org.apache.hive.service.cli.session.store.HiveSessionSnapshot;
+import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,5 +79,29 @@ public class TestPersistableSessionUtils {
     assertTrue(PersistableSessionUtils.shouldPersistSnapshot(
         "CREATE TEMPORARY TABLE tmp (id INT)", sessionState));
     assertFalse(PersistableSessionUtils.shouldPersistSnapshot("SELECT 1", sessionState));
+  }
+
+  @Test
+  public void testHiveVariablesSnapshotJsonRoundTrip() throws Exception {
+    SessionState source = new SessionState(new HiveConf());
+    source.getHiveVariables().put("hive_var", "hive_value");
+
+    HiveSessionSnapshot snapshot = PersistableSessionUtils.captureSnapshot(
+        new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V11),
+        "hive", "127.0.0.1", source, TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V11, 0, 0);
+
+    ObjectMapper mapper = new ObjectMapper();
+    snapshot = mapper.readValue(mapper.writeValueAsString(snapshot), HiveSessionSnapshot.class);
+
+    SessionState target = new SessionState(new HiveConf());
+    HiveSession session = mock(HiveSession.class);
+    when(session.getSessionState()).thenReturn(target);
+    when(session.getHiveConf()).thenReturn(target.getConf());
+    PersistableSessionUtils.hydrateSession(session, snapshot);
+
+    assertEquals("hive_value", target.getHiveVariables().get("hive_var"));
+    target.getConf().setBoolVar(HiveConf.ConfVars.HIVE_VARIABLE_SUBSTITUTE, true);
+    assertEquals("hive_value", new VariableSubstitution(target::getHiveVariables)
+        .substitute(target.getConf(), "${hivevar:hive_var}"));
   }
 }

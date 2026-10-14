@@ -153,6 +153,24 @@ EXPLAIN select count(*) from srcpart_iceberg join srcpart_date_hour_n0_iceberg o
 select count(*) from srcpart_iceberg join srcpart_date_hour_n0_iceberg on (srcpart_iceberg.ds = srcpart_date_hour_n0_iceberg.ds and srcpart_iceberg.hr = srcpart_date_hour_n0_iceberg.hr) where srcpart_date_hour_n0_iceberg.hour = 11 and (srcpart_date_hour_n0_iceberg.`date` = '2008-04-08' or srcpart_date_hour_n0_iceberg.`date` = '2008-04-09');
 select count(*) from srcpart where (ds = '2008-04-08' or ds = '2008-04-09') and hr = 11;
 
+-- the same pruned read twice: the shared work optimizer merges both reads, their dynamic partition
+-- pruning event included, into one pipeline
+reset -d hive.tez.min.bloom.filter.entries hive.tez.bigtable.minsize.semijoin.reduction;
+
+EXPLAIN with v as (
+  select srcpart_iceberg.key, count(*) c from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds)
+  where srcpart_date_n2.`date` = '2008-04-08'
+  group by srcpart_iceberg.key
+)
+select sum(v1.c * v2.c) from v v1 join v v2 on (v1.key = v2.key);
+
+with v as (
+  select srcpart_iceberg.key, count(*) c from srcpart_iceberg join srcpart_date_n2 on (srcpart_iceberg.ds = srcpart_date_n2.ds)
+  where srcpart_date_n2.`date` = '2008-04-08'
+  group by srcpart_iceberg.key
+)
+select sum(v1.c * v2.c) from v v1 join v v2 on (v1.key = v2.key);
+
 drop table srcpart_iceberg;
 drop table srcpart_date_hour_n0_iceberg;
 drop table srcpart_date_n2;

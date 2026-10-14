@@ -81,6 +81,25 @@ public class HiveClusterAutoscaler {
     MANAGED_REPLICAS.put(cacheKey(namespace, clusterName, component), replicas);
   }
 
+  /**
+   * Removes the autoscaler-managed replica count for a component. Used when autoscaling is disabled so
+   * a pre-existing in-memory scale decision if any is cleared up.
+   */
+  public static void cleanupManagedReplicas(String namespace, String clusterName, String component) {
+    MANAGED_REPLICAS.remove(cacheKey(namespace, clusterName, component));
+  }
+
+  /**
+   * Clears all in-memory autoscaling state for a component when autoscaling is disabled.
+   */
+  public void resetComponentAutoscalingState(String namespace, String clusterName, String component) {
+    String key = cacheKey(namespace, clusterName, component);
+    MANAGED_REPLICAS.remove(key);
+    pendingScaleDowns.remove(key);
+    autoscalers.remove(key);
+    lastScaleTimes.remove(key);
+  }
+
   private record PendingScaleDown(int targetReplicas, Instant annotatedAt, List<String> podsToDeregister) {}
 
   private final BackgroundMetricsScraper bgScraper;

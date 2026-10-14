@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
@@ -476,6 +477,12 @@ public interface TableStore {
       throws MetaException, NoSuchObjectException;
 
   MPartition ensureGetMPartition(TableName tableName, List<String> partVals) throws MetaException;
+
+  /**
+   * Multi-table table-parameter update.
+   * @param updates updates to apply.
+   */
+  void updateTableParams(List<Map.Entry<TableParamsUpdate, Table>> updates) throws MetaException, NoSuchObjectException;
 
   class AttachedMTableInfo {
     public MTable mtbl;
