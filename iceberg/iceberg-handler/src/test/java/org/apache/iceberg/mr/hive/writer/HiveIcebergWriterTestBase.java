@@ -22,7 +22,6 @@ package org.apache.iceberg.mr.hive.writer;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -108,8 +107,7 @@ public class HiveIcebergWriterTestBase {
         PartitionSpec.builderFor(SCHEMA)
             .bucket("data", 3)
             .build();
-    this.helper = new TestHelper(new HiveConf(), tables, location.toString(), SCHEMA, spec, fileFormat,
-        Collections.emptyMap(), temp);
+    this.helper = new TestHelper(new HiveConf(), tables, location.toString(), SCHEMA, spec, fileFormat, temp);
     this.table = helper.createTable();
     helper.appendToTable(RECORDS);
 
