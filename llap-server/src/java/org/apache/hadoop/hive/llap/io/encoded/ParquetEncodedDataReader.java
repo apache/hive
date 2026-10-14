@@ -276,8 +276,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
    * Parquet's own input format assigns them, minus any the pushed-down predicate rules out on its
    * statistics. Returned in file order, since the fetch pipeline reads them in that order.
    */
-  private List<BlockMetaData> selectRowGroups(List<BlockMetaData> blocks, MessageType fileSchema)
-      throws IOException {
+  private List<BlockMetaData> selectRowGroups(List<BlockMetaData> blocks, MessageType fileSchema) {
     long splitStart = split.getStart();
     long splitEnd = splitStart + split.getLength();
     List<BlockMetaData> selected = new ArrayList<>();
