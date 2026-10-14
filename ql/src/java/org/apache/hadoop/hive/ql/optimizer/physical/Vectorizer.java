@@ -3015,7 +3015,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       // Row mode also accepts a non-constant ntile argument (read from the first row of the partition).
       if (supportedFunctionType == SupportedFunctionType.NTILE &&
           !isPositiveIntConstant(singleExprNodeDesc)) {
-        setOperatorIssue(functionName + " only a positive integer constant number of buckets is supported");
+        setOperatorIssue(functionName + " only supports a positive integer constant number of buckets");
         return false;
       }
 
@@ -5051,11 +5051,8 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private static boolean isPositiveIntConstant(ExprNodeDesc exprNodeDesc) {
-    if (!(exprNodeDesc instanceof ExprNodeConstantDesc)) {
-      return false;
-    }
-    Object value = ((ExprNodeConstantDesc) exprNodeDesc).getValue();
-    return value instanceof Integer && (Integer) value > 0;
+    return exprNodeDesc instanceof ExprNodeConstantDesc constantDesc
+        && constantDesc.getValue() instanceof Integer value && value > 0;
   }
 
   // TODO: An evaluator that wants to handle an unbuffered partition-only column in its calculation could

@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
  */
 public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
 
-  private final int numBuckets;
+  private final long numBuckets;
 
   // Per-partition bucket layout, set up by addStreamingGroupResults.
   private int bucketSize;
@@ -62,18 +62,17 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
   public VectorPTFEvaluatorNTile(WindowFrameDef windowFrameDef,
       VectorExpression numBucketsExpression, int outputColumnNum) {
     super(windowFrameDef, outputColumnNum);
-    if (!(numBucketsExpression instanceof ConstantVectorExpression)) {
+    if (!(numBucketsExpression instanceof ConstantVectorExpression constantExpr)) {
       throw new RuntimeException(
           "NTILE expects a constant integer expression for the number of buckets, got: "
               + (numBucketsExpression == null ? "null"
                   : numBucketsExpression.getClass().getName()));
     }
-    long value = ((ConstantVectorExpression) numBucketsExpression).getLongValue();
-    if (value <= 0 || value > Integer.MAX_VALUE) {
+    numBuckets = constantExpr.getLongValue();
+    if (numBuckets <= 0) {
       throw new RuntimeException(
-          "NTILE requires a positive integer number of buckets, got: " + value);
+          "NTILE requires a positive number of buckets, got: " + numBuckets);
     }
-    this.numBuckets = (int) value;
     resetEvaluator();
   }
 
@@ -89,8 +88,8 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
     }
     // Peer groups are irrelevant: buckets depend only on row position and partition size.
     // With more buckets than rows every row gets its own bucket, which is ntile(partitionSize);
-    // capping the bucket count keeps every bucket non-empty.
-    final int buckets = Math.min(numBuckets, partitionSize);
+    // capping the bucket count keeps every bucket non-empty (and fits it in an int).
+    final int buckets = (int) Math.min(numBuckets, partitionSize);
     bucketSize = partitionSize / buckets;
     largerBucketCount = partitionSize % buckets;
     currentBucket = 1;
