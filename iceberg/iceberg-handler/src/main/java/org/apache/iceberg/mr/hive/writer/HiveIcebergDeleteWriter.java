@@ -61,10 +61,10 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate, isMergeTask);
     int specId = IcebergAcidUtil.parseSpecId(rec);
     PartitionKey partitionKey = isMergeTask ? IcebergAcidUtil.parsePartitionKey(rec) :
-        partition(positionDelete.row(), specId);
+        partition(rowDataTemplate, specId);
     if (skipRowData) {
       // Set null as the row data as we intend to avoid writing the actual row data in the delete file.
-      positionDelete.set(positionDelete.path(), positionDelete.pos(), null);
+      positionDelete.set(positionDelete.path(), positionDelete.pos());
     }
     writer.write(positionDelete, specs.get(specId), partitionKey);
   }
