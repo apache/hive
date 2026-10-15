@@ -73,6 +73,7 @@ public class ParquetEncodedDataConsumer
   private final CompressionCodecFactory codecFactory;
   private final ParquetMetadataConverter converter;
   private final boolean verifyChecksums;
+  private final DataTypePhysicalVariation[] variations;
   private ParquetMetadata footer;
   private MessageType requestedSchema;
   private Path path;
@@ -82,7 +83,6 @@ public class ParquetEncodedDataConsumer
   private List<TypeInfo> columnTypesList;
   private List<Integer> colsToInclude;
   private boolean readAllColumns;
-  private DataTypePhysicalVariation[] variations;
   private ParquetRowGroupDecoder rowGroupDecoder;
   private ParquetRowGroupDecoder.TimestampConversionOptions conversions;
   private boolean schemaInitialized = false;
@@ -95,6 +95,17 @@ public class ParquetEncodedDataConsumer
     this.codecFactory = options.getCodecFactory();
     this.converter = new ParquetMetadataConverter(options);
     this.verifyChecksums = options.usePageChecksumVerification();
+    /*
+     * The vectorizer already decided per column whether it wants a DECIMAL_64 vector, and honouring
+     * that is what keeps the batch shape identical to the plan the operator pipeline was built for.
+     * A split arriving without a vectorized plan carries no such decision: variations stays null and
+     * every column gets its type's default vector.
+     *
+     * Read here, on the task's thread, and not at the first decode: the IO elevator thread decoding
+     * the split would deserialize the plan into its own work map, which nothing clears.
+     */
+    VectorizedRowBatchCtx rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
+    this.variations = rbCtx == null ? null : rbCtx.getRowdataTypePhysicalVariations();
   }
 
   public void setFileMetadata(ParquetMetadata footer, MessageType requestedSchema, Path path) {
@@ -120,14 +131,6 @@ public class ParquetEncodedDataConsumer
         DataWritableReadSupport.getColumnTypes(jobConf.get(IOConstants.COLUMNS_TYPES));
     this.colsToInclude = ColumnProjectionUtils.getReadColumnIDs(jobConf);
     this.readAllColumns = ColumnProjectionUtils.isReadAllColumns(jobConf);
-    /*
-     * The vectorizer already decided per column whether it wants a DECIMAL_64 vector, and honouring
-     * that is what keeps the batch shape identical to the plan the operator pipeline was built for.
-     * A split arriving without a vectorized plan carries no such decision: variations stays null and
-     * every column gets its type's default vector.
-     */
-    VectorizedRowBatchCtx rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
-    this.variations = rbCtx == null ? null : rbCtx.getRowdataTypePhysicalVariations();
 
     boolean skipTimestampConversion;
     if (HiveConf.getBoolVar(jobConf, ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {

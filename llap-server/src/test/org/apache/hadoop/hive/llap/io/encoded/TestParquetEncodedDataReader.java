@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -224,6 +226,8 @@ public class TestParquetEncodedDataReader {
   private boolean skipExpectedRows;
   /** Opts out of the A/B check, for tests the stock reader cannot reproduce. */
   private boolean skipNonNativeParity;
+  /** Runs the reader on a thread of its own, as the IO elevator does, not on the thread that set it up. */
+  private boolean readOnIoThread;
   private ParquetEncodedDataReader reader;
   private int decoded;
   /**
@@ -283,6 +287,7 @@ public class TestParquetEncodedDataReader {
     failDecodeWithError = false;
     skipExpectedRows = false;
     skipNonNativeParity = false;
+    readOnIoThread = false;
     decoded = 0;
     decodedAtRequest.clear();
   }
@@ -299,6 +304,20 @@ public class TestParquetEncodedDataReader {
 
     assertEquals(ROWS, run.rows.size());
     assertTrue(String.valueOf(run.firstBatchCols[2]), run.firstBatchCols[2] instanceof DecimalColumnVector);
+  }
+
+  /**
+   * The IO elevator decodes on its own threads, which hold no plan: Utilities' work map is per thread in a
+   * daemon, and only the task's thread clears its own. The decimals still follow the plan the read was set
+   * up with.
+   */
+  @Test
+  public void testDecodeOnAnIoThreadFollowsThePlan() throws Exception {
+    readOnIoThread = true;
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
+
+    assertEquals(ROWS, run.rows.size());
+    assertTrue(String.valueOf(run.firstBatchCols[2]), run.firstBatchCols[2] instanceof Decimal64ColumnVector);
   }
 
   /** Whole file, every column: all rows arrive, in DEFAULT_SIZE batches, with decimals as Decimal64. */
@@ -1360,7 +1379,16 @@ public class TestParquetEncodedDataReader {
     this.reader = parquetReader;
     edc.init(parquetReader, parquetReader);
     parquetReader.readFooter();
-    parquetReader.call();
+    if (readOnIoThread) {
+      ExecutorService io = Executors.newSingleThreadExecutor();
+      try {
+        io.submit(parquetReader).get();
+      } finally {
+        io.shutdown();
+      }
+    } else {
+      parquetReader.call();
+    }
     Run run = new Run(downstream, counters, tezCounters, buffers, reads, opens.get(), ledger);
     boolean whole = run.error == null && !stopAfterFirstBatch;
     if (!skipExpectedRows) {
