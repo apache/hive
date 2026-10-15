@@ -80,7 +80,7 @@ public class TestHiveVectorizedReader {
     conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
     HadoopTables tables = new HadoopTables(conf);
 
-    helper = new TestHelper(conf, tables, location.toString(), SCHEMA, null, fileFormat, temp);
+    helper = new TestHelper(conf, tables, location.toString(), SCHEMA, null, fileFormat, TestHelper.toPath(temp));
     builder = new InputFormatConfig.ConfigBuilder(conf).readFrom(location.toString())
       .useHiveRows();
   }
