@@ -687,6 +687,17 @@ public class TestParquetEncodedDataReader {
     }
   }
 
+  /** A split the cache serves whole never opens the file; a cold one opens it once. */
+  @Test
+  public void testFullyCachedReadDoesNotOpenTheFile() throws Exception {
+    Run cold = read(jobConf(COLUMNS, TYPES, 1, 3), wholeFile());
+    Run warm = read(jobConf(COLUMNS, TYPES, 1, 3), wholeFile());
+
+    assertEquals(1, cold.opens);
+    assertEquals(0, warm.opens);
+    assertEquals(ROWS, warm.rows.size());
+  }
+
   /**
    * A file the native reader cached is found whole by the fallback reader. Both readers write into
    * the same cache - the fallback one through {@link LlapCacheAwareFs}, which splits parquet's
@@ -1207,10 +1218,12 @@ public class TestParquetEncodedDataReader {
     };
     edc.setInitialDefaults(initialDefaults);
     List<long[]> reads = new ArrayList<>();
+    AtomicInteger opens = new AtomicInteger();
     ParquetEncodedDataReader parquetReader = new ParquetEncodedDataReader(
         ledger, ledger, readerDaemonConf, job, split, edc, counters) {
       @Override
       FSDataInputStream openFile(FileSystem fs) throws IOException {
+        opens.incrementAndGet();
         return new RecordingStream(super.openFile(fs), reads);
       }
     };
@@ -1218,7 +1231,7 @@ public class TestParquetEncodedDataReader {
     edc.init(parquetReader, parquetReader);
     parquetReader.readFooter();
     parquetReader.call();
-    Run run = new Run(downstream, counters, tezCounters, buffers, reads, ledger);
+    Run run = new Run(downstream, counters, tezCounters, buffers, reads, opens.get(), ledger);
     boolean whole = run.error == null && !stopAfterFirstBatch;
     if (!skipExpectedRows) {
       assertExpectedRows(run, job, whole);
@@ -1713,10 +1726,12 @@ public class TestParquetEncodedDataReader {
     final TezCounters counters;
     final List<MemoryBuffer> buffers;
     final List<long[]> reads;
+    /** How many times the reader opened the file. */
+    final int opens;
     final Ledger ledger;
 
     Run(CapturingConsumer c, QueryFragmentCounters fragmentCounters, TezCounters counters,
-        List<MemoryBuffer> buffers, List<long[]> reads, Ledger ledger) {
+        List<MemoryBuffer> buffers, List<long[]> reads, int opens, Ledger ledger) {
       this.rows = c.rows;
       this.batchSizes = c.batchSizes;
       this.firstBatchCols = c.firstBatchCols;
@@ -1726,6 +1741,7 @@ public class TestParquetEncodedDataReader {
       this.counters = counters;
       this.buffers = buffers;
       this.reads = reads;
+      this.opens = opens;
       this.ledger = ledger;
     }
 
