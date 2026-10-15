@@ -69,12 +69,27 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendAcidSelectColumnsForDeletedRecords(
-      Operation operation, boolean skipPrefix, String deletedRowPosition) {
+      Operation operation, boolean skipPrefix, String deletedRowIdExpr) {
     throw new UnsupportedOperationException();
   }
 
   public abstract List<String> getDeleteValues(Operation operation);
   public abstract List<String> getSortKeys(Operation operation);
+
+  public int getRowIdIndex(Operation operation) {
+    List<FieldSchema> columns = targetTable.getStorageHandler().acidSelectColumns(targetTable, operation);
+    FieldSchema rowId = targetTable.getStorageHandler().getRowId();
+    for (int i = 0; i < columns.size(); i++) {
+      if (columns.get(i).equals(rowId)) {
+        return i;
+      }
+    }
+    throw new IllegalStateException("Row identity column is missing from the ACID projection");
+  }
+
+  public String getRowIdType(Operation operation) {
+    return targetTable.getStorageHandler().getRowId().getType();
+  }
 
   public String qualify(String columnName) {
     if (isBlank(subQueryAlias)) {

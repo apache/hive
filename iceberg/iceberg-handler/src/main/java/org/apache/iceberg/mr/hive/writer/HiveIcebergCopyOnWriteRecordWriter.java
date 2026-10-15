@@ -20,7 +20,9 @@
 package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.hive.ql.io.AffectedRowsProvidingRecordWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
@@ -42,7 +44,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter
     implements AffectedRowsProvidingRecordWriter {
 
   private final GenericRecord rowDataTemplate;
-  private final List<DataFile> replacedDataFiles;
+  private final Map<String, DataFile> replacedDataFiles;
   private long affectedRows;
 
   HiveIcebergCopyOnWriteRecordWriter(Table table, HiveFileWriterFactory writerFactory,
@@ -51,7 +53,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter
 
     this.rowDataTemplate = GenericRecord.create(
         shouldAddRowLineage ? MetadataColumns.schemaWithRowLineage(table.schema()) : table.schema());
-    this.replacedDataFiles = Lists.newArrayList();
+    this.replacedDataFiles = new LinkedHashMap<>();
   }
 
   @Override
@@ -61,17 +63,20 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter
     Record rowData = rowDataTemplate;
 
     if (positionDelete.pos() < 0) {
+      // A negative position is a matched-row marker whose magnitude contributes to the affected-row count.
       affectedRows += -positionDelete.pos();
       int specId = IcebergAcidUtil.parseSpecId(record);
-      DataFile dataFile =
-          DataFiles.builder(specs.get(specId))
-            .withPath(positionDelete.path().toString())
-            .withPartition(partition(rowData, specId))
-            .withFileSizeInBytes(0)
-            .withRecordCount(0)
-            .build();
-      replacedDataFiles.add(dataFile);
+      String filePath = positionDelete.path().toString();
+      replacedDataFiles.computeIfAbsent(filePath, ignored -> DataFiles.builder(specs.get(specId))
+          .withPath(filePath)
+          .withPartition(partition(rowData, specId))
+          .withFileSizeInBytes(0)
+          .withRecordCount(0)
+          .build());
     } else {
+      if (positionDelete.path() == null) {
+        affectedRows++;
+      }
       write(rowData);
     }
   }
@@ -84,6 +89,6 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter
   @Override
   public FilesForCommit files() {
     List<DataFile> dataFiles = ((DataWriteResult) writer.result()).dataFiles();
-    return FilesForCommit.onlyData(dataFiles, replacedDataFiles);
+    return FilesForCommit.onlyData(dataFiles, Lists.newArrayList(replacedDataFiles.values()));
   }
 }

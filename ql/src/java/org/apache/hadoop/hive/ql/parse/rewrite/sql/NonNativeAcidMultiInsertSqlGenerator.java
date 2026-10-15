@@ -50,17 +50,17 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
 
   @Override
   public void appendAcidSelectColumnsForDeletedRecords(
-      Operation operation, boolean skipPrefix, String deletedRowPosition) {
-    appendAcidSelectColumns(operation, true, skipPrefix, deletedRowPosition);
+      Operation operation, boolean skipPrefix, String deletedRowIdExpr) {
+    appendAcidSelectColumns(operation, true, skipPrefix, deletedRowIdExpr);
   }
 
   private void appendAcidSelectColumns(
-      Operation operation, boolean markRowIdAsDeleted, boolean skipPrefix, String deletedRowPosition) {
+      Operation operation, boolean markRowIdAsDeleted, boolean skipPrefix, String deletedRowIdExpr) {
     List<FieldSchema> acidSelectColumns = targetTable.getStorageHandler().acidSelectColumns(targetTable, operation);
     for (FieldSchema fieldSchema : acidSelectColumns) {
       boolean deletedRowId = markRowIdAsDeleted && fieldSchema.equals(targetTable.getStorageHandler().getRowId());
       String identifier = deletedRowId ?
-          deletedRowPosition : HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
+          deletedRowIdExpr : HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
       if (!markRowIdAsDeleted || skipPrefix) {
         queryStr.append(identifier);
       }
@@ -70,7 +70,7 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
           queryStr.append(" AS ");
         }
         String prefixedIdentifier = deletedRowId ?
-            deletedRowPosition : HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
+            deletedRowIdExpr : HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
         queryStr.append(prefixedIdentifier);
       }
       queryStr.append(",");
