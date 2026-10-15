@@ -20,10 +20,14 @@
 package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
+import org.apache.hadoop.hive.ql.io.sarg.LiteralDelegate;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -735,5 +739,61 @@ public class TestParquetFilterPredicate {
         + "eq(b, Binary{\"orange\"})), "
         + "or(eq(c, Binary{\"banana\"}), lt(d, Binary{\"cherry\"})))";
     assertEquals(expected, p.toString());
+  }
+
+  /** A runtime value (a DynamicValue) that is not available when the reader builds its filter. */
+  private static final LiteralDelegate UNRESOLVED = new LiteralDelegate() {
+    @Override
+    public Object getLiteral() {
+      throw new NoDynamicValuesException("not available");
+    }
+
+    @Override
+    public String getId() {
+      return "unresolved";
+    }
+
+    @Override
+    public void setConf(Configuration conf) {
+    }
+
+    @Override
+    public Configuration getConf() {
+      return null;
+    }
+  };
+
+  /**
+   * A leaf whose runtime value is not available filters nothing: the rest of a conjunction still filters, a
+   * disjunction with it does not.
+   */
+  @Test
+  public void testUnresolvedRuntimeValueDropsOnlyItsLeaf() {
+    MessageType schema = MessageTypeParser.parseMessageType(
+        "message test { required int32 a; required int32 b; required int32 c; }");
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    for (String column : new String[] {"a", "b", "c"}) {
+      columnTypes.put(column, TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    }
+    FilterPredicate onlyA = ParquetFilterPredicateConverter.toFilterPredicate(
+        SearchArgumentFactory.newBuilder().lessThan("a", PredicateLeaf.Type.LONG, 5L).build(), schema, columnTypes);
+
+    SearchArgument and = SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
+        .equals("b", PredicateLeaf.Type.LONG, UNRESOLVED)
+        .between("c", PredicateLeaf.Type.LONG, UNRESOLVED, UNRESOLVED)
+        .end()
+        .build();
+    assertEquals(String.valueOf(onlyA),
+        String.valueOf(ParquetFilterPredicateConverter.toFilterPredicate(and, schema, columnTypes)));
+
+    SearchArgument or = SearchArgumentFactory.newBuilder()
+        .startOr()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
+        .between("c", PredicateLeaf.Type.LONG, UNRESOLVED, UNRESOLVED)
+        .end()
+        .build();
+    assertNull(ParquetFilterPredicateConverter.toFilterPredicate(or, schema, columnTypes));
   }
 }
