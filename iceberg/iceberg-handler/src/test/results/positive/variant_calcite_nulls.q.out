@@ -1,0 +1,125 @@
+PREHOOK: query: drop table if exists vcn
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists vcn
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE vcn (id INT, v VARIANT) STORED BY ICEBERG TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vcn
+POSTHOOK: query: CREATE EXTERNAL TABLE vcn (id INT, v VARIANT) STORED BY ICEBERG TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vcn
+PREHOOK: query: INSERT INTO vcn VALUES (1, parse_json('{"a":1}')), (2, parse_json('[1,2]'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@vcn
+POSTHOOK: query: INSERT INTO vcn VALUES (1, parse_json('{"a":1}')), (2, parse_json('[1,2]'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@vcn
+PREHOOK: query: SELECT v FROM vcn WHERE false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vcn
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT v FROM vcn WHERE false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vcn
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: SELECT v FROM vcn LIMIT 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vcn
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT v FROM vcn LIMIT 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vcn
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: EXPLAIN CBO SELECT parse_json('{"k":1}') FROM vcn
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vcn
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN CBO SELECT parse_json('{"k":1}') FROM vcn
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vcn
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(_c0=[parse_json('{"k":1}':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveTableScan(table=[[default, vcn]], table:alias=[vcn])
+
+PREHOOK: query: SELECT id, parse_json('{"k":1}') FROM vcn ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vcn
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, parse_json('{"k":1}') FROM vcn ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vcn
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	{"k":1}
+2	{"k":1}
+PREHOOK: query: SELECT id, to_json(IF(false, v, NULL)) FROM vcn ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vcn
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, to_json(IF(false, v, NULL)) FROM vcn ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vcn
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL
+2	NULL
+PREHOOK: query: SELECT id, variant_get(CASE WHEN false THEN v END, '$.a', 'int') FROM vcn ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vcn
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, variant_get(CASE WHEN false THEN v END, '$.a', 'int') FROM vcn ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vcn
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL
+2	NULL
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY SELECT id, IF(false, v, NULL) FROM vcn
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vcn
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY SELECT id, IF(false, v, NULL) FROM vcn
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vcn
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT id, IF(false, v, NULL) FROM vcn ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vcn
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, IF(false, v, NULL) FROM vcn ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vcn
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL
+2	NULL

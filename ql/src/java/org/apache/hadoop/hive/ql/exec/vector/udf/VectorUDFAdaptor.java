@@ -116,10 +116,8 @@ public class VectorUDFAdaptor extends VectorExpression {
     int n = batch.size;
     ColumnVector outV = batch.cols[outputColumnNum];
 
-    // If the output column is of type string, initialize the buffer to receive data.
-    if (outV instanceof BytesColumnVector) {
-      ((BytesColumnVector) outV).initBuffer();
-    }
+    // Reset the output, including the children of a complex type, to receive this batch.
+    outV.init();
 
     if (n == 0) {
       //Nothing to do

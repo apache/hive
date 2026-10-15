@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -2586,6 +2587,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         }
         return result;
       }
+      case VARIANT:
+        return convertTypeInfo(VariantEncoding.TYPE_INFO);
       default:
         throw new IllegalArgumentException("ORC doesn't handle " +
             info.getCategory());

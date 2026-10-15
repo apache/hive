@@ -546,6 +546,8 @@ public class VectorExtractRow {
         }
         return struct;
       }
+    case VARIANT:
+      return VariantColumnVectors.getVariant((StructColumnVector) colVector, adjustedIndex);
     case UNION:
       {
         final UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;

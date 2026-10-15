@@ -98,6 +98,7 @@ public abstract class GenericUDFBaseCompare extends GenericUDFBaseBinary {
     case MAP:
     case STRUCT:
     case LIST:
+    case VARIANT:
       initForNonPrimitives(arguments[0], arguments[1]);
       break;
     default:

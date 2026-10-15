@@ -930,6 +930,7 @@ public class DDLPlanUtils {
   public static String formatType(TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
+      case VARIANT:
         return typeInfo.getTypeName();
       case STRUCT:
         StringBuilder structFormattedType = new StringBuilder();

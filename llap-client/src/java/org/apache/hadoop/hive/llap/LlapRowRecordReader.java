@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.llap;
 import com.google.common.base.Preconditions;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,6 +208,9 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
         convertedRow.add(convertedFieldValue);
       }
       convertedVal = convertedRow;
+      break;
+    case VARIANT:
+      convertedVal = ((VariantObjectInspector) oi).getVariant(val).toJson(ZoneOffset.UTC);
       break;
     default:
       throw new IllegalArgumentException("Cannot convert type " + oiCategory);

@@ -19,11 +19,8 @@
 
 package org.apache.hadoop.hive.serde2.variant;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.io.JsonStringEncoder;
 
-import java.io.CharArrayWriter;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,7 +31,6 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -52,16 +48,6 @@ public final class Variant {
     this(value, metadata, 0);
   }
 
-  public static Variant from(List<Object> data) {
-    if (data == null || data.size() != 2) {
-      throw malformedVariant();
-    }
-    byte[] metadata = convertToByteArray(data.get(0));
-    byte[] value = convertToByteArray(data.get(1));
-
-    return new Variant(value, metadata);
-  }
-
   Variant(byte[] value, byte[] metadata, int pos) {
     this.value = value;
     this.metadata = metadata;
@@ -77,19 +63,6 @@ public final class Variant {
     }
   }
 
-  private static byte[] convertToByteArray(Object obj) {
-    if (obj == null) {
-      throw malformedVariant();
-    }
-    return switch (obj) {
-      case byte[] bytes -> bytes;
-      case org.apache.hadoop.io.BytesWritable bytesWritable -> bytesWritable.getBytes();
-      case org.apache.hadoop.io.Text text -> text.getBytes();
-      default ->
-        throw new IllegalArgumentException("Unsupported type for Variant field: " + obj.getClass());
-    };
-  }
-
   public byte[] getValue() {
     if (pos == 0) return value;
     int size = valueSize(value, pos);
@@ -99,6 +72,21 @@ public final class Variant {
 
   public byte[] getMetadata() {
     return metadata;
+  }
+
+  // Byte-wise: equal encodings are equal; logically equal variants with different encodings are not.
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    return o instanceof Variant other
+        && Arrays.equals(metadata, other.metadata) && Arrays.equals(getValue(), other.getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return 31 * Arrays.hashCode(metadata) + Arrays.hashCode(getValue());
   }
 
   // Get a boolean value from the variant.
@@ -251,21 +239,37 @@ public final class Variant {
     return sb.toString();
   }
 
-  // Escape a string so that it can be pasted into JSON structure.
-  // For example, if `str` only contains a new-line character, then the result content is "\n"
-  // (4 characters).
-  static String escapeJson(String str) {
-    try (CharArrayWriter writer = new CharArrayWriter();
-         JsonGenerator gen = new JsonFactory().createGenerator(writer)) {
-      gen.writeString(str);
-      gen.flush();
-      return writer.toString();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  /**
+   * Returns the value cast to a string: null for a JSON null, the characters of a string, the base64 of a binary, the
+   * JSON of an object or an array, and the plain text of any other scalar.
+   */
+  public String castToString() {
+    return switch (getType()) {
+      case NULL -> null;
+      case BOOLEAN -> String.valueOf(getBoolean());
+      case LONG -> String.valueOf(getLong());
+      case DOUBLE -> String.valueOf(getDouble());
+      case FLOAT -> String.valueOf(getFloat());
+      case DECIMAL -> getDecimal().toPlainString();
+      case STRING -> getString();
+      case BINARY -> Base64.getEncoder().encodeToString(getBinary());
+      case DATE -> LocalDate.ofEpochDay(getLong()).toString();
+      case TIMESTAMP, TIMESTAMP_NTZ -> microsToInstant(getLong()).toString();
+      case UUID -> getUuid().toString();
+      case OBJECT, ARRAY -> toJson(ZoneOffset.UTC);
+    };
   }
 
-  // A simplified and more performant version of `sb.append(escapeJson(str))`. It is used when we
+  // Escape a string so that it can be pasted into JSON structure, and append it to `sb`.
+  // For example, if `str` only contains a new-line character, then the appended content is "\n"
+  // (4 characters).
+  static void escapeJson(StringBuilder sb, String str) {
+    sb.append('"');
+    JsonStringEncoder.getInstance().quoteAsString(str, sb);
+    sb.append('"');
+  }
+
+  // A simplified and more performant version of `escapeJson(sb, str)`. It is used when we
   // know `str` doesn't contain any special character that needs escaping.
   static void appendQuoted(StringBuilder sb, String str) {
     sb.append('"');
@@ -298,7 +302,7 @@ public final class Variant {
             int offset = readUnsigned(value, offsetStart + offsetSize * i, offsetSize);
             int elementPos = dataStart + offset;
             if (i != 0) sb.append(',');
-            sb.append(escapeJson(getMetadataKey(metadata, id)));
+            escapeJson(sb, getMetadataKey(metadata, id));
             sb.append(':');
             toJsonImpl(value, metadata, elementPos, sb, zoneId);
           }
@@ -329,7 +333,7 @@ public final class Variant {
         sb.append(VariantUtil.getLong(value, pos));
         break;
       case STRING:
-        sb.append(escapeJson(VariantUtil.getString(value, pos)));
+        escapeJson(sb, VariantUtil.getString(value, pos));
         break;
       case DOUBLE: {
         double d = VariantUtil.getDouble(value, pos);

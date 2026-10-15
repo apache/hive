@@ -87,6 +87,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -541,6 +543,17 @@ public class BinarySortableSerDe extends AbstractSerDe {
           invert, nullMarker, notNullMarker, null));
       return r;
     }
+    case VARIANT: {
+      // Same bytes as the STRUCT branch over the two binaries; the standard variant inspector holds a Variant.
+      List<TypeInfo> fieldTypes = VariantEncoding.TYPE_INFO.getAllStructFieldTypeInfos();
+      byte[][] binaries = new byte[fieldTypes.size()][];
+      for (int i = 0; i < binaries.length; i++) {
+        BytesWritable binary =
+            (BytesWritable) deserialize(buffer, fieldTypes.get(i), invert, nullMarker, notNullMarker, null);
+        binaries[i] = binary.copyBytes();
+      }
+      return new Variant(binaries[VariantEncoding.VALUE_INDEX], binaries[VariantEncoding.METADATA_INDEX]);
+    }
     default: {
       throw new RuntimeException("Unrecognized type: " + type.getCategory());
     }
@@ -802,13 +815,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       return;
     }
     case STRUCT: {
-      StructObjectInspector soi = (StructObjectInspector) oi;
-      List<? extends StructField> fields = soi.getAllStructFieldRefs();
-
-      for (int i = 0; i < fields.size(); i++) {
-        serialize(buffer, soi.getStructFieldData(o, fields.get(i)), fields.get(
-            i).getFieldObjectInspector(), invert, nullMarker, notNullMarker);
-      }
+      serializeStructFields(buffer, o, (StructObjectInspector) oi, invert, nullMarker, notNullMarker);
       return;
     }
     case UNION: {
@@ -819,11 +826,27 @@ public class BinarySortableSerDe extends AbstractSerDe {
           invert, nullMarker, notNullMarker);
       return;
     }
+    case VARIANT: {
+      // The STRUCT body over the two binaries; the not-null marker is already written above.
+      serializeStructFields(buffer, VariantEncoding.fields(oi, o), VariantEncoding.JAVA_OBJECT_INSPECTOR, invert,
+          nullMarker, notNullMarker);
+      return;
+    }
     default: {
       throw new RuntimeException("Unrecognized type: " + oi.getCategory());
     }
     }
 
+  }
+
+  private static void serializeStructFields(ByteStream.Output buffer, Object o, StructObjectInspector soi,
+      boolean invert, byte nullMarker, byte notNullMarker) throws SerDeException {
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+
+    for (int i = 0; i < fields.size(); i++) {
+      serialize(buffer, soi.getStructFieldData(o, fields.get(i)), fields.get(
+          i).getFieldObjectInspector(), invert, nullMarker, notNullMarker);
+    }
   }
 
   public static void serializeBytes(

@@ -65,6 +65,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -616,6 +618,9 @@ public class VectorAssignRow {
         }
       }
       break;
+    case VARIANT:
+      VariantColumnVectors.setVariant((StructColumnVector) columnVector, batchIndex, (Variant) object);
+      break;
     case UNION:
       {
         final StandardUnion union = (StandardUnion) object;
@@ -643,6 +648,11 @@ public class VectorAssignRow {
   private void assignNullRowColumn(
     ColumnVector columnVector, int batchIndex, TypeInfo targetTypeInfo) {
 
+    if (targetTypeInfo.getCategory() == Category.VARIANT) {
+      // a null variant is a null struct of VariantEncoding
+      assignNullRowColumn(columnVector, batchIndex, VariantEncoding.TYPE_INFO);
+      return;
+    }
     VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);     
     
     if (targetTypeInfo.getCategory() == Category.STRUCT) {

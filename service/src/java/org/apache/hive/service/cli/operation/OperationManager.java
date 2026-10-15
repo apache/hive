@@ -329,7 +329,8 @@ public class OperationManager extends AbstractService {
 
   public TableSchema getOperationResultSetSchema(OperationHandle opHandle)
       throws HiveSQLException {
-    return getOperation(opHandle).getResultSetSchema();
+    // released drivers cannot decode VARIANT_TYPE; the JSON values read as a string column
+    return getOperation(opHandle).getResultSetSchema().withVariantAsString();
   }
 
   public RowSet getOperationNextRowSet(OperationHandle opHandle,

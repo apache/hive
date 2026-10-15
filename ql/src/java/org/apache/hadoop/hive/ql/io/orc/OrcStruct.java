@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructEncodedVariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.Writable;
 import org.apache.orc.OrcProto;
 
@@ -557,6 +559,8 @@ final public class OrcStruct implements Writable {
         return new OrcMapObjectInspector((MapTypeInfo) info);
       case LIST:
         return new OrcListObjectInspector((ListTypeInfo) info);
+      case VARIANT:
+        return new StructEncodedVariantObjectInspector(new OrcStructInspector(VariantEncoding.TYPE_INFO));
       default:
         throw new IllegalArgumentException("Unknown type " +
           info.getCategory());

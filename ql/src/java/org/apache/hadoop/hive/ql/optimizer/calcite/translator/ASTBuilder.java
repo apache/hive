@@ -265,6 +265,7 @@ public class ASTBuilder {
     case MAP:
     case ARRAY:
     case ROW:
+    case VARIANT:
       if (literal.getValue() == null) {
         return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
       }

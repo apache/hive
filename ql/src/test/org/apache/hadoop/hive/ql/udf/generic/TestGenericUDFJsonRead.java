@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -30,8 +31,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantBuilder;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
@@ -186,6 +190,18 @@ public class TestGenericUDFJsonRead {
       Map<?, ?> o = (Map<?, ?>) res;
       assertEquals(1, o.size());
       assertEquals(new Text("v"), o.get(new Text("a")));
+    }
+  }
+
+  @Test
+  public void testVariantReadsTheTwoBinaryObject() throws Exception {
+    Variant v = VariantBuilder.parseJson("{\"k\":1}", false);
+    String json = "{\"metadata\":\"" + Base64.getEncoder().encodeToString(v.getMetadata())
+        + "\",\"value\":\"" + Base64.getEncoder().encodeToString(v.getValue()) + "\"}";
+    try (GenericUDFJsonRead udf = new GenericUDFJsonRead()) {
+      ObjectInspector oi = udf.initialize(buildArguments("variant"));
+      assertEquals(ObjectInspector.Category.VARIANT, oi.getCategory());
+      assertEquals(v, ((VariantObjectInspector) oi).getVariant(udf.evaluate(evalArgs(json))));
     }
   }
 

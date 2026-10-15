@@ -21,11 +21,15 @@ package org.apache.hadoop.hive.ql.exec.vector.udf;
 
 import static org.junit.Assert.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VariantColumnVectors;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.udf.generic.GenericUDFIsNull;
@@ -38,8 +42,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFParseJson;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.variant.VariantBuilder;
 import org.junit.Test;
 
 /*
@@ -305,5 +311,41 @@ public class TestVectorUDFAdaptor {
 
     // output entry should not be null for null input for this particular generic UDF
     assertTrue(out.noNulls || !out.isNull[0]);
+  }
+
+  @Test
+  public void testVariantOutputBufferIsReusedAcrossBatches() throws Exception {
+    String json = "{\"key\":\"" + "x".repeat(60) + "\"}";
+    List<ExprNodeDesc> children = List.of(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col0", "t", false));
+    ExprNodeGenericFuncDesc parseJson = new ExprNodeGenericFuncDesc(TypeInfoFactory.getVariantTypeInfo(),
+        new GenericUDFParseJson(), "parse_json", children);
+    VectorUDFArgDesc[] argDescs = {new VectorUDFArgDesc()};
+    argDescs[0].setVariable(0);
+    VectorUDFAdaptor vudf = new VectorUDFAdaptor(parseJson, 1, "variant", argDescs);
+
+    // the batch is reset once and never again, as for the scratch columns of an LLAP IO batch
+    VectorizedRowBatch b = new VectorizedRowBatch(2);
+    BytesColumnVector in = new BytesColumnVector();
+    b.cols[0] = in;
+    b.cols[1] = VectorizedBatchUtil.createColumnVector(TypeInfoFactory.getVariantTypeInfo());
+    b.reset();
+    byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+    for (int i = 0; i < b.getMaxSize(); i++) {
+      in.setRef(i, bytes, 0, bytes.length);
+    }
+    b.size = b.getMaxSize();
+
+    // the shared buffers grow over the first batches until one batch fits
+    StructColumnVector out = (StructColumnVector) b.cols[1];
+    vudf.evaluate(b);
+    vudf.evaluate(b);
+    int metadataBuffer = ((BytesColumnVector) out.fields[0]).bufferSize();
+    int valueBuffer = ((BytesColumnVector) out.fields[1]).bufferSize();
+    for (int batch = 0; batch < 8; batch++) {
+      vudf.evaluate(b);
+    }
+    assertEquals(metadataBuffer, ((BytesColumnVector) out.fields[0]).bufferSize());
+    assertEquals(valueBuffer, ((BytesColumnVector) out.fields[1]).bufferSize());
+    assertEquals(VariantBuilder.parseJson(json, false), VariantColumnVectors.getVariant(out, b.size - 1));
   }
 }

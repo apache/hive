@@ -88,6 +88,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
@@ -311,6 +313,10 @@ public final class ObjectInspectorUtils {
       result = ObjectInspectorFactory.getStandardUnionObjectInspector(ois);
       break;
     }
+    case VARIANT: {
+      result = ObjectInspectorFactory.getStandardVariantObjectInspector();
+      break;
+    }
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
     }
@@ -497,6 +503,10 @@ public final class ObjectInspectorUtils {
       result = new StandardUnionObjectInspector.StandardUnion(tag, object);
       break;
     }
+    case VARIANT: {
+      result = ((VariantObjectInspector) oi).getVariant(o);
+      break;
+    }
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
     }
@@ -626,6 +636,9 @@ public final class ObjectInspectorUtils {
       }
       result.append(">");
       return result.toString();
+    }
+    case VARIANT: {
+      return oi.getClass().getSimpleName();
     }
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
@@ -799,6 +812,11 @@ public final class ObjectInspectorUtils {
       byte tag = uOI.getTag(o);
       return hashCode(uOI.getField(o), uOI.getObjectInspectors().get(tag));
 
+    case VARIANT: {
+      // the hash of the encoding struct of the two binaries
+      return ((VariantObjectInspector) objIns).getVariant(o).hashCode();
+    }
+
     default:
       throw new RuntimeException("Unknown type: "+ objIns.getTypeName());
     }
@@ -937,6 +955,13 @@ public final class ObjectInspectorUtils {
         byte tag = uOI.getTag(o);
         return hashCodeMurmur(uOI.getField(o), uOI.getObjectInspectors().get(tag), byteBuffer);
 
+      case VARIANT: {
+        Variant variant = ((VariantObjectInspector) objIns).getVariant(o);
+        ObjectInspector binaryOI = PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector;
+        return 31 * hashCodeMurmur(variant.getMetadata(), binaryOI, byteBuffer)
+            + hashCodeMurmur(variant.getValue(), binaryOI, byteBuffer);
+      }
+
       default:
         throw new RuntimeException("Unknown type: "+ objIns.getTypeName());
     }
@@ -1025,6 +1050,8 @@ public final class ObjectInspectorUtils {
           return false;
         }
       }
+      return true;
+    case VARIANT:
       return true;
     default:
       return false;
@@ -1262,10 +1289,25 @@ public final class ObjectInspectorUtils {
           uoi2.getField(o2), uoi2.getObjectInspectors().get(tag2),
           mapEqualComparer, nullValueOpt);
     }
+    case VARIANT: {
+      // the metadata binaries, then the value binaries
+      return compare(variantEncodedData(o1, oi1), variantEncodedInspector(oi1),
+          variantEncodedData(o2, oi2), variantEncodedInspector(oi2), mapEqualComparer, nullValueOpt);
+    }
     default:
       throw new RuntimeException("Compare on unknown type: "
           + oi1.getCategory());
     }
+  }
+
+  /** The variant as a {@link VariantEncoding} struct: a struct-encoded value as it is, any other as its binaries. */
+  private static Object variantEncodedData(Object o, ObjectInspector oi) {
+    return oi instanceof StructEncodedVariantObjectInspector ? o : VariantEncoding.fields(oi, o);
+  }
+
+  private static StructObjectInspector variantEncodedInspector(ObjectInspector oi) {
+    return oi instanceof StructEncodedVariantObjectInspector encoded
+        ? encoded.getEncodedObjectInspector() : VariantEncoding.JAVA_OBJECT_INSPECTOR;
   }
 
   /**
@@ -1434,6 +1476,10 @@ public final class ObjectInspectorUtils {
       return true;
     }
 
+    if (c1.equals(Category.VARIANT)) {
+      return true;
+    }
+
     // Unknown category
     throw new RuntimeException("Unknown category encountered: " + c1);
   }
@@ -1488,6 +1534,8 @@ public final class ObjectInspectorUtils {
             fieldNames,
             fieldObjectInspectors,
             (List<?>)writableValue);
+      case VARIANT:
+        return ObjectInspectorFactory.getStandardConstantVariantObjectInspector((Variant) writableValue);
       default:
        throw new IllegalArgumentException(
            writableOI.getCategory() + " not yet supported for constant OI");
@@ -1579,6 +1627,8 @@ public final class ObjectInspectorUtils {
         return oi instanceof SettableMapObjectInspector;
       case UNION:
         return oi instanceof SettableUnionObjectInspector;
+      case VARIANT:
+        return oi instanceof StandardVariantObjectInspector;
       default:
         throw new RuntimeException("Hive internal error inside isAssignableFromSettableOI : "
             + oi.getTypeName() + " not supported yet.");
@@ -1646,6 +1696,8 @@ public final class ObjectInspectorUtils {
           break;
         }
       }
+      break;
+    case VARIANT:
       break;
     default:
       throw new RuntimeException("Hive internal error inside hasAllFieldsSettable : "

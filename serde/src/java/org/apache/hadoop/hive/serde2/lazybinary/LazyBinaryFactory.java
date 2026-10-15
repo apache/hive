@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructEncodedVariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveIntervalDayTimeObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveIntervalYearMonthObjectInspector;
@@ -119,6 +120,9 @@ public final class LazyBinaryFactory {
       return new LazyBinaryStruct((LazyBinaryStructObjectInspector) oi);
     case UNION:
       return new LazyBinaryUnion((LazyBinaryUnionObjectInspector) oi);
+    case VARIANT:
+      return new LazyBinaryStruct((LazyBinaryStructObjectInspector)
+          ((StructEncodedVariantObjectInspector) oi).getEncodedObjectInspector());
     }
 
     throw new RuntimeException("Hive LazyBinarySerDe Internal error.");

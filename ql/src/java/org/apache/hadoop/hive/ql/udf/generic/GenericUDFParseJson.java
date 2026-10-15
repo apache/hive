@@ -26,11 +26,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.variant.Variant;
 import org.apache.hadoop.hive.serde2.variant.VariantBuilder;
 
 import java.io.IOException;
-import java.util.List;
 
 @Description(name = "parse_json", value = "_FUNC_(json_string) - Parses a JSON string into a VARIANT type", extended = """
     Example:
@@ -51,8 +49,7 @@ public class GenericUDFParseJson extends GenericUDF {
     }
     inputOI = (PrimitiveObjectInspector) arguments[0];
 
-    // Return a Variant OI
-    return ObjectInspectorFactory.getVariantObjectInspector();
+    return ObjectInspectorFactory.getStandardVariantObjectInspector();
   }
 
   @Override
@@ -63,9 +60,7 @@ public class GenericUDFParseJson extends GenericUDF {
     }
     String json = inputOI.getPrimitiveJavaObject(input).toString();
     try {
-      Variant variant = VariantBuilder.parseJson(json, true);
-      return List.of(variant.getMetadata(), variant.getValue());
-
+      return VariantBuilder.parseJson(json, true);
     } catch (IOException e) {
       throw new HiveException("Failed to parse JSON: " + json, e);
     }

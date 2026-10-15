@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -643,6 +644,8 @@ public abstract class BatchToRowReader<StructType, UnionType>
         return nextList(vector, row, (ListTypeInfo)schema, previous);
       case MAP:
         return nextMap(vector, row, (MapTypeInfo)schema, previous);
+      case VARIANT:
+        return nextStruct(vector, row, VariantEncoding.TYPE_INFO, previous);
       case PRIMITIVE: {
         PrimitiveTypeInfo pschema = (PrimitiveTypeInfo)schema;
         switch (pschema.getPrimitiveCategory()) {

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPower;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFVariantGet;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.BeforeClass;
@@ -202,6 +203,27 @@ public class TestColumnPrunerProcCtx {
     SelectOperator selectOperator = buildSelectOperator(Arrays.asList(funcDesc), paths);
     List<FieldNode> groups = ctx.getSelectColsFromChildren(selectOperator, paths);
     compareTestResults(groups, "root.col1.b", "root.col2");
+  }
+
+  // Test select variant_get(v, path, 'int') from table test(v variant)
+  @Test
+  public void testVariantGetPathStopsBeforeAKeyWithAComma() {
+    assertEquals(List.of("v.a.c"), variantGetPaths("$.a.c"));
+    assertEquals(List.of("v"), variantGetPaths("$.a,b.c"));
+    assertEquals(List.of("v.x"), variantGetPaths("$.x.a,b.c"));
+  }
+
+  private List<String> variantGetPaths(String path) {
+    ExprNodeDesc v = new ExprNodeColumnDesc(TypeInfoFactory.getVariantTypeInfo(), "v", "test", false);
+    ExprNodeDesc variantGet = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, new GenericUDFVariantGet(),
+        "variant_get", Arrays.asList(v, new ExprNodeConstantDesc(path), new ExprNodeConstantDesc("int")));
+    List<FieldNode> outputs = Arrays.asList(new FieldNode("_col0"));
+    List<String> paths = new ArrayList<>();
+    for (FieldNode fn : new ColumnPrunerProcCtx(null).getSelectColsFromChildren(
+        buildSelectOperator(Arrays.asList(variantGet), outputs), outputs)) {
+      paths.addAll(fn.toPaths());
+    }
+    return paths;
   }
 
   @Test

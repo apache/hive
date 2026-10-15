@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.Writable;
 
 class AvroDeserializer {
@@ -305,6 +306,8 @@ class AvroDeserializer {
       return deserializeMap(datum, fileSchema, recordSchema, (MapTypeInfo) columnType);
     case PRIMITIVE:
       return deserializePrimitive(datum, fileSchema, recordSchema, (PrimitiveTypeInfo) columnType);
+    case VARIANT:
+      return deserializeStruct((GenericData.Record) datum, fileSchema, VariantEncoding.TYPE_INFO);
     default:
       throw new AvroSerdeException("Unknown TypeInfo: " + columnType.getCategory());
     }

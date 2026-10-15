@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructEncodedVariantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.WritableUtils;
 
 /**
@@ -239,6 +242,7 @@ public final class LazyBinaryUtils {
     case MAP:
     case STRUCT:
     case UNION:
+    case VARIANT:
       recordInfo.elementOffset = 4;
       recordInfo.elementSize = LazyBinaryUtils.byteArrayToInt(bytes, offset);
       break;
@@ -513,6 +517,12 @@ public final class LazyBinaryUtils {
         }
         result = LazyBinaryObjectInspectorFactory
             .getLazyBinaryUnionObjectInspector(fieldObjectInspectors);
+        break;
+      }
+      case VARIANT: {
+        // Stored as the struct of its two binaries.
+        result = new StructEncodedVariantObjectInspector((StructObjectInspector)
+            getLazyBinaryObjectInspectorFromTypeInfo(VariantEncoding.TYPE_INFO));
         break;
       }
       case UNKNOWN:

@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE TABLE variant_mv_src (id INT, s STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@variant_mv_src
+POSTHOOK: query: CREATE TABLE variant_mv_src (id INT, s STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@variant_mv_src
+FAILED: SemanticException Column name v cannot be of type 'variant' as it is not supported in non-Iceberg tables.

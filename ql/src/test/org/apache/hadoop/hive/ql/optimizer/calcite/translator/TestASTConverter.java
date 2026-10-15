@@ -29,6 +29,7 @@ import org.apache.calcite.sql.type.MapSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -70,6 +71,13 @@ class TestASTConverter {
       "      TOK_TABCOL\n" +
       "         c\n" +
       "         TOK_NULL\n";
+
+  @Test
+  void testConvertTypeWhenInputIsVariant() {
+    ASTNode tree = convertType(new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.VARIANT));
+    assertThat(tree.getType(), is(HiveParser.TOK_VARIANT));
+    assertThat(tree.getChildCount(), is(0));
+  }
 
   @Test
   void testEmptyPlanWhenInputSchemaIsEmpty() {

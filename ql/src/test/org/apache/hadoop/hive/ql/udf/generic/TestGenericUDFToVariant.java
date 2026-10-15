@@ -26,14 +26,15 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructEncodedVariantObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.variant.Variant;
 import org.apache.hadoop.hive.serde2.variant.VariantBuilder;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -41,17 +42,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestGenericUDFToVariant {
 
-  @SuppressWarnings("unchecked")
   private static String toJson(String typeString, Object value) throws Exception {
+    return toJson(TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
+        TypeInfoUtils.getTypeInfoFromTypeString(typeString)), value);
+  }
+
+  private static String toJson(ObjectInspector oi, Object value) throws Exception {
     GenericUDFToVariant udf = new GenericUDFToVariant();
-    udf.initialize(new ObjectInspector[] { TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(
-        TypeInfoUtils.getTypeInfoFromTypeString(typeString)) });
+    udf.initialize(new ObjectInspector[] { oi });
     Object result = udf.evaluate(new GenericUDF.DeferredObject[] { new GenericUDF.DeferredJavaObject(value) });
-    if (result == null) {
-      return null;
-    }
-    List<byte[]> variant = (List<byte[]>) result;
-    return new Variant(variant.get(1), variant.get(0)).toJson(ZoneOffset.UTC);
+    return result == null ? null : ((Variant) result).toJson(ZoneOffset.UTC);
   }
 
   @Test
@@ -88,19 +88,24 @@ public class TestGenericUDFToVariant {
   @Test
   public void testVariantInputIsEmbeddedAsIs() throws Exception {
     Variant v = VariantBuilder.parseJson("{\"k\":1}", false);
-    assertEquals("{\"k\":1}", toJson("variant", List.of(v.getMetadata(), v.getValue())));
+    assertEquals("{\"k\":1}", toJson("variant", v));
+    assertEquals("{\"k\":1}", toJson(new StructEncodedVariantObjectInspector(VariantEncoding.JAVA_OBJECT_INSPECTOR),
+        VariantEncoding.fields(v)));
   }
 
   @Test
   public void testStructAndMapRejected() {
     assertThrows(UDFArgumentTypeException.class, () -> toJson("struct<a:int>", null));
     assertThrows(UDFArgumentTypeException.class, () -> toJson("map<string,int>", null));
+    // the layout a variant used to be is an ordinary struct now
+    assertThrows(UDFArgumentTypeException.class, () -> toJson("struct<metadata:binary,value:binary>", null));
   }
 
   @Test
   public void testMalformedVariantInputThrows() {
     // strict like parse_json and Spark's cast: bytes that are not variant encoding fail loudly
     assertThrows(HiveException.class,
-        () -> toJson("struct<metadata:binary,value:binary>", Arrays.asList(new byte[] { 9 }, new byte[] { 1 })));
+        () -> toJson(new StructEncodedVariantObjectInspector(VariantEncoding.JAVA_OBJECT_INSPECTOR),
+            Arrays.asList(new byte[] { 9 }, new byte[] { 1 })));
   }
 }

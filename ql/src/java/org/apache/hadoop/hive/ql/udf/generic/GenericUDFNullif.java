@@ -56,6 +56,7 @@ public class GenericUDFNullif extends GenericUDF {
     case MAP:
     case STRUCT:
     case PRIMITIVE:
+    case VARIANT:
       break;
     case UNION:
     default:

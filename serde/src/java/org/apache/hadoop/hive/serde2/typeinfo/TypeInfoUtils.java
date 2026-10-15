@@ -721,7 +721,7 @@ public final class TypeInfoUtils {
         break;
       }
       case VARIANT: {
-        result = ObjectInspectorFactory.getVariantObjectInspector();
+        result = ObjectInspectorFactory.getStandardVariantObjectInspector();
         break;
       }
       case UNKNOWN: {
@@ -811,7 +811,7 @@ public final class TypeInfoUtils {
         break;
       }
       case VARIANT: {
-        result = ObjectInspectorFactory.getVariantObjectInspector();
+        result = ObjectInspectorFactory.getStandardVariantObjectInspector();
         break;
       }
       case UNKNOWN: {

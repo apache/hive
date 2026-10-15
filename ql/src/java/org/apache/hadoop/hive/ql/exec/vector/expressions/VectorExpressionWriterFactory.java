@@ -735,6 +735,9 @@ public final class VectorExpressionWriterFactory {
         return genVectorExpressionWritableStruct(
             (SettableStructObjectInspector) fieldObjInspector);
 
+      case VARIANT:
+        return genVectorExpressionWritableVariant();
+
       case UNION:
         return genVectorExpressionWritableUnion(
             (SettableUnionObjectInspector) fieldObjInspector);
@@ -1652,6 +1655,30 @@ public final class VectorExpressionWriterFactory {
         return struct;
       }
     }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableVariant() throws HiveException {
+
+    return new VectorExpressionWriterBase() {
+      @Override
+      public Object writeValue(ColumnVector column, int row) throws HiveException {
+        return setValue(null, column, row);
+      }
+
+      @Override
+      public Object setValue(Object ignored, ColumnVector column, int row) throws HiveException {
+        final int adjustedIndex = column.isRepeating ? 0 : row;
+        if (!column.noNulls && column.isNull[adjustedIndex]) {
+          return null;
+        }
+        return VariantColumnVectors.getVariant((StructColumnVector) column, adjustedIndex);
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return null;
+      }
+    }.init(ObjectInspectorFactory.getStandardVariantObjectInspector());
   }
 
   private static VectorExpressionWriter genVectorExpressionWritableUnion(

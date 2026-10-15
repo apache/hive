@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.WritableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,6 +148,9 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       final List<TypeInfo> objectTypeInfos = unionTypeInfo.getAllUnionObjectTypeInfos();
       field.children = createFields(objectTypeInfos.toArray(new TypeInfo[objectTypeInfos.size()]));
       break;
+    case VARIANT:
+      // Stored as the struct of its two binaries.
+      return createField(VariantEncoding.TYPE_INFO);
     default:
       throw new RuntimeException();
     }

@@ -620,6 +620,32 @@ public abstract class BaseJdbcWithMiniLlap {
     assertArrayEquals("X'01FF'".getBytes("UTF-8"), (byte[]) rowValues[22]);
   }
 
+  // A non-Iceberg table cannot hold VARIANT, so the variant column has its own Iceberg table.
+  @Test(timeout = 60000)
+  public void testVariantType() throws Exception {
+    try (Statement stmt = hs2Conn.createStatement()) {
+      stmt.execute("DROP TABLE IF EXISTS variant_types");
+      stmt.execute("CREATE TABLE variant_types (id INT, v VARIANT) STORED BY ICEBERG "
+          + "TBLPROPERTIES ('format-version'='3')");
+      stmt.execute("INSERT INTO variant_types VALUES (1, parse_json('{\"a\":1,\"b\":[true,\"é\"]}')), "
+          + "(2, parse_json('null')), (3, CAST(NULL AS VARIANT))");
+    }
+    RowCollector2 rowCollector = new RowCollector2();
+    assertEquals(3, processQuery("select id, v from variant_types", 1, rowCollector));
+
+    FieldDesc fieldDesc = rowCollector.schema.getColumns().get(1);
+    assertEquals("v", fieldDesc.getName());
+    assertEquals("variant", fieldDesc.getTypeInfo().getTypeName());
+    Map<Integer, Object> values = new HashMap<>();
+    for (Object[] row : rowCollector.rows) {
+      values.put((Integer) row[0], row[1]);
+    }
+    assertEquals("{\"a\":1,\"b\":[true,\"é\"]}", values.get(1));
+    assertEquals("null", values.get(2));
+    assertTrue(values.containsKey(3));
+    assertNull(values.get(3));
+  }
+
 
   @Test(timeout = 120000)
   public void testComplexQuery() throws Exception {

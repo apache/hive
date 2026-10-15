@@ -124,6 +124,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.slf4j.Logger;
@@ -731,7 +732,8 @@ public class StatsUtils {
         || colTypeLowerCase.startsWith(serdeConstants.LIST_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.MAP_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.STRUCT_TYPE_NAME)
-        || colTypeLowerCase.startsWith(serdeConstants.UNION_TYPE_NAME)) {
+        || colTypeLowerCase.startsWith(serdeConstants.UNION_TYPE_NAME)
+        || columnInfo.getType().getCategory() == Category.VARIANT) {
       return getAvgColLenOf(conf, oi, colTypeLowerCase);
     } else {
       return getAvgColLenOfFixedLengthTypes(colTypeLowerCase);
@@ -1312,6 +1314,10 @@ public class StatsUtils {
       for (ObjectInspector foi : uoi.getObjectInspectors()) {
         result += getSizeOfComplexTypes(conf, foi);
       }
+      break;
+    case VARIANT:
+      // sized as its encoding struct of the two binaries
+      result += getSizeOfComplexTypes(conf, VariantEncoding.JAVA_OBJECT_INSPECTOR);
       break;
     default:
       break;

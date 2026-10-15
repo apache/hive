@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
@@ -38,7 +37,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObject
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
-import org.apache.hadoop.hive.serde2.variant.Variant;
 import org.apache.hadoop.hive.serde2.variant.VariantBuilder;
 
 import java.time.Instant;
@@ -57,8 +55,6 @@ import java.util.List;
       > SELECT CAST(unhex('DEADBEEF') AS VARIANT);
       "3q2+7w==\"""")
 public class GenericUDFToVariant extends GenericUDF {
-  private static final String VARIANT_TYPE_NAME = VariantObjectInspector.get().getTypeName();
-
   private transient ObjectInspector inputOI;
 
   @Override
@@ -68,7 +64,7 @@ public class GenericUDFToVariant extends GenericUDF {
     }
     checkSupported(arguments[0]);
     inputOI = arguments[0];
-    return ObjectInspectorFactory.getVariantObjectInspector();
+    return ObjectInspectorFactory.getStandardVariantObjectInspector();
   }
 
   private static void checkSupported(ObjectInspector oi) throws UDFArgumentException {
@@ -82,7 +78,7 @@ public class GenericUDFToVariant extends GenericUDF {
         checkSupported(((ListObjectInspector) oi).getListElementObjectInspector());
         yield true;
       }
-      case STRUCT -> VARIANT_TYPE_NAME.equals(oi.getTypeName());
+      case VARIANT -> true;
       default -> false;
     };
     if (!supported) {
@@ -99,8 +95,7 @@ public class GenericUDFToVariant extends GenericUDF {
     try {
       VariantBuilder builder = new VariantBuilder(false);
       append(builder, value, inputOI);
-      Variant variant = builder.result();
-      return List.of(variant.getMetadata(), variant.getValue());
+      return builder.result();
     } catch (RuntimeException e) {
       throw new HiveException("Cannot cast value to VARIANT: " + e.getMessage(), e);
     }
@@ -114,8 +109,7 @@ public class GenericUDFToVariant extends GenericUDF {
     switch (oi.getCategory()) {
       case PRIMITIVE -> appendPrimitive(builder, o, (PrimitiveObjectInspector) oi);
       case LIST -> appendArray(builder, o, (ListObjectInspector) oi);
-      // the variant shape, guaranteed by initialize: embed as-is
-      case STRUCT -> builder.appendVariant(Variant.from(((StructObjectInspector) oi).getStructFieldsDataAsList(o)));
+      case VARIANT -> builder.appendVariant(((VariantObjectInspector) oi).getVariant(o));
       default -> throw new HiveException("Cannot cast " + oi.getTypeName() + " to VARIANT");
     }
   }

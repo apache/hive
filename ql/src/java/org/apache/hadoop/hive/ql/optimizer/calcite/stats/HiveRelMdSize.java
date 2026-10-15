@@ -186,6 +186,9 @@ public class HiveRelMdSize extends RelMdSize {
         average += averageTypeValueSize(field.getType());
       }
       return average;
+    case VARIANT:
+      // the metadata and value binaries, each sized as BINARY above: by its precision, which Hive leaves unspecified
+      return 2 * (double) RelDataType.PRECISION_NOT_SPECIFIED;
     default:
       return null;
     }

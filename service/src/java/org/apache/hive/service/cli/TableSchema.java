@@ -60,6 +60,21 @@ public class TableSchema {
     this(schema.getFieldSchemas());
   }
 
+  /**
+   * This schema with top-level VARIANT columns typed as STRING, for clients that cannot read VARIANT_TYPE.
+   * The values are JSON text either way.
+   */
+  public TableSchema withVariantAsString() {
+    TableSchema result = new TableSchema();
+    for (ColumnDescriptor column : columns) {
+      result.columns.add(column.getType() == Type.VARIANT_TYPE
+          ? new ColumnDescriptor(column.getName(), column.getComment(), new TypeDescriptor(Type.STRING_TYPE),
+              column.getOrdinalPosition())
+          : column);
+    }
+    return result;
+  }
+
   public List<ColumnDescriptor> getColumnDescriptors() {
     return new ArrayList<ColumnDescriptor>(columns);
   }

@@ -36,7 +36,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.variant.Variant;
 import org.apache.hadoop.io.BooleanWritable;
 
 /**
@@ -190,6 +192,15 @@ public class GenericUDFIn extends GenericUDF {
           value = conversionHelper.convertIfNecessary(arguments[0].get(), argumentOIs[0]);
         }
         if (constantInSet.contains(((StructObjectInspector) compareOI).getStructFieldsDataAsList(value))) {
+          bw.set(true);
+          return bw;
+        }
+        break;
+      }
+      case VARIANT: {
+        Variant value = ((VariantObjectInspector) compareOI).getVariant(
+            conversionHelper.convertIfNecessary(arguments[0].get(), argumentOIs[0]));
+        if (constantInSet.contains(value)) {
           bw.set(true);
           return bw;
         }

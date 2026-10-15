@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructEncodedVariantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 
 /**
  * An AvroObjectInspectorGenerator takes an Avro schema and creates the three
@@ -132,6 +135,11 @@ public class AvroObjectInspectorGenerator {
 
         result = ObjectInspectorFactory.getStandardUnionObjectInspector(unionObjectInspectors);
         break;
+      case VARIANT:
+        // Avro rows hold the record of the two binaries as a struct.
+        result = new StructEncodedVariantObjectInspector(
+            (StructObjectInspector) createObjectInspectorWorker(VariantEncoding.TYPE_INFO));
+        break;
       default:
         throw new AvroSerdeException("No Hive categories matched: " + ti);
     }
@@ -145,7 +153,8 @@ public class AvroObjectInspectorGenerator {
            c.equals(ObjectInspector.Category.MAP)       ||
            c.equals(ObjectInspector.Category.LIST)      ||
            c.equals(ObjectInspector.Category.STRUCT)    ||
-           c.equals(ObjectInspector.Category.UNION);
+           c.equals(ObjectInspector.Category.UNION)     ||
+           c.equals(ObjectInspector.Category.VARIANT);
   }
 
   public static List<String> generateColumnNames(Schema schema) {

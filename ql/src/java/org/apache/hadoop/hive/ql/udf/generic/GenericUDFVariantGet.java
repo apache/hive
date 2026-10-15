@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -34,13 +34,9 @@ import org.apache.hadoop.hive.serde2.variant.VariantUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,7 +54,7 @@ public class GenericUDFVariantGet extends GenericUDF {
   private static final Logger LOG = LoggerFactory.getLogger(GenericUDFVariantGet.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  private StructObjectInspector variantOI;
+  private VariantObjectInspector variantOI;
   private PrimitiveObjectInspector pathOI;
 
   private String targetType;
@@ -69,10 +65,10 @@ public class GenericUDFVariantGet extends GenericUDF {
       throw new UDFArgumentException("variant_get requires 2 or 3 arguments");
     }
 
-    if (!(arguments[0] instanceof StructObjectInspector)) {
+    if (!(arguments[0] instanceof VariantObjectInspector variantArgument)) {
       throw new UDFArgumentException("First argument must be VARIANT");
     }
-    variantOI = (StructObjectInspector) arguments[0];
+    variantOI = variantArgument;
 
     if (!(arguments[1] instanceof PrimitiveObjectInspector)) {
       throw new UDFArgumentException("Second argument must be string path");
@@ -100,7 +96,7 @@ public class GenericUDFVariantGet extends GenericUDF {
       if (variantObj == null) {
         return null;
       }
-      Variant variant = Variant.from(variantOI.getStructFieldsDataAsList(variantObj));
+      Variant variant = variantOI.getVariant(variantObj);
 
       Object pathObj = arguments[1].get();
       if (pathObj == null) {
@@ -162,7 +158,7 @@ public class GenericUDFVariantGet extends GenericUDF {
         case "int", "integer" -> toInteger(value);
         case "long" -> toLong(value);
         case "double" -> toDouble(value);
-        case "string" -> toString(value);
+        case "string" -> value.castToString();
         default -> throw new IllegalArgumentException("Unsupported target type: " + targetType);
       };
     } catch (NumberFormatException e) {
@@ -216,26 +212,6 @@ public class GenericUDFVariantGet extends GenericUDF {
       case DOUBLE -> value.getDouble() != 0.0;
       case FLOAT -> value.getFloat() != 0.0f;
       case STRING -> Boolean.parseBoolean(value.getString());
-      default -> null;
-    };
-  }
-
-  private static String toString(Variant value) {
-    return switch (value.getType()) {
-      case BOOLEAN -> String.valueOf(value.getBoolean());
-      case LONG -> String.valueOf(value.getLong());
-      case DOUBLE -> String.valueOf(value.getDouble());
-      case FLOAT -> String.valueOf(value.getFloat());
-      case DECIMAL -> value.getDecimal().toPlainString();
-      case STRING -> value.getString();
-      case BINARY -> Base64.getEncoder().encodeToString(value.getBinary());
-      case DATE -> LocalDate.ofEpochDay(value.getLong()).toString();
-      case TIMESTAMP, TIMESTAMP_NTZ -> {
-        Instant instant = Instant.EPOCH.plus(value.getLong(), ChronoUnit.MICROS);
-        yield instant.toString();
-      }
-      case UUID -> value.getUuid().toString();
-      case OBJECT, ARRAY -> value.toJson(ZoneOffset.UTC);
       default -> null;
     };
   }

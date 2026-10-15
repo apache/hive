@@ -1,0 +1,5 @@
+PREHOOK: query: CREATE TABLE variant_st (id INT, s STRUCT<x:INT, v:VARIANT>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@variant_st
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Column name s cannot be of type 'struct<x:int,v:variant>' as it is not supported in non-Iceberg tables.

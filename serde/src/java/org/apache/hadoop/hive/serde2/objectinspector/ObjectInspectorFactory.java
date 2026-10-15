@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.variant.Variant;
 import org.apache.thrift.TUnion;
 
 import com.google.common.cache.Cache;
@@ -364,8 +365,25 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
+  private static final StandardVariantObjectInspector STANDARD_VARIANT_OBJECT_INSPECTOR =
+      new StandardVariantObjectInspector();
+
+  /**
+   * Returns the standard variant inspector, whose objects are {@link Variant}s.
+   *
+   * @deprecated use {@link #getStandardVariantObjectInspector()}
+   */
+  @Deprecated
   public static ObjectInspector getVariantObjectInspector() {
-    return VariantObjectInspector.get();
+    return getStandardVariantObjectInspector();
+  }
+
+  public static StandardVariantObjectInspector getStandardVariantObjectInspector() {
+    return STANDARD_VARIANT_OBJECT_INSPECTOR;
+  }
+
+  public static StandardConstantVariantObjectInspector getStandardConstantVariantObjectInspector(Variant value) {
+    return new StandardConstantVariantObjectInspector(value);
   }
 
   public static ObjectInspector getUnknownObjectInspector() {

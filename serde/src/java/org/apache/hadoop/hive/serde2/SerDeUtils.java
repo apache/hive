@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
-import org.apache.hadoop.hive.serde2.variant.Variant;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.slf4j.Logger;
@@ -76,8 +75,6 @@ public final class SerDeUtils {
 
   // lower case null is used within json objects
   private static final String JSON_NULL = "null";
-  // the physical struct<metadata:binary,value:binary> shape identifying variant values at runtime
-  private static final String VARIANT_TYPE_NAME = VariantObjectInspector.get().getTypeName();
   public static final String LIST_SINK_OUTPUT_FORMATTER = "list.sink.output.formatter";
   public static final String LIST_SINK_OUTPUT_PROTOCOL = "list.sink.output.protocol";
   public static final Logger LOG = LoggerFactory.getLogger(SerDeUtils.class.getName());
@@ -186,7 +183,7 @@ public final class SerDeUtils {
     }
     // for now, expose non-primitive as a string
     // TODO: expose non-primitive as a structured object while maintaining JDBC compliance
-    return SerDeUtils.getJSONString(val, valOI, JSON_NULL, true);
+    return SerDeUtils.getJSONString(val, valOI);
   }
 
   public static String getJSONString(Object o, ObjectInspector oi) {
@@ -203,23 +200,13 @@ public final class SerDeUtils {
    * @return
    */
   public static String getJSONString(Object o, ObjectInspector oi, String nullStr) {
-    return getJSONString(o, oi, nullStr, false);
-  }
-
-  /**
-   * Use this for client-facing output: variant values, recognized by their physical
-   * {@code struct<metadata:binary,value:binary>} shape, are rendered as their logical JSON
-   * value instead of the raw metadata/value bytes.
-   */
-  public static String getJSONString(Object o, ObjectInspector oi, String nullStr, boolean decodeVariant) {
     StringBuilder sb = new StringBuilder();
-    buildJSONString(sb, o, oi, nullStr, decodeVariant);
+    buildJSONString(sb, o, oi, nullStr);
     return sb.toString();
   }
 
 
-  static void buildJSONString(StringBuilder sb, Object o, ObjectInspector oi, String nullStr,
-      boolean decodeVariant) {
+  static void buildJSONString(StringBuilder sb, Object o, ObjectInspector oi, String nullStr) {
     switch (oi.getCategory()) {
     case PRIMITIVE: {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
@@ -337,7 +324,7 @@ public final class SerDeUtils {
           if (i > 0) {
             sb.append(COMMA);
           }
-          buildJSONString(sb, olist.get(i), listElementObjectInspector, JSON_NULL, decodeVariant);
+          buildJSONString(sb, olist.get(i), listElementObjectInspector, JSON_NULL);
         }
         sb.append(RBRACKET);
       }
@@ -361,9 +348,9 @@ public final class SerDeUtils {
             sb.append(COMMA);
           }
           Map.Entry<?, ?> e = (Map.Entry<?, ?>) entry;
-          buildJSONString(sb, e.getKey(), mapKeyObjectInspector, JSON_NULL, decodeVariant);
+          buildJSONString(sb, e.getKey(), mapKeyObjectInspector, JSON_NULL);
           sb.append(COLON);
-          buildJSONString(sb, e.getValue(), mapValueObjectInspector, JSON_NULL, decodeVariant);
+          buildJSONString(sb, e.getValue(), mapValueObjectInspector, JSON_NULL);
         }
         sb.append(RBRACE);
       }
@@ -371,27 +358,24 @@ public final class SerDeUtils {
     }
     case STRUCT: {
       StructObjectInspector soi = (StructObjectInspector) oi;
+      List<? extends StructField> structFields = soi.getAllStructFieldRefs();
       if (o == null) {
         sb.append(nullStr);
-        break;
-      }
-      if (decodeVariant && appendVariantJson(sb, o, soi)) {
-        break;
-      }
-      List<? extends StructField> structFields = soi.getAllStructFieldRefs();
-      sb.append(LBRACE);
-      for (int i = 0; i < structFields.size(); i++) {
-        if (i > 0) {
-          sb.append(COMMA);
+      } else {
+        sb.append(LBRACE);
+        for (int i = 0; i < structFields.size(); i++) {
+          if (i > 0) {
+            sb.append(COMMA);
+          }
+          sb.append(QUOTE);
+          sb.append(structFields.get(i).getFieldName());
+          sb.append(QUOTE);
+          sb.append(COLON);
+          buildJSONString(sb, soi.getStructFieldData(o, structFields.get(i)),
+              structFields.get(i).getFieldObjectInspector(), JSON_NULL);
         }
-        sb.append(QUOTE);
-        sb.append(structFields.get(i).getFieldName());
-        sb.append(QUOTE);
-        sb.append(COLON);
-        buildJSONString(sb, soi.getStructFieldData(o, structFields.get(i)),
-            structFields.get(i).getFieldObjectInspector(), JSON_NULL, decodeVariant);
+        sb.append(RBRACE);
       }
-      sb.append(RBRACE);
       break;
     }
     case UNION: {
@@ -403,40 +387,21 @@ public final class SerDeUtils {
         sb.append(uoi.getTag(o));
         sb.append(COLON);
         buildJSONString(sb, uoi.getField(o),
-              uoi.getObjectInspectors().get(uoi.getTag(o)), JSON_NULL, decodeVariant);
+              uoi.getObjectInspectors().get(uoi.getTag(o)), JSON_NULL);
         sb.append(RBRACE);
+      }
+      break;
+    }
+    case VARIANT: {
+      if (o == null) {
+        sb.append(nullStr);
+      } else {
+        sb.append(((VariantObjectInspector) oi).getVariant(o).toJson(ZoneOffset.UTC));
       }
       break;
     }
     default:
       throw new RuntimeException("Unknown type in ObjectInspector!");
-    }
-  }
-
-  /**
-   * Renders a variant value as its logical JSON and returns true. Variant values are recognized
-   * by their physical {@code struct<metadata:binary,value:binary>} shape, independent of the
-   * ObjectInspector flavor; returns false without output when the struct has a different shape
-   * or the bytes are not valid variant encoding, so the caller falls back to the generic struct
-   * rendering.
-   */
-  private static boolean appendVariantJson(StringBuilder sb, Object o, StructObjectInspector soi) {
-    if (!VARIANT_TYPE_NAME.equals(soi.getTypeName())) {
-      return false;
-    }
-    List<? extends StructField> fields = soi.getAllStructFieldRefs();
-    byte[] metadata = ((BinaryObjectInspector) fields.get(0).getFieldObjectInspector())
-        .getPrimitiveJavaObject(soi.getStructFieldData(o, fields.get(0)));
-    byte[] value = ((BinaryObjectInspector) fields.get(1).getFieldObjectInspector())
-        .getPrimitiveJavaObject(soi.getStructFieldData(o, fields.get(1)));
-    if (metadata == null || value == null) {
-      return false;
-    }
-    try {
-      sb.append(new Variant(value, metadata).toJson(ZoneOffset.UTC));
-      return true;
-    } catch (RuntimeException e) {
-      return false;
     }
   }
 
@@ -547,6 +512,9 @@ public final class SerDeUtils {
         return hasAnyNullObject(uoi.getField(o),
             uoi.getObjectInspectors().get(uoi.getTag(o)));
       }
+    }
+    case VARIANT: {
+      return o == null;
     }
     default:
       throw new RuntimeException("Unknown type in ObjectInspector!");

@@ -1,0 +1,1 @@
+CREATE TABLE variant_map (id INT, m MAP<STRING, VARIANT>);

@@ -62,6 +62,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hive.common.util.TimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -235,6 +237,8 @@ public class HiveJsonReader {
         return visitStructNode(rootNode, oi);
       case MAP:
         return visitMapNode(rootNode, oi);
+      case VARIANT:
+        return visitVariantNode(rootNode);
       default:
         throw new SerDeException(
             "Parsing of: " + oi.getCategory() + " is not supported");
@@ -344,6 +348,19 @@ public class HiveJsonReader {
     }
 
     return ret;
+  }
+
+  /**
+   * Visit a node holding a variant as the JSON object of its two binaries.
+   *
+   * @param rootNode The node pointing at the JSON object
+   * @return The Variant; the standard variant inspector holds it directly
+   * @throws SerDeException A binary cannot be decoded
+   */
+  private Variant visitVariantNode(final JsonNode rootNode) throws SerDeException {
+    Preconditions.checkArgument(JsonNodeType.OBJECT == rootNode.getNodeType());
+    return new Variant(getByteValue(rootNode.get(VariantEncoding.VALUE)),
+        getByteValue(rootNode.get(VariantEncoding.METADATA)));
   }
 
   /**

@@ -28,6 +28,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.StringUtils;
@@ -71,6 +73,12 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
   public static final String HIVE_TABLE_AS_PARQUET_SCHEMA = "HIVE_TABLE_SCHEMA";
   public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";
+  /**
+   * Set by a caller of the vectorized reader that rebuilds shredded VARIANT values itself (Iceberg). The reader then
+   * reads the metadata and value of a shredded VARIANT group, instead of failing on its typed_value.
+   */
+  public static final String SHREDDED_VARIANT_REBUILT = "hive.parquet.shredded.variant.rebuilt";
+  private static final String TYPED_VALUE = "typed_value";
   private TypeInfo hiveTypeInfo;
   /**
    * From a string which columns names (including hive column), return a list
@@ -104,7 +112,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
    * @param colTypes List of column types.
    * @return List of GroupType objects of projected columns.
    */
-  private static List<Type> getProjectedGroupFields(GroupType schema, List<String> colNames, List<TypeInfo> colTypes) {
+  private static List<Type> getProjectedGroupFields(GroupType schema, List<String> colNames, List<TypeInfo> colTypes,
+      boolean shreddedVariantRebuilt) {
     List<Type> schemaTypes = new ArrayList<Type>();
 
     ListIterator<String> columnIterator = colNames.listIterator();
@@ -118,38 +127,43 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       if (fieldType == null) {
         schemaTypes.add(Types.optional(PrimitiveTypeName.BINARY).named(colName));
       } else {
-        schemaTypes.add(getProjectedType(colType, fieldType));
+        schemaTypes.add(getProjectedType(colType, fieldType, shreddedVariantRebuilt));
       }
     }
 
     return schemaTypes;
   }
 
-  private static Type getProjectedType(TypeInfo colType, Type fieldType) {
+  private static Type getProjectedType(TypeInfo colType, Type fieldType, boolean shreddedVariantRebuilt) {
     switch (colType.getCategory()) {
       case STRUCT:
         List<Type> groupFields = getProjectedGroupFields(
           fieldType.asGroupType(),
           ((StructTypeInfo) colType).getAllStructFieldNames(),
-          ((StructTypeInfo) colType).getAllStructFieldTypeInfos()
+          ((StructTypeInfo) colType).getAllStructFieldTypeInfos(),
+          shreddedVariantRebuilt
         );
 
         Type[] typesArray = groupFields.toArray(new Type[0]);
         return Types.buildGroup(fieldType.getRepetition())
           .addFields(typesArray)
           .named(fieldType.getName());
+      case VARIANT:
+        // without a caller that rebuilds shredded values, the readers resolve the group (getVariantFields)
+        return shreddedVariantRebuilt ? getVariantFields(fieldType.asGroupType(), true) : fieldType;
       case LIST:
         TypeInfo elemType = ((ListTypeInfo) colType).getListElementTypeInfo();
-        if (elemType.getCategory() == ObjectInspector.Category.STRUCT) {
+        if (elemType.getCategory() == ObjectInspector.Category.STRUCT
+            || elemType.getCategory() == ObjectInspector.Category.VARIANT) {
           Type subFieldType = fieldType.asGroupType().getType(0);
           if (!subFieldType.isPrimitive()) {
             String subFieldName = subFieldType.getName();
             Text name = new Text(subFieldName);
             if (name.equals(ParquetHiveSerDe.ARRAY) || name.equals(ParquetHiveSerDe.LIST)) {
               subFieldType = new GroupType(Repetition.REPEATED, subFieldName,
-                getProjectedType(elemType, subFieldType.asGroupType().getType(0)));
+                getProjectedType(elemType, subFieldType.asGroupType().getType(0), shreddedVariantRebuilt));
             } else {
-              subFieldType = getProjectedType(elemType, subFieldType);
+              subFieldType = getProjectedType(elemType, subFieldType, shreddedVariantRebuilt);
             }
           return Types.buildGroup(Repetition.OPTIONAL).as(LogicalTypeAnnotation.listType())
               .addFields(subFieldType).named(fieldType.getName());
@@ -162,6 +176,44 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   }
 
   /**
+   * The metadata and value fields of a VARIANT group, found by name. A shredded group (one with a typed_value field)
+   * fails unless the caller rebuilds its values, since its metadata and value alone are incomplete values.
+   */
+  public static GroupType getVariantFields(GroupType group, boolean shreddedVariantRebuilt) {
+    if (!shreddedVariantRebuilt && group.containsField(TYPED_VALUE)) {
+      throw new UnsupportedOperationException("Cannot read the shredded VARIANT '" + group.getName()
+          + "': its typed_value field is read only through Iceberg tables");
+    }
+    return getProjectedType(VariantEncoding.TYPE_INFO, group, shreddedVariantRebuilt).asGroupType();
+  }
+
+  /**
+   * Cuts a nested column path at a VARIANT column or struct field. A variant is read whole: the rest of the path
+   * (pushed down for variant_get) addresses its content, not a Parquet field.
+   */
+  public static String truncateAtVariant(String path, StructTypeInfo rowType) {
+    String[] names = path.split("\\.");
+    TypeInfo type = rowType;
+    for (int i = 0; i < names.length && type instanceof StructTypeInfo struct; i++) {
+      type = getFieldTypeIgnoreCase(struct, names[i]);
+      if (type != null && type.getCategory() == ObjectInspector.Category.VARIANT) {
+        return String.join(".", Arrays.copyOf(names, i + 1));
+      }
+    }
+    return path;
+  }
+
+  private static TypeInfo getFieldTypeIgnoreCase(StructTypeInfo struct, String name) {
+    List<String> names = struct.getAllStructFieldNames();
+    for (int i = 0; i < names.size(); i++) {
+      if (names.get(i).equalsIgnoreCase(name)) {
+        return struct.getAllStructFieldTypeInfos().get(i);
+      }
+    }
+    return null;
+  }
+
+  /**
    * Searches column names by name on a given Parquet message schema, and returns its projected
    * Parquet schema types.
    *
@@ -171,7 +223,12 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
    * @return A MessageType object of projected columns.
    */
   public static MessageType getSchemaByName(MessageType schema, List<String> colNames, List<TypeInfo> colTypes) {
-    List<Type> projectedFields = getProjectedGroupFields(schema, colNames, colTypes);
+    return getSchemaByName(schema, colNames, colTypes, false);
+  }
+
+  private static MessageType getSchemaByName(MessageType schema, List<String> colNames, List<TypeInfo> colTypes,
+      boolean shreddedVariantRebuilt) {
+    List<Type> projectedFields = getProjectedGroupFields(schema, colNames, colTypes, shreddedVariantRebuilt);
     Type[] typesArray = projectedFields.toArray(new Type[0]);
 
     return Types.buildMessage()
@@ -399,14 +456,16 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
       List<TypeInfo> columnTypesList = getColumnTypes(columnTypes);
 
+      // the row reader never rebuilds shredded variant values
       MessageType tableSchema =
-        getRequestedSchemaForIndexAccess(indexAccess, columnNamesList, columnTypesList, fileSchema);
+        getRequestedSchemaForIndexAccess(indexAccess, columnNamesList, columnTypesList, fileSchema, false);
 
       contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, tableSchema.toString());
       contextMetadata.put(PARQUET_COLUMN_INDEX_ACCESS, String.valueOf(indexAccess));
       this.hiveTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNamesList, columnTypesList);
 
-      return new ReadContext(getRequestedPrunedSchema(columnNamesList, tableSchema, configuration),
+      return new ReadContext(
+        getRequestedPrunedSchema(columnNamesList, tableSchema, configuration, (StructTypeInfo) hiveTypeInfo),
         contextMetadata);
     } else {
       contextMetadata.put(HIVE_TABLE_AS_PARQUET_SCHEMA, fileSchema.toString());
@@ -429,8 +488,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     List<TypeInfo> columnTypesList,
     MessageType fileSchema,
     Configuration configuration) {
-    MessageType tableSchema =
-      getRequestedSchemaForIndexAccess(indexAccess, columnNamesList, columnTypesList, fileSchema);
+    MessageType tableSchema = getRequestedSchemaForIndexAccess(indexAccess, columnNamesList, columnTypesList,
+      fileSchema, configuration.getBoolean(SHREDDED_VARIANT_REBUILT, false));
 
     List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
     //TODO Duplicated code for init method since vectorization reader path doesn't support Nested
@@ -447,7 +506,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     boolean indexAccess,
     List<String> columnNamesList,
     List<TypeInfo> columnTypesList,
-    MessageType fileSchema) {
+    MessageType fileSchema,
+    boolean shreddedVariantRebuilt) {
     if (indexAccess) {
       List<Integer> indexSequence = new ArrayList<Integer>();
 
@@ -458,15 +518,18 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
       return getSchemaByIndex(fileSchema, columnNamesList, indexSequence);
     } else {
-      return getSchemaByName(fileSchema, columnNamesList, columnTypesList);
+      return getSchemaByName(fileSchema, columnNamesList, columnTypesList, shreddedVariantRebuilt);
     }
   }
 
   private static MessageType getRequestedPrunedSchema(
     List<String> columnNamesList,
     MessageType fileSchema,
-    Configuration configuration) {
-    Set<String> groupPaths = ColumnProjectionUtils.getNestedColumnPaths(configuration);
+    Configuration configuration,
+    StructTypeInfo rowType) {
+    Set<String> groupPaths = ColumnProjectionUtils.getNestedColumnPaths(configuration).stream()
+        .map(path -> truncateAtVariant(path, rowType))
+        .collect(Collectors.toSet());
     List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
     if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
       return getProjectedSchema(fileSchema, columnNamesList, indexColumnsWanted, groupPaths);
