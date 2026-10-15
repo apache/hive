@@ -159,7 +159,16 @@ public class TestParquetEncodedDataReader {
   private static final int ROW_GROUPS = 3;
   private static final int ROWS = ROWS_PER_GROUP * ROW_GROUPS;
   // Smaller than every column chunk so each chunk spans several cache buffers.
+
   private static final int MAX_ALLOC = 4096;
+  /**
+   * hive.llap.io.encode.alloc.size: the size below which {@link ParquetCacheLayout} stops splitting a
+   * remainder into smaller power-of-two buffers. Set below {@link #MAX_ALLOC} so a chunk's remainder
+   * splits, leaving buffer boundaries that are not multiples of MAX_ALLOC, as on a daemon (256KB floor,
+   * 16MB maximum); testFallbackReaderRefillsAHoleOnTheNativeReaderBoundaries needs one. At the 256KB
+   * default the layout would cap the floor at 4KB, and each chunk would be 4KB buffers plus one tail.
+   */
+  private static final int FLOOR = 1024;
   /** Padding around a range's bytes when a vectored read returns them inside a bigger buffer. */
   private static final int RANGE_PAD = 29;
   private static final byte RANGE_POISON = (byte) 0xAB;
@@ -187,14 +196,7 @@ public class TestParquetEncodedDataReader {
 
   private LowLevelCacheImpl cache;
   private Ledger ledger;
-  /**
-   * hive.llap.io.encode.alloc.size: the size below which {@link ParquetCacheLayout} stops splitting a
-   * remainder into smaller power-of-two buffers. Set below {@link #MAX_ALLOC} so a chunk's remainder
-   * splits, leaving buffer boundaries that are not multiples of MAX_ALLOC, as on a daemon (256KB floor,
-   * 16MB maximum); testFallbackReaderRefillsAHoleOnTheNativeReaderBoundaries needs one. At the 256KB
-   * default the layout would cap the floor at 4KB, and each chunk would be 4KB buffers plus one tail.
-   */
-  private static final int FLOOR = 1024;
+
   /** Hands every job its own plan path, which is the key its MapWork is cached under. */
   private static final AtomicInteger PLAN_ID = new AtomicInteger();
 
