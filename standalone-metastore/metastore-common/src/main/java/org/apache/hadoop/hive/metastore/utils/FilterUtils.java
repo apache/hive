@@ -544,9 +544,8 @@ public class FilterUtils {
       return writeEventInfoList;
     }
 
-    // Group by dbName -> list of distinct tableNames referenced, mirroring the approach used
-    // in filterCompactionsIfEnabled, so we make one filterTableNames() call per db instead of
-    // one call per row.
+    // Group by dbName -> list of distinct tableNames referenced, mirroring the approach used in
+    // filterCompactionsIfEnabled, so we make one filterTableNames() call per db instead of one call per row.
     Map<String, List<String>> dbToTables = new HashMap<>();
     for (WriteEventInfo info : writeEventInfoList) {
       dbToTables.computeIfAbsent(info.getDatabase(), k -> new ArrayList<>());
