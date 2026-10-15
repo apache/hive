@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.ql.io.parquet.FilterPredicateLeafBuilder;
 import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
 import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree;
@@ -131,8 +132,13 @@ public class ParquetFilterPredicateConverter {
           .getLeafFilterBuilderByType(leaf.getType(), parquetType);
 
       if (isMultiLiteralsOperator(leaf.getOperator())) {
+        List<Object> literals = leaf.getLiteralList();
+        // empty when the runtime values (DynamicValue) of the leaf are not available
+        if (literals.isEmpty()) {
+          return null;
+        }
         return builder.buildPredicate(leaf.getOperator(),
-            leaf.getLiteralList(),
+            literals,
             leaf.getColumnName(),
             columnType);
       } else {
@@ -142,6 +148,9 @@ public class ParquetFilterPredicateConverter {
                 leaf.getColumnName(),
                 columnType);
       }
+    } catch (NoDynamicValuesException e) {
+      // the runtime value of the leaf is not available: the leaf filters nothing
+      return null;
     } catch (Exception e) {
       LOG.error("fail to build predicate filter leaf with errors" + e, e);
       throw e;
