@@ -74,9 +74,14 @@ public abstract class MetaStoreClientTest {
    */
   public static void startMetaStores(Map<MetastoreConf.ConfVars, String> msConf,
       Map<String, String> extraConf) {
+    // The Remote mini-HMS flips the static HiveMetaStore.isMetaStoreRemote flag for the whole JVM, so the
+    // proxy-privilege check (authorizeProxyPrivilege) would also apply to the Embedded variant and to the
+    // test user. Disable it unless a test explicitly sets it.
+    Map<String, String> effectiveExtraConf = new HashMap<>(extraConf);
+    effectiveExtraConf.putIfAbsent(MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.getVarname(), "false");
     for(AbstractMetaStoreService metaStoreService : metaStoreServices) {
       try {
-        metaStoreService.start(msConf, extraConf);
+        metaStoreService.start(msConf, effectiveExtraConf);
       } catch(Exception e) {
         throw new RuntimeException("Error starting MetaStoreService", e);
       }
