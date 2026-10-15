@@ -260,6 +260,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.AuxOpTreeSignature;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
@@ -354,6 +355,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Map<TableScanOperator, PrunedPartitionList> opToPartList;
   protected Map<String, TableScanOperator> topOps;
   protected Map<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
+  /**
+   * Select list columns, in select list order, of an INSERT with a column list, by query block and destination.
+   * The select output is rearranged into the target column order, and the reduce sinks of the destination, including
+   * the extra one for a LIMIT, read columns with the same internal names. TRANSFORM and UDTF outputs are never
+   * rearranged, so they have no entry and their positions resolve against their own columns.
+   */
+  private final Map<QB, Map<String, List<ColumnInfo>>> insertSelectListColumns = new HashMap<>();
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
   private final List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts;
@@ -543,6 +551,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     joinContext.clear();
     smbMapJoinContext.clear();
     opParseCtx.clear();
+    insertSelectListColumns.clear();
     groupOpToInputTables.clear();
     disableJoinMerge = defaultJoinMerge;
     aliasToCTEs.clear();
@@ -5049,6 +5058,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    if ((isInTransform || isUDTF) && insertSelectListColumns.containsKey(qb)) {
+      insertSelectListColumns.get(qb).remove(dest);
+    }
+
     LOG.debug("Created Select Plan row schema: {}", out_rwsch);
     return output;
   }
@@ -5226,6 +5239,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       targetCol2ColumnInfo.put(targetCol, outputRR.getColumnInfos().get(colListPos));
       targetCol2Projection.put(targetCol, col_list.get(colListPos++));
     }
+    // getColForInsertStmtSpec renames these columns, so record their select list names first
+    List<ColumnInfo> selectListColumns = new ArrayList<>(outputRR.getColumnInfos());
+    List<String[]> selectListNames = new ArrayList<>();
+    List<String[]> selectListAlternateNames = new ArrayList<>();
+    for (ColumnInfo column : selectListColumns) {
+      selectListNames.add(outputRR.reverseLookup(column.getInternalName()));
+      selectListAlternateNames.add(outputRR.getAlternateMappings(column.getInternalName()));
+    }
     Table target = qb.getMetaData().getDestTableForAlias(dest);
     Partition partition = target == null ? qb.getMetaData().getDestPartitionForAlias(dest) : null;
     if(target == null && partition == null) {
@@ -5263,9 +5284,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tbl = target == null? partition.getTable() : target;
     RowResolver newOutputRR =  getColForInsertStmtSpec(targetCol2Projection, tbl, targetCol2ColumnInfo, colListPos,
                                                        targetTableColTypes, newColList, targetTableColNames);
+    if (selectListColumns.size() == targetTableSchema.size()) {
+      for (int i = 0; i < selectListColumns.size(); i++) {
+        // the reduce sink for a LIMIT copies one alternate name, the last one added, so add the primary name last
+        addSelectListName(newOutputRR, selectListAlternateNames.get(i), selectListColumns.get(i));
+        addSelectListName(newOutputRR, selectListNames.get(i), selectListColumns.get(i));
+      }
+      insertSelectListColumns.computeIfAbsent(qb, k -> new HashMap<>()).put(dest, selectListColumns);
+    }
     col_list.clear();
     col_list.addAll(newColList);
     return newOutputRR;
+  }
+
+  /**
+   * Keeps a select list name resolvable after the column was rearranged into the target column order.
+   */
+  private static void addSelectListName(RowResolver rearrangedRR, String[] name, ColumnInfo column) {
+    if (name != null && name[1] != null) {
+      rearrangedRR.addMappingOnly(name[0], name[1], column);
+    }
   }
 
   String recommendName(ExprNodeDesc exp, String colAlias) {
@@ -9504,7 +9542,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int ccount = partitionExprs.getChildCount();
       for (int i = 0; i < ccount; ++i) {
         ASTNode cl = (ASTNode) partitionExprs.getChild(i);
-        partCols.add(isUnresolvedPosition(cl) ? genPositionExpr(cl, inputRR) : genExprNodeDesc(cl, inputRR));
+        partCols.add(isUnresolvedPosition(cl) ? genPositionExpr(cl, inputRR, qb, dest) : genExprNodeDesc(cl, inputRR));
       }
     }
     ASTNode sortExprs = qb.getParseInfo().getClusterByForClause(dest);
@@ -9564,7 +9602,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           order.append("+");
           nullOrder.append("a");
         }
-        sortCols.add(isUnresolvedPosition(cl) ? genPositionExpr(cl, inputRR) : genExprNodeDesc(cl, inputRR));
+        sortCols.add(isUnresolvedPosition(cl) ? genPositionExpr(cl, inputRR, qb, dest) : genExprNodeDesc(cl, inputRR));
       }
     }
 
@@ -9758,20 +9796,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Resolves a 1-based position against the select output, where SELECT * is already expanded.
+   * Resolves a 1-based position against the select list, where SELECT * is already expanded. For an INSERT with a
+   * column list, the select output is in target column order, so the select list order is looked up.
    */
-  private ExprNodeDesc genPositionExpr(ASTNode positionNode, RowResolver selectOutputRR)
+  private ExprNodeDesc genPositionExpr(ASTNode positionNode, RowResolver selectOutputRR, QB qb, String dest)
       throws SemanticException {
-    List<ColumnInfo> columns = selectOutputRR.getColumnInfos();
-    int pos = Integer.parseInt(positionNode.getText());
+    List<ColumnInfo> columns = insertSelectListColumns.getOrDefault(qb, Collections.emptyMap())
+        .getOrDefault(dest, selectOutputRR.getColumnInfos());
+    int pos;
+    try {
+      pos = Integer.parseInt(positionNode.getText());
+    } catch (NumberFormatException e) {
+      throw recompileWithoutCboIfAllowed(e);
+    }
     if (pos < 1 || pos > columns.size()) {
-      throw new SemanticException(ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
-          positionAliasNotFoundMessage(pos, columns.size())));
+      throw recompileWithoutCboIfAllowed(new SemanticException(ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
+          positionAliasNotFoundMessage(pos, columns.size()))));
     }
     return new ExprNodeColumnDesc(columns.get(pos - 1));
   }
 
-  private static String positionAliasNotFoundMessage(int pos, int selectListSize) {
+  /**
+   * When CBO plans a statement, an invalid position makes it recompile the statement without CBO, unless the
+   * fallback strategy treats the error as fatal. A declined statement does the same.
+   */
+  private <T extends Exception> T recompileWithoutCboIfAllowed(T error) {
+    CBOFallbackStrategy fallbackStrategy =
+        CBOFallbackStrategy.valueOf(conf.getVar(ConfVars.HIVE_CBO_FALLBACK_STRATEGY));
+    if (!fallbackStrategy.isFatal(error)) {
+      throw new ReCompileException(ctx.getCboInfo());
+    }
+    return error;
+  }
+
+  static String positionAliasNotFoundMessage(int pos, int selectListSize) {
     return "Position alias: " + pos + " does not exist\nThe Select List is indexed from 1 to " + selectListSize;
   }
 

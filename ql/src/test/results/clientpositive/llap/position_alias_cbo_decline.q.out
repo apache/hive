@@ -197,17 +197,17 @@ NULL
 3
 2
 1
-PREHOOK: query: select d, rank() over (order by d desc) as r from pacd_t tablesample (5 rows) order by 2
+PREHOOK: query: select d, rank() over (order by d desc) as r from pacd_t tablesample (5 rows) order by 2 desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pacd_t
 #### A masked pattern was here ####
-POSTHOOK: query: select d, rank() over (order by d desc) as r from pacd_t tablesample (5 rows) order by 2
+POSTHOOK: query: select d, rank() over (order by d desc) as r from pacd_t tablesample (5 rows) order by 2 desc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pacd_t
 #### A masked pattern was here ####
-3	1
-2	2
 1	3
+2	2
+3	1
 PREHOOK: query: select s, count(*) as n, max(d) as m from pacd_t tablesample (5 rows) group by s order by 3 desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pacd_t
@@ -271,14 +271,14 @@ POSTHOOK: Input: default@pacd_v
 1	a
 PREHOOK: query: from (select a.d from pacd_t a join pacd_t b on a.d = b.d) j
 insert overwrite table pacd_mi_a select d order by 1 desc limit 2
-insert overwrite table pacd_mi_b select d order by 1 limit 2
+insert overwrite table pacd_mi_b select d order by 1 desc limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pacd_t
 PREHOOK: Output: default@pacd_mi_a
 PREHOOK: Output: default@pacd_mi_b
 POSTHOOK: query: from (select a.d from pacd_t a join pacd_t b on a.d = b.d) j
 insert overwrite table pacd_mi_a select d order by 1 desc limit 2
-insert overwrite table pacd_mi_b select d order by 1 limit 2
+insert overwrite table pacd_mi_b select d order by 1 desc limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pacd_t
 POSTHOOK: Output: default@pacd_mi_a
@@ -303,8 +303,7 @@ POSTHOOK: query: select d from pacd_mi_b order by d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pacd_mi_b
 #### A masked pattern was here ####
-1
-2
+3
 PREHOOK: query: select d, s from pacd_t tablesample (5 rows) sort by 1 desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pacd_t
@@ -398,6 +397,1478 @@ POSTHOOK: Input: default@pacd_t
 3	c
 2	b
 1	a
+PREHOOK: query: create table pacd_xy (x int, y int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_xy
+POSTHOOK: query: create table pacd_xy (x int, y int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_xy
+PREHOOK: query: insert into pacd_xy values (1, 20), (3, 10), (2, 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pacd_xy
+POSTHOOK: query: insert into pacd_xy values (1, 20), (3, 10), (2, 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pacd_xy
+POSTHOOK: Lineage: pacd_xy.x SCRIPT []
+POSTHOOK: Lineage: pacd_xy.y SCRIPT []
+PREHOOK: query: create table pacd_xy_t (x int, y int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: create table pacd_xy_t (x int, y int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: create table pacd_xy_t2 (x int, y int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_xy_t2
+POSTHOOK: query: create table pacd_xy_t2 (x int, y int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_xy_t2
+PREHOOK: query: create table pacd_xy_p (x int, y int) partitioned by (p string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_xy_p
+POSTHOOK: query: create table pacd_xy_p (x int, y int) partitioned by (p string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_xy_p
+PREHOOK: query: create table pacd_xy_def (x int default 7, y int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_xy_def
+POSTHOOK: query: create table pacd_xy_def (x int default 7, y int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_xy_def
+PREHOOK: query: insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+10	3
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) order by 2 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) order by 2 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+30	2
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) order by x desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) order by x desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+10	3
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: insert into pacd_xy_t (x) select y from pacd_xy tablesample (5 rows) order by 1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (x) select y from pacd_xy tablesample (5 rows) order by 1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE []
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+10	NULL
+PREHOOK: query: insert into pacd_xy_p partition (p = 's') (y, x) select x, y from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_p@p=s
+POSTHOOK: query: insert into pacd_xy_p partition (p = 's') (y, x) select x, y from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_p@p=s
+POSTHOOK: Lineage: pacd_xy_p PARTITION(p=s).x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_p PARTITION(p=s).y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: insert into pacd_xy_p partition (p) (y, x, p) select x, y, 'd' from pacd_xy tablesample (5 rows) order by 2 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_p
+POSTHOOK: query: insert into pacd_xy_p partition (p) (y, x, p) select x, y, 'd' from pacd_xy tablesample (5 rows) order by 2 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_p
+POSTHOOK: Output: default@pacd_xy_p@p=d
+POSTHOOK: Lineage: pacd_xy_p PARTITION(p=d).x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_p PARTITION(p=d).y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y, p from pacd_xy_p order by p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_p
+PREHOOK: Input: default@pacd_xy_p@p=d
+PREHOOK: Input: default@pacd_xy_p@p=s
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y, p from pacd_xy_p order by p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_p
+POSTHOOK: Input: default@pacd_xy_p@p=d
+POSTHOOK: Input: default@pacd_xy_p@p=s
+#### A masked pattern was here ####
+30	2	d
+10	3	s
+PREHOOK: query: insert into pacd_xy_def (y) select x from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_def
+POSTHOOK: query: insert into pacd_xy_def (y) select x from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_def
+POSTHOOK: Lineage: pacd_xy_def.x SIMPLE []
+POSTHOOK: Lineage: pacd_xy_def.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_def
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_def
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_def
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_def
+#### A masked pattern was here ####
+7	3
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: from (select a.x, a.y from pacd_xy a join pacd_xy b on a.x = b.x) j
+insert into table pacd_xy_t (y, x) select x, y order by 1 desc limit 1
+insert into table pacd_xy_t2 (y, x) select x, y order by 2 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+PREHOOK: Output: default@pacd_xy_t2
+POSTHOOK: query: from (select a.x, a.y from pacd_xy a join pacd_xy b on a.x = b.x) j
+insert into table pacd_xy_t (y, x) select x, y order by 1 desc limit 1
+insert into table pacd_xy_t2 (y, x) select x, y order by 2 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Output: default@pacd_xy_t2
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)a.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)a.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t2.x SIMPLE [(pacd_xy)a.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t2.y SIMPLE [(pacd_xy)a.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+10	3
+PREHOOK: query: select x, y from pacd_xy_t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t2
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t2
+#### A masked pattern was here ####
+30	2
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) sort by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) sort by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_xy
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: y (type: int), x (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      null sort order: a
+                      sort order: -
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.pacd_xy_t
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int)
+                  outputColumnNames: x, y
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(x), max(x), count(1), count(x), compute_bit_vector_hll(x), min(y), max(y), count(y), compute_bit_vector_hll(y)
+                    minReductionHashAggr: 0.6666666
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pacd_xy_t
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: x, y
+          Column Types: int, int
+          Table: default.pacd_xy_t
+
+PREHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) sort by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) sort by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_xy
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Top N Key Operator
+                    sort order: -
+                    keys: x (type: int)
+                    null sort order: a
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    top n: 1
+                    Select Operator
+                      expressions: y (type: int), x (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: a
+                        sort order: -
+                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: -
+                  keys: KEY.reducesinkkey0 (type: int)
+                  null sort order: a
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 1
+                  Select Operator
+                    expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      null sort order: a
+                      sort order: -
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.pacd_xy_t
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int)
+                    outputColumnNames: x, y
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(x), max(x), count(1), count(x), compute_bit_vector_hll(x), min(y), max(y), count(y), compute_bit_vector_hll(y)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pacd_xy_t
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: x, y
+          Column Types: int, int
+          Table: default.pacd_xy_t
+
+PREHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) distribute by 1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) distribute by 1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_xy
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: y (type: int), x (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col0 (type: int), _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Map-reduce partition columns: _col1 (type: int)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col0 (type: int), _col1 (type: int)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.pacd_xy_t
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int)
+                    outputColumnNames: x, y
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(x), max(x), count(1), count(x), compute_bit_vector_hll(x), min(y), max(y), count(y), compute_bit_vector_hll(y)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pacd_xy_t
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: x, y
+          Column Types: int, int
+          Table: default.pacd_xy_t
+
+PREHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) sort by x desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) sort by x desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_xy
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Top N Key Operator
+                    sort order: -
+                    keys: x (type: int)
+                    null sort order: a
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    top n: 1
+                    Select Operator
+                      expressions: y (type: int), x (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: a
+                        sort order: -
+                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: -
+                  keys: KEY.reducesinkkey0 (type: int)
+                  null sort order: a
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 1
+                  Select Operator
+                    expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      null sort order: a
+                      sort order: -
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.pacd_xy_t
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int)
+                    outputColumnNames: x, y
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(x), max(x), count(1), count(x), compute_bit_vector_hll(x), min(y), max(y), count(y), compute_bit_vector_hll(y)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pacd_xy_t
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: x, y
+          Column Types: int, int
+          Table: default.pacd_xy_t
+
+PREHOOK: query: explain insert into pacd_xy_t (y, x) select a.x, b.y from pacd_xy tablesample (5 rows) a join pacd_xy b on a.x = b.x sort by b.y desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: explain insert into pacd_xy_t (y, x) select a.x, b.y from pacd_xy tablesample (5 rows) a join pacd_xy b on a.x = b.x sort by b.y desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: x is not null (type: boolean)
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: x is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: x (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: x (type: int)
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: x is not null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: x is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: x (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: x (type: int)
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: y (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 x (type: int)
+                  1 x (type: int)
+                outputColumnNames: _col0, _col7
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: -
+                  keys: _col7 (type: int)
+                  null sort order: a
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 1
+                  Select Operator
+                    expressions: _col7 (type: int), _col0 (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: a
+                      sort order: -
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: int)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: -
+                  keys: KEY.reducesinkkey0 (type: int)
+                  null sort order: a
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 1
+                  Select Operator
+                    expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: a
+                      sort order: -
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: int)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.pacd_xy_t
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int)
+                    outputColumnNames: x, y
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(x), max(x), count(1), count(x), compute_bit_vector_hll(x), min(y), max(y), count(y), compute_bit_vector_hll(y)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pacd_xy_t
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: x, y
+          Column Types: int, int
+          Table: default.pacd_xy_t
+
+PREHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) distribute by 1 sort by 2 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) distribute by 1 sort by 2 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_xy
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: y (type: int), x (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: a
+                      sort order: -
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.pacd_xy_t
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int)
+                  outputColumnNames: x, y
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(x), max(x), count(1), count(x), compute_bit_vector_hll(x), min(y), max(y), count(y), compute_bit_vector_hll(y)
+                    minReductionHashAggr: 0.6666666
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pacd_xy_t
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: x, y
+          Column Types: int, int
+          Table: default.pacd_xy_t
+
+PREHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) cluster by 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: explain insert into pacd_xy_t (y, x) select x, y from pacd_xy tablesample (5 rows) cluster by 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_xy
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: y (type: int), x (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.pacd_xy_t
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int)
+                  outputColumnNames: x, y
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(x), max(x), count(1), count(x), compute_bit_vector_hll(x), min(y), max(y), count(y), compute_bit_vector_hll(y)
+                    minReductionHashAggr: 0.6666666
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pacd_xy_t
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: x, y
+          Column Types: int, int
+          Table: default.pacd_xy_t
+
+PREHOOK: query: explain insert into pacd_xy_p partition (p) (y, x, p) select x, y, 'e' from pacd_xy tablesample (5 rows) distribute by 3 sort by 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_p
+POSTHOOK: query: explain insert into pacd_xy_p partition (p) (y, x, p) select x, y, 'e' from pacd_xy tablesample (5 rows) distribute by 3 sort by 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_p
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_xy
+                  Row Limit Per Split: 5
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: y (type: int), x (type: int), 'e' (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      null sort order: a
+                      sort order: -
+                      Map-reduce partition columns: _col2 (type: string)
+                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: int), 'e' (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.pacd_xy_p
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int)
+                  outputColumnNames: x, y
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(x), max(x), count(1), count(x), compute_bit_vector_hll(x), min(y), max(y), count(y), compute_bit_vector_hll(y)
+                    keys: 'e' (type: string)
+                    minReductionHashAggr: 0.6666666
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                    Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 'e' (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: 'e' (type: string)
+                      Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                keys: 'e' (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'e' (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                  Statistics: Num rows: 1 Data size: 613 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 613 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            p 
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pacd_xy_p
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: x, y
+          Column Types: int, int
+          Table: default.pacd_xy_p
+
+PREHOOK: query: insert into pacd_xy_t (y, x) select * from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (y, x) select * from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+10	3
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: insert into pacd_xy_t (y, x) select a.x, b.y from pacd_xy tablesample (5 rows) a join pacd_xy b on a.x = b.x order by b.y desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (y, x) select a.x, b.y from pacd_xy tablesample (5 rows) a join pacd_xy b on a.x = b.x order by b.y desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)b.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)a.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+30	2
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: with c as (select x, y from pacd_xy tablesample (5 rows)) insert into pacd_xy_t (y, x) select x, y from c order by 2 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: with c as (select x, y from pacd_xy tablesample (5 rows)) insert into pacd_xy_t (y, x) select x, y from c order by 2 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+30	2
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: create view pacd_xy_v as select x, y from pacd_xy
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_xy_v
+POSTHOOK: query: create view pacd_xy_v as select x, y from pacd_xy
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_xy_v
+POSTHOOK: Lineage: pacd_xy_v.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_v.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[20][tables = [v, d]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: insert into pacd_xy_t (y, x) select v.x, v.y from pacd_xy_v v join (select 1 as one from pacd_xy tablesample (1 rows)) d order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Input: default@pacd_xy_v
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (y, x) select v.x, v.y from pacd_xy_v v join (select 1 as one from pacd_xy tablesample (1 rows)) d order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Input: default@pacd_xy_v
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+10	3
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: truncate table pacd_xy_t2
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t2
+POSTHOOK: query: truncate table pacd_xy_t2
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t2
+PREHOOK: query: from pacd_xy tablesample (5 rows)
+insert into table pacd_xy_t (y, x) select x, y order by 1 desc limit 1
+insert into table pacd_xy_t2 (y, x) select x, y order by 2 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+PREHOOK: Output: default@pacd_xy_t2
+POSTHOOK: query: from pacd_xy tablesample (5 rows)
+insert into table pacd_xy_t (y, x) select x, y order by 1 desc limit 1
+insert into table pacd_xy_t2 (y, x) select x, y order by 2 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Output: default@pacd_xy_t2
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t2.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t2.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+10	3
+PREHOOK: query: select x, y from pacd_xy_t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t2
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t2
+#### A masked pattern was here ####
+30	2
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
 PREHOOK: query: select s, t.c from pacd_t lateral view explode(array(d, -d)) t as c order by 2 desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pacd_t
@@ -412,6 +1883,25 @@ a	1
 a	-1
 b	-2
 c	-3
+PREHOOK: query: insert into pacd_xy_t (y, x) select x, t.c from pacd_xy lateral view explode(array(y)) t as c order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (y, x) select x, t.c from pacd_xy lateral view explode(array(y)) t as c order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SCRIPT [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+10	3
 PREHOOK: query: select d from pacd_t tablesample (5 rows) order by 1 desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pacd_t

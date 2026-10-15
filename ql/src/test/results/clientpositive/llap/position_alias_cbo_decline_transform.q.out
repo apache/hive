@@ -27,3 +27,279 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	c
 1	b
 3	a
+PREHOOK: query: create table pacd_tr_src (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_tr_src
+POSTHOOK: query: create table pacd_tr_src (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_tr_src
+PREHOOK: query: insert into pacd_tr_src values (2,10), (3,20), (1,30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pacd_tr_src
+POSTHOOK: query: insert into pacd_tr_src values (2,10), (3,20), (1,30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pacd_tr_src
+POSTHOOK: Lineage: pacd_tr_src.a SCRIPT []
+POSTHOOK: Lineage: pacd_tr_src.b SCRIPT []
+PREHOOK: query: create table pacd_tr_pos (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_tr_pos
+POSTHOOK: query: create table pacd_tr_pos (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_tr_pos
+PREHOOK: query: create table pacd_tr_named (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_tr_named
+POSTHOOK: query: create table pacd_tr_named (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_tr_named
+PREHOOK: query: insert into pacd_tr_pos (b,a)
+select transform(a,b) using 'cat' as (x int,y int) from pacd_tr_src order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_tr_src
+PREHOOK: Output: default@pacd_tr_pos
+POSTHOOK: query: insert into pacd_tr_pos (b,a)
+select transform(a,b) using 'cat' as (x int,y int) from pacd_tr_src order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_tr_src
+POSTHOOK: Output: default@pacd_tr_pos
+POSTHOOK: Lineage: pacd_tr_pos.a SCRIPT [(pacd_tr_src)pacd_tr_src.FieldSchema(name:b, type:int, comment:null), (pacd_tr_src)pacd_tr_src.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_tr_pos.b SCRIPT [(pacd_tr_src)pacd_tr_src.FieldSchema(name:b, type:int, comment:null), (pacd_tr_src)pacd_tr_src.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: insert into pacd_tr_named (b,a)
+select transform(a,b) using 'cat' as (x int,y int) from pacd_tr_src order by x desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_tr_src
+PREHOOK: Output: default@pacd_tr_named
+POSTHOOK: query: insert into pacd_tr_named (b,a)
+select transform(a,b) using 'cat' as (x int,y int) from pacd_tr_src order by x desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_tr_src
+POSTHOOK: Output: default@pacd_tr_named
+POSTHOOK: Lineage: pacd_tr_named.a SCRIPT [(pacd_tr_src)pacd_tr_src.FieldSchema(name:b, type:int, comment:null), (pacd_tr_src)pacd_tr_src.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_tr_named.b SCRIPT [(pacd_tr_src)pacd_tr_src.FieldSchema(name:b, type:int, comment:null), (pacd_tr_src)pacd_tr_src.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select 'position', a,b from pacd_tr_pos
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_tr_pos
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select 'position', a,b from pacd_tr_pos
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_tr_pos
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+position	30	1
+PREHOOK: query: explain insert into pacd_tr_pos (b,a)
+select transform(a,b) using 'cat' as (x int,y int) from pacd_tr_src sort by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_tr_src
+PREHOOK: Output: default@pacd_tr_pos
+POSTHOOK: query: explain insert into pacd_tr_pos (b,a)
+select transform(a,b) using 'cat' as (x int,y int) from pacd_tr_src sort by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_tr_src
+POSTHOOK: Output: default@pacd_tr_pos
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pacd_tr_src
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: b (type: int), a (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Transform Operator
+                      command: cat
+                      output info:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Top N Key Operator
+                        sort order: -
+                        keys: _col0 (type: int)
+                        null sort order: a
+                        Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        top n: 1
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: a
+                          sort order: -
+                          Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: -
+                  keys: VALUE._col0 (type: int)
+                  null sort order: a
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 1
+                  Select Operator
+                    expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: a
+                      sort order: -
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: int)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Limit
+                Number of rows: 1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.pacd_tr_pos
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int)
+                    outputColumnNames: a, b
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(a), max(a), count(1), count(a), compute_bit_vector_hll(a), min(b), max(b), count(b), compute_bit_vector_hll(b)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 528 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.pacd_tr_pos
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: a, b
+          Column Types: int, int
+          Table: default.pacd_tr_pos
+
+PREHOOK: query: select 'named', a,b from pacd_tr_named
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_tr_named
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select 'named', a,b from pacd_tr_named
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_tr_named
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+named	30	1
+PREHOOK: query: create table pacd_tr_mi_a (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_tr_mi_a
+POSTHOOK: query: create table pacd_tr_mi_a (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_tr_mi_a
+PREHOOK: query: create table pacd_tr_mi_b (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_tr_mi_b
+POSTHOOK: query: create table pacd_tr_mi_b (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_tr_mi_b
+PREHOOK: query: from pacd_tr_src
+insert into pacd_tr_mi_a (a) select transform(a) using 'cat' as (x int) order by 1 desc limit 1
+insert into pacd_tr_mi_b (a) select transform(b) using 'cat' as (x int) order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_tr_src
+PREHOOK: Output: default@pacd_tr_mi_a
+PREHOOK: Output: default@pacd_tr_mi_b
+POSTHOOK: query: from pacd_tr_src
+insert into pacd_tr_mi_a (a) select transform(a) using 'cat' as (x int) order by 1 desc limit 1
+insert into pacd_tr_mi_b (a) select transform(b) using 'cat' as (x int) order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_tr_src
+POSTHOOK: Output: default@pacd_tr_mi_a
+POSTHOOK: Output: default@pacd_tr_mi_b
+POSTHOOK: Lineage: pacd_tr_mi_a.a SCRIPT [(pacd_tr_src)pacd_tr_src.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_tr_mi_b.a SCRIPT [(pacd_tr_src)pacd_tr_src.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select 'multi_a',a from pacd_tr_mi_a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_tr_mi_a
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select 'multi_a',a from pacd_tr_mi_a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_tr_mi_a
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+multi_a	3
+PREHOOK: query: select 'multi_b',a from pacd_tr_mi_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_tr_mi_b
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select 'multi_b',a from pacd_tr_mi_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_tr_mi_b
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+multi_b	30

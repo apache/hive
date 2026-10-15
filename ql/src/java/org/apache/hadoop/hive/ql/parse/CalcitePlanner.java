@@ -5463,10 +5463,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // Note that pos starts from 1 while fieldIndex starts from 0;
         fieldIndex = pos - 1;
       } else {
-        throw new SemanticException(
-                ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg("Position alias: " + pos
-                        + " does not exist\n" + "The Select List is indexed from 1 to "
-                        + selectOutputRR.getColumnInfos().size()));
+        throw new SemanticException(ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
+                positionAliasNotFoundMessage(pos, selectOutputRR.getColumnInfos().size())));
       }
       return fieldIndex;
     }
