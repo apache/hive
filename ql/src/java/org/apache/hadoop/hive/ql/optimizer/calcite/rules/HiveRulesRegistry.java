@@ -29,18 +29,29 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
+/**
+ * A registry that tracks information for the rule applications.
+ * <p>
+ * If used with a {@link org.apache.calcite.plan.hep.HepPlanner}, pass a copy hook to the planner that calls
+ * {@link #onCopy(RelNode, RelNode)}.
+ * </p>
+ */
 public class HiveRulesRegistry {
 
   private SetMultimap<RelOptRule, RelNode> registryVisited;
+  private SetMultimap<RelNode, RelOptRule> visitedNodes;
   private ListMultimap<RelNode, Set<String>> registryPushedPredicates;
 
   public HiveRulesRegistry() {
     this.registryVisited = HashMultimap.create();
+    this.visitedNodes = HashMultimap.create();
     this.registryPushedPredicates = ArrayListMultimap.create();
   }
 
   public void registerVisited(RelOptRule rule, RelNode operator) {
-    this.registryVisited.put(rule, operator);
+    if (this.registryVisited.put(rule, operator)) {
+      this.visitedNodes.put(operator, rule);
+    }
   }
 
   public Set<RelNode> getVisited(RelOptRule rule) {
@@ -61,6 +72,12 @@ public class HiveRulesRegistry {
       for (Set<String> s : this.registryPushedPredicates.get(operator)) {
         this.registryPushedPredicates.put(otherOperator, Sets.newHashSet(s));
       }
+    }
+  }
+
+  public void onCopy(RelNode rel, RelNode newRel) {
+    for (RelOptRule rule : visitedNodes.get(rel)) {
+      registerVisited(rule, newRel);
     }
   }
 }
