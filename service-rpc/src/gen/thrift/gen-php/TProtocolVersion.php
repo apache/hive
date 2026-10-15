@@ -38,6 +38,8 @@ final class TProtocolVersion
 
     const HIVE_CLI_SERVICE_PROTOCOL_V11 = 10;
 
+    const HIVE_CLI_SERVICE_PROTOCOL_V12 = 11;
+
     static public $__names = array(
         0 => 'HIVE_CLI_SERVICE_PROTOCOL_V1',
         1 => 'HIVE_CLI_SERVICE_PROTOCOL_V2',
@@ -50,6 +52,7 @@ final class TProtocolVersion
         8 => 'HIVE_CLI_SERVICE_PROTOCOL_V9',
         9 => 'HIVE_CLI_SERVICE_PROTOCOL_V10',
         10 => 'HIVE_CLI_SERVICE_PROTOCOL_V11',
+        11 => 'HIVE_CLI_SERVICE_PROTOCOL_V12',
     );
 }
 
