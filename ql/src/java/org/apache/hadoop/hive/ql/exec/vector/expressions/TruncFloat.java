@@ -19,7 +19,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -29,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Argument
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.generic.TruncUtils;
 
 /**
  * Vectorized implementation of trunc(number, scale) function for float/double input
@@ -127,26 +127,8 @@ public class TruncFloat extends VectorExpression {
   }
 
   protected void trunc(ColumnVector inputColVector, ColumnVector outputColVector, int i) {
-    BigDecimal input = BigDecimal.valueOf(((DoubleColumnVector) inputColVector).vector[i]);
-
-    double output = trunc(input).doubleValue();
-    ((DoubleColumnVector) outputColVector).vector[i] = output;
-  }
-
-  protected BigDecimal trunc(BigDecimal input) {
-    BigDecimal pow = BigDecimal.valueOf(Math.pow(10, Math.abs(scale)));
-
-    if (scale >= 0) {
-      if (scale != 0) {
-        long longValue = input.multiply(pow).longValue();
-        return BigDecimal.valueOf(longValue).divide(pow);
-      } else {
-        return BigDecimal.valueOf(input.longValue());
-      }
-    } else {
-      long longValue2 = input.divide(pow).longValue();
-      return BigDecimal.valueOf(longValue2).multiply(pow);
-    }
+    ((DoubleColumnVector) outputColVector).vector[i] =
+        TruncUtils.trunc(((DoubleColumnVector) inputColVector).vector[i], scale);
   }
 
   @Override

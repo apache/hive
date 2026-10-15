@@ -5136,6 +5136,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
         fastResult);
 
     if (fastResult.fast0 == 0 && fastResult.fast1 == 0 && fastResult.fast2 == 0) {
+      fastResult.fastSignum = 0;
       fastResult.fastIntegerDigitCount = 0;
       fastResult.fastScale = 0;
     } else {
