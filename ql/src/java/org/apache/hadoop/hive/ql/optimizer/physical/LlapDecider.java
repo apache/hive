@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -166,6 +167,12 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     private void adjustAutoParallelism(BaseWork work) {
+      if (work instanceof MergeJoinWork mergeJoinWork) {
+        // one vertex, fed by the edges of its reduce works
+        adjustAutoParallelism(mergeJoinWork.getMainWork());
+        mergeJoinWork.getBaseWorkList().forEach(this::adjustAutoParallelism);
+        return;
+      }
       if (minReducersPerExec <= 0 || !(work instanceof ReduceWork)) return;
       ReduceWork reduceWork = (ReduceWork)work;
       if (reduceWork.isAutoReduceParallelism() == false && reduceWork.isUniformDistribution() == false) {
