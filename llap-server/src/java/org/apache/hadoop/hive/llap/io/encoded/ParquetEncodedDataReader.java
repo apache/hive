@@ -86,6 +86,7 @@ import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 import org.apache.tez.common.CallableWithNdc;
+import org.apache.tez.common.counters.TezCounters;
 
 /**
  * Reads one Parquet split through the LLAP cache on an IO thread. Row groups whose first data
@@ -97,7 +98,7 @@ import org.apache.tez.common.CallableWithNdc;
  * consumed batch carries exactly one ref, owned by the batch until returnData.
  */
 public class ParquetEncodedDataReader extends CallableWithNdc<Void>
-    implements ConsumerFeedback<ParquetEncodedColumnBatch> {
+    implements ConsumerFeedback<ParquetEncodedColumnBatch>, TezCounterSource {
 
   private static final BufferObjectFactory DATA_BUFFER_FACTORY = LlapDataBuffer::new;
 
@@ -661,5 +662,10 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   @Override
   public void stop() {
     isStopped.set(true);
+  }
+
+  @Override
+  public TezCounters getTezCounters() {
+    return counters.getTezCounters();
   }
 }
