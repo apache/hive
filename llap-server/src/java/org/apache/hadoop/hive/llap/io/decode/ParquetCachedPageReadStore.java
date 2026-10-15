@@ -364,7 +364,7 @@ class ParquetCachedPageReadStore implements PageReadStore {
       if (compressedPage == null) {
         return null;
       }
-      return compressedPage.accept(new DataPage.Visitor<DataPage>() {
+      return compressedPage.accept(new DataPage.Visitor<>() {
         @Override
         public DataPage visit(DataPageV1 page) {
           return carryCrc(page,
