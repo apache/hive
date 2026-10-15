@@ -38,7 +38,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.data.GenericRecord;
-import org.apache.iceberg.data.IcebergGenerics2;
+import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.io.CloseableIterable;
@@ -107,7 +107,8 @@ public class HiveIcebergWriterTestBase {
         PartitionSpec.builderFor(SCHEMA)
             .bucket("data", 3)
             .build();
-    this.helper = new TestHelper(new HiveConf(), tables, location.toString(), SCHEMA, spec, fileFormat, temp);
+    this.helper =
+        new TestHelper(new HiveConf(), tables, location.toString(), SCHEMA, spec, fileFormat, TestHelper.toPath(temp));
     this.table = helper.createTable();
     helper.appendToTable(RECORDS);
 
@@ -141,7 +142,7 @@ public class HiveIcebergWriterTestBase {
 
   protected static List<GenericRecord> readRecords(Table table, Schema schema) throws IOException {
     List<GenericRecord> records = Lists.newArrayList();
-    try (CloseableIterable<Record> reader = IcebergGenerics2.read(table).project(schema).build()) {
+    try (CloseableIterable<Record> reader = IcebergGenerics.read(table).project(schema).build()) {
       // For these tests we can be sure that the records are GenericRecords, and we need it to easily access fields
       reader.forEach(record -> records.add((GenericRecord) record));
     }
