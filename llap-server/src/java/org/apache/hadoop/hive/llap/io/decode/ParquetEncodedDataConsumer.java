@@ -72,7 +72,6 @@ public class ParquetEncodedDataConsumer
   private final Configuration jobConf;
   private final CompressionCodecFactory codecFactory;
   private final ParquetMetadataConverter converter;
-  /** parquet.page.verify-checksum.enabled, as the file reader reads it. */
   private final boolean verifyChecksums;
   private ParquetMetadata footer;
   private MessageType requestedSchema;
