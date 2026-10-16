@@ -87,13 +87,10 @@ public class MapredIcebergInputFormat<T> implements InputFormat<Void, Container<
 
   private static final class MapredIcebergRecordReader<T> extends AbstractMapredIcebergRecordReader<Container<T>> {
 
-    private final long splitLength; // for getPos()
-
     MapredIcebergRecordReader(org.apache.iceberg.mr.mapreduce.IcebergInputFormat<T> mapreduceInputFormat,
         org.apache.hadoop.mapreduce.InputSplit split, JobConf job, Reporter reporter)
         throws IOException, InterruptedException {
       super(mapreduceInputFormat, split, job, reporter);
-      splitLength = split.getLength();
     }
 
     @Override
@@ -116,9 +113,13 @@ public class MapredIcebergInputFormat<T> implements InputFormat<Void, Container<
       return new Container<>();
     }
 
+    /**
+     * A split is a group of file scan tasks, so no position within it maps to a file offset. -1 keeps
+     * HiveContextAwareRecordReader from taking every row for the start of a file.
+     */
     @Override
     public long getPos() throws IOException {
-      return (long) (splitLength * getProgress());
+      return -1;
     }
 
   }

@@ -61,8 +61,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testReadAndWriteFormatV2UnpartitionedWithEqDelete() throws IOException {
-    Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +
-        "non-vectorized mode", !isVectorized && formatVersion == 2);
+    Assume.assumeTrue(formatVersion == 2);
 
     Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
@@ -84,8 +83,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testReadAndWriteFormatV2Partitioned_EqDelete_AllColumnsSupplied() throws IOException {
-    Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +
-        "non-vectorized mode", !isVectorized && formatVersion == 2);
+    Assume.assumeTrue(formatVersion == 2);
 
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id").build();
@@ -111,8 +109,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testReadAndWriteFormatV2Partitioned_EqDelete_OnlyEqColumnsSupplied() throws IOException {
-    Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +
-        "non-vectorized mode", !isVectorized && formatVersion == 2);
+    Assume.assumeTrue(formatVersion == 2);
 
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id").build();
