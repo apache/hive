@@ -2953,6 +2953,17 @@ public class TestHiveDecimal extends HiveDecimalTestBase {
     }
   }
 
+  @Test
+  public void testRoundDownAllIntegerDigitsInPlace() {
+    String[] values = { "12345.678", "-12345.678", "12345", "99999999999999999999999999999999999999" };
+    for (String value : values) {
+      HiveDecimalWritable writable = new HiveDecimalWritable(value);
+      writable.mutateSetScale(-writable.getHiveDecimal().integerDigitCount(), BigDecimal.ROUND_DOWN);
+      assertEquals(value, 0, writable.signum());
+      assertEquals(value, HiveDecimal.ZERO, writable.getHiveDecimal());
+    }
+  }
+
   //------------------------------------------------------------------------------------------------
 
   @Test
