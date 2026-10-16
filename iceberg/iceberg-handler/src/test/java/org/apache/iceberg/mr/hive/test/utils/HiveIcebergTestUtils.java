@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
@@ -254,8 +255,9 @@ public class HiveIcebergTestUtils {
   }
 
   /**
-   * Validates whether the 2 sets of records are the same. The results should be sorted by a unique key so we do
-   * not end up with flaky tests.
+   * Validates whether the 2 sets of records are the same. The results should be sorted by a unique
+   * key so we do not end up with flaky tests.
+   *
    * @param expected The expected list of Records
    * @param actual The actual list of Records
    * @param sortBy The column position by which we will sort
@@ -264,8 +266,8 @@ public class HiveIcebergTestUtils {
     List<Record> sortedExpected = Lists.newArrayList(expected);
     List<Record> sortedActual = Lists.newArrayList(actual);
     // Sort based on the specified column
-    sortedExpected.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
-    sortedActual.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
+    sortedExpected.sort(Comparator.comparingInt(record -> Objects.hashCode(record.get(sortBy))));
+    sortedActual.sort(Comparator.comparingInt(record -> Objects.hashCode(record.get(sortBy))));
 
     Assert.assertEquals(sortedExpected.size(), sortedActual.size());
     validateData(sortedExpected, sortedActual);
@@ -273,6 +275,7 @@ public class HiveIcebergTestUtils {
 
   /**
    * Validates whether the 2 sets of records are the same.
+   *
    * @param expected The expected list of Records
    * @param actual The actual list of Records
    */
