@@ -29,7 +29,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantUtil;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
@@ -181,19 +183,20 @@ class Deserializer {
 
     @Override
     public FieldDeserializer variant(Types.VariantType variantType, ObjectInspectorPair pair) {
+      VariantObjectInspector variantOI = (VariantObjectInspector) pair.sourceInspector();
       return variantObj -> {
         if (variantObj == null) {
           return null;
         }
-        // Extract data from the struct representation
-        StructObjectInspector variantOI = (StructObjectInspector) pair.sourceInspector();
-        Variant variant = Variant.from(variantOI.getStructFieldsDataAsList(variantObj));
+        Variant variant = variantOI.getVariant(variantObj);
 
         VariantMetadata metadata = VariantMetadata.from(
             ByteBuffer.wrap(variant.getMetadata()).order(ByteOrder.LITTLE_ENDIAN));
 
+        // only the value's own bytes: a value written by Hive 4.2.x carries the tail of its write buffer
+        byte[] valueBytes = variant.getValue();
         VariantValue value = VariantValue.from(metadata,
-            ByteBuffer.wrap(variant.getValue()).order(ByteOrder.LITTLE_ENDIAN));
+            ByteBuffer.wrap(valueBytes, 0, VariantUtil.valueSize(valueBytes, 0)).order(ByteOrder.LITTLE_ENDIAN));
 
         return org.apache.iceberg.variants.Variant.of(metadata, value);
       };

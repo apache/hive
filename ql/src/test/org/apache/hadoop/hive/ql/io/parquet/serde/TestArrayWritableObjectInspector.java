@@ -20,9 +20,18 @@ package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantBuilder;
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Writable;
 import org.junit.Assert;
 
 import org.junit.Test;
@@ -77,4 +86,19 @@ public class TestArrayWritableObjectInspector {
     Assert.assertNotEquals(inspectorX.hashCode(), inspectorY.hashCode());
   }
 
+  @Test
+  public void testVariantFieldReadsTheTwoBinaries() throws Exception {
+    StructTypeInfo rowType = (StructTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString("struct<v:variant>");
+    ArrayWritableObjectInspector rowOI = new ArrayWritableObjectInspector(rowType);
+    StructField field = rowOI.getStructFieldRef("v");
+    Variant variant = VariantBuilder.parseJson("{\"a\":[1,2]}", false);
+    ArrayWritable row = new ArrayWritable(Writable.class, new Writable[] {
+        new ArrayWritable(Writable.class, new Writable[] {
+            new BytesWritable(variant.getMetadata()), new BytesWritable(variant.getValue())})});
+
+    VariantObjectInspector variantOI = (VariantObjectInspector) field.getFieldObjectInspector();
+    Assert.assertEquals(ObjectInspector.Category.VARIANT, variantOI.getCategory());
+    Assert.assertEquals("variant", variantOI.getTypeName());
+    Assert.assertEquals(variant, variantOI.getVariant(rowOI.getStructFieldData(row, field)));
+  }
 }

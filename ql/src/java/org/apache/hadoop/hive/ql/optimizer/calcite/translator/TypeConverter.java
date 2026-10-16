@@ -109,6 +109,7 @@ public class TypeConverter {
     b.put(SqlTypeName.INTERVAL_SECOND.getName(),
             new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.BINARY.getName(), new HiveToken(HiveParser.TOK_BINARY, "TOK_BINARY"));
+    b.put(SqlTypeName.VARIANT.getName(), new HiveToken(HiveParser.TOK_VARIANT, "TOK_VARIANT"));
     calciteToHiveTypeNameMap = b.build();
   };
 
@@ -166,7 +167,7 @@ public class TypeConverter {
       convertedType = convert((UnionTypeInfo) type, dtFactory);
       break;
     case VARIANT:
-      convertedType = dtFactory.createSqlType(SqlTypeName.OTHER);
+      convertedType = dtFactory.createSqlType(SqlTypeName.VARIANT);
       break;
     case UNKNOWN:
       convertedType = dtFactory.createSqlType(SqlTypeName.NULL);
@@ -394,6 +395,8 @@ public class TypeConverter {
         return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
       else
         return TypeInfoFactory.getCharTypeInfo(charLength);
+    case VARIANT:
+      return TypeInfoFactory.getVariantTypeInfo();
     default:
       return TypeInfoFactory.voidTypeInfo;
     }

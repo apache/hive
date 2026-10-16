@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -192,7 +193,7 @@ public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
       StructTypeInfo originalTypeInfo, List<String> prunedPaths) {
     PrunedStructTypeInfo prunedTypeInfo = new PrunedStructTypeInfo(originalTypeInfo);
     for (String path : prunedPaths) {
-      pruneFromSinglePath(prunedTypeInfo, path);
+      pruneFromSinglePath(prunedTypeInfo, DataWritableReadSupport.truncateAtVariant(path, originalTypeInfo));
     }
     return prunedTypeInfo.prune();
   }

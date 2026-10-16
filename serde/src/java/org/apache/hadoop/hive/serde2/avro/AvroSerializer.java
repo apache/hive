@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.Writable;
 
 class AvroSerializer {
@@ -156,6 +158,10 @@ class AvroSerializer {
         assert fieldOI instanceof StructObjectInspector;
         assert typeInfo instanceof StructTypeInfo;
         return serializeStruct((StructTypeInfo) typeInfo, (StructObjectInspector) fieldOI, structFieldData, schema);
+      case VARIANT:
+        assert fieldOI instanceof VariantObjectInspector;
+        return serializeStruct(VariantEncoding.TYPE_INFO, VariantEncoding.JAVA_OBJECT_INSPECTOR,
+            VariantEncoding.fields(fieldOI, structFieldData), schema);
       default:
         throw new AvroSerdeException("Ran out of TypeInfo Categories: " + typeInfo.getCategory());
     }

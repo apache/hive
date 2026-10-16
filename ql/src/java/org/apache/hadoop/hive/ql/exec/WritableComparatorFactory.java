@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
+import org.apache.hadoop.hive.serde2.variant.Variant;
 import org.apache.hadoop.io.WritableComparator;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ public final class WritableComparatorFactory {
             throw new RuntimeException("map datatype is not supported for SMB and Merge Join");
         } else if (key instanceof StandardUnion) {
             throw new RuntimeException("union datatype is not supported for SMB and Merge Join");
+        } else if (key instanceof Variant) {
+            return new HiveVariantComparator(nullSafe, nullOrdering);
         } else {
             return new HiveWritableComparator(nullSafe, nullOrdering);
         }

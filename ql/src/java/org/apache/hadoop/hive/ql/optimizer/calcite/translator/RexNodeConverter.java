@@ -645,6 +645,10 @@ public class RexNodeConverter {
 
   protected RexNode convert(ExprNodeConstantDesc literal) throws CalciteSemanticException {
     final RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
+    // The only non-primitive constant is the typed VARIANT NULL (see ExprNodeConverter).
+    if (literal.getTypeInfo().getCategory() == Category.VARIANT && literal.getValue() == null) {
+      return rexBuilder.makeNullLiteral(TypeConverter.convert(literal.getTypeInfo(), dtFactory));
+    }
     final PrimitiveTypeInfo hiveType = (PrimitiveTypeInfo) literal.getTypeInfo();
     final RelDataType calciteDataType = TypeConverter.convert(hiveType, dtFactory);
 

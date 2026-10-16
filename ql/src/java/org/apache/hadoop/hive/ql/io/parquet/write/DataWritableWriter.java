@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.GroupType;
@@ -181,6 +183,8 @@ public class DataWritableWriter {
       } else if (logicalType != null && logicalType instanceof MapLogicalTypeAnnotation) {
         checkInspectorCategory(inspector, ObjectInspector.Category.MAP);
         return new MapDataWriter((MapObjectInspector)inspector, groupType);
+      } else if (inspector.getCategory() == ObjectInspector.Category.VARIANT) {
+        return new VariantDataWriter((VariantObjectInspector) inspector, groupType);
       } else {
         checkInspectorCategory(inspector, ObjectInspector.Category.STRUCT);
         return new StructDataWriter((StructObjectInspector)inspector, groupType);
@@ -288,6 +292,21 @@ public class DataWritableWriter {
       recordConsumer.startGroup();
       super.write(value);
       recordConsumer.endGroup();
+    }
+  }
+
+  private class VariantDataWriter implements DataWriter {
+    private final VariantObjectInspector inspector;
+    private final DataWriter encodedWriter;
+
+    VariantDataWriter(VariantObjectInspector inspector, GroupType groupType) {
+      this.inspector = inspector;
+      this.encodedWriter = new StructDataWriter(VariantEncoding.JAVA_OBJECT_INSPECTOR, groupType);
+    }
+
+    @Override
+    public void write(Object value) {
+      encodedWriter.write(VariantEncoding.fields(inspector, value));
     }
   }
 

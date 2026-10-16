@@ -132,6 +132,10 @@ public class VectorUDFArgDesc implements Serializable {
               constantStructObjectInspector.getWritableConstantValue();
         }
         break;
+      case VARIANT:
+        // the standard variant inspector reads the value as it is
+        writableValue = constantValue;
+        break;
       default:
         throw new RuntimeException("Unexpected category " + category);
       }

@@ -19,25 +19,30 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import java.util.List;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.variant.Variant;
 
-public class VariantObjectInspector extends StandardStructObjectInspector {
+/**
+ * Inspects a VARIANT value: a metadata binary and a value binary in the Iceberg/Parquet variant encoding.
+ * <p>
+ * VARIANT is a category of its own, at the same level as STRUCT, MAP and LIST. Each serde inspects its own
+ * objects; {@link StandardVariantObjectInspector} holds {@link Variant} objects.
+ */
+public interface VariantObjectInspector extends ObjectInspector {
 
-  private static final ObjectInspector INSTANCE = new VariantObjectInspector();
-
-  protected VariantObjectInspector() {
-    super(List.of("metadata", "value"), createObjectInspectors());
+  @Override
+  default Category getCategory() {
+    return Category.VARIANT;
   }
 
-  public static ObjectInspector get() {
-    return INSTANCE;
+  @Override
+  default String getTypeName() {
+    return serdeConstants.VARIANT_TYPE_NAME;
   }
 
-  private static List<ObjectInspector> createObjectInspectors() {
-    return List.of(
-        PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector,
-        PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector
-    );
-  }
+  /**
+   * The variant held by {@code data}, or null when {@code data} is null.
+   * The result shares no mutable buffer with {@code data}.
+   */
+  Variant getVariant(Object data);
 }

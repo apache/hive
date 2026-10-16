@@ -84,6 +84,7 @@ public class VectorExpressionDescriptor {
     LIST                    (0x004000L),
     MAP                     (0x008000L),
     VOID                    (0x010000L),
+    VARIANT                 (0x020000L),
     INT_DECIMAL_64_FAMILY   (INT_FAMILY.value | DECIMAL_64.value),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
@@ -139,6 +140,8 @@ public class VectorExpressionDescriptor {
         return LIST;
       } else if (VectorizationContext.mapTypePattern.matcher(lower).matches()) {
         return MAP;
+      } else if (lower.equals(serdeConstants.VARIANT_TYPE_NAME)) {
+        return VARIANT;
       } else if (lower.equals(serdeConstants.VOID_TYPE_NAME)) {
         return VOID;
       } else {

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -186,6 +187,8 @@ public class LazyBinarySerDe2 extends LazyBinarySerDe {
         unionFieldSerializers[idx] = createLBSerializer(unionFields.get(idx));
       }
       return new LBUnionSerializer(unionFieldSerializers);
+    case VARIANT:
+      return new LBVariantSerializer(createLBSerializer(VariantEncoding.JAVA_OBJECT_INSPECTOR));
     default:
       throw new IllegalArgumentException("Unsupported category " + oi.getCategory());
     }
@@ -592,6 +595,24 @@ public class LazyBinarySerDe2 extends LazyBinarySerDe {
         int typeSize = typeEnd - typeStart;
         writeSizeAtOffset(byteStream, byteSizeStart, typeSize);
       }
+    }
+  }
+
+  /**
+   * Writes a variant as the struct of its two binaries: the same bytes as LBStructSerializer.
+   */
+  static class LBVariantSerializer extends LBSerializer {
+    private final LBSerializer encodingSerializer;
+
+    LBVariantSerializer(LBSerializer encodingSerializer) {
+      this.encodingSerializer = encodingSerializer;
+    }
+
+    @Override
+    void serialize(RandomAccessOutput byteStream, Object obj, ObjectInspector objInspector,
+        boolean skipLengthPrefix, BooleanRef warnedOnceNullMapKey) {
+      encodingSerializer.serialize(byteStream, VariantEncoding.fields(objInspector, obj),
+          VariantEncoding.JAVA_OBJECT_INSPECTOR, skipLengthPrefix, warnedOnceNullMapKey);
     }
   }
 

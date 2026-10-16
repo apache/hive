@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -387,6 +388,11 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
             separators, level + 1, nullSequence, escaped, escapeChar,
             needsEscape);
       }
+      return;
+    case VARIANT:
+      // Same bytes as the STRUCT branch over the two binaries.
+      serialize(out, VariantEncoding.fields(objInspector, obj), VariantEncoding.JAVA_OBJECT_INSPECTOR,
+          separators, level, nullSequence, escaped, escapeChar, needsEscape);
       return;
     default:
       break;

@@ -1,0 +1,1 @@
+FAILED: SemanticException Column name v cannot be of type 'variant' as it is not supported in non-Iceberg tables.

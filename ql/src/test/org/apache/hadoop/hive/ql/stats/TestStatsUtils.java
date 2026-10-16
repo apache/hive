@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -126,6 +127,16 @@ class TestStatsUtils {
       long siz = StatsUtils.getSizeOfPrimitiveTypeArraysFromType(typeName, 3, maxVarLen);
       assertNotEquals(0, siz, field.toString());
     }
+  }
+
+  @Test
+  void testVariantIsSizedAsItsEncodingStruct() {
+    HiveConf conf = new HiveConf();
+    ColumnInfo struct = new ColumnInfo("s", VariantEncoding.TYPE_INFO, "t", false);
+    ColumnInfo variant = new ColumnInfo("v", TypeInfoFactory.getVariantTypeInfo(), "t", false);
+    long structSize = StatsUtils.estimateRowSizeFromSchema(conf, List.of(struct));
+    assertNotEquals(0, structSize);
+    assertEquals(structSize, StatsUtils.estimateRowSizeFromSchema(conf, List.of(variant)));
   }
 
   @ParameterizedTest(name = "{0} - {1}")

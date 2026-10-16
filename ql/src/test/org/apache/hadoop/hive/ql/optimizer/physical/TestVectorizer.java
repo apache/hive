@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumLong;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer.VectorizerCannotVectorizeException;
 import org.apache.hadoop.hive.ql.plan.*;
@@ -275,5 +276,16 @@ public class TestVectorizer {
     v.testSetCurrentBaseWork(new MapWork());
     boolean valid = v.validateExprNodeDesc(betweenExpr, "Test", Mode.FILTER, false);
     Assert.assertTrue(valid);
+  }
+
+  @Test
+  public void testVariantColumnPassesTheNativeParquetVectorizedReadGate() {
+    Vectorizer.VectorizationDispatcher dispatcher = new Vectorizer().new VectorizationDispatcher();
+    // a variant column is read natively, as the struct of VariantEncoding
+    Assert.assertFalse(dispatcher.hasUnsupportedVectorizedParquetDataType(MapredParquetInputFormat.class,
+        Arrays.asList(TypeInfoFactory.intTypeInfo, TypeInfoFactory.getVariantTypeInfo())));
+    // nested in a list the variant has no vectorized Parquet reader
+    Assert.assertTrue(dispatcher.hasUnsupportedVectorizedParquetDataType(MapredParquetInputFormat.class,
+        Arrays.asList(TypeInfoFactory.getListTypeInfo(TypeInfoFactory.getVariantTypeInfo()))));
   }
 }

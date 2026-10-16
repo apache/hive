@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.TimestampParser;
 
@@ -116,6 +117,10 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     public ComplexTypeHelper complexTypeHelper;
 
     public Field(TypeInfo typeInfo, DataTypePhysicalVariation dataTypePhysicalVariation) {
+      if (typeInfo.getCategory() == Category.VARIANT) {
+        // Text stores a variant as the struct of its two binaries.
+        typeInfo = VariantEncoding.TYPE_INFO;
+      }
       Category category = typeInfo.getCategory();
       if (category == Category.PRIMITIVE) {
         isPrimitive = true;

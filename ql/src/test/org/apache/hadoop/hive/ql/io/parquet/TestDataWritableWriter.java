@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantBuilder;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -339,6 +341,36 @@ public class TestDataWritableWriter {
           endField("c", 2);
         endGroup();
       endField("structCol", 0);
+    endMessage();
+  }
+
+  @Test
+  public void testVariantType() throws Exception {
+    String columnNames = "v";
+    String columnTypes = "variant";
+    String fileSchema = "message hive_schema {\n"
+        + "  optional group v {\n"
+        + "    optional binary metadata;\n"
+        + "    optional binary value;\n"
+        + "  }\n"
+        + "}\n";
+    Variant variant = VariantBuilder.parseJson("{\"a\":1}", false);
+    ArrayWritable hiveRecord = createGroup(
+        createGroup(new BytesWritable(variant.getMetadata()), new BytesWritable(variant.getValue())));
+
+    writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord));
+
+    startMessage();
+      startField("v", 0);
+        startGroup();
+          startField("metadata", 0);
+            inOrder.verify(mockRecordConsumer).addBinary(Binary.fromConstantByteArray(variant.getMetadata()));
+          endField("metadata", 0);
+          startField("value", 1);
+            inOrder.verify(mockRecordConsumer).addBinary(Binary.fromConstantByteArray(variant.getValue()));
+          endField("value", 1);
+        endGroup();
+      endField("v", 0);
     endMessage();
   }
 

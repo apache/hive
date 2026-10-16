@@ -1,0 +1,5 @@
+PREHOOK: query: CREATE TABLE variant_map (id INT, m MAP<STRING, VARIANT>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@variant_map
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Column name m cannot be of type 'map<string,variant>' as it is not supported in non-Iceberg tables.

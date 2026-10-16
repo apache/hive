@@ -81,7 +81,13 @@ import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -290,7 +296,7 @@ public class Table implements Serializable {
       // legitimately empty when every column is a partition transform source
       throw new HiveException("at least one column must be specified for the table");
     }
-    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
+    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this), variantAllowed());
 
     if (!isView()) {
       if (null == getDeserializer(false)) {
@@ -1228,8 +1234,17 @@ public class Table implements Serializable {
     return deserializer.shouldStoreFieldsInMetastore(tableParams);
   }
 
-  public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols, boolean icebergTable)
-      throws HiveException {
+  /**
+   * Whether a non-Iceberg table may hold a VARIANT: a view stores no data, and a native temporary table, a
+   * materialized CTE included, lives only in the writing session. A storage handler's temporary table writes to the
+   * handler's system.
+   */
+  boolean variantAllowed() {
+    return isView() || isTemporary() && !isNonNative();
+  }
+
+  public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols, boolean icebergTable,
+      boolean variantAllowed) throws HiveException {
     Set<String> colNames = new HashSet<>();
     for (FieldSchema col: columns) {
       String colName = normalize(col.getName());
@@ -1237,7 +1252,7 @@ public class Table implements Serializable {
         throw new HiveException("Duplicate column name " + colName
             + " in the table definition.");
       }
-      if (!icebergTable && isUnsupportedInNonIceberg(col.getType())) {
+      if (!icebergTable && isUnsupportedInNonIceberg(col.getType(), variantAllowed)) {
         throw new HiveException(
             "Column name " + colName + " cannot be of type '" + col.getType() + "' as it is not supported in "
                 + "non-Iceberg tables.");
@@ -1486,10 +1501,28 @@ public class Table implements Serializable {
     return virtualColumns;
   }
 
-  private static boolean isUnsupportedInNonIceberg(String columnType) {
-    return VARIANT_TYPE_NAME.equalsIgnoreCase(columnType) ||
+  private static boolean isUnsupportedInNonIceberg(String columnType, boolean variantAllowed) {
+    return (!variantAllowed && hasVariant(columnType)) ||
         UNKNOWN_TYPE_NAME.equalsIgnoreCase(columnType) ||
         TypeInfoFactory.nanoTimestampTypeInfo.getQualifiedName().equalsIgnoreCase(columnType) ||
         TypeInfoFactory.timestampNanoLocalTZTypeInfo.getQualifiedName().equalsIgnoreCase(columnType);
+  }
+
+  private static boolean hasVariant(String columnType) {
+    // parse only the type strings that can name one
+    return columnType.toLowerCase().contains(VARIANT_TYPE_NAME)
+        && hasVariant(TypeInfoUtils.getTypeInfoFromTypeString(columnType));
+  }
+
+  private static boolean hasVariant(TypeInfo type) {
+    return switch (type.getCategory()) {
+      case VARIANT -> true;
+      case LIST -> hasVariant(((ListTypeInfo) type).getListElementTypeInfo());
+      case MAP -> hasVariant(((MapTypeInfo) type).getMapKeyTypeInfo())
+          || hasVariant(((MapTypeInfo) type).getMapValueTypeInfo());
+      case STRUCT -> ((StructTypeInfo) type).getAllStructFieldTypeInfos().stream().anyMatch(Table::hasVariant);
+      case UNION -> ((UnionTypeInfo) type).getAllUnionObjectTypeInfos().stream().anyMatch(Table::hasVariant);
+      case PRIMITIVE, UNKNOWN -> false;
+    };
   }
 }

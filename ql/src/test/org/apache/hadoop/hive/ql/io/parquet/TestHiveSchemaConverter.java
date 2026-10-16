@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.parquet.schema.MessageType;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageTypeParser;
 import org.apache.parquet.schema.Type;
@@ -296,6 +297,18 @@ public class TestHiveSchemaConverter {
             + "    optional binary c (UTF8);\n"
             + "  }\n"
             + "}\n");
+  }
+
+  @Test
+  public void testVariant() throws Exception {
+    String twoBinaryGroup = "message hive_schema {\n"
+        + "  optional group v {\n"
+        + "    optional binary metadata;\n"
+        + "    optional binary value;\n"
+        + "  }\n"
+        + "}\n";
+    testConversion("v", "variant", twoBinaryGroup);
+    testConversion("v", VariantEncoding.TYPE_INFO.getTypeName(), twoBinaryGroup);
   }
 
   @Test

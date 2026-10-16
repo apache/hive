@@ -1626,7 +1626,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
-    private boolean hasUnsupportedVectorizedParquetDataType(
+    @VisibleForTesting
+    boolean hasUnsupportedVectorizedParquetDataType(
         Class<? extends InputFormat> inputFileFormatClass, List<TypeInfo> allTypeInfoList) {
       if (!inputFileFormatClass.equals(org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat.class)) {
         return false;
@@ -1664,6 +1665,9 @@ public class Vectorizer implements PhysicalPlanResolver {
                 }
               }
             }
+            break;
+          case VARIANT:
+            // read as VariantEncoding's struct
             break;
           case UNION:
             // Not supported at all.

@@ -610,7 +610,7 @@ public class Partition implements Serializable {
 
   public void checkValidity() throws HiveException {
     if (!tPartition.getSd().equals(table.getSd())) {
-      Table.validateColumns(getCols(), table.getPartCols(), DDLUtils.isIcebergTable(table));
+      Table.validateColumns(getCols(), table.getPartCols(), DDLUtils.isIcebergTable(table), table.variantAllowed());
     }
   }
 

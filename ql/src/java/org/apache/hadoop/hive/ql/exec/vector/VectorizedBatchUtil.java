@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -186,6 +187,8 @@ public class VectorizedBatchUtil {
         return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
             children);
       }
+    case VARIANT:
+      return createColumnVector(VariantEncoding.TYPE_INFO);
     case UNION:
       {
         UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;

@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.VectorizedParquetInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -278,6 +279,8 @@ public class HiveVectorizedReader {
     job.set(IOConstants.COLUMNS, psv.retrieveColumnNameList());
 
     inputFormat.seInitialColumnDefaults(initialColumnDefaults);
+    // ParquetVariantRecordReader rebuilds shredded variant values over the metadata and value this reader reads
+    job.setBoolean(DataWritableReadSupport.SHREDDED_VARIANT_REBUILT, true);
     RecordReader<NullWritable, VectorizedRowBatch> reader = inputFormat.getRecordReader(split, job, reporter);
     return ParquetVariantRecordReader
         .tryWrap(reader, job, task, path, start, length, prunedMetadata)

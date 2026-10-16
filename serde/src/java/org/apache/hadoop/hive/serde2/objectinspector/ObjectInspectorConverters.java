@@ -190,6 +190,8 @@ public final class ObjectInspectorConverters {
     case UNION:
       return new UnionConverter(inputOI,
           (SettableUnionObjectInspector) outputOI);
+    case VARIANT:
+      return new VariantConverter(inputOI);
     default:
       throw new RuntimeException("Hive internal error: conversion of "
           + inputOI.getTypeName() + " to " + outputOI.getTypeName()
@@ -207,6 +209,8 @@ public final class ObjectInspectorConverters {
       case MAP:
       case UNION:
         return new TextConverterForComplexTypes(inputOI);
+      case VARIANT:
+        return new TextConverterForVariant((VariantObjectInspector) inputOI);
       default:
         throw new RuntimeException("Hive internal error: conversion of "
             + inputOI.getTypeName() + " to " + outputOI.getTypeName()
@@ -321,11 +325,34 @@ public final class ObjectInspectorConverters {
             false));
       }
       return ObjectInspectorFactory.getStandardUnionObjectInspector(unionFieldObjectInspectors);
+    case VARIANT:
+      return ObjectInspectorFactory.getStandardVariantObjectInspector();
     default:
       // Unsupported in-memory structure.
       throw new RuntimeException("Hive internal error: conversion of "
           + inputOI.getTypeName() + " to " + outputOI.getTypeName()
           + " not supported yet.");
+    }
+  }
+
+  /**
+   * A converter from any variant inspector to the standard {@link org.apache.hadoop.hive.serde2.variant.Variant}.
+   */
+  public static class VariantConverter implements Converter {
+
+    private final VariantObjectInspector inputOI;
+
+    public VariantConverter(ObjectInspector inputOI) {
+      if (!(inputOI instanceof VariantObjectInspector variantOI)) {
+        throw new RuntimeException("Hive internal error: conversion of "
+            + inputOI.getTypeName() + " to variant not supported yet.");
+      }
+      this.inputOI = variantOI;
+    }
+
+    @Override
+    public Object convert(Object input) {
+      return inputOI.getVariant(input);
     }
   }
 
@@ -606,6 +633,28 @@ public final class ObjectInspectorConverters {
     @Override
     public Object convert(Object input) {
       return new Text(SerDeUtils.getJSONString(input, inputOI));
+    }
+  }
+
+  /**
+   * Converts a variant to text by {@link org.apache.hadoop.hive.serde2.variant.Variant#castToString()}, so a JSON null
+   * gives null.
+   */
+  public static class TextConverterForVariant implements Converter {
+
+    private final VariantObjectInspector inputOI;
+
+    public TextConverterForVariant(VariantObjectInspector inputOI) {
+      this.inputOI = inputOI;
+    }
+
+    @Override
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+      String text = inputOI.getVariant(input).castToString();
+      return text == null ? null : new Text(text);
     }
   }
 }

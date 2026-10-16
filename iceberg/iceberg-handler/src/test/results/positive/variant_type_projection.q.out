@@ -67,7 +67,7 @@ STAGE PLANS:
         TableScan
           alias: variant_proj
           Select Operator
-            expressions: id (type: int), data (type: struct<metadata:binary,value:binary>)
+            expressions: id (type: int), data (type: variant)
             outputColumnNames: _col0, _col1
             ListSink
 

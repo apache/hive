@@ -8052,6 +8052,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           viewDesc.setDistributeCols(new ArrayList<>(distributeColumns));
         }
       }
+      if (ddlDesc != null) {
+        validateCreateAsSelectColumns(ddlDesc, fieldSchemas, partitionColumns, destTableIsTemporary);
+      }
 
       boolean isDestTempFile = true;
       if (!ctx.isMRTmpFileURI(destinationPath.toUri().toString())
@@ -8455,6 +8458,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean hasSetBatchSerializer(String serdeClassName) {
     return (serdeClassName.equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()) &&
       HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS));
+  }
+
+  /**
+   * Applies the column checks of Table.checkValidity to a CTAS or materialized view target at compile time: the
+   * create task runs only after the query has written its data into the target location.
+   */
+  private void validateCreateAsSelectColumns(DDLDescWithTableProperties ddlDesc, List<FieldSchema> cols,
+      List<FieldSchema> partCols, boolean temporary) throws SemanticException {
+    try {
+      String storageHandler = ddlDesc.getStorageHandler();
+      boolean icebergTable = storageHandler != null
+          && HiveUtils.getStorageHandler(conf, storageHandler).getType() == StorageFormat.StorageHandlerTypes.ICEBERG;
+      // as Table.checkValidity: of the temporary tables, only native ones may hold a variant
+      Table.validateColumns(cols, partCols, icebergTable, temporary && storageHandler == null);
+    } catch (HiveException e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
   }
 
   private ColsAndTypes deriveFileSinkColTypes(RowResolver inputRR, List<String> sortColumnNames, List<String> distributeColumnNames,

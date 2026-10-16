@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 
 /**
  * This class serializes columns from a row in a VectorizedRowBatch into a serialization format.
@@ -94,6 +95,10 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
   }
 
   private Field createField(TypeInfo typeInfo) {
+    if (typeInfo.getCategory() == Category.VARIANT) {
+      // the same bytes the row-mode serdes write for a variant: the struct of VariantEncoding
+      return createField(VariantEncoding.TYPE_INFO);
+    }
     final Field field = new Field();
     final Category category = typeInfo.getCategory();
     field.category = category;

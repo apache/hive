@@ -184,6 +184,11 @@ class SchemaToTypeInfo {
       return TypeInfoFactory.timestampTypeInfo;
     }
 
+    if (type == Schema.Type.RECORD &&
+      AvroSerDe.VARIANT_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+      return TypeInfoFactory.getVariantTypeInfo();
+    }
+
     return typeInfoCache.retrieve(schema, seenSchemas);
   }
 

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,6 +94,9 @@ public class TypeInfoToSchema {
         break;
       case UNION:
         schema = createAvroUnion(typeInfo);
+        break;
+      case VARIANT:
+        schema = createAvroVariant();
         break;
     }
 
@@ -210,6 +214,19 @@ public class TypeInfoToSchema {
         null, false);
     ++recordCounter;
     recordSchema.setFields(childFields);
+    return recordSchema;
+  }
+
+  /**
+   * Iceberg's variant record: two non-nullable binaries tagged with the variant logical type, which Iceberg's
+   * registered logical type validates and SchemaToTypeInfo reads back as a variant.
+   */
+  private Schema createAvroVariant() {
+    Schema recordSchema = Schema.createRecord("record_" + recordCounter, null, null, false, List.of(
+        new Schema.Field(VariantEncoding.METADATA, Schema.create(Schema.Type.BYTES)),
+        new Schema.Field(VariantEncoding.VALUE, Schema.create(Schema.Type.BYTES))));
+    ++recordCounter;
+    recordSchema.addProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE, AvroSerDe.VARIANT_TYPE_NAME);
     return recordSchema;
   }
 

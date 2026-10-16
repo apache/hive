@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.parquet.schema.ConversionPatterns;
 import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.LogicalTypeAnnotation;
@@ -146,6 +147,8 @@ public class HiveSchemaConverter {
       return convertStructType(name, (StructTypeInfo) typeInfo, conf);
     } else if (typeInfo.getCategory().equals(Category.MAP)) {
       return convertMapType(name, (MapTypeInfo) typeInfo, conf);
+    } else if (typeInfo.getCategory().equals(Category.VARIANT)) {
+      return convertStructType(name, VariantEncoding.TYPE_INFO, conf);
     } else if (typeInfo.getCategory().equals(Category.UNION)) {
       throw new UnsupportedOperationException("Union type not implemented");
     } else {

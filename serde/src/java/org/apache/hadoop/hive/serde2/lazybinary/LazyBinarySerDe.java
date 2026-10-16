@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -674,6 +675,12 @@ public class LazyBinarySerDe extends AbstractSerDe {
         int typeSize = typeEnd - typeStart;
         writeSizeAtOffset(byteStream, byteSizeStart, typeSize);
       }
+      return;
+    }
+    case VARIANT: {
+      // Same bytes as the STRUCT branch over the two binaries.
+      serialize(byteStream, VariantEncoding.fields(objInspector, obj), VariantEncoding.JAVA_OBJECT_INSPECTOR,
+          skipLengthPrefix, warnedOnceNullMapKey);
       return;
     }
     default: {

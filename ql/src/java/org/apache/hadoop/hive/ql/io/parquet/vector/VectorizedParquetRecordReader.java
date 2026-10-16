@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
@@ -111,6 +112,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private Object[] partitionValues;
   private boolean addPartitionCols = true;
   private Path cacheFsPath;
+  private boolean shreddedVariantRebuilt;
   private static final int MAP_DEFINITION_LEVEL_MAX = 3;
 
   /**
@@ -274,6 +276,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
         .getWriterTimeZoneId(parquetMetadata.getFileMetaData().getKeyValueMetaData());
 
     colsToInclude = ColumnProjectionUtils.getReadColumnIDs(configuration);
+    shreddedVariantRebuilt = configuration.getBoolean(DataWritableReadSupport.SHREDDED_VARIANT_REBUILT, false);
     requestedSchema = DataWritableReadSupport
       .getRequestedSchema(indexAccess, columnNamesList, columnTypesList, fileSchema, configuration);
     requestedSchema = getRequestedSchemaWithRowLineageColumns(rbCtx, requestedSchema, fileSchema, colsToInclude);
@@ -568,6 +571,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
         }
       }
       return new VectorizedStructColumnReader(fieldReaders, typeDefLevel);
+    case VARIANT:
+      return buildVectorizedParquetReader(VariantEncoding.TYPE_INFO,
+          DataWritableReadSupport.getVariantFields(type.asGroupType(), shreddedVariantRebuilt), pages,
+          columnDescriptors, skipTimestampConversion, writerTimezone, skipProlepticConversion,
+          legacyConversionEnabled, depth, currentDefLevel);
     case LIST:
       checkListColumnSupport(((ListTypeInfo) typeInfo).getListElementTypeInfo());
       if (columnDescriptors == null || columnDescriptors.isEmpty()) {

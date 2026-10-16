@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLogUtils;
@@ -43,6 +44,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 
@@ -112,6 +115,10 @@ public class GenericUDAFApproximateDistinct extends AbstractGenericUDAFResolver 
       HyperLogLog hll = ((HyperLogLogBuffer)agg).hll;
       // should use BinarySortableSerDe, perhaps
       Object val = ObjectInspectorUtils.copyToStandardJavaObject(args[0], inputOI);
+      if (val instanceof Variant variant) {
+        // hash the variant's encoded bytes
+        val = new ArrayList<Object>(VariantEncoding.fields(variant));
+      }
       try {
         if (val instanceof Byte || val instanceof Character || val instanceof Short) {
           hll.add(val.hashCode());
@@ -228,7 +235,8 @@ public class GenericUDAFApproximateDistinct extends AbstractGenericUDAFResolver 
     if (parameters.length != 1) {
       throw new IllegalArgumentException("Function only takes 1 parameter");
     } else if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE
-        && parameters[0].getCategory() != ObjectInspector.Category.STRUCT) {
+        && parameters[0].getCategory() != ObjectInspector.Category.STRUCT
+        && parameters[0].getCategory() != ObjectInspector.Category.VARIANT) {
       throw new UDFArgumentTypeException(1,
           "Only primitive/struct rows are accepted but "
               + parameters[0].getTypeName() + " was passed.");

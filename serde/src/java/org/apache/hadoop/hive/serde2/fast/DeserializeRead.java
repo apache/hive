@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 
 /*
  * Directly deserialize with the caller reading field-by-field a serialization format.
@@ -119,6 +120,9 @@ public abstract class DeserializeRead {
       for (TypeInfo fieldTypeInfo : ((UnionTypeInfo) typeInfo).getAllUnionObjectTypeInfos()) {
         allocateCurrentWritable(fieldTypeInfo);
       }
+      break;
+    case VARIANT:
+      allocateCurrentWritable(VariantEncoding.TYPE_INFO);
       break;
     default:
       throw new RuntimeException("Unexpected category " + typeInfo.getCategory());

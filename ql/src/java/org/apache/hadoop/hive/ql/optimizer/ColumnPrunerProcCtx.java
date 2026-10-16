@@ -307,11 +307,16 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     }
 
     String[] segments = path.split("\\.");
+    // Nested column paths travel as one comma-separated list, so the chain ends before a key with a comma
+    int depth = 0;
+    while (depth < segments.length && segments[depth].indexOf(',') < 0) {
+      depth++;
+    }
 
     // Build FieldNode chain from leaf to root
     // For $.address.city: city -> address -> (pathToRoot)
     FieldNode currentTail = pathToRoot;
-    for (int i = segments.length - 1; i >= 0; i--) {
+    for (int i = depth - 1; i >= 0; i--) {
       String seg = segments[i];
       
       // Strip array index: items[0] -> items

@@ -64,7 +64,8 @@ public interface ObjectInspector extends Cloneable {
   /**
    * An ObjectInspector must inherit from one of the following interfaces if
    * getCategory() returns: PRIMITIVE: PrimitiveObjectInspector LIST:
-   * ListObjectInspector MAP: MapObjectInspector STRUCT: StructObjectInspector.
+   * ListObjectInspector MAP: MapObjectInspector STRUCT: StructObjectInspector
+   * VARIANT: VariantObjectInspector.
    */
   Category getCategory();
 }

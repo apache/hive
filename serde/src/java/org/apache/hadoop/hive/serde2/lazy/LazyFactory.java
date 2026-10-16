@@ -64,6 +64,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructEncodedVariantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -71,6 +73,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -194,6 +197,9 @@ public final class LazyFactory {
       return new LazyStruct((LazySimpleStructObjectInspector) oi);
     case UNION:
       return new LazyUnion((LazyUnionObjectInspector) oi);
+    case VARIANT:
+      return new LazyStruct((LazySimpleStructObjectInspector)
+          ((StructEncodedVariantObjectInspector) oi).getEncodedObjectInspector());
     }
 
     throw new RuntimeException("Hive LazySerDe Internal error.");
@@ -372,6 +378,10 @@ public final class LazyFactory {
       return LazyObjectInspectorFactory.getLazyUnionObjectInspector(lazyOIs,
           LazyUtils.getSeparator(lazyParams.getSeparators(), separatorIndex),
           lazyParams);
+    case VARIANT:
+      // Stored as the struct of its two binaries, at this separator level.
+      return new StructEncodedVariantObjectInspector((StructObjectInspector)
+          createLazyObjectInspector(VariantEncoding.TYPE_INFO, separatorIndex, lazyParams, option));
     case UNKNOWN:
       // Unknown columns are always null and are not stored in data files.
       return LazyPrimitiveObjectInspectorFactory.getLazyObjectInspector(

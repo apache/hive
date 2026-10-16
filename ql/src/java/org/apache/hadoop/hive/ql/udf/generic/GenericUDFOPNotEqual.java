@@ -164,7 +164,8 @@ public class GenericUDFOPNotEqual extends GenericUDFBaseCompare {
     return super.supportsCategory(c) ||
         c == ObjectInspector.Category.MAP ||
         c == ObjectInspector.Category.STRUCT ||
-        c == ObjectInspector.Category.LIST;
+        c == ObjectInspector.Category.LIST ||
+        c == ObjectInspector.Category.VARIANT;
   }
 
   @Override

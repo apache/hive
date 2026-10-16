@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.io.parquet.serde.primitive.ParquetPrimitiveInsp
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructEncodedVariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.ArrayWritable;
 
 /**
@@ -112,6 +114,9 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return ParquetPrimitiveInspectorFactory.parquetStringInspector;
     }  else if (typeInfo instanceof DecimalTypeInfo) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo) typeInfo);
+    } else if (typeInfo.getCategory().equals(Category.VARIANT)) {
+      return new StructEncodedVariantObjectInspector(
+          new ArrayWritableObjectInspector(false, VariantEncoding.TYPE_INFO, null));
     } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
       return new ArrayWritableObjectInspector(false, (StructTypeInfo) typeInfo, (StructTypeInfo) prunedTypeInfo);
     } else if (typeInfo.getCategory().equals(Category.LIST)) {

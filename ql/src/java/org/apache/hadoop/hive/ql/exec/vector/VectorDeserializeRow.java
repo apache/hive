@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -373,6 +374,9 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     case UNION:
     case UNKNOWN:
       return allocateComplexField(sourceTypeInfo);
+    case VARIANT:
+      // serialized as, and vectorized into, the struct of VariantEncoding
+      return allocateComplexField(VariantEncoding.TYPE_INFO);
     default:
       throw new RuntimeException("Category " + sourceTypeInfo.getCategory() + " not supported");
     }

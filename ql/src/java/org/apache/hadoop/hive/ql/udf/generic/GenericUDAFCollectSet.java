@@ -45,6 +45,7 @@ public class GenericUDAFCollectSet extends AbstractGenericUDAFResolver {
       case STRUCT:
       case MAP:
       case LIST:
+      case VARIANT:
         break;
       default:
         throw new UDFArgumentTypeException(0,

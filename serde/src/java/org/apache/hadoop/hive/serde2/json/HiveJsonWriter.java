@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,6 +162,10 @@ public class HiveJsonWriter {
         return primitiveToNode(oi, o);
       case UNION:
         return visitUnion(oi, o);
+      case VARIANT:
+        // Same JSON as a struct of the two binaries.
+        return visitStruct(VariantEncoding.JAVA_OBJECT_INSPECTOR, VariantEncoding.fields(oi, o),
+            Collections.emptyList());
       default:
         throw new SerDeException(
             "Parsing of: " + oi.getCategory() + " is not supported");

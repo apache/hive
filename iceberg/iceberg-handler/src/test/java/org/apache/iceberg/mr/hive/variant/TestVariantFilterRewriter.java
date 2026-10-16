@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFVariantGet;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.UnboundPredicate;
@@ -37,8 +36,7 @@ import org.junit.Test;
 
 public class TestVariantFilterRewriter {
 
-  private static final TypeInfo VARIANT_STRUCT =
-      TypeInfoUtils.getTypeInfoFromTypeString("struct<metadata:binary,value:binary>");
+  private static final TypeInfo VARIANT = TypeInfoFactory.getVariantTypeInfo();
 
   @Test
   public void testStripExtractPredicateBecomesAlwaysTrue() {
@@ -151,7 +149,7 @@ public class TestVariantFilterRewriter {
   @Test
   public void testDoesNotRewriteWhenPathIsNotConstant() throws Exception {
     ExprNodeColumnDesc payload = new ExprNodeColumnDesc(
-        VARIANT_STRUCT, "payload", "t", false);
+        VARIANT, "payload", "t", false);
     ExprNodeColumnDesc path = new ExprNodeColumnDesc(
         TypeInfoFactory.stringTypeInfo, "path", "t", false);
     ExprNodeGenericFuncDesc udf = ExprNodeGenericFuncDesc.newInstance(
@@ -175,7 +173,7 @@ public class TestVariantFilterRewriter {
   }
 
   private static ExprNodeGenericFuncDesc variantGet(String column, String jsonPath) throws Exception {
-    ExprNodeColumnDesc payload = new ExprNodeColumnDesc(VARIANT_STRUCT, column, "t", false);
+    ExprNodeColumnDesc payload = new ExprNodeColumnDesc(VARIANT, column, "t", false);
     ExprNodeConstantDesc path = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, jsonPath);
     return ExprNodeGenericFuncDesc.newInstance(
         new GenericUDFVariantGet(), List.of(payload, path));

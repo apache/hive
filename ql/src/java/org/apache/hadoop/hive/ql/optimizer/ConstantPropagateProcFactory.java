@@ -882,6 +882,10 @@ public final class ConstantPropagateProcFactory {
         return new ExprNodeConstantDesc(
             TypeInfoUtils.getTypeInfoFromObjectInspector(oi), o);
       }
+      if (!ObjectInspectorUtils.supportsConstantObjectInspector(oi)) {
+        // a non-null value of this type has no constant form, e.g. a variant
+        return null;
+      }
       Class<?> clz = o.getClass();
       if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(clz)) {
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;

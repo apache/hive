@@ -18,7 +18,10 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
+import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.Writable;
 import org.apache.parquet.io.api.Converter;
 import org.apache.parquet.io.api.GroupConverter;
@@ -85,6 +88,11 @@ public abstract class HiveGroupConverter extends GroupConverter implements Conve
       }
     }
 
+    if (hiveTypeInfo != null && hiveTypeInfo.getCategory() == ObjectInspector.Category.VARIANT) {
+      // each binary goes to its slot in VariantEncoding, whatever its position in the file's group
+      GroupType fields = DataWritableReadSupport.getVariantFields(type, false);
+      return new HiveStructConverter(type, parent, index, fields, VariantEncoding.TYPE_INFO);
+    }
     return new HiveStructConverter(type, parent, index, hiveTypeInfo);
   }
 

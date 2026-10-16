@@ -22,24 +22,24 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.variant.Variant;
 
 import java.time.ZoneOffset;
 
 public class GenericUDFToJson extends GenericUDF {
-  private StructObjectInspector inputOI;
+  private VariantObjectInspector inputOI;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 1) {
       throw new UDFArgumentException("to_json takes exactly 1 argument");
     }
-    if (!(arguments[0] instanceof StructObjectInspector)) {
-      throw new UDFArgumentTypeException(0, "Argument must be VARIANT (struct<metadata:binary,value:binary>)");
+    if (!(arguments[0] instanceof VariantObjectInspector variantArgument)) {
+      throw new UDFArgumentTypeException(0, "Argument must be VARIANT");
     }
-    inputOI = (StructObjectInspector) arguments[0];
+    inputOI = variantArgument;
     return PrimitiveObjectInspectorFactory.javaStringObjectInspector;
   }
 
@@ -49,7 +49,7 @@ public class GenericUDFToJson extends GenericUDF {
     if (variantObj == null) {
       return null;
     }
-    Variant variant = Variant.from(inputOI.getStructFieldsDataAsList(variantObj));
+    Variant variant = inputOI.getVariant(variantObj);
     // convert to JSON
     return variant.toJson(ZoneOffset.UTC);
   }

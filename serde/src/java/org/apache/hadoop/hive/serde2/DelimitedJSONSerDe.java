@@ -59,7 +59,7 @@ public class DelimitedJSONSerDe extends LazySimpleSerDe {
     if (!objInspector.getCategory().equals(Category.PRIMITIVE) || (objInspector.getTypeName().equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME))) {
       //do this for all complex types and binary
       try {
-        serialize(out, SerDeUtils.getJSONString(obj, objInspector, serdeParams.getNullSequence().toString(), true),
+        serialize(out, SerDeUtils.getJSONString(obj, objInspector, serdeParams.getNullSequence().toString()),
             PrimitiveObjectInspectorFactory.javaStringObjectInspector, serdeParams.getSeparators(),
             1, serdeParams.getNullSequence(), serdeParams.isEscaped(), serdeParams.getEscapeChar(),
             serdeParams.getNeedsEscape());

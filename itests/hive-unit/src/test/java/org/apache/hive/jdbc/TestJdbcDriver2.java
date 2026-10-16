@@ -1131,9 +1131,18 @@ public class TestJdbcDriver2 {
       stmt.execute("insert into variant_table values (parse_json('{\"name\":\"John\",\"age\":30}'))");
 
       try (ResultSet res = stmt.executeQuery("select v from variant_table")) {
+        ResultSetMetaData meta = res.getMetaData();
+        // the server reports VARIANT as string until the client declares support (HIVE-30166)
+        assertEquals(Types.VARCHAR, meta.getColumnType(1));
+        assertEquals("string", meta.getColumnTypeName(1));
         assertTrue(res.next());
         assertEquals("{\"age\":30,\"name\":\"John\"}", res.getString(1));
+        assertEquals("{\"age\":30,\"name\":\"John\"}", res.getObject(1));
         assertFalse(res.next());
+      }
+      try (ResultSet res = stmt.executeQuery("select array(v) from variant_table")) {
+        assertTrue(res.next());
+        assertEquals("[{\"age\":30,\"name\":\"John\"}]", res.getString(1));
       }
       stmt.execute("drop table variant_table");
     }

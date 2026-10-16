@@ -21,76 +21,34 @@ package org.apache.iceberg.mr.hive.serde.objectinspector;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.List;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
-import org.apache.iceberg.variants.Variant;
+import org.apache.hadoop.hive.serde2.variant.Variant;
 
 /**
- * ObjectInspector for Iceberg's Variant type in Hive.
- * <p>
- * This ObjectInspector enables Hive to work with Iceberg's Variant type, which stores
- * polymorphic data in a single column. Variant types are particularly useful for
- * semi-structured data like JSON where the actual type may vary per row.
- * <p>
- * The ObjectInspector exposes each Variant as a Hive struct with two binary fields:
- * <ul>
- *   <li><strong>metadata</strong>: Binary metadata containing type information and schema</li>
- *   <li><strong>value</strong>: Binary representation of the actual data value</li>
- * </ul>
- * <p>
+ * Inspects Iceberg {@link org.apache.iceberg.variants.Variant} values as Hive VARIANT: each value is serialized
+ * into its metadata and value binaries on access.
  */
-public final class IcebergVariantObjectInspector extends VariantObjectInspector {
+public final class IcebergVariantObjectInspector implements VariantObjectInspector {
 
-  private static final ObjectInspector INSTANCE = new IcebergVariantObjectInspector();
+  private static final IcebergVariantObjectInspector INSTANCE = new IcebergVariantObjectInspector();
 
   private IcebergVariantObjectInspector() {
   }
 
-  public static ObjectInspector get() {
+  public static IcebergVariantObjectInspector get() {
     return INSTANCE;
   }
 
   @Override
-  public Object getStructFieldData(Object data, StructField fieldRef) {
+  public Variant getVariant(Object data) {
     if (data == null) {
       return null;
     }
-    Variant variant = (Variant) data;
-    MyField field = (MyField) fieldRef;
-
-    switch (field.getFieldID()) {
-      case 0: // "metadata" field (binary)
-        ByteBuffer metadata = ByteBuffer.allocate(variant.metadata().sizeInBytes())
-            .order(ByteOrder.LITTLE_ENDIAN);
-        variant.metadata().writeTo(metadata, 0);
-        return metadata.array();
-      case 1: // "value" field (binary)
-        ByteBuffer value = ByteBuffer.allocate(variant.value().sizeInBytes())
-            .order(ByteOrder.LITTLE_ENDIAN);
-        variant.value().writeTo(value, 0);
-        return value.array();
-      default:
-        throw new IllegalArgumentException("Unknown field position: " + field.getFieldID());
-    }
-  }
-
-  @Override
-  public List<Object> getStructFieldsDataAsList(Object data) {
-    if (data == null) {
-      return null;
-    }
-    Variant variant = (Variant) data;
-    ByteBuffer metadata = ByteBuffer.allocate(variant.metadata().sizeInBytes())
-        .order(ByteOrder.LITTLE_ENDIAN);
+    org.apache.iceberg.variants.Variant variant = (org.apache.iceberg.variants.Variant) data;
+    ByteBuffer metadata = ByteBuffer.allocate(variant.metadata().sizeInBytes()).order(ByteOrder.LITTLE_ENDIAN);
     variant.metadata().writeTo(metadata, 0);
-
-    ByteBuffer value = ByteBuffer.allocate(variant.value().sizeInBytes())
-        .order(ByteOrder.LITTLE_ENDIAN);
+    ByteBuffer value = ByteBuffer.allocate(variant.value().sizeInBytes()).order(ByteOrder.LITTLE_ENDIAN);
     variant.value().writeTo(value, 0);
-
-    // Return the data for our fields in the correct order: metadata, value
-    return List.of(metadata.array(), value.array());
+    return new Variant(value.array(), metadata.array());
   }
 }

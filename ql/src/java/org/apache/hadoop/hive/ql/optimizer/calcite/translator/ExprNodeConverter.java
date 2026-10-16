@@ -310,6 +310,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case INTERVAL_MINUTE_SECOND:
       case INTERVAL_SECOND:
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo, null);
+      case VARIANT:
+        return new ExprNodeConstantDesc(TypeInfoFactory.getVariantTypeInfo(), null);
       default:
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
       }

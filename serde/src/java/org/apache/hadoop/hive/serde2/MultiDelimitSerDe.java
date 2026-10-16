@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -288,6 +289,11 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
                 needsEscape);
           }
         }
+        return;
+      case VARIANT:
+        // Same bytes as the STRUCT branch over the two binaries.
+        serializeNoEncode(out, VariantEncoding.fields(objInspector, obj), VariantEncoding.JAVA_OBJECT_INSPECTOR,
+            separators, level, nullSequence, escaped, escapeChar, needsEscape);
         return;
     }
     throw new RuntimeException("Unknown category type: "+ objInspector.getCategory());

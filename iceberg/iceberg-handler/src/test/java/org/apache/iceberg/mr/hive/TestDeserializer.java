@@ -19,12 +19,19 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructEncodedVariantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.variant.Variant;
+import org.apache.hadoop.hive.serde2.variant.VariantBuilder;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
@@ -32,6 +39,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
+import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergVariantObjectInspector;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
@@ -191,5 +199,42 @@ public class TestDeserializer {
 
     // Check null record as well
     Assert.assertNull(deserializer.deserialize(null));
+  }
+
+  @Test
+  public void testVariantDeserialize() throws IOException {
+    Schema schema = new Schema(optional(1, "v", Types.VariantType.get()));
+    Variant variant = VariantBuilder.parseJson("{\"a\":1,\"b\":[true,null,\"x\"]}", false);
+
+    // the source is whatever feeds the FileSink: a UDF result, or a serde's struct-encoded value after a shuffle
+    assertWritesVariant(schema, ObjectInspectorFactory.getStandardVariantObjectInspector(), variant, variant);
+    assertWritesVariant(schema, new StructEncodedVariantObjectInspector(VariantEncoding.JAVA_OBJECT_INSPECTOR),
+        VariantEncoding.fields(variant), variant);
+    assertWritesVariant(schema, ObjectInspectorFactory.getStandardVariantObjectInspector(), null, null);
+  }
+
+  @Test
+  public void testVariantIsWrittenWithoutTheTrailingBytesOfItsValue() throws IOException {
+    Schema schema = new Schema(optional(1, "v", Types.VariantType.get()));
+    Variant variant = VariantBuilder.parseJson("{\"a\":1,\"b\":[true,null,\"x\"]}", false);
+    // a value written by Hive 4.2.x carries the zero tail of its write buffer
+    byte[] tailed = Arrays.copyOf(variant.getValue(), variant.getValue().length * 3 / 2);
+
+    assertWritesVariant(schema, ObjectInspectorFactory.getStandardVariantObjectInspector(),
+        new Variant(tailed, variant.getMetadata()), variant);
+  }
+
+  private static void assertWritesVariant(Schema schema, ObjectInspector variantInspector, Object value,
+      Variant expected) {
+    Deserializer deserializer = new Deserializer.Builder()
+        .schema(schema)
+        .writerInspector((StructObjectInspector) IcebergObjectInspector.create(schema))
+        .sourceInspector(ObjectInspectorFactory.getStandardStructObjectInspector(
+            List.of("v"), List.of(variantInspector)))
+        .build();
+
+    Record record = deserializer.deserialize(new Object[] { value });
+
+    Assert.assertEquals(expected, IcebergVariantObjectInspector.get().getVariant(record.get(0)));
   }
 }

@@ -1615,7 +1615,8 @@ import com.google.common.annotations.VisibleForTesting;
       outCol = ocm.allocateOutputColumn(typeInfo);
     }
     if (constantValue == null) {
-      if (typeInfo.getCategory() != Category.PRIMITIVE) {
+      // a null variant sets its struct column to a repeating null
+      if (typeInfo.getCategory() != Category.PRIMITIVE && typeInfo.getCategory() != Category.VARIANT) {
         throw new HiveException("Complex type constants (" + typeInfo.getCategory() + ") not supported for type name " + typeName);
       }
       if (mode == VectorExpressionDescriptor.Mode.FILTER) {
@@ -4208,7 +4209,8 @@ import com.google.common.annotations.VisibleForTesting;
       } else if (child instanceof ExprNodeConstantDesc) {
         // this is a constant (or null)
         if (child.getTypeInfo().getCategory() != Category.PRIMITIVE &&
-            child.getTypeInfo().getCategory() != Category.STRUCT) {
+            child.getTypeInfo().getCategory() != Category.STRUCT &&
+            child.getTypeInfo().getCategory() != Category.VARIANT) {
 
           // Complex type constants currently not supported by VectorUDFArgDesc.prepareConstant.
           throw new HiveException(
@@ -4503,6 +4505,8 @@ import com.google.common.annotations.VisibleForTesting;
       return "List";
     case MAP:
       return "Map";
+    case VARIANT:
+      return "Variant";
     default:
       throw new HiveException("Unexpected hive type name " + hiveTypeName);
     }
@@ -4530,6 +4534,7 @@ import com.google.common.annotations.VisibleForTesting;
           throws HiveException {
     switch (typeInfo.getCategory()) {
       case STRUCT:
+      case VARIANT:
         return Type.STRUCT;
       case UNION:
         return Type.UNION;

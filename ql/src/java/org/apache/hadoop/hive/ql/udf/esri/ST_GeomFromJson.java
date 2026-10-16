@@ -93,16 +93,8 @@ public class ST_GeomFromJson extends GenericUDF {
 
     ObjectInspector argJsonOI = arguments[0];
 
-    if (argJsonOI.getCategory() == Category.PRIMITIVE) {
-      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) argJsonOI;
-
-      if (poi.getPrimitiveCategory() != PrimitiveCategory.STRING) {
-        throw new UDFArgumentTypeException(0,
-            "ST_GeomFromJson argument category must be either a string primitive or struct");
-      }
-    } else if (argJsonOI.getCategory() != Category.STRUCT) {
-
-    } else {
+    if (argJsonOI.getCategory() != Category.PRIMITIVE
+        || ((PrimitiveObjectInspector) argJsonOI).getPrimitiveCategory() != PrimitiveCategory.STRING) {
       throw new UDFArgumentTypeException(0,
           "ST_GeomFromJson argument category must be either a string primitive or struct");
     }

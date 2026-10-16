@@ -1,0 +1,195 @@
+PREHOOK: query: CREATE TEMPORARY TABLE vpt (id INT, v VARIANT, s STRUCT<v:VARIANT,n:INT>) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vpt
+POSTHOOK: query: CREATE TEMPORARY TABLE vpt (id INT, v VARIANT, s STRUCT<v:VARIANT,n:INT>) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vpt
+PREHOOK: query: INSERT INTO vpt VALUES
+(1, parse_json('{"a":15,"b":"x"}'), named_struct('v', parse_json('{"a":25}'), 'n', 1)),
+(2, parse_json('{"a":16}'), named_struct('v', parse_json('{"c":true}'), 'n', 2))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@vpt
+POSTHOOK: query: INSERT INTO vpt VALUES
+(1, parse_json('{"a":15,"b":"x"}'), named_struct('v', parse_json('{"a":25}'), 'n', 1)),
+(2, parse_json('{"a":16}'), named_struct('v', parse_json('{"c":true}'), 'n', 2))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@vpt
+POSTHOOK: Lineage: vpt.id SCRIPT []
+POSTHOOK: Lineage: vpt.s SCRIPT []
+POSTHOOK: Lineage: vpt.v SCRIPT []
+PREHOOK: query: EXPLAIN SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM vpt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vpt
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM vpt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vpt
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: vpt
+          Pruned Column Paths: v.a, s.v.a
+          Select Operator
+            expressions: id (type: int), variant_get(v, '$.a', 'int') (type: int), variant_get(s.v, '$.a', 'int') (type: int)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+
+PREHOOK: query: SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM vpt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vpt
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM vpt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vpt
+#### A masked pattern was here ####
+1	15	25
+2	16	NULL
+PREHOOK: query: SELECT id FROM vpt WHERE variant_get(v, '$.a', 'int') = 16
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vpt
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id FROM vpt WHERE variant_get(v, '$.a', 'int') = 16
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vpt
+#### A masked pattern was here ####
+2
+PREHOOK: query: EXPLAIN WITH c AS (SELECT id, v, s FROM vpt)
+SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@c
+PREHOOK: Input: default@vpt
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN WITH c AS (SELECT id, v, s FROM vpt)
+SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c
+POSTHOOK: Input: default@vpt
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-1
+  Stage-3 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vpt
+                  Statistics: Num rows: 2 Data size: 1456 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: id (type: int), v (type: variant), s (type: struct<v:variant,n:int>)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 1456 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 1456 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+                          name: default.c
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-3
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: c
+          Pruned Column Paths: v.a, s.v.a
+          Statistics: Num rows: 2 Data size: 1456 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: id (type: int), variant_get(v, '$.a', 'int') (type: int), variant_get(s.v, '$.a', 'int') (type: int)
+            outputColumnNames: _col0, _col1, _col2
+            ListSink
+
+PREHOOK: query: WITH c AS (SELECT id, v, s FROM vpt) SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@c
+PREHOOK: Input: default@vpt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@c
+#### A masked pattern was here ####
+POSTHOOK: query: WITH c AS (SELECT id, v, s FROM vpt) SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c
+POSTHOOK: Input: default@vpt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@c
+#### A masked pattern was here ####
+1	15	25
+2	16	NULL
+PREHOOK: query: SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM vpt ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vpt
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM vpt ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vpt
+#### A masked pattern was here ####
+1	15	25
+2	16	NULL
+PREHOOK: query: WITH c AS (SELECT id, v, s FROM vpt)
+SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM c ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@c
+PREHOOK: Input: default@vpt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@c
+#### A masked pattern was here ####
+POSTHOOK: query: WITH c AS (SELECT id, v, s FROM vpt)
+SELECT id, variant_get(v, '$.a', 'int'), variant_get(s.v, '$.a', 'int') FROM c ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c
+POSTHOOK: Input: default@vpt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@c
+#### A masked pattern was here ####
+1	15	25
+2	16	NULL
+PREHOOK: query: INSERT INTO vpt VALUES (3, parse_json('{"a,b":{"c":7}}'), named_struct('v', parse_json('{}'), 'n', 3))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@vpt
+POSTHOOK: query: INSERT INTO vpt VALUES (3, parse_json('{"a,b":{"c":7}}'), named_struct('v', parse_json('{}'), 'n', 3))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@vpt
+POSTHOOK: Lineage: vpt.id SCRIPT []
+POSTHOOK: Lineage: vpt.s SCRIPT []
+POSTHOOK: Lineage: vpt.v SCRIPT []
+PREHOOK: query: SELECT id, variant_get(v, '$.a,b.c', 'int') FROM vpt WHERE id = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vpt
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, variant_get(v, '$.a,b.c', 'int') FROM vpt WHERE id = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vpt
+#### A masked pattern was here ####
+3	7

@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.variant.VariantEncoding;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -304,6 +305,9 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
           }
           break;
         }
+        case VARIANT:
+          setColumn(rowId, column, VariantEncoding.JAVA_OBJECT_INSPECTOR, VariantEncoding.fields(inspector, obj));
+          break;
         default:
           throw new IllegalArgumentException("Unknown ObjectInspector kind " +
               inspector.getCategory());

@@ -56,6 +56,7 @@ public class AvroSerDe extends AbstractSerDe {
 
   public static final String DECIMAL_TYPE_NAME = "decimal";
   public static final String CHAR_TYPE_NAME = "char";
+  public static final String VARIANT_TYPE_NAME = "variant";
   public static final String VARCHAR_TYPE_NAME = "varchar";
   public static final String DATE_TYPE_NAME = "date";
   public static final String TIMESTAMP_TYPE_NAME_MILLIS = "timestamp-millis";
