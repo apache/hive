@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.StringUtils;
 import java.util.Collections;
 import java.util.Map;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.junit.Test;
@@ -229,6 +231,14 @@ public class TestHmsServerAuthorization {
     request.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     expectAuthorizationFailure("get_partitions_with_specs",
         () -> client.getPartitionsWithSpecs(request));
+  }
+
+  @Test
+  public void testCompact2Authorization() throws Exception {
+    dbName1 = "db_test_compact2";
+    creatEnv(conf);
+    CompactionRequest request = new CompactionRequest(dbName1, TAB1, CompactionType.MAJOR);
+    expectAuthorizationFailure("compact2", () -> client.compact2(request));
   }
 
   @Test
