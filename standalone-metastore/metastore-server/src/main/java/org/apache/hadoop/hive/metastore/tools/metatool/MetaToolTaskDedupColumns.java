@@ -110,6 +110,9 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
         + result.getStorageDescriptorsUpdated());
     if (!isDryRun) {
       System.out.println("Column descriptors removed: " + result.getColumnDescriptorsRemoved());
+      if (result.getTablesValidated() > 0) {
+        System.out.println("Post-commit validation passed for " + result.getTablesValidated() + " table(s).");
+      }
     }
     if (isVerbose) {
       for (String detail : result.getDetails()) {
