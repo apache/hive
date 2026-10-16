@@ -392,8 +392,9 @@ public class GenericUDFTrunc extends GenericUDF {
     case VOID:
       return null;
     case DECIMAL:
-      decimalOutput.set((HiveDecimalWritable) inputOI.getPrimitiveWritableObject(input));
-      TruncUtils.trunc(decimalOutput, scale);
+      HiveDecimalWritable decimalWritable =
+          (HiveDecimalWritable) inputOI.getPrimitiveWritableObject(input);
+      TruncUtils.trunc(decimalWritable, scale, decimalOutput);
       return decimalOutput;
     case BYTE:
       ByteWritable byteWritable = (ByteWritable) inputOI.getPrimitiveWritableObject(input);

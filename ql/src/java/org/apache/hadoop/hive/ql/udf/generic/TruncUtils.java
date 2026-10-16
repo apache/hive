@@ -52,10 +52,11 @@ public final class TruncUtils {
   }
 
   /**
-   * Truncates the decimal held by the writable in place.
+   * Truncates the input decimal into the output writable. The input is not modified.
    */
-  public static void trunc(HiveDecimalWritable writable, int scale) {
-    writable.mutateSetScale(Math.max(scale, MIN_DECIMAL_SCALE), DECIMAL_ROUND_DOWN);
+  public static void trunc(HiveDecimalWritable input, int scale, HiveDecimalWritable output) {
+    output.set(input);
+    output.mutateSetScale(Math.max(scale, MIN_DECIMAL_SCALE), DECIMAL_ROUND_DOWN);
   }
 
   /**

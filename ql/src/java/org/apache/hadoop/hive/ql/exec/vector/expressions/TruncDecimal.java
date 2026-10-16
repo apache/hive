@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.ArgumentType;
 import org.apache.hadoop.hive.ql.udf.generic.TruncUtils;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Vectorized implementation of trunc(number, scale) function for decimal input
@@ -45,9 +44,8 @@ public class TruncDecimal extends TruncFloat {
 
   @Override
   protected void trunc(ColumnVector inputColVector, ColumnVector outputColVector, int i) {
-    HiveDecimalWritable output = ((DecimalColumnVector) outputColVector).vector[i];
-    output.set(((DecimalColumnVector) inputColVector).vector[i]);
-    TruncUtils.trunc(output, scale);
+    TruncUtils.trunc(((DecimalColumnVector) inputColVector).vector[i], scale,
+        ((DecimalColumnVector) outputColVector).vector[i]);
   }
 
   protected ArgumentType getInputColumnType() {
