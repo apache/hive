@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.parquet.column.ColumnDescriptor;
+import org.apache.parquet.column.page.DataPage;
 import org.apache.parquet.column.page.PageReader;
 import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
 import org.apache.parquet.schema.Type;
@@ -52,6 +53,13 @@ import java.time.ZoneId;
  */
 public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader {
 
+  /**
+   * Batched decoder for flat PLAIN / dictionary columns; null when the column needs the per-value path.
+   */
+  private final FlatColumnDecoder flat;
+  private boolean flatTarget;
+  private boolean flatPage;
+
   public VectorizedPrimitiveColumnReader(
       ColumnDescriptor descriptor,
       PageReader pageReader,
@@ -62,8 +70,42 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       Type type,
       TypeInfo hiveType)
       throws IOException {
+    this(descriptor, pageReader, skipTimestampConversion, writerTimezone, skipProlepticConversion,
+        legacyConversionEnabled, type, hiveType, true);
+  }
+
+  /** {@code flatDecode} false keeps every column on the per-value path; tests compare the two. */
+  VectorizedPrimitiveColumnReader(
+      ColumnDescriptor descriptor,
+      PageReader pageReader,
+      boolean skipTimestampConversion,
+      ZoneId writerTimezone,
+      boolean skipProlepticConversion,
+      boolean legacyConversionEnabled,
+      Type type,
+      TypeInfo hiveType,
+      boolean flatDecode)
+      throws IOException {
     super(descriptor, pageReader, skipTimestampConversion, writerTimezone, skipProlepticConversion,
         legacyConversionEnabled, type, hiveType);
+    this.flat = flatDecode ? FlatColumnDecoder.forColumn(descriptor, type.asPrimitiveType(), hiveType,
+        dictionary == null ? null : dictionary.getDictionary(), skipProlepticConversion) : null;
+  }
+
+  /** Whether this column decodes in batches; tests pin which columns qualify. */
+  boolean usesFlatDecoding() {
+    return flat != null;
+  }
+
+  @Override
+  protected void initPage(DataPage page) {
+    flatPage = flatTarget && flat.initPage(page);
+    if (flatPage) {
+      pageValueCount = page.getValueCount();
+      endOfPageValueCount = valuesRead + pageValueCount;
+    } else {
+      super.initPage(page);
+    }
   }
 
   @Override
@@ -71,8 +113,21 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       int total,
       ColumnVector column,
       TypeInfo columnType) throws IOException {
-    this.currentDefLevels = new int[total];
+    if (currentDefLevels == null || currentDefLevels.length < total) {
+      currentDefLevels = new int[total];
+    }
     this.defLevelIndex = 0;
+    flatTarget = flat != null && flat.accepts(column);
+    if (flatTarget) {
+      flat.beginBatch(total);
+      if (column instanceof Decimal64ColumnVector dec64) {
+        fillDecimal64PrecisionScale(dec64);
+      } else if (column instanceof DecimalColumnVector dec) {
+        fillDecimalPrecisionScale(dec);
+      } else if (column instanceof DateColumnVector date) {
+        date.setUsingProlepticCalendar(true);
+      }
+    }
     int rowId = 0;
     while (total > 0) {
       // Compute the number of values we want to read in this page.
@@ -83,7 +138,11 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
 
       int num = Math.min(total, leftInPage);
-      if (isCurrentPageDictionaryEncoded) {
+      if (flatPage) {
+        flat.readValues(num, column, rowId, currentDefLevels);
+        valuesRead += num;
+        defLevelIndex += num;
+      } else if (isCurrentPageDictionaryEncoded) {
         LongColumnVector dictionaryIds = new LongColumnVector();
         // Read and decode dictionary ids.
         readDictionaryIDs(num, dictionaryIds, rowId);
@@ -94,6 +153,9 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
       rowId += num;
       total -= num;
+    }
+    if (flatTarget) {
+      flat.finishBatch(column, rowId);
     }
   }
 
