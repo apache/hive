@@ -49,6 +49,8 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
 
   private List<MetastoreTaskThread> runningTasks;
 
+  private volatile boolean isDynamic;
+
   public HouseKeepingTasks(Configuration configuration, boolean runOnlyRemoteTasks) {
     this.configuration = new Configuration(requireNonNull(configuration,
         "configuration is null"));
@@ -60,12 +62,18 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
    */
   public List<MetastoreTaskThread> getRemoteOnlyTasks() throws Exception {
     List<MetastoreTaskThread> remoteOnlyTasks = new ArrayList<>();
-    if(!MetastoreConf.getBoolVar(configuration,
-        MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON)) {
+    boolean tasksOn =
+        MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_THREADS_ON);
+    if(!isDynamic && !tasksOn) {
       return remoteOnlyTasks;
     }
-    boolean isCompactorEnabled = MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)
-            || MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON);
+    if (!tasksOn) {
+      HiveMetaStore.LOG.info("metastore.housekeeping.threads.on is ignored since current leader is dynamic.");
+    }
+
+    boolean isCompactorEnabled = isDynamic
+        || MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)
+        || MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON);
 
     Collection<String> taskNames =
         MetastoreConf.getStringCollection(configuration, MetastoreConf.ConfVars.TASK_THREADS_REMOTE_ONLY);
@@ -80,7 +88,6 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     return remoteOnlyTasks;
   }
 
-  // Copied from HiveMetaStore
   public List<MetastoreTaskThread> getAlwaysTasks() throws Exception {
     List<MetastoreTaskThread> alwaysTasks = new ArrayList<>();
     Collection<String> taskNames =
@@ -102,6 +109,7 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
         .setNameFormat("Metastore Scheduled Worker(" + election.getName() + ") %d").build();
     final List<MetastoreTaskThread> tasks;
+    isDynamic = election.isDynamic();
     if (!runOnlyRemoteTasks) {
       tasks = new ArrayList<>(getAlwaysTasks());
     } else {
