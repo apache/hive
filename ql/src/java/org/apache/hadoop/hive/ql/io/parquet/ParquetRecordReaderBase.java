@@ -143,7 +143,7 @@ public abstract class ParquetRecordReaderBase {
 
     FilterCompat.Filter filter = setFilter(jobConf, fileMetaData.getSchema());
     if (filter != null) {
-      filteredBlocks = RowGroupFilter.filterRowGroups(filter, splitGroup, fileMetaData.getSchema());
+      filteredBlocks = filterRowGroups(filter, splitGroup, fileMetaData);
       if (filteredBlocks.isEmpty()) {
         LOG.debug("All row groups are dropped due to filter predicates");
         return null;
@@ -179,6 +179,15 @@ public abstract class ParquetRecordReaderBase {
       fileMetaData.getKeyValueMetaData(),
       readContext.getReadSupportMetadata());
     return split;
+  }
+
+  /**
+   * Prunes the row groups of this split with the pushed down predicate, using the statistics that the footer
+   * already holds.
+   */
+  protected List<BlockMetaData> filterRowGroups(FilterCompat.Filter filter, List<BlockMetaData> splitGroup,
+      FileMetaData fileMetaData) throws IOException {
+    return RowGroupFilter.filterRowGroups(filter, splitGroup, fileMetaData.getSchema());
   }
 
   @SuppressWarnings("deprecation")
