@@ -1098,7 +1098,8 @@ public class TestSemanticAnalyzer {
   @Test
   public void testFloatSortKeyNotReadAsPositionWhenCboPlansStatement() throws Exception {
     // the AST regenerated from the CBO plan goes through the same reduce sink code; it carries an ORDER BY key
-    // outside the select list as an expression, and a FLOAT constant as a bare number such as 1.5F
+    // outside the select list as an expression, and a FLOAT constant as a bare number such as 1.5F. CBO removes
+    // constant sort keys first, so no number reaches the reduce sink
     SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(
         "select value from table1 order by cast(1.5 as float), key desc");
     assertFalse(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO"));

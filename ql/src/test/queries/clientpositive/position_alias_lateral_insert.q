@@ -1,4 +1,4 @@
--- CBO's Hive operator return path declines lateral views.
+-- HIVE-30037: CBO's Hive operator return path declines lateral views.
 set hive.cbo.returnpath.hiveop=true;
 create table pali_src (a int, b int);
 insert into pali_src values (1,30), (2,10), (3,20);

@@ -358,8 +358,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Select list columns, in select list order, of an INSERT with a column list, by query block and destination.
    * The select output is rearranged into the target column order, and the reduce sinks of the destination, including
-   * the extra one for a LIMIT, read columns with the same internal names. TRANSFORM and UDTF outputs are never
-   * rearranged, so they have no entry and their positions resolve against their own columns.
+   * the extra one for a LIMIT, read columns with the same internal names. With CBO enabled, the only case in which
+   * positions are resolved here, TRANSFORM and UDTF output columns are not rearranged, so they have no entry and their
+   * positions resolve against their own columns.
    */
   private final Map<QB, Map<String, List<ColumnInfo>>> insertSelectListColumns = new HashMap<>();
   private List<LoadTableDesc> loadTableWork;
@@ -5286,7 +5287,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                        targetTableColTypes, newColList, targetTableColNames);
     if (selectListColumns.size() == targetTableSchema.size()) {
       for (int i = 0; i < selectListColumns.size(); i++) {
-        // the reduce sink for a LIMIT copies one alternate name, the last one added, so add the primary name last
+        // the extra reduce sink for a LIMIT reads a copy that keeps only the last alternate name added,
+        // so add the primary name last
         addSelectListName(newOutputRR, selectListAlternateNames.get(i), selectListColumns.get(i));
         addSelectListName(newOutputRR, selectListNames.get(i), selectListColumns.get(i));
       }
@@ -9784,9 +9786,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * CBO resolves positions in CLUSTER BY, DISTRIBUTE BY, SORT BY and ORDER BY in
-   * CalcitePlanner.genSortByKey. When CBO is enabled but declines the statement, the positions reach
-   * this planner unresolved. With CBO disabled, processPositionAlias has already replaced ORDER BY
-   * positions with the select expressions, so a remaining number is a literal.
+   * CalcitePlanner.genSortByKey. When CBO is enabled but does not plan the clause, because it declines the
+   * statement or plans only the FROM clause of a multi-insert, the positions reach this planner unresolved.
+   * With CBO disabled, processPositionAlias has already replaced ORDER BY positions with the select
+   * expressions, so a remaining number is a literal.
    */
   private boolean isUnresolvedPosition(ASTNode node) {
     return node.getType() == HiveParser.Number
@@ -9817,8 +9820,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * When CBO plans a statement, an invalid position makes it recompile the statement without CBO, unless the
-   * fallback strategy treats the error as fatal. A declined statement does the same.
+   * When CBO plans a statement, an invalid position fails CBO, and the statement is recompiled without CBO unless
+   * the fallback strategy treats the error as fatal. A declined statement is recompiled the same way.
    */
   private <T extends Exception> T recompileWithoutCboIfAllowed(T error) {
     CBOFallbackStrategy fallbackStrategy =

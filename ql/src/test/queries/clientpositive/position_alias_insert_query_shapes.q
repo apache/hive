@@ -1,4 +1,4 @@
--- Exercise query-block isolation and final SELECT projections after CBO declines.
+-- HIVE-30037: Exercise query-block isolation and final SELECT projections after CBO declines.
 set hive.cbo.returnpath.hiveop=true;
 create table pai_src (a int, b int);
 insert into pai_src values (2,10),(3,20),(1,30);

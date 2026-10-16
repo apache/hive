@@ -1,7 +1,7 @@
 -- SORT_QUERY_RESULTS
--- HIVE-30037: with a fallback strategy other than NEVER, an invalid position makes CBO recompile the statement
--- without CBO, which ignores positions in SORT BY, DISTRIBUTE BY and CLUSTER BY. A statement that CBO declines
--- is recompiled the same way.
+-- HIVE-30037: with a fallback strategy other than NEVER, an invalid position fails CBO, and Hive recompiles the
+-- statement without CBO, which ignores positions in SORT BY, DISTRIBUTE BY and CLUSTER BY. A statement that CBO
+-- declines is recompiled the same way.
 
 create table pacdf_t (d int, s string);
 insert into pacdf_t values (1, 'a'), (3, 'c'), (2, 'b');

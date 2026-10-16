@@ -1,4 +1,4 @@
--- Review reproduction: SELECT positions must survive insert target-column rearrangement.
+-- HIVE-30037: Review reproduction: SELECT positions must survive insert target-column rearrangement.
 
 create table pair_src (a int, b int);
 insert into pair_src values (2,10), (3,20), (1,30);

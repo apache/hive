@@ -1,4 +1,4 @@
--- A top-level UDTF's positions refer to its output, not its array argument.
+-- HIVE-30037: A top-level UDTF's positions refer to its output, not its array argument.
 create table paui_src (a int);
 insert into paui_src values (1),(3),(2);
 create table paui_pos (a int);

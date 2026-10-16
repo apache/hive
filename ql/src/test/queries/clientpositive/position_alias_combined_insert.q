@@ -1,4 +1,4 @@
--- Combine operator outputs with explicit insert layouts and nullable lateral-view rows.
+-- HIVE-30037: Combine operator outputs with explicit insert layouts and nullable lateral-view rows.
 set hive.cbo.returnpath.hiveop=true;
 create table paci_src (a int, b int);
 insert into paci_src values (2,10),(3,20),(1,30);
