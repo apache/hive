@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -54,6 +55,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -198,7 +200,7 @@ public class TestHMSColumnDescriptorReuse {
     Deadline.startTimer("testDeduplicateColumnDescriptorsTool");
     try {
       MetaToolObjectStore.DedupColumnsResult result = metaToolStore.dedupColumns(null, "default", "person", progress,
-          false, false);
+          false, false, false);
       assertEquals(0, result.getTablesWithDuplicates());
       assertEquals(0, result.getTablesValidated());
 
@@ -211,12 +213,26 @@ public class TestHMSColumnDescriptorReuse {
       objectStore.addPartition(newPart(tbl2, "England"));
       cdsBeforeDedup = countColumnDescriptors();
       assertTrue(cdsBeforeDedup > 2);
+      Table table = objectStore.getTable("hive", "default", "person");
+      assertFalse(table.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
 
-      result = metaToolStore.dedupColumns(null, "default", "person", progress, false, false);
+      result = metaToolStore.dedupColumns(null, "default", "person", progress, false, false, false);
       assertTrue(result.getStorageDescriptorsUpdated() > 0);
       assertEquals(1, result.getTablesValidated());
       assertEquals(2, countColumnDescriptors());
       assertNotNull(progress.get());
+      table = objectStore.getTable("hive", "default", "person");
+      assertTrue(table.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
+
+      result = metaToolStore.dedupColumns(null, "default", "person", progress, false, false, false);
+      assertEquals(0, result.getStorageDescriptorsUpdated());
+      assertEquals(0, result.getTablesValidated());
+
+      result = metaToolStore.dedupColumns(null, "default", "person", progress, false, false, true);
+      assertEquals(0, result.getStorageDescriptorsUpdated());
+      table = objectStore.getTable("hive", "default", "person");
+      // the marker has been cleaned
+      assertFalse(table.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
 
       Deadline.registerIfNot(30 * 1000);
       Deadline.startTimer("testDeduplicateColumnDescriptorsTool");
@@ -332,8 +348,8 @@ public class TestHMSColumnDescriptorReuse {
   private void validate(List<ColumnDeduplicator.PartitionSchemaSnapshot> snapshots)
       throws Exception {
     ColumnDeduplicator deduplicator =
-        new ColumnDeduplicator(objectStore.createRawStoreBundle(), null, false, false);
-    ColumnDeduplicator.TableInfo tableInfo = new ColumnDeduplicator.TableInfo(0L, 0L, "hive", "default", "person");
+        new ColumnDeduplicator(objectStore.createRawStoreBundle(), null, false, false, false);
+    ColumnDeduplicator.TableInfo tableInfo = new ColumnDeduplicator.TableInfo(0L, 0L, new TableName("hive", "default", "person"));
     deduplicator.validateTableAfterDedup(tableInfo, snapshots);
   }
 
