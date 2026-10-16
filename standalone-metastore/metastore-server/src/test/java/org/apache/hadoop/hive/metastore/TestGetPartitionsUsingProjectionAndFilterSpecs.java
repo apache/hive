@@ -81,6 +81,8 @@ public class TestGetPartitionsUsingProjectionAndFilterSpecs {
   private List<Partition> origPartitions;
   private Table tbl;
   private static final String EXCLUDE_KEY_PREFIX = "exclude";
+  private static final int DEFAULT_LIMIT_PARTITION_REQUEST = 100;
+  private static final String MANY_PART_TBL_NAME = "test_projection_table_many_partitions";
   private HiveMetaStoreClient client;
 
   @BeforeClass
@@ -88,7 +90,7 @@ public class TestGetPartitionsUsingProjectionAndFilterSpecs {
     conf.set("hive.in.test", "true");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
-    MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, 100);
+    MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
     port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
     LOG.info("Starting MetaStore Server on port " + port);
 
@@ -125,6 +127,11 @@ public class TestGetPartitionsUsingProjectionAndFilterSpecs {
   private void dropTestTables() {
     try {
       client.dropTable(dbName, tblName);
+    } catch (TException e) {
+      // ignored
+    }
+    try {
+      client.dropTable(dbName, MANY_PART_TBL_NAME);
     } catch (TException e) {
       // ignored
     }
@@ -192,6 +199,170 @@ public class TestGetPartitionsUsingProjectionAndFilterSpecs {
     GetPartitionsRequest request = getGetPartitionsRequest();
     GetPartitionsResponse response = client.getPartitionsWithSpecs(request);
     validateBasic(response);
+  }
+
+  @Test
+  public void testGetPartitionsWithSpecsExceedsPartitionLimit() throws Exception {
+    createTableWithManyPartitions(MANY_PART_TBL_NAME, DEFAULT_LIMIT_PARTITION_REQUEST + 1);
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    request.setTblName(MANY_PART_TBL_NAME);
+    request.getProjectionSpec().setFieldList(Collections.singletonList("values"));
+
+    // The number of partitions matched exceeds hive.metastore.limit.partition.request,
+    // so getPartitionsWithSpecs should throw a MetaException just like the regular
+    // partition listing RPCs do.
+    try {
+      client.getPartitionsWithSpecs(request);
+      Assert.fail("getPartitionsWithSpecs should have thrown a MetaException");
+    } catch (MetaException e) {
+      Assert.assertTrue("Unexpected error message: " + e.getMessage(),
+          e.getMessage().contains("exceeds limit"));
+    }
+  }
+
+  @Test
+  public void testGetPartitionsWithSpecsAtPartitionLimit() throws Exception {
+    createTableWithManyPartitions(MANY_PART_TBL_NAME, DEFAULT_LIMIT_PARTITION_REQUEST);
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    request.setTblName(MANY_PART_TBL_NAME);
+    request.getProjectionSpec().setFieldList(Collections.singletonList("values"));
+
+    // Exactly as many partitions as hive.metastore.limit.partition.request: the
+    // request must succeed
+    GetPartitionsResponse response = client.getPartitionsWithSpecs(request);
+    Assert.assertEquals(1, response.getPartitionSpecSize());
+    Assert.assertEquals(DEFAULT_LIMIT_PARTITION_REQUEST,
+        response.getPartitionSpec().get(0).getSharedSDPartitionSpec().getPartitions().size());
+  }
+
+  @Test
+  public void testGetPartitionsWithSpecsByNamesExceedsPartitionLimit() throws Exception {
+    createTableWithManyPartitions(MANY_PART_TBL_NAME, DEFAULT_LIMIT_PARTITION_REQUEST + 1);
+    List<String> partNames = client.listPartitionNames(dbName, MANY_PART_TBL_NAME, (short) -1);
+    Assert.assertEquals(DEFAULT_LIMIT_PARTITION_REQUEST + 1, partNames.size());
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    request.setTblName(MANY_PART_TBL_NAME);
+    request.getProjectionSpec().setFieldList(Collections.singletonList("values"));
+    request.getFilterSpec().setFilterMode(PartitionFilterMode.BY_NAMES);
+    request.getFilterSpec().setFilters(partNames);
+
+    // Mirrors get_partitions_by_names: the requested partition names count already
+    // exceeds the limit, so the request fails fast with a MetaException
+    try {
+      client.getPartitionsWithSpecs(request);
+      Assert.fail("getPartitionsWithSpecs should have thrown a MetaException");
+    } catch (MetaException e) {
+      Assert.assertTrue("Unexpected error message: " + e.getMessage(),
+          e.getMessage().contains("exceeds limit"));
+    }
+  }
+
+  @Test
+  public void testGetPartitionsWithSpecsByNamesRequestedCountExceedsPartitionLimit() throws Exception {
+    // Fewer partitions exist than the limit, but more names are requested than the limit
+    int existingPartitions = DEFAULT_LIMIT_PARTITION_REQUEST / 2;
+    createTableWithManyPartitions(MANY_PART_TBL_NAME, existingPartitions);
+    List<String> partNames = client.listPartitionNames(dbName, MANY_PART_TBL_NAME, (short) -1);
+    Assert.assertEquals(existingPartitions, partNames.size());
+    for (int i = 0; i < DEFAULT_LIMIT_PARTITION_REQUEST; i++) {
+      partNames.add("p=a/q=nonexistent" + i);
+    }
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    request.setTblName(MANY_PART_TBL_NAME);
+    request.getProjectionSpec().setFieldList(Collections.singletonList("values"));
+    request.getFilterSpec().setFilterMode(PartitionFilterMode.BY_NAMES);
+    request.getFilterSpec().setFilters(partNames);
+
+    // Mirrors get_partitions_by_names: the requested partition names count exceeds the
+    // limit even though only half of them exist, so the request must fail fast. Without
+    // the check on the requested names count the fetch would return existingPartitions
+    // partitions, which is within the limit, and would not fail.
+    try {
+      client.getPartitionsWithSpecs(request);
+      Assert.fail("getPartitionsWithSpecs should have thrown a MetaException");
+    } catch (MetaException e) {
+      Assert.assertTrue("Unexpected error message: " + e.getMessage(),
+          e.getMessage().contains("exceeds limit"));
+    }
+  }
+
+  @Test
+  public void testGetPartitionsWithSpecsByValuesExceedsPartitionLimit() throws Exception {
+    createTableWithManyPartitions(MANY_PART_TBL_NAME, DEFAULT_LIMIT_PARTITION_REQUEST + 1);
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    request.setTblName(MANY_PART_TBL_NAME);
+    request.getProjectionSpec().setFieldList(Collections.singletonList("values"));
+    request.getFilterSpec().setFilterMode(PartitionFilterMode.BY_VALUES);
+    request.getFilterSpec().setFilters(Collections.singletonList("a"));
+
+    // The partial partition values match all the partitions, exceeding
+    // hive.metastore.limit.partition.request, so the request fails with a MetaException
+    try {
+      client.getPartitionsWithSpecs(request);
+      Assert.fail("getPartitionsWithSpecs should have thrown a MetaException");
+    } catch (MetaException e) {
+      Assert.assertTrue("Unexpected error message: " + e.getMessage(),
+          e.getMessage().contains("exceeds limit"));
+    }
+  }
+
+  @Test
+  public void testGetPartitionsWithSpecsByExprExceedsPartitionLimit() throws Exception {
+    createTableWithManyPartitions(MANY_PART_TBL_NAME, DEFAULT_LIMIT_PARTITION_REQUEST + 1);
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    request.setTblName(MANY_PART_TBL_NAME);
+    request.getProjectionSpec().setFieldList(Collections.singletonList("values"));
+    request.getFilterSpec().setFilterMode(PartitionFilterMode.BY_EXPR);
+    request.getFilterSpec().setFilters(Collections.singletonList("p=\"a\""));
+
+    // The filter expression matches all the partitions, exceeding
+    // hive.metastore.limit.partition.request, so the request fails with a MetaException
+    try {
+      client.getPartitionsWithSpecs(request);
+      Assert.fail("getPartitionsWithSpecs should have thrown a MetaException");
+    } catch (MetaException e) {
+      Assert.assertTrue("Unexpected error message: " + e.getMessage(),
+          e.getMessage().contains("exceeds limit"));
+    }
+  }
+
+  @Test
+  public void testGetPartitionsWithSpecsExceedsPartitionLimitWithJDO() throws Exception {
+    // disable direct SQL so that the limit checks use the JDO code path
+    client.setMetaConf(ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
+    createTableWithManyPartitions(MANY_PART_TBL_NAME, DEFAULT_LIMIT_PARTITION_REQUEST + 1);
+    GetPartitionsRequest request = getGetPartitionsRequest();
+    request.setTblName(MANY_PART_TBL_NAME);
+    request.getProjectionSpec().setFieldList(Collections.singletonList("values"));
+
+    // Same as testGetPartitionsWithSpecsExceedsPartitionLimit but exercising the
+    // JDO count path of the limit check
+    try {
+      client.getPartitionsWithSpecs(request);
+      Assert.fail("getPartitionsWithSpecs should have thrown a MetaException");
+    } catch (MetaException e) {
+      Assert.assertTrue("Unexpected error message: " + e.getMessage(),
+          e.getMessage().contains("exceeds limit"));
+    }
+  }
+
+  private void createTableWithManyPartitions(String tbl, int numPartitions) throws TException {
+    new TableBuilder()
+        .setTableName(tbl)
+        .setDbName(dbName)
+        .addCol("c1", "string")
+        .addPartCol("p", "string")
+        .addPartCol("q", "string")
+        .create(client, conf);
+    Table table = client.getTable(dbName, tbl);
+
+    // All partitions share the first key value so that a partial-values filter
+    // (BY_VALUES) and a first-key expression (BY_EXPR) match all of them
+    List<Partition> partitions = new ArrayList<>(numPartitions);
+    for (int i = 0; i < numPartitions; i++) {
+      partitions.add(createPartition(Arrays.asList("a", "b" + i), table));
+    }
+    client.add_partitions(partitions);
   }
 
   @Test

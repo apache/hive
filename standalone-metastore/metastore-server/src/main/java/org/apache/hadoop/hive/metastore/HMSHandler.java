@@ -1577,9 +1577,14 @@ public class HMSHandler extends PrivilegeHandler {
       getTableRequest.setCatName(catName);
       Table table = get_table_core(getTableRequest);
       firePreEvent(new PreReadTableEvent(table, this));
+      // Fail fast before the expensive fetch; the check on the fetched result below
+      // remains as the final backstop
+      GetPartitionsHandler.checkLimitNumberOfPartitionsByFilterSpec(getConf(), getMS(), catName,
+          parsedDbName[DB_NAME], tableName, request.getFilterSpec());
       List<Partition> partitions = getMS()
           .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
               request.getFilterSpec());
+      GetPartitionsHandler.checkLimitNumberOfPartitions(getConf(), tableName, partitions.size());
       partitions = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, partitions);
       List<String> processorCapabilities = request.getProcessorCapabilities();
       String processorId = request.getProcessorIdentifier();
