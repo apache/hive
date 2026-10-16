@@ -69,7 +69,8 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
         daemon.setDaemon(true);
         daemon.start();
       }
-      result = getObjectStore().dedupColumns(catalogFilter, dbFilter, tableFilter, progress, isDryRun, isVerbose);
+      result = getObjectStore().dedupColumns(catalogFilter, dbFilter, tableFilter, progress, isDryRun, isVerbose,
+          getCl().isClearMarker());
     } catch (MetaException ex) {
       // Deadline.startTimer throws MetaException, this shouldn't happen as the Deadline has been registered.
       System.err.println(ex.getMessage());
