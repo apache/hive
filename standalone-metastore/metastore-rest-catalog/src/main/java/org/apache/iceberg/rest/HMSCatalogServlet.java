@@ -20,13 +20,17 @@
 package org.apache.iceberg.rest;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.iceberg.exceptions.RESTException;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 import org.apache.iceberg.rest.responses.ErrorResponse;
@@ -35,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.11.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java">RESTCatalogServlet.java</a>
+ * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.12.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java">RESTCatalogServlet.java</a>
  * The RESTCatalogServlet provides a servlet implementation used in combination with a
  * RESTCatalogAdaptor to proxy the REST Spec to any Catalog implementation.
  */
@@ -58,21 +62,58 @@ public class HMSCatalogServlet extends HttpServlet {
   }
 
   @Override
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    execute(ServletRequestContext.from(request), response);
+  }
+
+  @Override
+  protected void doHead(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    execute(ServletRequestContext.from(request), response);
+  }
+
+  @Override
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    execute(ServletRequestContext.from(request), response);
+  }
+
+  @Override
+  protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    execute(ServletRequestContext.from(request), response);
+  }
+
+  @Override
   protected void service(HttpServletRequest request, HttpServletResponse response) {
     try {
       ServletRequestContext context = ServletRequestContext.from(request);
-      response.setStatus(HttpServletResponse.SC_OK);
-      responseHeaders.forEach(response::setHeader);
-      final Optional<ErrorResponse> error = context.error();
-      if (error.isPresent()) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        RESTObjectMapper.mapper().writeValue(response.getWriter(), error.get());
-        return;
-      }
+      execute(context, response);
+    } catch (RuntimeException | IOException e) {
+      LOG.error("Error processing REST request", e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  protected void execute(ServletRequestContext context, HttpServletResponse response)
+      throws IOException {
+    response.setStatus(HttpServletResponse.SC_OK);
+    responseHeaders.forEach(response::setHeader);
+
+    final Optional<ErrorResponse> error = context.error();
+    if (error.isPresent()) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      RESTObjectMapper.mapper().writeValue(response.getWriter(), error.get());
+      return;
+    }
+
+    try {
       Object responseBody =
           restCatalogAdapter.execute(
               context.method(),
               context.path(),
+              context.headers(),
               context.queryParams(),
               context.body(),
               response);
@@ -80,10 +121,32 @@ public class HMSCatalogServlet extends HttpServlet {
       if (responseBody != null) {
         RESTObjectMapper.mapper().writeValue(response.getWriter(), responseBody);
       }
-    } catch (RuntimeException | IOException e) {
+    } catch (RESTException e) {
       LOG.error("Error processing REST request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    } catch (Exception e) {
+      LOG.error("Unexpected exception when processing REST request", e);
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
+  }
+
+  /**
+   * Package-private (non-private compared to upstream RESTCatalogServlet) so HMSCatalogAdapter
+   * can reuse it to set 204 No Content without duplicating the route list.
+   */
+  static boolean shouldReturn204(Route route) {
+    return route == Route.NAMESPACE_EXISTS
+        || route == Route.TABLE_EXISTS
+        || route == Route.VIEW_EXISTS
+        || route == Route.DROP_NAMESPACE
+        || route == Route.DROP_TABLE
+        || route == Route.DROP_VIEW
+        || route == Route.RENAME_TABLE
+        || route == Route.RENAME_VIEW
+        // TODO: Enable once server-side scan planning (Route.CANCEL_PLAN_TABLE_SCAN) is implemented
+        // || route == Route.CANCEL_PLAN_TABLE_SCAN
+        || route == Route.REPORT_METRICS
+        || route == Route.COMMIT_TRANSACTION;
   }
 
   @Override
@@ -94,7 +157,9 @@ public class HMSCatalogServlet extends HttpServlet {
 
   public static class ServletRequestContext {
     private HTTPMethod method;
+    private Route route;
     private String path;
+    private Map<String, String> headers = Map.of();
     private Map<String, String> queryParams;
     private Object body;
 
@@ -106,11 +171,15 @@ public class HMSCatalogServlet extends HttpServlet {
 
     private ServletRequestContext(
         HTTPMethod method,
+        Route route,
         String path,
+        Map<String, String> headers,
         Map<String, String> queryParams,
         Object body) {
       this.method = method;
+      this.route = route;
       this.path = path;
+      this.headers = headers;
       this.queryParams = queryParams;
       this.body = body;
     }
@@ -150,19 +219,38 @@ public class HMSCatalogServlet extends HttpServlet {
         }
       }
 
+      Map<String, String> headers =
+          request.getHeaderNames() != null
+              ? Collections.list(request.getHeaderNames()).stream()
+                  .collect(
+                      Collectors.toMap(
+                          Function.identity(),
+                          request::getHeader,
+                          (v1, v2) -> v2,
+                          () -> Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER)))
+              : Map.of();
+
       Map<String, String> queryParams =
           request.getParameterMap().entrySet().stream()
               .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()[0]));
 
-      return new ServletRequestContext(method, path, queryParams, requestBody);
+      return new ServletRequestContext(method, route, path, headers, queryParams, requestBody);
     }
 
-    HTTPMethod method() {
+    public HTTPMethod method() {
       return method;
+    }
+
+    public Route route() {
+      return route;
     }
 
     public String path() {
       return path;
+    }
+
+    public Map<String, String> headers() {
+      return headers;
     }
 
     public Map<String, String> queryParams() {
