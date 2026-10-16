@@ -293,18 +293,26 @@ public class TestFilterHooks {
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
 
-    CompactionRequest tbl1CompactionRequest = new CompactionRequest();
-    tbl1CompactionRequest.setDbname(DBNAME1);
-    tbl1CompactionRequest.setTablename(TAB1);
-    tbl1CompactionRequest.setType(CompactionType.MAJOR);
-    client.compact2(tbl1CompactionRequest);
+    // Enqueue compactions while the filter hook is not blocking table names (server-side
+    // authorization on compact2 rejects blocked tables).
+    boolean origBlockResults = DummyMetaStoreFilterHookImpl.blockResults;
+    DummyMetaStoreFilterHookImpl.blockResults = false;
+    try {
+      CompactionRequest tbl1CompactionRequest = new CompactionRequest();
+      tbl1CompactionRequest.setDbname(DBNAME1);
+      tbl1CompactionRequest.setTablename(TAB1);
+      tbl1CompactionRequest.setType(CompactionType.MAJOR);
+      client.compact2(tbl1CompactionRequest);
 
-    CompactionRequest tbl2CompactionRequest = new CompactionRequest();
-    tbl2CompactionRequest.setDbname(DBNAME1);
-    tbl2CompactionRequest.setTablename(TAB2);
-    tbl2CompactionRequest.setType(CompactionType.MINOR);
-    tbl2CompactionRequest.setPartitionname("name=value1");
-    client.compact2(tbl2CompactionRequest);
+      CompactionRequest tbl2CompactionRequest = new CompactionRequest();
+      tbl2CompactionRequest.setDbname(DBNAME1);
+      tbl2CompactionRequest.setTablename(TAB2);
+      tbl2CompactionRequest.setType(CompactionType.MINOR);
+      tbl2CompactionRequest.setPartitionname("name=value1");
+      client.compact2(tbl2CompactionRequest);
+    } finally {
+      DummyMetaStoreFilterHookImpl.blockResults = origBlockResults;
+    }
   }
 
   /**
