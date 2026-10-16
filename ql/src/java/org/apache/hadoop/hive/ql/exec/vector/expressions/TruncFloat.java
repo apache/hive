@@ -127,8 +127,8 @@ public class TruncFloat extends VectorExpression {
   }
 
   protected void trunc(ColumnVector inputColVector, ColumnVector outputColVector, int i) {
-    ((DoubleColumnVector) outputColVector).vector[i] =
-        TruncUtils.trunc(((DoubleColumnVector) inputColVector).vector[i], scale);
+    double input = ((DoubleColumnVector) inputColVector).vector[i];
+    ((DoubleColumnVector) outputColVector).vector[i] = TruncUtils.trunc(input, scale);
   }
 
   @Override

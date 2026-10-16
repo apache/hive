@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.apache.hadoop.hive.common.type.FastHiveDecimalImpl;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
@@ -41,21 +42,11 @@ public final class TruncUtils {
   // Every decimal is smaller than 10^38 in magnitude, so lower scales also truncate it to zero.
   private static final int MIN_DECIMAL_SCALE = -HiveDecimal.MAX_PRECISION;
 
-  // 10^0 .. 10^18. Every long is smaller than 10^19 in magnitude.
-  private static final long[] POWERS_OF_TEN = new long[19];
-
   // Doubles of at least this magnitude have no fractional part.
   private static final double MIN_INTEGRAL_DOUBLE = 0x1p52;
 
   // Double.MAX_VALUE is about 1.8E308, so lower scales truncate every double to zero.
   private static final int MIN_DOUBLE_SCALE = -309;
-
-  static {
-    POWERS_OF_TEN[0] = 1;
-    for (int i = 1; i < POWERS_OF_TEN.length; i++) {
-      POWERS_OF_TEN[i] = POWERS_OF_TEN[i - 1] * 10;
-    }
-  }
 
   private TruncUtils() {
   }
@@ -99,10 +90,11 @@ public final class TruncUtils {
     if (scale >= 0) {
       return input;
     }
-    if (scale <= -POWERS_OF_TEN.length) {
+    if (scale < -FastHiveDecimalImpl.MAX_LONG_POWER_OF_TEN) {
+      // Every long is smaller than 10^19 in magnitude.
       return 0;
     }
     // The remainder has the sign of the input, so this truncates towards zero.
-    return input - input % POWERS_OF_TEN[-scale];
+    return input - input % FastHiveDecimalImpl.powerOfTen(-scale);
   }
 }

@@ -94,6 +94,7 @@ public class GenericUDFTrunc extends GenericUDF {
   private transient PrimitiveCategory inputType2;
   private final Date date = new Date();
   private final Text output = new Text();
+
   private final ByteWritable byteOutput = new ByteWritable();
   private final ShortWritable shortOutput = new ShortWritable();
   private final IntWritable intOutput = new IntWritable();
@@ -101,6 +102,7 @@ public class GenericUDFTrunc extends GenericUDF {
   private final FloatWritable floatOutput = new FloatWritable();
   private final DoubleWritable doubleOutput = new DoubleWritable();
   private final HiveDecimalWritable decimalOutput = new HiveDecimalWritable();
+
   private transient String fmtInput;
   private transient PrimitiveObjectInspector inputOI;
   private transient PrimitiveObjectInspector inputScaleOI;
