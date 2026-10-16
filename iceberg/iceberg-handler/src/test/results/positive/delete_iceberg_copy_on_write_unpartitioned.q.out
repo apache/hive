@@ -39,15 +39,17 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 5 <- Union 3 (CONTAINS)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 7 <- Map 5 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: tbl_ice
-                  filterExpr: (((b) IN ('four', 'one') or (a = 22)) is null or ((b <> 'four') and (b <> 'one') and (a <> 22))) (type: boolean)
+                  filterExpr: (((b) IN ('four', 'one') or (a = 22)) is null or ((b <> 'four') and (b <> 'one') and (a <> 22)) or (b) IN ('four', 'one') or (a = 22)) (type: boolean)
                   Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((((b) IN ('four', 'one') or (a = 22)) is null or ((b <> 'four') and (b <> 'one') and (a <> 22))) and FILE__PATH is not null) (type: boolean)
@@ -63,8 +65,18 @@ STAGE PLANS:
                         Map-reduce partition columns: _col5 (type: string)
                         Statistics: Num rows: 7 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col6 (type: bigint)
+                  Filter Operator
+                    predicate: (((b) IN ('four', 'one') or (a = 22)) and FILE__PATH is not null) (type: boolean)
+                    Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: FILE__PATH (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: FILE__PATH (type: string)
+                      Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: a (type: int), b (type: string), c (type: int), PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint)
             Execution mode: vectorized
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: tbl_ice
@@ -89,28 +101,30 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: tbl_ice
-                  filterExpr: ((b) IN ('four', 'one') or (a = 22)) (type: boolean)
-                  Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (((b) IN ('four', 'one') or (a = 22)) and FILE__PATH is not null) (type: boolean)
-                    Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: FILE__PATH (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: FILE__PATH (type: string)
+                      Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), -1L (type: bigint), a (type: int), b (type: string), c (type: int)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                      Statistics: Num rows: 4 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        Statistics: Num rows: 8 Data size: 2400 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:
-                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
-                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
-                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
-                            name: default.tbl_ice
+                      expressions: FILE__PATH (type: string)
+                      outputColumnNames: FILE__PATH
+                      Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        keys: FILE__PATH (type: string)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: bigint)
             Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
@@ -121,19 +135,145 @@ STAGE PLANS:
                   0 _col5 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 4 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col3 (type: int), _col4 (type: bigint), _col5 (type: string), _col6 (type: bigint), _col0 (type: int), _col1 (type: string), _col2 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                  Statistics: Num rows: 4 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 8 Data size: 2400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                         output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
                         serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                         name: default.tbl_ice
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), (- _col1) (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                  Dummy Store
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: bigint), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 4 Data size: 1168 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5 ASC NULLS FIRST
+                        partition by: _col5
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4 Data size: 1168 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 584 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col3 (type: int), _col4 (type: bigint), _col5 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 2 Data size: 584 Basic stats: COMPLETE Column stats: COMPLETE
+                      Merge Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col2 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col7
+                        Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col7 (type: bigint), _col3 (type: int), _col4 (type: string), _col5 (type: int)
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                          Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 4 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
+                            table:
+                                input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                                output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                                serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                                name: default.tbl_ice
+        Reducer 6 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col0 (type: string)
+                  minReductionHashAggr: 0.4
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 7 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col5
+                Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col5: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5 ASC NULLS FIRST
+                        partition by: _col5
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col5 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
         Union 3 
             Vertex: Union 3
 
@@ -184,12 +324,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
 Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[210][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[212][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
-Warning: Shuffle Join MERGEJOIN[208][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 12' is a cross product
-Warning: Shuffle Join MERGEJOIN[215][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 14' is a cross product
-Warning: Shuffle Join MERGEJOIN[209][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
-Warning: Shuffle Join MERGEJOIN[217][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 10' is a cross product
+Warning: Shuffle Join MERGEJOIN[389][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[391][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[385][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 14' is a cross product
+Warning: Shuffle Join MERGEJOIN[398][tables = [$hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 16' is a cross product
+Warning: Shuffle Join MERGEJOIN[387][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[400][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 10' is a cross product
 PREHOOK: query: explain delete from tbl_ice where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
@@ -209,26 +349,30 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 10 <- Reducer 21 (XPROD_EDGE), Reducer 9 (XPROD_EDGE)
-        Reducer 11 <- Reducer 10 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE), Union 7 (CONTAINS)
-        Reducer 12 <- Map 1 (XPROD_EDGE), Reducer 19 (XPROD_EDGE)
-        Reducer 13 <- Reducer 12 (SIMPLE_EDGE), Reducer 16 (SIMPLE_EDGE)
-        Reducer 14 <- Reducer 13 (XPROD_EDGE), Reducer 21 (XPROD_EDGE)
-        Reducer 15 <- Reducer 14 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE)
-        Reducer 16 <- Map 1 (SIMPLE_EDGE)
-        Reducer 17 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-        Reducer 18 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-        Reducer 19 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 16 (SIMPLE_EDGE)
-        Reducer 20 <- Map 1 (SIMPLE_EDGE)
+        Reducer 10 <- Reducer 24 (XPROD_EDGE), Reducer 9 (XPROD_EDGE)
+        Reducer 11 <- Reducer 10 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
+        Reducer 12 <- Reducer 11 (SIMPLE_EDGE)
+        Reducer 13 <- Reducer 12 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE), Union 7 (CONTAINS)
+        Reducer 14 <- Map 1 (XPROD_EDGE), Reducer 21 (XPROD_EDGE)
+        Reducer 15 <- Reducer 14 (SIMPLE_EDGE), Reducer 22 (SIMPLE_EDGE)
+        Reducer 16 <- Reducer 15 (XPROD_EDGE), Reducer 24 (XPROD_EDGE)
+        Reducer 17 <- Reducer 16 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
+        Reducer 18 <- Reducer 17 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
+        Reducer 19 <- Reducer 17 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 22 (SIMPLE_EDGE)
+        Reducer 20 <- Reducer 17 (SIMPLE_EDGE)
         Reducer 21 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-        Reducer 22 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-        Reducer 3 <- Reducer 18 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
-        Reducer 4 <- Reducer 20 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-        Reducer 5 <- Reducer 22 (XPROD_EDGE), Reducer 4 (XPROD_EDGE)
-        Reducer 6 <- Reducer 15 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE), Union 7 (CONTAINS)
-        Reducer 8 <- Map 1 (XPROD_EDGE), Reducer 17 (XPROD_EDGE)
-        Reducer 9 <- Reducer 16 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 22 <- Map 1 (SIMPLE_EDGE)
+        Reducer 23 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 24 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 25 <- Map 1 (SIMPLE_EDGE)
+        Reducer 26 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 23 (XPROD_EDGE)
+        Reducer 4 <- Reducer 25 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 26 (XPROD_EDGE), Reducer 4 (XPROD_EDGE)
+        Reducer 6 <- Reducer 18 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE), Union 7 (CONTAINS)
+        Reducer 8 <- Map 1 (XPROD_EDGE), Reducer 21 (XPROD_EDGE)
+        Reducer 9 <- Reducer 22 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -271,6 +415,19 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (a <= 5) (type: boolean)
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
                     Group By Operator
                       keys: a (type: int)
                       minReductionHashAggr: 0.99
@@ -283,19 +440,6 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
                     Group By Operator
                       aggregations: count(), count(a)
                       minReductionHashAggr: 0.99
@@ -307,6 +451,9 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint)
+                  Filter Operator
+                    predicate: (c > 800) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
@@ -320,9 +467,6 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-                  Filter Operator
-                    predicate: (c > 800) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: c (type: int)
                       minReductionHashAggr: 0.99
@@ -335,19 +479,6 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
                     Group By Operator
                       aggregations: count(), count(c)
                       minReductionHashAggr: 0.99
@@ -390,19 +521,77 @@ STAGE PLANS:
                 Filter Operator
                   predicate: (((_col6 <> 0L) and _col8 is not null) or ((_col9 <> 0L) and _col11 is not null)) (type: boolean)
                   Statistics: Num rows: 6 Data size: 1574 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col3 (type: int), _col4 (type: bigint), _col5 (type: string), -1L (type: bigint), _col0 (type: int), _col1 (type: string), _col2 (type: int)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                  Reduce Output Operator
+                    key expressions: _col5 (type: string)
+                    null sort order: a
+                    sort order: +
+                    Map-reduce partition columns: _col5 (type: string)
                     Statistics: Num rows: 6 Data size: 1574 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 12 Data size: 1834 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
-                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
-                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
-                          name: default.tbl_ice
+                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: bigint)
         Reducer 12 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: bigint), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 6 Data size: 1574 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: string, _col2: int, _col3: int, _col4: bigint, _col5: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5 ASC NULLS FIRST
+                        partition by: _col5
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 6 Data size: 1574 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 787 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col3 (type: int), _col4 (type: bigint), _col5 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 3 Data size: 787 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: string)
+                        Statistics: Num rows: 3 Data size: 787 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: bigint), _col3 (type: int), _col4 (type: string), _col5 (type: int)
+        Reducer 13 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col2 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col7
+                Statistics: Num rows: 3 Data size: 865 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col7 (type: bigint), _col3 (type: int), _col4 (type: string), _col5 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                  Statistics: Num rows: 3 Data size: 865 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 9 Data size: 1151 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                        output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                        serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                        name: default.tbl_ice
+        Reducer 14 
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -419,7 +608,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 6 Data size: 126 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: bigint)
-        Reducer 13 
+        Reducer 15 
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -434,7 +623,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 6 Data size: 138 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: bigint), _col5 (type: boolean)
-        Reducer 14 
+        Reducer 16 
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -451,7 +640,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col1 (type: int)
                   Statistics: Num rows: 6 Data size: 216 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: string), _col3 (type: bigint), _col5 (type: boolean), _col6 (type: bigint)
-        Reducer 15 
+        Reducer 17 
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -480,78 +669,92 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 6 Data size: 237 Basic stats: COMPLETE Column stats: NONE
-        Reducer 16 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: int), true (type: boolean)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    null sort order: z
+                    key expressions: _col2 (type: string)
+                    null sort order: a
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: boolean)
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    null sort order: z
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: boolean)
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    null sort order: z
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: boolean)
-        Reducer 17 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: bigint)
+                    Map-reduce partition columns: _col2 (type: string)
+                    Statistics: Num rows: 6 Data size: 237 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col2 (type: string)
+                    outputColumnNames: _col2
+                    Statistics: Num rows: 6 Data size: 237 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: _col2 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 6 Data size: 237 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 6 Data size: 237 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
         Reducer 18 
-            Execution mode: vectorized
             Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0), count(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: bigint), _col1 (type: bigint)
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 6 Data size: 260 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 6 Data size: 260 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 6 Data size: 260 Basic stats: COMPLETE Column stats: NONE
         Reducer 19 
             Execution mode: vectorized
             Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: bigint)
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col2
+                Statistics: Num rows: 6 Data size: 237 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col2: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS FIRST
+                        partition by: _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 6 Data size: 237 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 118 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col2 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 118 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 118 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -571,6 +774,44 @@ STAGE PLANS:
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 118 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), (- _col1) (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 3 Data size: 118 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 3 Data size: 118 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+        Reducer 21 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint)
+        Reducer 22 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -600,7 +841,20 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: boolean)
-        Reducer 21 
+        Reducer 23 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint), _col1 (type: bigint)
+        Reducer 24 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -618,7 +872,40 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint)
-        Reducer 22 
+        Reducer 25 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), true (type: boolean)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: boolean)
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: boolean)
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: boolean)
+        Reducer 26 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -704,14 +991,14 @@ STAGE PLANS:
                   0 _col5 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 6 Data size: 260 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 286 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col3 (type: int), _col4 (type: bigint), _col5 (type: string), _col6 (type: bigint), _col0 (type: int), _col1 (type: string), _col2 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                  Statistics: Num rows: 6 Data size: 260 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 286 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 12 Data size: 1834 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 9 Data size: 1151 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                         output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -771,12 +1058,12 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[61][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[210][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[212][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
-Warning: Shuffle Join MERGEJOIN[208][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 12' is a cross product
-Warning: Shuffle Join MERGEJOIN[215][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 14' is a cross product
-Warning: Shuffle Join MERGEJOIN[209][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
-Warning: Shuffle Join MERGEJOIN[217][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 10' is a cross product
+Warning: Shuffle Join MERGEJOIN[389][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[391][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[385][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 14' is a cross product
+Warning: Shuffle Join MERGEJOIN[398][tables = [$hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 16' is a cross product
+Warning: Shuffle Join MERGEJOIN[387][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[400][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 10' is a cross product
 PREHOOK: query: delete from tbl_ice where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
@@ -817,7 +1104,7 @@ POSTHOOK: query: insert into tbl_ice_other values (10, 'ten'), (333, 'hundred')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_other
-Warning: Shuffle Join MERGEJOIN[206][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[363][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
@@ -839,14 +1126,19 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 10 <- Reducer 8 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 9 (XPROD_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE), Union 5 (CONTAINS)
-        Reducer 6 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE), Union 5 (CONTAINS)
-        Reducer 7 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
-        Reducer 8 <- Map 1 (SIMPLE_EDGE), Map 11 (SIMPLE_EDGE)
-        Reducer 9 <- Reducer 8 (CUSTOM_SIMPLE_EDGE)
+        Reducer 10 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
+        Reducer 12 <- Reducer 10 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
+        Reducer 13 <- Reducer 10 (SIMPLE_EDGE)
+        Reducer 14 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 15 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 15 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
+        Reducer 4 <- Reducer 12 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Union 5 (CONTAINS)
+        Reducer 6 <- Map 1 (SIMPLE_EDGE), Map 16 (SIMPLE_EDGE)
+        Reducer 7 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
+        Reducer 9 <- Reducer 13 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE), Union 5 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -868,6 +1160,19 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: string), _col6 (type: bigint)
+                  Filter Operator
+                    predicate: a is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: a (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a is not null and FILE__PATH is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
@@ -893,21 +1198,8 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
-                  Filter Operator
-                    predicate: a is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: a (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
-        Map 11 
+        Map 16 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -928,6 +1220,134 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 10 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  keys: _col1 (type: string)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+        Reducer 11 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col1
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1 ASC NULLS FIRST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+        Reducer 12 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 13 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), (- _col1) (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+        Reducer 14 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -946,6 +1366,19 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: boolean)
+        Reducer 15 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint), _col1 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -1005,7 +1438,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 501 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 4 Data size: 923 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 733 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                         output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -1015,71 +1448,12 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Statistics: Num rows: 2 Data size: 422 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col3 (type: int), _col4 (type: bigint), _col5 (type: string), -1L (type: bigint), _col0 (type: int), _col1 (type: string), _col2 (type: int)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                  Statistics: Num rows: 2 Data size: 422 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 4 Data size: 923 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
-                        output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
-                        serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
-                        name: default.tbl_ice
-        Reducer 7 
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Left Semi Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col1
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col1 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: _col0 (type: string)
-                    minReductionHashAggr: 0.99
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-        Reducer 8 
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(), count(_col0)
-                  minReductionHashAggr: 0.99
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: bigint), _col1 (type: bigint)
                 Group By Operator
                   keys: _col0 (type: int)
                   minReductionHashAggr: 0.99
@@ -1104,19 +1478,97 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-        Reducer 9 
+                Group By Operator
+                  aggregations: count(), count(_col0)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint), _col1 (type: bigint)
+        Reducer 7 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 2 Data size: 422 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col5 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col5 (type: string)
+                  Statistics: Num rows: 2 Data size: 422 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: bigint)
+        Reducer 8 
             Execution mode: vectorized
             Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0), count(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: bigint), _col1 (type: bigint)
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: bigint), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 2 Data size: 422 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: string, _col2: int, _col3: int, _col4: bigint, _col5: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5 ASC NULLS FIRST
+                        partition by: _col5
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 2 Data size: 422 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 211 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col3 (type: int), _col4 (type: bigint), _col5 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 1 Data size: 211 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: string)
+                        Statistics: Num rows: 1 Data size: 211 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: bigint), _col3 (type: int), _col4 (type: string), _col5 (type: int)
+        Reducer 9 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col2 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col7
+                Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col7 (type: bigint), _col3 (type: int), _col4 (type: string), _col5 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                  Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3 Data size: 733 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                        output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                        serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                        name: default.tbl_ice
         Union 5 
             Vertex: Union 5
 
@@ -1137,7 +1589,7 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
-Warning: Shuffle Join MERGEJOIN[206][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[363][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
@@ -1181,7 +1633,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_standard_other
 POSTHOOK: Lineage: tbl_standard_other.a SCRIPT []
 POSTHOOK: Lineage: tbl_standard_other.b SCRIPT []
-Warning: Shuffle Join MERGEJOIN[206][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[363][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
@@ -1203,14 +1655,19 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 10 <- Reducer 8 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 9 (XPROD_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE), Union 5 (CONTAINS)
-        Reducer 6 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE), Union 5 (CONTAINS)
-        Reducer 7 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
-        Reducer 8 <- Map 1 (SIMPLE_EDGE), Map 11 (SIMPLE_EDGE)
-        Reducer 9 <- Reducer 8 (CUSTOM_SIMPLE_EDGE)
+        Reducer 10 <- Reducer 11 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 11 <- Reducer 9 (SIMPLE_EDGE)
+        Reducer 12 <- Reducer 9 (SIMPLE_EDGE)
+        Reducer 13 <- Map 1 (SIMPLE_EDGE), Map 16 (SIMPLE_EDGE)
+        Reducer 14 <- Reducer 13 (CUSTOM_SIMPLE_EDGE)
+        Reducer 15 <- Reducer 13 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 15 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 14 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
+        Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Union 5 (CONTAINS)
+        Reducer 6 <- Map 1 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 12 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE), Union 5 (CONTAINS)
+        Reducer 9 <- Map 1 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1271,7 +1728,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
-        Map 11 
+        Map 16 
             Map Operator Tree:
                 TableScan
                   alias: t2
@@ -1292,6 +1749,156 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 10 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: string)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 11 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col1
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1 ASC NULLS FIRST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+        Reducer 12 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), (- _col1) (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+        Reducer 13 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(), count(_col1)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint), _col1 (type: bigint)
+                Select Operator
+                  expressions: _col1 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col1 (type: int)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 14 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: bigint), _col1 (type: bigint)
+        Reducer 15 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -1369,7 +1976,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                         output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -1385,19 +1992,77 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                 Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col3 (type: int), _col4 (type: bigint), _col5 (type: string), -1L (type: bigint), _col0 (type: int), _col1 (type: string), _col2 (type: int)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                Reduce Output Operator
+                  key expressions: _col5 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col5 (type: string)
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: bigint)
+        Reducer 7 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: bigint), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col1: string, _col2: int, _col3: int, _col4: bigint, _col5: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col5 ASC NULLS FIRST
+                        partition by: _col5
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col3 (type: int), _col4 (type: bigint), _col5 (type: string), _col0 (type: int), _col1 (type: string), _col2 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col2 (type: string)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: bigint), _col3 (type: int), _col4 (type: string), _col5 (type: int)
+        Reducer 8 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col2 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col7
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col7 (type: bigint), _col3 (type: int), _col4 (type: string), _col5 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                         output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
                         serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                         name: default.tbl_ice
-        Reducer 7 
+        Reducer 9 
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -1423,84 +2088,26 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-        Reducer 8 
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col1
-                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: string)
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(), count(_col1)
+                  aggregations: count()
+                  keys: _col1 (type: string)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: bigint), _col1 (type: bigint)
-                Group By Operator
-                  keys: _col1 (type: int)
-                  minReductionHashAggr: 0.99
-                  mode: hash
-                  outputColumnNames: _col0
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int)
+                    key expressions: _col0 (type: string)
                     null sort order: z
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col1 (type: int)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: _col0 (type: int)
-                    minReductionHashAggr: 0.99
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col1 (type: int)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: _col0 (type: int)
-                    minReductionHashAggr: 0.99
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-        Reducer 9 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0), count(VALUE._col1)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: bigint), _col1 (type: bigint)
+                    value expressions: _col1 (type: bigint)
         Union 5 
             Vertex: Union 5
 
@@ -1521,7 +2128,7 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
-Warning: Shuffle Join MERGEJOIN[206][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[363][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
@@ -1568,15 +2175,15 @@ POSTHOOK: Output: default@tbl_ice_with_nulls
 Warning: Shuffle Join MERGEJOIN[57][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[59][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 Warning: Shuffle Join MERGEJOIN[60][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
-Warning: Shuffle Join MERGEJOIN[198][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[201][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[202][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
-Warning: Shuffle Join MERGEJOIN[196][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 12' is a cross product
-Warning: Shuffle Join MERGEJOIN[203][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 14' is a cross product
-Warning: Shuffle Join MERGEJOIN[204][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 15' is a cross product
-Warning: Shuffle Join MERGEJOIN[197][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 8' is a cross product
-Warning: Shuffle Join MERGEJOIN[205][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 10' is a cross product
-Warning: Shuffle Join MERGEJOIN[212][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 11' is a cross product
+Warning: Shuffle Join MERGEJOIN[369][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[374][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[375][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[366][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[382][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 10' is a cross product
+Warning: Shuffle Join MERGEJOIN[383][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 11' is a cross product
+Warning: Shuffle Join MERGEJOIN[367][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 16' is a cross product
+Warning: Shuffle Join MERGEJOIN[380][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 18' is a cross product
+Warning: Shuffle Join MERGEJOIN[381][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 19' is a cross product
 PREHOOK: query: delete from tbl_ice_with_nulls where id in (select id from tbl_ice_with_nulls where id > 9) or name in (select name from tbl_ice_with_nulls where name = 'sdf')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice_with_nulls
