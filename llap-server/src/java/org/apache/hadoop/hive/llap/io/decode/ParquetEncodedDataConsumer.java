@@ -1,0 +1,228 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.hadoop.hive.llap.io.decode;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
+import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
+import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
+import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
+import org.apache.hadoop.hive.llap.io.encoded.ParquetEncodedColumnBatch;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
+import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
+import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetRowGroupDecoder;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedColumnReader;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.parquet.HadoopReadOptions;
+import org.apache.parquet.ParquetReadOptions;
+import org.apache.parquet.column.page.PageReadStore;
+import org.apache.parquet.compression.CompressionCodecFactory;
+import org.apache.parquet.format.converter.ParquetMetadataConverter;
+import org.apache.parquet.hadoop.metadata.FileMetaData;
+import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.schema.MessageType;
+
+import com.google.common.base.Strings;
+
+/**
+ * The Parquet counterpart of {@link OrcEncodedDataConsumer}: it turns one row group's worth of
+ * cached column-chunk buffers ({@link ParquetEncodedColumnBatch}) into {@link ColumnVectorBatch}es
+ * and hands them downstream.
+ *
+ * <p>Rather than reimplementing Parquet value decoding, this consumer builds a
+ * {@link ParquetCachedPageReadStore} directly over the cached buffers (pages are parsed in place and
+ * decompressed lazily, no ParquetFileReader and no whole-chunk copy) and drives the very same
+ * {@link VectorizedColumnReader}s the non-cached vectorized reader uses (via {@link ParquetRowGroupDecoder}).
+ */
+public class ParquetEncodedDataConsumer
+    extends EncodedDataConsumer<Object, ParquetEncodedColumnBatch> {
+
+  private final Configuration jobConf;
+  private final CompressionCodecFactory codecFactory;
+  private final ParquetMetadataConverter converter;
+  private final boolean verifyChecksums;
+  private ParquetMetadata footer;
+  private MessageType requestedSchema;
+  private Path path;
+  private Map<String, Object> initialDefaults;
+
+  // Derived lazily (once) from the footer + job conf, then reused across row groups.
+  private List<TypeInfo> columnTypesList;
+  private List<Integer> colsToInclude;
+  private boolean readAllColumns;
+  private DataTypePhysicalVariation[] variations;
+  private ParquetRowGroupDecoder rowGroupDecoder;
+  private ParquetRowGroupDecoder.TimestampConversionOptions conversions;
+  private boolean schemaInitialized = false;
+
+  public ParquetEncodedDataConsumer(Consumer<ColumnVectorBatch> consumer, Includes includes,
+      QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics, Configuration jobConf) {
+    super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics, counters);
+    this.jobConf = jobConf;
+    ParquetReadOptions options = HadoopReadOptions.builder(jobConf).build();
+    this.codecFactory = options.getCodecFactory();
+    this.converter = new ParquetMetadataConverter(options);
+    this.verifyChecksums = options.usePageChecksumVerification();
+  }
+
+  public void setFileMetadata(ParquetMetadata footer, MessageType requestedSchema, Path path) {
+    this.footer = footer;
+    this.requestedSchema = requestedSchema;
+    this.path = path;
+  }
+
+  public void setInitialDefaults(Map<String, Object> initialDefaults) {
+    this.initialDefaults = initialDefaults;
+  }
+
+  /**
+   * Derives the Hive type / projection lists and the conversion flags the same way
+   * {@link org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase} does from the job conf,
+   * so the shared {@link ParquetRowGroupDecoder} produces identical readers.
+   */
+  private void initSchema() {
+    FileMetaData fileMetaData = footer.getFileMetaData();
+    Map<String, String> kvMeta = fileMetaData.getKeyValueMetaData();
+
+    this.columnTypesList =
+        DataWritableReadSupport.getColumnTypes(jobConf.get(IOConstants.COLUMNS_TYPES));
+    this.colsToInclude = ColumnProjectionUtils.getReadColumnIDs(jobConf);
+    this.readAllColumns = ColumnProjectionUtils.isReadAllColumns(jobConf);
+    /*
+     * The vectorizer already decided per column whether it wants a DECIMAL_64 vector, and honouring
+     * that is what keeps the batch shape identical to the plan the operator pipeline was built for.
+     * A split arriving without a vectorized plan carries no such decision: variations stays null and
+     * every column gets its type's default vector.
+     */
+    VectorizedRowBatchCtx rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
+    this.variations = rbCtx == null ? null : rbCtx.getRowdataTypePhysicalVariations();
+
+    boolean skipTimestampConversion;
+    if (HiveConf.getBoolVar(jobConf, ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
+      skipTimestampConversion =
+          !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
+    } else {
+      skipTimestampConversion = false;
+    }
+    Boolean proleptic = DataWritableReadSupport.getWriterDateProleptic(kvMeta);
+    if (proleptic == null) {
+      proleptic = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT);
+    }
+    this.conversions = new ParquetRowGroupDecoder.TimestampConversionOptions(skipTimestampConversion,
+        DataWritableReadSupport.getWriterTimeZoneId(kvMeta), proleptic,
+        DataWritableReadSupport.getZoneConversionLegacy(kvMeta, jobConf));
+
+    // Per-file state only, so it is built here and reused for every row group of the split.
+    this.rowGroupDecoder = new ParquetRowGroupDecoder(fileMetaData.getSchema(), initialDefaults);
+
+    this.schemaInitialized = true;
+  }
+
+  @Override
+  protected void decodeBatch(ParquetEncodedColumnBatch batch,
+      Consumer<ColumnVectorBatch> downstreamConsumer) throws InterruptedException {
+    if (!schemaInitialized) {
+      initSchema();
+    }
+
+    long startTime = counters.startTimeCounter();
+    // NOSONAR - S2093 does not apply: codecFactory is a per-consumer field with a per-batch
+    // release() (not close()); try-with-resources would tie it to this scope, which is wrong.
+    try { // NOSONAR
+      PageReadStore pages = new ParquetCachedPageReadStore(
+          footer, batch, codecFactory, converter, verifyChecksums);
+
+      VectorizedColumnReader[] columnReaders = rowGroupDecoder.buildColumnReaders(
+          pages, requestedSchema, columnTypesList, colsToInclude, readAllColumns, conversions);
+
+      long rowsLeft = pages.getRowCount();
+      int batches = 0;
+      while (rowsLeft > 0) {
+        int batchSize = (int) Math.min(VectorizedRowBatch.DEFAULT_SIZE, rowsLeft);
+
+        ColumnVectorBatch cvb = takeBatch(batchSize);
+
+        // columnReaders[i] is requestedSchema field i, i.e. the i-th projected column.
+        for (int i = 0; i < columnReaders.length; ++i) {
+          if (columnReaders[i] == null) {
+            continue;
+          }
+          int tableColId = readAllColumns ? i : colsToInclude.get(i);
+          TypeInfo columnType = columnTypesList.get(tableColId);
+          ColumnVector cv = prepareColumnVector(cvb, i, tableColId, columnType, batchSize);
+          columnReaders[i].readBatch(batchSize, cv, columnType);
+        }
+
+        downstreamConsumer.consumeData(cvb);
+        counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
+        rowsLeft -= batchSize;
+        ++batches;
+      }
+      counters.incrWallClockCounter(LlapIOCounters.DECODE_TIME_NS, startTime);
+      counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, batches);
+      counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
+    } catch (IOException | RuntimeException e) {
+      // Narrower than Exception on purpose: consumeData above throws InterruptedException, which is
+      // the stop signal and has to propagate rather than be reported as a decode failure. Wider
+      // than ORC's IOException-only catch, though, because parquet reports decode failures as the
+      // runtime ParquetDecodingException, and letting one through would skip the buffer return.
+      downstreamConsumer.setError(new IOException(
+          String.format("Parquet decode failed for row group %d of %s", batch.rowGroupIx(), path), e));
+    } finally {
+      // Returns the pooled Hadoop decompressors after each row group; getDecompressor re-creates
+      // them. codecFactory is a per-consumer field with a per-batch release() (not close()) —
+      // try-with-resources would tie it to the outer decodeBatch scope, which is wrong here.
+      codecFactory.release(); // NOSONAR - see comment above (S2093 does not apply)
+    }
+  }
+
+  private ColumnVector prepareColumnVector(ColumnVectorBatch cvb, int idx, int tableColId,
+      TypeInfo columnType, int batchSize) {
+    if (cvb.cols[idx] == null) {
+      DataTypePhysicalVariation variation =
+          variations == null ? DataTypePhysicalVariation.NONE : variations[tableColId];
+      cvb.cols[idx] = VectorizedBatchUtil.createColumnVector(columnType, variation);
+    }
+    ColumnVector cv = cvb.cols[idx];
+    cv.reset();
+    cv.ensureSize(batchSize, false);
+    // Seeded, not decided: the column readers only ever clear this flag - on the first value that
+    // differs from row 0, or on any null - and never raise it, so starting from the false that
+    // reset() just left would leave every batch non-repeating. This is what the stock
+    // VectorizedParquetRecordReader does too, immediately before its readBatch call.
+    cv.isRepeating = true;
+    return cv;
+  }
+}

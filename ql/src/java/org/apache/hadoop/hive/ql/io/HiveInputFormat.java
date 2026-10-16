@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat.NullRowsRecordReader;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -296,7 +297,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return inputFormat; // LLAP not enabled, no-op.
     }
     String ifName = inputFormat.getClass().getCanonicalName();
-    boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface;
+    boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface
+        || usesNativeParquetLlapIo(inputFormat.getClass(), conf);
     boolean isCacheOnly = inputFormat instanceof LlapCacheOnlyInputFormatInterface;
     boolean isVectorized = Utilities.getIsVectorized(conf);
     if (!isVectorized) {
@@ -351,6 +353,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       injectLlapCaches(inputFormat, llapIo, conf);
     }
     return inputFormat;
+  }
+
+  /** Parquet reads through LLAP IO natively when the flag is on; otherwise it is cache-only. */
+  public static boolean usesNativeParquetLlapIo(Class<?> inputFormatClass, Configuration conf) {
+    return MapredParquetInputFormat.class.isAssignableFrom(inputFormatClass)
+        && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_PARQUET_NATIVE_ENABLED);
   }
 
   public static boolean checkInputFormatForLlapEncode(Configuration conf, String ifName) {

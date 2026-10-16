@@ -85,7 +85,7 @@ public class VectorizedReadUtils {
         // Schema has to be serialized and deserialized as it is passed between different packages of TypeDescription:
         // Iceberg expects org.apache.hive.iceberg.org.apache.orc.TypeDescription as it shades ORC, while LLAP provides
         // the unshaded org.apache.orc.TypeDescription type.
-        return LlapProxy.getIo().getOrcTailFromCache(path, job, cacheTag, fileId).getSerializedTail();
+        return LlapProxy.getIo().orc().getTailFromCache(path, job, cacheTag, fileId).getSerializedTail();
       } catch (IOException ioe) {
         LOG.warn("LLAP is turned on but was unable to get file metadata information through its cache for {}",
             path, ioe);

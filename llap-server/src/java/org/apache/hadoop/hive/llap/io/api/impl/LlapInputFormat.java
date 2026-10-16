@@ -48,7 +48,10 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.AvoidSplitCombination;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat.NullRowsRecordReader;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
@@ -114,6 +117,12 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     reporter.setStatus(fileSplit.toString());
 
     try {
+      boolean vectorized = Utilities.getIsVectorized(job);
+      if (!vectorized && !canWrapToRows(job)) {
+        // The pipeline wants rows and no batch-to-row wrapper exists for this format; decide here,
+        // before a reader (and its read pipeline, footer fetch, counters) is built for nothing.
+        return fallback(split, job, reporter);
+      }
       // At this entry point, we are going to assume that these are logical table columns.
       // Perhaps we should go thru the code and clean this up to be more explicit; for now, we
       // will start with this single assumption and maintain clear semantics from here.
@@ -122,21 +131,11 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       LlapRecordReader rr = LlapRecordReader.create(job, fileSplit, tableIncludedCols, hostName,
           cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
       if (rr == null) {
-        // Reader-specific incompatibility like SMB or schema evolution.
-        return sourceInputFormat.getRecordReader(split, job, reporter);
+        // Reader-specific incompatibility: SMB, schema evolution, or the producer declined the split.
+        return fallback(split, job, reporter);
       }
-      // For non-vectorized operator case, wrap the reader if possible.
-      RecordReader<NullWritable, VectorizedRowBatch> result = rr;
-      if (!Utilities.getIsVectorized(job)) {
-        result = null;
-        if (HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED)) {
-          result = wrapLlapReader(tableIncludedCols, rr, split);
-        }
-        if (result == null) {
-          // Cannot wrap a reader for non-vectorized pipeline.
-          return sourceInputFormat.getRecordReader(split, job, reporter);
-        }
-      }
+      RecordReader<NullWritable, VectorizedRowBatch> result =
+          vectorized ? rr : wrapToRows(rr, tableIncludedCols, split);
       // This starts the reader in the background.
       rr.start();
       return result;
@@ -154,6 +153,34 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     }
   }
 
+  /** The non-vectorized pipeline can take LLAP batches only through the source format's row wrapper. */
+  private boolean canWrapToRows(JobConf job) {
+    return HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED)
+        && sourceInputFormat instanceof BatchToRowInputFormat;
+  }
+
+  /** Only called when {@link #canWrapToRows} held, so the cast is safe. */
+  private RecordReader<NullWritable, VectorizedRowBatch> wrapToRows(
+      LlapRecordReader rr, List<Integer> includedCols, InputSplit split) throws IOException {
+    LlapIoImpl.LOG.info("Using batch-to-row converter for split: " + split);
+    return bogusCast(((BatchToRowInputFormat) sourceInputFormat).getWrapper(
+        rr, rr.getVectorizedRowBatchCtx(), includedCols));
+  }
+
+  /**
+   * Serves the split with the source format. A cache-only format still gets the LLAP caches
+   * injected, so a declined split reads through the same cache entries as the native path.
+   */
+  private RecordReader<NullWritable, VectorizedRowBatch> fallback(
+      InputSplit split, JobConf job, Reporter reporter) throws IOException {
+    if (sourceInputFormat instanceof LlapCacheOnlyInputFormatInterface) {
+      // injectLlapCaches rather than initCacheOnlyInputFormat: it also pins
+      // parquet.read.allocation.size, so the reader asks for each column chunk in one read.
+      HiveInputFormat.injectLlapCaches(bogusCast(sourceInputFormat), LlapProxy.getIo(), job);
+    }
+    return sourceInputFormat.getRecordReader(split, job, reporter);
+  }
+
   private boolean checkLimitReached(JobConf job) {
     /*
      * 2 assumptions here when using "tez.mapreduce.vertex.name"
@@ -163,18 +190,6 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
      *    On Input codepaths we cannot use properties from TezProcessor.initTezAttributes.
      */
     return LimitOperator.checkLimitReachedForVertex(job, job.get("tez.mapreduce.vertex.name"));
-  }
-
-  private RecordReader<NullWritable, VectorizedRowBatch> wrapLlapReader(
-      List<Integer> includedCols, LlapRecordReader rr, InputSplit split) throws IOException {
-    // vectorized row batch reader
-    if (sourceInputFormat instanceof BatchToRowInputFormat) {
-      LlapIoImpl.LOG.info("Using batch-to-row converter for split: " + split);
-      return bogusCast(((BatchToRowInputFormat) sourceInputFormat).getWrapper(
-          rr, rr.getVectorizedRowBatchCtx(), includedCols));
-    }
-    LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
-    return null;
   }
 
   public RecordReader<NullWritable, VectorizedRowBatch> checkLlapSplit(
@@ -194,6 +209,13 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   @SuppressWarnings("unchecked")
   private static <A, B, C, D> RecordReader<A, B> bogusCast(RecordReader<C, D> rr) {
     return (RecordReader<A, B>)rr;
+  }
+
+  // Same break, for the format itself: injectLlapCaches is written against the row-shaped
+  // signature HiveInputFormat deals in, and this class holds the vectorized one.
+  @SuppressWarnings("unchecked")
+  private static <A, B, C, D> InputFormat<A, B> bogusCast(InputFormat<C, D> inputFormat) {
+    return (InputFormat<A, B>)inputFormat;
   }
 
   @Override

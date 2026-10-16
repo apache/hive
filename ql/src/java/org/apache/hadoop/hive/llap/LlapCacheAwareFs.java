@@ -52,9 +52,53 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.orc.impl.RecordReaderUtils;
 
 /**
- * This is currently only used by Parquet; however, a generally applicable approach is used -
- * you pass in a set of offset pairs for a file, and the file is cached with these boundaries.
- * Don't add anything format specific here.
+ * A shim {@link FileSystem} that transparently interposes on reads so that byte ranges backed by
+ * the LLAP {@link DataCache} are served from memory and only genuine misses go to the underlying
+ * (real) file system.
+ *
+ * <h3>What it does</h3>
+ * It exposes a virtual {@code llapcache://} URI in place of the real file path. Reads issued
+ * against that URI are routed through {@link CacheAwareInputStream}, which consults the
+ * {@link DataCache} for each requested chunk: hits are copied straight out of cache buffers,
+ * misses are fetched from the wrapped {@link FileSystem}, handed back to the caller, and
+ * simultaneously inserted into the cache so subsequent reads of the same chunk are served from
+ * memory. All non-read {@code FileSystem} operations (open/append/create/delete/rename/
+ * getFileStatus/listStatus/mkdirs) are simply delegated to the wrapped file system after
+ * translating the virtual path back to the real one.
+ *
+ * <h3>How it works</h3>
+ * The reader that wants caching calls {@link #registerFile(DataCache, Path, Object, TreeMap,
+ * Configuration, CacheTag, ParquetCacheLayout)} with the real path, a stable {@code fileKey}, a chunk
+ * index (a {@code TreeMap} of {@code startOffset -> endOffset} boundaries covering the ranges the
+ * reader intends to read - typically the column-chunk ranges of the projected columns), and the
+ * daemon's cache layout, the one the native reader caches with. The
+ * shim assigns a unique {@code splitId}, stashes the per-split state in a static map, registers
+ * itself as the handler for the {@code llapcache} scheme via {@code fs.llapcache.impl}, and
+ * returns a virtual {@code llapcache://llapcache/&lt;splitId&gt;} path. The caller hands this
+ * virtual path to the underlying format library (e.g. the Parquet reader); when the library
+ * opens the path and issues positioned reads, this class receives them, splits them along the
+ * pre-registered chunk boundaries, and either serves each chunk from cache or reads-through and
+ * populates it. When the reader is finished it must call {@link #unregisterFile(Path)} to drop
+ * the per-split state.
+ *
+ * <h3>When it is used</h3>
+ * Today the only caller is the vectorized Parquet path in
+ * {@code VectorizedParquetRecordReader.wrapPathForCache}, which engages the shim when LLAP IO
+ * is enabled and a {@link DataCache} was injected into the reader via
+ * {@code LlapCacheOnlyInputFormatInterface.injectCaches}. Concretely that means:
+ * <ul>
+ *   <li>LLAP daemon splits where the native Parquet cache pipeline
+ *       ({@code ParquetColumnVectorProducer} / {@code ParquetEncodedDataReader}) declines the
+ *       split and {@code LlapInputFormat} falls back to the source
+ *       {@code VectorizedParquetInputFormat} - e.g. nested-type projections or setup errors.
+ *   <li>Iceberg vectorized Parquet reads via {@code HiveVectorizedReader.parquetRecordReader},
+ *       which always uses {@code VectorizedParquetInputFormat} directly and injects caches when
+ *       LLAP is on - the native Parquet cache pipeline is not reachable from that entry point.
+ * </ul>
+ * Non-LLAP execution (no daemon, no {@code DataCache} injected) skips this shim entirely and
+ * reads directly from the real file system. The chunk boundaries come from the caller and the
+ * buffer layout from {@link ParquetCacheLayout}, which the native Parquet reader shares so each
+ * finds the other's buffers; nothing else format-specific belongs here.
  */
 public class LlapCacheAwareFs extends FileSystem {
   public static final String SCHEME = "llapcache";
@@ -67,10 +111,11 @@ public class LlapCacheAwareFs extends FileSystem {
       new ConcurrentHashMap<>();
 
   public static Path registerFile(DataCache cache, Path path, Object fileKey,
-      TreeMap<Long, Long> index, Configuration conf, CacheTag tag) throws IOException {
+      TreeMap<Long, Long> index, Configuration conf, CacheTag tag, ParquetCacheLayout layout)
+      throws IOException {
     long splitId = currentSplitId.incrementAndGet();
     CacheAwareInputStream stream = new CacheAwareInputStream(
-        cache, conf, index, path, fileKey, -1, tag);
+        cache, conf, index, path, fileKey, -1, tag, layout);
     if (files.putIfAbsent(splitId, stream) != null) {
       throw new IOException("Record already exists for " + splitId);
     }
@@ -171,7 +216,8 @@ public class LlapCacheAwareFs extends FileSystem {
     return ctx1.getFs().rename(ctx1.path, ctx2.path);
   }
 
-  private static class CacheAwareInputStream extends InputStream
+  /** Package-private so a test can check which cache misses it accepts. */
+  static class CacheAwareInputStream extends InputStream
       implements Seekable, PositionedReadable {
     private final TreeMap<Long, Long> chunkIndex;
     private final Path path;
@@ -180,10 +226,12 @@ public class LlapCacheAwareFs extends FileSystem {
     private final Configuration conf;
     private final DataCache cache;
     private final int bufferSize;
+    private final ParquetCacheLayout layout;
     private long position = 0;
 
     public CacheAwareInputStream(DataCache cache, Configuration conf,
-        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize, CacheTag tag) {
+        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize, CacheTag tag,
+        ParquetCacheLayout layout) {
       this.cache = cache;
       this.fileKey = fileKey;
       this.chunkIndex = chunkIndex;
@@ -191,10 +239,14 @@ public class LlapCacheAwareFs extends FileSystem {
       this.conf = conf;
       this.bufferSize = bufferSize;
       this.tag = tag;
+      // The daemon's layout, not one built from conf: conf is the job's, which need not carry the
+      // daemon's hive.llap.io.encode.alloc.size, and both Parquet readers must cut a chunk into the
+      // same cache pieces.
+      this.layout = layout;
     }
 
     public LlapCacheAwareFs.CacheAwareInputStream cloneWithBufferSize(int bufferSize) {
-      return new CacheAwareInputStream(cache, conf, chunkIndex, path, fileKey, bufferSize, tag);
+      return new CacheAwareInputStream(cache, conf, chunkIndex, path, fileKey, bufferSize, tag, layout);
     }
 
     @Override
@@ -212,13 +264,8 @@ public class LlapCacheAwareFs extends FileSystem {
       long readStartPos = position;
       DiskRangeList drl = new DiskRangeList(readStartPos, readStartPos + len);
       DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
-      drl = cache.getFileData(fileKey, drl, 0, new DataCache.DiskRangeListFactory() {
-        @Override
-        public DiskRangeList createCacheChunk(
-            MemoryBuffer buffer, long startOffset, long endOffset) {
-          return new CacheChunk(buffer, startOffset, endOffset);
-        }
-      }, gotAllData);
+      drl = cache.getFileData(
+          fileKey, drl, 0, ParquetCacheLayout.CACHE_CHUNK_FACTORY, gotAllData);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Buffers after cache " + RecordReaderUtils.stringifyDiskRanges(drl));
       }
@@ -237,7 +284,6 @@ public class LlapCacheAwareFs extends FileSystem {
         validateAndUpdatePosition(len, sizeRead);
         return len;
       }
-      int maxAlloc = cache.getAllocator().getMaxAllocation();
       // We have some disk data. Separate it by column chunk and put into cache.
 
       // We started with a single DRL, so we assume there will be no consecutive missing blocks
@@ -264,7 +310,7 @@ public class LlapCacheAwareFs extends FileSystem {
           // The data is not in cache.
 
           // Account for potential partial chunks.
-          SortedMap<Long, Long> chunksInThisRead = getAndValidateMissingChunks(maxAlloc, from, to);
+          SortedMap<Long, Long> chunksInThisRead = getAndValidateMissingChunks(from, to);
 
           is.seek(from);
           is.readFully(array, arrayOffset + offsetFromReadStart, candidateSize);
@@ -281,68 +327,52 @@ public class LlapCacheAwareFs extends FileSystem {
             //       chunksInThisRead should probably be changed to be a struct array indicating both
             //       partial and full sizes for each chunk; then the partial ones could be merged
             //       with the previous partial ones, and any newly-full chunks put in the cache.
-            MemoryBuffer[] largeBuffers = null, smallBuffer = null, newCacheData = null;
+
+            // The same decomposition the native Parquet reader caches with, so a chunk cached by
+            // either reader is found whole by the other, and a gap left by evicting part of one is
+            // re-cached under the keys the first writer used.
+            int[] sizes = layout.bufferSizes(chunkLength);
+            MemoryBuffer[] parts = new MemoryBuffer[sizes.length];
+            // One putFileData per part rather than one for the chunk: a mid-run throw from the
+            // cache would otherwise leave the parts before it locked and the parts after it raw
+            // allocations, with nothing in the cleanup below able to tell the two apart.
+            int cachedCount = 0;
             try {
-              int largeBufCount = (int) (chunkLength / maxAlloc);
-              int smallSize = (int) (chunkLength % maxAlloc);
-              int chunkPartCount = largeBufCount + ((smallSize > 0) ? 1 : 0);
-              DiskRange[] cacheRanges = new DiskRange[chunkPartCount];
-              int extraOffsetInChunk = 0;
-              newCacheData = new MemoryBuffer[chunkPartCount];
-              int index = 0;
-              
-              if (largeBufCount > 0) {
-                largeBuffers = new MemoryBuffer[largeBufCount];
+              long partFrom = chunkFrom;
+              for (int i = 0; i < sizes.length; ++i) {
+                MemoryBuffer[] one = new MemoryBuffer[1];
                 // Note: we don't use StoppableAllocator here - this is not on an IO thread.
-                allocator.allocateMultiple(largeBuffers, maxAlloc, cache.getDataBufferFactory());
-                for (int i = 0; i < largeBuffers.length; ++i) {
-                  // By definition here we copy up to the limit of the buffer.
-                  ByteBuffer bb = largeBuffers[i].getByteBufferRaw();
-                  int remaining = bb.remaining();
-                  assert remaining == maxAlloc;
-                  copyDiskDataToCacheBuffer(array,
-                      arrayOffset + offsetFromReadStart + extraDiskDataOffset,
-                      remaining, bb, cacheRanges, i, chunkFrom + extraOffsetInChunk);
-                  extraDiskDataOffset += remaining;
-                  extraOffsetInChunk += remaining;
+                allocator.allocateMultiple(one, sizes[i], cache.getDataBufferFactory());
+                MemoryBuffer fresh = one[0];
+                parts[i] = fresh;
+                // The allocator rounds the request up to its own power of two, so the copy fills -
+                // and the cache is told about - the bytes we asked for, not the buffer's capacity.
+                ByteBuffer bb = fresh.getByteBufferRaw();
+                bb.limit(bb.position() + sizes[i]);
+                DiskRange[] range = { copyDiskDataToCacheBuffer(array,
+                    arrayOffset + offsetFromReadStart + extraDiskDataOffset, sizes[i], bb, partFrom) };
+                extraDiskDataOffset += sizes[i];
+                partFrom += sizes[i];
+                cache.putFileData(fileKey, range, one, 0, tag);
+                if (one[0] != fresh) {
+                  // The cache kept its own buffer (locked for us) and unlocked ours without freeing it.
+                  allocator.deallocate(fresh);
+                  parts[i] = one[0];
                 }
-                for (MemoryBuffer buf : largeBuffers) {
-                  newCacheData[index++] = buf;
-                }
+                ++cachedCount;
               }
-              largeBuffers = null;
-              if (smallSize > 0) {
-                smallBuffer = new MemoryBuffer[1];
-                // Note: we don't use StoppableAllocator here - this is not on an IO thread.
-                allocator.allocateMultiple(smallBuffer, smallSize, cache.getDataBufferFactory());
-                ByteBuffer bb = smallBuffer[0].getByteBufferRaw();
-                copyDiskDataToCacheBuffer(array,
-                    arrayOffset + offsetFromReadStart + extraDiskDataOffset,
-                    smallSize, bb, cacheRanges, largeBufCount, chunkFrom + extraOffsetInChunk);
-                extraDiskDataOffset += smallSize;
-                extraOffsetInChunk += smallSize; // Not strictly necessary, no one will look at it.
-                newCacheData[index] = smallBuffer[0];
-                smallBuffer = null;
-              }
-              cache.putFileData(fileKey, cacheRanges, newCacheData, 0, tag);
             } finally {
               // We do not use the new cache buffers for the actual read, given the way read() API is.
-              // Therefore, we don't need to handle cache collisions - just decref all the buffers.
-              if (newCacheData != null) {
-                for (MemoryBuffer buffer : newCacheData) {
-                  if (buffer == null) continue;
-                  cache.releaseBuffer(buffer);
+              // Therefore, we don't need to handle cache collisions - just decref every buffer the
+              // cache took, and free the one allocation it never got to see.
+              for (int i = 0; i < parts.length; ++i) {
+                if (parts[i] == null) {
+                  continue;
+                } else if (i < cachedCount) {
+                  cache.releaseBuffer(parts[i]);
+                } else {
+                  allocator.deallocate(parts[i]);
                 }
-              }
-              // If we have failed before building newCacheData, deallocate other the allocated.
-              if (largeBuffers != null) {
-                for (MemoryBuffer buffer : largeBuffers) {
-                  if (buffer == null) continue;
-                  allocator.deallocate(buffer);
-                }
-              }
-              if (smallBuffer != null && smallBuffer[0] != null) {
-                allocator.deallocate(smallBuffer[0]);
               }
             }
           }
@@ -360,27 +390,35 @@ public class LlapCacheAwareFs extends FileSystem {
       position += len;
     }
 
-    private void copyDiskDataToCacheBuffer(byte[] diskData, int offsetInDiskData, int sizeToCopy,
-        ByteBuffer cacheBuffer, DiskRange[] cacheRanges, int cacheRangeIx, long cacheRangeStart) {
+    /** Copies one part's bytes into its cache buffer and returns the range it now holds. */
+    private DiskRange copyDiskDataToCacheBuffer(byte[] diskData, int offsetInDiskData,
+        int sizeToCopy, ByteBuffer cacheBuffer, long cacheRangeStart) {
       int bbPos = cacheBuffer.position();
       long cacheRangeEnd = cacheRangeStart + sizeToCopy;
       if (LOG.isTraceEnabled()) {
         LOG.trace("Caching [" + cacheRangeStart + ", " + cacheRangeEnd + ")");
       }
-      cacheRanges[cacheRangeIx] = new DiskRange(cacheRangeStart, cacheRangeEnd);
       cacheBuffer.put(diskData, offsetInDiskData, sizeToCopy);
       cacheBuffer.position(bbPos);
+      return new DiskRange(cacheRangeStart, cacheRangeEnd);
     }
 
-    private SortedMap<Long, Long> getAndValidateMissingChunks(
-        int maxAlloc, long from, long to) {
+    /**
+     * The registered chunks a cache miss covering {@code [from, to)} falls into.
+     *
+     * <p>This checks only that the miss lies within chunks the caller registered, which is an
+     * invariant of this class: the chunk index and the offsets the format library reads come from
+     * the same footer. It deliberately says nothing about where the miss starts or ends inside a
+     * chunk - the cache may have evicted any subset of a chunk's buffers, and whatever gap that
+     * leaves is re-cached on {@link ParquetCacheLayout}'s boundaries by the caller.
+     */
+    SortedMap<Long, Long> getAndValidateMissingChunks(long from, long to) {
       Map.Entry<Long, Long> firstMissing = chunkIndex.floorEntry(from);
       if (firstMissing == null) {
         throw new AssertionError("No lower bound for start offset " + from);
       }
-      if (firstMissing.getValue() <= from
-          || ((from - firstMissing.getKey()) % maxAlloc) != 0) {
-        // The data does not belong to a recognized chunk, or is split wrong.
+      if (firstMissing.getValue() <= from) {
+        // The data does not belong to a recognized chunk.
         throw new AssertionError("Lower bound for start offset " + from + " is ["
             + firstMissing.getKey() + ", " + firstMissing.getValue() + ")");
       }
@@ -390,9 +428,8 @@ public class LlapCacheAwareFs extends FileSystem {
       }
       long lastMissingOffset = missingChunks.lastKey(),
           lastMissingEnd = missingChunks.get(lastMissingOffset);
-      if (lastMissingEnd < to
-          || (to != lastMissingEnd && ((to - lastMissingOffset) % maxAlloc) != 0)) {
-        // The data does not belong to a recognized chunk, or is split wrong.
+      if (lastMissingEnd < to) {
+        // The data runs past the last chunk that was registered for it.
         throw new AssertionError("Lower bound for end offset " + to + " is ["
             + lastMissingOffset + ", " + lastMissingEnd + ")");
       }
