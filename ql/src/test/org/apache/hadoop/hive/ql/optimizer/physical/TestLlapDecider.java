@@ -34,8 +34,6 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
-import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,25 +45,33 @@ public class TestLlapDecider {
   private static final int FLOOR = 96;
 
   /**
-   * A reduce-side merge join is one vertex fed by the edges of its reduce works: each of them gets the minimum
-   * reducers for the cluster's executors, as a lone reduce work does.
+   * A reduce-side merge join's vertex is built from its main work, which gets the minimum reducers for the cluster's
+   * executors, as a lone reduce work does.
    */
   @Test
-  public void testMergeJoinGetsTheExecutorReducerFloor() throws Exception {
+  public void testMergeJoinMainWorkGetsTheExecutorReducerFloor() throws Exception {
     HiveConf conf = conf();
-    ReduceWork main = autoReduceWork("Reducer 3", conf);
-    ReduceWork merged = autoReduceWork("Reducer 7", conf);
-    MergeJoinWork mergeJoin = new MergeJoinWork();
-    mergeJoin.addMergedWork(main, null, new HashMap<>());
-    mergeJoin.addMergedWork(null, merged, new HashMap<>());
-    ReduceWork lone = autoReduceWork("Reducer 4", conf);
+    ReduceWork main = autoReduceWork("Reducer 3", 104);
+    ReduceWork lone = autoReduceWork("Reducer 4", 104);
 
-    resolve(conf, mergeJoin, lone);
+    resolve(conf, mergeJoin(main), lone);
 
-    for (ReduceWork work : List.of(main, merged, lone)) {
+    for (ReduceWork work : List.of(main, lone)) {
+      Assert.assertTrue(work.getName(), work.isAutoReduceParallelism());
       Assert.assertEquals(work.getName(), FLOOR, work.getMinReduceTasks());
-      Assert.assertEquals(work.getName(), FLOOR, work.getEdgePropRef().getMinReducer());
     }
+  }
+
+  /** A floor at or above the main work's maximum fixes the merge join's vertex at the floor. */
+  @Test
+  public void testMergeJoinFixedAtTheFloor() throws Exception {
+    HiveConf conf = conf();
+    ReduceWork main = autoReduceWork("Reducer 3", 78);
+
+    resolve(conf, mergeJoin(main));
+
+    Assert.assertFalse(main.isAutoReduceParallelism());
+    Assert.assertEquals(FLOOR, main.getNumReduceTasks().intValue());
   }
 
   private static HiveConf conf() {
@@ -74,18 +80,22 @@ public class TestLlapDecider {
     return conf;
   }
 
-  /** Auto-reduces between 13 and 104 tasks, as a reducer estimated at 52 does with the default factors. */
-  private static ReduceWork autoReduceWork(String name, HiveConf conf) {
+  /** Auto-reduces between 13 tasks and the given maximum. */
+  private static ReduceWork autoReduceWork(String name, int maxReduceTasks) {
     ReduceWork work = new ReduceWork(name);
     work.setReducer(OperatorFactory.get(new CompilationOpContext(), new SelectDesc(new ArrayList<>(),
         new ArrayList<>())));
     work.setAutoReduceParallelism(true);
     work.setMinReduceTasks(13);
-    work.setMaxReduceTasks(104);
-    work.setNumReduceTasks(104);
-    work.setEdgePropRef(new TezEdgeProperty(conf, EdgeType.SIMPLE_EDGE, true, true, 13, 104, 256_000_000L,
-        0.25f, 0.75f));
+    work.setMaxReduceTasks(maxReduceTasks);
+    work.setNumReduceTasks(maxReduceTasks);
     return work;
+  }
+
+  private static MergeJoinWork mergeJoin(ReduceWork main) {
+    MergeJoinWork mergeJoin = new MergeJoinWork();
+    mergeJoin.addMergedWork(main, null, new HashMap<>());
+    return mergeJoin;
   }
 
   private static void resolve(HiveConf conf, BaseWork... works) throws Exception {
