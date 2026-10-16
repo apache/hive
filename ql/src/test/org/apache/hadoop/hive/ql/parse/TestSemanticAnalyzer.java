@@ -63,12 +63,17 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -102,6 +107,9 @@ public class TestSemanticAnalyzer {
     Table table1 = createKeyValueTable("table1");
     createKeyValueTable("table2");
     createKeyValueTable("table3");
+    Table udtfTarget = new Table("default", "udtf_target");
+    udtfTarget.setFields(Arrays.asList(new FieldSchema("value", "int", "UDTF output")));
+    db.createTable(udtfTarget);
     createPartitionedTable("table_part");
     Table tableAcid = createAcidTable("table_acid");
 
@@ -560,9 +568,24 @@ public class TestSemanticAnalyzer {
   }
 
   private BaseSemanticAnalyzer analyzeWithCbo(String query, boolean returnPath) throws Exception {
+    return analyzeWithCbo(query, returnPath, true);
+  }
+
+  private BaseSemanticAnalyzer analyzeWithCbo(String query, boolean returnPath, boolean positionAliases)
+      throws Exception {
+    return analyzeWithCbo(query, returnPath, positionAliases, null);
+  }
+
+  private BaseSemanticAnalyzer analyzeWithCbo(String query, boolean returnPath, boolean positionAliases,
+      String fallbackStrategy) throws Exception {
     HiveConf cboConf = new HiveConf(conf);
     cboConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
     cboConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP, returnPath);
+    cboConf.setBoolVar(HiveConf.ConfVars.HIVE_ORDERBY_POSITION_ALIAS, positionAliases);
+    cboConf.setBoolVar(HiveConf.ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS, false);
+    if (fallbackStrategy != null) {
+      cboConf.setVar(HiveConf.ConfVars.HIVE_CBO_FALLBACK_STRATEGY, fallbackStrategy);
+    }
     SessionState.start(cboConf);
     Context ctx = new Context(cboConf);
     ASTNode astNode = ParseUtils.parse(query, ctx);
@@ -726,5 +749,478 @@ public class TestSemanticAnalyzer {
         new HashSet<>(), colSrcRR, colSrcRR, 0, output, new ArrayList<>(Arrays.asList("l", "r")), false);
 
     assertTrue(output.get("l", "c").hasAmbiguousName());
+  }
+
+  @Test
+  public void testOrderByPositionResolvedWhenCboDeclines() throws Exception {
+    String[][] queryAndOrder = {
+        {"select value, key from table1 tablesample (2 rows) order by 2 desc", "-"},
+        {"select * from table1 tablesample (2 rows) order by 2", "+"},
+        // CBO declines scripts; positions count the script output columns
+        {"select transform(key, value) using 'cat' as (x, y) from table1 order by 2 desc", "-"},
+    };
+    for (String[] c : queryAndOrder) {
+      ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(c[0]);
+      assertColumns(rs.getKeyCols(), "_col1");
+      assertEquals(c[0], c[1], rs.getOrder());
+    }
+  }
+
+  @Test
+  public void testOrderByPositionResolvedWhenReturnPathDeclinesLateralView() throws Exception {
+    // with hive.cbo.returnpath.hiveop=true, CBO declines lateral views
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select t.c, value from table1 lateral view explode(array(key)) t as c order by 2 desc", true);
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testTransformInsertPositionUsesScriptOutputOrder() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 (value,key) select transform(key,value) using 'cat' "
+            + "as (x string,y int) from table1 order by 1 desc");
+    assertColumns(rs.getKeyCols(), "_col0");
+    assertEquals(TypeInfoFactory.stringTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testTransformInsertPositionUsesScriptOutputType() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 (key,value) select transform(key,value) using 'cat' "
+            + "as (x int,y string) from table1 order by 1 desc");
+    assertColumns(rs.getKeyCols(), "_col0");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+  }
+
+  @Test
+  public void testUdtfInsertOrderByUsesOutputType() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into udtf_target (value) select explode(array(value)) "
+            + "from table1 tablesample (2 rows) order by 1 desc");
+    assertEquals(1, rs.getKeyCols().size());
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+    assertColumns(rs.getKeyCols(), "col");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testUdtfInsertNamedOrderByUsesOutputType() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into udtf_target (value) select explode(array(value)) as c "
+            + "from table1 tablesample (2 rows) order by c desc");
+    assertColumns(rs.getKeyCols(), "col");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+  }
+
+  @Test
+  public void testUdtfInsertRejectsUnsupportedDistributionClauses() {
+    for (String clause : new String[] {"distribute by", "sort by", "cluster by"}) {
+      SemanticException e = assertThrows(SemanticException.class,
+          () -> analyzeWithCbo("insert into udtf_target (value) select explode(array(value)) "
+              + "from table1 tablesample (2 rows) " + clause + " 1"));
+      assertTrue(e.getMessage(), e.getMessage().contains(clause.toUpperCase() + " is not supported"));
+    }
+  }
+
+  @Test
+  public void testLateralViewInsertPositionPreservesSelectOrder() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 (value,key) select t.c,key from table1 "
+            + "lateral view explode(array(value)) t as c order by 1 desc", true);
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testSampledLateralViewInsertPositionPreservesSelectOrder() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 (value,key) select t.c,key from table1 tablesample (2 rows) "
+            + "lateral view explode(array(value)) t as c order by 1 desc");
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+  }
+
+  @Test
+  public void testLateralViewInsertDistributionPreservesSelectOrder() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 (value,key) select t.c,key from table1 "
+            + "lateral view explode(array(value)) t as c distribute by 1 sort by 2 desc", true);
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getPartitionCols().get(0).getTypeInfo());
+    assertColumns(rs.getKeyCols(), "_col0");
+    assertEquals(TypeInfoFactory.stringTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+  }
+
+  @Test
+  public void testLateralViewInsertClusterByPreservesSelectOrder() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 (value,key) select t.c,key from table1 "
+            + "lateral view explode(array(value)) t as c cluster by 1", true);
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+  }
+
+  @Test
+  public void testLateralViewInsertMissingColumnDoesNotShiftPosition() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 (value) select t.c from table1 "
+            + "lateral view explode(array(value)) t as c order by 1 desc", true);
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+  }
+
+  @Test
+  public void testLateralViewInsertMissingColumnDoesNotExpandPositionRange() {
+    SemanticException e = assertThrows(SemanticException.class,
+        () -> analyzeWithCbo("insert into table2 (value) select t.c from table1 "
+            + "lateral view explode(array(value)) t as c order by 2", true));
+    assertTrue(e.getMessage(), e.getMessage().contains("Position alias: 2 does not exist"));
+  }
+
+  @Test
+  public void testTransformPositionUsesOutputWidth() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select transform(key) using 'cat' as (x string,y int) from table1 order by 2 desc");
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+    SemanticException e = assertThrows(SemanticException.class,
+        () -> analyzeWithCbo("select transform(key,value) using 'cat' as (x string) "
+            + "from table1 order by 2"));
+    assertTrue(e.getMessage(), e.getMessage().contains("indexed from 1 to 1"));
+  }
+
+  @Test
+  public void testUdtfInsertWithoutColumnListUsesOutputWidth() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 select posexplode(array(value)) as (key,value) "
+            + "from table1 tablesample (2 rows) order by 2 desc");
+    assertColumns(rs.getKeyCols(), "val");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+  }
+
+  @Test
+  public void testUdtfPositionBeyondOutputWidthIsRejected() {
+    SemanticException e = assertThrows(SemanticException.class,
+        () -> analyzeWithCbo("select posexplode(array(value)) from table1 "
+            + "tablesample (2 rows) order by 3"));
+    assertTrue(e.getMessage(), e.getMessage().contains("indexed from 1 to 2"));
+  }
+
+  @Test
+  public void testExplicitInsertListRejectsArgumentWidthMismatchForScriptAndUdtf() {
+    // The existing insert-schema check runs on the argument projection before these operators.
+    for (String projection : new String[] {
+        "transform(key) using 'cat' as (x string,y int)", "posexplode(array(value))"}) {
+      SemanticException e = assertThrows(SemanticException.class,
+          () -> analyzeWithCbo("insert into table2 (key,value) select " + projection
+              + " from table1 tablesample (2 rows) order by 2"));
+      assertTrue(e.getMessage(), e.getMessage().contains("select produces 1 columns"));
+    }
+  }
+
+  @Test
+  public void testMultipleOuterLateralViewsPreserveInsertPositions() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 (value,key) select u.n,t.c from table1 "
+            + "lateral view outer explode(array(key)) t as c "
+            + "lateral view outer explode(array(value)) u as n order by 1 desc,2", true);
+    assertColumns(rs.getKeyCols(), "_col1", "_col0");
+    assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+    assertEquals(TypeInfoFactory.stringTypeInfo, rs.getKeyCols().get(1).getTypeInfo());
+    assertEquals("-+", rs.getOrder());
+  }
+
+  @Test
+  public void testDisabledPositionAliasesLeaveInsertSortKeysConstant() throws Exception {
+    String[] queries = {
+        "insert into table2 (value,key) select value,key from table1 tablesample (2 rows) order by 1",
+        "insert into table2 (value,key) select t.c,key from table1 "
+            + "lateral view explode(array(value)) t as c order by 1",
+        "insert into udtf_target (value) select explode(array(value)) "
+            + "from table1 tablesample (2 rows) order by 1",
+        "insert into table2 (key,value) select transform(key,value) using 'cat' "
+            + "as (x string,y int) from table1 order by 1"
+    };
+    for (String query : queries) {
+      SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(query, true, false);
+      List<ReduceSinkDesc> sinks = reduceSinks(analyzer);
+      assertEquals(query, 1, sinks.size());
+      assertTrue(query, sinks.get(0).getKeyCols().isEmpty());
+    }
+  }
+
+  @Test
+  public void testOtherCboDeclinersPreserveInsertPositions() throws Exception {
+    String[] queries = {
+        "insert into table2 (value,key) select value,key from table1 "
+            + "tablesample (bucket 1 out of 2 on key) order by 1 desc",
+        "insert into table2 (value,key) select value,_UTF8 0x616263 from table1 order by 1 desc",
+        "from uniquejoin table1 a (a.key), table3 b (b.key) "
+            + "insert into table2 (value,key) select a.value,a.key order by 1 desc"
+    };
+    for (String query : queries) {
+      List<ReduceSinkDesc> sinks = reduceSinksOfCboDeclinedQuery(query, false);
+      List<ReduceSinkDesc> orderSinks = new ArrayList<>();
+      for (ReduceSinkDesc sink : sinks) {
+        if (sink.hasOrderBy()) {
+          orderSinks.add(sink);
+        }
+      }
+      assertEquals(query, 1, orderSinks.size());
+      ReduceSinkDesc rs = orderSinks.get(0);
+      assertColumns(rs.getKeyCols(), "_col1");
+      assertEquals(TypeInfoFactory.intTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+    }
+  }
+
+  @Test
+  public void testNestedInsertPositionsPreserveQueryBlockScope() throws Exception {
+    String[] queries = {
+        "insert into table2 (value,key) select value,key from "
+            + "(select key,value from table1 tablesample (2 rows) order by 1 desc limit 5) q "
+            + "order by 1 desc",
+        "with q as (select key,value from table1 tablesample (2 rows) order by 1 desc limit 5) "
+            + "insert into table2 (value,key) select value,key from q order by 1 desc"
+    };
+    for (String query : queries) {
+      List<ReduceSinkDesc> sinks = reduceSinksOfCboDeclinedQuery(query, false);
+      int strings = 0;
+      int integers = 0;
+      for (ReduceSinkDesc sink : sinks) {
+        if (sink.hasOrderBy()) {
+          assertEquals(query, 1, sink.getKeyCols().size());
+          if (TypeInfoFactory.stringTypeInfo.equals(sink.getKeyCols().get(0).getTypeInfo())) {
+            strings++;
+          } else if (TypeInfoFactory.intTypeInfo.equals(sink.getKeyCols().get(0).getTypeInfo())) {
+            integers++;
+          }
+        }
+      }
+      assertEquals(query, 1, strings);
+      assertEquals(query, 1, integers);
+    }
+  }
+
+  @Test
+  public void testUnionAggregateAndWindowInsertPositions() throws Exception {
+    String[] queries = {
+        "insert into table2 (value,key) select value,key from "
+            + "(select key,value from table1 tablesample (2 rows) union all "
+            + "select key,value from table3) q order by 1 desc",
+        "insert into table2 (value,key) select max(value),key from table1 "
+            + "tablesample (2 rows) group by key order by 1 desc",
+        "insert into table2 (value,key) select sum(value) over (partition by key),key "
+            + "from table1 tablesample (2 rows) order by 1 desc"
+    };
+    for (String query : queries) {
+      List<ReduceSinkDesc> sinks = reduceSinksOfCboDeclinedQuery(query, false);
+      int orders = 0;
+      for (ReduceSinkDesc sink : sinks) {
+        if (sink.hasOrderBy()) {
+          orders++;
+          assertColumns(sink.getKeyCols(), "_col1");
+          assertTrue(query, sink.getKeyCols().get(0).getTypeInfo().equals(TypeInfoFactory.intTypeInfo)
+              || sink.getKeyCols().get(0).getTypeInfo().equals(TypeInfoFactory.longTypeInfo));
+        }
+      }
+      assertEquals(query, 1, orders);
+    }
+  }
+
+  @Test
+  public void testLateralViewStarInsertPositions() throws Exception {
+    ReduceSinkDesc sink = reduceSinkOfCboDeclinedQuery(
+        "insert into table2 (value,key) select t.* from table1 "
+            + "lateral view inline(array(struct(value,key))) t as v,k order by 1 desc,2", true);
+    assertColumns(sink.getKeyCols(), "_col1", "_col0");
+    assertEquals(TypeInfoFactory.intTypeInfo, sink.getKeyCols().get(0).getTypeInfo());
+    assertEquals(TypeInfoFactory.stringTypeInfo, sink.getKeyCols().get(1).getTypeInfo());
+  }
+
+  @Test
+  public void testMixedScriptInsertPositionsAreIndependent() throws Exception {
+    List<ReduceSinkDesc> sinks = reduceSinksOfCboDeclinedQuery(
+        "from table1 "
+            + "insert into table2 (value,key) select value,key order by 1 desc "
+            + "insert into table3 (value,key) select transform(key,value) using 'cat' "
+            + "as (x string,y int) order by 1 desc", false);
+    int strings = 0;
+    int integers = 0;
+    for (ReduceSinkDesc sink : sinks) {
+      if (sink.hasOrderBy()) {
+        if (TypeInfoFactory.stringTypeInfo.equals(sink.getKeyCols().get(0).getTypeInfo())) {
+          assertColumns(sink.getKeyCols(), "_col0");
+          strings++;
+        } else {
+          assertColumns(sink.getKeyCols(), "_col1");
+          integers++;
+        }
+      }
+    }
+    assertEquals(1, strings);
+    assertEquals(1, integers);
+  }
+
+  @Test
+  public void testSortByPositionResolvedInExtraLimitStepWhenCboDeclines() throws Exception {
+    // SORT BY + LIMIT in a subquery declines CBO and adds a second reduce sink for the limit
+    List<ReduceSinkDesc> reduceSinks = reduceSinksOfCboDeclinedQuery(
+        "select * from (select value, key from table1 sort by 2 desc limit 5) q", false);
+    assertEquals(2, reduceSinks.size());
+    for (ReduceSinkDesc rs : reduceSinks) {
+      assertColumns(rs.getKeyCols(), "_col1");
+      assertEquals("-", rs.getOrder());
+    }
+  }
+
+  @Test
+  public void testClusterByPositionResolvedWhenCboDeclines() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select key, value from table1 tablesample (2 rows) cluster by 2");
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("+", rs.getOrder());
+  }
+
+  @Test
+  public void testDistributeBySortByPositionsResolvedWhenCboDeclines() throws Exception {
+    ReduceSinkDesc rs = reduceSinkOfCboDeclinedQuery(
+        "select key, value from table1 tablesample (2 rows) distribute by 2 sort by 1 desc");
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertColumns(rs.getKeyCols(), "_col0");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testFloatSortKeyNotReadAsPositionWhenCboPlansStatement() throws Exception {
+    // the AST regenerated from the CBO plan goes through the same reduce sink code; it carries an ORDER BY key
+    // outside the select list as an expression, and a FLOAT constant as a bare number such as 1.5F. CBO removes
+    // constant sort keys first, so no number reaches the reduce sink
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(
+        "select value from table1 order by cast(1.5 as float), key desc");
+    assertFalse(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO"));
+    List<ReduceSinkDesc> reduceSinks = reduceSinks(analyzer);
+    assertEquals(1, reduceSinks.size());
+    for (ExprNodeDesc key : reduceSinks.get(0).getKeyCols()) {
+      assertTrue(key.toString(), key instanceof ExprNodeColumnDesc);
+    }
+  }
+
+  @Test
+  public void testOutOfRangePositionRejectedWhenCboDeclines() {
+    for (int pos : new int[] {0, 2}) {
+      SemanticException e = assertThrows(SemanticException.class,
+          () -> analyzeWithCbo("select key from table1 tablesample (2 rows) order by " + pos));
+      assertTrue(e.getMessage(), e.getMessage().contains("Position alias: " + pos + " does not exist"));
+    }
+  }
+
+  @Test
+  public void testInsertColumnListPositionCountsSelectListWhenCboDeclines() throws Exception {
+    // the select output is in the target column order (key, value), so select list column 1 is _col1
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(
+        "insert into table2 (value, key) select key, value from table1 tablesample (2 rows) order by 1 desc");
+    assertTrue(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO because"));
+    ReduceSinkDesc rs = keyedReduceSink(analyzer);
+    assertColumns(rs.getKeyCols(), "_col1");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testInsertColumnListPositionInExtraLimitStepWhenCboDeclines() throws Exception {
+    // an INSERT with a LIMIT gets a second reduce sink, whose input copies the select output in target column order
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(
+        "insert into table2 (value, key) select key, value from table1 tablesample (2 rows) sort by 1 desc limit 5");
+    List<ReduceSinkDesc> keyed = new ArrayList<>();
+    for (ReduceSinkDesc rs : reduceSinks(analyzer)) {
+      if (!rs.getKeyCols().isEmpty()) {
+        keyed.add(rs);
+      }
+    }
+    assertEquals(keyed.toString(), 2, keyed.size());
+    for (ReduceSinkDesc rs : keyed) {
+      assertColumns(rs.getKeyCols(), "_col1");
+      assertEquals("-", rs.getOrder());
+    }
+  }
+
+  @Test
+  public void testInsertColumnListPositionBeyondSelectListRejectedWhenCboDeclines() {
+    SemanticException e = assertThrows(SemanticException.class, () -> analyzeWithCbo(
+        "insert into table2 (key) select key from table1 tablesample (2 rows) order by 2"));
+    assertTrue(e.getMessage(), e.getMessage().contains("Position alias: 2 does not exist"));
+  }
+
+  @Test
+  public void testInsertColumnListSortKeysByNameWhenCboPlansStatement() throws Exception {
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(
+        "insert into table2 (value, key) select key, value from table1 distribute by key sort by value desc");
+    assertFalse(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO"));
+    ReduceSinkDesc rs = keyedReduceSink(analyzer);
+    assertColumns(rs.getPartitionCols(), "_col1");
+    assertColumns(rs.getKeyCols(), "_col0");
+    assertEquals("-", rs.getOrder());
+  }
+
+  @Test
+  public void testInvalidPositionRecompilesWithoutCboWhenFallbackAllowsIt() throws Exception {
+    String outOfRange = "select key from table1 tablesample (2 rows) sort by 2";
+    String notAnInteger = "select key from table1 tablesample (2 rows) order by 1.5";
+    for (String fallbackStrategy : new String[] {"CONSERVATIVE", "ALWAYS"}) {
+      assertThrows(ReCompileException.class, () -> analyzeWithCbo(outOfRange, false, true, fallbackStrategy));
+      assertThrows(ReCompileException.class, () -> analyzeWithCbo(notAnInteger, false, true, fallbackStrategy));
+    }
+    assertThrows(SemanticException.class, () -> analyzeWithCbo(outOfRange, false, true, "NEVER"));
+    assertThrows(NumberFormatException.class, () -> analyzeWithCbo(notAnInteger, false, true, "NEVER"));
+  }
+
+  private static ReduceSinkDesc keyedReduceSink(SemanticAnalyzer analyzer) {
+    // an INSERT can add a reduce sink without keys that gathers column statistics
+    List<ReduceSinkDesc> keyed = new ArrayList<>();
+    for (ReduceSinkDesc rs : reduceSinks(analyzer)) {
+      if (!rs.getKeyCols().isEmpty() || !rs.getPartitionCols().isEmpty()) {
+        keyed.add(rs);
+      }
+    }
+    assertEquals(keyed.toString(), 1, keyed.size());
+    return keyed.get(0);
+  }
+
+  private ReduceSinkDesc reduceSinkOfCboDeclinedQuery(String query) throws Exception {
+    return reduceSinkOfCboDeclinedQuery(query, false);
+  }
+
+  private ReduceSinkDesc reduceSinkOfCboDeclinedQuery(String query, boolean returnPath) throws Exception {
+    List<ReduceSinkDesc> reduceSinks = reduceSinksOfCboDeclinedQuery(query, returnPath);
+    assertEquals(1, reduceSinks.size());
+    return reduceSinks.get(0);
+  }
+
+  private List<ReduceSinkDesc> reduceSinksOfCboDeclinedQuery(String query, boolean returnPath) throws Exception {
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(query, returnPath);
+    assertTrue(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO because"));
+    return reduceSinks(analyzer);
+  }
+
+  private static List<ReduceSinkDesc> reduceSinks(SemanticAnalyzer analyzer) {
+    List<ReduceSinkDesc> reduceSinks = new ArrayList<>();
+    for (Operator<?> op : analyzer.opParseCtx.keySet()) {
+      if (op instanceof ReduceSinkOperator) {
+        reduceSinks.add(((ReduceSinkOperator) op).getConf());
+      }
+    }
+    return reduceSinks;
+  }
+
+  private static void assertColumns(List<ExprNodeDesc> exprs, String... expectedColumns) {
+    assertEquals(exprs.toString(), expectedColumns.length, exprs.size());
+    for (int i = 0; i < expectedColumns.length; i++) {
+      assertTrue(exprs.get(i).toString(), exprs.get(i) instanceof ExprNodeColumnDesc);
+      assertEquals(expectedColumns[i], ((ExprNodeColumnDesc) exprs.get(i)).getColumn());
+    }
   }
 }
