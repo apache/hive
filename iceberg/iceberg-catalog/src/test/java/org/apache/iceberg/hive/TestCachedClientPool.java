@@ -30,6 +30,7 @@ import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.hive.CachedClientPool.Key;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -45,6 +46,11 @@ public class TestCachedClientPool {
   @RegisterExtension
   private static final HiveMetastoreExtension HIVE_METASTORE_EXTENSION =
       HiveMetastoreExtension.builder().withDatabase(DB_NAME).build();
+
+  @BeforeEach
+  public void resetClientPoolCache() {
+    CachedClientPool.resetClientPoolCacheForTests();
+  }
 
   @Test
   public void testClientPoolCleaner() throws InterruptedException {
@@ -145,6 +151,31 @@ public class TestCachedClientPool {
         "Duplicate conf key elements should result in an error")
         .isInstanceOf(ValidationException.class)
         .hasMessageContaining("Conf key element k1 already specified");
+  }
+
+  @Test
+  public void testPerUserClientPoolsWhenUserNameInCacheKeys() throws Exception {
+    UserGroupInformation current = UserGroupInformation.getCurrentUser();
+    UserGroupInformation foo = UserGroupInformation.createProxyUser("foo", current);
+    UserGroupInformation bar = UserGroupInformation.createProxyUser("bar", current);
+    HiveConf hiveConf = HIVE_METASTORE_EXTENSION.hiveConf();
+    Map<String, String> properties =
+        ImmutableMap.of(CatalogProperties.CLIENT_POOL_CACHE_KEYS, "user_name");
+
+    CachedClientPool pool = new CachedClientPool(hiveConf, properties);
+    HiveClientPool fooPool = foo.doAs((PrivilegedAction<HiveClientPool>) pool::clientPool);
+    HiveClientPool barPool = bar.doAs((PrivilegedAction<HiveClientPool>) pool::clientPool);
+    assertThat(fooPool).isNotSameAs(barPool);
+  }
+
+  @Test
+  public void testTokenAuthPoolWhenSecurityAndUserNameCacheKey() {
+    org.junit.jupiter.api.Assumptions.assumeTrue(UserGroupInformation.isSecurityEnabled());
+    HiveConf hiveConf = HIVE_METASTORE_EXTENSION.hiveConf();
+    CachedClientPool pool =
+        new CachedClientPool(
+            hiveConf, ImmutableMap.of(CatalogProperties.CLIENT_POOL_CACHE_KEYS, "user_name"));
+    assertThat(pool.clientPool()).isInstanceOf(TokenAuthHiveClientPool.class);
   }
 
   @Test
