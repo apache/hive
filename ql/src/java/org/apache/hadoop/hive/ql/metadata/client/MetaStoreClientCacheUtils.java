@@ -241,7 +241,7 @@ public class MetaStoreClientCacheUtils {
 
     @Override
     public Object get(Object k) {
-      return c.getIfPresent(k);
+      return c.getIfPresent((CacheKey) k);
     }
   }
 
