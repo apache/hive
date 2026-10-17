@@ -58,7 +58,7 @@ public class TestLlapInputSplit {
 
     byte[] tokenBytes = new byte[] { 1 };
     LlapInputSplit split1 = new LlapInputSplit(splitNum, planBytes, fragmentBytes, null,
-        locations, llapDaemonInfos, schema, "hive", tokenBytes, "some-dummy-jwt");
+        locations, llapDaemonInfos, schema, "hive", tokenBytes);
     ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
     DataOutputStream dataOut = new DataOutputStream(byteOutStream);
     split1.write(dataOut);
@@ -89,7 +89,6 @@ public class TestLlapInputSplit {
     assertArrayEquals(split1.getLocations(), split2.getLocations());
     assertEquals(split1.getSchema().toString(), split2.getSchema().toString());
     assertEquals(split1.getLlapUser(), split2.getLlapUser());
-    assertEquals(split1.getJwt(), split2.getJwt());
     assertArrayEquals(split1.getLlapDaemonInfos(), split2.getLlapDaemonInfos());
   }
 
