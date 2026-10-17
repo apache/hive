@@ -113,11 +113,11 @@ HiveProject(sumb=[$3], sume=[$4], a=[$0], c=[$1], d=[$2])
               HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
             HiveProject(a=[$0], c=[$1], d=[$2])
               HiveAggregate(group=[{0, 2, 3}])
-                HiveFilter(condition=[<(1, $7.writeid)])
+                HiveFilter(condition=[IS NOT TRUE(>=(1, $7.writeid))])
                   HiveTableScan(table=[[default, t1]], table:alias=[t1])
         HiveProject(a=[$0], c=[$1], d=[$2], $f3=[$3], $f4=[$4])
           HiveAggregate(group=[{0, 2, 3}], agg#0=[sum($1)], agg#1=[sum($4)])
-            HiveFilter(condition=[<(1, $7.writeid)])
+            HiveFilter(condition=[IS NOT TRUE(>=(1, $7.writeid))])
               HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: EXPLAIN
@@ -180,15 +180,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  filterExpr: (ROW__ID.writeid > 1L) (type: boolean)
+                  filterExpr: (ROW__ID.writeid <= 1L) is not true (type: boolean)
                   Statistics: Num rows: 11 Data size: 1044 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ROW__ID.writeid > 1L) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (ROW__ID.writeid <= 1L) is not true (type: boolean)
+                    Statistics: Num rows: 5 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), c (type: int), d (type: string)
                       outputColumnNames: a, c, d
-                      Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: a (type: int), c (type: int), d (type: string)
                         minReductionHashAggr: 0.4
@@ -204,7 +204,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: a (type: int), b (type: int), c (type: int), d (type: string), e (type: float)
                       outputColumnNames: a, b, c, d, e
-                      Statistics: Num rows: 3 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 520 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(b), sum(e)
                         keys: a (type: int), c (type: int), d (type: string)
