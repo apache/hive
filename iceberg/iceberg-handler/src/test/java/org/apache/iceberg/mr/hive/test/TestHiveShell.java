@@ -199,7 +199,6 @@ public class TestHiveShell {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_METADATA_ONLY_QUERIES, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SKEW_JOIN, false);
 

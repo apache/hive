@@ -4,7 +4,6 @@ set hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.tez.bucket.pruning=true;
-set hive.optimize.index.filter=true;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 
 create table change_allowincompatible_vectorization_false_date (ts timestamp) partitioned by (s string) clustered by (ts) into 32 buckets stored as orc tblproperties ('transactional'='true');

@@ -13,7 +13,6 @@ set hive.mapjoin.hybridgrace.hashtable=false;
 set hive.merge.mapfiles=false;
 set hive.merge.nway.joins=false;
 set hive.optimize.bucketmapjoin=true;
-set hive.optimize.index.filter=true;
 set hive.stats.fetch.bitvector=false;
 set hive.stats.fetch.column.stats=true;
 set hive.support.quoted.identifiers=none;

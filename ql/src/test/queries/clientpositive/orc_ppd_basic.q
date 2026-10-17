@@ -6,7 +6,6 @@ SET hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 SET hive.fetch.task.conversion=none;
-SET hive.optimize.index.filter=true;
 SET hive.cbo.enable=false;
 SET hive.map.aggr=false;
 -- disabling map side aggregation as that can lead to different intermediate record counts
@@ -187,40 +186,31 @@ select count(*) from orc_ppd_n2 where s = "wendy king" and t < 0;
 select count(*) from orc_ppd_n2 where s = "wendy king" and t > 100;
 
 set hive.cbo.enable=false;
-set hive.optimize.index.filter=false;
 -- when cbo is disabled constant gets converted to HiveDecimal
 --  74.72f + 0.0 = 74.72000122070312
 select count(*) from orc_ppd_n2 where f=74.72;
-set hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n2 where f=74.72;
 
 set hive.cbo.enable=true;
-set hive.optimize.index.filter=false;
 select count(*) from orc_ppd_n2 where f=74.72;
-set hive.optimize.index.filter=true;
 select count(*) from orc_ppd_n2 where f=74.72;
 
 -- 42.47f + 0.0 == 42.470001220703125
 create temporary table orc_ppd_1 stored as orc as select * from orc_ppd_staging_n1 where d = 42.47;
 
 set hive.cbo.enable=false;
-set hive.optimize.index.filter=false;
 -- when cbo is disabled constant gets converted to HiveDecimal
 select count(*) from orc_ppd_1 where d=42.47;
-set hive.optimize.index.filter=true;
 select count(*) from orc_ppd_1 where d=42.47;
 
 set hive.cbo.enable=true;
-set hive.optimize.index.filter=false;
 select count(*) from orc_ppd_1 where d=42.47;
-set hive.optimize.index.filter=true;
 select count(*) from orc_ppd_1 where d=42.47;
 
 RESET;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 SET hive.fetch.task.conversion=none;
-SET hive.optimize.index.filter=true;
 SET hive.cbo.enable=false;
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecOrcRowGroupCountPrinter;
 -- these tests include timestamp column that will impact the file size when tests run across
@@ -256,7 +246,6 @@ drop table if exists tbl_orcppd_2_1;
 create table tbl_orcppd_2_1 as
         select count(*) from tmp_orcppd
                     where ctimestamp1 in (cast('2065-08-13 19:03:52' as timestamp), cast('2071-01-16 20:21:17' as timestamp), current_timestamp());
-set hive.optimize.index.filter=true;
 
 drop table if exists tmp_orcppd;
 create temporary table tmp_orcppd
