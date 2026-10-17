@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.metastore.auth.oauth2;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
+import com.google.common.annotations.VisibleForTesting;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.TokenIntrospectionRequest;
 import com.nimbusds.oauth2.sdk.TokenIntrospectionResponse;
@@ -55,20 +56,21 @@ public class TokenIntrospectionAuthenticator implements OAuth2Authenticator {
     }
   }
 
-  private record TokenExpiry(Duration maxExpiration, Clock clock) implements
+  @VisibleForTesting
+  record TokenExpiry(Duration maxExpiration, Clock clock) implements
       Expiry<String, TokenIntrospectionSuccessResponse> {
     @Override
     public long expireAfterCreate(@NonNull String key, @NonNull TokenIntrospectionSuccessResponse value,
         long currentTime) {
-      final var expiresIn = Duration.between(value.getExpirationTime().toInstant(), clock.instant());
-      return Math.min(expiresIn.toNanos(), maxExpiration.toNanos());
+      final var expiresIn = Duration.between(clock.instant(), value.getExpirationTime().toInstant());
+      return Math.clamp(expiresIn.toNanos(), 0L, maxExpiration.toNanos());
     }
 
     @Override
     public long expireAfterUpdate(@NonNull String key, @NonNull TokenIntrospectionSuccessResponse value,
         long currentTime, @NonNegative long currentDuration) {
-      final var expiresIn = Duration.between(value.getExpirationTime().toInstant(), clock.instant());
-      return Math.min(expiresIn.toNanos(), maxExpiration.toNanos());
+      final var expiresIn = Duration.between(clock.instant(), value.getExpirationTime().toInstant());
+      return Math.clamp(expiresIn.toNanos(), 0L, maxExpiration.toNanos());
     }
 
     @Override
