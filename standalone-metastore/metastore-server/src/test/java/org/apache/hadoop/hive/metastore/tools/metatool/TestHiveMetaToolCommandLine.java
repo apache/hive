@@ -154,6 +154,9 @@ public class TestHiveMetaToolCommandLine {
 
     cl = new HiveMetaToolCommandLine(new String[] {"-dedupColumns", "-timeout", "3600"});
     assertEquals(Long.valueOf(3600L), cl.getDedupColumnsTimeoutSeconds());
+
+    cl = new HiveMetaToolCommandLine(new String[] {"-dedupColumns", "hive", "default", "person", "-clearMarker"});
+    assertTrue(cl.isClearMarker());
   }
 
   @Test
@@ -170,6 +173,14 @@ public class TestHiveMetaToolCommandLine {
     exception.expectMessage("HiveMetaTool:-timeout must be a positive number of seconds");
 
     new HiveMetaToolCommandLine(new String[] {"-dedupColumns", "-timeout", "0"});
+  }
+
+  @Test
+  public void testClearMarkerNotAllowed() throws ParseException {
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("-clearMarker may be used only for the -dedupColumns command");
+
+    new HiveMetaToolCommandLine(new String[] {"-listFSRoot", "-clearMarker"});
   }
 
   @Test

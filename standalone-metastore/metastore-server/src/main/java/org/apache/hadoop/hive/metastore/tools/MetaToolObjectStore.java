@@ -977,7 +977,7 @@ public class MetaToolObjectStore extends ObjectStore {
     private int columnDescriptorsRemoved;
     private int tablesValidated;
     private final List<String> details = new ArrayList<>();
-    private Exception exception;
+    private Throwable exception;
     DedupColumnsResult(int tablesScanned) {
       this.tablesScanned = tablesScanned;
     }
@@ -1025,18 +1025,18 @@ public class MetaToolObjectStore extends ObjectStore {
       details.add(detail);
     }
 
-    void catchException(Exception exception) {
+    void catchException(Throwable exception) {
       this.exception = exception;
     }
 
-    public Exception getException() {
+    public Throwable getException() {
       return exception;
     }
   }
 
   public DedupColumnsResult dedupColumns(String catalogFilter, String dbFilter, String tableFilter,
-      AtomicReference<String> progress, boolean isDryRun, boolean isVerbose) {
-    return new ColumnDeduplicator(this.createRawStoreBundle(), progress, isDryRun, isVerbose)
+      AtomicReference<String> progress, boolean isDryRun, boolean isVerbose, boolean clearMarker) {
+    return new ColumnDeduplicator(this.createRawStoreBundle(), progress, isDryRun, isVerbose, clearMarker)
         .run(catalogFilter, dbFilter, tableFilter);
   }
 }
