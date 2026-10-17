@@ -87,7 +87,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.11.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
+ * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.12.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements Closeable {
@@ -601,24 +601,9 @@ public class HMSCatalogAdapter implements Closeable {
         vars.putAll(routeAndVars.second());
         Route route = routeAndVars.first();
         Map<String, String> responseHeaders = Maps.newHashMap();
-        T result =
-            handleRequest(
-                route,
-                vars.build(),
-                queryParams,
-                toCaseInsensitiveHeaders(headers),
-                body,
-                responseHeaders);
-        if (response != null) {
-          responseHeaders.forEach(response::setHeader);
-          if (result == null) {
-            if (route == Route.LOAD_TABLE) {
-              response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-            } else if (HMSCatalogServlet.shouldReturn204(route)) {
-              response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            }
-          }
-        }
+        T result = handleRequest(
+            route, vars.build(), queryParams, toCaseInsensitiveHeaders(headers), body, responseHeaders);
+        applyResponseStatusAndHeaders(response, route, result, responseHeaders);
         return result;
       } catch (RuntimeException e) {
         configureResponseFromException(e, errorBuilder);
@@ -633,6 +618,23 @@ public class HMSCatalogAdapter implements Closeable {
     response.setStatus(error.code());
     RESTObjectMapper.mapper().writeValue(response.getWriter(), error);
     return null;
+  }
+
+  private static <T extends RESTResponse> void applyResponseStatusAndHeaders(
+      HttpServletResponse response,
+      Route route,
+      T result,
+      Map<String, String> responseHeaders) {
+    if (response != null) {
+      responseHeaders.forEach(response::setHeader);
+      if (result == null) {
+        if (route == Route.LOAD_TABLE) {
+          response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        } else if (HMSCatalogServlet.shouldReturn204(route)) {
+          response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        }
+      }
+    }
   }
 
   /**
@@ -685,10 +687,9 @@ public class HMSCatalogAdapter implements Closeable {
         || queryParams.isEmpty()
         || (queryParams.size() == 1
             && queryParams.containsKey(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER))) {
-      return switch (mode) {
-        case ALL -> DEFAULT_SNAPSHOT_QUERY_PARAMS;
-        case REFS -> REFS_SNAPSHOT_QUERY_PARAMS;
-      };
+      return mode == RESTCatalogProperties.SnapshotMode.ALL
+          ? DEFAULT_SNAPSHOT_QUERY_PARAMS
+          : REFS_SNAPSHOT_QUERY_PARAMS;
     }
     Map<String, String> normalized = Maps.newHashMapWithExpectedSize(queryParams.size() + 1);
     normalized.putAll(queryParams);
@@ -699,7 +700,8 @@ public class HMSCatalogAdapter implements Closeable {
 
   /**
    * Evaluates an HTTP {@code If-None-Match} header against the current ETag according to RFC 9110
-   * §13.1.2. Supports wildcard {@code "*"} as well as comma-delimited lists of multiple ETags.
+   * §13.1.2. Supports wildcard {@code "*"}, weak comparison (ignoring {@code W/} prefix), and
+   * comma-delimited lists of multiple ETags.
    *
    * @param ifNoneMatchHeader the incoming If-None-Match header value, if any
    * @param currentETag the computed ETag of the current table state
@@ -709,11 +711,9 @@ public class HMSCatalogAdapter implements Closeable {
     if (ifNoneMatchHeader == null || currentETag == null) {
       return false;
     }
-    if ("*".equals(ifNoneMatchHeader) || ifNoneMatchHeader.equals(currentETag)) {
-      return true;
-    }
     for (String candidate : COMMA.split(ifNoneMatchHeader)) {
-      if ("*".equals(candidate) || candidate.equals(currentETag)) {
+      String trimmed = candidate.startsWith("W/") ? candidate.substring(2) : candidate;
+      if ("*".equals(trimmed) || trimmed.equals(currentETag)) {
         return true;
       }
     }

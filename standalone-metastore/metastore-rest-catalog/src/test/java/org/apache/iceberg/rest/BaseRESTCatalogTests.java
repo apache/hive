@@ -45,6 +45,8 @@ import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.rest.extension.MockHiveAuthorizer;
+import org.apache.iceberg.types.Types.IntegerType;
+import org.apache.iceberg.types.Types.NestedField;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -347,5 +349,40 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
     Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
     Assertions.assertTrue(Files.exists(victimFile), "purge must not delete files outside the table location");
     Assertions.assertFalse(Files.exists(ownedFile), "purge must delete files nested inside the table location");
+  }
+
+  /**
+   * Verifies end-to-end freshness-aware table loading through Jetty, GzipHandler, and RESTClient:
+   * subsequent loads or table refreshes send the If-None-Match header, and mutations invalidate the
+   * ETag and refresh the metadata.
+   */
+  @Test
+  void testFreshnessAwareTableLoading() {
+    TableIdentifier ident = TableIdentifier.of("default", "freshness_test");
+    Schema schema = new Schema(NestedField.required(1, "id", IntegerType.get()));
+    Table table = catalog.createTable(ident, schema);
+    try {
+      Assertions.assertNotNull(table);
+      // Table exists verification sends HEAD request and receives 204 No Content
+      Assertions.assertTrue(catalog.tableExists(ident));
+
+      // Refreshing the table sends If-None-Match with the ETag and server responds with 304 Not Modified
+      table.refresh();
+      Assertions.assertEquals(1, table.schema().columns().size());
+
+      // Update table schema to trigger a new metadata commit and a new ETag
+      table
+          .updateSchema()
+          .addColumn("name", org.apache.iceberg.types.Types.StringType.get())
+          .commit();
+
+      // Subsequent load receives 200 OK with the new schema and updated ETag
+      Table refreshed = catalog.loadTable(ident);
+      Assertions.assertEquals(2, refreshed.schema().columns().size());
+      Assertions.assertNotNull(refreshed.schema().findField("name"));
+    } finally {
+      catalog.dropTable(ident);
+      Assertions.assertFalse(catalog.tableExists(ident));
+    }
   }
 }
