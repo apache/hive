@@ -263,28 +263,6 @@ public class HiveTableUtil {
   }
 
   /**
-   * Returns the {@link Table} for split generation: deserialized from job conf when present,
-   * otherwise {@link Catalogs#loadTable}.
-   */
-  public static Table resolveTableForScanPlanning(Configuration conf, String tableIdentifier) {
-    Table table = deserializeTable(conf, tableIdentifier);
-    if (table == null) {
-      table = Catalogs.loadTable(conf);
-      configureLoadedTable(conf, table, resolveCatalogName(conf));
-    }
-    return table;
-  }
-
-  /**
-   * Prepares a table freshly loaded from the catalog for split planning: IO config and vended
-   * credentials. Credentials already on the table's FileIO take precedence over those in the job conf.
-   */
-  public static void configureLoadedTable(Configuration conf, Table table, String catalogName) {
-    checkAndSetIoConfig(conf, table);
-    IcebergVendedCredentialUtil.applyFromJobConf(table, catalogName, conf);
-  }
-
-  /**
    * Returns true when HS2 marked the table's catalog for server-side scan planning and the scan can
    * actually be planned by the REST server. Incremental append scans and metadata tables are planned
    * locally even on a {@code RESTTable}, and intra-transaction reads must see uncommitted metadata,

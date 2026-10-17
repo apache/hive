@@ -139,18 +139,16 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
   }
 
   /**
-   * Negative path: executor job conf without propagated catalog settings must not reload from the
-   * REST catalog, even when server mode is enabled on HS2. Without catalog URI/type in the job
-   * conf, split generation falls back to the serialized table snapshot.
+   * Negative path: without the HS2 marker and catalog settings in the job conf, split generation
+   * plans from the serialized table snapshot and never sends {@code POST /plan}.
    */
   @Test
   void executorJobConfWithoutPropagationUsesSerializedTable() throws IOException {
     Table table = createTableWithData();
     Configuration jobConf = executorJobConf(table);
+    jobConf.set(InputFormatConfig.TABLE_LOCATION, table.location());
 
-    Table resolved = HiveTableUtil.resolveTableForScanPlanning(jobConf, TABLE_ID.toString());
-    assertThat(resolved).isInstanceOf(SerializableTable.class);
-    assertThat(resolved.newScan()).isNotInstanceOf(RESTTableScan.class);
+    assertThat(planRequestsDuringGetSplits(jobConf)).isEmpty();
   }
 
   /**
