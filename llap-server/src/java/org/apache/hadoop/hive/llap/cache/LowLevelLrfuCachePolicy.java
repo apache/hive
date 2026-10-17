@@ -34,6 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -124,7 +125,7 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
 
     // register new metrics provider for this cache policy
     metrics = new PolicyMetrics(sessID);
-    LlapMetricsSystem.instance().register("LowLevelLrfuCachePolicy-" + MetricsUtils.getHostName(), null, metrics);
+    LlapMetricsSystem.instance().register("LowLevelLrfuCachePolicy-" + ServerUtils.hostname(), null, metrics);
 
     // Thread local buffer arrays are also registered in a concurrent map for more control over them. Note that this
     // concurrent hash map will only have to lock just once for every thread during startup, and later only during
