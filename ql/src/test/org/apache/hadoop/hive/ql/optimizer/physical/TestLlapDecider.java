@@ -74,6 +74,24 @@ public class TestLlapDecider {
     Assert.assertEquals(FLOOR, main.getNumReduceTasks().intValue());
   }
 
+  /**
+   * Without auto-reduce, a join's main work is evenly distributed (its ReduceSink is UNIFORM): it runs at least the
+   * floor, as a lone reduce work does.
+   */
+  @Test
+  public void testUniformMergeJoinMainWorkRunsAtTheFloor() throws Exception {
+    HiveConf conf = conf();
+    ReduceWork main = uniformWork("Reducer 3");
+    ReduceWork lone = uniformWork("Reducer 4");
+
+    resolve(conf, mergeJoin(main), lone);
+
+    for (ReduceWork work : List.of(main, lone)) {
+      Assert.assertFalse(work.getName(), work.isAutoReduceParallelism());
+      Assert.assertEquals(work.getName(), FLOOR, work.getNumReduceTasks().intValue());
+    }
+  }
+
   private static HiveConf conf() {
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.LLAP_EXECUTION_MODE, "all");
@@ -89,6 +107,16 @@ public class TestLlapDecider {
     work.setMinReduceTasks(13);
     work.setMaxReduceTasks(maxReduceTasks);
     work.setNumReduceTasks(maxReduceTasks);
+    return work;
+  }
+
+  /** Evenly distributed on 2 tasks, without auto-reduce. */
+  private static ReduceWork uniformWork(String name) {
+    ReduceWork work = new ReduceWork(name);
+    work.setReducer(OperatorFactory.get(new CompilationOpContext(), new SelectDesc(new ArrayList<>(),
+        new ArrayList<>())));
+    work.setUniformDistribution(true);
+    work.setNumReduceTasks(2);
     return work;
   }
 

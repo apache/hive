@@ -1493,7 +1493,7 @@ public class DagUtils {
       // something is seriously wrong if this is happening
       throw new HiveException(ErrorMsg.GENERIC_ERROR.getErrorCodedMsg());
     }
-    setVertexManager(conf, vertex, workUnit, tezWork);
+    setupVertexManager(conf, vertex, workUnit, tezWork);
     VertexExecutionContext vertexExecutionContext = createVertexExecutionContext(workUnit);
     vertex.addTaskLocalFiles(localResources);
     vertex.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
@@ -1582,9 +1582,44 @@ public class DagUtils {
     return instance;
   }
 
+  private void setupAutoReducerParallelism(JobConf conf, ReduceWork reduceWork, Vertex v)
+    throws IOException {
+    Configuration pluginConf = new Configuration(false);
+    VertexManagerPluginDescriptor desc =
+        VertexManagerPluginDescriptor.create(ShuffleVertexManager.class.getName());
+    pluginConf.setBoolean(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_ENABLE_AUTO_PARALLEL, true);
+    pluginConf.setInt(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_TASK_PARALLELISM,
+        reduceWork.getMinReduceTasks());
+    pluginConf.setLong(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_DESIRED_TASK_INPUT_SIZE,
+        HiveConf.getLongVar(conf, HiveConf.ConfVars.BYTES_PER_REDUCER));
+    pluginConf.setFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION,
+        reduceWork.getMinSrcFraction());
+    pluginConf.setFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION,
+        reduceWork.getMaxSrcFraction());
+    UserPayload payload = TezUtils.createUserPayloadFromConf(pluginConf);
+    desc.setUserPayload(payload);
+    v.setVertexManagerPlugin(desc);
+  }
+
+  private void setupQuickStart(Vertex v)
+    throws IOException {
+    Configuration pluginConf = new Configuration(false);
+    VertexManagerPluginDescriptor desc =
+            VertexManagerPluginDescriptor.create(ShuffleVertexManager.class.getName());
+    pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION, 0);
+    pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION, 0);
+    UserPayload payload = TezUtils.createUserPayloadFromConf(pluginConf);
+    desc.setUserPayload(payload);
+    v.setVertexManagerPlugin(desc);
+  }
+
   /**
-   * Sets the vertex's VertexManagerPlugin. A Tez vertex has one, chosen from the work the vertex is built from and the
-   * types of its input edges:
+   * Sets up the vertex's VertexManagerPlugin. A Tez vertex has one, chosen from the work the vertex is built from and
+   * the types of its input edges:
    * <ul>
    *   <li>a cross product input: CartesianProductVertexManager;</li>
    *   <li>a CUSTOM_EDGE input: CustomPartitionVertex, which routes the buckets of a bucket map join;</li>
@@ -1593,18 +1628,15 @@ public class DagUtils {
    *   <li>a CUSTOM_SIMPLE_EDGE input of a work that does not wait for its sources: ShuffleVertexManager without
    *   slow start.</li>
    * </ul>
-   * A map-side merge join keeps the CustomPartitionVertex it is created with.
    */
   @VisibleForTesting
-  void setVertexManager(JobConf conf, Vertex vertex, BaseWork work, TezWork tezWork) throws IOException {
+  void setupVertexManager(JobConf conf, Vertex vertex, BaseWork work, TezWork tezWork) throws IOException {
     BaseWork vertexWork = work instanceof MergeJoinWork mergeJoinWork ? mergeJoinWork.getMainWork() : work;
-    if (work instanceof MergeJoinWork && vertexWork instanceof MapWork) {
-      return;
-    }
     List<String> crossProductSources = new ArrayList<>();
     TezEdgeProperty customEdge = null;
     boolean shuffleInput = false;
     boolean partitionedInput = false;
+
     for (BaseWork parent : tezWork.getParents(work)) {
       TezEdgeProperty edgeProp = tezWork.getEdgeProperty(parent, work);
       switch (edgeProp.getEdgeType()) {
@@ -1616,6 +1648,7 @@ public class DagUtils {
         }
       }
     }
+
     if (!crossProductSources.isEmpty()) {
       // parallelism shouldn't be set for cartesian product vertex
       vertex.setVertexManagerPlugin(
@@ -1628,24 +1661,9 @@ public class DagUtils {
           .setUserPayload(UserPayload.create(ByteBuffer.wrap(dob.getData()))));
     } else if (vertexWork instanceof ReduceWork reduceWork) {
       if (shuffleInput && reduceWork.isAutoReduceParallelism()) {
-        Configuration pluginConf = new Configuration(false);
-        pluginConf.setBoolean(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_ENABLE_AUTO_PARALLEL, true);
-        pluginConf.setInt(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_TASK_PARALLELISM,
-            reduceWork.getMinReduceTasks());
-        pluginConf.setLong(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_DESIRED_TASK_INPUT_SIZE,
-            HiveConf.getLongVar(conf, HiveConf.ConfVars.BYTES_PER_REDUCER));
-        pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION,
-            reduceWork.getMinSrcFraction());
-        pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION,
-            reduceWork.getMaxSrcFraction());
-        vertex.setVertexManagerPlugin(VertexManagerPluginDescriptor.create(ShuffleVertexManager.class.getName())
-            .setUserPayload(TezUtils.createUserPayloadFromConf(pluginConf)));
+        setupAutoReducerParallelism(conf, reduceWork, vertex);
       } else if (partitionedInput && !reduceWork.isSlowStart()) {
-        Configuration pluginConf = new Configuration(false);
-        pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION, 0);
-        pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION, 0);
-        vertex.setVertexManagerPlugin(VertexManagerPluginDescriptor.create(ShuffleVertexManager.class.getName())
-            .setUserPayload(TezUtils.createUserPayloadFromConf(pluginConf)));
+        setupQuickStart(vertex);
       }
     }
   }

@@ -407,11 +407,11 @@ STAGE PLANS:
                   minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: (RUNTIME) Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: (RUNTIME) Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: (RUNTIME) Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: (RUNTIME) Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap

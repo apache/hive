@@ -100,15 +100,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 165	val_165
-238	val_238
-255	val_255
 27	val_27
-278	val_278
 311	val_311
 409	val_409
 484	val_484
-86	val_86
 98	val_98
+238	val_238
+255	val_255
+278	val_278
+86	val_86
 Warning: Shuffle Join MERGEJOIN[31][tables = [src, sq_1_notin_nullcheck]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain 
 select * from src tablesample (10 rows) where concat(key,value) not in (select key from src)
@@ -270,9 +270,9 @@ POSTHOOK: query: select * from src tablesample (10 rows) where concat(key,value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-165	val_165
 238	val_238
 255	val_255
+165	val_165
 278	val_278
 27	val_27
 311	val_311

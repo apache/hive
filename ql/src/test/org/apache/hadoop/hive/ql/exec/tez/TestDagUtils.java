@@ -154,7 +154,7 @@ public class TestDagUtils {
     connect(tezWork, mergeJoin, EdgeType.SIMPLE_EDGE, EdgeType.SIMPLE_EDGE);
 
     Vertex vertex = mock(Vertex.class);
-    DagUtils.getInstance().setVertexManager(new JobConf(), vertex, mergeJoin, tezWork);
+    DagUtils.getInstance().setupVertexManager(new JobConf(), vertex, mergeJoin, tezWork);
 
     verify(vertex, never()).setVertexManagerPlugin(any());
   }
@@ -230,6 +230,38 @@ public class TestDagUtils {
     Assert.assertEquals(0, pluginConf.getFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION, -1), 0);
   }
 
+  /** A partitioned input of a work that waits for its sources keeps Tez's default slow start. */
+  @Test
+  public void testSlowStartKeepsTheDefaultVertexManager() throws Exception {
+    ReduceWork work = new ReduceWork("Reducer 2");
+    TezWork tezWork = new TezWork("q");
+    tezWork.add(work);
+    connect(tezWork, work, EdgeType.CUSTOM_SIMPLE_EDGE);
+
+    Vertex vertex = mock(Vertex.class);
+    DagUtils.getInstance().setupVertexManager(new JobConf(), vertex, work, tezWork);
+
+    verify(vertex, never()).setVertexManagerPlugin(any());
+  }
+
+  /**
+   * Only a shuffle input auto-reduces: the partitioned inputs of a dynamically partitioned hash join keep the partition
+   * count both sides were hashed into.
+   */
+  @Test
+  public void testPartitionedInputsDoNotAutoReduce() throws Exception {
+    ReduceWork work = new ReduceWork("Reducer 2");
+    work.setAutoReduceParallelism(true);
+    TezWork tezWork = new TezWork("q");
+    tezWork.add(work);
+    connect(tezWork, work, EdgeType.CUSTOM_SIMPLE_EDGE, EdgeType.CUSTOM_SIMPLE_EDGE);
+
+    Vertex vertex = mock(Vertex.class);
+    DagUtils.getInstance().setupVertexManager(new JobConf(), vertex, work, tezWork);
+
+    verify(vertex, never()).setVertexManagerPlugin(any());
+  }
+
   private static MergeJoinWork mergeJoin(TezWork tezWork, ReduceWork main) {
     MergeJoinWork mergeJoin = new MergeJoinWork();
     mergeJoin.addMergedWork(main, null, new HashMap<>());
@@ -249,7 +281,7 @@ public class TestDagUtils {
   private static VertexManagerPluginDescriptor vertexManager(JobConf conf, BaseWork work, TezWork tezWork)
       throws IOException {
     Vertex vertex = mock(Vertex.class);
-    DagUtils.getInstance().setVertexManager(conf, vertex, work, tezWork);
+    DagUtils.getInstance().setupVertexManager(conf, vertex, work, tezWork);
     ArgumentCaptor<VertexManagerPluginDescriptor> plugin = ArgumentCaptor.forClass(VertexManagerPluginDescriptor.class);
     verify(vertex).setVertexManagerPlugin(plugin.capture());
     return plugin.getValue();

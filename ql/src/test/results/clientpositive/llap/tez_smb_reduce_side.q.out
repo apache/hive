@@ -780,8 +780,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-1
 300
+1
 PREHOOK: query: drop table t2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2
@@ -983,5 +983,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-1
 200
+1
