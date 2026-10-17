@@ -108,7 +108,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_returns
                   filterExpr: (wr_returning_cdemo_sk is not null and wr_refunded_cdemo_sk is not null and wr_reason_sk is not null and wr_refunded_addr_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_188_container, bigKeyColName:wr_refunded_cdemo_sk, smallTablePos:1, keyRatio:4.669891527614227E-6
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_187_container, bigKeyColName:wr_refunded_addr_sk, smallTablePos:1, keyRatio:0.08490567287735817
                   Statistics: Num rows: 2160007345 Data size: 562637317992 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (wr_returning_cdemo_sk is not null and wr_refunded_cdemo_sk is not null and wr_reason_sk is not null and wr_refunded_addr_sk is not null) (type: boolean)

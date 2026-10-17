@@ -23,7 +23,7 @@ STAGE PLANS:
                 TableScan
                   alias: ws1
                   filterExpr: (ws_ship_addr_sk is not null and ws_web_site_sk is not null and ws_ship_date_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:ws_web_site_sk, smallTablePos:1, keyRatio:2.9924592936258674E-4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:ws_ship_addr_sk, smallTablePos:1, keyRatio:0.018867924528301886
                   Statistics: Num rows: 21600036511 Data size: 5701632353848 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ws_ship_addr_sk is not null and ws_web_site_sk is not null and ws_ship_date_sk is not null) (type: boolean)
