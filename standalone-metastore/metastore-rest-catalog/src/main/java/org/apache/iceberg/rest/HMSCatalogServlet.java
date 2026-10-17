@@ -42,7 +42,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.12.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java">RESTCatalogServlet.java</a>
+ * Original @ <a
+ * href="https://github.com/apache/iceberg/blob/apache-iceberg-1.12.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java">
+ * RESTCatalogServlet.java</a>
  * The RESTCatalogServlet provides a servlet implementation used in combination with a
  * RESTCatalogAdaptor to proxy the REST Spec to any Catalog implementation.
  */
@@ -70,49 +72,38 @@ public class HMSCatalogServlet extends HttpServlet {
   }
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    execute(ServletRequestContext.from(request), response);
-  }
-
-  @Override
-  protected void doHead(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    execute(ServletRequestContext.from(request), response);
-  }
-
-  @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    execute(ServletRequestContext.from(request), response);
-  }
-
-  @Override
-  protected void doDelete(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    execute(ServletRequestContext.from(request), response);
-  }
-
-  @Override
   protected void service(HttpServletRequest request, HttpServletResponse response) {
+    executeInternal(request, response);
+  }
+
+  private void executeInternal(HttpServletRequest request, HttpServletResponse response) {
     try {
       ServletRequestContext context = ServletRequestContext.from(request);
       execute(context, response);
-    } catch (RuntimeException | IOException e) {
+    } catch (RESTException e) {
+      // A RESTException is thrown by HMSCatalogAdapter.execute() after the error handler has
+      // already written the correct HTTP status and body to the response (e.g. 404, 403).
+      // It is not an unexpected server failure, so log at DEBUG to avoid flooding the console.
+      LOG.debug("REST request resulted in a client error (already handled): {}", e.getMessage());
+    } catch (Exception e) {
       LOG.error("Error processing REST request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
   }
 
-  protected void execute(ServletRequestContext context, HttpServletResponse response)
-      throws IOException {
+  protected void execute(ServletRequestContext context, HttpServletResponse response) {
     response.setStatus(HttpServletResponse.SC_OK);
     responseHeaders.forEach(response::setHeader);
 
     final Optional<ErrorResponse> error = context.error();
     if (error.isPresent()) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      RESTObjectMapper.mapper().writeValue(response.getWriter(), error.get());
+      try {
+        RESTObjectMapper.mapper().writeValue(response.getWriter(), error.get());
+      } catch (IOException e) {
+        LOG.error("Error writing bad request error response", e);
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      }
       return;
     }
 
@@ -158,7 +149,7 @@ public class HMSCatalogServlet extends HttpServlet {
         || route == Route.DROP_VIEW
         || route == Route.RENAME_TABLE
         || route == Route.RENAME_VIEW
-        // TODO: Enable once server-side scan planning (Route.CANCEL_PLAN_TABLE_SCAN) is implemented
+        // Route.CANCEL_PLAN_TABLE_SCAN will be enabled once server-side scan planning is implemented
         // || route == Route.CANCEL_PLAN_TABLE_SCAN
         || route == Route.REPORT_METRICS
         || route == Route.COMMIT_TRANSACTION;
@@ -176,7 +167,6 @@ public class HMSCatalogServlet extends HttpServlet {
    */
   public static class ServletRequestContext {
     private HTTPMethod method;
-    private Route route;
     private String path;
     private Set<AccessDelegationMode> accessDelegationModes;
     private Map<String, String> headers = Map.of();
@@ -191,14 +181,12 @@ public class HMSCatalogServlet extends HttpServlet {
 
     private ServletRequestContext(
         HTTPMethod method,
-        Route route,
         String path,
         Set<AccessDelegationMode> accessDelegationModes,
         Map<String, String> headers,
         Map<String, String> queryParams,
         Object body) {
       this.method = method;
-      this.route = route;
       this.path = path;
       this.accessDelegationModes = accessDelegationModes;
       this.headers = headers;
@@ -272,15 +260,11 @@ public class HMSCatalogServlet extends HttpServlet {
               .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()[0]));
 
       return new ServletRequestContext(
-          method, route, path, accessDelegationModes, headers, queryParams, requestBody);
+          method, path, accessDelegationModes, headers, queryParams, requestBody);
     }
 
     public HTTPMethod method() {
       return method;
-    }
-
-    public Route route() {
-      return route;
     }
 
     /**
