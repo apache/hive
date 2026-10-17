@@ -97,7 +97,7 @@ public class GetValidWriteIdsFunction implements TransactionalFunction<GetValidW
   }
   
   private GetOpenTxnsResponse getOpenTxns(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
-    return jdbcResource.execute(new GetOpenTxnsListHandler(false, openTxnTimeOutMillis))
+    return jdbcResource.execute(new GetOpenTxnsListHandler(jdbcResource.getConf(), false, openTxnTimeOutMillis))
         .toOpenTxnsResponse(Collections.singletonList(TxnType.READ_ONLY));
   }
 
