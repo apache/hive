@@ -180,6 +180,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       }
       sqlGenerator.append(
           StringUtils.join(addRowLineageValuesForAppendWhenNotMatchedClause(isRowLineageSupported, values), ","));
+
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
       sqlGenerator.append("\n   WHERE ");
       
@@ -214,6 +215,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       addValuesForRowLineageForCopyOnMerge(isRowLineageSupported, values,
           "NULL AS " + HiveUtils.unparseIdentifier(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName()), conf);
       sqlGenerator.append(columnRefsFunc.apply(StringUtils.join(values, ",")));
+
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
 
       addWhereClauseOfUpdate(
@@ -243,6 +245,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
         sqlGenerator.append(hintStr);
       }
       sqlGenerator.append(StringUtils.join(deleteValues, ","));
+
       sqlGenerator.append("\nFROM " + sourceName);
       sqlGenerator.indent().append("WHERE ");
 
@@ -253,6 +256,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       }
       String whereClauseStr = columnRefsFunc.apply(whereClause.toString());
       String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
+      cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, whereClauseStr, false,
+          isRowLineageSupported, TARGET_PREFIX);
 
       if (isNotBlank(onClausePredicate)) {
         whereClause.append(" OR ").append(onClausePredicate);
@@ -264,12 +269,11 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\n").indent();
       // Add the file path filter that matches the delete condition.
       sqlGenerator.append("AND ").append(filePathCol);
-      sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from t )");
+      sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from ")
+          .append(cowWithClauseBuilder.getMarkerCteName()).append(" )");
       sqlGenerator.append("\nunion all");
-      sqlGenerator.append("\nselect * from t");
+      sqlGenerator.append("\nselect * from ").append(cowWithClauseBuilder.getMarkerCteName());
 
-      cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, whereClauseStr, false,
-          isRowLineageSupported, TARGET_PREFIX);
     }
   }
 }

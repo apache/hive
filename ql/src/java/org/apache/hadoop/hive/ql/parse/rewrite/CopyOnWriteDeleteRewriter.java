@@ -83,9 +83,10 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
     sqlGenerator.append("\n");
     // Add the file path filter that matches the delete condition.
     sqlGenerator.append("AND ").append(filePathCol);
-    sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from t )");
+    sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from ")
+        .append(cowWithClauseBuilder.getMarkerCteName()).append(" )");
     sqlGenerator.append("\nunion all");
-    sqlGenerator.append("\nselect * from t");
+    sqlGenerator.append("\nselect * from ").append(cowWithClauseBuilder.getMarkerCteName());
 
     ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;
