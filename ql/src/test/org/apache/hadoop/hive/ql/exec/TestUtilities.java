@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.apache.hadoop.hive.ql.exec.Utilities.getFileExtension;
@@ -901,5 +902,48 @@ public class TestUtilities {
       resultPathes.add(path.toString());
     }
     return resultPathes;
+  }
+
+  @Test
+  public void testUnquoteJdbcIdentifierNullAndShortInputsUnchanged() {
+    assertNull(Utilities.unquoteJdbcIdentifier(null));
+    assertEquals("", Utilities.unquoteJdbcIdentifier(""));
+    // A single character cannot be a matched quote pair.
+    assertEquals("\"", Utilities.unquoteJdbcIdentifier("\""));
+  }
+
+  @Test
+  public void testUnquoteJdbcIdentifierUnquotedInputUnchanged() {
+    // Unquoted identifiers keep the current (case-insensitive) behaviour.
+    assertEquals("Country", Utilities.unquoteJdbcIdentifier("Country"));
+    assertEquals("country", Utilities.unquoteJdbcIdentifier("country"));
+    assertEquals("COUNTRY", Utilities.unquoteJdbcIdentifier("COUNTRY"));
+  }
+
+  @Test
+  public void testUnquoteJdbcIdentifierStripsSupportedQuotePairs() {
+    // ANSI / Oracle / Postgres double quotes.
+    assertEquals("Country", Utilities.unquoteJdbcIdentifier("\"Country\""));
+    // MySQL / MariaDB back-ticks.
+    assertEquals("Country", Utilities.unquoteJdbcIdentifier("`Country`"));
+    // SQL Server brackets.
+    assertEquals("Country", Utilities.unquoteJdbcIdentifier("[Country]"));
+    // Schema-style identifiers with mixed case are preserved after unquoting.
+    assertEquals("WorldData", Utilities.unquoteJdbcIdentifier("\"WorldData\""));
+  }
+
+  @Test
+  public void testUnquoteJdbcIdentifierUnescapesDoubledQuotes() {
+    assertEquals("a\"b", Utilities.unquoteJdbcIdentifier("\"a\"\"b\""));
+    assertEquals("a`b", Utilities.unquoteJdbcIdentifier("`a``b`"));
+    assertEquals("a]b", Utilities.unquoteJdbcIdentifier("[a]]b]"));
+  }
+
+  @Test
+  public void testUnquoteJdbcIdentifierUnbalancedQuotesUnchanged() {
+    assertEquals("\"Country", Utilities.unquoteJdbcIdentifier("\"Country"));
+    assertEquals("Country\"", Utilities.unquoteJdbcIdentifier("Country\""));
+    assertEquals("[Country", Utilities.unquoteJdbcIdentifier("[Country"));
+    assertEquals("\"Country`", Utilities.unquoteJdbcIdentifier("\"Country`"));
   }
 }
