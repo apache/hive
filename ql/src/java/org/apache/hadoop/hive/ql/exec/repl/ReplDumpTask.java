@@ -1728,6 +1728,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       try {
         Thread.sleep(getSleepTime());
       } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
         LOG.info("REPL DUMP thread sleep interrupted", e);
       }
       validTxnList = hiveTxnManager.getValidTxns(excludedTxns);

@@ -787,7 +787,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         try {
           LOG.info("Waiting " + retryDelaySeconds + " seconds before next connection attempt.");
           Thread.sleep(retryDelaySeconds * 1000);
-        } catch (InterruptedException ignore) {}
+        } catch (InterruptedException ignore) {
+          Thread.currentThread().interrupt();
+        }
       }
     }
 

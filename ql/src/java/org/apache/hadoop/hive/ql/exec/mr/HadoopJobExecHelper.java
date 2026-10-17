@@ -247,6 +247,7 @@ public class HadoopJobExecHelper {
       try {
         Thread.sleep(pullInterval);
       } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
       }
 
       if (initializing && rj.getJobState() == JobStatus.PREP) {
@@ -532,6 +533,7 @@ public class HadoopJobExecHelper {
     try {
       exitVal = runningJob.waitFor(); //TODO: poll periodically
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
 
     if (exitVal != 0) {
@@ -613,6 +615,7 @@ public class HadoopJobExecHelper {
             returnVal = ec;
           }
         } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
           console.printError("Timed out trying to grab more detailed job failure"
               + " information, please check jobtracker for more info");
         }

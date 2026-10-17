@@ -91,6 +91,7 @@ public class RetryingExecutor<T> {
         try {
           Thread.sleep(getSleepInterval());
         } catch (InterruptedException e1) {
+          Thread.currentThread().interrupt();
           String msg = "Couldn't run the command: " + commandName + " in " + currentRetries +
               " retry, because the following error: ";
           LOG.error(msg, e1);
