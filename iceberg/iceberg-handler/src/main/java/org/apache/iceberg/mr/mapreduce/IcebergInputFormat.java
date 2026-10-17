@@ -55,6 +55,7 @@ import org.apache.iceberg.TableScan;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.CloseableRestCatalog;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
@@ -172,17 +173,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         String catalogName = HiveTableUtil.resolveCatalogName(conf);
         try (CloseableRestCatalog catalog = CloseableRestCatalog.load(conf, catalogName)) {
           Table planningTable = catalog.loadTable(tableIdentifier);
-          HiveTableUtil.configureLoadedTable(conf, planningTable, catalogName);
+          HiveTableUtil.checkAndSetIoConfig(conf, planningTable);
           return planInputSplits(planningTable, conf, workerPool, tableIdentifier, serializedTable);
         }
       }
 
-      Table table;
-      if (serializedTable != null) {
-        table = serializedTable;
-      } else {
-        table = HiveTableUtil.resolveTableForScanPlanning(conf, tableIdentifier);
-      }
+      Table table = serializedTable != null ? serializedTable : Catalogs.loadTable(conf);
       return planInputSplits(table, conf, workerPool, tableIdentifier, null);
     } finally {
       workerPool.shutdown();
