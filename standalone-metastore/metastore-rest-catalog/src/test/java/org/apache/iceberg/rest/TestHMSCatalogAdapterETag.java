@@ -265,6 +265,24 @@ class TestHMSCatalogAdapterETag {
   }
 
   @Test
+  void testStageCreateTableDoesNotSetETagHeader() throws Exception {
+    CreateTableRequest stageCreateRequest =
+        CreateTableRequest.builder()
+            .withName("staged_table")
+            .withLocation("file:///tmp/staged_table")
+            .withSchema(new Schema(Types.NestedField.required(1, "id", Types.IntegerType.get())))
+            .stageCreate()
+            .build();
+
+    LoadTableResponse res =
+        adapter.execute(HTTPMethod.POST, TABLES_PATH, null, stageCreateRequest, response);
+
+    Assertions.assertNotNull(res);
+    Assertions.assertNull(res.metadataLocation(), "Staged table creation must have null metadata location");
+    Mockito.verify(response, Mockito.never()).setHeader(Mockito.eq("ETag"), Mockito.anyString());
+  }
+
+  @Test
   void testRegisterTableSetsETagHeader() throws Exception {
     Mockito.when(catalog.registerTable(Mockito.any(), Mockito.any(), Mockito.anyBoolean()))
         .thenReturn(table);
