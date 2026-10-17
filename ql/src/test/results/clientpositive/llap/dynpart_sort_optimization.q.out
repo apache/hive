@@ -5004,10 +5004,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
-                  filterExpr: ((i > 1) and (s like 'bob%')) (type: boolean)
+                  filterExpr: ((s like 'bob%') and (i > 1)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 105949 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((i > 1) and (s like 'bob%')) (type: boolean)
+                    predicate: ((s like 'bob%') and (i > 1)) (type: boolean)
                     Statistics: Num rows: 524 Data size: 52924 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: i (type: int), s (type: string)

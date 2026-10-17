@@ -23,7 +23,7 @@ STAGE PLANS:
                 TableScan
                   alias: cs1
                   filterExpr: (cs_ship_addr_sk is not null and cs_ship_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:cs_call_center_sk, smallTablePos:1, keyRatio:4.13026255875998E-4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:cs_call_center_sk, smallTablePos:1, keyRatio:4.13026255875998E-4
                   Statistics: Num rows: 43220864887 Data size: 11379157992136 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cs_ship_addr_sk is not null and cs_ship_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
@@ -111,10 +111,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cs2
-                  filterExpr: (cs_warehouse_sk is not null and cs_order_number BETWEEN DynamicValue(RS_29_cs1_cs_order_number_min) AND DynamicValue(RS_29_cs1_cs_order_number_max) and in_bloom_filter(cs_order_number, DynamicValue(RS_29_cs1_cs_order_number_bloom_filter))) (type: boolean)
+                  filterExpr: (cs_warehouse_sk is not null and cs_order_number BETWEEN DynamicValue(RS_28_cs1_cs_order_number_min) AND DynamicValue(RS_28_cs1_cs_order_number_max) and in_bloom_filter(cs_order_number, DynamicValue(RS_28_cs1_cs_order_number_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 43220864887 Data size: 689811596216 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cs_warehouse_sk is not null and cs_order_number BETWEEN DynamicValue(RS_29_cs1_cs_order_number_min) AND DynamicValue(RS_29_cs1_cs_order_number_max) and in_bloom_filter(cs_order_number, DynamicValue(RS_29_cs1_cs_order_number_bloom_filter))) (type: boolean)
+                    predicate: (cs_warehouse_sk is not null and cs_order_number BETWEEN DynamicValue(RS_28_cs1_cs_order_number_min) AND DynamicValue(RS_28_cs1_cs_order_number_max) and in_bloom_filter(cs_order_number, DynamicValue(RS_28_cs1_cs_order_number_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 43005584639 Data size: 686375690624 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cs_order_number (type: bigint), cs_warehouse_sk (type: bigint)
@@ -139,10 +139,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cr1
-                  filterExpr: (cr_order_number BETWEEN DynamicValue(RS_35_cs1_cs_order_number_min) AND DynamicValue(RS_35_cs1_cs_order_number_max) and in_bloom_filter(cr_order_number, DynamicValue(RS_35_cs1_cs_order_number_bloom_filter))) (type: boolean)
+                  filterExpr: (cr_order_number BETWEEN DynamicValue(RS_34_cs1_cs_order_number_min) AND DynamicValue(RS_34_cs1_cs_order_number_max) and in_bloom_filter(cr_order_number, DynamicValue(RS_34_cs1_cs_order_number_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 4320980099 Data size: 34567840792 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cr_order_number BETWEEN DynamicValue(RS_35_cs1_cs_order_number_min) AND DynamicValue(RS_35_cs1_cs_order_number_max) and in_bloom_filter(cr_order_number, DynamicValue(RS_35_cs1_cs_order_number_bloom_filter))) (type: boolean)
+                    predicate: (cr_order_number BETWEEN DynamicValue(RS_34_cs1_cs_order_number_min) AND DynamicValue(RS_34_cs1_cs_order_number_max) and in_bloom_filter(cr_order_number, DynamicValue(RS_34_cs1_cs_order_number_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 4320980099 Data size: 34567840792 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cr_order_number (type: bigint)

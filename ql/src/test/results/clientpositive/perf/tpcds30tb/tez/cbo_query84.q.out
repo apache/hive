@@ -24,6 +24,6 @@ HiveProject(customer_id=[$0], customername=[$1])
                   HiveFilter(condition=[IS NOT NULL($1)])
                     HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
                 HiveProject(ib_income_band_sk=[$0])
-                  HiveFilter(condition=[AND(>=($1, 32287), <=($2, 82287))])
+                  HiveFilter(condition=[AND(<=($2, 82287), >=($1, 32287))])
                     HiveTableScan(table=[[default, income_band]], table:alias=[income_band])
 

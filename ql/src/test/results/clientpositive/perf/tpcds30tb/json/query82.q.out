@@ -356,164 +356,6 @@
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
-          "inventory"
-        ],
-        "table:alias": "inventory",
-        "inputs": [],
-        "rowCount": 1627857000,
-        "avgRowSize": 157,
-        "rowType": {
-          "fields": [
-            {
-              "type": "BIGINT",
-              "nullable": false,
-              "name": "inv_date_sk"
-            },
-            {
-              "type": "BIGINT",
-              "nullable": false,
-              "name": "inv_item_sk"
-            },
-            {
-              "type": "BIGINT",
-              "nullable": false,
-              "name": "inv_warehouse_sk"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "inv_quantity_on_hand"
-            },
-            {
-              "type": "BIGINT",
-              "nullable": true,
-              "name": "BLOCK__OFFSET__INSIDE__FILE"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 2147483647,
-              "name": "INPUT__FILE__NAME"
-            },
-            {
-              "fields": [
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "writeid"
-                },
-                {
-                  "type": "INTEGER",
-                  "nullable": true,
-                  "name": "bucketid"
-                },
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "rowid"
-                }
-              ],
-              "nullable": true,
-              "name": "ROW__ID"
-            },
-            {
-              "type": "BOOLEAN",
-              "nullable": true,
-              "name": "ROW__IS__DELETED"
-            }
-          ],
-          "nullable": false
-        },
-        "colStats": [
-          {
-            "name": "inv_date_sk",
-            "ndv": 258,
-            "minValue": 2450815,
-            "maxValue": 2452635
-          },
-          {
-            "name": "inv_item_sk",
-            "ndv": 464811,
-            "minValue": 1,
-            "maxValue": 462000
-          },
-          {
-            "name": "inv_quantity_on_hand",
-            "ndv": 987,
-            "minValue": 0,
-            "maxValue": 1000
-          },
-          {
-            "name": "inv_warehouse_sk",
-            "ndv": 27,
-            "minValue": 1,
-            "maxValue": 27
-          }
-        ]
-      },
-      {
-        "id": "3",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
-            "name": "BETWEEN",
-            "kind": "BETWEEN",
-            "syntax": "SPECIAL"
-          },
-          "operands": [
-            {
-              "literal": false,
-              "type": {
-                "type": "BOOLEAN",
-                "nullable": false
-              }
-            },
-            {
-              "input": 3,
-              "name": "$3"
-            },
-            {
-              "literal": 100,
-              "type": {
-                "type": "INTEGER",
-                "nullable": false
-              }
-            },
-            {
-              "literal": 500,
-              "type": {
-                "type": "INTEGER",
-                "nullable": false
-              }
-            }
-          ]
-        },
-        "rowCount": 406964250
-      },
-      {
-        "id": "4",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "inv_date_sk",
-          "inv_item_sk"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 1,
-            "name": "$1"
-          }
-        ],
-        "rowCount": 406964250
-      },
-      {
-        "id": "5",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
-        "table": [
-          "default",
           "item"
         ],
         "table:alias": "item",
@@ -800,7 +642,7 @@
         ]
       },
       {
-        "id": "6",
+        "id": "3",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -893,7 +735,7 @@
         "rowCount": 28875
       },
       {
-        "id": "7",
+        "id": "4",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "i_item_sk",
@@ -922,7 +764,7 @@
         "rowCount": 28875
       },
       {
-        "id": "8",
+        "id": "5",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -932,12 +774,12 @@
           },
           "operands": [
             {
-              "input": 1,
-              "name": "$1"
+              "input": 0,
+              "name": "$0"
             },
             {
-              "input": 2,
-              "name": "$2"
+              "input": 1,
+              "name": "$1"
             }
           ]
         },
@@ -945,10 +787,168 @@
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "4",
-          "7"
+          "1",
+          "4"
         ],
-        "rowCount": 1.7626639078125E12
+        "rowCount": 3.7424118577663125E14
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "inventory"
+        ],
+        "table:alias": "inventory",
+        "inputs": [],
+        "rowCount": 1627857000,
+        "avgRowSize": 157,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "inv_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "inv_item_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "inv_warehouse_sk"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "inv_quantity_on_hand"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "inv_date_sk",
+            "ndv": 258,
+            "minValue": 2450815,
+            "maxValue": 2452635
+          },
+          {
+            "name": "inv_item_sk",
+            "ndv": 464811,
+            "minValue": 1,
+            "maxValue": 462000
+          },
+          {
+            "name": "inv_quantity_on_hand",
+            "ndv": 987,
+            "minValue": 0,
+            "maxValue": 1000
+          },
+          {
+            "name": "inv_warehouse_sk",
+            "ndv": 27,
+            "minValue": 1,
+            "maxValue": 27
+          }
+        ]
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "BETWEEN",
+            "kind": "BETWEEN",
+            "syntax": "SPECIAL"
+          },
+          "operands": [
+            {
+              "literal": false,
+              "type": {
+                "type": "BOOLEAN",
+                "nullable": false
+              }
+            },
+            {
+              "input": 3,
+              "name": "$3"
+            },
+            {
+              "literal": 100,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            },
+            {
+              "literal": 500,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            }
+          ]
+        },
+        "rowCount": 406964250
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "inv_date_sk",
+          "inv_item_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 406964250
       },
       {
         "id": "9",
@@ -1383,8 +1383,8 @@
           },
           "operands": [
             {
-              "input": 6,
-              "name": "$6"
+              "input": 2,
+              "name": "$2"
             },
             {
               "input": 0,
@@ -1399,10 +1399,34 @@
           "8",
           "11"
         ],
-        "rowCount": 4828531342567324
+        "rowCount": 1.114812431184375E12
       },
       {
         "id": "13",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "inv_date_sk",
+          "inv_item_sk",
+          "d_date_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 1.114812431184375E12
+      },
+      {
+        "id": "14",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -1412,12 +1436,12 @@
           },
           "operands": [
             {
-              "input": 0,
-              "name": "$0"
+              "input": 6,
+              "name": "$6"
             },
             {
-              "input": 3,
-              "name": "$3"
+              "input": 1,
+              "name": "$1"
             }
           ]
         },
@@ -1425,24 +1449,24 @@
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "1",
-          "12"
+          "5",
+          "13"
         ],
         "rowCount": 6.258130892474544E25
       },
       {
-        "id": "14",
+        "id": "15",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
         "group": [
-          4,
-          5,
-          6
+          2,
+          3,
+          4
         ],
         "aggs": [],
         "rowCount": 6.258130892474543E24
       },
       {
-        "id": "15",
+        "id": "16",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "i_item_id",
@@ -1466,7 +1490,7 @@
         "rowCount": 6.258130892474543E24
       },
       {
-        "id": "16",
+        "id": "17",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit",
         "collation": [
           {

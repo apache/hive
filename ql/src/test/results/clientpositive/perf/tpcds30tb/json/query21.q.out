@@ -6,226 +6,6 @@
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
-          "warehouse"
-        ],
-        "table:alias": "warehouse",
-        "inputs": [],
-        "rowCount": 27,
-        "avgRowSize": 679,
-        "rowType": {
-          "fields": [
-            {
-              "type": "BIGINT",
-              "nullable": false,
-              "name": "w_warehouse_sk"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": false,
-              "precision": 2147483647,
-              "name": "w_warehouse_id"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 20,
-              "name": "w_warehouse_name"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "w_warehouse_sq_ft"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 10,
-              "name": "w_street_number"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 60,
-              "name": "w_street_name"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 15,
-              "name": "w_street_type"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 10,
-              "name": "w_suite_number"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 60,
-              "name": "w_city"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 30,
-              "name": "w_county"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 2,
-              "name": "w_state"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 10,
-              "name": "w_zip"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 20,
-              "name": "w_country"
-            },
-            {
-              "type": "DECIMAL",
-              "nullable": true,
-              "precision": 5,
-              "scale": 2,
-              "name": "w_gmt_offset"
-            },
-            {
-              "type": "BIGINT",
-              "nullable": true,
-              "name": "BLOCK__OFFSET__INSIDE__FILE"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 2147483647,
-              "name": "INPUT__FILE__NAME"
-            },
-            {
-              "fields": [
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "writeid"
-                },
-                {
-                  "type": "INTEGER",
-                  "nullable": true,
-                  "name": "bucketid"
-                },
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "rowid"
-                }
-              ],
-              "nullable": true,
-              "name": "ROW__ID"
-            },
-            {
-              "type": "BOOLEAN",
-              "nullable": true,
-              "name": "ROW__IS__DELETED"
-            }
-          ],
-          "nullable": false
-        },
-        "colStats": [
-          {
-            "name": "w_warehouse_sk",
-            "ndv": 27,
-            "minValue": 1,
-            "maxValue": 27
-          },
-          {
-            "name": "w_warehouse_name",
-            "ndv": 27
-          },
-          {
-            "name": "w_warehouse_id",
-            "ndv": 27
-          },
-          {
-            "name": "w_warehouse_sq_ft",
-            "ndv": 26,
-            "minValue": 73065,
-            "maxValue": 977787
-          },
-          {
-            "name": "w_street_number",
-            "ndv": 26
-          },
-          {
-            "name": "w_street_name",
-            "ndv": 27
-          },
-          {
-            "name": "w_street_type",
-            "ndv": 16
-          },
-          {
-            "name": "w_suite_number",
-            "ndv": 21
-          },
-          {
-            "name": "w_city",
-            "ndv": 18
-          },
-          {
-            "name": "w_county",
-            "ndv": 14
-          },
-          {
-            "name": "w_state",
-            "ndv": 12
-          },
-          {
-            "name": "w_zip",
-            "ndv": 24
-          },
-          {
-            "name": "w_country",
-            "ndv": 1
-          },
-          {
-            "name": "w_gmt_offset",
-            "ndv": 4,
-            "minValue": -8,
-            "maxValue": -5
-          }
-        ]
-      },
-      {
-        "id": "1",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "w_warehouse_sk",
-          "w_warehouse_name"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 2,
-            "name": "$2"
-          }
-        ],
-        "rowCount": 27
-      },
-      {
-        "id": "2",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
-        "table": [
-          "default",
           "inventory"
         ],
         "table:alias": "inventory",
@@ -322,7 +102,7 @@
         ]
       },
       {
-        "id": "3",
+        "id": "1",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "inv_date_sk",
@@ -351,7 +131,7 @@
         "rowCount": 1627857000
       },
       {
-        "id": "4",
+        "id": "2",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -704,7 +484,7 @@
         ]
       },
       {
-        "id": "5",
+        "id": "3",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -759,7 +539,7 @@
         "rowCount": 18262.25
       },
       {
-        "id": "6",
+        "id": "4",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "d_date_sk",
@@ -815,7 +595,7 @@
         "rowCount": 18262.25
       },
       {
-        "id": "7",
+        "id": "5",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -838,13 +618,13 @@
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "3",
-          "6"
+          "1",
+          "4"
         ],
         "rowCount": 4.4592497247375E12
       },
       {
-        "id": "8",
+        "id": "6",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
@@ -1134,7 +914,7 @@
         ]
       },
       {
-        "id": "9",
+        "id": "7",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1177,7 +957,7 @@
         "rowCount": 115500
       },
       {
-        "id": "10",
+        "id": "8",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "i_item_sk",
@@ -1196,7 +976,7 @@
         "rowCount": 115500
       },
       {
-        "id": "11",
+        "id": "9",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -1219,10 +999,230 @@
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "7",
-          "10"
+          "5",
+          "8"
         ],
         "rowCount": 77256501481077184
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "warehouse"
+        ],
+        "table:alias": "warehouse",
+        "inputs": [],
+        "rowCount": 27,
+        "avgRowSize": 679,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "w_warehouse_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "w_warehouse_id"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "w_warehouse_name"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "w_warehouse_sq_ft"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "w_street_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "w_street_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 15,
+              "name": "w_street_type"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "w_suite_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "w_city"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 30,
+              "name": "w_county"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 2,
+              "name": "w_state"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "w_zip"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "w_country"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 5,
+              "scale": 2,
+              "name": "w_gmt_offset"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "w_warehouse_sk",
+            "ndv": 27,
+            "minValue": 1,
+            "maxValue": 27
+          },
+          {
+            "name": "w_warehouse_name",
+            "ndv": 27
+          },
+          {
+            "name": "w_warehouse_id",
+            "ndv": 27
+          },
+          {
+            "name": "w_warehouse_sq_ft",
+            "ndv": 26,
+            "minValue": 73065,
+            "maxValue": 977787
+          },
+          {
+            "name": "w_street_number",
+            "ndv": 26
+          },
+          {
+            "name": "w_street_name",
+            "ndv": 27
+          },
+          {
+            "name": "w_street_type",
+            "ndv": 16
+          },
+          {
+            "name": "w_suite_number",
+            "ndv": 21
+          },
+          {
+            "name": "w_city",
+            "ndv": 18
+          },
+          {
+            "name": "w_county",
+            "ndv": 14
+          },
+          {
+            "name": "w_state",
+            "ndv": 12
+          },
+          {
+            "name": "w_zip",
+            "ndv": 24
+          },
+          {
+            "name": "w_country",
+            "ndv": 1
+          },
+          {
+            "name": "w_gmt_offset",
+            "ndv": 4,
+            "minValue": -8,
+            "maxValue": -5
+          }
+        ]
+      },
+      {
+        "id": "11",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "w_warehouse_sk",
+          "w_warehouse_name"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 27
       },
       {
         "id": "12",
@@ -1235,12 +1235,12 @@
           },
           "operands": [
             {
-              "input": 4,
-              "name": "$4"
+              "input": 2,
+              "name": "$2"
             },
             {
-              "input": 0,
-              "name": "$0"
+              "input": 9,
+              "name": "$9"
             }
           ]
         },
@@ -1248,7 +1248,7 @@
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "1",
+          "9",
           "11"
         ],
         "rowCount": 312888830998362560
@@ -1264,12 +1264,12 @@
         ],
         "exprs": [
           {
-            "input": 1,
-            "name": "$1"
-          },
-          {
             "input": 10,
             "name": "$10"
+          },
+          {
+            "input": 8,
+            "name": "$8"
           },
           {
             "op": {
@@ -1279,12 +1279,12 @@
             },
             "operands": [
               {
-                "input": 7,
-                "name": "$7"
-              },
-              {
                 "input": 5,
                 "name": "$5"
+              },
+              {
+                "input": 3,
+                "name": "$3"
               },
               {
                 "literal": 0,
@@ -1303,12 +1303,12 @@
             },
             "operands": [
               {
-                "input": 8,
-                "name": "$8"
+                "input": 6,
+                "name": "$6"
               },
               {
-                "input": 5,
-                "name": "$5"
+                "input": 3,
+                "name": "$3"
               },
               {
                 "literal": 0,
