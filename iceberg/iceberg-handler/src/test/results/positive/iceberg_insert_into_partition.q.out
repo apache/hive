@@ -926,10 +926,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 6 Data size: 2796 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      key expressions: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
+                      null sort order: zza
+                      sort order: +++
+                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 6 Data size: 2796 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string)
                     Select Operator
@@ -1045,10 +1045,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 12 Data size: 4428 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      key expressions: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
+                      null sort order: zza
+                      sort order: +++
+                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 12 Data size: 4428 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string)
                     Select Operator
@@ -1164,10 +1164,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 24 Data size: 8832 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      key expressions: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
+                      null sort order: zza
+                      sort order: +++
+                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 24 Data size: 8832 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string)
                     Select Operator
@@ -1283,10 +1283,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 48 Data size: 17664 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      key expressions: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
+                      null sort order: zza
+                      sort order: +++
+                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 48 Data size: 17664 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string)
                     Select Operator
@@ -1404,10 +1404,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 96 Data size: 35616 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      key expressions: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
+                      null sort order: zza
+                      sort order: +++
+                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 96 Data size: 35616 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string)
                     Select Operator
@@ -1525,10 +1525,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 192 Data size: 71232 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      key expressions: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
+                      null sort order: zza
+                      sort order: +++
+                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 192 Data size: 71232 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string), _col3 (type: string)
                     Select Operator

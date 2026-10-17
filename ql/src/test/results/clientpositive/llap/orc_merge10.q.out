@@ -84,10 +84,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: string)
+                      key expressions: _col2 (type: string), rand(1234567L) (type: double)
+                      null sort order: za
+                      sort order: ++
+                      Map-reduce partition columns: _col2 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string)
                     Select Operator
@@ -187,7 +187,8 @@ POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).key EXPRESSION [(src)sr
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Found 1 items
+Found 2 items
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
@@ -232,10 +233,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: string)
+                      key expressions: _col2 (type: string), rand(1234567L) (type: double)
+                      null sort order: za
+                      sort order: ++
+                      Map-reduce partition columns: _col2 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string)
                     Select Operator
@@ -425,10 +426,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: string)
+                      key expressions: _col2 (type: string), rand(1234567L) (type: double)
+                      null sort order: za
+                      sort order: ++
+                      Map-reduce partition columns: _col2 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string)
                     Select Operator
@@ -759,33 +760,54 @@ Type: struct<key:int,value:string>
 
 Stripe Statistics:
   Stripe 1:
-    Column 0: count: 242 hasNull: false
-    Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
-    Column 2: count: 242 hasNull: false bytesOnDisk: 913 min: val_0 max: val_97 sum: 1646
+    Column 0: count: 111 hasNull: false
+    Column 1: count: 111 hasNull: false bytesOnDisk: 227 min: 0 max: 495 sum: 28157
+    Column 2: count: 111 hasNull: false bytesOnDisk: 520 min: val_0 max: val_95 sum: 754
+  Stripe 2:
+    Column 0: count: 131 hasNull: false
+    Column 1: count: 131 hasNull: false bytesOnDisk: 267 min: 0 max: 497 sum: 32613
+    Column 2: count: 131 hasNull: false bytesOnDisk: 593 min: val_0 max: val_97 sum: 892
 
 File Statistics:
   Column 0: count: 242 hasNull: false
-  Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
-  Column 2: count: 242 hasNull: false bytesOnDisk: 913 min: val_0 max: val_97 sum: 1646
+  Column 1: count: 242 hasNull: false bytesOnDisk: 494 min: 0 max: 497 sum: 60770
+  Column 2: count: 242 hasNull: false bytesOnDisk: 1113 min: val_0 max: val_97 sum: 1646
 
 Stripes:
-  Stripe: offset: 3 data: 1402 rows: 242 tail: 73 index: 77
-    Stream: column 0 section ROW_INDEX start: 3 length 12
-    Stream: column 1 section ROW_INDEX start: 15 length 28
-    Stream: column 2 section ROW_INDEX start: 43 length 37
-    Stream: column 1 section DATA start: 80 length 489
-    Stream: column 2 section DATA start: 569 length 247
-    Stream: column 2 section LENGTH start: 816 length 71
-    Stream: column 2 section DICTIONARY_DATA start: 887 length 595
+  Stripe: offset: 3 data: 747 rows: 111 tail: 73 index: 74
+    Stream: column 0 section ROW_INDEX start: 3 length 11
+    Stream: column 1 section ROW_INDEX start: 14 length 27
+    Stream: column 2 section ROW_INDEX start: 41 length 36
+    Stream: column 1 section DATA start: 77 length 227
+    Stream: column 2 section DATA start: 304 length 116
+    Stream: column 2 section LENGTH start: 420 length 40
+    Stream: column 2 section DICTIONARY_DATA start: 460 length 364
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
-    Encoding column 2: DICTIONARY_V2[153]
+    Encoding column 2: DICTIONARY_V2[85]
     Row group indices for column 0:
-      Entry 0: count: 242 hasNull: false positions: 
+      Entry 0: count: 111 hasNull: false positions: 
     Row group indices for column 1:
-      Entry 0: count: 242 hasNull: false min: 0 max: 497 sum: 60770 positions: 0,0,0
+      Entry 0: count: 111 hasNull: false min: 0 max: 495 sum: 28157 positions: 0,0,0
     Row group indices for column 2:
-      Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
+      Entry 0: count: 111 hasNull: false min: val_0 max: val_95 sum: 754 positions: 0,0,0
+  Stripe: offset: 897 data: 860 rows: 131 tail: 72 index: 77
+    Stream: column 0 section ROW_INDEX start: 897 length 12
+    Stream: column 1 section ROW_INDEX start: 909 length 28
+    Stream: column 2 section ROW_INDEX start: 937 length 37
+    Stream: column 1 section DATA start: 974 length 267
+    Stream: column 2 section DATA start: 1241 length 136
+    Stream: column 2 section LENGTH start: 1377 length 57
+    Stream: column 2 section DICTIONARY_DATA start: 1434 length 400
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DICTIONARY_V2[98]
+    Row group indices for column 0:
+      Entry 0: count: 131 hasNull: false positions: 
+    Row group indices for column 1:
+      Entry 0: count: 131 hasNull: false min: 0 max: 497 sum: 32613 positions: 0,0,0
+    Row group indices for column 2:
+      Entry 0: count: 131 hasNull: false min: val_0 max: val_97 sum: 892 positions: 0,0,0
 
 File length: #Masked# bytes
 File raw data size: #Masked#
@@ -794,7 +816,7 @@ Padding ratio: 0%
 ________________________________________________________________________________________________________________________
 
 -- END ORC FILE DUMP --
-2	val_2	1	0
+105	val_105	1	0
 PREHOOK: query: select * from orcfile_merge1c where ds='1' and part='0' limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1c
@@ -811,33 +833,54 @@ Type: struct<key:int,value:string>
 
 Stripe Statistics:
   Stripe 1:
-    Column 0: count: 242 hasNull: false
-    Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
-    Column 2: count: 242 hasNull: false bytesOnDisk: 913 min: val_0 max: val_97 sum: 1646
+    Column 0: count: 111 hasNull: false
+    Column 1: count: 111 hasNull: false bytesOnDisk: 227 min: 0 max: 495 sum: 28157
+    Column 2: count: 111 hasNull: false bytesOnDisk: 520 min: val_0 max: val_95 sum: 754
+  Stripe 2:
+    Column 0: count: 131 hasNull: false
+    Column 1: count: 131 hasNull: false bytesOnDisk: 267 min: 0 max: 497 sum: 32613
+    Column 2: count: 131 hasNull: false bytesOnDisk: 593 min: val_0 max: val_97 sum: 892
 
 File Statistics:
   Column 0: count: 242 hasNull: false
-  Column 1: count: 242 hasNull: false bytesOnDisk: 489 min: 0 max: 497 sum: 60770
-  Column 2: count: 242 hasNull: false bytesOnDisk: 913 min: val_0 max: val_97 sum: 1646
+  Column 1: count: 242 hasNull: false bytesOnDisk: 494 min: 0 max: 497 sum: 60770
+  Column 2: count: 242 hasNull: false bytesOnDisk: 1113 min: val_0 max: val_97 sum: 1646
 
 Stripes:
-  Stripe: offset: 3 data: 1402 rows: 242 tail: 73 index: 77
-    Stream: column 0 section ROW_INDEX start: 3 length 12
-    Stream: column 1 section ROW_INDEX start: 15 length 28
-    Stream: column 2 section ROW_INDEX start: 43 length 37
-    Stream: column 1 section DATA start: 80 length 489
-    Stream: column 2 section DATA start: 569 length 247
-    Stream: column 2 section LENGTH start: 816 length 71
-    Stream: column 2 section DICTIONARY_DATA start: 887 length 595
+  Stripe: offset: 3 data: 747 rows: 111 tail: 73 index: 74
+    Stream: column 0 section ROW_INDEX start: 3 length 11
+    Stream: column 1 section ROW_INDEX start: 14 length 27
+    Stream: column 2 section ROW_INDEX start: 41 length 36
+    Stream: column 1 section DATA start: 77 length 227
+    Stream: column 2 section DATA start: 304 length 116
+    Stream: column 2 section LENGTH start: 420 length 40
+    Stream: column 2 section DICTIONARY_DATA start: 460 length 364
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
-    Encoding column 2: DICTIONARY_V2[153]
+    Encoding column 2: DICTIONARY_V2[85]
     Row group indices for column 0:
-      Entry 0: count: 242 hasNull: false positions: 
+      Entry 0: count: 111 hasNull: false positions: 
     Row group indices for column 1:
-      Entry 0: count: 242 hasNull: false min: 0 max: 497 sum: 60770 positions: 0,0,0
+      Entry 0: count: 111 hasNull: false min: 0 max: 495 sum: 28157 positions: 0,0,0
     Row group indices for column 2:
-      Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
+      Entry 0: count: 111 hasNull: false min: val_0 max: val_95 sum: 754 positions: 0,0,0
+  Stripe: offset: 897 data: 860 rows: 131 tail: 72 index: 77
+    Stream: column 0 section ROW_INDEX start: 897 length 12
+    Stream: column 1 section ROW_INDEX start: 909 length 28
+    Stream: column 2 section ROW_INDEX start: 937 length 37
+    Stream: column 1 section DATA start: 974 length 267
+    Stream: column 2 section DATA start: 1241 length 136
+    Stream: column 2 section LENGTH start: 1377 length 57
+    Stream: column 2 section DICTIONARY_DATA start: 1434 length 400
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DICTIONARY_V2[98]
+    Row group indices for column 0:
+      Entry 0: count: 131 hasNull: false positions: 
+    Row group indices for column 1:
+      Entry 0: count: 131 hasNull: false min: 0 max: 497 sum: 32613 positions: 0,0,0
+    Row group indices for column 2:
+      Entry 0: count: 131 hasNull: false min: val_0 max: val_97 sum: 892 positions: 0,0,0
 
 File length: #Masked# bytes
 File raw data size: #Masked#
@@ -846,7 +889,7 @@ Padding ratio: 0%
 ________________________________________________________________________________________________________________________
 
 -- END ORC FILE DUMP --
-2	val_2	1	0
+105	val_105	1	0
 PREHOOK: query: DROP TABLE orcfile_merge1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge1

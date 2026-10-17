@@ -2929,10 +2929,10 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: iceberg_bucket(_col0, 16) (type: int)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: iceberg_bucket(_col0, 16) (type: int)
+                          key expressions: iceberg_bucket(_col0, 16) (type: int), rand(1234567L) (type: double)
+                          null sort order: za
+                          sort order: ++
+                          Map-reduce partition columns: iceberg_bucket(_col0, 16) (type: int), rand(1234567L) (type: double)
                           Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: decimal(38,0))
                         Select Operator

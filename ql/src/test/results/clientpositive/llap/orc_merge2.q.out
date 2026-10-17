@@ -54,10 +54,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 500 Data size: 231500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: zz
-                      sort order: ++
-                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
+                      key expressions: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
+                      null sort order: zza
+                      sort order: +++
+                      Map-reduce partition columns: _col2 (type: string), _col3 (type: string), rand(1234567L) (type: double)
                       Statistics: Num rows: 500 Data size: 231500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: string)
                     Select Operator
@@ -214,7 +214,8 @@ POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=1).key EXPRESS
 POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=7).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=7).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Found 1 items
+Found 2 items
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
