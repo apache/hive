@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.rest;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import java.io.Closeable;
@@ -600,17 +601,20 @@ public class HMSCatalogAdapter implements Closeable {
     }
   }
 
-  private static Namespace namespaceFromPathVars(Map<String, String> pathVars) {
-    return RESTUtil.decodeNamespace(pathVars.get("namespace"), "%1F");
+  @VisibleForTesting
+  static Namespace namespaceFromPathVars(Map<String, String> pathVars) {
+    return RESTUtil.decodeNamespaceAsPathSegment(pathVars.get("namespace"), "%1F");
   }
 
-  private static TableIdentifier identFromPathVars(Map<String, String> pathVars) {
+  @VisibleForTesting
+  static TableIdentifier identFromPathVars(Map<String, String> pathVars) {
     return TableIdentifier.of(
-        namespaceFromPathVars(pathVars), RESTUtil.decodeString(pathVars.get("table")));
+        namespaceFromPathVars(pathVars), RESTUtil.decodePathSegment(pathVars.get("table")));
   }
 
-  private static TableIdentifier viewIdentFromPathVars(Map<String, String> pathVars) {
+  @VisibleForTesting
+  static TableIdentifier viewIdentFromPathVars(Map<String, String> pathVars) {
     return TableIdentifier.of(
-        namespaceFromPathVars(pathVars), RESTUtil.decodeString(pathVars.get("view")));
+        namespaceFromPathVars(pathVars), RESTUtil.decodePathSegment(pathVars.get("view")));
   }
 }
