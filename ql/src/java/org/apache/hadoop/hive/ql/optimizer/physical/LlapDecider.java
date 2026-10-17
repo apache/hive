@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -166,6 +167,11 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     private void adjustAutoParallelism(BaseWork work) {
+      if (work instanceof MergeJoinWork mergeJoinWork) {
+        // the vertex and its vertex manager are built from the main work (DagUtils)
+        adjustAutoParallelism(mergeJoinWork.getMainWork());
+        return;
+      }
       if (minReducersPerExec <= 0 || !(work instanceof ReduceWork)) return;
       ReduceWork reduceWork = (ReduceWork)work;
       if (reduceWork.isAutoReduceParallelism() == false && reduceWork.isUniformDistribution() == false) {
@@ -190,14 +196,9 @@ public class LlapDecider implements PhysicalPlanResolver {
         int newMin = Math.min(maxReducers, Math.max(reduceWork.getMinReduceTasks(), targetCount));
         if (newMin < reduceWork.getMaxReduceTasks()) {
           reduceWork.setMinReduceTasks(newMin);
-          reduceWork.getEdgePropRef().setAutoReduce(conf, true, newMin,
-              reduceWork.getMaxReduceTasks(), conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER),
-              reduceWork.getMinSrcFraction(), reduceWork.getMaxSrcFraction());
         } else {
           reduceWork.setAutoReduceParallelism(false);
           reduceWork.setNumReduceTasks(newMin);
-          // TODO: is this correct? based on the same logic as HIVE-14200
-          reduceWork.getEdgePropRef().setAutoReduce(null, false, 0, 0, 0, 0.0f, 0.0f);
         }
       } else {
         // UNIFORM || AUTOPARALLEL (maxed out)

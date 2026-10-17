@@ -24,6 +24,7 @@ select * from `v1_n9`
 limit 20;
 
 select * from `v1_n9`
+order by key, value
 limit 20;
 
 create view `masking_test_view` as select key from `v0`;

@@ -33,14 +33,14 @@ POSTHOOK: Input: default@src_temp
 90	val_90
 90	val_90
 90	val_90
+98	val_98
+98	val_98
 92	val_92
 95	val_95
 95	val_95
 96	val_96
 97	val_97
 97	val_97
-98	val_98
-98	val_98
 PREHOOK: query: select *
 from src_temp
 where src_temp.key in (select key from src_temp s1 where s1.key > '9')
@@ -56,14 +56,14 @@ POSTHOOK: Input: default@src_temp
 90	val_90
 90	val_90
 90	val_90
+97	val_97
+97	val_97
+98	val_98
+98	val_98
 92	val_92
 95	val_95
 95	val_95
 96	val_96
-97	val_97
-97	val_97
-98	val_98
-98	val_98
 PREHOOK: query: select b.key, min(b.value)
 from src_temp b
 group by b.key
@@ -85,11 +85,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_temp
 #### A masked pattern was here ####
 90	val_90
+98	val_98
 92	val_92
 95	val_95
 96	val_96
 97	val_97
-98	val_98
 PREHOOK: query: drop table src_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_temp

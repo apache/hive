@@ -486,7 +486,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	bucketing_version   	2                   
-	numFiles            	1                   
+	numFiles            	2                   
 	numRows             	13                  
 	rawDataSize         	41                  
 	totalSize           	#Masked#
