@@ -21,12 +21,12 @@ package org.apache.hadoop.hive.metastore.txn.jdbc.functions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
@@ -36,6 +36,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -51,7 +52,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
 
   @SuppressWarnings("squid:S3599")
   //language=SQL
-  private static final Map<BiFunction<HiveObjectType, Boolean, Boolean>, String> DELETE_COMMANDS =
+  private static final Map<BiFunction<HiveObjectType, Boolean, Boolean>, String> DELETE_TXN_COMMANDS =
       new LinkedHashMap<BiFunction<HiveObjectType, Boolean, Boolean>, String>() {{
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
             "DELETE FROM \"TXN_COMPONENTS\" WHERE " +
@@ -63,18 +64,6 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
                 "(\"CTC_DATABASE\" = :dbName) AND " +
                 "(\"CTC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
                 "(\"CTC_PARTITION\" = :partName OR :partName IS NULL)");
-        put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
-            "DELETE FROM \"COMPACTION_QUEUE\" WHERE " +
-                "\"CQ_DATABASE\" = :dbName AND " +
-                "(\"CQ_TABLE\" = :tableName OR :tableName IS NULL) AND " +
-                "(\"CQ_PARTITION\" = :partName OR :partName IS NULL) AND " +
-                "(\"CQ_TXN_ID\" != :txnId OR :txnId IS NULL) AND " +
-                "(\"CQ_TYPE\" != :cType)");
-        put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
-            "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE " +
-                "\"CC_DATABASE\" = :dbName AND " +
-                "(\"CC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
-                "(\"CC_PARTITION\" = :partName OR :partName IS NULL)");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HiveObjectType.DATABASE.equals(hiveObjectType) ||
                 (HiveObjectType.TABLE.equals(hiveObjectType) && !keepTxnToWriteIdMetaData),
             "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE " +
@@ -85,17 +74,36 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
             "DELETE FROM \"NEXT_WRITE_ID\" WHERE " +
                 "\"NWI_DATABASE\" = :dbName AND " +
                 "(\"NWI_TABLE\" = :tableName OR :tableName IS NULL)");
-        put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
-            "DELETE FROM \"COMPACTION_METRICS_CACHE\" WHERE " +
-                "\"CMC_DATABASE\" = :dbName AND " +
-                "(\"CMC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
-                "(\"CMC_PARTITION\" = :partName OR :partName IS NULL)");
       }};
+
+  //language=SQL
+  private static final String DELETE_COMPACTION_QUEUE_ALL =
+      "DELETE FROM \"COMPACTION_QUEUE\" WHERE " +
+          "\"CQ_DATABASE\" = :dbName AND " +
+          "(\"CQ_TABLE\" = :tableName OR :tableName IS NULL) AND " +
+          "(\"CQ_PARTITION\" = :partName OR :partName IS NULL)";
+
+  //language=SQL
+  private static final String DELETE_COMPACTION_QUEUE_ACID = DELETE_COMPACTION_QUEUE_ALL +
+      " AND (\"CQ_TXN_ID\" != :txnId OR :txnId IS NULL) AND " +
+      "(\"CQ_TYPE\" != :cType)";
+
+  //language=SQL
+  private static final List<String> DELETE_COMPACT_COMMANDS = Arrays.asList(
+      "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE " +
+          "\"CC_DATABASE\" = :dbName AND " +
+          "(\"CC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
+          "(\"CC_PARTITION\" = :partName OR :partName IS NULL)",
+      "DELETE FROM \"COMPACTION_METRICS_CACHE\" WHERE " +
+          "\"CMC_DATABASE\" = :dbName AND " +
+          "(\"CMC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
+          "(\"CMC_PARTITION\" = :partName OR :partName IS NULL)");
 
   private final HiveObjectType type;
   private final Database db;
   private final Table table;
-  private final Iterator<Partition> partitionIterator;
+  private final Iterator<Partition> partitionIterator; // cleanupRecords path
+  private final Iterator<String> partNamesIterator; // cleanupCompactionRecords path
   private final String defaultCatalog;
   private final boolean keepTxnToWriteIdMetaData;
   private final Long txnId;
@@ -106,15 +114,29 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
     this.db = db;
     this.table = table;
     this.partitionIterator = partitionIterator;
+    this.partNamesIterator = null;
     this.defaultCatalog = defaultCatalog;
     this.keepTxnToWriteIdMetaData = keepTxnToWriteIdMetaData;
     this.txnId = txnId;
+  }
+
+  /** Iceberg/non-transactional partition compaction cleanup only. */
+  public CleanupRecordsFunction(Table table, List<String> partitionNames, String defaultCatalog) {
+    this.type = HiveObjectType.PARTITION;
+    this.db = null;
+    this.table = table;
+    this.partitionIterator = null;
+    this.partNamesIterator = partitionNames.iterator();
+    this.defaultCatalog = defaultCatalog;
+    this.keepTxnToWriteIdMetaData = false;
+    this.txnId = null;
   }
 
   @Override
   public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     // cleanup should be done only for objects belonging to default catalog
     List<MapSqlParameterSource> paramSources = new ArrayList<>();
+    boolean deleteTxnCommands = false;
     switch (type) {
       case DATABASE: {
         if (!defaultCatalog.equals(db.getCatalogName())) {
@@ -122,6 +144,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
               + "other than default catalog: " + db.getCatalogName());
           return null;
         }
+        deleteTxnCommands = true;
         paramSources.add(new MapSqlParameterSource()
             .addValue("dbName", db.getName().toLowerCase())
             .addValue("tableName", null, Types.VARCHAR)
@@ -136,6 +159,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
               table.getTableName(), table.getCatName());
           return null;
         }
+        deleteTxnCommands = TxnUtils.isTransactionalTable(table);
         paramSources.add(new MapSqlParameterSource()
             .addValue("dbName", table.getDbName().toLowerCase())
             .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
@@ -150,27 +174,43 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
               table.getCatName());
           return null;
         }
-        List<FieldSchema> partCols = table.getPartitionKeys();  // partition columns
-        List<String> partVals;                                  // partition values
-        while (partitionIterator.hasNext()) {
-          Partition partition = partitionIterator.next();
-          partVals = partition.getValues();
-          paramSources.add(new MapSqlParameterSource()
-              .addValue("dbName", table.getDbName().toLowerCase())
-              .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
-              .addValue("partName", Warehouse.makePartName(partCols, partVals), Types.VARCHAR)
-              .addValue("txnId", null, Types.BIGINT)
-              .addValue("cType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
+        if (partitionIterator != null) {
+          deleteTxnCommands = true;
+          while (partitionIterator.hasNext()) {
+            Partition partition = partitionIterator.next();
+            paramSources.add(new MapSqlParameterSource()
+                .addValue("dbName", table.getDbName().toLowerCase())
+                .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
+                .addValue("partName",
+                    Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()), Types.VARCHAR)
+                .addValue("txnId", null, Types.BIGINT)
+                .addValue("cType", Character.toString(TxnStore.DEFERRED_CLEANUP), Types.CHAR));
+          }
+        } else if (partNamesIterator != null) {
+          while (partNamesIterator.hasNext()) {
+            paramSources.add(new MapSqlParameterSource()
+                .addValue("dbName", table.getDbName().toLowerCase())
+                .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
+                .addValue("partName", partNamesIterator.next(), Types.VARCHAR));
+          }
         }
       }
     }
 
     try {
       for (MapSqlParameterSource parameterSource : paramSources) {
-        for (Map.Entry<BiFunction<HiveObjectType, Boolean, Boolean>, String> item : DELETE_COMMANDS.entrySet()) {
-          if (item.getKey().apply(type, keepTxnToWriteIdMetaData)) {
-            jdbcResource.getJdbcTemplate().update(item.getValue(), parameterSource);
+        String deleteCompactionQueue = DELETE_COMPACTION_QUEUE_ALL;
+        if (deleteTxnCommands) {
+          for (Map.Entry<BiFunction<HiveObjectType, Boolean, Boolean>, String> item : DELETE_TXN_COMMANDS.entrySet()) {
+            if (item.getKey().apply(type, keepTxnToWriteIdMetaData)) {
+              jdbcResource.getJdbcTemplate().update(item.getValue(), parameterSource);
+            }
           }
+          deleteCompactionQueue = DELETE_COMPACTION_QUEUE_ACID;
+        }
+        jdbcResource.getJdbcTemplate().update(deleteCompactionQueue, parameterSource);
+        for (String deleteCommand : DELETE_COMPACT_COMMANDS) {
+          jdbcResource.getJdbcTemplate().update(deleteCommand, parameterSource);
         }
       }
     } catch (DataAccessException e) {
