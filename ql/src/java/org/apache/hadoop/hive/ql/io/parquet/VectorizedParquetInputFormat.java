@@ -46,6 +46,7 @@ public class VectorizedParquetInputFormat
   private DataCache dataCache = null;
   private Configuration cacheConf = null;
   private ParquetMetadata metadata;
+  private boolean[] includedRowGroups;
   private Map<String, Object> initialDefaults;
 
   public VectorizedParquetInputFormat() {
@@ -57,11 +58,22 @@ public class VectorizedParquetInputFormat
     JobConf jobConf,
     Reporter reporter) throws IOException {
     return new VectorizedParquetRecordReader(
-        inputSplit, jobConf, metadataCache, dataCache, cacheConf, metadata, initialDefaults);
+        inputSplit, jobConf, metadataCache, dataCache, cacheConf, metadata, initialDefaults, includedRowGroups);
   }
 
-  public void setMetadata(ParquetMetadata metadata) throws IOException {
+  /**
+   * The footer to read the file by, and which of its row groups to read: one flag each by footer index, or
+   * null for all of them. A caller passes a subset when it has ruled row groups out with a filter Parquet
+   * cannot express. The footer stays the file's own either way, so row positions remain absolute.
+   */
+  public void setMetadata(ParquetMetadata metadata, boolean[] includedRowGroups) throws IOException {
+    if (metadata != null && includedRowGroups != null
+        && includedRowGroups.length != metadata.getBlocks().size()) {
+      throw new IOException("Got " + includedRowGroups.length + " row group flags for a footer of "
+          + metadata.getBlocks().size() + " row groups");
+    }
     this.metadata = metadata;
+    this.includedRowGroups = includedRowGroups;
   }
 
   public void seInitialColumnDefaults(Map<String, Object> initialDefaults) {
