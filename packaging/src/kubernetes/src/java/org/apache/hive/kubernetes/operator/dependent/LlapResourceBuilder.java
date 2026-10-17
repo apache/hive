@@ -43,6 +43,8 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
+import io.fabric8.kubernetes.api.model.apps.StatefulSetUpdateStrategy;
+import io.fabric8.kubernetes.api.model.apps.StatefulSetUpdateStrategyBuilder;
 import io.fabric8.kubernetes.api.model.discovery.v1.Endpoint;
 import io.fabric8.kubernetes.api.model.discovery.v1.EndpointBuilder;
 import io.fabric8.kubernetes.api.model.discovery.v1.EndpointSlice;
@@ -56,6 +58,7 @@ import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
+import org.apache.hive.kubernetes.operator.model.spec.UpdateStrategy;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
@@ -447,6 +450,7 @@ public class LlapResourceBuilder
         .endMetadata()
         .withNewSpec()
           .withReplicas(replicas)
+          .withStrategy(buildDeploymentUpdateStrategy(tezAmUpdateStrategy(spec, llap)))
           .withNewSelector()
             .withMatchLabels(selectorLabels)
           .endSelector()
@@ -455,7 +459,7 @@ public class LlapResourceBuilder
               .withLabels(allLabels)
               .addToAnnotations("kubectl.kubernetes.io/default-container",
                   ConfigUtils.COMPONENT_TEZAM)
-              .addToAnnotations("hive.apache.org/config-hash", configHash)
+              .addToAnnotations(ConfigUtils.CONFIG_HASH_ANNOTATION, configHash)
             .endMetadata()
             .withNewSpec()
               .withServiceAccountName(spec.serviceAccountName())
@@ -611,6 +615,11 @@ public class LlapResourceBuilder
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getLlapDaemonSite(spec, llap)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
+    String stsUpdateStrategy = (llap.updateStrategy() == UpdateStrategy.RECREATE) ? "OnDelete" : "RollingUpdate";
+    StatefulSetUpdateStrategy updateStrategy = new StatefulSetUpdateStrategyBuilder()
+        .withType(stsUpdateStrategy)
+        .build();
+
     StatefulSet statefulSet = new StatefulSetBuilder()
         .withNewMetadata()
           .withName(ssName)
@@ -621,6 +630,7 @@ public class LlapResourceBuilder
         .withNewSpec()
           .withReplicas(replicas)
           .withPodManagementPolicy("Parallel")
+          .withUpdateStrategy(updateStrategy)
           .withServiceName(ssName)
           .withNewSelector()
             .withMatchLabels(selectorLabels)
@@ -630,7 +640,7 @@ public class LlapResourceBuilder
               .withLabels(allLabels)
               .addToAnnotations("kubectl.kubernetes.io/default-container",
                   ConfigUtils.COMPONENT_LLAP)
-              .addToAnnotations("hive.apache.org/config-hash", configHash)
+              .addToAnnotations(ConfigUtils.CONFIG_HASH_ANNOTATION, configHash)
             .endMetadata()
             .withNewSpec()
               .withServiceAccountName(spec.serviceAccountName())
