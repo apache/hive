@@ -30,9 +30,11 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -68,7 +70,12 @@ public class ShowPartitionsOperation extends DDLOperation<ShowPartitionsDesc> {
       parts = context.getDb().getPartitionNames(tbl, desc.getLimit());
     }
 
-    parts = parts.stream().filter(name -> !DummyPartition.isVoid(name)).toList();
+    HiveStorageHandler storageHandler = tbl.getStorageHandler();
+    boolean formatForDisplay = DDLUtils.isIcebergTable(tbl) && storageHandler != null;
+    parts = parts.stream()
+        .filter(name -> !DummyPartition.isVoid(name))
+        .map(name -> formatForDisplay ? storageHandler.formatPartitionNameForDisplay(name) : name)
+        .toList();
 
     // write the results in the file
     try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {

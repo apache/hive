@@ -259,8 +259,8 @@ public class IcebergAcidUtil {
       this.partitionHash = computeHash(task.file().partition());
       this.filePath = task.file().location();
 
-      IOContextMap.get(conf).setPartitionName(
-          IcebergTableUtil.toPartitionName(task.spec(), task.file().partition()));
+      IOContextMap.get(conf).setPartitionName(IcebergTableUtil.formatPartitionNameForDisplay(
+          IcebergTableUtil.toPartitionName(task.spec(), task.file().partition())));
     }
 
     @Override

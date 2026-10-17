@@ -21,6 +21,7 @@ explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_c
 update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null;
 
 select * from iceberg_cow_partitioned;
+select * from iceberg_cow_partitioned where str_col = 'UPDATED NULLS';
 
 -- Disable vectorization
 
@@ -33,3 +34,6 @@ explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_c
 update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null;
 
 select * from iceberg_cow_partitioned;
+select * from iceberg_cow_partitioned where str_col = 'UPDATED NULLS';
+
+show partitions iceberg_cow_partitioned;
