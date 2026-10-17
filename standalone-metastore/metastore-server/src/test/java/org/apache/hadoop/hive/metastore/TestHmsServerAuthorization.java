@@ -232,6 +232,14 @@ public class TestHmsServerAuthorization {
   }
 
   @Test
+  public void testGetNumPartitionsByFilterAuthorization() throws Exception {
+    dbName1 = "db_test_get_num_partitions_by_filter";
+    creatEnv(conf);
+    expectAuthorizationFailure("get_num_partitions_by_filter",
+        () -> client.getNumPartitionsByFilter(dbName1, TAB2, "name=\"value1\""));
+  }
+
+  @Test
   public void testTruncateTableAuthorization() throws Exception {
     dbName1 = "db_test_truncate_table";
     creatEnv(conf);
