@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
@@ -98,12 +99,20 @@ import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsDataConverter;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.thrift.TException;
+
+import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartValsFromName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -491,6 +500,11 @@ public abstract class TransactionHandler extends DeprecatedHandler {
   }
   @Override
   public CompactionResponse compact2(CompactionRequest rqst) throws TException {
+    try {
+      authorizeAndPrepareCompactionRequest(rqst);
+    } catch (Exception e) {
+      rethrowException(e);
+    }
     return getTxnHandler().compact(rqst);
   }
 
@@ -505,7 +519,48 @@ public abstract class TransactionHandler extends DeprecatedHandler {
   @Override
   public boolean submit_for_cleanup(CompactionRequest rqst, long highestWriteId, long txnId)
       throws TException {
+    try {
+      authorizeAndPrepareCompactionRequest(rqst);
+    } catch (Exception e) {
+      rethrowException(e);
+    }
     return getTxnHandler().submitForCleanup(rqst, highestWriteId, txnId);
+  }
+
+  /**
+   * Authorize client-initiated compaction/cleanup requests and derive server-side run-as identity.
+   * Internal callers (e.g. {@link org.apache.hadoop.hive.metastore.AcidEventListener}) invoke
+   * {@code TxnHandler} directly and are not subject to this path.
+   */
+  private void authorizeAndPrepareCompactionRequest(CompactionRequest rqst)
+      throws TException, IOException, InterruptedException {
+    if (rqst.getDbname() == null || rqst.getTablename() == null) {
+      throw new MetaException("The DB and table name cannot be null.");
+    }
+    String[] parsedDbName = parseDbName(rqst.getDbname(), conf);
+    String catName = parsedDbName[CAT_NAME];
+    String dbName = parsedDbName[DB_NAME];
+    String tblName = rqst.getTablename();
+    rqst.setDbname(dbName);
+
+    FilterUtils.checkDbAndTableFilters(isServerFilterEnabled, filterHook, catName, dbName, tblName);
+
+    GetTableRequest getTableRequest = new GetTableRequest(dbName, tblName);
+    getTableRequest.setCatName(catName);
+    Table table = get_table_core(getTableRequest);
+    firePreEvent(new PreAlterTableEvent(table, table, this));
+
+    String location = table.getSd() == null ? null : table.getSd().getLocation();
+    if (rqst.isSetPartitionname() && rqst.getPartitionname() != null) {
+      List<String> partVals = getPartValsFromName(table, rqst.getPartitionname());
+      Partition partition = getMS().getPartition(catName, dbName, tblName, partVals);
+      location = partition.getSd() == null ? null : partition.getSd().getLocation();
+    }
+    if (location == null) {
+      throw new MetaException("Cannot determine storage location of " + dbName + "." + tblName
+          + "; compaction is not supported for this table or partition");
+    }
+    rqst.setRunas(TxnUtils.findUserToRunAs(location, table, conf));
   }
 
   @Override
