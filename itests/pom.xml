@@ -31,6 +31,7 @@
     <hive.path.to.root>..</hive.path.to.root>
     <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
     <assertj.version>3.27.3</assertj.version>
+    <awaitility.version>4.2.1</awaitility.version>
   </properties>
   <modules>
     <module>custom-serde</module>
@@ -50,6 +51,7 @@
     <module>qtest-iceberg</module>
     <module>test-docker</module>
     <module>hive-iceberg</module>
+    <module>tez-yarn-it</module>
   </modules>
   <dependencyManagement>
     <dependencies>
@@ -496,6 +498,11 @@
         <artifactId>assertj-core</artifactId>
         <version>${assertj.version}</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
