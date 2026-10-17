@@ -58,9 +58,11 @@ import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.StaticTableOperations;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableScan;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.data.TableMigrationUtil;
 import org.apache.iceberg.exceptions.NotFoundException;
@@ -69,6 +71,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mapping.NameMapping;
@@ -260,13 +263,93 @@ public class HiveTableUtil {
   }
 
   /**
+   * Returns true when HS2 marked the table's catalog for server-side scan planning and the scan can
+   * actually be planned by the REST server. Incremental append scans and metadata tables are planned
+   * locally even on a {@code RESTTable}, and intra-transaction reads must see uncommitted metadata,
+   * so these keep using the serialized table.
+   */
+  public static boolean shouldReloadForServerSideScanPlanning(Configuration conf, Table serializedTable) {
+    if (StringUtils.isNotBlank(conf.get(InputFormatConfig.TABLE_METADATA_LOCATION)) ||
+        conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1) != -1 ||
+        serializedTable instanceof SerializableTable.SerializableMetadataTable) {
+      return false;
+    }
+    String catalogName = resolveCatalogName(conf);
+    return StringUtils.isNotBlank(catalogName) &&
+        conf.getBoolean(InputFormatConfig.serverSideScanPlanningKey(catalogName), false);
+  }
+
+  /**
+   * Returns true when the job conf pins snapshot, ref, or as-of time (no compile-time snapshot pin).
+   */
+  public static boolean hasExplicitScanSnapshotBinding(Configuration conf) {
+    if (conf == null) {
+      return false;
+    }
+    if (conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1) != -1) {
+      return true;
+    }
+    if (conf.getLong(InputFormatConfig.AS_OF_TIMESTAMP, -1) != -1) {
+      return true;
+    }
+    if (StringUtils.isNotBlank(conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF))) {
+      return true;
+    }
+    try {
+      if (conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1) != -1) {
+        return true;
+      }
+    } catch (NumberFormatException e) {
+      String version = conf.get(InputFormatConfig.SNAPSHOT_ID);
+      return StringUtils.isNotBlank(version) && !"-1".equals(version);
+    }
+    return false;
+  }
+
+  /**
+   * Pins a scan on a reloaded REST table to the snapshot of the compile-time table serialized into
+   * the job conf. {@link TableScan#useSnapshot} also switches the scan to that snapshot's schema; no
+   * explicit projection is set because Hive applies {@code select} afterwards.
+   */
+  public static TableScan pinServerSideScanToSerializedTable(
+      Configuration conf, Table serializedTable, TableScan scan) {
+    if (serializedTable == null || hasExplicitScanSnapshotBinding(conf)) {
+      return scan;
+    }
+    Snapshot snapshot = serializedTable.currentSnapshot();
+    return snapshot != null ? scan.useSnapshot(snapshot.snapshotId()) : scan;
+  }
+
+  /**
+   * Resolves the Iceberg catalog name from {@link InputFormatConfig#CATALOG_NAME} on the
+   * configuration, or the session default ({@link IcebergCatalogProperties#getCatalogName(Configuration)}).
+   */
+  public static String resolveCatalogName(Configuration conf) {
+    return resolveCatalogName(conf, conf != null ? conf.get(InputFormatConfig.CATALOG_NAME) : null);
+  }
+
+  /**
+   * Resolves the Iceberg catalog name from a per-table {@link InputFormatConfig#CATALOG_NAME} value
+   * (e.g. {@code TableDesc} properties) or the session default when that value is absent.
+   */
+  public static String resolveCatalogName(Configuration conf, String catalogNameFromTable) {
+    if (StringUtils.isNotBlank(catalogNameFromTable)) {
+      return catalogNameFromTable;
+    }
+    if (conf == null) {
+      return null;
+    }
+    return IcebergCatalogProperties.getCatalogName(conf);
+  }
+
+  /**
    * If enabled, it populates the FileIO's hadoop configuration with the input config object.
    * This might be necessary when the table object was serialized without the FileIO config.
    *
    * @param config Configuration to set for FileIO, if enabled
    * @param table The Iceberg table object
    */
-  private static void checkAndSetIoConfig(Configuration config, Table table) {
+  public static void checkAndSetIoConfig(Configuration config, Table table) {
     if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
             InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) &&
           table.io() instanceof HadoopConfigurable fileIO) {

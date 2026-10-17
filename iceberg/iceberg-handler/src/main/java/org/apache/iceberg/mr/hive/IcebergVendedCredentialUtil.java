@@ -100,6 +100,25 @@ public final class IcebergVendedCredentialUtil {
   }
 
   /**
+   * Copies vended storage credentials into job secrets for
+   * {@link HiveIcebergStorageHandler#configureInputJobCredentials} (HIVE-20651).
+   */
+  public static void propagateInputJobCredentials(
+      TableDesc tableDesc, Map<String, String> jobSecrets, Configuration conf) {
+    if (tableDesc == null || tableDesc.getProperties() == null ||
+        !requestsVendedCredentials(tableDesc.getProperties(), conf)) {
+      return;
+    }
+    String catalogName = tableDesc.getProperty(InputFormatConfig.CATALOG_NAME);
+    try {
+      Table table = getTableWithVendedCredentials(tableDesc.getProperties(), conf);
+      propagateToJob(table, catalogName, null, jobSecrets, conf);
+    } catch (NoSuchTableException ex) {
+      // Table may not exist yet for CTAS; credentials will not be available.
+    }
+  }
+
+  /**
    * Writes each key in one vended {@link StorageCredential} into job configuration.
    *
    * <p>Derives storage scope from {@link StorageCredential#prefix()} and delegates to
@@ -394,7 +413,7 @@ public final class IcebergVendedCredentialUtil {
    * it. That is Hive's own registry of sensitive configuration (the same one behind
    * {@code HiveConf#isHiddenConfig}) that masks values in EXPLAIN, the Tez UI, and ATS.
    */
-  private static boolean isSecretKey(String key, Configuration conf) {
+  static boolean isSecretKey(String key, Configuration conf) {
     return HiveConfUtil.getHiddenSet(conf).stream().anyMatch(key::startsWith);
   }
 
