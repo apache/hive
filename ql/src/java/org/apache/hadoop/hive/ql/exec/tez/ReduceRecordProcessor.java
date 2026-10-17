@@ -30,12 +30,9 @@ import java.util.TreeMap;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
-import org.apache.hadoop.hive.ql.exec.ObjectCache;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -56,8 +53,6 @@ import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.api.Reader;
 
-import com.google.common.collect.Lists;
-
 /**
  * Process input from tez LogicalInput and write output - for a map plan
  * Just pump the records through the query plan.
@@ -67,13 +62,9 @@ public class ReduceRecordProcessor extends RecordProcessor {
 
   private static final String REDUCE_PLAN_KEY = "__REDUCE_PLAN__";
 
-  private final ObjectCache cache, dynamicValueCache;
-
   private ReduceWork reduceWork;
 
   private final List<BaseWork> mergeWorkList;
-  private final List<String> cacheKeys;
-  private final List<String> dynamicValueCacheKeys = new ArrayList<>();
 
   private final Map<Integer, DummyStoreOperator> connectOps = new TreeMap<>();
   private final Map<Integer, ReduceWork> tagToReducerMap = new HashMap<>();
@@ -87,16 +78,11 @@ public class ReduceRecordProcessor extends RecordProcessor {
   public ReduceRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
 
-    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVE_QUERY_ID);
-    cache = ObjectCacheFactory.getCache(jconf, queryId, true);
-    dynamicValueCache = ObjectCacheFactory.getCache(jconf, queryId, false, true);
-
     String cacheKey = processorContext.getTaskVertexName() + REDUCE_PLAN_KEY;
-    cacheKeys = Lists.newArrayList(cacheKey);
-    reduceWork = cache.retrieve(cacheKey, () -> Utilities.getReduceWork(jconf));
+    reduceWork = planCache.retrieve(cacheKey, () -> Utilities.getReduceWork(jconf));
 
     Utilities.setReduceWork(jconf, reduceWork);
-    mergeWorkList = getMergeWorkList(jconf, cacheKey, queryId, cache, cacheKeys);
+    mergeWorkList = getMergeWorkList(jconf);
   }
 
   @Override
@@ -161,7 +147,6 @@ public class ReduceRecordProcessor extends RecordProcessor {
     String valueRegistryKey = DynamicValue.DYNAMIC_VALUE_REGISTRY_CACHE_KEY;
     DynamicValueRegistryTez registryTez =
         dynamicValueCache.retrieve(valueRegistryKey, () -> new DynamicValueRegistryTez());
-    dynamicValueCacheKeys.add(valueRegistryKey);
     RegistryConfTez registryConf = new RegistryConfTez(jconf, reduceWork, processorContext, inputs);
     registryTez.init(registryConf);
     checkAbortCondition();
@@ -339,17 +324,7 @@ public class ReduceRecordProcessor extends RecordProcessor {
 
   @Override
   void close() {
-    if (cache != null) {
-      for (String key : cacheKeys) {
-        cache.release(key);
-      }
-    }
-
-    if (dynamicValueCache != null) {
-      for (String k : dynamicValueCacheKeys) {
-        dynamicValueCache.release(k);
-      }
-    }
+    releaseCache();
 
     try {
       boolean abort = isAborted();
