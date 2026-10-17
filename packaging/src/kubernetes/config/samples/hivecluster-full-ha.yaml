@@ -21,6 +21,7 @@ metadata:
 spec:
   image: apache/hive:${HIVE_VERSION}
   imagePullPolicy: IfNotPresent
+  runAsUser: 1000
 
   metastore:
     replicas: 2
