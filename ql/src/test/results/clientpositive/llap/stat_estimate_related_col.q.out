@@ -303,7 +303,7 @@ Stage-0
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
           PARTITION_ONLY_SHUFFLE [RS_10]
-            Group By Operator [GBY_9] (rows=1/1 width=8)
+            Group By Operator [GBY_9] (rows=1/2 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_19] (rows=64/64 width=8)
                 Conds:RS_21.3=RS_23.3(Inner)
