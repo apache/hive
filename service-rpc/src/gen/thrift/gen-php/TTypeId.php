@@ -69,9 +69,9 @@ final class TTypeId
 
     public const UNKNOWN_TYPE = 23;
 
-    const VARIANT_TYPE = 24;
+    public const VARIANT_TYPE = 24;
 
-    static public $__names = array(
+    public static $names = [
         0 => 'BOOLEAN_TYPE',
         1 => 'TINYINT_TYPE',
         2 => 'SMALLINT_TYPE',
@@ -97,5 +97,5 @@ final class TTypeId
         22 => 'TIMESTAMPLOCALTZ_TYPE',
         23 => 'UNKNOWN_TYPE',
         24 => 'VARIANT_TYPE',
-    );
+    ];
 }
