@@ -46,12 +46,18 @@ class WMCreateOrDropTriggerToPoolMappingRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ],
+        5 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $resourcePlanName = null;
     public ?string $triggerName = null;
     public ?string $poolPath = null;
     public ?bool $drop = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
@@ -67,6 +73,9 @@ class WMCreateOrDropTriggerToPoolMappingRequest
             }
             if (isset($vals['drop'])) {
                 $this->drop = (bool)$vals['drop'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -119,6 +128,13 @@ class WMCreateOrDropTriggerToPoolMappingRequest
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 5:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -157,6 +173,11 @@ class WMCreateOrDropTriggerToPoolMappingRequest
             if ($this->drop !== null) {
                 $xfer += $output->writeFieldBegin('drop', TType::BOOL, 4);
                 $xfer += $output->writeBool($this->drop);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 5);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

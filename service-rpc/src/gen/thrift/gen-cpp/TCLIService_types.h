@@ -2248,11 +2248,7 @@ class TUploadDataReq : public virtual ::apache::thrift::TBase {
 
   TUploadDataReq(const TUploadDataReq&);
   TUploadDataReq& operator=(const TUploadDataReq&);
-  TUploadDataReq() noexcept
-                 : tableName(),
-                   path(),
-                   values() {
-  }
+  TUploadDataReq() noexcept;
 
   virtual ~TUploadDataReq() noexcept;
   TSessionHandle sessionHandle;
@@ -2270,22 +2266,7 @@ class TUploadDataReq : public virtual ::apache::thrift::TBase {
 
   void __set_values(const std::string& val);
 
-  bool operator == (const TUploadDataReq & rhs) const
-  {
-    if (!(sessionHandle == rhs.sessionHandle))
-      return false;
-    if (__isset.tableName != rhs.__isset.tableName)
-      return false;
-    else if (__isset.tableName && !(tableName == rhs.tableName))
-      return false;
-    if (__isset.path != rhs.__isset.path)
-      return false;
-    else if (__isset.path && !(path == rhs.path))
-      return false;
-    if (!(values == rhs.values))
-      return false;
-    return true;
-  }
+  bool operator == (const TUploadDataReq & rhs) const;
   bool operator != (const TUploadDataReq &rhs) const {
     return !(*this == rhs);
   }
@@ -2298,7 +2279,7 @@ class TUploadDataReq : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(TUploadDataReq &a, TUploadDataReq &b);
+void swap(TUploadDataReq &a, TUploadDataReq &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const TUploadDataReq& obj);
 
@@ -2308,8 +2289,7 @@ class TUploadDataResp : public virtual ::apache::thrift::TBase {
 
   TUploadDataResp(const TUploadDataResp&);
   TUploadDataResp& operator=(const TUploadDataResp&);
-  TUploadDataResp() noexcept {
-  }
+  TUploadDataResp() noexcept;
 
   virtual ~TUploadDataResp() noexcept;
   TStatus status;
@@ -2319,14 +2299,7 @@ class TUploadDataResp : public virtual ::apache::thrift::TBase {
 
   void __set_operationHandle(const TOperationHandle& val);
 
-  bool operator == (const TUploadDataResp & rhs) const
-  {
-    if (!(status == rhs.status))
-      return false;
-    if (!(operationHandle == rhs.operationHandle))
-      return false;
-    return true;
-  }
+  bool operator == (const TUploadDataResp & rhs) const;
   bool operator != (const TUploadDataResp &rhs) const {
     return !(*this == rhs);
   }
@@ -2339,7 +2312,7 @@ class TUploadDataResp : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(TUploadDataResp &a, TUploadDataResp &b);
+void swap(TUploadDataResp &a, TUploadDataResp &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const TUploadDataResp& obj);
 
@@ -2356,11 +2329,7 @@ class TDownloadDataReq : public virtual ::apache::thrift::TBase {
 
   TDownloadDataReq(const TDownloadDataReq&);
   TDownloadDataReq& operator=(const TDownloadDataReq&);
-  TDownloadDataReq() noexcept
-                   : tableName(),
-                     query(),
-                     format() {
-  }
+  TDownloadDataReq() noexcept;
 
   virtual ~TDownloadDataReq() noexcept;
   TSessionHandle sessionHandle;
@@ -2381,28 +2350,7 @@ class TDownloadDataReq : public virtual ::apache::thrift::TBase {
 
   void __set_downloadOptions(const std::map<std::string, std::string> & val);
 
-  bool operator == (const TDownloadDataReq & rhs) const
-  {
-    if (!(sessionHandle == rhs.sessionHandle))
-      return false;
-    if (__isset.tableName != rhs.__isset.tableName)
-      return false;
-    else if (__isset.tableName && !(tableName == rhs.tableName))
-      return false;
-    if (__isset.query != rhs.__isset.query)
-      return false;
-    else if (__isset.query && !(query == rhs.query))
-      return false;
-    if (__isset.format != rhs.__isset.format)
-      return false;
-    else if (__isset.format && !(format == rhs.format))
-      return false;
-    if (__isset.downloadOptions != rhs.__isset.downloadOptions)
-      return false;
-    else if (__isset.downloadOptions && !(downloadOptions == rhs.downloadOptions))
-      return false;
-    return true;
-  }
+  bool operator == (const TDownloadDataReq & rhs) const;
   bool operator != (const TDownloadDataReq &rhs) const {
     return !(*this == rhs);
   }
@@ -2415,7 +2363,7 @@ class TDownloadDataReq : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(TDownloadDataReq &a, TDownloadDataReq &b);
+void swap(TDownloadDataReq &a, TDownloadDataReq &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const TDownloadDataReq& obj);
 
@@ -2425,8 +2373,7 @@ class TDownloadDataResp : public virtual ::apache::thrift::TBase {
 
   TDownloadDataResp(const TDownloadDataResp&);
   TDownloadDataResp& operator=(const TDownloadDataResp&);
-  TDownloadDataResp() noexcept {
-  }
+  TDownloadDataResp() noexcept;
 
   virtual ~TDownloadDataResp() noexcept;
   TStatus status;
@@ -2436,14 +2383,7 @@ class TDownloadDataResp : public virtual ::apache::thrift::TBase {
 
   void __set_operationHandle(const TOperationHandle& val);
 
-  bool operator == (const TDownloadDataResp & rhs) const
-  {
-    if (!(status == rhs.status))
-      return false;
-    if (!(operationHandle == rhs.operationHandle))
-      return false;
-    return true;
-  }
+  bool operator == (const TDownloadDataResp & rhs) const;
   bool operator != (const TDownloadDataResp &rhs) const {
     return !(*this == rhs);
   }
@@ -2456,7 +2396,7 @@ class TDownloadDataResp : public virtual ::apache::thrift::TBase {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(TDownloadDataResp &a, TDownloadDataResp &b);
+void swap(TDownloadDataResp &a, TDownloadDataResp &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const TDownloadDataResp& obj);
 
@@ -3729,6 +3669,10 @@ void swap(TRenewDelegationTokenResp &a, TRenewDelegationTokenResp &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const TRenewDelegationTokenResp& obj);
 
+typedef struct _TProgressUpdateResp__isset {
+  _TProgressUpdateResp__isset() : queueMetrics(false) {}
+  bool queueMetrics :1;
+} _TProgressUpdateResp__isset;
 
 class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
  public:
@@ -3748,6 +3692,9 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
   TJobExecutionStatus::type status;
   std::string footerSummary;
   int64_t startTime;
+  std::string queueMetrics;
+
+  _TProgressUpdateResp__isset __isset;
 
   void __set_headerNames(const std::vector<std::string> & val);
 
@@ -3760,6 +3707,8 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
   void __set_footerSummary(const std::string& val);
 
   void __set_startTime(const int64_t val);
+
+  void __set_queueMetrics(const std::string& val);
 
   bool operator == (const TProgressUpdateResp & rhs) const;
   bool operator != (const TProgressUpdateResp &rhs) const {

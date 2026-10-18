@@ -2279,8 +2279,7 @@ class TCLIService_UploadData_args {
 
   TCLIService_UploadData_args(const TCLIService_UploadData_args&);
   TCLIService_UploadData_args& operator=(const TCLIService_UploadData_args&);
-  TCLIService_UploadData_args() noexcept {
-  }
+  TCLIService_UploadData_args() noexcept;
 
   virtual ~TCLIService_UploadData_args() noexcept;
   TUploadDataReq req;
@@ -2289,12 +2288,7 @@ class TCLIService_UploadData_args {
 
   void __set_req(const TUploadDataReq& val);
 
-  bool operator == (const TCLIService_UploadData_args & rhs) const
-  {
-    if (!(req == rhs.req))
-      return false;
-    return true;
-  }
+  bool operator == (const TCLIService_UploadData_args & rhs) const;
   bool operator != (const TCLIService_UploadData_args &rhs) const {
     return !(*this == rhs);
   }
@@ -2328,8 +2322,7 @@ class TCLIService_UploadData_result {
 
   TCLIService_UploadData_result(const TCLIService_UploadData_result&);
   TCLIService_UploadData_result& operator=(const TCLIService_UploadData_result&);
-  TCLIService_UploadData_result() noexcept {
-  }
+  TCLIService_UploadData_result() noexcept;
 
   virtual ~TCLIService_UploadData_result() noexcept;
   TUploadDataResp success;
@@ -2338,12 +2331,7 @@ class TCLIService_UploadData_result {
 
   void __set_success(const TUploadDataResp& val);
 
-  bool operator == (const TCLIService_UploadData_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
+  bool operator == (const TCLIService_UploadData_result & rhs) const;
   bool operator != (const TCLIService_UploadData_result &rhs) const {
     return !(*this == rhs);
   }
@@ -2383,8 +2371,7 @@ class TCLIService_DownloadData_args {
 
   TCLIService_DownloadData_args(const TCLIService_DownloadData_args&);
   TCLIService_DownloadData_args& operator=(const TCLIService_DownloadData_args&);
-  TCLIService_DownloadData_args() noexcept {
-  }
+  TCLIService_DownloadData_args() noexcept;
 
   virtual ~TCLIService_DownloadData_args() noexcept;
   TDownloadDataReq req;
@@ -2393,12 +2380,7 @@ class TCLIService_DownloadData_args {
 
   void __set_req(const TDownloadDataReq& val);
 
-  bool operator == (const TCLIService_DownloadData_args & rhs) const
-  {
-    if (!(req == rhs.req))
-      return false;
-    return true;
-  }
+  bool operator == (const TCLIService_DownloadData_args & rhs) const;
   bool operator != (const TCLIService_DownloadData_args &rhs) const {
     return !(*this == rhs);
   }
@@ -2432,8 +2414,7 @@ class TCLIService_DownloadData_result {
 
   TCLIService_DownloadData_result(const TCLIService_DownloadData_result&);
   TCLIService_DownloadData_result& operator=(const TCLIService_DownloadData_result&);
-  TCLIService_DownloadData_result() noexcept {
-  }
+  TCLIService_DownloadData_result() noexcept;
 
   virtual ~TCLIService_DownloadData_result() noexcept;
   TDownloadDataResp success;
@@ -2442,12 +2423,7 @@ class TCLIService_DownloadData_result {
 
   void __set_success(const TDownloadDataResp& val);
 
-  bool operator == (const TCLIService_DownloadData_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
+  bool operator == (const TCLIService_DownloadData_result & rhs) const;
   bool operator != (const TCLIService_DownloadData_result &rhs) const {
     return !(*this == rhs);
   }

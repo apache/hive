@@ -14,7 +14,6 @@ from uuid import UUID
 import sys
 from .ttypes import *
 DDL_TIME = "transient_lastDdlTime"
-HMS_API = "1.2.60"
 ACCESSTYPE_NONE = 1
 ACCESSTYPE_READONLY = 2
 ACCESSTYPE_WRITEONLY = 4
@@ -46,13 +45,13 @@ TABLE_IS_TRANSACTIONAL = "transactional"
 NO_AUTO_COMPACT = "no_auto_compaction"
 TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties"
 TABLE_BUCKETING_VERSION = "bucketing_version"
-DRUID_CONFIG_PREFIX = "druid."
 JDBC_CONFIG_PREFIX = "hive.sql."
 TABLE_IS_CTAS = "created_with_ctas"
+TABLE_IS_CTLT = "created_with_ctlt"
 PARTITION_TRANSFORM_SPEC = "partition_transform_spec"
+NO_CLEANUP = "no_cleanup"
 CTAS_LEGACY_CONFIG = "create_table_as_external"
 DEFAULT_TABLE_TYPE = "defaultTableType"
-TABLE_IS_CTLT = "created_with_ctlt"
 TXN_ID = "txnId"
 WRITE_ID = "writeId"
 EXPECTED_PARAMETER_KEY = "expected_parameter_key"

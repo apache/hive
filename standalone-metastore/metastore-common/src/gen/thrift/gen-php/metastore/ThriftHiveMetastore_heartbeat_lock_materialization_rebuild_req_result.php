@@ -23,20 +23,32 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_hms_api_version_args
+class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result
 {
     public static bool $isValidate = false;
 
     public static array $tspec = [
+        0 => [
+            'var' => 'success',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ],
     ];
 
-    public function __construct()
+    public ?bool $success = null;
+
+    public function __construct(?array $vals = null)
     {
+        if (is_array($vals)) {
+            if (isset($vals['success'])) {
+                $this->success = (bool)$vals['success'];
+            }
+        }
     }
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_get_hms_api_version_args';
+        return 'ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result';
     }
 
     public function read(TProtocol $input): int
@@ -54,6 +66,13 @@ class ThriftHiveMetastore_get_hms_api_version_args
                     break;
                 }
                 switch ($fid) {
+                    case 0:
+                        if ($ftype == TType::BOOL) {
+                            $xfer += $input->readBool($this->success);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -73,7 +92,12 @@ class ThriftHiveMetastore_get_hms_api_version_args
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_hms_api_version_args');
+            $xfer += $output->writeStructBegin('ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_req_result');
+            if ($this->success !== null) {
+                $xfer += $output->writeFieldBegin('success', TType::BOOL, 0);
+                $xfer += $output->writeBool($this->success);
+                $xfer += $output->writeFieldEnd();
+            }
             $xfer += $output->writeFieldStop();
             $xfer += $output->writeStructEnd();
         } finally {

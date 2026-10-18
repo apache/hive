@@ -23,53 +23,59 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_drop_dataconnector_result
+class ThriftHiveMetastore_get_partition_names_req_result
 {
     public static bool $isValidate = false;
 
     public static array $tspec = [
+        0 => [
+            'var' => 'success',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::STRING,
+            'elem' => [
+                'type' => TType::STRING,
+            ],
+        ],
         1 => [
             'var' => 'o1',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\NoSuchObjectException',
+            'class' => '\metastore\MetaException',
         ],
         2 => [
             'var' => 'o2',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\InvalidOperationException',
-        ],
-        3 => [
-            'var' => 'o3',
-            'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\MetaException',
+            'class' => '\metastore\NoSuchObjectException',
         ],
     ];
 
-    public ?NoSuchObjectException $o1 = null;
-    public ?InvalidOperationException $o2 = null;
-    public ?MetaException $o3 = null;
+    /**
+     * @var string[]
+     */
+    public ?array $success = null;
+    public ?MetaException $o1 = null;
+    public ?NoSuchObjectException $o2 = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
+            if (isset($vals['success'])) {
+                $this->success = $vals['success'];
+            }
             if (isset($vals['o1'])) {
                 $this->o1 = $vals['o1'];
             }
             if (isset($vals['o2'])) {
                 $this->o2 = $vals['o2'];
             }
-            if (isset($vals['o3'])) {
-                $this->o3 = $vals['o3'];
-            }
         }
     }
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_drop_dataconnector_result';
+        return 'ThriftHiveMetastore_get_partition_names_req_result';
     }
 
     public function read(TProtocol $input): int
@@ -87,9 +93,25 @@ class ThriftHiveMetastore_drop_dataconnector_result
                     break;
                 }
                 switch ($fid) {
+                    case 0:
+                        if ($ftype == TType::LST) {
+                            $this->success = [];
+                            $_size1815 = 0;
+                            $_etype1818 = 0;
+                            $xfer += $input->readListBegin($_etype1818, $_size1815);
+                            for ($_i1819 = 0; $_i1819 < $_size1815; ++$_i1819) {
+                                $elem1820 = null;
+                                $xfer += $input->readString($elem1820);
+                                $this->success[] = $elem1820;
+                            }
+                            $xfer += $input->readListEnd();
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     case 1:
                         if ($ftype == TType::STRUCT) {
-                            $this->o1 = new \metastore\NoSuchObjectException();
+                            $this->o1 = new \metastore\MetaException();
                             $xfer += $this->o1->read($input);
                         } else {
                             $xfer += $input->skip($ftype);
@@ -97,16 +119,8 @@ class ThriftHiveMetastore_drop_dataconnector_result
                         break;
                     case 2:
                         if ($ftype == TType::STRUCT) {
-                            $this->o2 = new \metastore\InvalidOperationException();
+                            $this->o2 = new \metastore\NoSuchObjectException();
                             $xfer += $this->o2->read($input);
-                        } else {
-                            $xfer += $input->skip($ftype);
-                        }
-                        break;
-                    case 3:
-                        if ($ftype == TType::STRUCT) {
-                            $this->o3 = new \metastore\MetaException();
-                            $xfer += $this->o3->read($input);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
@@ -130,7 +144,19 @@ class ThriftHiveMetastore_drop_dataconnector_result
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_drop_dataconnector_result');
+            $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partition_names_req_result');
+            if ($this->success !== null) {
+                if (!is_array($this->success)) {
+                    throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+                }
+                $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+                $output->writeListBegin(TType::STRING, count($this->success));
+                foreach ($this->success as $iter1821) {
+                    $xfer += $output->writeString($iter1821);
+                }
+                $output->writeListEnd();
+                $xfer += $output->writeFieldEnd();
+            }
             if ($this->o1 !== null) {
                 $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
                 $xfer += $this->o1->write($output);
@@ -139,11 +165,6 @@ class ThriftHiveMetastore_drop_dataconnector_result
             if ($this->o2 !== null) {
                 $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
                 $xfer += $this->o2->write($output);
-                $xfer += $output->writeFieldEnd();
-            }
-            if ($this->o3 !== null) {
-                $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
-                $xfer += $this->o3->write($output);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

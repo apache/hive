@@ -94,16 +94,16 @@ class PropertySetRequest
                     case 2:
                         if ($ftype == TType::MAP) {
                             $this->propertyMap = [];
-                            $_size1359 = 0;
-                            $_ktype1360 = 0;
-                            $_vtype1361 = 0;
-                            $xfer += $input->readMapBegin($_ktype1360, $_vtype1361, $_size1359);
-                            for ($_i1363 = 0; $_i1363 < $_size1359; ++$_i1363) {
-                                $key1364 = '';
-                                $val1365 = '';
-                                $xfer += $input->readString($key1364);
-                                $xfer += $input->readString($val1365);
-                                $this->propertyMap[$key1364] = $val1365;
+                            $_size58 = 0;
+                            $_ktype59 = 0;
+                            $_vtype60 = 0;
+                            $xfer += $input->readMapBegin($_ktype59, $_vtype60, $_size58);
+                            for ($_i62 = 0; $_i62 < $_size58; ++$_i62) {
+                                $key63 = '';
+                                $val64 = '';
+                                $xfer += $input->readString($key63);
+                                $xfer += $input->readString($val64);
+                                $this->propertyMap[$key63] = $val64;
                             }
                             $xfer += $input->readMapEnd();
                         } else {
@@ -141,10 +141,10 @@ class PropertySetRequest
                 }
                 $xfer += $output->writeFieldBegin('propertyMap', TType::MAP, 2);
                 $output->writeMapBegin(TType::STRING, TType::STRING, count($this->propertyMap));
-                foreach ($this->propertyMap as $kiter1366 => $viter1367) {
-                    $kiter1366 = (string)$kiter1366;
-                    $xfer += $output->writeString($kiter1366);
-                    $xfer += $output->writeString($viter1367);
+                foreach ($this->propertyMap as $kiter65 => $viter66) {
+                    $kiter65 = (string)$kiter65;
+                    $xfer += $output->writeString($kiter65);
+                    $xfer += $output->writeString($viter66);
                 }
                 $output->writeMapEnd();
                 $xfer += $output->writeFieldEnd();

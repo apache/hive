@@ -1392,58 +1392,58 @@ class TCLIServiceClient implements \TCLIServiceIf
         throw new \Exception("SetClientInfo failed: unknown result");
     }
 
-    public function UploadData(\TUploadDataReq $req)
+    public function UploadData(?TUploadDataReq $req): ?TUploadDataResp
     {
         $this->send_UploadData($req);
         return $this->recv_UploadData();
     }
 
-    public function send_UploadData(\TUploadDataReq $req)
+    public function send_UploadData(?TUploadDataReq $req): void
     {
         $args = new \TCLIService_UploadData_args();
         $args->req = $req;
-        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        $bin_accel = ($this->output instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
-                $this->output_,
+                $this->output,
                 'UploadData',
                 TMessageType::CALL,
                 $args,
-                $this->seqid_,
-                $this->output_->isStrictWrite()
+                $this->seqid,
+                $this->output->isStrictWrite()
             );
         } else {
-            $this->output_->writeMessageBegin('UploadData', TMessageType::CALL, $this->seqid_);
-            $args->write($this->output_);
-            $this->output_->writeMessageEnd();
-            $this->output_->getTransport()->flush();
+            $this->output->writeMessageBegin('UploadData', TMessageType::CALL, $this->seqid);
+            $args->write($this->output);
+            $this->output->writeMessageEnd();
+            $this->output->getTransport()->flush();
         }
     }
 
-    public function recv_UploadData()
+    public function recv_UploadData(): ?TUploadDataResp
     {
-        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        $bin_accel = ($this->input instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
         if ($bin_accel) {
             $result = thrift_protocol_read_binary(
-                $this->input_,
+                $this->input,
                 '\TCLIService_UploadData_result',
-                $this->input_->isStrictRead()
+                $this->input->isStrictRead()
             );
         } else {
             $rseqid = 0;
             $fname = null;
             $mtype = 0;
 
-            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            $this->input->readMessageBegin($fname, $mtype, $rseqid);
             if ($mtype == TMessageType::EXCEPTION) {
                 $x = new TApplicationException();
-                $x->read($this->input_);
-                $this->input_->readMessageEnd();
+                $x->read($this->input);
+                $this->input->readMessageEnd();
                 throw $x;
             }
             $result = new \TCLIService_UploadData_result();
-            $result->read($this->input_);
-            $this->input_->readMessageEnd();
+            $result->read($this->input);
+            $this->input->readMessageEnd();
         }
         if ($result->success !== null) {
             return $result->success;
@@ -1451,58 +1451,58 @@ class TCLIServiceClient implements \TCLIServiceIf
         throw new \Exception("UploadData failed: unknown result");
     }
 
-    public function DownloadData(\TDownloadDataReq $req)
+    public function DownloadData(?TDownloadDataReq $req): ?TDownloadDataResp
     {
         $this->send_DownloadData($req);
         return $this->recv_DownloadData();
     }
 
-    public function send_DownloadData(\TDownloadDataReq $req)
+    public function send_DownloadData(?TDownloadDataReq $req): void
     {
         $args = new \TCLIService_DownloadData_args();
         $args->req = $req;
-        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        $bin_accel = ($this->output instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
-                $this->output_,
+                $this->output,
                 'DownloadData',
                 TMessageType::CALL,
                 $args,
-                $this->seqid_,
-                $this->output_->isStrictWrite()
+                $this->seqid,
+                $this->output->isStrictWrite()
             );
         } else {
-            $this->output_->writeMessageBegin('DownloadData', TMessageType::CALL, $this->seqid_);
-            $args->write($this->output_);
-            $this->output_->writeMessageEnd();
-            $this->output_->getTransport()->flush();
+            $this->output->writeMessageBegin('DownloadData', TMessageType::CALL, $this->seqid);
+            $args->write($this->output);
+            $this->output->writeMessageEnd();
+            $this->output->getTransport()->flush();
         }
     }
 
-    public function recv_DownloadData()
+    public function recv_DownloadData(): ?TDownloadDataResp
     {
-        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        $bin_accel = ($this->input instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
         if ($bin_accel) {
             $result = thrift_protocol_read_binary(
-                $this->input_,
+                $this->input,
                 '\TCLIService_DownloadData_result',
-                $this->input_->isStrictRead()
+                $this->input->isStrictRead()
             );
         } else {
             $rseqid = 0;
             $fname = null;
             $mtype = 0;
 
-            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            $this->input->readMessageBegin($fname, $mtype, $rseqid);
             if ($mtype == TMessageType::EXCEPTION) {
                 $x = new TApplicationException();
-                $x->read($this->input_);
-                $this->input_->readMessageEnd();
+                $x->read($this->input);
+                $this->input->readMessageEnd();
                 throw $x;
             }
             $result = new \TCLIService_DownloadData_result();
-            $result->read($this->input_);
-            $this->input_->readMessageEnd();
+            $result->read($this->input);
+            $this->input->readMessageEnd();
         }
         if ($result->success !== null) {
             return $result->success;

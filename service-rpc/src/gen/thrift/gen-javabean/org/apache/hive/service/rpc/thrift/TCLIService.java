@@ -692,6 +692,7 @@ package org.apache.hive.service.rpc.thrift;
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "SetClientInfo failed: unknown result");
     }
 
+    @Override
     public TUploadDataResp UploadData(TUploadDataReq req) throws org.apache.thrift.TException
     {
       send_UploadData(req);
@@ -715,6 +716,7 @@ package org.apache.hive.service.rpc.thrift;
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "UploadData failed: unknown result");
     }
 
+    @Override
     public TDownloadDataResp DownloadData(TDownloadDataReq req) throws org.apache.thrift.TException
     {
       send_DownloadData(req);
@@ -1562,6 +1564,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public void UploadData(TUploadDataReq req, org.apache.thrift.async.AsyncMethodCallback<TUploadDataResp> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       UploadData_call method_call = new UploadData_call(req, resultHandler, this, ___protocolFactory, ___transport);
@@ -1576,6 +1579,7 @@ package org.apache.hive.service.rpc.thrift;
         this.req = req;
       }
 
+      @Override
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("UploadData", org.apache.thrift.protocol.TMessageType.CALL, 0));
         UploadData_args args = new UploadData_args();
@@ -1584,6 +1588,7 @@ package org.apache.hive.service.rpc.thrift;
         prot.writeMessageEnd();
       }
 
+      @Override
       public TUploadDataResp getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new java.lang.IllegalStateException("Method call not finished!");
@@ -1594,6 +1599,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public void DownloadData(TDownloadDataReq req, org.apache.thrift.async.AsyncMethodCallback<TDownloadDataResp> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       DownloadData_call method_call = new DownloadData_call(req, resultHandler, this, ___protocolFactory, ___transport);
@@ -1608,6 +1614,7 @@ package org.apache.hive.service.rpc.thrift;
         this.req = req;
       }
 
+      @Override
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("DownloadData", org.apache.thrift.protocol.TMessageType.CALL, 0));
         DownloadData_args args = new DownloadData_args();
@@ -1616,6 +1623,7 @@ package org.apache.hive.service.rpc.thrift;
         prot.writeMessageEnd();
       }
 
+      @Override
       public TDownloadDataResp getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new java.lang.IllegalStateException("Method call not finished!");
@@ -2426,16 +2434,18 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
-    @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class UploadData<I extends Iface> extends org.apache.thrift.ProcessFunction<I, UploadData_args> {
+    @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class UploadData<I extends Iface> extends org.apache.thrift.ProcessFunction<I, UploadData_args, UploadData_result> {
       public UploadData() {
         super("UploadData");
       }
 
+      @Override
       public UploadData_args getEmptyArgsInstance() {
         return new UploadData_args();
       }
 
-      protected boolean isOneway() {
+      @Override
+      public boolean isOneway() {
         return false;
       }
 
@@ -2444,23 +2454,31 @@ package org.apache.hive.service.rpc.thrift;
         return false;
       }
 
+      @Override
+      public UploadData_result getEmptyResultInstance() {
+        return new UploadData_result();
+      }
+
+      @Override
       public UploadData_result getResult(I iface, UploadData_args args) throws org.apache.thrift.TException {
-        UploadData_result result = new UploadData_result();
+        UploadData_result result = getEmptyResultInstance();
         result.success = iface.UploadData(args.req);
         return result;
       }
     }
 
-    @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class DownloadData<I extends Iface> extends org.apache.thrift.ProcessFunction<I, DownloadData_args> {
+    @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class DownloadData<I extends Iface> extends org.apache.thrift.ProcessFunction<I, DownloadData_args, DownloadData_result> {
       public DownloadData() {
         super("DownloadData");
       }
 
+      @Override
       public DownloadData_args getEmptyArgsInstance() {
         return new DownloadData_args();
       }
 
-      protected boolean isOneway() {
+      @Override
+      public boolean isOneway() {
         return false;
       }
 
@@ -2469,8 +2487,14 @@ package org.apache.hive.service.rpc.thrift;
         return false;
       }
 
+      @Override
+      public DownloadData_result getEmptyResultInstance() {
+        return new DownloadData_result();
+      }
+
+      @Override
       public DownloadData_result getResult(I iface, DownloadData_args args) throws org.apache.thrift.TException {
-        DownloadData_result result = new DownloadData_result();
+        DownloadData_result result = getEmptyResultInstance();
         result.success = iface.DownloadData(args.req);
         return result;
       }
@@ -4173,18 +4197,26 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
-    @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class UploadData<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, UploadData_args, TUploadDataResp> {
+    @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class UploadData<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, UploadData_args, TUploadDataResp, UploadData_result> {
       public UploadData() {
         super("UploadData");
       }
 
+      @Override
+      public UploadData_result getEmptyResultInstance() {
+        return new UploadData_result();
+      }
+
+      @Override
       public UploadData_args getEmptyArgsInstance() {
         return new UploadData_args();
       }
 
+      @Override
       public org.apache.thrift.async.AsyncMethodCallback<TUploadDataResp> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new org.apache.thrift.async.AsyncMethodCallback<TUploadDataResp>() { 
+          @Override
           public void onComplete(TUploadDataResp o) {
             UploadData_result result = new UploadData_result();
             result.success = o;
@@ -4198,6 +4230,7 @@ package org.apache.hive.service.rpc.thrift;
               onError(e);
             }
           }
+          @Override
           public void onError(java.lang.Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TSerializable msg;
@@ -4225,27 +4258,37 @@ package org.apache.hive.service.rpc.thrift;
         };
       }
 
-      protected boolean isOneway() {
+      @Override
+      public boolean isOneway() {
         return false;
       }
 
+      @Override
       public void start(I iface, UploadData_args args, org.apache.thrift.async.AsyncMethodCallback<TUploadDataResp> resultHandler) throws org.apache.thrift.TException {
         iface.UploadData(args.req,resultHandler);
       }
     }
 
-    @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class DownloadData<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, DownloadData_args, TDownloadDataResp> {
+    @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class DownloadData<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, DownloadData_args, TDownloadDataResp, DownloadData_result> {
       public DownloadData() {
         super("DownloadData");
       }
 
+      @Override
+      public DownloadData_result getEmptyResultInstance() {
+        return new DownloadData_result();
+      }
+
+      @Override
       public DownloadData_args getEmptyArgsInstance() {
         return new DownloadData_args();
       }
 
+      @Override
       public org.apache.thrift.async.AsyncMethodCallback<TDownloadDataResp> getResultHandler(final org.apache.thrift.server.AbstractNonblockingServer.AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new org.apache.thrift.async.AsyncMethodCallback<TDownloadDataResp>() { 
+          @Override
           public void onComplete(TDownloadDataResp o) {
             DownloadData_result result = new DownloadData_result();
             result.success = o;
@@ -4259,6 +4302,7 @@ package org.apache.hive.service.rpc.thrift;
               onError(e);
             }
           }
+          @Override
           public void onError(java.lang.Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TSerializable msg;
@@ -4286,10 +4330,12 @@ package org.apache.hive.service.rpc.thrift;
         };
       }
 
-      protected boolean isOneway() {
+      @Override
+      public boolean isOneway() {
         return false;
       }
 
+      @Override
       public void start(I iface, DownloadData_args args, org.apache.thrift.async.AsyncMethodCallback<TDownloadDataResp> resultHandler) throws org.apache.thrift.TException {
         iface.DownloadData(args.req,resultHandler);
       }
@@ -22260,6 +22306,7 @@ package org.apache.hive.service.rpc.thrift;
     }
   }
 
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
   @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class UploadData_args implements org.apache.thrift.TBase<UploadData_args, UploadData_args._Fields>, java.io.Serializable, Cloneable, Comparable<UploadData_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("UploadData_args");
 
@@ -22321,10 +22368,12 @@ package org.apache.hive.service.rpc.thrift;
         _fieldName = fieldName;
       }
 
+      @Override
       public short getThriftFieldId() {
         return _thriftId;
       }
 
+      @Override
       public java.lang.String getFieldName() {
         return _fieldName;
       }
@@ -22359,6 +22408,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public UploadData_args deepCopy() {
       return new UploadData_args(this);
     }
@@ -22392,6 +22442,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
       switch (field) {
       case REQ:
@@ -22406,6 +22457,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     @org.apache.thrift.annotation.Nullable
+    @Override
     public java.lang.Object getFieldValue(_Fields field) {
       switch (field) {
       case REQ:
@@ -22416,6 +22468,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
     public boolean isSet(_Fields field) {
       if (field == null) {
         throw new java.lang.IllegalArgumentException();
@@ -22486,14 +22539,17 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     @org.apache.thrift.annotation.Nullable
+    @Override
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
+    @Override
     public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
       scheme(iprot).read(iprot, this);
     }
 
+    @Override
     public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
       scheme(oprot).write(oprot, this);
     }
@@ -22539,6 +22595,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     private static class UploadData_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
       public UploadData_argsStandardScheme getScheme() {
         return new UploadData_argsStandardScheme();
       }
@@ -22546,34 +22603,41 @@ package org.apache.hive.service.rpc.thrift;
 
     private static class UploadData_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<UploadData_args> {
 
+      @Override
       public void read(org.apache.thrift.protocol.TProtocol iprot, UploadData_args struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            case 1: // REQ
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.req = new TUploadDataReq();
-                struct.req.read(iprot);
-                struct.setReqIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
+        iprot.incrementRecursionDepth();
+        try {
+          org.apache.thrift.protocol.TField schemeField;
+          iprot.readStructBegin();
+          while (true)
+          {
+            schemeField = iprot.readFieldBegin();
+            if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
               break;
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            switch (schemeField.id) {
+              case 1: // REQ
+                if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                  struct.req = new TUploadDataReq();
+                  struct.req.read(iprot);
+                  struct.setReqIsSet(true);
+                } else { 
+                  org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+                }
+                break;
+              default:
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            iprot.readFieldEnd();
           }
-          iprot.readFieldEnd();
+          iprot.readStructEnd();
+          struct.validate();
+        } finally {
+          iprot.decrementRecursionDepth();
         }
-        iprot.readStructEnd();
-        struct.validate();
       }
 
+      @Override
       public void write(org.apache.thrift.protocol.TProtocol oprot, UploadData_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
@@ -22590,6 +22654,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     private static class UploadData_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
       public UploadData_argsTupleScheme getScheme() {
         return new UploadData_argsTupleScheme();
       }
@@ -22612,12 +22677,17 @@ package org.apache.hive.service.rpc.thrift;
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, UploadData_args struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-        java.util.BitSet incoming = iprot.readBitSet(1);
-        if (incoming.get(0)) {
-          struct.req = new TUploadDataReq();
-          struct.req.read(iprot);
-          struct.setReqIsSet(true);
+        prot.incrementRecursionDepth();
+        try {
+          org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+          java.util.BitSet incoming = iprot.readBitSet(1);
+          if (incoming.get(0)) {
+            struct.req = new TUploadDataReq();
+            struct.req.read(iprot);
+            struct.setReqIsSet(true);
+          }
+        } finally {
+          prot.decrementRecursionDepth();
         }
       }
     }
@@ -22627,6 +22697,7 @@ package org.apache.hive.service.rpc.thrift;
     }
   }
 
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
   @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class UploadData_result implements org.apache.thrift.TBase<UploadData_result, UploadData_result._Fields>, java.io.Serializable, Cloneable, Comparable<UploadData_result>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("UploadData_result");
 
@@ -22688,10 +22759,12 @@ package org.apache.hive.service.rpc.thrift;
         _fieldName = fieldName;
       }
 
+      @Override
       public short getThriftFieldId() {
         return _thriftId;
       }
 
+      @Override
       public java.lang.String getFieldName() {
         return _fieldName;
       }
@@ -22726,6 +22799,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public UploadData_result deepCopy() {
       return new UploadData_result(this);
     }
@@ -22759,6 +22833,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
       switch (field) {
       case SUCCESS:
@@ -22773,6 +22848,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     @org.apache.thrift.annotation.Nullable
+    @Override
     public java.lang.Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -22783,6 +22859,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
     public boolean isSet(_Fields field) {
       if (field == null) {
         throw new java.lang.IllegalArgumentException();
@@ -22853,10 +22930,12 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     @org.apache.thrift.annotation.Nullable
+    @Override
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
+    @Override
     public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
       scheme(iprot).read(iprot, this);
     }
@@ -22906,6 +22985,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     private static class UploadData_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
       public UploadData_resultStandardScheme getScheme() {
         return new UploadData_resultStandardScheme();
       }
@@ -22913,34 +22993,41 @@ package org.apache.hive.service.rpc.thrift;
 
     private static class UploadData_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<UploadData_result> {
 
+      @Override
       public void read(org.apache.thrift.protocol.TProtocol iprot, UploadData_result struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.success = new TUploadDataResp();
-                struct.success.read(iprot);
-                struct.setSuccessIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
+        iprot.incrementRecursionDepth();
+        try {
+          org.apache.thrift.protocol.TField schemeField;
+          iprot.readStructBegin();
+          while (true)
+          {
+            schemeField = iprot.readFieldBegin();
+            if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
               break;
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            switch (schemeField.id) {
+              case 0: // SUCCESS
+                if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                  struct.success = new TUploadDataResp();
+                  struct.success.read(iprot);
+                  struct.setSuccessIsSet(true);
+                } else { 
+                  org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+                }
+                break;
+              default:
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            iprot.readFieldEnd();
           }
-          iprot.readFieldEnd();
+          iprot.readStructEnd();
+          struct.validate();
+        } finally {
+          iprot.decrementRecursionDepth();
         }
-        iprot.readStructEnd();
-        struct.validate();
       }
 
+      @Override
       public void write(org.apache.thrift.protocol.TProtocol oprot, UploadData_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
@@ -22957,6 +23044,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     private static class UploadData_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
       public UploadData_resultTupleScheme getScheme() {
         return new UploadData_resultTupleScheme();
       }
@@ -22979,12 +23067,17 @@ package org.apache.hive.service.rpc.thrift;
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, UploadData_result struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-        java.util.BitSet incoming = iprot.readBitSet(1);
-        if (incoming.get(0)) {
-          struct.success = new TUploadDataResp();
-          struct.success.read(iprot);
-          struct.setSuccessIsSet(true);
+        prot.incrementRecursionDepth();
+        try {
+          org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+          java.util.BitSet incoming = iprot.readBitSet(1);
+          if (incoming.get(0)) {
+            struct.success = new TUploadDataResp();
+            struct.success.read(iprot);
+            struct.setSuccessIsSet(true);
+          }
+        } finally {
+          prot.decrementRecursionDepth();
         }
       }
     }
@@ -22994,6 +23087,7 @@ package org.apache.hive.service.rpc.thrift;
     }
   }
 
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
   @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class DownloadData_args implements org.apache.thrift.TBase<DownloadData_args, DownloadData_args._Fields>, java.io.Serializable, Cloneable, Comparable<DownloadData_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("DownloadData_args");
 
@@ -23055,10 +23149,12 @@ package org.apache.hive.service.rpc.thrift;
         _fieldName = fieldName;
       }
 
+      @Override
       public short getThriftFieldId() {
         return _thriftId;
       }
 
+      @Override
       public java.lang.String getFieldName() {
         return _fieldName;
       }
@@ -23093,6 +23189,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public DownloadData_args deepCopy() {
       return new DownloadData_args(this);
     }
@@ -23126,6 +23223,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
       switch (field) {
       case REQ:
@@ -23140,6 +23238,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     @org.apache.thrift.annotation.Nullable
+    @Override
     public java.lang.Object getFieldValue(_Fields field) {
       switch (field) {
       case REQ:
@@ -23150,6 +23249,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
     public boolean isSet(_Fields field) {
       if (field == null) {
         throw new java.lang.IllegalArgumentException();
@@ -23220,14 +23320,17 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     @org.apache.thrift.annotation.Nullable
+    @Override
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
+    @Override
     public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
       scheme(iprot).read(iprot, this);
     }
 
+    @Override
     public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
       scheme(oprot).write(oprot, this);
     }
@@ -23273,6 +23376,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     private static class DownloadData_argsStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
       public DownloadData_argsStandardScheme getScheme() {
         return new DownloadData_argsStandardScheme();
       }
@@ -23280,34 +23384,41 @@ package org.apache.hive.service.rpc.thrift;
 
     private static class DownloadData_argsStandardScheme extends org.apache.thrift.scheme.StandardScheme<DownloadData_args> {
 
+      @Override
       public void read(org.apache.thrift.protocol.TProtocol iprot, DownloadData_args struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            case 1: // REQ
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.req = new TDownloadDataReq();
-                struct.req.read(iprot);
-                struct.setReqIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
+        iprot.incrementRecursionDepth();
+        try {
+          org.apache.thrift.protocol.TField schemeField;
+          iprot.readStructBegin();
+          while (true)
+          {
+            schemeField = iprot.readFieldBegin();
+            if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
               break;
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            switch (schemeField.id) {
+              case 1: // REQ
+                if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                  struct.req = new TDownloadDataReq();
+                  struct.req.read(iprot);
+                  struct.setReqIsSet(true);
+                } else { 
+                  org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+                }
+                break;
+              default:
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            iprot.readFieldEnd();
           }
-          iprot.readFieldEnd();
+          iprot.readStructEnd();
+          struct.validate();
+        } finally {
+          iprot.decrementRecursionDepth();
         }
-        iprot.readStructEnd();
-        struct.validate();
       }
 
+      @Override
       public void write(org.apache.thrift.protocol.TProtocol oprot, DownloadData_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
@@ -23324,6 +23435,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     private static class DownloadData_argsTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
       public DownloadData_argsTupleScheme getScheme() {
         return new DownloadData_argsTupleScheme();
       }
@@ -23346,12 +23458,17 @@ package org.apache.hive.service.rpc.thrift;
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, DownloadData_args struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-        java.util.BitSet incoming = iprot.readBitSet(1);
-        if (incoming.get(0)) {
-          struct.req = new TDownloadDataReq();
-          struct.req.read(iprot);
-          struct.setReqIsSet(true);
+        prot.incrementRecursionDepth();
+        try {
+          org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+          java.util.BitSet incoming = iprot.readBitSet(1);
+          if (incoming.get(0)) {
+            struct.req = new TDownloadDataReq();
+            struct.req.read(iprot);
+            struct.setReqIsSet(true);
+          }
+        } finally {
+          prot.decrementRecursionDepth();
         }
       }
     }
@@ -23361,6 +23478,7 @@ package org.apache.hive.service.rpc.thrift;
     }
   }
 
+  @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
   @org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public static class DownloadData_result implements org.apache.thrift.TBase<DownloadData_result, DownloadData_result._Fields>, java.io.Serializable, Cloneable, Comparable<DownloadData_result>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("DownloadData_result");
 
@@ -23422,10 +23540,12 @@ package org.apache.hive.service.rpc.thrift;
         _fieldName = fieldName;
       }
 
+      @Override
       public short getThriftFieldId() {
         return _thriftId;
       }
 
+      @Override
       public java.lang.String getFieldName() {
         return _fieldName;
       }
@@ -23460,6 +23580,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public DownloadData_result deepCopy() {
       return new DownloadData_result(this);
     }
@@ -23493,6 +23614,7 @@ package org.apache.hive.service.rpc.thrift;
       }
     }
 
+    @Override
     public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
       switch (field) {
       case SUCCESS:
@@ -23507,6 +23629,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     @org.apache.thrift.annotation.Nullable
+    @Override
     public java.lang.Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -23517,6 +23640,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    @Override
     public boolean isSet(_Fields field) {
       if (field == null) {
         throw new java.lang.IllegalArgumentException();
@@ -23587,10 +23711,12 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     @org.apache.thrift.annotation.Nullable
+    @Override
     public _Fields fieldForId(int fieldId) {
       return _Fields.findByThriftId(fieldId);
     }
 
+    @Override
     public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
       scheme(iprot).read(iprot, this);
     }
@@ -23640,6 +23766,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     private static class DownloadData_resultStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
       public DownloadData_resultStandardScheme getScheme() {
         return new DownloadData_resultStandardScheme();
       }
@@ -23647,34 +23774,41 @@ package org.apache.hive.service.rpc.thrift;
 
     private static class DownloadData_resultStandardScheme extends org.apache.thrift.scheme.StandardScheme<DownloadData_result> {
 
+      @Override
       public void read(org.apache.thrift.protocol.TProtocol iprot, DownloadData_result struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.success = new TDownloadDataResp();
-                struct.success.read(iprot);
-                struct.setSuccessIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
+        iprot.incrementRecursionDepth();
+        try {
+          org.apache.thrift.protocol.TField schemeField;
+          iprot.readStructBegin();
+          while (true)
+          {
+            schemeField = iprot.readFieldBegin();
+            if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
               break;
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            switch (schemeField.id) {
+              case 0: // SUCCESS
+                if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                  struct.success = new TDownloadDataResp();
+                  struct.success.read(iprot);
+                  struct.setSuccessIsSet(true);
+                } else { 
+                  org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+                }
+                break;
+              default:
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            iprot.readFieldEnd();
           }
-          iprot.readFieldEnd();
+          iprot.readStructEnd();
+          struct.validate();
+        } finally {
+          iprot.decrementRecursionDepth();
         }
-        iprot.readStructEnd();
-        struct.validate();
       }
 
+      @Override
       public void write(org.apache.thrift.protocol.TProtocol oprot, DownloadData_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
@@ -23691,6 +23825,7 @@ package org.apache.hive.service.rpc.thrift;
     }
 
     private static class DownloadData_resultTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+      @Override
       public DownloadData_resultTupleScheme getScheme() {
         return new DownloadData_resultTupleScheme();
       }
@@ -23713,12 +23848,17 @@ package org.apache.hive.service.rpc.thrift;
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, DownloadData_result struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-        java.util.BitSet incoming = iprot.readBitSet(1);
-        if (incoming.get(0)) {
-          struct.success = new TDownloadDataResp();
-          struct.success.read(iprot);
-          struct.setSuccessIsSet(true);
+        prot.incrementRecursionDepth();
+        try {
+          org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+          java.util.BitSet incoming = iprot.readBitSet(1);
+          if (incoming.get(0)) {
+            struct.success = new TDownloadDataResp();
+            struct.success.read(iprot);
+            struct.setSuccessIsSet(true);
+          }
+        } finally {
+          prot.decrementRecursionDepth();
         }
       }
     }

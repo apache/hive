@@ -204,16 +204,16 @@ class CompactionRequest
                     case 6:
                         if ($ftype == TType::MAP) {
                             $this->properties = [];
-                            $_size775 = 0;
-                            $_ktype776 = 0;
-                            $_vtype777 = 0;
-                            $xfer += $input->readMapBegin($_ktype776, $_vtype777, $_size775);
-                            for ($_i779 = 0; $_i779 < $_size775; ++$_i779) {
-                                $key780 = '';
-                                $val781 = '';
-                                $xfer += $input->readString($key780);
-                                $xfer += $input->readString($val781);
-                                $this->properties[$key780] = $val781;
+                            $_size825 = 0;
+                            $_ktype826 = 0;
+                            $_vtype827 = 0;
+                            $xfer += $input->readMapBegin($_ktype826, $_vtype827, $_size825);
+                            for ($_i829 = 0; $_i829 < $_size825; ++$_i829) {
+                                $key830 = '';
+                                $val831 = '';
+                                $xfer += $input->readString($key830);
+                                $xfer += $input->readString($val831);
+                                $this->properties[$key830] = $val831;
                             }
                             $xfer += $input->readMapEnd();
                         } else {
@@ -306,10 +306,10 @@ class CompactionRequest
                 }
                 $xfer += $output->writeFieldBegin('properties', TType::MAP, 6);
                 $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
-                foreach ($this->properties as $kiter782 => $viter783) {
-                    $kiter782 = (string)$kiter782;
-                    $xfer += $output->writeString($kiter782);
-                    $xfer += $output->writeString($viter783);
+                foreach ($this->properties as $kiter832 => $viter833) {
+                    $kiter832 = (string)$kiter832;
+                    $xfer += $output->writeString($kiter832);
+                    $xfer += $output->writeString($viter833);
                 }
                 $output->writeMapEnd();
                 $xfer += $output->writeFieldEnd();

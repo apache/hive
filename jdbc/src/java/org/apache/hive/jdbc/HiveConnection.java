@@ -100,10 +100,6 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.jwt.HttpJwtAuthRequestInterceptor;
 import org.apache.hive.jdbc.saml.HiveJdbcBrowserClientFactory;
 import org.apache.hive.jdbc.saml.HiveJdbcSamlRedirectStrategy;
@@ -112,9 +108,7 @@ import org.apache.hive.jdbc.saml.IJdbcBrowserClient;
 import org.apache.hive.jdbc.saml.IJdbcBrowserClient.HiveJdbcBrowserException;
 import org.apache.hive.jdbc.saml.IJdbcBrowserClient.HiveJdbcBrowserServerResponse;
 import org.apache.hive.jdbc.saml.IJdbcBrowserClientFactory;
-import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
-import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -838,7 +832,7 @@ public class HiveConnection implements java.sql.Connection {
           boolean ret = statusCode == 401 && executionCount <= 1;
           if (ret) {
             context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY,
-                Utils.HIVE_SERVER2_RETRY_TRUE);
+                Utils.HIVE_SERVER2_CONST_TRUE);
           }
           return ret;
         }

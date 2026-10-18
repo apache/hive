@@ -23,16 +23,11 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_hms_api_version_result
+class ThriftHiveMetastore_update_table_params_result
 {
     public static bool $isValidate = false;
 
     public static array $tspec = [
-        0 => [
-            'var' => 'success',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ],
         1 => [
             'var' => 'o1',
             'isRequired' => false,
@@ -41,15 +36,11 @@ class ThriftHiveMetastore_get_hms_api_version_result
         ],
     ];
 
-    public ?string $success = null;
     public ?MetaException $o1 = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['success'])) {
-                $this->success = (string)$vals['success'];
-            }
             if (isset($vals['o1'])) {
                 $this->o1 = $vals['o1'];
             }
@@ -58,7 +49,7 @@ class ThriftHiveMetastore_get_hms_api_version_result
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_get_hms_api_version_result';
+        return 'ThriftHiveMetastore_update_table_params_result';
     }
 
     public function read(TProtocol $input): int
@@ -76,13 +67,6 @@ class ThriftHiveMetastore_get_hms_api_version_result
                     break;
                 }
                 switch ($fid) {
-                    case 0:
-                        if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->success);
-                        } else {
-                            $xfer += $input->skip($ftype);
-                        }
-                        break;
                     case 1:
                         if ($ftype == TType::STRUCT) {
                             $this->o1 = new \metastore\MetaException();
@@ -110,12 +94,7 @@ class ThriftHiveMetastore_get_hms_api_version_result
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_hms_api_version_result');
-            if ($this->success !== null) {
-                $xfer += $output->writeFieldBegin('success', TType::STRING, 0);
-                $xfer += $output->writeString($this->success);
-                $xfer += $output->writeFieldEnd();
-            }
+            $xfer += $output->writeStructBegin('ThriftHiveMetastore_update_table_params_result');
             if ($this->o1 !== null) {
                 $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
                 $xfer += $this->o1->write($output);

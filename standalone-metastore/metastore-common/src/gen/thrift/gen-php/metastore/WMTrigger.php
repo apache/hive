@@ -51,6 +51,11 @@ class WMTrigger
             'isRequired' => false,
             'type' => TType::BOOL,
         ],
+        6 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $resourcePlanName = null;
@@ -58,6 +63,7 @@ class WMTrigger
     public ?string $triggerExpression = null;
     public ?string $actionExpression = null;
     public ?bool $isInUnmanaged = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
@@ -76,6 +82,9 @@ class WMTrigger
             }
             if (isset($vals['isInUnmanaged'])) {
                 $this->isInUnmanaged = (bool)$vals['isInUnmanaged'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -135,6 +144,13 @@ class WMTrigger
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 6:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -178,6 +194,11 @@ class WMTrigger
             if ($this->isInUnmanaged !== null) {
                 $xfer += $output->writeFieldBegin('isInUnmanaged', TType::BOOL, 5);
                 $xfer += $output->writeBool($this->isInUnmanaged);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 6);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

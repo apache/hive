@@ -51,11 +51,6 @@ class StringColumnStatsData
             'isRequired' => false,
             'type' => TType::STRING,
         ],
-        6 => [
-            'var' => 'histogram',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ],
     ];
 
     public ?int $maxColLen = null;
@@ -63,7 +58,6 @@ class StringColumnStatsData
     public ?int $numNulls = null;
     public ?int $numDVs = null;
     public ?string $bitVectors = null;
-    public ?string $histogram = null;
 
     public function __construct(?array $vals = null)
     {
@@ -82,9 +76,6 @@ class StringColumnStatsData
             }
             if (isset($vals['bitVectors'])) {
                 $this->bitVectors = (string)$vals['bitVectors'];
-            }
-            if (isset($vals['histogram'])) {
-                $this->histogram = (string)$vals['histogram'];
             }
         }
     }
@@ -144,13 +135,6 @@ class StringColumnStatsData
                             $xfer += $input->skip($ftype);
                         }
                         break;
-                    case 6:
-                        if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->histogram);
-                        } else {
-                            $xfer += $input->skip($ftype);
-                        }
-                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -194,11 +178,6 @@ class StringColumnStatsData
             if ($this->bitVectors !== null) {
                 $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
                 $xfer += $output->writeString($this->bitVectors);
-                $xfer += $output->writeFieldEnd();
-            }
-            if ($this->histogram !== null) {
-                $xfer += $output->writeFieldBegin('histogram', TType::STRING, 6);
-                $xfer += $output->writeString($this->histogram);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

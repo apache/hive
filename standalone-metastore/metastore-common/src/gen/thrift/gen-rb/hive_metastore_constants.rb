@@ -10,8 +10,6 @@ require 'hive_metastore_types'
 
 DDL_TIME = %q"transient_lastDdlTime"
 
-HMS_API = %q"1.2.60"
-
 ACCESSTYPE_NONE = 1
 
 ACCESSTYPE_READONLY = 2
@@ -74,19 +72,19 @@ TABLE_TRANSACTIONAL_PROPERTIES = %q"transactional_properties"
 
 TABLE_BUCKETING_VERSION = %q"bucketing_version"
 
-DRUID_CONFIG_PREFIX = %q"druid."
-
 JDBC_CONFIG_PREFIX = %q"hive.sql."
 
 TABLE_IS_CTAS = %q"created_with_ctas"
 
+TABLE_IS_CTLT = %q"created_with_ctlt"
+
 PARTITION_TRANSFORM_SPEC = %q"partition_transform_spec"
+
+NO_CLEANUP = %q"no_cleanup"
 
 CTAS_LEGACY_CONFIG = %q"create_table_as_external"
 
 DEFAULT_TABLE_TYPE = %q"defaultTableType"
-
-TABLE_IS_CTLT = %q"created_with_ctlt"
 
 TXN_ID = %q"txnId"
 

@@ -51,6 +51,11 @@ class WMPool
             'isRequired' => false,
             'type' => TType::STRING,
         ],
+        6 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $resourcePlanName = null;
@@ -58,6 +63,7 @@ class WMPool
     public ?float $allocFraction = null;
     public ?int $queryParallelism = null;
     public ?string $schedulingPolicy = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
@@ -76,6 +82,9 @@ class WMPool
             }
             if (isset($vals['schedulingPolicy'])) {
                 $this->schedulingPolicy = (string)$vals['schedulingPolicy'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -135,6 +144,13 @@ class WMPool
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 6:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -178,6 +194,11 @@ class WMPool
             if ($this->schedulingPolicy !== null) {
                 $xfer += $output->writeFieldBegin('schedulingPolicy', TType::STRING, 5);
                 $xfer += $output->writeString($this->schedulingPolicy);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 6);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

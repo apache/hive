@@ -26,7 +26,6 @@ use Thrift\Exception\TApplicationException;
 final class Constant extends \Thrift\Type\TConstant
 {
     protected static $DDL_TIME;
-    protected static $HMS_API;
     protected static $ACCESSTYPE_NONE;
     protected static $ACCESSTYPE_READONLY;
     protected static $ACCESSTYPE_WRITEONLY;
@@ -58,13 +57,13 @@ final class Constant extends \Thrift\Type\TConstant
     protected static $NO_AUTO_COMPACT;
     protected static $TABLE_TRANSACTIONAL_PROPERTIES;
     protected static $TABLE_BUCKETING_VERSION;
-    protected static $DRUID_CONFIG_PREFIX;
     protected static $JDBC_CONFIG_PREFIX;
     protected static $TABLE_IS_CTAS;
+    protected static $TABLE_IS_CTLT;
     protected static $PARTITION_TRANSFORM_SPEC;
+    protected static $NO_CLEANUP;
     protected static $CTAS_LEGACY_CONFIG;
     protected static $DEFAULT_TABLE_TYPE;
-    protected static $TABLE_IS_CTLT;
     protected static $TXN_ID;
     protected static $WRITE_ID;
     protected static $EXPECTED_PARAMETER_KEY;
@@ -73,11 +72,6 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_DDL_TIME()
     {
         return "transient_lastDdlTime";
-    }
-
-    protected static function init_HMS_API()
-    {
-        return "1.2.60";
     }
 
     protected static function init_ACCESSTYPE_NONE()
@@ -235,11 +229,6 @@ final class Constant extends \Thrift\Type\TConstant
         return "bucketing_version";
     }
 
-    protected static function init_DRUID_CONFIG_PREFIX()
-    {
-        return "druid.";
-    }
-
     protected static function init_JDBC_CONFIG_PREFIX()
     {
         return "hive.sql.";
@@ -250,9 +239,19 @@ final class Constant extends \Thrift\Type\TConstant
         return "created_with_ctas";
     }
 
+    protected static function init_TABLE_IS_CTLT()
+    {
+        return "created_with_ctlt";
+    }
+
     protected static function init_PARTITION_TRANSFORM_SPEC()
     {
         return "partition_transform_spec";
+    }
+
+    protected static function init_NO_CLEANUP()
+    {
+        return "no_cleanup";
     }
 
     protected static function init_CTAS_LEGACY_CONFIG()
@@ -263,11 +262,6 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_DEFAULT_TABLE_TYPE()
     {
         return "defaultTableType";
-    }
-
-    protected static function init_TABLE_IS_CTLT()
-    {
-        return "created_with_ctlt";
     }
 
     protected static function init_TXN_ID()

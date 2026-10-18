@@ -5,8 +5,6 @@
  *
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
- *
- * phpcs:disable Squiz.Classes.ValidClassName
  */
 
 declare(strict_types=1);
@@ -23,50 +21,50 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_drop_dataconnector_args
+class AsyncOperationResp
 {
     public static bool $isValidate = false;
 
     public static array $tspec = [
         1 => [
-            'var' => 'name',
-            'isRequired' => false,
+            'var' => 'id',
+            'isRequired' => true,
             'type' => TType::STRING,
         ],
         2 => [
-            'var' => 'ifNotExists',
+            'var' => 'message',
             'isRequired' => false,
-            'type' => TType::BOOL,
+            'type' => TType::STRING,
         ],
         3 => [
-            'var' => 'checkReferences',
+            'var' => 'finished',
             'isRequired' => false,
             'type' => TType::BOOL,
         ],
     ];
 
-    public ?string $name = null;
-    public ?bool $ifNotExists = null;
-    public ?bool $checkReferences = null;
+    public ?string $id = null;
+    public ?string $message = null;
+    public ?bool $finished = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['name'])) {
-                $this->name = (string)$vals['name'];
+            if (isset($vals['id'])) {
+                $this->id = (string)$vals['id'];
             }
-            if (isset($vals['ifNotExists'])) {
-                $this->ifNotExists = (bool)$vals['ifNotExists'];
+            if (isset($vals['message'])) {
+                $this->message = (string)$vals['message'];
             }
-            if (isset($vals['checkReferences'])) {
-                $this->checkReferences = (bool)$vals['checkReferences'];
+            if (isset($vals['finished'])) {
+                $this->finished = (bool)$vals['finished'];
             }
         }
     }
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_drop_dataconnector_args';
+        return 'AsyncOperationResp';
     }
 
     public function read(TProtocol $input): int
@@ -86,21 +84,21 @@ class ThriftHiveMetastore_drop_dataconnector_args
                 switch ($fid) {
                     case 1:
                         if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->name);
+                            $xfer += $input->readString($this->id);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
                         break;
                     case 2:
-                        if ($ftype == TType::BOOL) {
-                            $xfer += $input->readBool($this->ifNotExists);
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->message);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
                         break;
                     case 3:
                         if ($ftype == TType::BOOL) {
-                            $xfer += $input->readBool($this->checkReferences);
+                            $xfer += $input->readBool($this->finished);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
@@ -124,20 +122,20 @@ class ThriftHiveMetastore_drop_dataconnector_args
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_drop_dataconnector_args');
-            if ($this->name !== null) {
-                $xfer += $output->writeFieldBegin('name', TType::STRING, 1);
-                $xfer += $output->writeString($this->name);
+            $xfer += $output->writeStructBegin('AsyncOperationResp');
+            if ($this->id !== null) {
+                $xfer += $output->writeFieldBegin('id', TType::STRING, 1);
+                $xfer += $output->writeString($this->id);
                 $xfer += $output->writeFieldEnd();
             }
-            if ($this->ifNotExists !== null) {
-                $xfer += $output->writeFieldBegin('ifNotExists', TType::BOOL, 2);
-                $xfer += $output->writeBool($this->ifNotExists);
+            if ($this->message !== null) {
+                $xfer += $output->writeFieldBegin('message', TType::STRING, 2);
+                $xfer += $output->writeString($this->message);
                 $xfer += $output->writeFieldEnd();
             }
-            if ($this->checkReferences !== null) {
-                $xfer += $output->writeFieldBegin('checkReferences', TType::BOOL, 3);
-                $xfer += $output->writeBool($this->checkReferences);
+            if ($this->finished !== null) {
+                $xfer += $output->writeFieldBegin('finished', TType::BOOL, 3);
+                $xfer += $output->writeBool($this->finished);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

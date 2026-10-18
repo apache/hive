@@ -67,6 +67,11 @@ class TProgressUpdateResp
             'isRequired' => true,
             'type' => TType::I64,
         ],
+        7 => [
+            'var' => 'queueMetrics',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     /**
@@ -81,6 +86,7 @@ class TProgressUpdateResp
     public ?int $status = null;
     public ?string $footerSummary = null;
     public ?int $startTime = null;
+    public ?string $queueMetrics = null;
 
     public function __construct(?array $vals = null)
     {
@@ -102,6 +108,9 @@ class TProgressUpdateResp
             }
             if (isset($vals['startTime'])) {
                 $this->startTime = (int)$vals['startTime'];
+            }
+            if (isset($vals['queueMetrics'])) {
+                $this->queueMetrics = (string)$vals['queueMetrics'];
             }
         }
     }
@@ -129,13 +138,13 @@ class TProgressUpdateResp
                     case 1:
                         if ($ftype == TType::LST) {
                             $this->headerNames = [];
-                            $_size168 = 0;
-                            $_etype171 = 0;
-                            $xfer += $input->readListBegin($_etype171, $_size168);
-                            for ($_i172 = 0; $_i172 < $_size168; ++$_i172) {
-                                $elem173 = null;
-                                $xfer += $input->readString($elem173);
-                                $this->headerNames[] = $elem173;
+                            $_size177 = 0;
+                            $_etype180 = 0;
+                            $xfer += $input->readListBegin($_etype180, $_size177);
+                            for ($_i181 = 0; $_i181 < $_size177; ++$_i181) {
+                                $elem182 = null;
+                                $xfer += $input->readString($elem182);
+                                $this->headerNames[] = $elem182;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -145,22 +154,22 @@ class TProgressUpdateResp
                     case 2:
                         if ($ftype == TType::LST) {
                             $this->rows = [];
-                            $_size174 = 0;
-                            $_etype177 = 0;
-                            $xfer += $input->readListBegin($_etype177, $_size174);
-                            for ($_i178 = 0; $_i178 < $_size174; ++$_i178) {
-                                $elem179 = null;
-                                $elem179 = [];
-                                $_size180 = 0;
-                                $_etype183 = 0;
-                                $xfer += $input->readListBegin($_etype183, $_size180);
-                                for ($_i184 = 0; $_i184 < $_size180; ++$_i184) {
-                                    $elem185 = null;
-                                    $xfer += $input->readString($elem185);
-                                    $elem179[] = $elem185;
+                            $_size183 = 0;
+                            $_etype186 = 0;
+                            $xfer += $input->readListBegin($_etype186, $_size183);
+                            for ($_i187 = 0; $_i187 < $_size183; ++$_i187) {
+                                $elem188 = null;
+                                $elem188 = [];
+                                $_size189 = 0;
+                                $_etype192 = 0;
+                                $xfer += $input->readListBegin($_etype192, $_size189);
+                                for ($_i193 = 0; $_i193 < $_size189; ++$_i193) {
+                                    $elem194 = null;
+                                    $xfer += $input->readString($elem194);
+                                    $elem188[] = $elem194;
                                 }
                                 $xfer += $input->readListEnd();
-                                $this->rows[] = $elem179;
+                                $this->rows[] = $elem188;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -195,6 +204,13 @@ class TProgressUpdateResp
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 7:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->queueMetrics);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -221,8 +237,8 @@ class TProgressUpdateResp
                 }
                 $xfer += $output->writeFieldBegin('headerNames', TType::LST, 1);
                 $output->writeListBegin(TType::STRING, count($this->headerNames));
-                foreach ($this->headerNames as $iter186) {
-                    $xfer += $output->writeString($iter186);
+                foreach ($this->headerNames as $iter195) {
+                    $xfer += $output->writeString($iter195);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();
@@ -233,10 +249,10 @@ class TProgressUpdateResp
                 }
                 $xfer += $output->writeFieldBegin('rows', TType::LST, 2);
                 $output->writeListBegin(TType::LST, count($this->rows));
-                foreach ($this->rows as $iter187) {
-                    $output->writeListBegin(TType::STRING, count($iter187));
-                    foreach ($iter187 as $iter188) {
-                        $xfer += $output->writeString($iter188);
+                foreach ($this->rows as $iter196) {
+                    $output->writeListBegin(TType::STRING, count($iter196));
+                    foreach ($iter196 as $iter197) {
+                        $xfer += $output->writeString($iter197);
                     }
                     $output->writeListEnd();
                 }
@@ -261,6 +277,11 @@ class TProgressUpdateResp
             if ($this->startTime !== null) {
                 $xfer += $output->writeFieldBegin('startTime', TType::I64, 6);
                 $xfer += $output->writeI64($this->startTime);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->queueMetrics !== null) {
+                $xfer += $output->writeFieldBegin('queueMetrics', TType::STRING, 7);
+                $xfer += $output->writeString($this->queueMetrics);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

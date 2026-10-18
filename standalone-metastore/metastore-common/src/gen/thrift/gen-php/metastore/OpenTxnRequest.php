@@ -164,13 +164,13 @@ class OpenTxnRequest
                     case 6:
                         if ($ftype == TType::LST) {
                             $this->replSrcTxnIds = [];
-                            $_size661 = 0;
-                            $_etype664 = 0;
-                            $xfer += $input->readListBegin($_etype664, $_size661);
-                            for ($_i665 = 0; $_i665 < $_size661; ++$_i665) {
-                                $elem666 = null;
-                                $xfer += $input->readI64($elem666);
-                                $this->replSrcTxnIds[] = $elem666;
+                            $_size711 = 0;
+                            $_etype714 = 0;
+                            $xfer += $input->readListBegin($_etype714, $_size711);
+                            for ($_i715 = 0; $_i715 < $_size711; ++$_i715) {
+                                $elem716 = null;
+                                $xfer += $input->readI64($elem716);
+                                $this->replSrcTxnIds[] = $elem716;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -235,8 +235,8 @@ class OpenTxnRequest
                 }
                 $xfer += $output->writeFieldBegin('replSrcTxnIds', TType::LST, 6);
                 $output->writeListBegin(TType::I64, count($this->replSrcTxnIds));
-                foreach ($this->replSrcTxnIds as $iter667) {
-                    $xfer += $output->writeI64($iter667);
+                foreach ($this->replSrcTxnIds as $iter717) {
+                    $xfer += $output->writeI64($iter717);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();

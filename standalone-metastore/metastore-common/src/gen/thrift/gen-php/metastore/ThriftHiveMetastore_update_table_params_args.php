@@ -23,40 +23,40 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_table_objects_by_name_result
+class ThriftHiveMetastore_update_table_params_args
 {
     public static bool $isValidate = false;
 
     public static array $tspec = [
-        0 => [
-            'var' => 'success',
+        1 => [
+            'var' => 'updates',
             'isRequired' => false,
             'type' => TType::LST,
             'etype' => TType::STRUCT,
             'elem' => [
                 'type' => TType::STRUCT,
-                'class' => '\metastore\Table',
+                'class' => '\metastore\TableParamsUpdate',
             ],
         ],
     ];
 
     /**
-     * @var \metastore\Table[]
+     * @var \metastore\TableParamsUpdate[]
      */
-    public ?array $success = null;
+    public ?array $updates = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['success'])) {
-                $this->success = $vals['success'];
+            if (isset($vals['updates'])) {
+                $this->updates = $vals['updates'];
             }
         }
     }
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_get_table_objects_by_name_result';
+        return 'ThriftHiveMetastore_update_table_params_args';
     }
 
     public function read(TProtocol $input): int
@@ -74,17 +74,17 @@ class ThriftHiveMetastore_get_table_objects_by_name_result
                     break;
                 }
                 switch ($fid) {
-                    case 0:
+                    case 1:
                         if ($ftype == TType::LST) {
-                            $this->success = [];
-                            $_size1565 = 0;
-                            $_etype1568 = 0;
-                            $xfer += $input->readListBegin($_etype1568, $_size1565);
-                            for ($_i1569 = 0; $_i1569 < $_size1565; ++$_i1569) {
-                                $elem1570 = null;
-                                $elem1570 = new \metastore\Table();
-                                $xfer += $elem1570->read($input);
-                                $this->success[] = $elem1570;
+                            $this->updates = [];
+                            $_size1629 = 0;
+                            $_etype1632 = 0;
+                            $xfer += $input->readListBegin($_etype1632, $_size1629);
+                            for ($_i1633 = 0; $_i1633 < $_size1629; ++$_i1633) {
+                                $elem1634 = null;
+                                $elem1634 = new \metastore\TableParamsUpdate();
+                                $xfer += $elem1634->read($input);
+                                $this->updates[] = $elem1634;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -110,15 +110,15 @@ class ThriftHiveMetastore_get_table_objects_by_name_result
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_table_objects_by_name_result');
-            if ($this->success !== null) {
-                if (!is_array($this->success)) {
+            $xfer += $output->writeStructBegin('ThriftHiveMetastore_update_table_params_args');
+            if ($this->updates !== null) {
+                if (!is_array($this->updates)) {
                     throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
                 }
-                $xfer += $output->writeFieldBegin('success', TType::LST, 0);
-                $output->writeListBegin(TType::STRUCT, count($this->success));
-                foreach ($this->success as $iter1571) {
-                    $xfer += $iter1571->write($output);
+                $xfer += $output->writeFieldBegin('updates', TType::LST, 1);
+                $output->writeListBegin(TType::STRUCT, count($this->updates));
+                foreach ($this->updates as $iter1635) {
+                    $xfer += $iter1635->write($output);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();

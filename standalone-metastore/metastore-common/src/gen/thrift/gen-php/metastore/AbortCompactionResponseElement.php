@@ -5,8 +5,6 @@
  *
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
- *
- * phpcs:disable Squiz.Classes.ValidClassName
  */
 
 declare(strict_types=1);
@@ -23,53 +21,50 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_create_dataconnector_result
+class AbortCompactionResponseElement
 {
     public static bool $isValidate = false;
 
     public static array $tspec = [
         1 => [
-            'var' => 'o1',
-            'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\AlreadyExistsException',
+            'var' => 'compactionId',
+            'isRequired' => true,
+            'type' => TType::I64,
         ],
         2 => [
-            'var' => 'o2',
+            'var' => 'status',
             'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\InvalidObjectException',
+            'type' => TType::STRING,
         ],
         3 => [
-            'var' => 'o3',
+            'var' => 'message',
             'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\MetaException',
+            'type' => TType::STRING,
         ],
     ];
 
-    public ?AlreadyExistsException $o1 = null;
-    public ?InvalidObjectException $o2 = null;
-    public ?MetaException $o3 = null;
+    public ?int $compactionId = null;
+    public ?string $status = null;
+    public ?string $message = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['o1'])) {
-                $this->o1 = $vals['o1'];
+            if (isset($vals['compactionId'])) {
+                $this->compactionId = (int)$vals['compactionId'];
             }
-            if (isset($vals['o2'])) {
-                $this->o2 = $vals['o2'];
+            if (isset($vals['status'])) {
+                $this->status = (string)$vals['status'];
             }
-            if (isset($vals['o3'])) {
-                $this->o3 = $vals['o3'];
+            if (isset($vals['message'])) {
+                $this->message = (string)$vals['message'];
             }
         }
     }
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_create_dataconnector_result';
+        return 'AbortCompactionResponseElement';
     }
 
     public function read(TProtocol $input): int
@@ -88,25 +83,22 @@ class ThriftHiveMetastore_create_dataconnector_result
                 }
                 switch ($fid) {
                     case 1:
-                        if ($ftype == TType::STRUCT) {
-                            $this->o1 = new \metastore\AlreadyExistsException();
-                            $xfer += $this->o1->read($input);
+                        if ($ftype == TType::I64) {
+                            $xfer += $input->readI64($this->compactionId);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
                         break;
                     case 2:
-                        if ($ftype == TType::STRUCT) {
-                            $this->o2 = new \metastore\InvalidObjectException();
-                            $xfer += $this->o2->read($input);
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->status);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
                         break;
                     case 3:
-                        if ($ftype == TType::STRUCT) {
-                            $this->o3 = new \metastore\MetaException();
-                            $xfer += $this->o3->read($input);
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->message);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
@@ -130,20 +122,20 @@ class ThriftHiveMetastore_create_dataconnector_result
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_dataconnector_result');
-            if ($this->o1 !== null) {
-                $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
-                $xfer += $this->o1->write($output);
+            $xfer += $output->writeStructBegin('AbortCompactionResponseElement');
+            if ($this->compactionId !== null) {
+                $xfer += $output->writeFieldBegin('compactionId', TType::I64, 1);
+                $xfer += $output->writeI64($this->compactionId);
                 $xfer += $output->writeFieldEnd();
             }
-            if ($this->o2 !== null) {
-                $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
-                $xfer += $this->o2->write($output);
+            if ($this->status !== null) {
+                $xfer += $output->writeFieldBegin('status', TType::STRING, 2);
+                $xfer += $output->writeString($this->status);
                 $xfer += $output->writeFieldEnd();
             }
-            if ($this->o3 !== null) {
-                $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
-                $xfer += $this->o3->write($output);
+            if ($this->message !== null) {
+                $xfer += $output->writeFieldBegin('message', TType::STRING, 3);
+                $xfer += $output->writeString($this->message);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

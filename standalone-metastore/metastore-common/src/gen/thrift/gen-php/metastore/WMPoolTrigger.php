@@ -36,10 +36,16 @@ class WMPoolTrigger
             'isRequired' => true,
             'type' => TType::STRING,
         ],
+        3 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $pool = null;
     public ?string $trigger = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
@@ -49,6 +55,9 @@ class WMPoolTrigger
             }
             if (isset($vals['trigger'])) {
                 $this->trigger = (string)$vals['trigger'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -87,6 +96,13 @@ class WMPoolTrigger
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 3:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -115,6 +131,11 @@ class WMPoolTrigger
             if ($this->trigger !== null) {
                 $xfer += $output->writeFieldBegin('trigger', TType::STRING, 2);
                 $xfer += $output->writeString($this->trigger);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 3);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

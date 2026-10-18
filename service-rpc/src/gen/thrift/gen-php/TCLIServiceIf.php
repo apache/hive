@@ -136,4 +136,14 @@ interface TCLIServiceIf
      * @return \TSetClientInfoResp
      */
     public function SetClientInfo(?TSetClientInfoReq $req): ?TSetClientInfoResp;
+    /**
+     * @param \TUploadDataReq $req
+     * @return \TUploadDataResp
+     */
+    public function UploadData(?TUploadDataReq $req): ?TUploadDataResp;
+    /**
+     * @param \TDownloadDataReq $req
+     * @return \TDownloadDataResp
+     */
+    public function DownloadData(?TDownloadDataReq $req): ?TDownloadDataResp;
 }

@@ -75,14 +75,14 @@ class GetDatabaseObjectsResponse
                     case 1:
                         if ($ftype == TType::LST) {
                             $this->databases = [];
-                            $_size157 = 0;
-                            $_etype160 = 0;
-                            $xfer += $input->readListBegin($_etype160, $_size157);
-                            for ($_i161 = 0; $_i161 < $_size157; ++$_i161) {
-                                $elem162 = null;
-                                $elem162 = new \metastore\Database();
-                                $xfer += $elem162->read($input);
-                                $this->databases[] = $elem162;
+                            $_size200 = 0;
+                            $_etype203 = 0;
+                            $xfer += $input->readListBegin($_etype203, $_size200);
+                            for ($_i204 = 0; $_i204 < $_size200; ++$_i204) {
+                                $elem205 = null;
+                                $elem205 = new \metastore\Database();
+                                $xfer += $elem205->read($input);
+                                $this->databases[] = $elem205;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -115,8 +115,8 @@ class GetDatabaseObjectsResponse
                 }
                 $xfer += $output->writeFieldBegin('databases', TType::LST, 1);
                 $output->writeListBegin(TType::STRUCT, count($this->databases));
-                foreach ($this->databases as $iter163) {
-                    $xfer += $iter163->write($output);
+                foreach ($this->databases as $iter206) {
+                    $xfer += $iter206->write($output);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();
