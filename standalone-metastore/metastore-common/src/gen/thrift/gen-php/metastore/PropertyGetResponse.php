@@ -86,28 +86,28 @@ class PropertyGetResponse
                     case 1:
                         if ($ftype == TType::MAP) {
                             $this->properties = [];
-                            $_size1375 = 0;
-                            $_ktype1376 = 0;
-                            $_vtype1377 = 0;
-                            $xfer += $input->readMapBegin($_ktype1376, $_vtype1377, $_size1375);
-                            for ($_i1379 = 0; $_i1379 < $_size1375; ++$_i1379) {
-                                $key1380 = '';
-                                $val1381 = [];
-                                $xfer += $input->readString($key1380);
-                                $val1381 = [];
-                                $_size1382 = 0;
-                                $_ktype1383 = 0;
-                                $_vtype1384 = 0;
-                                $xfer += $input->readMapBegin($_ktype1383, $_vtype1384, $_size1382);
-                                for ($_i1386 = 0; $_i1386 < $_size1382; ++$_i1386) {
-                                    $key1387 = '';
-                                    $val1388 = '';
-                                    $xfer += $input->readString($key1387);
-                                    $xfer += $input->readString($val1388);
-                                    $val1381[$key1387] = $val1388;
+                            $_size74 = 0;
+                            $_ktype75 = 0;
+                            $_vtype76 = 0;
+                            $xfer += $input->readMapBegin($_ktype75, $_vtype76, $_size74);
+                            for ($_i78 = 0; $_i78 < $_size74; ++$_i78) {
+                                $key79 = '';
+                                $val80 = [];
+                                $xfer += $input->readString($key79);
+                                $val80 = [];
+                                $_size81 = 0;
+                                $_ktype82 = 0;
+                                $_vtype83 = 0;
+                                $xfer += $input->readMapBegin($_ktype82, $_vtype83, $_size81);
+                                for ($_i85 = 0; $_i85 < $_size81; ++$_i85) {
+                                    $key86 = '';
+                                    $val87 = '';
+                                    $xfer += $input->readString($key86);
+                                    $xfer += $input->readString($val87);
+                                    $val80[$key86] = $val87;
                                 }
                                 $xfer += $input->readMapEnd();
-                                $this->properties[$key1380] = $val1381;
+                                $this->properties[$key79] = $val80;
                             }
                             $xfer += $input->readMapEnd();
                         } else {
@@ -140,14 +140,14 @@ class PropertyGetResponse
                 }
                 $xfer += $output->writeFieldBegin('properties', TType::MAP, 1);
                 $output->writeMapBegin(TType::STRING, TType::MAP, count($this->properties));
-                foreach ($this->properties as $kiter1389 => $viter1390) {
-                    $kiter1389 = (string)$kiter1389;
-                    $xfer += $output->writeString($kiter1389);
-                    $output->writeMapBegin(TType::STRING, TType::STRING, count($viter1390));
-                    foreach ($viter1390 as $kiter1391 => $viter1392) {
-                        $kiter1391 = (string)$kiter1391;
-                        $xfer += $output->writeString($kiter1391);
-                        $xfer += $output->writeString($viter1392);
+                foreach ($this->properties as $kiter88 => $viter89) {
+                    $kiter88 = (string)$kiter88;
+                    $xfer += $output->writeString($kiter88);
+                    $output->writeMapBegin(TType::STRING, TType::STRING, count($viter89));
+                    foreach ($viter89 as $kiter90 => $viter91) {
+                        $kiter90 = (string)$kiter90;
+                        $xfer += $output->writeString($kiter90);
+                        $xfer += $output->writeString($viter91);
                     }
                     $output->writeMapEnd();
                 }

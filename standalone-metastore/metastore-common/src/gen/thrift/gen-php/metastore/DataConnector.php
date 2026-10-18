@@ -170,16 +170,16 @@ class DataConnector
                     case 5:
                         if ($ftype == TType::MAP) {
                             $this->parameters = [];
-                            $_size631 = 0;
-                            $_ktype632 = 0;
-                            $_vtype633 = 0;
-                            $xfer += $input->readMapBegin($_ktype632, $_vtype633, $_size631);
-                            for ($_i635 = 0; $_i635 < $_size631; ++$_i635) {
-                                $key636 = '';
-                                $val637 = '';
-                                $xfer += $input->readString($key636);
-                                $xfer += $input->readString($val637);
-                                $this->parameters[$key636] = $val637;
+                            $_size681 = 0;
+                            $_ktype682 = 0;
+                            $_vtype683 = 0;
+                            $xfer += $input->readMapBegin($_ktype682, $_vtype683, $_size681);
+                            for ($_i685 = 0; $_i685 < $_size681; ++$_i685) {
+                                $key686 = '';
+                                $val687 = '';
+                                $xfer += $input->readString($key686);
+                                $xfer += $input->readString($val687);
+                                $this->parameters[$key686] = $val687;
                             }
                             $xfer += $input->readMapEnd();
                         } else {
@@ -253,10 +253,10 @@ class DataConnector
                 }
                 $xfer += $output->writeFieldBegin('parameters', TType::MAP, 5);
                 $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-                foreach ($this->parameters as $kiter638 => $viter639) {
-                    $kiter638 = (string)$kiter638;
-                    $xfer += $output->writeString($kiter638);
-                    $xfer += $output->writeString($viter639);
+                foreach ($this->parameters as $kiter688 => $viter689) {
+                    $kiter688 = (string)$kiter688;
+                    $xfer += $output->writeString($kiter688);
+                    $xfer += $output->writeString($viter689);
                 }
                 $output->writeMapEnd();
                 $xfer += $output->writeFieldEnd();

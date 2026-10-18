@@ -57,6 +57,11 @@ class WMNullableResourcePlan
             'isRequired' => false,
             'type' => TType::BOOL,
         ],
+        8 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $name = null;
@@ -65,6 +70,7 @@ class WMNullableResourcePlan
     public ?bool $isSetQueryParallelism = null;
     public ?string $defaultPoolPath = null;
     public ?bool $isSetDefaultPoolPath = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
@@ -86,6 +92,9 @@ class WMNullableResourcePlan
             }
             if (isset($vals['isSetDefaultPoolPath'])) {
                 $this->isSetDefaultPoolPath = (bool)$vals['isSetDefaultPoolPath'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -152,6 +161,13 @@ class WMNullableResourcePlan
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 8:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -200,6 +216,11 @@ class WMNullableResourcePlan
             if ($this->isSetDefaultPoolPath !== null) {
                 $xfer += $output->writeFieldBegin('isSetDefaultPoolPath', TType::BOOL, 7);
                 $xfer += $output->writeBool($this->isSetDefaultPoolPath);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 8);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

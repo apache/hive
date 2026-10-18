@@ -5,8 +5,6 @@
  *
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
- *
- * phpcs:disable Squiz.Classes.ValidClassName
  */
 
 declare(strict_types=1);
@@ -23,48 +21,49 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_table_objects_by_name_args
+class PartitionsSpecByExprResult
 {
     public static bool $isValidate = false;
 
     public static array $tspec = [
         1 => [
-            'var' => 'dbname',
-            'isRequired' => false,
-            'type' => TType::STRING,
+            'var' => 'partitionsSpec',
+            'isRequired' => true,
+            'type' => TType::LST,
+            'etype' => TType::STRUCT,
+            'elem' => [
+                'type' => TType::STRUCT,
+                'class' => '\metastore\PartitionSpec',
+            ],
         ],
         2 => [
-            'var' => 'tbl_names',
-            'isRequired' => false,
-            'type' => TType::LST,
-            'etype' => TType::STRING,
-            'elem' => [
-                'type' => TType::STRING,
-            ],
+            'var' => 'hasUnknownPartitions',
+            'isRequired' => true,
+            'type' => TType::BOOL,
         ],
     ];
 
-    public ?string $dbname = null;
     /**
-     * @var string[]
+     * @var \metastore\PartitionSpec[]
      */
-    public ?array $tbl_names = null;
+    public ?array $partitionsSpec = null;
+    public ?bool $hasUnknownPartitions = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['dbname'])) {
-                $this->dbname = (string)$vals['dbname'];
+            if (isset($vals['partitionsSpec'])) {
+                $this->partitionsSpec = $vals['partitionsSpec'];
             }
-            if (isset($vals['tbl_names'])) {
-                $this->tbl_names = $vals['tbl_names'];
+            if (isset($vals['hasUnknownPartitions'])) {
+                $this->hasUnknownPartitions = (bool)$vals['hasUnknownPartitions'];
             }
         }
     }
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_get_table_objects_by_name_args';
+        return 'PartitionsSpecByExprResult';
     }
 
     public function read(TProtocol $input): int
@@ -83,24 +82,25 @@ class ThriftHiveMetastore_get_table_objects_by_name_args
                 }
                 switch ($fid) {
                     case 1:
-                        if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->dbname);
+                        if ($ftype == TType::LST) {
+                            $this->partitionsSpec = [];
+                            $_size525 = 0;
+                            $_etype528 = 0;
+                            $xfer += $input->readListBegin($_etype528, $_size525);
+                            for ($_i529 = 0; $_i529 < $_size525; ++$_i529) {
+                                $elem530 = null;
+                                $elem530 = new \metastore\PartitionSpec();
+                                $xfer += $elem530->read($input);
+                                $this->partitionsSpec[] = $elem530;
+                            }
+                            $xfer += $input->readListEnd();
                         } else {
                             $xfer += $input->skip($ftype);
                         }
                         break;
                     case 2:
-                        if ($ftype == TType::LST) {
-                            $this->tbl_names = [];
-                            $_size1558 = 0;
-                            $_etype1561 = 0;
-                            $xfer += $input->readListBegin($_etype1561, $_size1558);
-                            for ($_i1562 = 0; $_i1562 < $_size1558; ++$_i1562) {
-                                $elem1563 = null;
-                                $xfer += $input->readString($elem1563);
-                                $this->tbl_names[] = $elem1563;
-                            }
-                            $xfer += $input->readListEnd();
+                        if ($ftype == TType::BOOL) {
+                            $xfer += $input->readBool($this->hasUnknownPartitions);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
@@ -124,22 +124,22 @@ class ThriftHiveMetastore_get_table_objects_by_name_args
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_table_objects_by_name_args');
-            if ($this->dbname !== null) {
-                $xfer += $output->writeFieldBegin('dbname', TType::STRING, 1);
-                $xfer += $output->writeString($this->dbname);
-                $xfer += $output->writeFieldEnd();
-            }
-            if ($this->tbl_names !== null) {
-                if (!is_array($this->tbl_names)) {
+            $xfer += $output->writeStructBegin('PartitionsSpecByExprResult');
+            if ($this->partitionsSpec !== null) {
+                if (!is_array($this->partitionsSpec)) {
                     throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
                 }
-                $xfer += $output->writeFieldBegin('tbl_names', TType::LST, 2);
-                $output->writeListBegin(TType::STRING, count($this->tbl_names));
-                foreach ($this->tbl_names as $iter1564) {
-                    $xfer += $output->writeString($iter1564);
+                $xfer += $output->writeFieldBegin('partitionsSpec', TType::LST, 1);
+                $output->writeListBegin(TType::STRUCT, count($this->partitionsSpec));
+                foreach ($this->partitionsSpec as $iter531) {
+                    $xfer += $iter531->write($output);
                 }
                 $output->writeListEnd();
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->hasUnknownPartitions !== null) {
+                $xfer += $output->writeFieldBegin('hasUnknownPartitions', TType::BOOL, 2);
+                $xfer += $output->writeBool($this->hasUnknownPartitions);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

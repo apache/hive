@@ -4405,6 +4405,8 @@ uint32_t TCLIService_SetClientInfo_presult::read(::apache::thrift::protocol::TPr
 TCLIService_UploadData_args::~TCLIService_UploadData_args() noexcept {
 }
 
+TCLIService_UploadData_args::TCLIService_UploadData_args() noexcept {
+}
 
 uint32_t TCLIService_UploadData_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -4484,6 +4486,8 @@ uint32_t TCLIService_UploadData_pargs::write(::apache::thrift::protocol::TProtoc
 TCLIService_UploadData_result::~TCLIService_UploadData_result() noexcept {
 }
 
+TCLIService_UploadData_result::TCLIService_UploadData_result() noexcept {
+}
 
 uint32_t TCLIService_UploadData_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -4592,6 +4596,8 @@ uint32_t TCLIService_UploadData_presult::read(::apache::thrift::protocol::TProto
 TCLIService_DownloadData_args::~TCLIService_DownloadData_args() noexcept {
 }
 
+TCLIService_DownloadData_args::TCLIService_DownloadData_args() noexcept {
+}
 
 uint32_t TCLIService_DownloadData_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -4671,6 +4677,8 @@ uint32_t TCLIService_DownloadData_pargs::write(::apache::thrift::protocol::TProt
 TCLIService_DownloadData_result::~TCLIService_DownloadData_result() noexcept {
 }
 
+TCLIService_DownloadData_result::TCLIService_DownloadData_result() noexcept {
+}
 
 uint32_t TCLIService_DownloadData_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 

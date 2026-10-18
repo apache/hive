@@ -33,11 +33,14 @@ final class CompactionType
 
     public const SMART_OPTIMIZE = 5;
 
+    public const DEFERRED_CLEANUP = 6;
+
     public static $names = [
         1 => 'MINOR',
         2 => 'MAJOR',
         3 => 'REBALANCE',
         4 => 'ABORT_TXN_CLEANUP',
         5 => 'SMART_OPTIMIZE',
+        6 => 'DEFERRED_CLEANUP',
     ];
 }

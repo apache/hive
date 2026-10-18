@@ -5,13 +5,9 @@
  *
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
- *
- * phpcs:disable Squiz.Classes.ValidClassName
  */
 
 declare(strict_types=1);
-
-namespace metastore;
 
 use Thrift\Base\TBase;
 use Thrift\Type\TType;
@@ -23,42 +19,43 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_alter_dataconnector_args
+class TUploadDataResp
 {
     public static bool $isValidate = false;
 
     public static array $tspec = [
         1 => [
-            'var' => 'name',
-            'isRequired' => false,
-            'type' => TType::STRING,
+            'var' => 'status',
+            'isRequired' => true,
+            'type' => TType::STRUCT,
+            'class' => '\TStatus',
         ],
         2 => [
-            'var' => 'connector',
-            'isRequired' => false,
+            'var' => 'operationHandle',
+            'isRequired' => true,
             'type' => TType::STRUCT,
-            'class' => '\metastore\DataConnector',
+            'class' => '\TOperationHandle',
         ],
     ];
 
-    public ?string $name = null;
-    public ?DataConnector $connector = null;
+    public ?TStatus $status = null;
+    public ?TOperationHandle $operationHandle = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['name'])) {
-                $this->name = (string)$vals['name'];
+            if (isset($vals['status'])) {
+                $this->status = $vals['status'];
             }
-            if (isset($vals['connector'])) {
-                $this->connector = $vals['connector'];
+            if (isset($vals['operationHandle'])) {
+                $this->operationHandle = $vals['operationHandle'];
             }
         }
     }
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_alter_dataconnector_args';
+        return 'TUploadDataResp';
     }
 
     public function read(TProtocol $input): int
@@ -77,16 +74,17 @@ class ThriftHiveMetastore_alter_dataconnector_args
                 }
                 switch ($fid) {
                     case 1:
-                        if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->name);
+                        if ($ftype == TType::STRUCT) {
+                            $this->status = new \TStatus();
+                            $xfer += $this->status->read($input);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
                         break;
                     case 2:
                         if ($ftype == TType::STRUCT) {
-                            $this->connector = new \metastore\DataConnector();
-                            $xfer += $this->connector->read($input);
+                            $this->operationHandle = new \TOperationHandle();
+                            $xfer += $this->operationHandle->read($input);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
@@ -110,18 +108,21 @@ class ThriftHiveMetastore_alter_dataconnector_args
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_dataconnector_args');
-            if ($this->name !== null) {
-                $xfer += $output->writeFieldBegin('name', TType::STRING, 1);
-                $xfer += $output->writeString($this->name);
-                $xfer += $output->writeFieldEnd();
-            }
-            if ($this->connector !== null) {
-                if (!is_object($this->connector)) {
+            $xfer += $output->writeStructBegin('TUploadDataResp');
+            if ($this->status !== null) {
+                if (!is_object($this->status)) {
                     throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
                 }
-                $xfer += $output->writeFieldBegin('connector', TType::STRUCT, 2);
-                $xfer += $this->connector->write($output);
+                $xfer += $output->writeFieldBegin('status', TType::STRUCT, 1);
+                $xfer += $this->status->write($output);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->operationHandle !== null) {
+                if (!is_object($this->operationHandle)) {
+                    throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+                }
+                $xfer += $output->writeFieldBegin('operationHandle', TType::STRUCT, 2);
+                $xfer += $this->operationHandle->write($output);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

@@ -36,10 +36,16 @@ class WMDropTriggerRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ],
+        3 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $resourcePlanName = null;
     public ?string $triggerName = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
@@ -49,6 +55,9 @@ class WMDropTriggerRequest
             }
             if (isset($vals['triggerName'])) {
                 $this->triggerName = (string)$vals['triggerName'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -87,6 +96,13 @@ class WMDropTriggerRequest
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 3:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -115,6 +131,11 @@ class WMDropTriggerRequest
             if ($this->triggerName !== null) {
                 $xfer += $output->writeFieldBegin('triggerName', TType::STRING, 2);
                 $xfer += $output->writeString($this->triggerName);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 3);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

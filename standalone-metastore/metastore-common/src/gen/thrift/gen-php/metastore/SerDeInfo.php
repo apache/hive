@@ -147,16 +147,16 @@ class SerDeInfo
                     case 3:
                         if ($ftype == TType::MAP) {
                             $this->parameters = [];
-                            $_size164 = 0;
-                            $_ktype165 = 0;
-                            $_vtype166 = 0;
-                            $xfer += $input->readMapBegin($_ktype165, $_vtype166, $_size164);
-                            for ($_i168 = 0; $_i168 < $_size164; ++$_i168) {
-                                $key169 = '';
-                                $val170 = '';
-                                $xfer += $input->readString($key169);
-                                $xfer += $input->readString($val170);
-                                $this->parameters[$key169] = $val170;
+                            $_size207 = 0;
+                            $_ktype208 = 0;
+                            $_vtype209 = 0;
+                            $xfer += $input->readMapBegin($_ktype208, $_vtype209, $_size207);
+                            for ($_i211 = 0; $_i211 < $_size207; ++$_i211) {
+                                $key212 = '';
+                                $val213 = '';
+                                $xfer += $input->readString($key212);
+                                $xfer += $input->readString($val213);
+                                $this->parameters[$key212] = $val213;
                             }
                             $xfer += $input->readMapEnd();
                         } else {
@@ -227,10 +227,10 @@ class SerDeInfo
                 }
                 $xfer += $output->writeFieldBegin('parameters', TType::MAP, 3);
                 $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-                foreach ($this->parameters as $kiter171 => $viter172) {
-                    $kiter171 = (string)$kiter171;
-                    $xfer += $output->writeString($kiter171);
-                    $xfer += $output->writeString($viter172);
+                foreach ($this->parameters as $kiter214 => $viter215) {
+                    $kiter214 = (string)$kiter214;
+                    $xfer += $output->writeString($kiter214);
+                    $xfer += $output->writeString($viter215);
                 }
                 $output->writeMapEnd();
                 $xfer += $output->writeFieldEnd();

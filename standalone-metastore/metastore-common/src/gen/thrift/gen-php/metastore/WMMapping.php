@@ -51,6 +51,11 @@ class WMMapping
             'isRequired' => false,
             'type' => TType::I32,
         ],
+        6 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $resourcePlanName = null;
@@ -58,6 +63,7 @@ class WMMapping
     public ?string $entityName = null;
     public ?string $poolPath = null;
     public ?int $ordering = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
@@ -76,6 +82,9 @@ class WMMapping
             }
             if (isset($vals['ordering'])) {
                 $this->ordering = (int)$vals['ordering'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -135,6 +144,13 @@ class WMMapping
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 6:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -178,6 +194,11 @@ class WMMapping
             if ($this->ordering !== null) {
                 $xfer += $output->writeFieldBegin('ordering', TType::I32, 5);
                 $xfer += $output->writeI32($this->ordering);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 6);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

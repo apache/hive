@@ -131,13 +131,13 @@ class PartitionWithoutSD
                     case 1:
                         if ($ftype == TType::LST) {
                             $this->values = [];
-                            $_size331 = 0;
-                            $_etype334 = 0;
-                            $xfer += $input->readListBegin($_etype334, $_size331);
-                            for ($_i335 = 0; $_i335 < $_size331; ++$_i335) {
-                                $elem336 = null;
-                                $xfer += $input->readString($elem336);
-                                $this->values[] = $elem336;
+                            $_size374 = 0;
+                            $_etype377 = 0;
+                            $xfer += $input->readListBegin($_etype377, $_size374);
+                            for ($_i378 = 0; $_i378 < $_size374; ++$_i378) {
+                                $elem379 = null;
+                                $xfer += $input->readString($elem379);
+                                $this->values[] = $elem379;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -168,16 +168,16 @@ class PartitionWithoutSD
                     case 5:
                         if ($ftype == TType::MAP) {
                             $this->parameters = [];
-                            $_size337 = 0;
-                            $_ktype338 = 0;
-                            $_vtype339 = 0;
-                            $xfer += $input->readMapBegin($_ktype338, $_vtype339, $_size337);
-                            for ($_i341 = 0; $_i341 < $_size337; ++$_i341) {
-                                $key342 = '';
-                                $val343 = '';
-                                $xfer += $input->readString($key342);
-                                $xfer += $input->readString($val343);
-                                $this->parameters[$key342] = $val343;
+                            $_size380 = 0;
+                            $_ktype381 = 0;
+                            $_vtype382 = 0;
+                            $xfer += $input->readMapBegin($_ktype381, $_vtype382, $_size380);
+                            for ($_i384 = 0; $_i384 < $_size380; ++$_i384) {
+                                $key385 = '';
+                                $val386 = '';
+                                $xfer += $input->readString($key385);
+                                $xfer += $input->readString($val386);
+                                $this->parameters[$key385] = $val386;
                             }
                             $xfer += $input->readMapEnd();
                         } else {
@@ -218,8 +218,8 @@ class PartitionWithoutSD
                 }
                 $xfer += $output->writeFieldBegin('values', TType::LST, 1);
                 $output->writeListBegin(TType::STRING, count($this->values));
-                foreach ($this->values as $iter344) {
-                    $xfer += $output->writeString($iter344);
+                foreach ($this->values as $iter387) {
+                    $xfer += $output->writeString($iter387);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();
@@ -245,10 +245,10 @@ class PartitionWithoutSD
                 }
                 $xfer += $output->writeFieldBegin('parameters', TType::MAP, 5);
                 $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-                foreach ($this->parameters as $kiter345 => $viter346) {
-                    $kiter345 = (string)$kiter345;
-                    $xfer += $output->writeString($kiter345);
-                    $xfer += $output->writeString($viter346);
+                foreach ($this->parameters as $kiter388 => $viter389) {
+                    $kiter388 = (string)$kiter388;
+                    $xfer += $output->writeString($kiter388);
+                    $xfer += $output->writeString($viter389);
                 }
                 $output->writeMapEnd();
                 $xfer += $output->writeFieldEnd();

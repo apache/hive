@@ -261,6 +261,14 @@ class TGetTypeInfoReq; end
 
 class TGetTypeInfoResp; end
 
+class TUploadDataReq; end
+
+class TUploadDataResp; end
+
+class TDownloadDataReq; end
+
+class TDownloadDataResp; end
+
 class TGetCatalogsReq; end
 
 class TGetCatalogsResp; end
@@ -1431,6 +1439,95 @@ class TGetTypeInfoResp
   ::Thrift::Struct.generate_accessors self
 end
 
+class TUploadDataReq
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SESSIONHANDLE_FIELD_ID = 1
+  TABLENAME_FIELD_ID = 2
+  PATH_FIELD_ID = 3
+  VALUES_FIELD_ID = 4
+
+  FIELDS = {
+    SESSIONHANDLE_FIELD_ID => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle},
+    TABLENAME_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
+    PATH_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'path', :optional => true},
+    VALUES_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'values', :binary => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field sessionHandle is unset!') unless @sessionHandle
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field values is unset!') unless @values
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TUploadDataResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATUS_FIELD_ID = 1
+  OPERATIONHANDLE_FIELD_ID = 2
+
+  FIELDS = {
+    STATUS_FIELD_ID => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
+    OPERATIONHANDLE_FIELD_ID => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field status is unset!') unless @status
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field operationHandle is unset!') unless @operationHandle
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TDownloadDataReq
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SESSIONHANDLE_FIELD_ID = 1
+  TABLENAME_FIELD_ID = 2
+  QUERY_FIELD_ID = 3
+  FORMAT_FIELD_ID = 4
+  DOWNLOADOPTIONS_FIELD_ID = 5
+
+  FIELDS = {
+    SESSIONHANDLE_FIELD_ID => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle},
+    TABLENAME_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
+    QUERY_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'query', :optional => true},
+    FORMAT_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'format', :optional => true},
+    DOWNLOADOPTIONS_FIELD_ID => {:type => ::Thrift::Types::MAP, :name => 'downloadOptions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field sessionHandle is unset!') unless @sessionHandle
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TDownloadDataResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATUS_FIELD_ID = 1
+  OPERATIONHANDLE_FIELD_ID = 2
+
+  FIELDS = {
+    STATUS_FIELD_ID => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
+    OPERATIONHANDLE_FIELD_ID => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field status is unset!') unless @status
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::INVALID_DATA, 'Required field operationHandle is unset!') unless @operationHandle
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class TGetCatalogsReq
   include ::Thrift::Struct, ::Thrift::Struct_Union
   SESSIONHANDLE_FIELD_ID = 1
@@ -2100,6 +2197,7 @@ class TProgressUpdateResp
   STATUS_FIELD_ID = 4
   FOOTERSUMMARY_FIELD_ID = 5
   STARTTIME_FIELD_ID = 6
+  QUEUEMETRICS_FIELD_ID = 7
 
   FIELDS = {
     HEADERNAMES_FIELD_ID => {:type => ::Thrift::Types::LIST, :name => 'headerNames', :element => {:type => ::Thrift::Types::STRING}},
@@ -2107,7 +2205,8 @@ class TProgressUpdateResp
     PROGRESSEDPERCENTAGE_FIELD_ID => {:type => ::Thrift::Types::DOUBLE, :name => 'progressedPercentage'},
     STATUS_FIELD_ID => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::TJobExecutionStatus},
     FOOTERSUMMARY_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'footerSummary'},
-    STARTTIME_FIELD_ID => {:type => ::Thrift::Types::I64, :name => 'startTime'}
+    STARTTIME_FIELD_ID => {:type => ::Thrift::Types::I64, :name => 'startTime'},
+    QUEUEMETRICS_FIELD_ID => {:type => ::Thrift::Types::STRING, :name => 'queueMetrics', :optional => true}
   }
 
   def struct_fields; FIELDS; end

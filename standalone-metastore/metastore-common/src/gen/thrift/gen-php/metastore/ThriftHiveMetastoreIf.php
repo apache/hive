@@ -27,10 +27,10 @@ use Thrift\Exception\TApplicationException;
 interface ThriftHiveMetastoreIf extends \FacebookServiceIf
 {
     /**
-     * @return string
-     * @throws \metastore\MetaException
+     * @param \metastore\AbortCompactionRequest $rqst
+     * @return \metastore\AbortCompactResponse
      */
-    public function get_hms_api_version(): ?string;
+    public function abort_Compactions(?AbortCompactionRequest $rqst): ?AbortCompactResponse;
     /**
      * @param string $key
      * @return string
@@ -115,11 +115,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function drop_database(?string $name, ?bool $deleteData, ?bool $cascade): void;
     /**
      * @param \metastore\DropDatabaseRequest $req
+     * @return \metastore\AsyncOperationResp
      * @throws \metastore\NoSuchObjectException
      * @throws \metastore\InvalidOperationException
      * @throws \metastore\MetaException
      */
-    public function drop_database_req(?DropDatabaseRequest $req): void;
+    public function drop_database_req(?DropDatabaseRequest $req): ?AsyncOperationResp;
     /**
      * @param string $pattern
      * @return string[]
@@ -151,13 +152,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function alter_database_req(?AlterDatabaseRequest $alterDbReq): void;
     /**
-     * @param \metastore\DataConnector $connector
-     * @throws \metastore\AlreadyExistsException
-     * @throws \metastore\InvalidObjectException
-     * @throws \metastore\MetaException
-     */
-    public function create_dataconnector(?DataConnector $connector): void;
-    /**
      * @param \metastore\CreateDataConnectorRequest $connectorReq
      * @throws \metastore\AlreadyExistsException
      * @throws \metastore\InvalidObjectException
@@ -172,15 +166,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_dataconnector_req(?GetDataConnectorRequest $request): ?DataConnector;
     /**
-     * @param string $name
-     * @param bool $ifNotExists
-     * @param bool $checkReferences
-     * @throws \metastore\NoSuchObjectException
-     * @throws \metastore\InvalidOperationException
-     * @throws \metastore\MetaException
-     */
-    public function drop_dataconnector(?string $name, ?bool $ifNotExists, ?bool $checkReferences): void;
-    /**
      * @param \metastore\DropDataConnectorRequest $dropDcReq
      * @throws \metastore\NoSuchObjectException
      * @throws \metastore\InvalidOperationException
@@ -192,13 +177,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function get_dataconnectors(): ?array;
-    /**
-     * @param string $name
-     * @param \metastore\DataConnector $connector
-     * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
-     */
-    public function alter_dataconnector(?string $name, ?DataConnector $connector): void;
     /**
      * @param \metastore\AlterDataConnectorRequest $alterReq
      * @throws \metastore\MetaException
@@ -396,10 +374,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function drop_table_with_environment_context(?string $dbname, ?string $name, ?bool $deleteData, ?EnvironmentContext $environment_context): void;
     /**
      * @param \metastore\DropTableRequest $dropTableReq
+     * @return \metastore\AsyncOperationResp
      * @throws \metastore\NoSuchObjectException
      * @throws \metastore\MetaException
      */
-    public function drop_table_req(?DropTableRequest $dropTableReq): void;
+    public function drop_table_req(?DropTableRequest $dropTableReq): ?AsyncOperationResp;
     /**
      * @param string $dbName
      * @param string $tableName
@@ -453,20 +432,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function get_all_tables(?string $db_name): ?array;
-    /**
-     * @param string $dbname
-     * @param string $tbl_name
-     * @return \metastore\Table
-     * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
-     */
-    public function get_table(?string $dbname, ?string $tbl_name): ?Table;
-    /**
-     * @param string $dbname
-     * @param string[] $tbl_names
-     * @return \metastore\Table[]
-     */
-    public function get_table_objects_by_name(?string $dbname, ?array $tbl_names): ?array;
     /**
      * @param \metastore\GetTablesExtRequest $req
      * @return \metastore\ExtendedTableInfo[]
@@ -550,6 +515,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function alter_table_req(?AlterTableRequest $req): ?AlterTableResponse;
+    /**
+     * @param \metastore\TableParamsUpdate[] $updates
+     * @throws \metastore\MetaException
+     */
+    public function update_table_params(?array $updates): void;
     /**
      * @param \metastore\Partition $new_part
      * @return \metastore\Partition
@@ -865,6 +835,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_partition_names_ps_req(?GetPartitionNamesPsRequest $req): ?GetPartitionNamesPsResponse;
     /**
+     * @param \metastore\PartitionsByExprRequest $req
+     * @return string[]
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_partition_names_req(?PartitionsByExprRequest $req): ?array;
+    /**
      * @param string $db_name
      * @param string $tbl_name
      * @param string $filter
@@ -899,6 +876,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_partitions_by_expr(?PartitionsByExprRequest $req): ?PartitionsByExprResult;
     /**
+     * @param \metastore\PartitionsByExprRequest $req
+     * @return \metastore\PartitionsSpecByExprResult
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_partitions_spec_by_expr(?PartitionsByExprRequest $req): ?PartitionsSpecByExprResult;
+    /**
      * @param string $db_name
      * @param string $tbl_name
      * @param string $filter
@@ -925,6 +909,20 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\InvalidObjectException
      */
     public function get_partitions_by_names_req(?GetPartitionsByNamesRequest $req): ?GetPartitionsByNamesResult;
+    /**
+     * @param \metastore\PropertyGetRequest $req
+     * @return \metastore\PropertyGetResponse
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_properties(?PropertyGetRequest $req): ?PropertyGetResponse;
+    /**
+     * @param \metastore\PropertySetRequest $req
+     * @return bool
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function set_properties(?PropertySetRequest $req): ?bool;
     /**
      * @param string $db_name
      * @param string $tbl_name
@@ -1611,6 +1609,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function mark_failed(?CompactionInfoStruct $cr): void;
     /**
+     * @param \metastore\CompactionInfoStruct $cr
+     * @throws \metastore\MetaException
+     */
+    public function mark_refused(?CompactionInfoStruct $cr): void;
+    /**
      * @param \metastore\CompactionMetricsDataStruct $data
      * @return bool
      * @throws \metastore\MetaException
@@ -1621,11 +1624,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function remove_compaction_metrics_data(?CompactionMetricsDataRequest $request): void;
-    /**
-     * @param \metastore\CompactionInfoStruct $cr
-     * @throws \metastore\MetaException
-     */
-    public function mark_refused(?CompactionInfoStruct $cr): void;
     /**
      * @param string $jobId
      * @param int $cq_id
@@ -1946,6 +1944,16 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function heartbeat_lock_materialization_rebuild(?string $dbName, ?string $tableName, ?int $txnId): ?bool;
     /**
+     * @param \metastore\LockMaterializationRebuildRequest $req
+     * @return \metastore\LockResponse
+     */
+    public function get_lock_materialization_rebuild_req(?LockMaterializationRebuildRequest $req): ?LockResponse;
+    /**
+     * @param \metastore\LockMaterializationRebuildRequest $req
+     * @return bool
+     */
+    public function heartbeat_lock_materialization_rebuild_req(?LockMaterializationRebuildRequest $req): ?bool;
+    /**
      * @param \metastore\RuntimeStat $stat
      * @throws \metastore\MetaException
      */
@@ -2058,20 +2066,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function get_all_write_event_info(?GetAllWriteEventInfoRequest $request): ?array;
-    /**
-     * @param \metastore\PropertyGetRequest $req
-     * @return \metastore\PropertyGetResponse
-     * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
-     */
-    public function get_properties(?PropertyGetRequest $req): ?PropertyGetResponse;
-    /**
-     * @param \metastore\PropertySetRequest $req
-     * @return bool
-     * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
-     */
-    public function set_properties(?PropertySetRequest $req): ?bool;
     /**
      * @param string $policyName
      * @return \metastore\ReplayedTxnsForPolicyResult

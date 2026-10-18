@@ -52,6 +52,11 @@ class WMAlterResourcePlanRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ],
+        6 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $resourcePlanName = null;
@@ -59,6 +64,7 @@ class WMAlterResourcePlanRequest
     public ?bool $isEnableAndActivate = null;
     public ?bool $isForceDeactivate = null;
     public ?bool $isReplace = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
@@ -77,6 +83,9 @@ class WMAlterResourcePlanRequest
             }
             if (isset($vals['isReplace'])) {
                 $this->isReplace = (bool)$vals['isReplace'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -137,6 +146,13 @@ class WMAlterResourcePlanRequest
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 6:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -183,6 +199,11 @@ class WMAlterResourcePlanRequest
             if ($this->isReplace !== null) {
                 $xfer += $output->writeFieldBegin('isReplace', TType::BOOL, 5);
                 $xfer += $output->writeBool($this->isReplace);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 6);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

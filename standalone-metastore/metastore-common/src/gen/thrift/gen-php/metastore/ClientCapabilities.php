@@ -75,13 +75,13 @@ class ClientCapabilities
                     case 1:
                         if ($ftype == TType::LST) {
                             $this->values = [];
-                            $_size993 = 0;
-                            $_etype996 = 0;
-                            $xfer += $input->readListBegin($_etype996, $_size993);
-                            for ($_i997 = 0; $_i997 < $_size993; ++$_i997) {
-                                $elem998 = null;
-                                $xfer += $input->readI32($elem998);
-                                $this->values[] = $elem998;
+                            $_size1059 = 0;
+                            $_etype1062 = 0;
+                            $xfer += $input->readListBegin($_etype1062, $_size1059);
+                            for ($_i1063 = 0; $_i1063 < $_size1059; ++$_i1063) {
+                                $elem1064 = null;
+                                $xfer += $input->readI32($elem1064);
+                                $this->values[] = $elem1064;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -114,8 +114,8 @@ class ClientCapabilities
                 }
                 $xfer += $output->writeFieldBegin('values', TType::LST, 1);
                 $output->writeListBegin(TType::I32, count($this->values));
-                foreach ($this->values as $iter999) {
-                    $xfer += $output->writeI32($iter999);
+                foreach ($this->values as $iter1065) {
+                    $xfer += $output->writeI32($iter1065);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();

@@ -81,11 +81,6 @@ class GetTableRequest
             'isRequired' => false,
             'type' => TType::I64,
         ],
-        12 => [
-            'var' => 'getFileMetadata',
-            'isRequired' => false,
-            'type' => TType::BOOL,
-        ],
     ];
 
     public ?string $dbName = null;
@@ -101,7 +96,6 @@ class GetTableRequest
     public ?string $processorIdentifier = null;
     public ?string $engine = "hive";
     public ?int $id = -1;
-    public ?bool $getFileMetadata = null;
 
     public function __construct(?array $vals = null)
     {
@@ -135,9 +129,6 @@ class GetTableRequest
             }
             if (isset($vals['id'])) {
                 $this->id = (int)$vals['id'];
-            }
-            if (isset($vals['getFileMetadata'])) {
-                $this->getFileMetadata = (bool)$vals['getFileMetadata'];
             }
         }
     }
@@ -208,13 +199,13 @@ class GetTableRequest
                     case 8:
                         if ($ftype == TType::LST) {
                             $this->processorCapabilities = [];
-                            $_size1007 = 0;
-                            $_etype1010 = 0;
-                            $xfer += $input->readListBegin($_etype1010, $_size1007);
-                            for ($_i1011 = 0; $_i1011 < $_size1007; ++$_i1011) {
-                                $elem1012 = null;
-                                $xfer += $input->readString($elem1012);
-                                $this->processorCapabilities[] = $elem1012;
+                            $_size1073 = 0;
+                            $_etype1076 = 0;
+                            $xfer += $input->readListBegin($_etype1076, $_size1073);
+                            for ($_i1077 = 0; $_i1077 < $_size1073; ++$_i1077) {
+                                $elem1078 = null;
+                                $xfer += $input->readString($elem1078);
+                                $this->processorCapabilities[] = $elem1078;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -238,13 +229,6 @@ class GetTableRequest
                     case 11:
                         if ($ftype == TType::I64) {
                             $xfer += $input->readI64($this->id);
-                        } else {
-                            $xfer += $input->skip($ftype);
-                        }
-                        break;
-                    case 12:
-                        if ($ftype == TType::BOOL) {
-                            $xfer += $input->readBool($this->getFileMetadata);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
@@ -308,8 +292,8 @@ class GetTableRequest
                 }
                 $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 8);
                 $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
-                foreach ($this->processorCapabilities as $iter1013) {
-                    $xfer += $output->writeString($iter1013);
+                foreach ($this->processorCapabilities as $iter1079) {
+                    $xfer += $output->writeString($iter1079);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();
@@ -327,11 +311,6 @@ class GetTableRequest
             if ($this->id !== null) {
                 $xfer += $output->writeFieldBegin('id', TType::I64, 11);
                 $xfer += $output->writeI64($this->id);
-                $xfer += $output->writeFieldEnd();
-            }
-            if ($this->getFileMetadata !== null) {
-                $xfer += $output->writeFieldBegin('getFileMetadata', TType::BOOL, 12);
-                $xfer += $output->writeBool($this->getFileMetadata);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

@@ -75,14 +75,14 @@ class PrimaryKeysResponse
                     case 1:
                         if ($ftype == TType::LST) {
                             $this->primaryKeys = [];
-                            $_size391 = 0;
-                            $_etype394 = 0;
-                            $xfer += $input->readListBegin($_etype394, $_size391);
-                            for ($_i395 = 0; $_i395 < $_size391; ++$_i395) {
-                                $elem396 = null;
-                                $elem396 = new \metastore\SQLPrimaryKey();
-                                $xfer += $elem396->read($input);
-                                $this->primaryKeys[] = $elem396;
+                            $_size434 = 0;
+                            $_etype437 = 0;
+                            $xfer += $input->readListBegin($_etype437, $_size434);
+                            for ($_i438 = 0; $_i438 < $_size434; ++$_i438) {
+                                $elem439 = null;
+                                $elem439 = new \metastore\SQLPrimaryKey();
+                                $xfer += $elem439->read($input);
+                                $this->primaryKeys[] = $elem439;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -115,8 +115,8 @@ class PrimaryKeysResponse
                 }
                 $xfer += $output->writeFieldBegin('primaryKeys', TType::LST, 1);
                 $output->writeListBegin(TType::STRUCT, count($this->primaryKeys));
-                foreach ($this->primaryKeys as $iter397) {
-                    $xfer += $iter397->write($output);
+                foreach ($this->primaryKeys as $iter440) {
+                    $xfer += $iter440->write($output);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();

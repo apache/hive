@@ -47,12 +47,18 @@ class WMResourcePlan
             'isRequired' => false,
             'type' => TType::STRING,
         ],
+        5 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $name = null;
     public ?int $status = null;
     public ?int $queryParallelism = null;
     public ?string $defaultPoolPath = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
@@ -68,6 +74,9 @@ class WMResourcePlan
             }
             if (isset($vals['defaultPoolPath'])) {
                 $this->defaultPoolPath = (string)$vals['defaultPoolPath'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -120,6 +129,13 @@ class WMResourcePlan
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 5:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -158,6 +174,11 @@ class WMResourcePlan
             if ($this->defaultPoolPath !== null) {
                 $xfer += $output->writeFieldBegin('defaultPoolPath', TType::STRING, 4);
                 $xfer += $output->writeString($this->defaultPoolPath);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 5);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

@@ -108,6 +108,11 @@ class ShowLocksResponseElement
             'isRequired' => false,
             'type' => TType::I64,
         ],
+        17 => [
+            'var' => 'catname',
+            'isRequired' => true,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?int $lockid = null;
@@ -126,6 +131,7 @@ class ShowLocksResponseElement
     public ?int $blockedByExtId = null;
     public ?int $blockedByIntId = null;
     public ?int $lockIdInternal = null;
+    public ?string $catname = null;
 
     public function __construct(?array $vals = null)
     {
@@ -177,6 +183,9 @@ class ShowLocksResponseElement
             }
             if (isset($vals['lockIdInternal'])) {
                 $this->lockIdInternal = (int)$vals['lockIdInternal'];
+            }
+            if (isset($vals['catname'])) {
+                $this->catname = (string)$vals['catname'];
             }
         }
     }
@@ -313,6 +322,13 @@ class ShowLocksResponseElement
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 17:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->catname);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -411,6 +427,11 @@ class ShowLocksResponseElement
             if ($this->lockIdInternal !== null) {
                 $xfer += $output->writeFieldBegin('lockIdInternal', TType::I64, 16);
                 $xfer += $output->writeI64($this->lockIdInternal);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->catname !== null) {
+                $xfer += $output->writeFieldBegin('catname', TType::STRING, 17);
+                $xfer += $output->writeString($this->catname);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

@@ -5,8 +5,6 @@
  *
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
- *
- * phpcs:disable Squiz.Classes.ValidClassName
  */
 
 declare(strict_types=1);
@@ -23,31 +21,40 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_table_args
+class TableName
 {
     public static bool $isValidate = false;
 
     public static array $tspec = [
         1 => [
-            'var' => 'dbname',
+            'var' => 'cat_name',
             'isRequired' => false,
             'type' => TType::STRING,
         ],
         2 => [
+            'var' => 'db_name',
+            'isRequired' => true,
+            'type' => TType::STRING,
+        ],
+        3 => [
             'var' => 'tbl_name',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::STRING,
         ],
     ];
 
-    public ?string $dbname = null;
+    public ?string $cat_name = null;
+    public ?string $db_name = null;
     public ?string $tbl_name = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['dbname'])) {
-                $this->dbname = (string)$vals['dbname'];
+            if (isset($vals['cat_name'])) {
+                $this->cat_name = (string)$vals['cat_name'];
+            }
+            if (isset($vals['db_name'])) {
+                $this->db_name = (string)$vals['db_name'];
             }
             if (isset($vals['tbl_name'])) {
                 $this->tbl_name = (string)$vals['tbl_name'];
@@ -57,7 +64,7 @@ class ThriftHiveMetastore_get_table_args
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_get_table_args';
+        return 'TableName';
     }
 
     public function read(TProtocol $input): int
@@ -77,12 +84,19 @@ class ThriftHiveMetastore_get_table_args
                 switch ($fid) {
                     case 1:
                         if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->dbname);
+                            $xfer += $input->readString($this->cat_name);
                         } else {
                             $xfer += $input->skip($ftype);
                         }
                         break;
                     case 2:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->db_name);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
+                    case 3:
                         if ($ftype == TType::STRING) {
                             $xfer += $input->readString($this->tbl_name);
                         } else {
@@ -108,14 +122,19 @@ class ThriftHiveMetastore_get_table_args
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_table_args');
-            if ($this->dbname !== null) {
-                $xfer += $output->writeFieldBegin('dbname', TType::STRING, 1);
-                $xfer += $output->writeString($this->dbname);
+            $xfer += $output->writeStructBegin('TableName');
+            if ($this->cat_name !== null) {
+                $xfer += $output->writeFieldBegin('cat_name', TType::STRING, 1);
+                $xfer += $output->writeString($this->cat_name);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->db_name !== null) {
+                $xfer += $output->writeFieldBegin('db_name', TType::STRING, 2);
+                $xfer += $output->writeString($this->db_name);
                 $xfer += $output->writeFieldEnd();
             }
             if ($this->tbl_name !== null) {
-                $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 2);
+                $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 3);
                 $xfer += $output->writeString($this->tbl_name);
                 $xfer += $output->writeFieldEnd();
             }

@@ -85,14 +85,14 @@ class PartitionSpecWithSharedSD
                     case 1:
                         if ($ftype == TType::LST) {
                             $this->partitions = [];
-                            $_size347 = 0;
-                            $_etype350 = 0;
-                            $xfer += $input->readListBegin($_etype350, $_size347);
-                            for ($_i351 = 0; $_i351 < $_size347; ++$_i351) {
-                                $elem352 = null;
-                                $elem352 = new \metastore\PartitionWithoutSD();
-                                $xfer += $elem352->read($input);
-                                $this->partitions[] = $elem352;
+                            $_size390 = 0;
+                            $_etype393 = 0;
+                            $xfer += $input->readListBegin($_etype393, $_size390);
+                            for ($_i394 = 0; $_i394 < $_size390; ++$_i394) {
+                                $elem395 = null;
+                                $elem395 = new \metastore\PartitionWithoutSD();
+                                $xfer += $elem395->read($input);
+                                $this->partitions[] = $elem395;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -133,8 +133,8 @@ class PartitionSpecWithSharedSD
                 }
                 $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
                 $output->writeListBegin(TType::STRUCT, count($this->partitions));
-                foreach ($this->partitions as $iter353) {
-                    $xfer += $iter353->write($output);
+                foreach ($this->partitions as $iter396) {
+                    $xfer += $iter396->write($output);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();

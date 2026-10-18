@@ -115,13 +115,13 @@ class GetLatestCommittedCompactionInfoRequest
                     case 3:
                         if ($ftype == TType::LST) {
                             $this->partitionnames = [];
-                            $_size791 = 0;
-                            $_etype794 = 0;
-                            $xfer += $input->readListBegin($_etype794, $_size791);
-                            for ($_i795 = 0; $_i795 < $_size791; ++$_i795) {
-                                $elem796 = null;
-                                $xfer += $input->readString($elem796);
-                                $this->partitionnames[] = $elem796;
+                            $_size857 = 0;
+                            $_etype860 = 0;
+                            $xfer += $input->readListBegin($_etype860, $_size857);
+                            for ($_i861 = 0; $_i861 < $_size857; ++$_i861) {
+                                $elem862 = null;
+                                $xfer += $input->readString($elem862);
+                                $this->partitionnames[] = $elem862;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -171,8 +171,8 @@ class GetLatestCommittedCompactionInfoRequest
                 }
                 $xfer += $output->writeFieldBegin('partitionnames', TType::LST, 3);
                 $output->writeListBegin(TType::STRING, count($this->partitionnames));
-                foreach ($this->partitionnames as $iter797) {
-                    $xfer += $output->writeString($iter797);
+                foreach ($this->partitionnames as $iter863) {
+                    $xfer += $output->writeString($iter863);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();

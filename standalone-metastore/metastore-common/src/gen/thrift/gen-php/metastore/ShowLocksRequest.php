@@ -51,6 +51,11 @@ class ShowLocksRequest
             'isRequired' => false,
             'type' => TType::I64,
         ],
+        6 => [
+            'var' => 'catname',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $dbname = null;
@@ -58,6 +63,7 @@ class ShowLocksRequest
     public ?string $partname = null;
     public ?bool $isExtended = false;
     public ?int $txnid = null;
+    public ?string $catname = "hive";
 
     public function __construct(?array $vals = null)
     {
@@ -76,6 +82,9 @@ class ShowLocksRequest
             }
             if (isset($vals['txnid'])) {
                 $this->txnid = (int)$vals['txnid'];
+            }
+            if (isset($vals['catname'])) {
+                $this->catname = (string)$vals['catname'];
             }
         }
     }
@@ -135,6 +144,13 @@ class ShowLocksRequest
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 6:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->catname);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -178,6 +194,11 @@ class ShowLocksRequest
             if ($this->txnid !== null) {
                 $xfer += $output->writeFieldBegin('txnid', TType::I64, 5);
                 $xfer += $output->writeI64($this->txnid);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->catname !== null) {
+                $xfer += $output->writeFieldBegin('catname', TType::STRING, 6);
+                $xfer += $output->writeString($this->catname);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

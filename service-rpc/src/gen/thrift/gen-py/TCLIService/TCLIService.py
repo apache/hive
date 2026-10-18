@@ -4999,42 +4999,52 @@ class UploadData_args(object):
      - req
 
     """
+    thrift_spec = None
 
 
-    def __init__(self, req=None,):
+    def __init__(self, req = None,):
         self.req = req
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.STRUCT:
-                    self.req = TUploadDataReq()
-                    self.req.read(iprot)
+        iprot.increment_recursion_depth()
+        try:
+            iprot.readStructBegin()
+            while True:
+                (fname, ftype, fid) = iprot.readFieldBegin()
+                if ftype == TType.STOP:
+                    break
+                if fid == 1:
+                    if ftype == TType.STRUCT:
+                        self.req = TUploadDataReq()
+                        self.req.read(iprot)
+                    else:
+                        iprot.skip(ftype)
                 else:
                     iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
+                iprot.readFieldEnd()
+            iprot.readStructEnd()
+        finally:
+            iprot.decrement_recursion_depth()
 
     def write(self, oprot):
+        self.validate()
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('UploadData_args')
-        if self.req is not None:
-            oprot.writeFieldBegin('req', TType.STRUCT, 1)
-            self.req.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
+        oprot.increment_recursion_depth()
+        try:
+            oprot.writeStructBegin('UploadData_args')
+            if self.req is not None:
+                oprot.writeFieldBegin('req', TType.STRUCT, 1)
+                self.req.write(oprot)
+                oprot.writeFieldEnd()
+            oprot.writeFieldStop()
+            oprot.writeStructEnd()
+        finally:
+            oprot.decrement_recursion_depth()
 
     def validate(self):
         return
@@ -5062,42 +5072,52 @@ class UploadData_result(object):
      - success
 
     """
+    thrift_spec = None
 
 
-    def __init__(self, success=None,):
+    def __init__(self, success = None,):
         self.success = success
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 0:
-                if ftype == TType.STRUCT:
-                    self.success = TUploadDataResp()
-                    self.success.read(iprot)
+        iprot.increment_recursion_depth()
+        try:
+            iprot.readStructBegin()
+            while True:
+                (fname, ftype, fid) = iprot.readFieldBegin()
+                if ftype == TType.STOP:
+                    break
+                if fid == 0:
+                    if ftype == TType.STRUCT:
+                        self.success = TUploadDataResp()
+                        self.success.read(iprot)
+                    else:
+                        iprot.skip(ftype)
                 else:
                     iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
+                iprot.readFieldEnd()
+            iprot.readStructEnd()
+        finally:
+            iprot.decrement_recursion_depth()
 
     def write(self, oprot):
+        self.validate()
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('UploadData_result')
-        if self.success is not None:
-            oprot.writeFieldBegin('success', TType.STRUCT, 0)
-            self.success.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
+        oprot.increment_recursion_depth()
+        try:
+            oprot.writeStructBegin('UploadData_result')
+            if self.success is not None:
+                oprot.writeFieldBegin('success', TType.STRUCT, 0)
+                self.success.write(oprot)
+                oprot.writeFieldEnd()
+            oprot.writeFieldStop()
+            oprot.writeStructEnd()
+        finally:
+            oprot.decrement_recursion_depth()
 
     def validate(self):
         return
@@ -5124,42 +5144,52 @@ class DownloadData_args(object):
      - req
 
     """
+    thrift_spec = None
 
 
-    def __init__(self, req=None,):
+    def __init__(self, req = None,):
         self.req = req
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.STRUCT:
-                    self.req = TDownloadDataReq()
-                    self.req.read(iprot)
+        iprot.increment_recursion_depth()
+        try:
+            iprot.readStructBegin()
+            while True:
+                (fname, ftype, fid) = iprot.readFieldBegin()
+                if ftype == TType.STOP:
+                    break
+                if fid == 1:
+                    if ftype == TType.STRUCT:
+                        self.req = TDownloadDataReq()
+                        self.req.read(iprot)
+                    else:
+                        iprot.skip(ftype)
                 else:
                     iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
+                iprot.readFieldEnd()
+            iprot.readStructEnd()
+        finally:
+            iprot.decrement_recursion_depth()
 
     def write(self, oprot):
+        self.validate()
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('DownloadData_args')
-        if self.req is not None:
-            oprot.writeFieldBegin('req', TType.STRUCT, 1)
-            self.req.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
+        oprot.increment_recursion_depth()
+        try:
+            oprot.writeStructBegin('DownloadData_args')
+            if self.req is not None:
+                oprot.writeFieldBegin('req', TType.STRUCT, 1)
+                self.req.write(oprot)
+                oprot.writeFieldEnd()
+            oprot.writeFieldStop()
+            oprot.writeStructEnd()
+        finally:
+            oprot.decrement_recursion_depth()
 
     def validate(self):
         return
@@ -5187,42 +5217,52 @@ class DownloadData_result(object):
      - success
 
     """
+    thrift_spec = None
 
 
-    def __init__(self, success=None,):
+    def __init__(self, success = None,):
         self.success = success
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 0:
-                if ftype == TType.STRUCT:
-                    self.success = TDownloadDataResp()
-                    self.success.read(iprot)
+        iprot.increment_recursion_depth()
+        try:
+            iprot.readStructBegin()
+            while True:
+                (fname, ftype, fid) = iprot.readFieldBegin()
+                if ftype == TType.STOP:
+                    break
+                if fid == 0:
+                    if ftype == TType.STRUCT:
+                        self.success = TDownloadDataResp()
+                        self.success.read(iprot)
+                    else:
+                        iprot.skip(ftype)
                 else:
                     iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
+                iprot.readFieldEnd()
+            iprot.readStructEnd()
+        finally:
+            iprot.decrement_recursion_depth()
 
     def write(self, oprot):
+        self.validate()
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('DownloadData_result')
-        if self.success is not None:
-            oprot.writeFieldBegin('success', TType.STRUCT, 0)
-            self.success.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
+        oprot.increment_recursion_depth()
+        try:
+            oprot.writeStructBegin('DownloadData_result')
+            if self.success is not None:
+                oprot.writeFieldBegin('success', TType.STRUCT, 0)
+                self.success.write(oprot)
+                oprot.writeFieldEnd()
+            oprot.writeFieldStop()
+            oprot.writeStructEnd()
+        finally:
+            oprot.decrement_recursion_depth()
 
     def validate(self):
         return

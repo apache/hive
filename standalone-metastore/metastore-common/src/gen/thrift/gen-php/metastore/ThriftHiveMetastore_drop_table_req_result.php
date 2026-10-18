@@ -28,6 +28,12 @@ class ThriftHiveMetastore_drop_table_req_result
     public static bool $isValidate = false;
 
     public static array $tspec = [
+        0 => [
+            'var' => 'success',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\AsyncOperationResp',
+        ],
         1 => [
             'var' => 'o1',
             'isRequired' => false,
@@ -42,12 +48,16 @@ class ThriftHiveMetastore_drop_table_req_result
         ],
     ];
 
+    public ?AsyncOperationResp $success = null;
     public ?NoSuchObjectException $o1 = null;
     public ?MetaException $o3 = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
+            if (isset($vals['success'])) {
+                $this->success = $vals['success'];
+            }
             if (isset($vals['o1'])) {
                 $this->o1 = $vals['o1'];
             }
@@ -77,6 +87,14 @@ class ThriftHiveMetastore_drop_table_req_result
                     break;
                 }
                 switch ($fid) {
+                    case 0:
+                        if ($ftype == TType::STRUCT) {
+                            $this->success = new \metastore\AsyncOperationResp();
+                            $xfer += $this->success->read($input);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     case 1:
                         if ($ftype == TType::STRUCT) {
                             $this->o1 = new \metastore\NoSuchObjectException();
@@ -113,6 +131,14 @@ class ThriftHiveMetastore_drop_table_req_result
         $output->incrementRecursionDepth();
         try {
             $xfer += $output->writeStructBegin('ThriftHiveMetastore_drop_table_req_result');
+            if ($this->success !== null) {
+                if (!is_object($this->success)) {
+                    throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+                }
+                $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
+                $xfer += $this->success->write($output);
+                $xfer += $output->writeFieldEnd();
+            }
             if ($this->o1 !== null) {
                 $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
                 $xfer += $this->o1->write($output);

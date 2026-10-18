@@ -94,6 +94,15 @@ class GetPartitionsPsWithAuthRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ],
+        13 => [
+            'var' => 'partNames',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::STRING,
+            'elem' => [
+                'type' => TType::STRING,
+            ],
+        ],
     ];
 
     public ?string $catName = null;
@@ -114,6 +123,10 @@ class GetPartitionsPsWithAuthRequest
     public ?bool $skipColumnSchemaForPartition = null;
     public ?string $includeParamKeyPattern = null;
     public ?string $excludeParamKeyPattern = null;
+    /**
+     * @var string[]
+     */
+    public ?array $partNames = null;
 
     public function __construct(?array $vals = null)
     {
@@ -153,6 +166,9 @@ class GetPartitionsPsWithAuthRequest
             }
             if (isset($vals['excludeParamKeyPattern'])) {
                 $this->excludeParamKeyPattern = (string)$vals['excludeParamKeyPattern'];
+            }
+            if (isset($vals['partNames'])) {
+                $this->partNames = $vals['partNames'];
             }
         }
     }
@@ -201,13 +217,13 @@ class GetPartitionsPsWithAuthRequest
                     case 4:
                         if ($ftype == TType::LST) {
                             $this->partVals = [];
-                            $_size1310 = 0;
-                            $_etype1313 = 0;
-                            $xfer += $input->readListBegin($_etype1313, $_size1310);
-                            for ($_i1314 = 0; $_i1314 < $_size1310; ++$_i1314) {
-                                $elem1315 = null;
-                                $xfer += $input->readString($elem1315);
-                                $this->partVals[] = $elem1315;
+                            $_size1385 = 0;
+                            $_etype1388 = 0;
+                            $xfer += $input->readListBegin($_etype1388, $_size1385);
+                            for ($_i1389 = 0; $_i1389 < $_size1385; ++$_i1389) {
+                                $elem1390 = null;
+                                $xfer += $input->readString($elem1390);
+                                $this->partVals[] = $elem1390;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -231,13 +247,13 @@ class GetPartitionsPsWithAuthRequest
                     case 7:
                         if ($ftype == TType::LST) {
                             $this->groupNames = [];
-                            $_size1316 = 0;
-                            $_etype1319 = 0;
-                            $xfer += $input->readListBegin($_etype1319, $_size1316);
-                            for ($_i1320 = 0; $_i1320 < $_size1316; ++$_i1320) {
-                                $elem1321 = null;
-                                $xfer += $input->readString($elem1321);
-                                $this->groupNames[] = $elem1321;
+                            $_size1391 = 0;
+                            $_etype1394 = 0;
+                            $xfer += $input->readListBegin($_etype1394, $_size1391);
+                            for ($_i1395 = 0; $_i1395 < $_size1391; ++$_i1395) {
+                                $elem1396 = null;
+                                $xfer += $input->readString($elem1396);
+                                $this->groupNames[] = $elem1396;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -275,6 +291,22 @@ class GetPartitionsPsWithAuthRequest
                     case 12:
                         if ($ftype == TType::STRING) {
                             $xfer += $input->readString($this->excludeParamKeyPattern);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
+                    case 13:
+                        if ($ftype == TType::LST) {
+                            $this->partNames = [];
+                            $_size1397 = 0;
+                            $_etype1400 = 0;
+                            $xfer += $input->readListBegin($_etype1400, $_size1397);
+                            for ($_i1401 = 0; $_i1401 < $_size1397; ++$_i1401) {
+                                $elem1402 = null;
+                                $xfer += $input->readString($elem1402);
+                                $this->partNames[] = $elem1402;
+                            }
+                            $xfer += $input->readListEnd();
                         } else {
                             $xfer += $input->skip($ftype);
                         }
@@ -320,8 +352,8 @@ class GetPartitionsPsWithAuthRequest
                 }
                 $xfer += $output->writeFieldBegin('partVals', TType::LST, 4);
                 $output->writeListBegin(TType::STRING, count($this->partVals));
-                foreach ($this->partVals as $iter1322) {
-                    $xfer += $output->writeString($iter1322);
+                foreach ($this->partVals as $iter1403) {
+                    $xfer += $output->writeString($iter1403);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();
@@ -342,8 +374,8 @@ class GetPartitionsPsWithAuthRequest
                 }
                 $xfer += $output->writeFieldBegin('groupNames', TType::LST, 7);
                 $output->writeListBegin(TType::STRING, count($this->groupNames));
-                foreach ($this->groupNames as $iter1323) {
-                    $xfer += $output->writeString($iter1323);
+                foreach ($this->groupNames as $iter1404) {
+                    $xfer += $output->writeString($iter1404);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();
@@ -371,6 +403,18 @@ class GetPartitionsPsWithAuthRequest
             if ($this->excludeParamKeyPattern !== null) {
                 $xfer += $output->writeFieldBegin('excludeParamKeyPattern', TType::STRING, 12);
                 $xfer += $output->writeString($this->excludeParamKeyPattern);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->partNames !== null) {
+                if (!is_array($this->partNames)) {
+                    throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+                }
+                $xfer += $output->writeFieldBegin('partNames', TType::LST, 13);
+                $output->writeListBegin(TType::STRING, count($this->partNames));
+                foreach ($this->partNames as $iter1405) {
+                    $xfer += $output->writeString($iter1405);
+                }
+                $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

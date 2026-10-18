@@ -86,13 +86,13 @@ class ThriftHiveMetastore_get_materialized_views_for_rewriting_result
                     case 0:
                         if ($ftype == TType::LST) {
                             $this->success = [];
-                            $_size1530 = 0;
-                            $_etype1533 = 0;
-                            $xfer += $input->readListBegin($_etype1533, $_size1530);
-                            for ($_i1534 = 0; $_i1534 < $_size1530; ++$_i1534) {
-                                $elem1535 = null;
-                                $xfer += $input->readString($elem1535);
-                                $this->success[] = $elem1535;
+                            $_size1587 = 0;
+                            $_etype1590 = 0;
+                            $xfer += $input->readListBegin($_etype1590, $_size1587);
+                            for ($_i1591 = 0; $_i1591 < $_size1587; ++$_i1591) {
+                                $elem1592 = null;
+                                $xfer += $input->readString($elem1592);
+                                $this->success[] = $elem1592;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -133,8 +133,8 @@ class ThriftHiveMetastore_get_materialized_views_for_rewriting_result
                 }
                 $xfer += $output->writeFieldBegin('success', TType::LST, 0);
                 $output->writeListBegin(TType::STRING, count($this->success));
-                foreach ($this->success as $iter1536) {
-                    $xfer += $output->writeString($iter1536);
+                foreach ($this->success as $iter1593) {
+                    $xfer += $output->writeString($iter1593);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();

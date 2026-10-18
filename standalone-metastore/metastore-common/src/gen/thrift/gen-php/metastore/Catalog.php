@@ -46,12 +46,29 @@ class Catalog
             'isRequired' => false,
             'type' => TType::I32,
         ],
+        5 => [
+            'var' => 'parameters',
+            'isRequired' => false,
+            'type' => TType::MAP,
+            'ktype' => TType::STRING,
+            'vtype' => TType::STRING,
+            'key' => [
+                'type' => TType::STRING,
+            ],
+            'val' => [
+                'type' => TType::STRING,
+            ],
+        ],
     ];
 
     public ?string $name = null;
     public ?string $description = null;
     public ?string $locationUri = null;
     public ?int $createTime = null;
+    /**
+     * @var array
+     */
+    public ?array $parameters = null;
 
     public function __construct(?array $vals = null)
     {
@@ -67,6 +84,9 @@ class Catalog
             }
             if (isset($vals['createTime'])) {
                 $this->createTime = (int)$vals['createTime'];
+            }
+            if (isset($vals['parameters'])) {
+                $this->parameters = $vals['parameters'];
             }
         }
     }
@@ -119,6 +139,25 @@ class Catalog
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 5:
+                        if ($ftype == TType::MAP) {
+                            $this->parameters = [];
+                            $_size175 = 0;
+                            $_ktype176 = 0;
+                            $_vtype177 = 0;
+                            $xfer += $input->readMapBegin($_ktype176, $_vtype177, $_size175);
+                            for ($_i179 = 0; $_i179 < $_size175; ++$_i179) {
+                                $key180 = '';
+                                $val181 = '';
+                                $xfer += $input->readString($key180);
+                                $xfer += $input->readString($val181);
+                                $this->parameters[$key180] = $val181;
+                            }
+                            $xfer += $input->readMapEnd();
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -157,6 +196,20 @@ class Catalog
             if ($this->createTime !== null) {
                 $xfer += $output->writeFieldBegin('createTime', TType::I32, 4);
                 $xfer += $output->writeI32($this->createTime);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->parameters !== null) {
+                if (!is_array($this->parameters)) {
+                    throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+                }
+                $xfer += $output->writeFieldBegin('parameters', TType::MAP, 5);
+                $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
+                foreach ($this->parameters as $kiter182 => $viter183) {
+                    $kiter182 = (string)$kiter182;
+                    $xfer += $output->writeString($kiter182);
+                    $xfer += $output->writeString($viter183);
+                }
+                $output->writeMapEnd();
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

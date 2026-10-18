@@ -41,23 +41,11 @@ class UniqueConstraintsRequest
             'isRequired' => true,
             'type' => TType::STRING,
         ],
-        4 => [
-            'var' => 'validWriteIdList',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ],
-        5 => [
-            'var' => 'tableId',
-            'isRequired' => false,
-            'type' => TType::I64,
-        ],
     ];
 
     public ?string $catName = null;
     public ?string $db_name = null;
     public ?string $tbl_name = null;
-    public ?string $validWriteIdList = null;
-    public ?int $tableId = -1;
 
     public function __construct(?array $vals = null)
     {
@@ -70,12 +58,6 @@ class UniqueConstraintsRequest
             }
             if (isset($vals['tbl_name'])) {
                 $this->tbl_name = (string)$vals['tbl_name'];
-            }
-            if (isset($vals['validWriteIdList'])) {
-                $this->validWriteIdList = (string)$vals['validWriteIdList'];
-            }
-            if (isset($vals['tableId'])) {
-                $this->tableId = (int)$vals['tableId'];
             }
         }
     }
@@ -121,20 +103,6 @@ class UniqueConstraintsRequest
                             $xfer += $input->skip($ftype);
                         }
                         break;
-                    case 4:
-                        if ($ftype == TType::STRING) {
-                            $xfer += $input->readString($this->validWriteIdList);
-                        } else {
-                            $xfer += $input->skip($ftype);
-                        }
-                        break;
-                    case 5:
-                        if ($ftype == TType::I64) {
-                            $xfer += $input->readI64($this->tableId);
-                        } else {
-                            $xfer += $input->skip($ftype);
-                        }
-                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -168,16 +136,6 @@ class UniqueConstraintsRequest
             if ($this->tbl_name !== null) {
                 $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 3);
                 $xfer += $output->writeString($this->tbl_name);
-                $xfer += $output->writeFieldEnd();
-            }
-            if ($this->validWriteIdList !== null) {
-                $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 4);
-                $xfer += $output->writeString($this->validWriteIdList);
-                $xfer += $output->writeFieldEnd();
-            }
-            if ($this->tableId !== null) {
-                $xfer += $output->writeFieldBegin('tableId', TType::I64, 5);
-                $xfer += $output->writeI64($this->tableId);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

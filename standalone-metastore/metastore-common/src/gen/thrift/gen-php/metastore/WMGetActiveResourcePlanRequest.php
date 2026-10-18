@@ -26,10 +26,22 @@ class WMGetActiveResourcePlanRequest
     public static bool $isValidate = false;
 
     public static array $tspec = [
+        1 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
-    public function __construct()
+    public ?string $ns = null;
+
+    public function __construct(?array $vals = null)
     {
+        if (is_array($vals)) {
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
+            }
+        }
     }
 
     public function getName(): string
@@ -52,6 +64,13 @@ class WMGetActiveResourcePlanRequest
                     break;
                 }
                 switch ($fid) {
+                    case 1:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -72,6 +91,11 @@ class WMGetActiveResourcePlanRequest
         $output->incrementRecursionDepth();
         try {
             $xfer += $output->writeStructBegin('WMGetActiveResourcePlanRequest');
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 1);
+                $xfer += $output->writeString($this->ns);
+                $xfer += $output->writeFieldEnd();
+            }
             $xfer += $output->writeFieldStop();
             $xfer += $output->writeStructEnd();
         } finally {

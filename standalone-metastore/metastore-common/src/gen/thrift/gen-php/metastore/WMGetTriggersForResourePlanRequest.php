@@ -31,15 +31,24 @@ class WMGetTriggersForResourePlanRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ],
+        2 => [
+            'var' => 'ns',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ],
     ];
 
     public ?string $resourcePlanName = null;
+    public ?string $ns = null;
 
     public function __construct(?array $vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['resourcePlanName'])) {
                 $this->resourcePlanName = (string)$vals['resourcePlanName'];
+            }
+            if (isset($vals['ns'])) {
+                $this->ns = (string)$vals['ns'];
             }
         }
     }
@@ -71,6 +80,13 @@ class WMGetTriggersForResourePlanRequest
                             $xfer += $input->skip($ftype);
                         }
                         break;
+                    case 2:
+                        if ($ftype == TType::STRING) {
+                            $xfer += $input->readString($this->ns);
+                        } else {
+                            $xfer += $input->skip($ftype);
+                        }
+                        break;
                     default:
                         $xfer += $input->skip($ftype);
                         break;
@@ -94,6 +110,11 @@ class WMGetTriggersForResourePlanRequest
             if ($this->resourcePlanName !== null) {
                 $xfer += $output->writeFieldBegin('resourcePlanName', TType::STRING, 1);
                 $xfer += $output->writeString($this->resourcePlanName);
+                $xfer += $output->writeFieldEnd();
+            }
+            if ($this->ns !== null) {
+                $xfer += $output->writeFieldBegin('ns', TType::STRING, 2);
+                $xfer += $output->writeString($this->ns);
                 $xfer += $output->writeFieldEnd();
             }
             $xfer += $output->writeFieldStop();

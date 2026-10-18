@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.TMessageSizeTransport;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -522,7 +522,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   private TTransport configureThriftMaxMessageSize(TTransport transport) {
-    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(conf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
+    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
     if (maxThriftMessageSize > 0) {
       if (transport.getConfiguration() == null) {
         LOG.warn("TTransport {} is returning a null Configuration, Thrift max message size is not getting configured",
@@ -614,11 +614,16 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @VisibleForTesting
   protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-    String authType = MetastoreConf.getAsString(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE).toLowerCase(
-        Locale.ROOT);
-    String user = null;
-    if (authType.equals("jwt")) {
-      final boolean isKrbToJWTEnabled = KrbToJWTExchanger.isKrbToJWTEnabled(conf);
+    String authType = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_AUTH_MODE);
+    Map<String, String> additionalHeaders = getAdditionalHeaders();
+    if (authType.equalsIgnoreCase("jwt")) {
+      // fetch JWT token from environment and set it in Auth Header in HTTP request
+      String jwtToken = System.getenv("HMS_JWT");
+      if (jwtToken == null || jwtToken.isEmpty()) {
+        LOG.debug("No jwt token set in environment variable: HMS_JWT");
+        throw new MetaException("For auth mode JWT, valid signed jwt token must be provided in the "
+            + "environment variable HMS_JWT");
+      }
       httpClientBuilder.addRequestInterceptorFirst(new HttpRequestInterceptor() {
         @Override
         public void process(HttpRequest httpRequest, EntityDetails entityDetails, HttpContext httpContext)

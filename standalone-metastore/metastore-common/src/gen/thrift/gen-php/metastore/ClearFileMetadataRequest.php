@@ -74,13 +74,13 @@ class ClearFileMetadataRequest
                     case 1:
                         if ($ftype == TType::LST) {
                             $this->fileIds = [];
-                            $_size979 = 0;
-                            $_etype982 = 0;
-                            $xfer += $input->readListBegin($_etype982, $_size979);
-                            for ($_i983 = 0; $_i983 < $_size979; ++$_i983) {
-                                $elem984 = null;
-                                $xfer += $input->readI64($elem984);
-                                $this->fileIds[] = $elem984;
+                            $_size1045 = 0;
+                            $_etype1048 = 0;
+                            $xfer += $input->readListBegin($_etype1048, $_size1045);
+                            for ($_i1049 = 0; $_i1049 < $_size1045; ++$_i1049) {
+                                $elem1050 = null;
+                                $xfer += $input->readI64($elem1050);
+                                $this->fileIds[] = $elem1050;
                             }
                             $xfer += $input->readListEnd();
                         } else {
@@ -113,8 +113,8 @@ class ClearFileMetadataRequest
                 }
                 $xfer += $output->writeFieldBegin('fileIds', TType::LST, 1);
                 $output->writeListBegin(TType::I64, count($this->fileIds));
-                foreach ($this->fileIds as $iter985) {
-                    $xfer += $output->writeI64($iter985);
+                foreach ($this->fileIds as $iter1051) {
+                    $xfer += $output->writeI64($iter1051);
                 }
                 $output->writeListEnd();
                 $xfer += $output->writeFieldEnd();

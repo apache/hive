@@ -23,7 +23,7 @@ use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_table_result
+class ThriftHiveMetastore_get_partitions_spec_by_expr_result
 {
     public static bool $isValidate = false;
 
@@ -32,7 +32,7 @@ class ThriftHiveMetastore_get_table_result
             'var' => 'success',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\Table',
+            'class' => '\metastore\PartitionsSpecByExprResult',
         ],
         1 => [
             'var' => 'o1',
@@ -48,7 +48,7 @@ class ThriftHiveMetastore_get_table_result
         ],
     ];
 
-    public ?Table $success = null;
+    public ?PartitionsSpecByExprResult $success = null;
     public ?MetaException $o1 = null;
     public ?NoSuchObjectException $o2 = null;
 
@@ -69,7 +69,7 @@ class ThriftHiveMetastore_get_table_result
 
     public function getName(): string
     {
-        return 'ThriftHiveMetastore_get_table_result';
+        return 'ThriftHiveMetastore_get_partitions_spec_by_expr_result';
     }
 
     public function read(TProtocol $input): int
@@ -89,7 +89,7 @@ class ThriftHiveMetastore_get_table_result
                 switch ($fid) {
                     case 0:
                         if ($ftype == TType::STRUCT) {
-                            $this->success = new \metastore\Table();
+                            $this->success = new \metastore\PartitionsSpecByExprResult();
                             $xfer += $this->success->read($input);
                         } else {
                             $xfer += $input->skip($ftype);
@@ -130,7 +130,7 @@ class ThriftHiveMetastore_get_table_result
         $xfer = 0;
         $output->incrementRecursionDepth();
         try {
-            $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_table_result');
+            $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partitions_spec_by_expr_result');
             if ($this->success !== null) {
                 if (!is_object($this->success)) {
                     throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
