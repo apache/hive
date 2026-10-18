@@ -64,9 +64,8 @@ final class Constant extends \Thrift\Type\TConstant
                         12 => true,
                         13 => true,
                         14 => true,
-        ];
                         24 => true,
-        );
+        ];
     }
 
     protected static function init_COLLECTION_TYPES()
@@ -104,7 +103,7 @@ final class Constant extends \Thrift\Type\TConstant
                         23 => "UNKNOWN",
                         18 => "VARCHAR",
                         24 => "VARIANT",
-        );
+        ];
     }
 
     protected static function init_CHARACTER_MAXIMUM_LENGTH()
