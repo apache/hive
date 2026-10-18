@@ -348,4 +348,82 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
     Assertions.assertTrue(Files.exists(victimFile), "purge must not delete files outside the table location");
     Assertions.assertFalse(Files.exists(ownedFile), "purge must delete files nested inside the table location");
   }
+
+  /**
+   * Verifies RFC 3986 path segment decoding end-to-end: '+' in table and namespace names is
+   * preserved as a literal '+' rather than being converted to a space.
+   */
+  @Test
+  void testTableWithPlusSign() {
+    Namespace ns = Namespace.of("ns+plus");
+    TableIdentifier ident = TableIdentifier.of(ns, "table+name");
+    catalog.createNamespace(ns);
+    try {
+      catalog.createTable(ident, new Schema());
+      Assertions.assertTrue(catalog.tableExists(ident), "Table with '+' must exist");
+      Table loaded = catalog.loadTable(ident);
+      Assertions.assertNotNull(loaded);
+    } finally {
+      catalog.dropTable(ident);
+      catalog.dropNamespace(ns);
+    }
+  }
+
+  /**
+   * Verifies RFC 3986 path segment decoding end-to-end: special characters such as '?', '=', and
+   * '-' are preserved in table and namespace names.
+   */
+  @Test
+  void testTableWithSpecialCharacters() {
+    Namespace ns = Namespace.of("ns 1 ?=-");
+    TableIdentifier ident = TableIdentifier.of(ns, "table 1 ?=-");
+    catalog.createNamespace(ns);
+    try {
+      catalog.createTable(ident, new Schema());
+      Assertions.assertTrue(catalog.tableExists(ident), "Table with ?=- should exist");
+      Table loaded = catalog.loadTable(ident);
+      Assertions.assertNotNull(loaded);
+    } finally {
+      catalog.dropTable(ident);
+      catalog.dropNamespace(ns);
+    }
+  }
+
+  /**
+   * Verifies that table names with a literal percent (encoded by the client as %2520) are not
+   * double-decoded into space by the servlet container and adapter.
+   */
+  @Test
+  void testTableWithLiteralPercent() {
+    Namespace ns = Namespace.of("ns_percent");
+    TableIdentifier ident = TableIdentifier.of(ns, "table%20name");
+    catalog.createNamespace(ns);
+    try {
+      catalog.createTable(ident, new Schema());
+      Assertions.assertTrue(catalog.tableExists(ident), "Table with literal %20 must exist");
+      Assertions.assertNotNull(catalog.loadTable(ident));
+    } finally {
+      catalog.dropTable(ident);
+      catalog.dropNamespace(ns);
+    }
+  }
+
+  /**
+   * Verifies that table names with slashes (encoded by the client as %2F) are not decoded before
+   * route matching, preventing routing failures (HTTP 400).
+   */
+  @Test
+  void testTableWithSlash() {
+    Namespace ns = Namespace.of("ns_slash");
+    TableIdentifier ident = TableIdentifier.of(ns, "table/with/slash");
+    catalog.createNamespace(ns);
+    try {
+      catalog.createTable(ident, new Schema());
+      Assertions.assertTrue(catalog.tableExists(ident), "Table with slash must exist");
+      Assertions.assertNotNull(catalog.loadTable(ident));
+    } finally {
+      catalog.dropTable(ident);
+      catalog.dropNamespace(ns);
+    }
+  }
 }

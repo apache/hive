@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
@@ -117,14 +118,21 @@ public class HMSCatalogServlet extends HttpServlet {
 
     static ServletRequestContext from(HttpServletRequest request) throws IOException {
       HTTPMethod method = HTTPMethod.valueOf(request.getMethod());
-      // path = uri - context-path + servlet-path + /
-      String path = request.getPathInfo();
-      if (path == null) {
-        path = request.getRequestURI().substring(
-            request.getContextPath().length() + request.getServletPath().length());
+      /*
+       Extract the raw path from getRequestURI() rather than getPathInfo() to avoid servlet
+       container auto-decoding (e.g. %2F into /), which breaks route matching and causes
+       double-decoding issues.
+       path = uri - (context-path + servlet-path) - leading /
+      */
+
+      int prefixLength =
+          StringUtils.length(request.getContextPath())
+              + StringUtils.length(request.getServletPath());
+      String uri = request.getRequestURI();
+      String path = uri != null && uri.length() >= prefixLength ? uri.substring(prefixLength) : "";
+      if (path.startsWith("/")) {
+        path = path.substring(1);
       }
-      // remove leading /
-      path = path.substring(1);
       Pair<Route, Map<String, String>> routeContext = Route.from(method, path);
 
       if (routeContext == null) {

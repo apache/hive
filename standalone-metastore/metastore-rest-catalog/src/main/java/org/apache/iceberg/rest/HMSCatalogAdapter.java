@@ -601,17 +601,30 @@ public class HMSCatalogAdapter implements Closeable {
     }
   }
 
+  /**
+   * Decodes a namespace path variable according to RFC 3986 path segment rules, preserving '+'
+   * literals rather than converting them to spaces (as standard form URL-decoding would).
+   */
   @VisibleForTesting
   static Namespace namespaceFromPathVars(Map<String, String> pathVars) {
-    return RESTUtil.decodeNamespaceAsPathSegment(pathVars.get("namespace"), "%1F");
+    return RESTUtil.decodeNamespaceAsPathSegment(
+        pathVars.get("namespace"), RESTUtil.NAMESPACE_SEPARATOR_URLENCODED_UTF_8);
   }
 
+  /**
+   * Decodes table identifier path variables using RFC 3986 path segment decoding so that special
+   * characters (e.g. '+') are preserved.
+   */
   @VisibleForTesting
   static TableIdentifier identFromPathVars(Map<String, String> pathVars) {
     return TableIdentifier.of(
         namespaceFromPathVars(pathVars), RESTUtil.decodePathSegment(pathVars.get("table")));
   }
 
+  /**
+   * Decodes view identifier path variables using RFC 3986 path segment decoding so that special
+   * characters (e.g. '+') are preserved.
+   */
   @VisibleForTesting
   static TableIdentifier viewIdentFromPathVars(Map<String, String> pathVars) {
     return TableIdentifier.of(
