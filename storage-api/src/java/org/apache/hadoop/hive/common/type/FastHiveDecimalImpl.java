@@ -146,7 +146,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   public static final int MAX_LONG_POWER_OF_TEN = powerOfTenTable.length - 1;
 
   /**
-   * Returns 10^exponent, for 0 <= exponent <= {@link #MAX_LONG_POWER_OF_TEN}.
+   * Returns 10^exponent, for 0 &lt;= exponent &lt;= {@link #MAX_LONG_POWER_OF_TEN}.
    */
   public static long powerOfTen(int exponent) {
     return powerOfTenTable[exponent];
