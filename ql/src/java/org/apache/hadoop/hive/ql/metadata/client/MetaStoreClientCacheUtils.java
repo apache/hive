@@ -39,6 +39,8 @@ import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
@@ -88,6 +90,8 @@ public class MetaStoreClientCacheUtils {
     UNIQUE_CONSTRAINTS(UniqueConstraintsResponse.class, UniqueConstraintsRequest.class),
     // NotNullConstraintsResponse <-- getNotNullConstraintsInternal(NotNullConstraintsRequest req)
     NOT_NULL_CONSTRAINTS(NotNullConstraintsResponse.class, NotNullConstraintsRequest.class),
+    // AllTableConstraintsResponse <-- getAllTableConstraints(AllTableConstraintsRequest req)
+    ALL_TABLE_CONSTRAINTS(AllTableConstraintsResponse.class, AllTableConstraintsRequest.class),
     // TableStatsResult <-- getTableColumnStatisticsInternal(TableStatsRequest rqst)
     // Stored individually as:
     // ColumnStatisticsObj <-- String dbName, String tblName, List<string> colNames,
