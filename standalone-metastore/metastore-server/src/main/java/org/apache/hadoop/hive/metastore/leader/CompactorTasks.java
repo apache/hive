@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.metastore.leader;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
@@ -153,5 +155,10 @@ public class CompactorTasks implements LeaderElection.LeadershipStateListener {
       });
       metastoreThreadsMap = null;
     }
+  }
+
+  @VisibleForTesting
+  public Map<MetaStoreThread, AtomicBoolean> getMetastoreThreadsMap() {
+    return metastoreThreadsMap;
   }
 }
