@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -75,9 +75,6 @@ public class WriterBuilder {
   private Operation operation;
   private final boolean copyOnWrite;
 
-  // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
-  private static AtomicInteger operationNum = new AtomicInteger(0);
-
   // To specify whether to write the actual row data while writing the delete files.
   private boolean shouldAddRowLineageColumns = false;
 
@@ -113,7 +110,7 @@ public class WriterBuilder {
   public HiveIcebergWriter build() {
     int partitionId = attemptID.getTaskID().getId();
     int taskId = attemptID.getId();
-    String operationId = queryId + "-" + attemptID.getJobID() + "-" + operationNum.incrementAndGet();
+    String operationId = queryId + "-" + attemptID.getJobID() + "-" + UUID.randomUUID();
 
     OutputFileFactory dataFileFactory = OutputFileFactory.builderFor(table, partitionId, taskId)
         .format(context.dataFileFormat())
