@@ -229,4 +229,90 @@ public class TestPlanSerializationRealPlans {
       checkViaUtilities(engine, true);
     }
   }
+
+  /** Same shape as the LLAP UDF whitelist: rejects the listed classes in preRead and injects a checker in postRead. */
+  private static final class RejectingHook extends SerializationUtilities.Hook {
+    private final Class<?> denied;
+    int postReadBridges;
+
+    RejectingHook(Class<?> denied) {
+      this.denied = denied;
+    }
+
+    @Override
+    public boolean preRead(Class<?> type) {
+      if (denied.equals(type)) {
+        throw new SecurityException("UDF " + type.getCanonicalName() + " is not allowed");
+      }
+      return false;
+    }
+
+    @Override
+    public Object postRead(Object o) {
+      if (o instanceof org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge) {
+        postReadBridges++;
+      }
+      return o;
+    }
+  }
+
+  @Test
+  public void testVectorizedRandWithSeedSurvivesBothEngines() throws Exception {
+    for (String engine : new String[] {"kryo", "fory"}) {
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      SerializationUtilities.serializePlanWithEngine(conf(engine),
+          new org.apache.hadoop.hive.ql.exec.vector.expressions.FuncRand(42L, 1), out);
+      org.apache.hadoop.hive.ql.exec.vector.expressions.FuncRand read = SerializationUtilities
+          .deserializePlanWithEngine(conf(engine), new ByteArrayInputStream(out.toByteArray()),
+              org.apache.hadoop.hive.ql.exec.vector.expressions.FuncRand.class);
+      java.lang.reflect.Field f = org.apache.hadoop.hive.ql.exec.vector.expressions.FuncRand.class
+          .getDeclaredField("random");
+      f.setAccessible(true);
+      Assert.assertEquals(engine, new java.util.Random(42L).nextLong(), ((java.util.Random) f.get(read)).nextLong());
+    }
+  }
+
+  @Test
+  public void testForyGlobalHookRejectsDeniedUdfClass() throws Exception {
+    MapredWork plan = mapOnlyPlan();
+    HiveConf conf = conf("fory");
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    SerializationUtilities.serializePlanWithEngine(conf, plan, out);
+    SerializationUtilities.Hook before = SerializationUtilities.globalHook();
+    SerializationUtilities.setGlobalHook(new RejectingHook(org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan.class));
+    try {
+      SerializationUtilities.deserializePlanWithEngine(conf, new ByteArrayInputStream(out.toByteArray()),
+          MapredWork.class);
+      Assert.fail("the denied UDF class must be rejected");
+    } catch (RuntimeException e) {
+      Throwable t = e;
+      boolean rejected = false;
+      while (t != null) {
+        rejected |= t instanceof SecurityException || String.valueOf(t.getMessage()).contains("not allowed")
+            || t instanceof org.apache.fory.exception.InsecureException;
+        t = t.getCause();
+      }
+      Assert.assertTrue("unexpected failure: " + e, rejected);
+    } finally {
+      SerializationUtilities.setGlobalHook(before);
+    }
+  }
+
+  @Test
+  public void testForyGlobalHookAllowsOtherUdfsAndWritesAreUnaffected() throws Exception {
+    MapredWork plan = mapOnlyPlan();
+    HiveConf conf = conf("fory");
+    String expected = fingerprint(plan);
+    SerializationUtilities.Hook before = SerializationUtilities.globalHook();
+    SerializationUtilities.setGlobalHook(new RejectingHook(org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan.class));
+    try {
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      SerializationUtilities.serializePlanWithEngine(conf, plan, out);
+      MapredWork back = SerializationUtilities.deserializePlanWithEngine(conf,
+          new ByteArrayInputStream(out.toByteArray()), MapredWork.class);
+      Assert.assertEquals(expected, fingerprint(back));
+    } finally {
+      SerializationUtilities.setGlobalHook(before);
+    }
+  }
 }

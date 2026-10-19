@@ -18,10 +18,16 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.fory.Fory;
@@ -33,8 +39,11 @@ import org.apache.fory.context.WriteContext;
 import org.apache.fory.io.ForyInputStream;
 import org.apache.fory.resolver.DisallowedList;
 import org.apache.fory.resolver.TypeResolver;
+import org.apache.fory.serializer.ObjectSerializer;
+import org.apache.fory.serializer.Serializer;
 import org.apache.fory.serializer.collection.MapSerializer;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -53,27 +62,33 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 final class ForyPlanSerializer {
   private static final Cache<ClassLoader, ThreadSafeFory> FORY_BY_LOADER =
       CacheBuilder.newBuilder().weakKeys().softValues().build();
+  // Readers used while a SerializationUtilities global hook (the LLAP UDF whitelist) is installed. Fory's type checker
+  // also runs on write and caches accepted class names per instance, so the hooked checker must never serve writes.
+  private static final Cache<ClassLoader, ThreadSafeFory> HOOKED_READER_BY_LOADER =
+      CacheBuilder.newBuilder().weakKeys().softValues().build();
 
   private ForyPlanSerializer() {
   }
 
   static void serialize(ClassLoader loader, Object plan, OutputStream out) {
-    get(loader).serialize(out, plan);
+    get(FORY_BY_LOADER, loader, false).serialize(out, plan);
   }
 
   static <T> T deserialize(ClassLoader loader, InputStream in, Class<T> clazz) {
-    return get(loader).deserialize(new ForyInputStream(in), clazz);
+    ThreadSafeFory fory = SerializationUtilities.globalHook() == null
+        ? get(FORY_BY_LOADER, loader, false) : get(HOOKED_READER_BY_LOADER, loader, true);
+    return fory.deserialize(new ForyInputStream(in), clazz);
   }
 
-  private static ThreadSafeFory get(ClassLoader loader) {
+  private static ThreadSafeFory get(Cache<ClassLoader, ThreadSafeFory> cache, ClassLoader loader, boolean hooked) {
     try {
-      return FORY_BY_LOADER.get(loader, () -> create(loader));
+      return cache.get(loader, () -> create(loader, hooked));
     } catch (ExecutionException | UncheckedExecutionException e) {
       throw new RuntimeException("Failed to create Fory instance", e.getCause());
     }
   }
 
-  private static ThreadSafeFory create(ClassLoader loader) {
+  private static ThreadSafeFory create(ClassLoader loader, boolean hooked) {
     ThreadSafeFory fory = Fory.builder()
         .withLanguage(Language.JAVA)
         // Kryo equivalent: setReferences(true). Plans are object graphs with shared and cyclic references.
@@ -83,7 +98,8 @@ final class ForyPlanSerializer {
         .requireClassRegistration(false)
         // Same-version writer and reader only; no per-object schema metadata.
         .withCompatibleMode(CompatibleMode.SCHEMA_CONSISTENT)
-        .withTypeChecker((resolver, className) -> !DisallowedList.contains(className))
+        .withTypeChecker((resolver, className) ->
+            !DisallowedList.contains(className) && (!hooked || hookAllows(loader, className)))
         .withClassLoader(loader)
         // Experiment switch (-Dhive.plan.fory.codegen=false): JIT serializers cost ~0.8s on first use in a cold JVM, and
         // Fory 1.7.6 cannot generate them when plan classes and fory live in different class loaders.
@@ -91,7 +107,87 @@ final class ForyPlanSerializer {
         .buildThreadSafeFory();
     fory.registerSerializer(Properties.class, resolver -> new MapSerializer<Properties>(resolver, Properties.class));
     fory.registerSerializer(CopyOnFirstWriteProperties.class, CopyOnFirstWritePropertiesSerializer::new);
+    fory.registerSerializer(Random.class, resolver -> new RandomSerializer(resolver));
+    if (hooked) {
+      fory.registerSerializer(GenericUDFBridge.class, resolver -> new HookedBridgeSerializer(resolver));
+    }
     return fory;
+  }
+
+  /**
+   * Plans can carry a java.util.Random (FuncRand holds one, built from the rand(seed) argument). Fory's generic
+   * handling of Random fails its own field schema check, so use the JDK's serialized form, which keeps the seed state.
+   */
+  private static final class RandomSerializer extends Serializer<Random> {
+    RandomSerializer(TypeResolver resolver) {
+      super(resolver.getConfig(), Random.class);
+    }
+
+    @Override
+    public void write(WriteContext ctx, Random random) {
+      ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+      try (ObjectOutputStream oos = new ObjectOutputStream(bytes)) {
+        oos.writeObject(random);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      ctx.getBuffer().writeInt32(bytes.size());
+      ctx.getBuffer().writeBytes(bytes.toByteArray());
+    }
+
+    @Override
+    public Random read(ReadContext ctx) {
+      byte[] bytes = ctx.getBuffer().readBytes(ctx.getBuffer().readInt32());
+      try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+        Random random = (Random) ois.readObject();
+        ctx.reference(random);
+        return random;
+      } catch (IOException | ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  /** Ports Hook.preRead of the kryo engine: a hook that throws SecurityException rejects the class. */
+  private static boolean hookAllows(ClassLoader loader, String className) {
+    SerializationUtilities.Hook hook = SerializationUtilities.globalHook();
+    if (hook == null) {
+      return true;
+    }
+    Class<?> type;
+    try {
+      type = Class.forName(className, false, loader);
+    } catch (ClassNotFoundException | LinkageError e) {
+      return true; // Fory fails on its own when it cannot load the class
+    }
+    try {
+      hook.preRead(type);
+      return true;
+    } catch (SecurityException e) {
+      return false;
+    }
+  }
+
+  /** Ports Hook.postRead of the kryo engine, which injects the whitelist checker into GenericUDFBridge instances. */
+  private static final class HookedBridgeSerializer extends Serializer<GenericUDFBridge> {
+    private final ObjectSerializer<GenericUDFBridge> delegate;
+
+    HookedBridgeSerializer(TypeResolver resolver) {
+      super(resolver.getConfig(), GenericUDFBridge.class);
+      this.delegate = new ObjectSerializer<>(resolver, GenericUDFBridge.class);
+    }
+
+    @Override
+    public void write(WriteContext ctx, GenericUDFBridge bridge) {
+      delegate.write(ctx, bridge);
+    }
+
+    @Override
+    public GenericUDFBridge read(ReadContext ctx) {
+      GenericUDFBridge bridge = delegate.read(ctx);
+      SerializationUtilities.Hook hook = SerializationUtilities.globalHook();
+      return hook == null ? bridge : (GenericUDFBridge) hook.postRead(bridge);
+    }
   }
 
   /**

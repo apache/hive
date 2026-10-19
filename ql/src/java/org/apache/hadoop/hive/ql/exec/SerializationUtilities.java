@@ -121,6 +121,10 @@ public class SerializationUtilities {
     globalHook = hook;
   }
 
+  static Hook globalHook() {
+    return globalHook;
+  }
+
   /**
    * Provides general-purpose hooks for specific types, as well as a global hook.
    */
@@ -825,10 +829,10 @@ public class SerializationUtilities {
     if (!fory) {
       return deserializePlan(bin, planClass);
     }
-    if (globalHook != null || !kryoTypeHooks.isEmpty()) {
-      // Fail closed: the hooks (e.g. the LLAP UDF whitelist) are only implemented for kryo.
-      throw new UnsupportedOperationException("A fory serialized plan cannot be read where deserialization hooks "
-          + "are installed (LLAP). Set " + HiveConf.ConfVars.HIVE_PLAN_SERIALIZATION_ENGINE.varname + "=kryo.");
+    if (!kryoTypeHooks.isEmpty()) {
+      // Fail closed: per-type hooks are only implemented for kryo. The global hook (LLAP UDF whitelist) is ported.
+      throw new UnsupportedOperationException("A fory serialized plan cannot be read where per-type kryo hooks "
+          + "are installed. Set " + HiveConf.ConfVars.HIVE_PLAN_SERIALIZATION_ENGINE.varname + "=kryo.");
     }
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
