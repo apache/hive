@@ -212,6 +212,15 @@ controls. *(maintainer — okumin)*
   (e.g. `hive.query.max.length`) and YARN resource pools, and — where stronger
   isolation than HS2 + YARN can provide is required — separate HS2 instances or
   separate Hadoop/YARN clusters. *(maintainer — okumin, §14 Q11)*
+- **Cryptographic strength of built-in masking / encryption UDFs.**
+  `mask_hash` is a deterministic, unsalted, unkeyed SHA-256/512 digest (so
+  masked values remain joinable); `aes_encrypt`/`aes_decrypt` currently use
+  AES/ECB/PKCS5Padding (no IV, no authentication) by default, for
+  compatibility with existing ciphertexts and MySQL-style `AES_ENCRYPT`. These
+  functions do not provide semantic security or resistance to
+  dictionary/enumeration attacks, and Hive does not claim they do. Choosing a
+  masking type appropriate to the data (e.g. nullify/redact for low-entropy
+  columns) is the policy author's responsibility.
 
 ## §8 — Key configuration levers (load-bearing)
 
@@ -303,6 +312,10 @@ These are the dispositions the PMC has recorded; confirm and extend
   the operator has not configured the blacklist → `OUT-OF-MODEL:
   operator responsibility`, unless the report shows a
   *bypass* of a configured blacklist. *(maintainer — okumin.)*
+- **"`mask_hash` is invertible / `aes_encrypt` uses ECB / a built-in hash UDF
+  is weak."** By design — see §7. Valid only if the report shows a bypass of a
+  configured masking policy (e.g. reading the unmasked column), not the
+  inherent properties of the function. `BY-DESIGN`.
 - **Dependency-tail CVEs** (Hadoop, Log4j, a transitive JAR) surfaced by an
   SCA scanner against Hive's build — triage upstream unless Hive's own code
   reaches the vulnerable path with untrusted input.
