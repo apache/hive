@@ -76,9 +76,12 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLong
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongMax;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongSum;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingVariance;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorTimestampCountDistinct;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorVariance;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.VarianceKind;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
@@ -108,20 +111,39 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     LAST_VALUE,
     COUNT(true),
     LEAD,
-    LAG;
+    LAG,
+    VARIANCE(VarianceKind.VARIANCE),
+    VAR_POP(VarianceKind.VARIANCE),
+    VAR_SAMP(VarianceKind.VARIANCE_SAMPLE),
+    STD(VarianceKind.STANDARD_DEVIATION),
+    STDDEV(VarianceKind.STANDARD_DEVIATION),
+    STDDEV_POP(VarianceKind.STANDARD_DEVIATION),
+    STDDEV_SAMP(VarianceKind.STANDARD_DEVIATION_SAMPLE);
 
     private final boolean supportDistinct;
+    private final VarianceKind varianceKind;
 
     SupportedFunctionType() {
-      supportDistinct = false;
+      this(false);
     }
 
     SupportedFunctionType(boolean supportDistinct) {
       this.supportDistinct = supportDistinct;
+      this.varianceKind = null;
+    }
+
+    SupportedFunctionType(VarianceKind varianceKind) {
+      this.supportDistinct = false;
+      this.varianceKind = varianceKind;
     }
 
     public boolean isSupportDistinct() {
       return supportDistinct;
+    }
+
+    // The variance family kind, or null if this is not a variance family function.
+    public VarianceKind getVarianceKind() {
+      return varianceKind;
     }
   }
 
@@ -336,6 +358,19 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
       }
+      break;
+    case VARIANCE:
+    case VAR_POP:
+    case VAR_SAMP:
+    case STD:
+    case STDDEV:
+    case STDDEV_POP:
+    case STDDEV_SAMP:
+      evaluator = !canStream ?
+          new VectorPTFEvaluatorVariance(windowFrameDef, inputVectorExpression, outputColumnNum,
+              columnVectorType, functionType.getVarianceKind()) :
+          new VectorPTFEvaluatorStreamingVariance(windowFrameDef, inputVectorExpression,
+              outputColumnNum, columnVectorType, functionType.getVarianceKind());
       break;
     case FIRST_VALUE:
       switch (columnVectorType) {
