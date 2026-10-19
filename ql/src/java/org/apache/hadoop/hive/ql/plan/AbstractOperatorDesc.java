@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.fory.annotation.Ignore;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 public abstract class AbstractOperatorDesc implements OperatorDesc {
@@ -35,6 +36,9 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
   // etc.
   protected VectorDesc vectorDesc;
 
+  // @Ignore mirrors the Kryo removeField() calls in SerializationUtilities.createNewKryo(): both fields are
+  // compile-time only and are not shipped in a serialized plan.
+  @Ignore
   protected Statistics statistics;
   protected transient OpTraits opTraits;
   protected transient Map<String, String> opProps;
@@ -48,6 +52,7 @@ public abstract class AbstractOperatorDesc implements OperatorDesc {
    * optimizer and built during semantic analysis contains only key elements for
    * reduce sink and group by op
    */
+  @Ignore
   protected Map<String, ExprNodeDesc> colExprMap;
 
   private Set<String> computedFields = new HashSet<String>();

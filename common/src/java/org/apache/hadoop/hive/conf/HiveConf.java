@@ -4683,6 +4683,10 @@ public class HiveConf extends Configuration {
             + "rawDataSize                exact string match, removes only rawDataSize property"
             + ".*Size                     regex match, removes every property ending with 'Size'"
             + "numRows,impala_.*chunk.*   comma separated and mixed (handles strings and regexes at the same time)"),
+    HIVE_PLAN_SERIALIZATION_ENGINE("hive.plan.serialization.engine", "kryo", new StringSet("kryo", "fory"),
+        "Experimental. Serialization library used for query plan distribution (Utilities.setBaseWork/getBaseWork) "
+            + "and for in-memory plan cloning. The writer and the reader of a plan must use the same value, which is "
+            + "the case when it is set per session. Metastore-bound and filter/SARG payloads always use kryo."),
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true,
         "Whether to generate the splits locally or in the AM (tez only)"),
     HIVE_SPLITS_AVAILABLE_SLOTS_CALCULATOR_CLASS("hive.splits.available.slots.calculator.class.name",
