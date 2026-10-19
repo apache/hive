@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.llap;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -306,7 +307,7 @@ public class TestLlapCacheAwareFsInterop {
         assertTrue("neither cached nor freed: " + buffer, hit.hasData());
         MemoryBuffer cached = ((CacheChunk) hit).getBuffer();
         cache.decRefBuffer(cached);
-        assertTrue("neither cached nor freed: " + buffer, cached == buffer);
+        assertSame("neither cached nor freed: " + buffer, cached, buffer);
         assertFalse("left locked: " + buffer, ((LlapAllocatorBuffer) buffer).isLocked());
       }
     }

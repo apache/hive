@@ -157,6 +157,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       this.metadataCache = metadataCache;
       this.cache = dataCache;
       this.cacheConf = cacheConf;
+      this.initialDefaults = initialDefaults;
 
       if (metadataCache != null) {
         cacheKey = SyntheticFileId.fromJobConf(conf);
@@ -182,7 +183,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
       initPartitionValues(fileSplit, conf);
       bucketIdentifier = BucketIdentifier.from(conf, filePath);
-      this.initialDefaults = initialDefaults;
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);

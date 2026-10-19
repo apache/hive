@@ -387,6 +387,7 @@ public class OrcEncodedDataConsumer
     this.evolution = evolution;
   }
 
+  @Override
   public SchemaEvolution getSchemaEvolution() {
     return evolution;
   }

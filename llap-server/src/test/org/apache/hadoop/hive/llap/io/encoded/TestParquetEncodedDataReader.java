@@ -38,8 +38,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -90,6 +93,7 @@ import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
@@ -142,6 +146,7 @@ import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Types;
 import org.apache.tez.common.counters.TezCounters;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -226,8 +231,11 @@ public class TestParquetEncodedDataReader {
   private boolean skipExpectedRows;
   /** Opts out of the A/B check, for tests the stock reader cannot reproduce. */
   private boolean skipNonNativeParity;
-  /** Runs the reader on a thread of its own, as the IO elevator does, not on the thread that set it up. */
-  private boolean readOnIoThread;
+  /**
+   * When set, the reader runs on this thread, as on an IO elevator thread, not on the thread that set it up.
+   * A test can run more on it afterwards to see what the read left behind there.
+   */
+  private ExecutorService ioThread;
   private ParquetEncodedDataReader reader;
   private int decoded;
   /**
@@ -287,9 +295,16 @@ public class TestParquetEncodedDataReader {
     failDecodeWithError = false;
     skipExpectedRows = false;
     skipNonNativeParity = false;
-    readOnIoThread = false;
+    ioThread = null;
     decoded = 0;
     decodedAtRequest.clear();
+  }
+
+  @After
+  public void tearDown() {
+    if (ioThread != null) {
+      ioThread.shutdownNow();
+    }
   }
 
   /**
@@ -313,11 +328,33 @@ public class TestParquetEncodedDataReader {
    */
   @Test
   public void testDecodeOnAnIoThreadFollowsThePlan() throws Exception {
-    readOnIoThread = true;
+    ioThread = Executors.newSingleThreadExecutor();
     Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
 
     assertEquals(ROWS, run.rows.size());
     assertTrue(String.valueOf(run.firstBatchCols[2]), run.firstBatchCols[2] instanceof Decimal64ColumnVector);
+  }
+
+  /**
+   * Decoding on an IO thread leaves no plan behind there. IO threads outlive every task, and nothing
+   * clears their work maps, so a plan deserialized there would stay for the daemon's life, one per vertex
+   * the thread ever decoded for. Here the job ships its plan in the conf, as a fragment does, so that the
+   * IO thread could load it.
+   */
+  @Test
+  public void testDecodeOnAnIoThreadLeavesNoPlanThere() throws Exception {
+    ioThread = Executors.newSingleThreadExecutor();
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5);
+    HiveConf.setBoolVar(job, ConfVars.HIVE_RPC_QUERY_PLAN, true);
+    job.set(Utilities.MAPRED_MAPPER_CLASS, ExecMapper.class.getName());
+    Utilities.setMapWork(job, Utilities.getMapWork(job), null, false);
+    read(job, wholeFile());
+
+    // With the serialized plan gone from the conf, only a work map can still produce it.
+    JobConf probe = new JobConf(job);
+    probe.unset(new Path(Utilities.getPlanPath(job), Utilities.MAP_PLAN_NAME).toUri().getPath());
+    assertNotNull("the task thread's work map should hold the plan", Utilities.getMapWork(probe));
+    assertNull("the IO thread's work map should hold no plan", ioThread.submit(() -> Utilities.getMapWork(probe)).get());
   }
 
   /** Whole file, every column: all rows arrive, in DEFAULT_SIZE batches, with decimals as Decimal64. */
@@ -1379,13 +1416,8 @@ public class TestParquetEncodedDataReader {
     this.reader = parquetReader;
     edc.init(parquetReader, parquetReader);
     parquetReader.readFooter();
-    if (readOnIoThread) {
-      ExecutorService io = Executors.newSingleThreadExecutor();
-      try {
-        io.submit(parquetReader).get();
-      } finally {
-        io.shutdown();
-      }
+    if (ioThread != null) {
+      ioThread.submit(parquetReader).get();
     } else {
       parquetReader.call();
     }
@@ -1717,6 +1749,7 @@ public class TestParquetEncodedDataReader {
         fulfillInline(ranges);
       } else {
         super.readVectored(ranges, allocate);
+        deferCompletion(ranges);
       }
       injectFailure(ranges);
     }
@@ -1731,8 +1764,22 @@ public class TestParquetEncodedDataReader {
         fulfillInline(ranges);
       } else {
         super.readVectored(ranges, allocate, release);
+        deferCompletion(ranges);
       }
       injectFailure(ranges);
+    }
+
+    /**
+     * Keeps every range's future pending until someone waits on it, however quickly the local
+     * filesystem's pool thread finished the read behind it. A remote store's reads are still in
+     * flight when readVectored returns; the local filesystem's usually are, but not always, and a
+     * read that has already landed by the time the reader looks makes it take the stream for an
+     * inline one and drop the lookahead the tests here count on.
+     */
+    private void deferCompletion(List<? extends FileRange> ranges) {
+      for (FileRange range : ranges) {
+        range.setData(new CompletedOnWait(range.getData()));
+      }
     }
 
     /**
@@ -1783,6 +1830,44 @@ public class TestParquetEncodedDataReader {
         ranges.getFirst().setData(failed);
       }
       first = false;
+    }
+  }
+
+  /** Not done until waited on; then it takes the outcome of the read it stands for. */
+  private static final class CompletedOnWait extends CompletableFuture<ByteBuffer> {
+    private final CompletableFuture<ByteBuffer> read;
+
+    CompletedOnWait(CompletableFuture<ByteBuffer> read) {
+      this.read = read;
+    }
+
+    @Override
+    public ByteBuffer get() throws InterruptedException, ExecutionException {
+      settle();
+      return super.get();
+    }
+
+    @Override
+    public ByteBuffer get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException {
+      settle();
+      return super.get(timeout, unit);
+    }
+
+    @Override
+    public ByteBuffer join() {
+      settle();
+      return super.join();
+    }
+
+    private void settle() {
+      read.whenComplete((data, failure) -> {
+        if (failure != null) {
+          completeExceptionally(failure);
+        } else {
+          complete(data);
+        }
+      });
     }
   }
 

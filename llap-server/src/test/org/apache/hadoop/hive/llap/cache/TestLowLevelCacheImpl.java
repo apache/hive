@@ -311,7 +311,7 @@ Example code to test specific scenarios:
     LlapDataBuffer cached = fb();
     LlapDataBuffer colliding = fb();
 
-    assertNull(cache.putFileData(fileKey, new DiskRange[] { new DiskRange(0, 1) },
+    assertNull(cache.putFileData(fileKey, new DiskRange[] {new DiskRange(0, 1) },
         new LlapDataBuffer[] { cached }, 0, Priority.NORMAL, null, null));
     // Refcounts rather than isLocked: both buffers legitimately hold a reference at this point - the
     // cached one is in the cache, and fb() takes the one a caller would - so what has to be true of
@@ -321,8 +321,8 @@ Example code to test specific scenarios:
 
     // Same offset, two bytes rather than one: the "most basic check" in putFileData.
     RuntimeException collision = assertThrows(RuntimeException.class,
-        () -> cache.putFileData(fileKey, new DiskRange[] { new DiskRange(0, 2) },
-            new LlapDataBuffer[] { colliding }, 0, Priority.NORMAL, null, null));
+        () -> cache.putFileData(fileKey, new DiskRange[] {new DiskRange(0, 2) },
+            new LlapDataBuffer[] {colliding }, 0, Priority.NORMAL, null, null));
     assertTrue(collision.getMessage(),
         collision.getMessage().startsWith("Found a block with different length at the same offset"));
 

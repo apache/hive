@@ -349,7 +349,7 @@ public class LlapCacheAwareFs extends FileSystem {
                 // and the cache is told about - the bytes we asked for, not the buffer's capacity.
                 ByteBuffer bb = fresh.getByteBufferRaw();
                 bb.limit(bb.position() + sizes[i]);
-                DiskRange[] range = { copyDiskDataToCacheBuffer(array,
+                DiskRange[] range = {copyDiskDataToCacheBuffer(array,
                     arrayOffset + offsetFromReadStart + extraDiskDataOffset, sizes[i], bb, partFrom) };
                 extraDiskDataOffset += sizes[i];
                 partFrom += sizes[i];

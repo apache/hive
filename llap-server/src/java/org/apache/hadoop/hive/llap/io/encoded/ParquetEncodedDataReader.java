@@ -256,8 +256,8 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
           }
           // The next row group's requests go out now so its transfer overlaps this one's decode.
           // Not once readsInline: that stream would do the transfer right here, before the decode.
-          if (!readsInline && i + 1 < selected.size() && !isStopped.get()
-              && projectedChunkBytes(inFlight.peek()) + projectedChunkBytes(projected, selected.get(i + 1)) <= lookaheadBudget) {
+          if (!readsInline && i + 1 < selected.size() && !isStopped.get() && projectedChunkBytes(
+              inFlight.peek()) + projectedChunkBytes(projected, selected.get(i + 1)) <= lookaheadBudget) {
             inFlight.add(startFetch(file, allocator, projected, selected.get(i + 1),
                 rowGroupOf.get(selected.get(i + 1))));
           }
