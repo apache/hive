@@ -83,6 +83,9 @@ import org.apache.hadoop.hive.metastore.api.PartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysResponse;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -2281,6 +2284,27 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       return v;
     }
     return delegate.getDatabase(catalogName, databaseName);
+  }
+
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.ALL_TABLE_CONSTRAINTS, req);
+      AllTableConstraintsResponse v = (AllTableConstraintsResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = new AllTableConstraintsResponse(delegate.getAllTableConstraints(req));
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getAllTableConstraints, dbName={}, tblName={}",
+            req.getDbName(), req.getTblName());
+      }
+      // a copy: Hive.getTableConstraints keeps only the RELY constraints in the object it gets
+      return new SQLAllTableConstraints(v.getAllTableConstraints());
+    }
+    return delegate.getAllTableConstraints(req);
   }
 
   @Override
