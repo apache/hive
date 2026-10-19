@@ -156,9 +156,9 @@
       <classifier>tests</classifier>
       <scope>test</scope>
       <exclusions>
-       <exclusion>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
         </exclusion>
         <!-- kerby/kerberos auth chain pulled in transitively via hadoop-auth; beeline
              does not exercise hadoop-common's Kerberos/UGI code paths -->
