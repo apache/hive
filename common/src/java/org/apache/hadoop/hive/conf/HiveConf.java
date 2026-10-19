@@ -1860,6 +1860,9 @@ public class HiveConf extends Configuration {
         "retrieval in the JDBC storage handler"),
     HIVE_JDBC_FETCH_THREADS("hive.jdbc.fetch.threads", 1,
         "Controls the number of thread/connections used to fetch results for a JDBC query"),
+    HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE("hive.storage.jdbc.allow.metastore.database.type", false,
+        "When true, allows hive.sql.database.type=METASTORE on JDBC storage-handler tables outside the SYS\n" +
+        "database. The default (false) restricts METASTORE binding to SYS bootstrap tables only."),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
