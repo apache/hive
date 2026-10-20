@@ -490,6 +490,10 @@ public final class HMSCachingCatalog
     final Table cachedTable = tableCache.getIfPresent(identifier);
     long now = System.currentTimeMillis();
     if (cachedTable != null) {
+      // Authorize before any further work: the cached entry is shared across users and a hit never
+      // reaches HMS, so neither the location probe, the not-found/stale outcomes nor the
+      // invalidation below may be observable by a caller who may not read the table.
+      authorizeCachedRead(identifier);
       // Determine if L1 cache is valid based on the last cached time and the TTL.
       // If the table is in L1 cache, we can skip the location check and return the cached table directly,
       // which can significantly reduce the latency for repeated access to the same table.
@@ -499,7 +503,6 @@ public final class HMSCachingCatalog
           LOG.debug("Table {} is in L1 cache, returning cached table", identifier);
           onL1CacheHit(identifier);
           onCacheHit(identifier);
-          authorizeCachedRead(identifier);
           return cachedTable;
         } else {
           l1Invalidate(identifier);
@@ -523,7 +526,6 @@ public final class HMSCachingCatalog
       if (location.equals(cachedLocation)) {
         onCacheHit(identifier);
         l1MarkFresh(identifier, now);
-        authorizeCachedRead(identifier);
         return cachedTable;
       } else {
         LOG.debug("Invalidate table {}, cached {} != actual {}", identifier, cachedLocation, location);
