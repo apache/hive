@@ -1906,7 +1906,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Table table = IcebergTableUtil.getTable(conf, tableProps);
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, tableProps.getProperty(Utilities.AS_OF_TIMESTAMP),
         tableProps.getProperty(Utilities.AS_OF_VERSION), tableProps.getProperty(Catalogs.SNAPSHOT_REF));
-    return snapshot != null && PropertyUtil.propertyAsLong(snapshot.summary(), TOTAL_EQ_DELETES_PROP, 0) > 0;
+    // a V1 snapshot may have no summary, and V1 has no delete files
+    return snapshot != null && snapshot.summary() != null &&
+        PropertyUtil.propertyAsLong(snapshot.summary(), TOTAL_EQ_DELETES_PROP, 0) > 0;
   }
 
   private void disableVectorization() {

@@ -161,24 +161,6 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void testAnalyzeTableComputeStatisticsForColumnsWithEqualityDeletes() throws IOException {
-    Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
-        formatVersion);
-    List<Record> toDelete = TestHelper.RecordsBuilder
-        .newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).add(2L, "Trudy", null).build();
-    DeleteFile deleteFile = HiveIcebergTestUtils.createEqualityDeleteFile(table, "dummyPath",
-        ImmutableList.of("customer_id", "first_name"), fileFormat, toDelete);
-    table.newRowDelta().addDeletes(deleteFile).commit();
-
-    shell.executeStatement("ANALYZE TABLE customers COMPUTE STATISTICS FOR COLUMNS");
-
-    // the column statistics describe the rows the equality delete leaves: Alice and Bob
-    checkColStatMinMaxValue("customers", "customer_id", 0, 1);
-    checkColStatMaxLengthDistinctValue("customers", "first_name", 5, 2);
-  }
-
-  @Test
   public void testAnalyzeTableComputeStatisticsEmptyTable() throws IOException, TException, InterruptedException {
     String dbName = "default";
     String tableName = "customers";

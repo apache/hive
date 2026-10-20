@@ -180,6 +180,9 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
   private void initIOContext(long startPos, boolean isBlockPointer,
       Path inputPath) {
     ioCxtRef = this.getIOContext();
+    if (recordReader instanceof IOContextAwareRecordReader reader) {
+      reader.setIOContext(ioCxtRef);
+    }
     ioCxtRef.setCurrentBlockStart(startPos);
     ioCxtRef.setBlockPointer(isBlockPointer);
     ioCxtRef.setInputPath(inputPath);

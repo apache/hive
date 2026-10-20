@@ -22,6 +22,8 @@ package org.apache.iceberg.mr.mapred;
 import java.io.IOException;
 import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.IOContext;
+import org.apache.hadoop.hive.ql.io.IOContextAwareRecordReader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -75,21 +77,17 @@ public class MapredIcebergInputFormat<T> implements InputFormat<Void, Container<
   @Override
   public RecordReader<Void, Container<T>> getRecordReader(InputSplit split, JobConf job,
                                                           Reporter reporter) throws IOException {
-    try {
-      org.apache.hadoop.mapreduce.InputSplit inputSplit = split instanceof IcebergMergeSplit ?
-              (IcebergMergeSplit) split : ((IcebergSplitContainer) split).icebergSplit();
-      return new MapredIcebergRecordReader<>(innerInputFormat, inputSplit, job, reporter);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    org.apache.hadoop.mapreduce.InputSplit inputSplit = split instanceof IcebergMergeSplit ?
+            (IcebergMergeSplit) split : ((IcebergSplitContainer) split).icebergSplit();
+    return new MapredIcebergRecordReader<>(innerInputFormat, inputSplit, job, reporter);
   }
 
 
-  private static final class MapredIcebergRecordReader<T> extends AbstractMapredIcebergRecordReader<Container<T>> {
+  private static final class MapredIcebergRecordReader<T> extends AbstractMapredIcebergRecordReader<Container<T>>
+      implements IOContextAwareRecordReader {
 
     MapredIcebergRecordReader(org.apache.iceberg.mr.mapreduce.IcebergInputFormat<T> mapreduceInputFormat,
-        org.apache.hadoop.mapreduce.InputSplit split, JobConf job, Reporter reporter)
-        throws IOException, InterruptedException {
+        org.apache.hadoop.mapreduce.InputSplit split, JobConf job, Reporter reporter) throws IOException {
       super(mapreduceInputFormat, split, job, reporter);
     }
 
@@ -111,6 +109,13 @@ public class MapredIcebergInputFormat<T> implements InputFormat<Void, Container<
     @Override
     public Container<T> createValue() {
       return new Container<>();
+    }
+
+    @Override
+    public void setIOContext(IOContext ioContext) {
+      if (innerReader instanceof IOContextAwareRecordReader reader) {
+        reader.setIOContext(ioContext);
+      }
     }
 
     /**
