@@ -315,7 +315,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
-  public void testCopyOnWriteDeleteReportsMatchedRowCount() throws IOException {
+  public void testCopyOnWriteDeleteReportsMatchedRowCount() {
     Assume.assumeTrue(formatVersion == 2);
 
     TableIdentifier identifier = TableIdentifier.of("default", "cow_delete_count");
@@ -331,7 +331,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
-  public void testCopyOnWriteDeleteReportsZeroWhenNothingMatches() throws IOException {
+  public void testCopyOnWriteDeleteReportsZeroWhenNothingMatches() {
     Assume.assumeTrue(formatVersion == 2);
 
     TableIdentifier identifier = TableIdentifier.of("default", "cow_delete_no_match");
@@ -523,7 +523,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
-  public void testCopyOnWriteUpdateReportsOnlyMatchedRowCount() throws IOException {
+  public void testCopyOnWriteUpdateReportsOnlyMatchedRowCount() {
     Assume.assumeTrue(formatVersion == 2);
 
     TableIdentifier identifier = TableIdentifier.of("default", "cow_update_count");
@@ -539,7 +539,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
-  public void testCopyOnWriteUpdateWithoutPredicateReportsMatchedRowCount() throws IOException {
+  public void testCopyOnWriteUpdateWithoutPredicateReportsMatchedRowCount() {
     Assume.assumeTrue(formatVersion == 2);
 
     TableIdentifier identifier = TableIdentifier.of("default", "cow_update_all_count");
@@ -553,7 +553,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
-  public void testCopyOnWriteMergeReportsMatchedRowCount() throws IOException {
+  public void testCopyOnWriteMergeReportsMatchedRowCount() {
     Assume.assumeTrue(formatVersion == 2);
 
     TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_count");
@@ -576,7 +576,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
-  public void testCopyOnWriteInsertOnlyMergeReportsInsertedRows() throws IOException {
+  public void testCopyOnWriteInsertOnlyMergeReportsInsertedRows() {
     Assume.assumeTrue(formatVersion == 2);
 
     TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_insert_only");
@@ -596,7 +596,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
-  public void testCopyOnWriteMergeReportsInsertsWhenUpdateDoesNotMatch() throws IOException {
+  public void testCopyOnWriteMergeReportsInsertsWhenUpdateDoesNotMatch() {
     Assume.assumeTrue(formatVersion == 2);
 
     TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_no_update_match");

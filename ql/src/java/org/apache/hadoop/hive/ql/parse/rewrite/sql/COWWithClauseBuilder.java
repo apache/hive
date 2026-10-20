@@ -9,8 +9,8 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.ql.parse.rewrite.sql;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -128,14 +129,12 @@ public class COWWithClauseBuilder {
   }
 
   private static Set<String> getReservedAliases(MultiInsertSqlGenerator sqlGenerator) {
-    Set<String> reservedAliases = new HashSet<>();
-    for (FieldSchema column : sqlGenerator.getTargetTable().getAllCols()) {
-      reservedAliases.add(column.getName().toLowerCase(Locale.ROOT));
-    }
-    for (FieldSchema column : sqlGenerator.getTargetTable().getStorageHandler()
-        .acidSelectColumns(sqlGenerator.getTargetTable(), Context.Operation.DELETE)) {
-      reservedAliases.add(column.getName().toLowerCase(Locale.ROOT));
-    }
+    Set<String> reservedAliases = Stream.concat(
+        sqlGenerator.getTargetTable().getAllCols().stream(),
+        sqlGenerator.getTargetTable().getStorageHandler()
+            .acidSelectColumns(sqlGenerator.getTargetTable(), Context.Operation.DELETE).stream())
+        .map(column -> column.getName().toLowerCase(Locale.ROOT))
+        .collect(Collectors.toCollection(HashSet::new));
     reservedAliases.add(VirtualColumn.ROW_LINEAGE_ID.getName().toLowerCase(Locale.ROOT));
     reservedAliases.add(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName().toLowerCase(Locale.ROOT));
     return reservedAliases;

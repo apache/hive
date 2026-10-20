@@ -151,7 +151,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
   public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
   private transient long affectedRowCount;
-  private transient boolean hasNonAffectedRowsWriter;
   private transient Set<String> dynamicPartitionSpecs = new HashSet<>();
 
   /**
@@ -294,6 +293,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // Made an attempt to close all writers.
       if (exception != null) {
         throw new HiveException(exception);
+      }
+    }
+
+    private void recordAffectedRows(RecordWriter writer) {
+      if (writer instanceof AffectedRowsProvidingRecordWriter affectedRowsWriter) {
+        affectedRowCount = Math.max(affectedRowCount, 0) + affectedRowsWriter.getAffectedRows();
       }
     }
 
@@ -755,7 +760,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       numRows = 0;
       cntr = 1;
       affectedRowCount = -1;
-      hasNonAffectedRowsWriter = false;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
       statsMap.put(getCounterName(Counter.RECORDS_OUT), row_count);
@@ -1501,16 +1505,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     return FileUtils.makePartName(dpColNames, row);
   }
 
-  private void recordAffectedRows(RecordWriter writer) {
-    if (writer instanceof AffectedRowsProvidingRecordWriter affectedRowsWriter) {
-      affectedRowCount = Math.max(affectedRowCount, 0) + affectedRowsWriter.getAffectedRows();
-    } else {
-      hasNonAffectedRowsWriter = true;
-    }
-  }
-
   @Override
   public void closeOp(boolean abort) throws HiveException {
+
+    row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : numRows);
 
     LOG.info("{}: {} written - {}",
             this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
@@ -1586,9 +1584,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           fsp.commit(fs, commitPaths, deleteDeltas);
         }
       }
-      row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : numRows);
-      modifiedRowCount.set(conf.isDeleteOfSplitUpdate() ? 0
-          : !hasNonAffectedRowsWriter && affectedRowCount >= 0 ? affectedRowCount : numRows);
+      long modifiedRows = numRows;
+      if (conf.isDeleteOfSplitUpdate()) {
+        modifiedRows = 0;
+      } else if (affectedRowCount >= 0) {
+        modifiedRows = affectedRowCount;
+      }
+      modifiedRowCount.set(modifiedRows);
       if (conf.isMmTable() || conf.isDirectInsert()) {
         boolean isDelete = AcidUtils.Operation.DELETE.equals(conf.getAcidOperation());
         Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(),
