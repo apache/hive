@@ -33,15 +33,14 @@ import java.util.Collections;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.assertPlans;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildPlanner;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.PlanFixture;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestHiveSemiJoinRule {
 
   private PlanFixture fixture(RelOptRule rule) {
     return new PlanFixture(buildPlanner(Collections.singletonList(rule)))
-        .registerTable("t1", T1Record.class)
-        .registerTable("t2", T2Record.class);
+        .registerTable("t1", TestHiveAntiSemiJoinRule.T1Record.class)
+        .registerTable("t2", TestHiveAntiSemiJoinRule.T2Record.class);
   }
 
   @Test
@@ -65,15 +64,72 @@ public class TestHiveSemiJoinRule {
   }
 
   @Test
+  public void testProjectOuterJoinWithAggregateOnLeftIsNotRewritten() {
+    for (JoinRelType joinType : new JoinRelType[] {JoinRelType.RIGHT, JoinRelType.FULL}) {
+      PlanFixture fixture = fixture(HiveSemiJoinRule.INSTANCE_PROJECT_SWAPPED);
+      RelBuilder builder = buildJoinPlan(fixture, joinType);
+      RelNode plan = builder.project(builder.field("t2id")).build();
+
+      assertUnchanged(fixture, plan);
+    }
+  }
+
+  @Test
+  public void testAggregateOuterJoinWithAggregateOnLeftIsNotRewritten() {
+    for (JoinRelType joinType : new JoinRelType[] {JoinRelType.RIGHT, JoinRelType.FULL}) {
+      PlanFixture fixture = fixture(HiveSemiJoinRule.INSTANCE_AGGREGATE_SWAPPED);
+      RelBuilder builder = buildJoinPlan(fixture, joinType);
+      RelNode plan = builder
+          .aggregate(builder.groupKey(), builder.aggregateCall(SqlStdOperatorTable.COUNT))
+          .build();
+
+      assertUnchanged(fixture, plan);
+    }
+  }
+
+  @Test
+  public void testProjectOuterJoinWithAggregateOnRightIsNotRewritten() {
+    for (JoinRelType joinType : new JoinRelType[] {JoinRelType.RIGHT, JoinRelType.FULL}) {
+      PlanFixture fixture = fixture(HiveSemiJoinRule.INSTANCE_PROJECT);
+      RelBuilder builder = buildJoinPlanWithAggregateOnRight(fixture, joinType);
+      RelNode plan = builder.project(builder.field("t1id")).build();
+
+      assertUnchanged(fixture, plan);
+    }
+  }
+
+  @Test
+  public void testAggregateOuterJoinWithAggregateOnRightIsNotRewritten() {
+    for (JoinRelType joinType : new JoinRelType[] {JoinRelType.RIGHT, JoinRelType.FULL}) {
+      PlanFixture fixture = fixture(HiveSemiJoinRule.INSTANCE_AGGREGATE);
+      RelBuilder builder = buildJoinPlanWithAggregateOnRight(fixture, joinType);
+      RelNode plan = builder
+          .aggregate(builder.groupKey(), builder.aggregateCall(SqlStdOperatorTable.COUNT))
+          .build();
+
+      assertUnchanged(fixture, plan);
+    }
+  }
+
+  @Test
   public void testProjectInnerJoinWithAggregateOnLeftIsRewritten() {
     PlanFixture fixture = fixture(HiveSemiJoinRule.INSTANCE_PROJECT_SWAPPED);
     RelBuilder builder = buildJoinPlan(fixture, JoinRelType.INNER);
     RelNode plan = builder.project(builder.field("t2id")).build();
 
-    fixture.getPlanner().setRoot(plan);
-    RelNode optimizedPlan = fixture.getPlanner().findBestExp();
+    String expectedPrePlan = "HiveProject(t2id=[$1])\n"
+        + "  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])\n"
+        + "    HiveAggregate(group=[{0}])\n"
+        + "      LogicalTableScan(table=[[t1]])\n"
+        + "    LogicalTableScan(table=[[t2]])\n";
 
-    assertTrue(RelOptUtil.toString(optimizedPlan).contains("HiveSemiJoin"));
+    String expectedPostPlan = "HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])\n"
+        + "  HiveProject(t2id=[$0])\n"
+        + "    LogicalTableScan(table=[[t2]])\n"
+        + "  HiveProject(t1id=[$0])\n"
+        + "    LogicalTableScan(table=[[t1]])\n";
+
+    assertPlans(fixture.getPlanner(), plan, expectedPrePlan, expectedPostPlan);
   }
 
   private RelBuilder buildJoinPlan(PlanFixture fixture, JoinRelType joinType) {
@@ -87,20 +143,21 @@ public class TestHiveSemiJoinRule {
             builder.field(2, 1, "t2id")));
   }
 
+  private RelBuilder buildJoinPlanWithAggregateOnRight(PlanFixture fixture, JoinRelType joinType) {
+    RelBuilder builder = fixture.createRelBuilder();
+    return builder
+        .scan("t1")
+        .scan("t2")
+        .aggregate(builder.groupKey(0))
+        .join(joinType, builder.equals(
+            builder.field(2, 0, "t1id"),
+            builder.field(2, 1, "t2id")));
+  }
+
   private void assertUnchanged(PlanFixture fixture, RelNode plan) {
     String expectedPlan = RelOptUtil.toString(plan);
     assertPlans(fixture.getPlanner(), plan, expectedPlan, expectedPlan);
   }
 
-  static class T1Record {
-    public int t1id;
-    public int t1notnull;
-    public Integer t1nullable;
-  }
-
-  static class T2Record {
-    public int t2id;
-    public int t2notnull;
-    public Integer t2nullable;
-  }
+  // Record classes are shared with TestHiveAntiSemiJoinRule.
 }
