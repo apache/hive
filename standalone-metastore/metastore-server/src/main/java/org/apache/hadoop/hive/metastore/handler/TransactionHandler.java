@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionMetricsDataStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
 import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
@@ -70,6 +71,7 @@ import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
@@ -98,12 +100,22 @@ import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsDataConverter;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.thrift.TException;
+
+import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartValsFromName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -491,6 +503,11 @@ public abstract class TransactionHandler extends DeprecatedHandler {
   }
   @Override
   public CompactionResponse compact2(CompactionRequest rqst) throws TException {
+    try {
+      authorizeAndPrepareCompactionRequest(rqst, false);
+    } catch (Exception e) {
+      rethrowException(e);
+    }
     return getTxnHandler().compact(rqst);
   }
 
@@ -505,7 +522,106 @@ public abstract class TransactionHandler extends DeprecatedHandler {
   @Override
   public boolean submit_for_cleanup(CompactionRequest rqst, long highestWriteId, long txnId)
       throws TException {
+    try {
+      authorizeAndPrepareCompactionRequest(rqst, true);
+    } catch (Exception e) {
+      rethrowException(e);
+    }
     return getTxnHandler().submitForCleanup(rqst, highestWriteId, txnId);
+  }
+
+  /**
+   * Authorize client-initiated compaction/cleanup requests and derive server-side run-as identity.
+   * Internal callers (e.g. {@link org.apache.hadoop.hive.metastore.AcidEventListener}) invoke
+   * {@code TxnHandler} directly and are not subject to this path.
+   *
+   * @param allowMissingTable only for cleanup requests: a rolled-back CTAS (see {@code HiveQueryLifeTimeHook})
+   *     asks for cleanup of a directory whose table was never created or has already been dropped. In that case
+   *     the request is authorized against the database and the requested location must be strictly inside the
+   *     database's managed/external location.
+   */
+  private void authorizeAndPrepareCompactionRequest(CompactionRequest rqst, boolean allowMissingTable)
+      throws TException, IOException, InterruptedException {
+    if (rqst.getDbname() == null || rqst.getTablename() == null) {
+      throw new MetaException("The DB and table name cannot be null.");
+    }
+    String[] parsedDbName = parseDbName(rqst.getDbname(), conf);
+    String catName = parsedDbName[CAT_NAME];
+    String dbName = parsedDbName[DB_NAME];
+    String tblName = rqst.getTablename();
+    rqst.setDbname(dbName);
+
+    FilterUtils.checkDbAndTableFilters(isServerFilterEnabled, filterHook, catName, dbName, tblName);
+
+    GetTableRequest getTableRequest = new GetTableRequest(dbName, tblName);
+    getTableRequest.setCatName(catName);
+    Table table;
+    try {
+      table = get_table_core(getTableRequest);
+    } catch (NoSuchObjectException e) {
+      if (!allowMissingTable || rqst.isSetPartitionname()) {
+        throw e;
+      }
+      authorizeCleanupOfMissingTable(rqst, catName, dbName);
+      return;
+    }
+    firePreEvent(new PreAlterTableEvent(table, table, this));
+
+    String location = table.getSd() == null ? null : table.getSd().getLocation();
+    if (rqst.isSetPartitionname() && rqst.getPartitionname() != null) {
+      List<String> partVals = getPartValsFromName(table, rqst.getPartitionname());
+      Partition partition = getMS().getPartition(catName, dbName, tblName, partVals);
+      location = partition.getSd() == null ? null : partition.getSd().getLocation();
+    }
+    if (location == null) {
+      throw new MetaException("Cannot determine storage location of " + dbName + "." + tblName
+          + "; compaction is not supported for this table or partition");
+    }
+    rqst.setRunas(TxnUtils.findUserToRunAs(location, table, conf));
+  }
+
+  /**
+   * Cleanup of a directory that has no backing table: authorize against the database, require that the
+   * requested location is strictly inside the database's locations (so that a client cannot get an arbitrary
+   * path purged by the Cleaner) and derive the run-as user from the directory owner.
+   */
+  private void authorizeCleanupOfMissingTable(CompactionRequest rqst, String catName, String dbName)
+      throws TException, IOException, InterruptedException {
+    Database db = get_database_core(catName, dbName);
+    firePreEvent(new PreAlterDatabaseEvent(db, db, this));
+
+    String requested = rqst.getProperties() == null ? null : rqst.getProperties().get(META_TABLE_LOCATION);
+    if (requested == null || requested.isEmpty()) {
+      throw new MetaException("Cannot determine storage location of " + dbName + "." + rqst.getTablename()
+          + "; the table does not exist and no location was supplied for the cleanup");
+    }
+    Warehouse warehouse = getWh();
+    Path location = normalizePath(warehouse, new Path(requested));
+    List<Path> allowedRoots = new ArrayList<>(3);
+    if (db.getLocationUri() != null) {
+      allowedRoots.add(normalizePath(warehouse, new Path(db.getLocationUri())));
+    }
+    if (db.getManagedLocationUri() != null) {
+      allowedRoots.add(normalizePath(warehouse, new Path(db.getManagedLocationUri())));
+    }
+    allowedRoots.add(normalizePath(warehouse, warehouse.getDatabaseManagedPath(db)));
+    boolean allowed = allowedRoots.stream()
+        .anyMatch(root -> !root.equals(location) && FileUtils.isPathWithinSubtree(location, root));
+    if (!allowed) {
+      throw new MetaException("Cleanup location " + requested + " is not inside the locations of database "
+          + dbName);
+    }
+    Table dummy = new Table();
+    dummy.setDbName(dbName);
+    dummy.setTableName(rqst.getTablename());
+    dummy.setOwner(db.getOwnerName());
+    rqst.putToProperties(META_TABLE_LOCATION, location.toString());
+    rqst.setRunas(TxnUtils.findUserToRunAs(location.toString(), dummy, conf));
+  }
+
+  private static Path normalizePath(Warehouse warehouse, Path path) throws MetaException {
+    // resolve scheme/authority and strip any "." / ".." segments so that the containment check cannot be bypassed
+    return warehouse.getDnsPath(new Path(path.toUri().normalize()));
   }
 
   @Override
