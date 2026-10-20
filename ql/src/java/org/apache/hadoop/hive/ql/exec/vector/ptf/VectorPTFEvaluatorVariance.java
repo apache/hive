@@ -77,35 +77,51 @@ public class VectorPTFEvaluatorVariance extends VectorPTFEvaluatorAbstractVarian
       return;
     }
 
-    final boolean noNulls = colVector.noNulls;
-    final boolean[] isNull = colVector.isNull;
     switch (inputColumnVectorType) {
     case LONG:
-      final long[] longVector = ((LongColumnVector) colVector).vector;
-      for (int i = 0; i < size; i++) {
-        if (noNulls || !isNull[i]) {
-          iterate(longVector[i]);
-        }
-      }
+      iterateLongs((LongColumnVector) colVector, size);
       break;
     case DOUBLE:
-      final double[] doubleVector = ((DoubleColumnVector) colVector).vector;
-      for (int i = 0; i < size; i++) {
-        if (noNulls || !isNull[i]) {
-          iterate(doubleVector[i]);
-        }
-      }
+      iterateDoubles((DoubleColumnVector) colVector, size);
       break;
     case DECIMAL:
-      final HiveDecimalWritable[] decimalVector = ((DecimalColumnVector) colVector).vector;
-      for (int i = 0; i < size; i++) {
-        if (noNulls || !isNull[i]) {
-          iterate(decimalVector[i].doubleValue());
-        }
-      }
+      iterateDecimals((DecimalColumnVector) colVector, size);
       break;
     default:
-      throw new RuntimeException("Unexpected column vector type " + inputColumnVectorType);
+      throw new IllegalStateException("Unexpected column vector type " + inputColumnVectorType);
+    }
+  }
+
+  private void iterateLongs(LongColumnVector colVector, int size) {
+    final long[] vector = colVector.vector;
+    final boolean noNulls = colVector.noNulls;
+    final boolean[] isNull = colVector.isNull;
+    for (int i = 0; i < size; i++) {
+      if (noNulls || !isNull[i]) {
+        iterate((double) vector[i]);
+      }
+    }
+  }
+
+  private void iterateDoubles(DoubleColumnVector colVector, int size) {
+    final double[] vector = colVector.vector;
+    final boolean noNulls = colVector.noNulls;
+    final boolean[] isNull = colVector.isNull;
+    for (int i = 0; i < size; i++) {
+      if (noNulls || !isNull[i]) {
+        iterate(vector[i]);
+      }
+    }
+  }
+
+  private void iterateDecimals(DecimalColumnVector colVector, int size) {
+    final HiveDecimalWritable[] vector = colVector.vector;
+    final boolean noNulls = colVector.noNulls;
+    final boolean[] isNull = colVector.isNull;
+    for (int i = 0; i < size; i++) {
+      if (noNulls || !isNull[i]) {
+        iterate(vector[i].doubleValue());
+      }
     }
   }
 

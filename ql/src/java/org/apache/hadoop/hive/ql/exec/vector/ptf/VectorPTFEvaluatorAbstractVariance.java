@@ -19,6 +19,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -28,6 +31,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.VarianceKind;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Base class of the variance family evaluators: variance/var_pop, var_samp,
@@ -40,6 +45,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.VarianceKind;
  */
 public abstract class VectorPTFEvaluatorAbstractVariance extends VectorPTFEvaluatorBase {
 
+  private static final Set<Type> SUPPORTED_INPUT_TYPES =
+      EnumSet.of(Type.LONG, Type.DOUBLE, Type.DECIMAL);
+
   protected final Type inputColumnVectorType;
   protected final VarianceKind varianceKind;
 
@@ -48,19 +56,12 @@ public abstract class VectorPTFEvaluatorAbstractVariance extends VectorPTFEvalua
   // sum[(x - avg)^2], this is count times the population variance.
   protected double variance;
 
-  public VectorPTFEvaluatorAbstractVariance(WindowFrameDef windowFrameDef,
+  protected VectorPTFEvaluatorAbstractVariance(WindowFrameDef windowFrameDef,
       VectorExpression inputVecExpr, int outputColumnNum, Type inputColumnVectorType,
       VarianceKind varianceKind) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
-    switch (inputColumnVectorType) {
-    case LONG:
-    case DOUBLE:
-    case DECIMAL:
-      break;
-    default:
-      throw new RuntimeException(
-          "Unexpected column vector type " + inputColumnVectorType + " for " + varianceKind);
-    }
+    Preconditions.checkArgument(SUPPORTED_INPUT_TYPES.contains(inputColumnVectorType),
+        "Unexpected column vector type %s for %s", inputColumnVectorType, varianceKind);
     this.inputColumnVectorType = inputColumnVectorType;
     this.varianceKind = varianceKind;
   }
@@ -76,13 +77,13 @@ public abstract class VectorPTFEvaluatorAbstractVariance extends VectorPTFEvalua
   protected final double getDouble(ColumnVector colVector, int i) {
     switch (inputColumnVectorType) {
     case LONG:
-      return ((LongColumnVector) colVector).vector[i];
+      return (double) ((LongColumnVector) colVector).vector[i];
     case DOUBLE:
       return ((DoubleColumnVector) colVector).vector[i];
     case DECIMAL:
       return ((DecimalColumnVector) colVector).vector[i].doubleValue();
     default:
-      throw new RuntimeException("Unexpected column vector type " + inputColumnVectorType);
+      throw new IllegalStateException("Unexpected column vector type " + inputColumnVectorType);
     }
   }
 

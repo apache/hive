@@ -359,13 +359,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
       }
       break;
-    case VARIANCE:
-    case VAR_POP:
-    case VAR_SAMP:
-    case STD:
-    case STDDEV:
-    case STDDEV_POP:
-    case STDDEV_SAMP:
+    case VARIANCE, VAR_POP, VAR_SAMP, STD, STDDEV, STDDEV_POP, STDDEV_SAMP:
       evaluator = !canStream ?
           new VectorPTFEvaluatorVariance(windowFrameDef, inputVectorExpression, outputColumnNum,
               columnVectorType, functionType.getVarianceKind()) :

@@ -38,8 +38,12 @@ import com.google.common.base.Preconditions;
  * (ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW).
  *
  * Each non-null value is added to the running aggregation and every row gets the running result.
+ * The result is only recalculated when a value is added, null rows reuse it.
  */
 public class VectorPTFEvaluatorStreamingVariance extends VectorPTFEvaluatorAbstractVariance {
+
+  private boolean isCurrentResultNull;
+  private double currentResult;
 
   public VectorPTFEvaluatorStreamingVariance(WindowFrameDef windowFrameDef,
       VectorExpression inputVecExpr, int outputColumnNum, Type inputColumnVectorType,
@@ -66,7 +70,7 @@ public class VectorPTFEvaluatorStreamingVariance extends VectorPTFEvaluatorAbstr
       if (colVector.noNulls || !colVector.isNull[0]) {
         final double value = getDouble(colVector, 0);
         for (int i = 0; i < size; i++) {
-          iterate(value);
+          aggregate(value);
           setOutput(outputColVector, i);
         }
       } else {
@@ -78,48 +82,75 @@ public class VectorPTFEvaluatorStreamingVariance extends VectorPTFEvaluatorAbstr
       return;
     }
 
-    final boolean noNulls = colVector.noNulls;
-    final boolean[] isNull = colVector.isNull;
     switch (inputColumnVectorType) {
     case LONG:
-      final long[] longVector = ((LongColumnVector) colVector).vector;
-      for (int i = 0; i < size; i++) {
-        if (noNulls || !isNull[i]) {
-          iterate(longVector[i]);
-        }
-        setOutput(outputColVector, i);
-      }
+      evaluateLongs((LongColumnVector) colVector, outputColVector, size);
       break;
     case DOUBLE:
-      final double[] doubleVector = ((DoubleColumnVector) colVector).vector;
-      for (int i = 0; i < size; i++) {
-        if (noNulls || !isNull[i]) {
-          iterate(doubleVector[i]);
-        }
-        setOutput(outputColVector, i);
-      }
+      evaluateDoubles((DoubleColumnVector) colVector, outputColVector, size);
       break;
     case DECIMAL:
-      final HiveDecimalWritable[] decimalVector = ((DecimalColumnVector) colVector).vector;
-      for (int i = 0; i < size; i++) {
-        if (noNulls || !isNull[i]) {
-          iterate(decimalVector[i].doubleValue());
-        }
-        setOutput(outputColVector, i);
-      }
+      evaluateDecimals((DecimalColumnVector) colVector, outputColVector, size);
       break;
     default:
-      throw new RuntimeException("Unexpected column vector type " + inputColumnVectorType);
+      throw new IllegalStateException("Unexpected column vector type " + inputColumnVectorType);
+    }
+  }
+
+  private void evaluateLongs(LongColumnVector colVector, DoubleColumnVector outputColVector,
+      int size) {
+    final long[] vector = colVector.vector;
+    final boolean noNulls = colVector.noNulls;
+    final boolean[] isNull = colVector.isNull;
+    for (int i = 0; i < size; i++) {
+      if (noNulls || !isNull[i]) {
+        aggregate((double) vector[i]);
+      }
+      setOutput(outputColVector, i);
+    }
+  }
+
+  private void evaluateDoubles(DoubleColumnVector colVector, DoubleColumnVector outputColVector,
+      int size) {
+    final double[] vector = colVector.vector;
+    final boolean noNulls = colVector.noNulls;
+    final boolean[] isNull = colVector.isNull;
+    for (int i = 0; i < size; i++) {
+      if (noNulls || !isNull[i]) {
+        aggregate(vector[i]);
+      }
+      setOutput(outputColVector, i);
+    }
+  }
+
+  private void evaluateDecimals(DecimalColumnVector colVector, DoubleColumnVector outputColVector,
+      int size) {
+    final HiveDecimalWritable[] vector = colVector.vector;
+    final boolean noNulls = colVector.noNulls;
+    final boolean[] isNull = colVector.isNull;
+    for (int i = 0; i < size; i++) {
+      if (noNulls || !isNull[i]) {
+        aggregate(vector[i].doubleValue());
+      }
+      setOutput(outputColVector, i);
+    }
+  }
+
+  private void aggregate(double value) {
+    iterate(value);
+    isCurrentResultNull = isResultNull();
+    if (!isCurrentResultNull) {
+      currentResult = calculateResult();
     }
   }
 
   private void setOutput(DoubleColumnVector outputColVector, int i) {
-    if (isResultNull()) {
+    if (isCurrentResultNull) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     } else {
       outputColVector.isNull[i] = false;
-      outputColVector.vector[i] = calculateResult();
+      outputColVector.vector[i] = currentResult;
     }
   }
 
@@ -127,5 +158,12 @@ public class VectorPTFEvaluatorStreamingVariance extends VectorPTFEvaluatorAbstr
   public boolean streamsResult() {
     // No group value.
     return true;
+  }
+
+  @Override
+  public void resetEvaluator() {
+    super.resetEvaluator();
+    isCurrentResultNull = true;
+    currentResult = 0.0;
   }
 }
