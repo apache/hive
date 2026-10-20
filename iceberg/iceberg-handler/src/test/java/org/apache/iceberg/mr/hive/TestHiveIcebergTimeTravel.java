@@ -227,8 +227,7 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void testSelectBranchAndTagWithEqualityDeletes() throws IOException {
-    // the vectorized reader cannot apply equality deletes: the branch and the tag scanned have some, the table none
+  public void testSelectBranchTagAndAsOfWithEqualityDeletes() throws IOException {
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
         formatVersion);
@@ -244,5 +243,9 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
 
     Assert.assertEquals(2, shell.executeStatement("SELECT * FROM default.customers.branch_eq_branch").size());
     Assert.assertEquals(2, shell.executeStatement("SELECT * FROM default.customers.tag_eq_tag").size());
+    Assert.assertEquals(2,
+        shell.executeStatement("SELECT * FROM customers FOR SYSTEM_VERSION AS OF " + snapshotId).size());
+    Assert.assertEquals(2, shell.executeStatement(
+        "SELECT * FROM customers FOR SYSTEM_TIME AS OF '" + timestampAfterSnapshot(table, 1) + "'").size());
   }
 }

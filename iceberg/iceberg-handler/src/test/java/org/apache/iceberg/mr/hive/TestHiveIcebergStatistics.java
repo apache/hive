@@ -162,20 +162,20 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testAnalyzeTableComputeStatisticsForColumnsWithEqualityDeletes() throws IOException {
-    // the vectorized reader cannot apply equality deletes, and the scan of a column analyze vectorizes
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
         formatVersion);
     List<Record> toDelete = TestHelper.RecordsBuilder
-        .newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).add(1L, "Bob", null).build();
+        .newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).add(2L, "Trudy", null).build();
     DeleteFile deleteFile = HiveIcebergTestUtils.createEqualityDeleteFile(table, "dummyPath",
         ImmutableList.of("customer_id", "first_name"), fileFormat, toDelete);
     table.newRowDelta().addDeletes(deleteFile).commit();
 
     shell.executeStatement("ANALYZE TABLE customers COMPUTE STATISTICS FOR COLUMNS");
 
-    List<Object[]> rows = shell.executeStatement("SELECT customer_id FROM customers ORDER BY customer_id");
-    Assert.assertEquals(2, rows.size());
+    // the column statistics describe the rows the equality delete leaves: Alice and Bob
+    checkColStatMinMaxValue("customers", "customer_id", 0, 1);
+    checkColStatMaxLengthDistinctValue("customers", "first_name", 5, 2);
   }
 
   @Test

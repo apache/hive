@@ -12407,7 +12407,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // append additional virtual columns for storing statistics
     Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
-    List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
+    List<VirtualColumn> vcList = new ArrayList<>();
     while (vcs.hasNext()) {
       VirtualColumn vc = vcs.next();
       rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),

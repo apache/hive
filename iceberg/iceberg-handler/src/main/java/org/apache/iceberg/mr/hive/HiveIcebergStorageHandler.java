@@ -1900,11 +1900,12 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   /**
    * Whether the scanned snapshot has equality deletes, which the vectorized reader cannot apply
-   * (HiveVectorizedReader): the current one, or the head of the branch or tag scanned.
+   * (HiveVectorizedReader): the one read as of a time or version, the head of the branch or tag, or the current one.
    */
   private boolean hasEqualityDeletes(Properties tableProps) {
-    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(
-        IcebergTableUtil.getTable(conf, tableProps), tableProps.getProperty(Catalogs.SNAPSHOT_REF));
+    Table table = IcebergTableUtil.getTable(conf, tableProps);
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, tableProps.getProperty(Utilities.AS_OF_TIMESTAMP),
+        tableProps.getProperty(Utilities.AS_OF_VERSION), tableProps.getProperty(Catalogs.SNAPSHOT_REF));
     return snapshot != null && PropertyUtil.propertyAsLong(snapshot.summary(), TOTAL_EQ_DELETES_PROP, 0) > 0;
   }
 
