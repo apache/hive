@@ -93,7 +93,7 @@ public final class Indexer implements Closeable {
     }
     IndexCommit snapshot = snapshotter.snapshot();
     try {
-      indexManager.syncBackup();
+      indexManager.syncBackup(snapshot);
     } finally {
       snapshotter.release(snapshot);
     }

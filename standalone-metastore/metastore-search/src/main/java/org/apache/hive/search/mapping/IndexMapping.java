@@ -92,7 +92,6 @@ public record IndexMapping(Configuration configuration, Map<String, FieldSchema>
       }
       return semanticFields;
     }
-    SearchTextSegment.isSegmentField(fieldName);
     validateSemanticField(fieldName);
     return List.of(fieldName);
   }

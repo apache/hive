@@ -155,6 +155,9 @@ public final class BootstrapIndexer {
     }
     List<Table> tables =
         client.getTableObjectsByName(batch.database(), batch.tableNames());
+    if (tables == null || tables.isEmpty()) {
+      return;
+    }
     List<TableDocument> documents = new ArrayList<>(tables.size());
     for (Table table : tables) {
       documents.add(MetastoreTableMapper.fromTable(table, indexManager.mapping()));

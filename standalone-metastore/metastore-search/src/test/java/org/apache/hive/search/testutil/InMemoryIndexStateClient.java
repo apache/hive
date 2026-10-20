@@ -30,6 +30,7 @@ import java.util.zip.CRC32C;
 import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.index.store.IndexManifest;
 import org.apache.hive.search.index.store.IndexStateClient;
+import org.apache.lucene.index.IndexCommit;
 
 /** In-memory {@link IndexStateClient} for unit tests. */
 public final class InMemoryIndexStateClient implements IndexStateClient {
@@ -37,7 +38,10 @@ public final class InMemoryIndexStateClient implements IndexStateClient {
   private byte[] stagingManifest;
 
   @Override
-  public Optional<IndexManifest> readManifest() throws IOException {
+  public Optional<IndexManifest> readManifest(Optional<IndexCommit> commit) throws IOException {
+    if (commit.isPresent()) {
+      throw new IndexIOException("in-memory index state does not support pinned commits");
+    }
     byte[] bytes = files.get(IndexManifest.MANIFEST_FILE_NAME);
     return bytes == null ? Optional.empty() : Optional.of(IndexManifest.fromJson(bytes));
   }

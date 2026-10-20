@@ -30,21 +30,17 @@ import org.apache.hive.search.exception.IndexIOException;
 public final class IndexBackupUtils {
   private IndexBackupUtils() {}
 
-  /** Push local index state to the backup (remote) location. */
-  public static boolean syncToBackup(IndexStateClient local, IndexStateClient remote)
-      throws IOException {
-    Optional<IndexManifest> localManifest = local.readManifest();
-    if (localManifest.isEmpty()) {
-      return false;
-    }
+  /** Push a pinned local manifest to the backup (remote) location. */
+  public static boolean syncToBackup(IndexStateClient local, IndexStateClient remote,
+      IndexManifest localM) throws IOException {
     Optional<IndexManifest> remoteManifest = remote.readManifest();
-    IndexManifest localM = localManifest.get();
     if (remoteManifest.isPresent()) {
       IndexManifest remoteM = remoteManifest.get();
       if (remoteM.lastEventId() > localM.lastEventId()) {
         return false;
       }
-      if (remoteM.lastEventId() == localM.lastEventId() && localM.sameFilesAs(remoteM)) {
+      if (remoteM.lastEventId() == localM.lastEventId()
+          && localM.sameFilesAs(remoteM)) {
         return false;
       }
     }

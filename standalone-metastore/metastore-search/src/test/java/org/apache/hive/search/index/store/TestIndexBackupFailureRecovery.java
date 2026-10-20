@@ -75,7 +75,7 @@ public class TestIndexBackupFailureRecovery {
     writeManifest(local, manifest(10L, "segments_new", 100));
     local.write("segments_new", new ByteArrayInputStream(new byte[] {1, 2, 3}));
 
-    assertTrue(IndexBackupUtils.syncToBackup(local, remote));
+    assertTrue(IndexBackupUtils.syncToBackup(local, remote, local.readManifest().get()));
     assertFalse(remote.hasFile("segments_old"));
     assertTrue(remote.hasFile("segments_new"));
   }
