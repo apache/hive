@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.AbstractPrimitiveLazyObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -130,6 +131,10 @@ public final class OpenCSVSerde extends AbstractEncodingAwareSerDe {
         outputFields[c] = ((StringObjectInspector) fieldOI).getPrimitiveJavaObject(field);
       } else if (fieldOI instanceof AbstractPrimitiveWritableObjectInspector) {
         Object primitiveJavaObject = ((AbstractPrimitiveWritableObjectInspector) fieldOI).getPrimitiveJavaObject(field);
+        outputFields[c] = Objects.toString(primitiveJavaObject, null);
+      } else if (fieldOI instanceof AbstractPrimitiveLazyObjectInspector) {
+        Object primitiveJavaObject =
+            ((AbstractPrimitiveLazyObjectInspector<?>) fieldOI).getPrimitiveWritableObject(field);
         outputFields[c] = Objects.toString(primitiveJavaObject, null);
       } else {
         throw new UnsupportedOperationException(

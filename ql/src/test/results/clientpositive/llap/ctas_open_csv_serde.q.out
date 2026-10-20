@@ -417,3 +417,117 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2_timestamp
 #### A masked pattern was here ####
 2016-01-01 00:00:00
+PREHOOK: query: create table T1_vec(f1 char(1), f2 varchar(10), f3 int, f4 tinyint, f5 bigint, f6 decimal(10,2), f7 float, f8 boolean, f9 date, f10 timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_vec
+POSTHOOK: query: create table T1_vec(f1 char(1), f2 varchar(10), f3 int, f4 tinyint, f5 bigint, f6 decimal(10,2), f7 float, f8 boolean, f9 date, f10 timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_vec
+PREHOOK: query: insert into T1_vec values ('a', 'abc', 1, 11, 11, 1.25, 2.25, true, cast('2024-01-01' as date), cast('2016-01-01 00:00:00' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_vec
+POSTHOOK: query: insert into T1_vec values ('a', 'abc', 1, 11, 11, 1.25, 2.25, true, cast('2024-01-01' as date), cast('2016-01-01 00:00:00' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_vec
+POSTHOOK: Lineage: t1_vec.f1 SCRIPT []
+POSTHOOK: Lineage: t1_vec.f10 SCRIPT []
+POSTHOOK: Lineage: t1_vec.f2 SCRIPT []
+POSTHOOK: Lineage: t1_vec.f3 SCRIPT []
+POSTHOOK: Lineage: t1_vec.f4 SCRIPT []
+POSTHOOK: Lineage: t1_vec.f5 SCRIPT []
+POSTHOOK: Lineage: t1_vec.f6 SCRIPT []
+POSTHOOK: Lineage: t1_vec.f7 SCRIPT []
+POSTHOOK: Lineage: t1_vec.f8 SCRIPT []
+POSTHOOK: Lineage: t1_vec.f9 SCRIPT []
+PREHOOK: query: create table T2_vec row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_vec
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_vec
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_vec
+POSTHOOK: query: create table T2_vec row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_vec
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_vec
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_vec
+POSTHOOK: Lineage: t2_vec.f1 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f1, type:char(1), comment:null), ]
+POSTHOOK: Lineage: t2_vec.f10 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f10, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: t2_vec.f2 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f2, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: t2_vec.f3 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f3, type:int, comment:null), ]
+POSTHOOK: Lineage: t2_vec.f4 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f4, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: t2_vec.f5 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f5, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_vec.f6 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f6, type:decimal(10,2), comment:null), ]
+POSTHOOK: Lineage: t2_vec.f7 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f7, type:float, comment:null), ]
+POSTHOOK: Lineage: t2_vec.f8 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f8, type:boolean, comment:null), ]
+POSTHOOK: Lineage: t2_vec.f9 SIMPLE [(t1_vec)t1_vec.FieldSchema(name:f9, type:date, comment:null), ]
+PREHOOK: query: select * from T2_vec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_vec
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_vec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_vec
+#### A masked pattern was here ####
+a	abc	1	11	11	1.25	2.25	true	2024-01-01	2016-01-01 00:00:00
+PREHOOK: query: create table T1_novec(f1 char(1), f2 varchar(10), f3 int, f4 tinyint, f5 bigint, f6 decimal(10,2), f7 float, f8 boolean, f9 date, f10 timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_novec
+POSTHOOK: query: create table T1_novec(f1 char(1), f2 varchar(10), f3 int, f4 tinyint, f5 bigint, f6 decimal(10,2), f7 float, f8 boolean, f9 date, f10 timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_novec
+PREHOOK: query: insert into T1_novec values ('a', 'abc', 1, 11, 11, 1.25, 2.25, true, cast('2024-01-01' as date), cast('2016-01-01 00:00:00' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_novec
+POSTHOOK: query: insert into T1_novec values ('a', 'abc', 1, 11, 11, 1.25, 2.25, true, cast('2024-01-01' as date), cast('2016-01-01 00:00:00' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_novec
+POSTHOOK: Lineage: t1_novec.f1 SCRIPT []
+POSTHOOK: Lineage: t1_novec.f10 SCRIPT []
+POSTHOOK: Lineage: t1_novec.f2 SCRIPT []
+POSTHOOK: Lineage: t1_novec.f3 SCRIPT []
+POSTHOOK: Lineage: t1_novec.f4 SCRIPT []
+POSTHOOK: Lineage: t1_novec.f5 SCRIPT []
+POSTHOOK: Lineage: t1_novec.f6 SCRIPT []
+POSTHOOK: Lineage: t1_novec.f7 SCRIPT []
+POSTHOOK: Lineage: t1_novec.f8 SCRIPT []
+POSTHOOK: Lineage: t1_novec.f9 SCRIPT []
+PREHOOK: query: create table T2_novec row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_novec
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_novec
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_novec
+POSTHOOK: query: create table T2_novec row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_novec
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_novec
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_novec
+POSTHOOK: Lineage: t2_novec.f1 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f1, type:char(1), comment:null), ]
+POSTHOOK: Lineage: t2_novec.f10 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f10, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: t2_novec.f2 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f2, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: t2_novec.f3 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f3, type:int, comment:null), ]
+POSTHOOK: Lineage: t2_novec.f4 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f4, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: t2_novec.f5 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f5, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_novec.f6 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f6, type:decimal(10,2), comment:null), ]
+POSTHOOK: Lineage: t2_novec.f7 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f7, type:float, comment:null), ]
+POSTHOOK: Lineage: t2_novec.f8 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f8, type:boolean, comment:null), ]
+POSTHOOK: Lineage: t2_novec.f9 SIMPLE [(t1_novec)t1_novec.FieldSchema(name:f9, type:date, comment:null), ]
+PREHOOK: query: select * from T2_novec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_novec
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_novec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_novec
+#### A masked pattern was here ####
+a	abc	1	11	11	1.25	2.25	true	2024-01-01	2016-01-01 00:00:00
