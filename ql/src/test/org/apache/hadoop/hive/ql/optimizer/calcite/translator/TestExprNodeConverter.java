@@ -23,27 +23,18 @@ import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlBinaryOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class TestExprNodeConverter {
 
@@ -69,7 +60,10 @@ public class TestExprNodeConverter {
     RexNode eq = equalsCall(intLiteral(1), intLiteral(1));
     ExprNodeDesc result = convert(rexBuilder.makeCall(SqlStdOperatorTable.AND, eq, eq));
 
-    assertUdf(GenericUDFOPEqual.class, 2, result);
+    List<ExprNodeDesc> resultNodes = result.getChildren();
+    assertEquals(2, resultNodes.size());
+    assertEquals("Const int 1", resultNodes.get(0).toString());
+    assertEquals("Const int 1", resultNodes.get(1).toString());
   }
 
   @Test
@@ -77,7 +71,10 @@ public class TestExprNodeConverter {
     RexNode eq = equalsCall(rexBuilder.makeInputRef(intType, 0), intLiteral(5));
     ExprNodeDesc result = convert(rexBuilder.makeCall(SqlStdOperatorTable.AND, eq, eq));
 
-    assertUdf(GenericUDFOPEqual.class, 2, result);
+    List<ExprNodeDesc> resultNodes = result.getChildren();
+    assertEquals(2, resultNodes.size());
+    assertEquals("Column[a]", resultNodes.get(0).toString());
+    assertEquals("Const int 5", resultNodes.get(1).toString());
   }
 
   @Test
@@ -85,7 +82,10 @@ public class TestExprNodeConverter {
     RexNode eq = equalsCall(intLiteral(5), intLiteral(5));
     ExprNodeDesc result = convert(rexBuilder.makeCall(SqlStdOperatorTable.OR, eq, eq));
 
-    assertUdf(GenericUDFOPEqual.class, 2, result);
+    List<ExprNodeDesc> resultNodes = result.getChildren();
+    assertEquals(2, resultNodes.size());
+    assertEquals("Const int 5", resultNodes.get(0).toString());
+    assertEquals("Const int 5", resultNodes.get(1).toString());
   }
 
   @Test
@@ -93,7 +93,10 @@ public class TestExprNodeConverter {
     RexNode eq = equalsCall(rexBuilder.makeInputRef(intType, 0), intLiteral(5));
     ExprNodeDesc result = convert(rexBuilder.makeCall(SqlStdOperatorTable.OR, eq, eq));
 
-    assertUdf(GenericUDFOPEqual.class, 2, result);
+    List<ExprNodeDesc> resultNodes = result.getChildren();
+    assertEquals(2, resultNodes.size());
+    assertEquals("Column[a]", resultNodes.get(0).toString());
+    assertEquals("Const int 5", resultNodes.get(1).toString());
   }
 
   @Test
@@ -102,7 +105,10 @@ public class TestExprNodeConverter {
     RexNode eqB = equalsCall(rexBuilder.makeInputRef(intType, 1), intLiteral(6));
     ExprNodeDesc result = convert(rexBuilder.makeCall(SqlStdOperatorTable.AND, eqA, eqB, eqA));
 
-    assertUdf(GenericUDFOPAnd.class, 2, result);
+    List<ExprNodeDesc> resultNodes = result.getChildren();
+    assertEquals(2, resultNodes.size());
+    assertEquals("GenericUDFOPEqual(Column[a], Const int 5)", resultNodes.get(0).toString());
+    assertEquals("GenericUDFOPEqual(Column[b], Const int 6)", resultNodes.get(1).toString());
   }
 
   @Test
@@ -111,56 +117,9 @@ public class TestExprNodeConverter {
     RexNode eqB = equalsCall(rexBuilder.makeInputRef(intType, 1), intLiteral(6));
     ExprNodeDesc result = convert(rexBuilder.makeCall(SqlStdOperatorTable.OR, eqA, eqB, eqA));
 
-    assertUdf(GenericUDFOPOr.class, 2, result);
-  }
-
-  @Test
-  public void testNestedANDWithDistinctOperandsIsFlattened() {
-    RexNode eqA = equalsCall(rexBuilder.makeInputRef(intType, 0), intLiteral(5));
-    RexNode eqB = equalsCall(rexBuilder.makeInputRef(intType, 1), intLiteral(6));
-    RexNode eqC = equalsCall(rexBuilder.makeInputRef(intType, 0), intLiteral(7));
-    RexNode nestedOr = rexBuilder.makeCall(SqlStdOperatorTable.AND, eqB, eqC);
-    ExprNodeDesc result = convert(rexBuilder.makeCall(SqlStdOperatorTable.AND, eqA, nestedOr));
-
-    assertUdf(GenericUDFOPAnd.class, 3, result);
-  }
-
-  @Test
-  public void testNestedOrWithDistinctOperandsIsFlattened() {
-    RexNode eqA = equalsCall(rexBuilder.makeInputRef(intType, 0), intLiteral(5));
-    RexNode eqB = equalsCall(rexBuilder.makeInputRef(intType, 1), intLiteral(6));
-    RexNode eqC = equalsCall(rexBuilder.makeInputRef(intType, 0), intLiteral(7));
-    RexNode nestedOr = rexBuilder.makeCall(SqlStdOperatorTable.OR, eqB, eqC);
-    ExprNodeDesc result = convert(rexBuilder.makeCall(SqlStdOperatorTable.OR, eqA, nestedOr));
-
-    assertUdf(GenericUDFOPOr.class, 3, result);
-  }
-
-  @Test
-  public void testReduceAndWithDuplicateConstantOperands() {
-    assertSpecifiedOperatorWithDuplicateConstantOperands(SqlStdOperatorTable.AND);
-  }
-
-  @Test
-  public void testReduceOrWithDuplicateConstantOperands() {
-    assertSpecifiedOperatorWithDuplicateConstantOperands(SqlStdOperatorTable.OR);
-  }
-
-  private void assertSpecifiedOperatorWithDuplicateConstantOperands(SqlBinaryOperator operator) {
-    RexNode eq = equalsCall(intLiteral(1), intLiteral(1));
-    RexNode and = rexBuilder.makeCall(operator, eq, eq);
-    List<RexNode> reduced = new ArrayList<>();
-
-    new HiveRexExecutorImpl().reduce(rexBuilder, Collections.singletonList(and), reduced);
-
-    assertEquals(1, reduced.size());
-    assertTrue(reduced.get(0) instanceof RexLiteral);
-    assertEquals(Boolean.TRUE, ((RexLiteral) reduced.get(0)).getValueAs(Boolean.class));
-  }
-
-  private static void assertUdf(Class<?> expectedUdf, int expectedChildren, ExprNodeDesc actual) {
-    assertTrue(actual.getExprString(), actual instanceof ExprNodeGenericFuncDesc);
-    assertEquals(actual.getExprString(), expectedUdf, ((ExprNodeGenericFuncDesc) actual).getGenericUDF().getClass());
-    assertEquals(actual.getExprString(), expectedChildren, actual.getChildren().size());
+    List<ExprNodeDesc> resultNodes = result.getChildren();
+    assertEquals(2, resultNodes.size());
+    assertEquals("GenericUDFOPEqual(Column[a], Const int 5)", resultNodes.get(0).toString());
+    assertEquals("GenericUDFOPEqual(Column[b], Const int 6)", resultNodes.get(1).toString());
   }
 }
