@@ -87,36 +87,10 @@ public final class SearchProvider implements AutoCloseable {
     return provider;
   }
 
-  /** Clears the installed provider; intended for tests. */
-  public static void reset() throws Exception {
+  static void reset() throws Exception {
     SearchProvider previous = INSTANCE.getAndSet(null);
     if (previous != null) {
       previous.close();
-    }
-  }
-
-  /**
-   * Closes the current provider (if any) and installs a fresh backend from {@code configuration}.
-   */
-  public static SearchProvider reload(Configuration configuration)
-      throws InitializeException, IOException {
-    return reload(configuration, new LuceneSearchBackend());
-  }
-
-  public static SearchProvider reload(Configuration configuration, SearchBackend backend)
-      throws InitializeException, IOException {
-    synchronized (SearchProvider.class) {
-      SearchProvider previous = INSTANCE.getAndSet(null);
-      if (previous != null) {
-        try {
-          previous.close();
-        } catch (Exception e) {
-          throw new IOException("Failed to close previous search provider", e);
-        }
-      }
-      SearchProvider provider = create(configuration, backend);
-      INSTANCE.set(provider);
-      return provider;
     }
   }
 

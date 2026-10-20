@@ -70,16 +70,6 @@ public class TestSearchProvider {
   }
 
   @Test
-  public void reloadReplacesBackend() throws Exception {
-    StubSearchBackend first = new StubSearchBackend();
-    SearchProvider.install(new Configuration(false), first);
-    StubSearchBackend second = new StubSearchBackend();
-    SearchProvider reloaded = SearchProvider.reload(new Configuration(false), second);
-    assertSame(second, reloaded.backend());
-    assertTrue(first.closed);
-  }
-
-  @Test
   public void searchDelegatesToBackend() throws Exception {
     StubSearchBackend backend = new StubSearchBackend();
     SearchProvider provider =

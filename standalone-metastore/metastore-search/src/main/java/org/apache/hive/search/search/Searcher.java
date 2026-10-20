@@ -87,15 +87,23 @@ public final class Searcher implements AutoCloseable {
     if (StringUtils.isBlank(request.body().queryText())) {
       throw new SearchException("query text is required");
     }
+    Query filter = compileScopeFilter(request.catalogName(), request.databaseName());
     int size = request.limit() > 0 ? request.limit() : searchConfig.getDefaultLimit();
-    int semanticK = searchConfig.semanticK(size);
     Query query =
         switch (request.body()) {
-          case MatchQuery match -> compileMatchQuery(match.resolve(mapping));
-          case SemanticQuery semantic -> compileSemanticQuery(semantic.resolve(mapping), semanticK);
-          case HybridQuery hybrid -> compileFusionQuery(hybrid.resolve(mapping), semanticK);
+          case MatchQuery match -> {
+            Query matchQuery = compileMatchQuery(match.resolve(mapping));
+            if (filter == null) {
+              yield matchQuery;
+            }
+            yield new BooleanQuery.Builder()
+                .add(matchQuery, BooleanClause.Occur.MUST)
+                .add(filter, BooleanClause.Occur.FILTER)
+                .build();
+          }
+          case SemanticQuery semantic -> compileSemanticQuery(semantic.resolve(mapping), size, filter);
+          case HybridQuery hybrid -> compileFusionQuery(hybrid.resolve(mapping), size, filter);
         };
-    query = applyScopeFilter(query, request.catalogName(), request.databaseName());
     TopDocs topDocs = indexSearcher.search(query, size);
     List<TableSearchHit> hits = new ArrayList<>();
     for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
@@ -126,27 +134,16 @@ public final class Searcher implements AutoCloseable {
     return new TableSearchResult(searchHits, hits.totalHits.value(), processedEventId);
   }
 
-  private Query compileFusionQuery(HybridQuery query, int semanticK)
+  private Query compileFusionQuery(HybridQuery query, int semanticK, Query filter)
       throws SearchException {
     Query matchQuery = new BayesianScoreQuery(
         compileMatchQuery(query.toMatchQuery().resolve(mapping)),
         parameters.alpha(), parameters.beta(), parameters.baseRate());
-    Query semanticQuery = compileSemanticQuery(query.toSemanticQuery().resolve(mapping), semanticK);
+    Query semanticQuery = compileSemanticQuery(query.toSemanticQuery().resolve(mapping), semanticK, filter);
     float semanticWeight = query.semanticWeight(searchConfig);
     float[] weights = {1.0f - semanticWeight, semanticWeight};
     return new LogOddsFusionQuery(List.of(matchQuery, semanticQuery),
         searchConfig.getFusionPrior(), weights);
-  }
-
-  private Query applyScopeFilter(Query query, String catalogName, String databaseName) {
-    Query filter = compileScopeFilter(catalogName, databaseName);
-    if (filter == null) {
-      return query;
-    }
-    return new BooleanQuery.Builder()
-        .add(query, BooleanClause.Occur.MUST)
-        .add(filter, BooleanClause.Occur.FILTER)
-        .build();
   }
 
   private Query compileScopeFilter(String catalogName, String databaseName) {
@@ -246,7 +243,7 @@ public final class Searcher implements AutoCloseable {
     return new SimpleQueryParser(mapping.analyzer(), field).parse(queryText);
   }
 
-  private Query compileSemanticQuery(SemanticQuery semantic, int knnK) throws SearchException {
+  private Query compileSemanticQuery(SemanticQuery semantic, int knnK, Query filter) throws SearchException {
     List<String> fields = mapping.resolveSemanticSearchFields(null);
     FieldSchema schema = mapping.fieldSchema(fields.getFirst());
     if (!(schema instanceof TextFieldSchema text) || !text.semantic()) {
@@ -264,11 +261,11 @@ public final class Searcher implements AutoCloseable {
           "embedding model '" + text.semanticModel() + "' returned null vector");
     }
     if (fields.size() == 1) {
-      return new KnnFloatVectorQuery(fields.getFirst(), embedding, knnK);
+      return new KnnFloatVectorQuery(fields.getFirst(), embedding, knnK, filter);
     }
     List<Query> disjuncts = new ArrayList<>(fields.size());
     for (String field : fields) {
-      disjuncts.add(new KnnFloatVectorQuery(field, embedding, knnK));
+      disjuncts.add(new KnnFloatVectorQuery(field, embedding, knnK, filter));
     }
     return new DisjunctionMaxQuery(disjuncts, 0.0f);
   }

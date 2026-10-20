@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.lucene.index.IndexCommit;
 
 /** Remote index backup target backed by Hadoop {@link FileSystem}. */
 public final class RemoteStateClient implements IndexStateClient {
@@ -44,7 +45,7 @@ public final class RemoteStateClient implements IndexStateClient {
   }
 
   @Override
-  public Optional<IndexManifest> readManifest() throws IOException {
+  public Optional<IndexManifest> readManifest(Optional<IndexCommit> commit) throws IOException {
     Path manifestPath = new Path(root, IndexManifest.MANIFEST_FILE_NAME);
     if (!fs.exists(manifestPath)) {
       return Optional.empty();

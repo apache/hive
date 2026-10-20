@@ -34,6 +34,7 @@ import org.apache.hive.search.index.store.IndexStateClient;
 import org.apache.hive.search.config.IndexStoreOptions;
 import org.apache.hive.search.metastore.BootstrapIndexer;
 import org.apache.hive.search.metastore.MetastoreEventListener;
+import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
@@ -89,14 +90,16 @@ public class IndexManager implements Closeable, MetastoreEventListener {
     return remoteIndex != null;
   }
 
-  public boolean syncBackup() throws IOException {
+  public boolean syncBackup(IndexCommit snapshot) throws IOException {
     if (remoteIndex == null) {
       return false;
     }
-    if (localIndex.readManifest().isEmpty()) {
+    Optional<IndexManifest> localManifest =
+        localIndex.readManifest(Optional.of(snapshot));
+    if (localManifest.isEmpty()) {
       return false;
     }
-    return IndexBackupUtils.syncToBackup(localIndex, remoteIndex);
+    return IndexBackupUtils.syncToBackup(localIndex, remoteIndex, localManifest.get());
   }
 
   public boolean restoreBackup() {

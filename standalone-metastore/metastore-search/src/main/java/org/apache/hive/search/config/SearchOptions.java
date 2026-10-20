@@ -41,9 +41,6 @@ public record SearchOptions(Configuration configuration) {
   public static final String BAYESIAN_TOKENS_PER_QUERY = "metastore.search.bayesian.tokens.per.query";
   public static final int BAYESIAN_TOKENS_PER_QUERY_DEFAULT = 5;
 
-  public static final String SEMANTIC_K_MULTIPLIER = "metastore.search.semantic.k.multiplier";
-  public static final int SEMANTIC_K_MULTIPLIER_DEFAULT = 5;
-
   /** Max semantic segments per table ({@code search_text_0} head + column batches). */
   public static final String SEMANTIC_SEGMENT_MAX = "metastore.search.semantic.segments.max";
   public static final int SEMANTIC_SEGMENT_MAX_DEFAULT = 4;
@@ -87,13 +84,6 @@ public record SearchOptions(Configuration configuration) {
 
   public long getBayesianSeed() {
     return configuration.getLong(BAYESIAN_SEED, BAYESIAN_SEED_DEFAULT);
-  }
-
-  /** kNN candidate count for semantic retrieval (oversamples vs hit limit). */
-  public int semanticK(int limit) {
-    int effectiveLimit = limit > 0 ? limit : getDefaultLimit();
-    int multiplier = Math.max(1, configuration.getInt(SEMANTIC_K_MULTIPLIER, SEMANTIC_K_MULTIPLIER_DEFAULT));
-    return Math.max(effectiveLimit, effectiveLimit * multiplier);
   }
 
   public int getSemanticSegmentMax() {

@@ -22,9 +22,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
+import org.apache.lucene.index.IndexCommit;
+
 public interface IndexStateClient {
 
-  Optional<IndexManifest> readManifest() throws IOException;
+  Optional<IndexManifest> readManifest(Optional<IndexCommit> commit) throws IOException;
+
+  default Optional<IndexManifest> readManifest() throws IOException {
+    return readManifest(Optional.empty());
+  }
 
   InputStream read(String fileName) throws IOException;
 

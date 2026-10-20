@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import java.util.zip.CRC32;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.search.exception.IndexIOException;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
@@ -48,16 +50,27 @@ public record LocalStateClient(Directory directory, String indexName)
     return IndexManifest.STAGING_MANIFEST_FILE_NAME.equals(fileName);
   }
 
+  private Map.Entry<Map<String, String>, Collection<String>>
+      getCommitUserData(Optional<IndexCommit> commit) throws IOException {
+    if (commit.isEmpty()) {
+      SegmentInfos segmentInfos = SegmentInfos.readLatestCommit(directory);
+      return Map.entry(segmentInfos.getUserData(), segmentInfos.files(true));
+    }
+    IndexCommit snapshot = commit.get();
+    return Map.entry(snapshot.getUserData(), snapshot.getFileNames());
+  }
+
   @Override
-  public Optional<IndexManifest> readManifest() throws IOException {
+  public Optional<IndexManifest> readManifest(Optional<IndexCommit> commit) throws IOException {
     if (hasStagingManifest()) {
       return Optional.empty();
     }
     if (!DirectoryReader.indexExists(directory)) {
       return Optional.empty();
     }
-    SegmentInfos segmentInfos = SegmentInfos.readLatestCommit(directory);
-    Map<String, String> userData = segmentInfos.getUserData();
+
+    Map.Entry<Map<String, String>, Collection<String>> commitUserData = getCommitUserData(commit);
+    Map<String, String> userData = commitUserData.getKey();
     String nid = userData.get("nid");
     if (StringUtils.isEmpty(nid)) {
       return Optional.empty();
@@ -73,7 +86,10 @@ public record LocalStateClient(Directory directory, String indexName)
       throw new IndexIOException("Invalid commit checkpoint in index metadata: nid=" + nid, e);
     }
     List<IndexManifest.IndexFile> files = new ArrayList<>();
-    for (String file : segmentInfos.files(true)) {
+    for (String file : commitUserData.getValue()) {
+      if (isStagingFile(file)) {
+        continue;
+      }
       files.add(indexFile(file));
     }
     return Optional.of(IndexManifest.create(indexName, files, embedder, eventId));

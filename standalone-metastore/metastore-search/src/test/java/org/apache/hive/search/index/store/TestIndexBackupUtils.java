@@ -48,7 +48,7 @@ public class TestIndexBackupUtils {
     writeManifest(local, manifest(10L, "segments_1", 100));
     local.write("segments_1", new ByteArrayInputStream(new byte[] {1, 2, 3}));
 
-    assertTrue(IndexBackupUtils.syncToBackup(local, remote));
+    assertTrue(IndexBackupUtils.syncToBackup(local, remote, local.readManifest().get()));
     assertTrue(remote.hasFile(IndexManifest.MANIFEST_FILE_NAME));
     assertTrue(remote.hasFile("segments_1"));
     assertEqualsEventId(10L, remote);
@@ -61,7 +61,7 @@ public class TestIndexBackupUtils {
     writeManifest(remote, manifest(10L, "segments_1", 100, 222L));
     remote.write("segments_1", new ByteArrayInputStream(new byte[] {9, 9, 9}));
 
-    assertTrue(IndexBackupUtils.syncToBackup(local, remote));
+    assertTrue(IndexBackupUtils.syncToBackup(local, remote, local.readManifest().get()));
     assertEquals(111L, (long) remote.readManifest().get().files().getFirst().crc32C());
   }
 
@@ -70,7 +70,7 @@ public class TestIndexBackupUtils {
     writeManifest(local, manifest(5L, "segments_1", 100));
     writeManifest(remote, manifest(10L, "segments_1", 100));
 
-    assertFalse(IndexBackupUtils.syncToBackup(local, remote));
+    assertFalse(IndexBackupUtils.syncToBackup(local, remote, local.readManifest().get()));
   }
 
   @Test
