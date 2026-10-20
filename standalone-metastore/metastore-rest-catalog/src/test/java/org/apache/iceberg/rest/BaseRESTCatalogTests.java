@@ -132,8 +132,9 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
       throw new AssertionError("Catalog operation failed", e);
     }
     try (var client = RCKUtils.initCatalogClient(properties.get())) {
-      // Should this fail?
-      Assertions.assertTrue(client.listNamespaces().contains(db));
+      // List operations are result-filtered: a user who can read nothing sees an empty listing
+      // rather than an error.
+      Assertions.assertFalse(client.listNamespaces().contains(db));
       testUnauthorizedAccess(() -> client.namespaceExists(db));
       testUnauthorizedAccess(() -> client.loadNamespaceMetadata(db));
       testUnauthorizedAccess(() -> client.createNamespace(Namespace.of("new-db")));
@@ -141,16 +142,14 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
       testUnauthorizedAccess(() -> client.setProperties(db, Collections.singletonMap("key", "value")));
       testUnauthorizedAccess(() -> client.removeProperties(db, Collections.singleton("key")));
 
-      // Should this fail?
-      Assertions.assertEquals(Collections.singletonList(table), client.listTables(db));
+      Assertions.assertTrue(client.listTables(db).isEmpty());
       testUnauthorizedAccess(() -> client.tableExists(table));
       testUnauthorizedAccess(() -> client.loadTable(table));
       testUnauthorizedAccess(() -> client.createTable(TableIdentifier.of(db, "new-table"), new Schema()));
       testUnauthorizedAccess(() -> client.renameTable(table, TableIdentifier.of(db, "new-table")));
       testUnauthorizedAccess(() -> client.dropTable(table));
 
-      // Should this fail?
-      Assertions.assertEquals(Collections.singletonList(view), client.listViews(db));
+      Assertions.assertTrue(client.listViews(db).isEmpty());
       testUnauthorizedAccess(() -> client.viewExists(view));
       testUnauthorizedAccess(() -> client.loadView(view));
       testUnauthorizedAccess(() -> client.buildView(TableIdentifier.of(db, "new-view"))
@@ -191,7 +190,7 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
       throw new AssertionError("Catalog operation failed", e);
     }
     try (var client = RCKUtils.initCatalogClient(properties.get())) {
-      // Should this fail?
+      // A read-only user can read, so result-filtered listings still show what they may read.
       Assertions.assertTrue(client.listNamespaces().contains(db));
       Assertions.assertTrue(client.namespaceExists(db));
       Assertions.assertNotNull(client.loadNamespaceMetadata(db));
@@ -200,7 +199,6 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
       testUnauthorizedAccess(() -> client.setProperties(db, Collections.singletonMap("key", "value")));
       testUnauthorizedAccess(() -> client.removeProperties(db, Collections.singleton("key")));
 
-      // Should this fail?
       Assertions.assertEquals(Collections.singletonList(table), client.listTables(db));
       Assertions.assertTrue(client.tableExists(table));
       Assertions.assertNotNull(client.loadTable(table));
@@ -208,7 +206,6 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
       testUnauthorizedAccess(() -> client.renameTable(table, TableIdentifier.of(db, "new-table")));
       testUnauthorizedAccess(() -> client.dropTable(table));
 
-      // Should this fail?
       Assertions.assertEquals(Collections.singletonList(view), client.listViews(db));
       Assertions.assertTrue(client.viewExists(view));
       Assertions.assertNotNull(client.loadView(view));
