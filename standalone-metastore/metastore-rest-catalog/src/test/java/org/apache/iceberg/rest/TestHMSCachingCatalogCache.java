@@ -213,6 +213,37 @@ class TestHMSCachingCatalogCache {
   }
 
   @Test
+  void testL2HitDeniedBeforeLocationProbe() throws Exception {
+    hiveCatalog.createTable(TABLE_ID, SCHEMA);
+
+    HiveAuthorizer hiveAuthorizer = mock(HiveAuthorizer.class);
+    doThrow(new HiveAccessControlException("access denied"))
+        .when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
+
+    // Disable the L1 recency guard so every cached load takes the L2 path (location probe).
+    var conf = hiveCatalog.getConf();
+    int prevSize = conf.getInt("hms.caching.catalog.l1.cache.size", 32);
+    conf.setInt("hms.caching.catalog.l1.cache.size", 0);
+    try {
+      HMSCachingCatalog authzCatalog =
+          new HMSCachingCatalog(hiveCatalog, CACHE_EXPIRY_MS, new IcebergAuthorizer(() -> hiveAuthorizer));
+
+      // Cold miss reloads through HMS; the cache authorizer is not consulted.
+      assertThat(authzCatalog.loadTable(TABLE_ID)).isNotNull();
+      verify(hiveAuthorizer, never()).checkPrivileges(any(), anyList(), anyList(), any());
+
+      // Drop behind the cache's back: the L2 entry is stale and a location probe would yield
+      // NoSuchTableException. A denied caller must get Forbidden instead, i.e. authorization runs
+      // before the probe and the existence of the table is not observable.
+      hiveCatalog.dropTable(TABLE_ID, false);
+      assertThatThrownBy(() -> authzCatalog.loadTable(TABLE_ID)).isInstanceOf(ForbiddenException.class);
+      verify(hiveAuthorizer, times(1)).checkPrivileges(any(), anyList(), anyList(), any());
+    } finally {
+      conf.setInt("hms.caching.catalog.l1.cache.size", prevSize);
+    }
+  }
+
+  @Test
   void testCacheHitEnforcesAuthorization() throws Exception {
     hiveCatalog.createTable(TABLE_ID, SCHEMA);
 
