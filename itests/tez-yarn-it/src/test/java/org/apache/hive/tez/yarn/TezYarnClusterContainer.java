@@ -46,31 +46,28 @@ import java.util.stream.Stream;
 /**
  * Manages a pseudo-distributed HDFS+YARN cluster (NameNode, DataNode,
  * ResourceManager, NodeManager) using a custom image built from
- * apache/hadoop:3.4.2 (see {@code src/test/docker/hadoop-yarn/Dockerfile}).
- * The image adds a Java 21 runtime at {@link #CONTAINER_JAVA_21_HOME} so that
+ * apache/hadoop:3.4.2 (see src/test/docker/hadoop-yarn/Dockerfile).
+ * The image adds a Java 21 runtime at CONTAINER_JAVA_21_HOME so that
  * Tez AM/task containers (which load hive-exec compiled for Java 21) can run,
  * while the HDFS/YARN daemons keep the image default Java 8. Intended for
  * integration tests that need real YARN container scheduling and HDFS-backed
  * resource localization.
  *
- * <p>All four containers share a single Docker network and are configured via
+ * All four containers share a single Docker network and are configured via
  * the same environment-variable convention used by the official image (the
  * env var key encodes the target XML file and property name, e.g.
- * {@code CORE-SITE.XML_fs.defaultFS=hdfs://namenode}).
+ * CORE-SITE.XML_fs.defaultFS=hdfs://namenode).
  *
- * <p>Two modes are supported:
- * <ul>
- *   <li><b>Dynamic-port mode</b> (default, {@code new TezYarnClusterContainer()}):
- *       Testcontainers assigns random host ports. Use for tests where only the
- *       host JVM accesses HDFS/YARN (e.g. JDBC connectivity smoke tests).</li>
- *   <li><b>Fixed-port mode</b> ({@code new TezYarnClusterContainer(true)}):
- *       Host ports match container ports (NN: 8020/9870, RM: 8032/8088).
- *       The docker-network hostnames {@code namenode} and {@code resourcemanager}
- *       must resolve to {@code 127.0.0.1} on the host, e.g. via
- *       {@code -Djdk.net.hosts.file=custom_hosts_file}. Use for tests where
- *       YARN containers also need to reach HDFS by the same URI as the host JVM
- *       (real Tez-on-YARN localization tests).</li>
- * </ul>
+ * Two modes are supported:
+ *   - Dynamic-port mode (default, new TezYarnClusterContainer()):
+ *     Testcontainers assigns random host ports. Use for tests where only the
+ *     host JVM accesses HDFS/YARN (e.g. JDBC connectivity smoke tests).
+ *   - Fixed-port mode (new TezYarnClusterContainer(true)):
+ *     Host ports match container ports (NN: 8020/9870, RM: 8032/8088).
+ *     The docker-network hostnames "namenode" and "resourcemanager" must
+ *     resolve to 127.0.0.1 on the host, e.g. via -Djdk.net.hosts.file.
+ *     Use for tests where YARN containers also need to reach HDFS by the
+ *     same URI as the host JVM (real Tez-on-YARN localization tests).
  */
 public class TezYarnClusterContainer {
 
@@ -83,7 +80,6 @@ public class TezYarnClusterContainer {
    */
   public static final String CONTAINER_JAVA_21_HOME = "/opt/jdk21";
 
-  // Custom image: apache/hadoop:3.4.2 + Corretto 21 at /opt/jdk21 (see src/test/docker/hadoop-yarn/Dockerfile).
   private static final String HADOOP_IMAGE = buildHadoopImage();
   private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3);
   private static final Map<String, String> COMMON_ENV = loadCommonEnv();
@@ -240,12 +236,11 @@ public class TezYarnClusterContainer {
   }
 
   /**
-   * Returns the HDFS URI for use in {@code HiveConf} / {@code Configuration}.
+   * Returns the HDFS URI for use in HiveConf / Configuration.
    *
-   * <p>In fixed-port mode, returns {@code hdfs://namenode:8020} — a URI that
-   * works from both the host JVM (via the custom hosts file) and from inside
-   * YARN containers (via the docker network alias). In dynamic-port mode,
-   * returns {@code hdfs://localhost:<mappedPort>}.
+   * In fixed-port mode, returns hdfs://namenode:8020 — a URI that works from both the host
+   * JVM (via the custom hosts file) and from inside YARN containers (via the docker network
+   * alias). In dynamic-port mode, returns hdfs://localhost:<mappedPort>.
    */
   public String getHdfsUri() {
     if (fixedPorts) {
@@ -300,13 +295,11 @@ public class TezYarnClusterContainer {
 
   /**
    * Discovers Tez jars on the test JVM classpath, uploads them to
-   * {@code /tmp/hive-29483/tez-libs/} on HDFS, and returns a comma-separated
-   * list of fully-qualified HDFS URIs suitable for the {@code tez.lib.uris}
-   * configuration property.
+   * /tmp/hive-29483/tez-libs/ on HDFS, and returns a comma-separated list of
+   * fully-qualified HDFS URIs suitable for the tez.lib.uris configuration property.
    *
-   * <p>Only available in fixed-port mode; the returned URIs use the stable
-   * hostname {@code namenode} which must be resolvable from both the host JVM
-   * and YARN containers.
+   * Only available in fixed-port mode; the returned URIs use the stable hostname
+   * "namenode" which must be resolvable from both the host JVM and YARN containers.
    *
    * @throws IllegalStateException if no Tez jars are found on the classpath
    */
@@ -340,24 +333,20 @@ public class TezYarnClusterContainer {
   }
 
   /**
-   * Discovers Tez framework jars from the running JVM's classpath using two complementary strategies:
-   * <ol>
-   *   <li>Reflection on known probe classes — works regardless of how Surefire passes the classpath
-   *       (direct {@code -cp} or manifest-only argfile JAR).</li>
-   *   <li>Scanning {@link ManagementFactory#getRuntimeMXBean() RuntimeMXBean#getClassPath()}
-   *       — a safety net when the reflection approach misses a jar (e.g. classes not loaded yet).</li>
-   * </ol>
-   * Returns regular {@code .jar} files that should be staged into {@code tez.lib.uris} (see
-   * {@link #isTezFrameworkJar(String)}). This includes:
-   * <ul>
-   *   <li>{@code hadoop-shim-*.jar}: carries {@code HadoopShimsLoader} but has no "tez" in its name;
-   *       omitting it causes {@code NoClassDefFoundError: org/apache/tez/hadoop/shim/HadoopShimsLoader}
-   *       in {@code DAGAppMaster.serviceInit()}.</li>
-   *   <li>{@code hadoop-mapreduce-client-core-*.jar}: provides {@code org.apache.hadoop.mapred.JobConf}
-   *       needed by {@code MRInputAMSplitGenerator}; not present in the cluster's
-   *       {@code yarn.application.classpath} and not included in {@code tez.use.cluster.hadoop-libs}
-   *       expansion for {@code apache/hadoop:3.4.2}, so it must be staged explicitly.</li>
-   * </ul>
+   * Discovers Tez framework jars from the running JVM's classpath using two complementary
+   * strategies:
+   *   1. Reflection on known probe classes — works regardless of how Surefire passes the
+   *      classpath (direct -cp or manifest-only argfile JAR).
+   *   2. Scanning RuntimeMXBean.getClassPath() — a safety net when the reflection approach
+   *      misses a jar (e.g. classes not loaded yet).
+   *
+   * Returns regular .jar files that should be staged into tez.lib.uris (see isTezFrameworkJar).
+   * This includes:
+   *   - hadoop-shim-*.jar: carries HadoopShimsLoader but has no "tez" in its name;
+   *     omitting it causes NoClassDefFoundError in DAGAppMaster.serviceInit().
+   *   - hadoop-mapreduce-client-core-*.jar: provides JobConf needed by MRInputAMSplitGenerator;
+   *     absent from the cluster's yarn.application.classpath and not included in the
+   *     tez.use.cluster.hadoop-libs expansion for apache/hadoop:3.4.2.
    */
   private static Set<Path> findTezJarsFromClasspath() {
     Set<Path> jars = new LinkedHashSet<>();
@@ -409,14 +398,13 @@ public class TezYarnClusterContainer {
   }
 
   /**
-   * Whether a jar should be staged into {@code tez.lib.uris}. Matches:
-   * <ul>
-   *   <li>{@code tez-*} — core Tez framework jars</li>
-   *   <li>{@code hadoop-shim-*} — carries {@code HadoopShimsLoader}; filename has no "tez"</li>
-   *   <li>{@code hadoop-mapreduce-client-core-*} and {@code hadoop-mapreduce-client-common-*} —
-   *       provide {@code JobConf} and related classes required by {@code MRInputAMSplitGenerator};
-   *       absent from the {@code apache/hadoop:3.4.2} {@code yarn.application.classpath} expansion</li>
-   * </ul>
+   * Whether a jar should be staged into tez.lib.uris. Matches:
+   *   - tez-*: core Tez framework jars
+   *   - hadoop-shim-*: carries HadoopShimsLoader; filename has no "tez"
+   *   - hadoop-mapreduce-client-core-* and hadoop-mapreduce-client-common-*:
+   *     provide JobConf and related classes required by MRInputAMSplitGenerator;
+   *     absent from the apache/hadoop:3.4.2 yarn.application.classpath expansion
+   *
    * Test jars are always excluded.
    */
   private static boolean isTezFrameworkJar(String name) {
