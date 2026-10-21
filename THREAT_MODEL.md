@@ -315,7 +315,7 @@ These are the dispositions the PMC has recorded; confirm and extend
 - **"`mask_hash` is invertible / `aes_encrypt` uses ECB / a built-in hash UDF
   is weak."** By design — see §7. Valid only if the report shows a bypass of a
   configured masking policy (e.g. reading the unmasked column), not the
-  inherent properties of the function. `BY-DESIGN`.
+  inherent properties of the function. `BY-DESIGN`. *(documented: GenericUDFMaskHash, GenericUDFAesEncrypt, GenericUDFAesDecrypt))*.
 - **Dependency-tail CVEs** (Hadoop, Log4j, a transitive JAR) surfaced by an
   SCA scanner against Hive's build — triage upstream unless Hive's own code
   reaches the vulnerable path with untrusted input.
