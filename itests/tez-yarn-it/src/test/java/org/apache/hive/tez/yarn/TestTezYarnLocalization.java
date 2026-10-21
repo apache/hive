@@ -258,6 +258,14 @@ public class TestTezYarnLocalization {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS, false);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE, 0);
 
+    // Pin the Tez AM's client-facing RPC port so the host JVM can reach the AM. The AM runs in the
+    // NodeManager container (hostname "nodemanager", resolvable to 127.0.0.1 via custom_hosts_file)
+    // and publishes AM_CLIENT_PORT; without a fixed port the AM would advertise a random port that
+    // is not published, so the client fails with "UnknownHostException/connection refused" and the
+    // Tez session times out.
+    conf.set("tez.am.client.am.port-range",
+        TezYarnClusterContainer.AM_CLIENT_PORT + "-" + TezYarnClusterContainer.AM_CLIENT_PORT);
+
     // The Hadoop image daemons use Java 8 but hive-exec requires Java 21; point Tez AM/task
     // container environments at the Java 21 runtime added by the custom Dockerfile.
     // HADOOP_HOME must be set explicitly: the apache/hadoop image does not export it into YARN
