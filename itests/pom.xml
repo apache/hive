@@ -50,6 +50,7 @@
     <module>qtest-iceberg</module>
     <module>test-docker</module>
     <module>hive-iceberg</module>
+    <module>tez-yarn-it</module>
   </modules>
   <dependencyManagement>
     <dependencies>
