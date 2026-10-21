@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
 import org.apache.hadoop.hive.metastore.tools.ColumnDeduplicator;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +58,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -234,6 +236,11 @@ public class TestHMSColumnDescriptorReuse {
       // the marker has been cleaned
       assertFalse(table.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
 
+      result = metaToolStore.dedupColumns(null, "default", "person", progress, false, false, true);
+      assertEquals(0, result.getStorageDescriptorsUpdated());
+      table = objectStore.getTable("hive", "default", "person");
+      assertFalse(table.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
+
       Deadline.registerIfNot(30 * 1000);
       Deadline.startTimer("testDeduplicateColumnDescriptorsTool");
       GetPartitionsByNamesRequest request = new GetPartitionsByNamesRequest("default", "person");
@@ -249,6 +256,61 @@ public class TestHMSColumnDescriptorReuse {
       assertTrue(partitions.stream().allMatch(p -> tbl2.getSd().getCols().equals(p.getSd().getCols())));
     } finally {
       Deadline.stopTimer();
+    }
+  }
+
+  @Test
+  public void testColDupGetTable() throws Exception {
+    FieldSchema id = new FieldSchema("id", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema fname = new FieldSchema("fname", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema country = new FieldSchema("country", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl = newTable(Arrays.asList(id, fname), Collections.singletonList(country));
+    objectStore.createTable(tbl);
+    long tableId = objectStore.getTable("hive", "default", "person").getId();
+
+    MetaToolObjectStore metaToolStore = new MetaToolObjectStore();
+    metaToolStore.setConf(conf);
+    ColumnDeduplicator deduplicator =
+        new ColumnDeduplicator(metaToolStore.createRawStoreBundle(), null, false, false, false);
+    assertNull(getTableInTrx(metaToolStore, deduplicator, 9_999_999_999L));
+    ColumnDeduplicator.TableInfo tableInfo = getTableInTrx(metaToolStore, deduplicator, tableId);
+    assertNotNull(tableInfo);
+    assertEquals("person", tableInfo.tableName().getTable());
+    tbl = objectStore.getTable("hive", "default", "person");
+    assertTrue(tbl.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
+
+    Table newTable = newTable(Arrays.asList(id, fname), Collections.singletonList(country));
+    newTable.setTableName("person1");
+    objectStore.createTable(newTable);
+    long person1TableId = objectStore.getTable("hive", "default", "person1").getId();
+
+    // Marker should be cleared
+    deduplicator =
+        new ColumnDeduplicator(metaToolStore.createRawStoreBundle(), null, false, false, true);
+    getTableInTrx(metaToolStore, deduplicator, tableId);
+    tbl = objectStore.getTable("hive", "default", "person");
+    assertFalse(tbl.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
+
+    // A table without the deduplication marker shouldn't be affected
+    newTable = objectStore.getTable("hive", "default", "person1");
+    assertFalse(newTable.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
+    getTableInTrx(metaToolStore, deduplicator, person1TableId);
+    newTable = objectStore.getTable("hive", "default", "person1");
+    assertFalse(newTable.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
+  }
+
+  private static ColumnDeduplicator.TableInfo getTableInTrx(MetaToolObjectStore store,
+      ColumnDeduplicator deduplicator, long tableId) {
+    boolean committed = false;
+    store.openTransaction();
+    try {
+      ColumnDeduplicator.TableInfo tableInfo = deduplicator.getTable(tableId);
+      committed = store.commitTransaction();
+      return tableInfo;
+    } finally {
+      if (!committed) {
+        store.rollbackTransaction();
+      }
     }
   }
 

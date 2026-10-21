@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import java.util.ArrayList;
@@ -95,9 +96,8 @@ public final class ColumnDeduplicator {
           validation = deduplicateTable(table, result);
         }
         committed = store.commitTransaction();
-      } catch (Throwable ex) {
+      } catch (Exception ex) {
         System.err.println("Failed to deduplicate the column in this table: " + (table == null ? tableId : table));
-        ex.printStackTrace(System.err);
         result.catchException(ex);
       } finally {
         if (!committed) {
@@ -132,19 +132,25 @@ public final class ColumnDeduplicator {
     return result;
   }
 
-  private TableInfo getTable(long tableId) {
-    MTable table = pm.getObjectById(MTable.class, new MTable.PK(tableId));
-    if (table == null) {
+  public TableInfo getTable(long tableId) {
+    final MTable table;
+    try {
+      table = pm.getObjectById(MTable.class, new MTable.PK(tableId));
+    } catch (JDOObjectNotFoundException e) {
+      // This table might have been dropped since the beginning
       return null;
     }
     Map<String, String> params = table.getParameters() == null ?
         new HashMap<>() : table.getParameters();
-    // This table has been processed early
-    if (params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
-      if (clearMarker) {
-        params.remove(COLUMN_DEDUPLICATOR_MARKER);
-        table.setParameters(params);
+    if (clearMarker) {
+      if (!params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
+        return null;
       }
+      params.remove(COLUMN_DEDUPLICATOR_MARKER);
+      table.setParameters(params);
+      return null;
+    }
+    if (params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
       return null;
     }
 
@@ -152,6 +158,7 @@ public final class ColumnDeduplicator {
       params.put(COLUMN_DEDUPLICATOR_MARKER, "" + System.currentTimeMillis() / 1000);
       table.setParameters(params);
     }
+    pm.retrieve(table);
     pm.retrieve(table.getSd().getCD());
     pm.retrieve(table.getDatabase());
     return new TableInfo(tableId, table.getSd().getCD().getId(),
@@ -275,9 +282,6 @@ public final class ColumnDeduplicator {
     try {
       tables.addAll((List<Long>) query.executeWithArray(parameterVals.toArray(new String[0])));
       success = store.commitTransaction();
-    } catch (Throwable e) {
-      e.printStackTrace(System.err);
-      throw new RuntimeException(e);
     } finally {
       query.closeAll();
       if (!success) {
