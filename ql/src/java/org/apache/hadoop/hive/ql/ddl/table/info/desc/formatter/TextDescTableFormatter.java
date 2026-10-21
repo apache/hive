@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
+import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
@@ -374,7 +375,9 @@ class TextDescTableFormatter extends DescTableFormatter {
 
     if (table.getParameters().size() > 0) {
       tableInfo.append("Table Parameters:").append(LINE_DELIM);
-      displayAllParameters(table.getParameters(), tableInfo, false, isOutputPadded);
+      displayAllParameters(
+          MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(table.getParameters()), tableInfo, false,
+          isOutputPadded);
     }
   }
 
@@ -388,7 +391,9 @@ class TextDescTableFormatter extends DescTableFormatter {
 
     if (partition.getTPartition().getParameters().size() > 0) {
       tableInfo.append("Partition Parameters:").append(LINE_DELIM);
-      displayAllParameters(partition.getTPartition().getParameters(), tableInfo);
+      displayAllParameters(
+          MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(partition.getTPartition().getParameters()),
+          tableInfo);
     }
   }
 
