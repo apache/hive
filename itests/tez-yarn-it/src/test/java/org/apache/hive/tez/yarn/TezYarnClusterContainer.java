@@ -18,6 +18,8 @@
  */
 package org.apache.hive.tez.yarn;
 
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
@@ -218,7 +220,7 @@ public class TezYarnClusterContainer {
   public String uploadJarToHdfs(Path localJarPath) throws IOException, InterruptedException {
     String fileName = localJarPath.getFileName().toString();
     String containerTmp = "/tmp/" + fileName;
-    String hdfsDir = "/tmp/hive-29483-jars";
+    String hdfsDir = "/tmp/hive-tez-yarn-jars";
     String hdfsPath = hdfsDir + "/" + fileName;
 
     namenode.copyFileToContainer(MountableFile.forHostPath(localJarPath, 0644), containerTmp);
@@ -233,7 +235,7 @@ public class TezYarnClusterContainer {
   }
 
   public String uploadTezLibsToHdfs() throws IOException, InterruptedException {
-    String hdfsDir = "/tmp/hive-29483/tez-libs";
+    String hdfsDir = "/tmp/hive-tez-yarn/tez-libs";
     GenericContainer.ExecResult mkdir = namenode.execInContainer("hdfs", "dfs", "-mkdir", "-p", hdfsDir);
     requireSuccess(mkdir, "hdfs dfs -mkdir -p " + hdfsDir);
 
@@ -330,23 +332,24 @@ public class TezYarnClusterContainer {
   }
 
   private void waitForNodeManagerRegistration() {
-    long deadline = System.currentTimeMillis() + Duration.ofMinutes(2).toMillis();
-    while (System.currentTimeMillis() < deadline) {
-      try {
-        GenericContainer.ExecResult result = resourcemanager.execInContainer("yarn", "node", "-list");
-        String out = result.getStdout();
-        if (out.contains("Total Nodes:") && !out.contains("Total Nodes:0")) {
-          return;
-        }
-        Thread.sleep(3000);
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        throw new IllegalStateException("Interrupted while waiting for NodeManager registration");
-      } catch (Exception ignored) {
-        try { Thread.sleep(3000); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
-      }
+    final String[] lastOut = {""};
+
+    try {
+      Awaitility.await()
+              .pollDelay(Duration.ZERO)
+              .pollInterval(Duration.ofSeconds(3))
+              .atMost(Duration.ofMinutes(2))
+              .ignoreExceptions()
+              .until(() -> {
+                GenericContainer.ExecResult result = resourcemanager.execInContainer("yarn", "node", "-list");
+                String out = result.getStdout();
+                lastOut[0] = out;
+                return out.contains("Total Nodes:") && !out.contains("Total Nodes:0");
+              });
+    } catch (ConditionTimeoutException e) {
+      throw new IllegalStateException(
+              "NodeManager did not register with ResourceManager within 2 minutes. Last output:\n" + lastOut[0], e);
     }
-    throw new IllegalStateException("NodeManager did not register with ResourceManager within 2 minutes");
   }
 
   private static void requireSuccess(GenericContainer.ExecResult result, String cmd) {

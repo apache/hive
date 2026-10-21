@@ -43,10 +43,10 @@ public class TestTezYarnLocalization {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestTezYarnLocalization.class);
 
-  private static final String HDFS_BASE      = "hdfs://namenode:8020";
+  private static final String HDFS_BASE = "hdfs://namenode:8020";
   private static final String HDFS_WAREHOUSE = HDFS_BASE + "/tmp/hive-tez-loc/warehouse";
-  private static final String HDFS_SCRATCH   = HDFS_BASE + "/tmp/hive-tez-loc/scratch";
-  private static final String HDFS_ROOT      = "/tmp/hive-tez-loc";
+  private static final String HDFS_SCRATCH = HDFS_BASE + "/tmp/hive-tez-loc/scratch";
+  private static final String HDFS_ROOT = "/tmp/hive-tez-loc";
 
   private static TezYarnClusterContainer cluster;
   private static HiveServer2 hs2;
@@ -63,16 +63,22 @@ public class TestTezYarnLocalization {
     r = nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", "/tmp");
     Assert.assertEquals("hdfs dfs -chmod -R 777 /tmp failed:\n" + r.getStderr(), 0, r.getExitCode());
 
-    nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/warehouse");
-    nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/scratch");
-    nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/user-install");
-    nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", HDFS_ROOT);
+    r = nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/warehouse");
+    Assert.assertEquals("hdfs dfs -mkdir -p " + HDFS_ROOT + "/warehouse failed:\n" + r.getStderr(), 0, r.getExitCode());
+    r = nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/scratch");
+    Assert.assertEquals("hdfs dfs -mkdir -p " + HDFS_ROOT + "/scratch failed:\n" + r.getStderr(), 0, r.getExitCode());
+    r = nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/user-install");
+    Assert.assertEquals("hdfs dfs -mkdir -p " + HDFS_ROOT + "/user-install failed:\n" + r.getStderr(), 0, r.getExitCode());
+    r = nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", HDFS_ROOT);
+    Assert.assertEquals("hdfs dfs -chmod -R 777 " + HDFS_ROOT + " failed:\n" + r.getStderr(), 0, r.getExitCode());
 
     String tezLibUris = cluster.uploadTezLibsToHdfs();
     LOG.info("Staged Tez libs to HDFS: {}", tezLibUris);
 
-    Path localScratch = Files.createDirectories(
-            Path.of("/tmp", "hive-tez-loc-" + System.currentTimeMillis()));
+    Path localScratch = Files.createTempDirectory("hive-tez-loc-");
+    String derbyUrl = "jdbc:derby:"
+        + localScratch.resolve("metastore_db").toAbsolutePath() + ";create=true";
+    System.setProperty("javax.jdo.option.ConnectionURL", derbyUrl);
     HiveConf conf = buildHiveConf(tezLibUris, localScratch);
 
     hs2 = new HiveServer2();
@@ -94,6 +100,7 @@ public class TestTezYarnLocalization {
       cluster.stop();
       cluster = null;
     }
+    System.clearProperty("javax.jdo.option.ConnectionURL");
   }
 
   @Test
@@ -121,12 +128,12 @@ public class TestTezYarnLocalization {
     verifyTezYarnAppExists();
   }
 
-  /** Prints Tez AM and NodeManager logs to the Surefire *-output.txt file at teardown. */
+  /** Logs Tez AM and NodeManager diagnostics at teardown. */
   private static void dumpNodeManagerDiagnostics() {
     if (cluster == null) {
       return;
     }
-    System.out.println("########## BEGIN NodeManager diagnostics ##########");
+    LOG.info("########## BEGIN NodeManager diagnostics ##########");
     try {
       dumpNmCommand("launch_container.sh (AM launch command + classpath)",
           "find /tmp -name 'launch_container.sh' 2>/dev/null | head -3 "
@@ -144,10 +151,9 @@ public class TestTezYarnLocalization {
           "find /var/log/hadoop -maxdepth 1 -name '*.log' 2>/dev/null | head -3 "
           + "| xargs -I{} sh -c 'echo \"--- {} ---\"; tail -200 {}' 2>/dev/null || true");
     } catch (Exception e) {
-      System.out.println("Could not dump NodeManager diagnostics: " + e);
+      LOG.warn("Could not dump NodeManager diagnostics", e);
     }
-    System.out.println("########## END NodeManager diagnostics ##########");
-    System.out.flush();
+    LOG.info("########## END NodeManager diagnostics ##########");
   }
 
   private static void dumpNmCommand(String label, String bashCommand) {
@@ -155,10 +161,9 @@ public class TestTezYarnLocalization {
       GenericContainer.ExecResult r =
           cluster.nodeManagerContainer().execInContainer("bash", "-c", bashCommand);
       String out = r.getStdout();
-      System.out.println("===== NM: " + label + " =====");
-      System.out.println(out.isEmpty() ? "(no output found)" : out);
+      LOG.info("===== NM: {} =====\n{}", label, out.isEmpty() ? "(no output found)" : out);
     } catch (Exception e) {
-      System.out.println("===== NM: " + label + " (dump failed: " + e + ") =====");
+      LOG.warn("===== NM: {} (dump failed) =====", label, e);
     }
   }
 
