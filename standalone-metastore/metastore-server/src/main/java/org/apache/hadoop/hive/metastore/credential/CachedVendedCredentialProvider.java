@@ -22,7 +22,7 @@ package org.apache.hadoop.hive.metastore.credential;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
-import org.checkerframework.checker.index.qual.NonNegative;
+import org.jspecify.annotations.NonNull;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -52,20 +52,20 @@ public class CachedVendedCredentialProvider implements VendedCredentialProvider 
           }
 
           @Override
-          public long expireAfterCreate(CachedVendedCredentialProvider.CacheKey key,
-              List<VendedStorageCredential> value, long currentTime) {
+          public long expireAfterCreate(CachedVendedCredentialProvider.@NonNull CacheKey key,
+              @NonNull List<VendedStorageCredential> value, long currentTime) {
             return calculateExpiration(value);
           }
 
           @Override
-          public long expireAfterUpdate(CachedVendedCredentialProvider.CacheKey key,
-              List<VendedStorageCredential> value, long currentTime, @NonNegative long currentDuration) {
+          public long expireAfterUpdate(CachedVendedCredentialProvider.@NonNull CacheKey key,
+              @NonNull List<VendedStorageCredential> value, long currentTime, long currentDuration) {
             return calculateExpiration(value);
           }
 
           @Override
-          public long expireAfterRead(CachedVendedCredentialProvider.CacheKey key,
-              List<VendedStorageCredential> value, long currentTime, @NonNegative long currentDuration) {
+          public long expireAfterRead(CachedVendedCredentialProvider.@NonNull CacheKey key,
+              @NonNull List<VendedStorageCredential> value, long currentTime, long currentDuration) {
             return currentDuration;
           }
         }).build();
