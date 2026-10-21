@@ -2070,7 +2070,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       planner.addRule(new HivePartitionPruneRule(conf));
 
       // Optimize plan
-      final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
+      final String ruleExclusionRegex =
+          "HivePreFilteringRule|" + conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
       if (!ruleExclusionRegex.isEmpty()) {
         LOG.info("The CBO rules matching the following regex are excluded from planning: {}",
                 ruleExclusionRegex);
@@ -2475,7 +2476,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode executeProgram(RelNode basePlan, HepProgram program, RelMetadataProvider mdProvider,
         RexExecutor executorProvider, List<? extends RelOptMaterialization> materializations, boolean noDag) {
 
-      final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
+      final String ruleExclusionRegex =
+          "HivePreFilteringRule|" + conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
 
       // Create planner and copy context
       HepPlanner planner =
