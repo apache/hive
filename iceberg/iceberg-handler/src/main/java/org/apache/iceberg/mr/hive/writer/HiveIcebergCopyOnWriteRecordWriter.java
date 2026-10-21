@@ -64,15 +64,17 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter
 
     if (positionDelete.pos() < 0) {
       // A negative position is a matched-row marker whose magnitude contributes to the affected-row count.
-      affectedRows += -positionDelete.pos();
       int specId = IcebergAcidUtil.parseSpecId(record);
       String filePath = positionDelete.path().toString();
-      replacedDataFiles.computeIfAbsent(filePath, ignored -> DataFiles.builder(specs.get(specId))
-          .withPath(filePath)
-          .withPartition(partition(rowData, specId))
-          .withFileSizeInBytes(0)
-          .withRecordCount(0)
-          .build());
+      replacedDataFiles.computeIfAbsent(filePath, ignored -> {
+        affectedRows += -positionDelete.pos();
+        return DataFiles.builder(specs.get(specId))
+            .withPath(filePath)
+            .withPartition(partition(rowData, specId))
+            .withFileSizeInBytes(0)
+            .withRecordCount(0)
+            .build();
+      });
     } else {
       if (positionDelete.path() == null) {
         affectedRows++;
