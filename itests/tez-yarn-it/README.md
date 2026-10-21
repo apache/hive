@@ -82,22 +82,3 @@ classpath (`ql/target/hive-exec-*.jar`). To pick up code changes:
 
 2. Re-run the integration test or `StartTezYarnCluster`.
 
-## Module layout
-
-```
-itests/tez-yarn-it/
-├── pom.xml
-└── src/test/
-    ├── docker/hadoop-yarn/
-    │   ├── Dockerfile                         # Custom Hadoop + JDK 21 image
-    │   └── config                             # Hadoop daemon environment variables
-    ├── java/.../tez/yarn/
-    │   ├── TezYarnClusterContainer.java       # Testcontainers cluster orchestration
-    │   ├── TestTezYarnLocalization.java       # End-to-end localization assertion
-    │   ├── TestHiveServer2Connectivity.java   # Basic JDBC connectivity smoke test
-    │   ├── TestTezYarnClusterContainer.java   # Cluster smoke tests (no Hive)
-    │   └── StartTezYarnCluster.java           # Keep-alive cluster for manual testing
-    └── resources/
-        ├── hive-site-yarn-it.xml              # Hive/Tez/HS2 constants for the test JVM
-        └── yarn-site.xml                      # YARN NM memory check overrides
-```

@@ -14,17 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Hostname overrides for Tez-on-YARN integration tests.
-#
-# When TezYarnClusterContainer is started in fixed-port mode, these four
-# containers are reachable from the host at 127.0.0.1 on their well-known
-# ports (NameNode 8020/9870, ResourceManager 8032/8088).  The same hostnames
-# are used inside the Docker network, so a single HDFS URI like
-# hdfs://namenode:8020 works both from the test JVM and from YARN containers.
-#
-# This file is passed to the test JVM via
-#   -Djdk.net.hosts.file=<path>/custom_hosts_file
-# which makes the JVM's DNS resolver consult it before the OS resolver.
+# Maps Docker service hostnames to 127.0.0.1 for the host JVM (-Djdk.net.hosts.file).
 
 127.0.0.1 localhost
 127.0.0.1 namenode
