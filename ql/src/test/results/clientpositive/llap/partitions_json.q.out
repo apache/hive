@@ -56,8 +56,10 @@ POSTHOOK: Input: default@add_part_test_n0
 {"partitions":[{"name":"ds='2010-01-01'","values":[{"columnName":"ds","columnValue":"2010-01-01"}]},{"name":"ds='2010-01-02'","values":[{"columnName":"ds","columnValue":"2010-01-02"}]}]}
 PREHOOK: query: SHOW TABLE EXTENDED LIKE add_part_test_n0 PARTITION (ds='2010-01-02')
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@add_part_test_n0
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE add_part_test_n0 PARTITION (ds='2010-01-02')
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@add_part_test_n0
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE add_part_test_n0 DROP PARTITION (ds='2010-01-02')
 PREHOOK: type: ALTERTABLE_DROPPARTS

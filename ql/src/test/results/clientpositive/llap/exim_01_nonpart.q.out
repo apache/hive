@@ -69,8 +69,10 @@ dep_id              	int                 	department id
 #### A masked pattern was here ####
 PREHOOK: query: show table extended like exim_department_n7
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: importer@exim_department_n7
 POSTHOOK: query: show table extended like exim_department_n7
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: importer@exim_department_n7
 tableName:exim_department_n7
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

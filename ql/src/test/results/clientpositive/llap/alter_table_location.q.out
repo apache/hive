@@ -14,8 +14,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hcat_altertable_16
 PREHOOK: query: show table extended like  hcat_altertable_16
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@hcat_altertable_16
 POSTHOOK: query: show table extended like  hcat_altertable_16
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@hcat_altertable_16
 tableName:hcat_altertable_16
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -40,8 +42,10 @@ POSTHOOK: Output: default@hcat_altertable_16
 #### A masked pattern was here ####
 PREHOOK: query: show table extended like  hcat_altertable_16
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@hcat_altertable_16
 POSTHOOK: query: show table extended like  hcat_altertable_16
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@hcat_altertable_16
 tableName:hcat_altertable_16
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

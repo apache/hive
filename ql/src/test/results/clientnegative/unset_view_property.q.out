@@ -19,8 +19,10 @@ POSTHOOK: Input: default@testview
 POSTHOOK: Output: default@testview
 PREHOOK: query: SHOW TBLPROPERTIES testView
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@testview
 POSTHOOK: query: SHOW TBLPROPERTIES testView
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@testview
 bucketing_version	2
 #### A masked pattern was here ####
 propA	100

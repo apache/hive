@@ -95,8 +95,10 @@ POSTHOOK: Lineage: erasure_table2.value SIMPLE [(src)src.FieldSchema(name:value,
 ECHO show table extended like erasure_table2
 PREHOOK: query: show table extended like erasure_table2
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@erasure_table2
 POSTHOOK: query: show table extended like erasure_table2
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@erasure_table2
 tableName:erasure_table2
 #### A masked pattern was here ####
 location:hdfs://### HDFS PATH ###
@@ -115,8 +117,10 @@ minFileSize:#Masked#
 ECHO SHOW TBLPROPERTIES erasure_table2
 PREHOOK: query: SHOW TBLPROPERTIES erasure_table2
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@erasure_table2
 POSTHOOK: query: SHOW TBLPROPERTIES erasure_table2
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@erasure_table2
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
 bucketing_version	2
 numFiles	1

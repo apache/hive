@@ -44,8 +44,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: show table extended like load_overwrite
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@load_overwrite
 POSTHOOK: query: show table extended like load_overwrite
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@load_overwrite
 tableName:load_overwrite
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -88,8 +90,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite2
 PREHOOK: query: show table extended like load_overwrite2
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@load_overwrite2
 POSTHOOK: query: show table extended like load_overwrite2
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@load_overwrite2
 tableName:load_overwrite2
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -132,8 +136,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: show table extended like load_overwrite
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@load_overwrite
 POSTHOOK: query: show table extended like load_overwrite
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@load_overwrite
 tableName:load_overwrite
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

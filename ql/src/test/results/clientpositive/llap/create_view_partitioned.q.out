@@ -165,8 +165,10 @@ POSTHOOK: Input: default@vp1
 value=val_86
 PREHOOK: query: SHOW TABLE EXTENDED LIKE vp1
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@vp1
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE vp1
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@vp1
 tableName:vp1
 #### A masked pattern was here ####
 location:null
@@ -178,8 +180,10 @@ partitionColumns:struct partition_columns { string value}
 
 PREHOOK: query: SHOW TABLE EXTENDED LIKE vp1 PARTITION(value='val_86')
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@vp1
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE vp1 PARTITION(value='val_86')
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@vp1
 tableName:vp1
 #### A masked pattern was here ####
 location:null

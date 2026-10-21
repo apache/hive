@@ -264,8 +264,10 @@ POSTHOOK: Input: default@cmv_mat_view5
 3	charlie	17	9.80	13144339.80
 PREHOOK: query: show tblproperties cmv_mat_view5
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@cmv_mat_view5
 POSTHOOK: query: show tblproperties cmv_mat_view5
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@cmv_mat_view5
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","f":"true"}}
 bucketing_version	2
 key	value

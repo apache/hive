@@ -79,8 +79,10 @@ POSTHOOK: Input: db2@cmv_mat_view_n7
 2	bonnie	172342.20
 PREHOOK: query: show tblproperties cmv_mat_view_n7
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: db2@cmv_mat_view_n7
 POSTHOOK: query: show tblproperties cmv_mat_view_n7
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: db2@cmv_mat_view_n7
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true"}}
 bucketing_version	2
 numFiles	1
@@ -115,8 +117,10 @@ POSTHOOK: Input: db2@cmv_mat_view2_n2
 3	9.80
 PREHOOK: query: show tblproperties cmv_mat_view2_n2
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: db2@cmv_mat_view2_n2
 POSTHOOK: query: show tblproperties cmv_mat_view2_n2
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: db2@cmv_mat_view2_n2
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","c":"true"}}
 bucketing_version	2
 numFiles	1

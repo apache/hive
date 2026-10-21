@@ -8,13 +8,17 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmpfoo
 PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@tmpfoo
 POSTHOOK: query: show tblproperties tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@tmpfoo
 Table default.tmpfoo does not have property: bar	 
 PREHOOK: query: show tblproperties default.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@tmpfoo
 POSTHOOK: query: show tblproperties default.tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@tmpfoo
 Table default.tmpfoo does not have property: bar	 
 PREHOOK: query: alter table tmpfoo set tblproperties ("bar" = "bar value")
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -34,8 +38,10 @@ POSTHOOK: Input: default@tmpfoo
 POSTHOOK: Output: default@tmpfoo
 PREHOOK: query: show tblproperties tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@tmpfoo
 POSTHOOK: query: show tblproperties tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@tmpfoo
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true"}}
 bar	bar value
 bucketing_version	2
@@ -49,13 +55,17 @@ totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@tmpfoo
 POSTHOOK: query: show tblproperties tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@tmpfoo
 bar	bar value
 PREHOOK: query: show tblproperties default.tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@tmpfoo
 POSTHOOK: query: show tblproperties default.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@tmpfoo
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true"}}
 bar	bar value
 bucketing_version	2
@@ -69,8 +79,10 @@ totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties default.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@tmpfoo
 POSTHOOK: query: show tblproperties default.tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@tmpfoo
 bar	bar value
 PREHOOK: query: CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
@@ -110,8 +122,10 @@ POSTHOOK: Input: db1@tmpfoo
 POSTHOOK: Output: db1@tmpfoo
 PREHOOK: query: show tblproperties default.tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@tmpfoo
 POSTHOOK: query: show tblproperties default.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@tmpfoo
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true"}}
 bar	bar value
 bucketing_version	2
@@ -125,13 +139,17 @@ totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties default.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@tmpfoo
 POSTHOOK: query: show tblproperties default.tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@tmpfoo
 bar	bar value
 PREHOOK: query: show tblproperties tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: db1@tmpfoo
 POSTHOOK: query: show tblproperties tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: db1@tmpfoo
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"b":"true"}}
 bar	bar value1
 bucketing_version	2
@@ -145,8 +163,10 @@ totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: db1@tmpfoo
 POSTHOOK: query: show tblproperties tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: db1@tmpfoo
 bar	bar value1
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
@@ -156,8 +176,10 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: show tblproperties db1.tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: db1@tmpfoo
 POSTHOOK: query: show tblproperties db1.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: db1@tmpfoo
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"b":"true"}}
 bar	bar value1
 bucketing_version	2
@@ -171,6 +193,8 @@ totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: show tblproperties db1.tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: db1@tmpfoo
 POSTHOOK: query: show tblproperties db1.tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: db1@tmpfoo
 bar	bar value1
