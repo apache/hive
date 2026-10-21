@@ -52,11 +52,13 @@ import org.apache.iceberg.SystemConfigs;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
+import org.apache.iceberg.catalog.Catalog;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.io.CloseableGroup;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
-import org.apache.iceberg.mr.CloseableRestCatalog;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -90,7 +92,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       }
       String refName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
       if (StringUtils.isNotEmpty(refName)) {
-        scan = scan.useRef(HiveUtils.getTableSnapshotRef(refName));
+        String ref = HiveUtils.getTableSnapshotRef(refName);
+        scan = serverSidePinTable != null ?
+            HiveTableUtil.pinServerSideScanRefToSerializedTable(serverSidePinTable, ref, scan) :
+            scan.useRef(ref);
       }
       if (snapshotId != -1) {
         scan = scan.useSnapshot(snapshotId);
@@ -170,13 +175,22 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
             conf.getInt(SystemConfigs.WORKER_THREAD_POOL_SIZE.propertyKey(), ThreadPools.WORKER_THREAD_POOL_SIZE));
     try {
       if (HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serializedTable)) {
-        String catalogName = HiveTableUtil.resolveCatalogName(conf);
-        try (CloseableRestCatalog catalog = CloseableRestCatalog.load(conf, catalogName)) {
-          Table planningTable = catalog.loadTable(tableIdentifier);
+        Catalog catalog = Catalogs.loadCatalog(conf, HiveTableUtil.resolveCatalogName(conf))
+            .orElseThrow(() -> new IllegalStateException(
+                "Iceberg catalog is required for REST server-side scan planning"));
+        try (CloseableGroup closer = new CloseableGroup()) {
+          closer.setSuppressCloseFailure(true);
+          if (catalog instanceof AutoCloseable closeable) {
+            closer.addCloseable(closeable);
+          }
+          Table planningTable = catalog.loadTable(TableIdentifier.parse(tableIdentifier));
           HiveTableUtil.checkAndSetIoConfig(conf, planningTable);
           return planInputSplits(planningTable, conf, workerPool, tableIdentifier, serializedTable);
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
         }
       }
+
 
       Table table = serializedTable != null ? serializedTable : Catalogs.loadTable(conf);
       return planInputSplits(table, conf, workerPool, tableIdentifier, null);

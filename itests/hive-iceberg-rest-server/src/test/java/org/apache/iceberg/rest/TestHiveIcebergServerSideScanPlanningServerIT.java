@@ -22,10 +22,12 @@ package org.apache.iceberg.rest;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Consumer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -36,17 +38,20 @@ import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.Scan;
 import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
-import org.apache.iceberg.mr.CloseableRestCatalog;
+import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.hive.RestCatalogScanPlanningUtil;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.mr.mapreduce.IcebergInputFormat;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.rest.requests.PlanTableScanRequest;
 import org.apache.iceberg.rest.responses.ErrorResponse;
 import org.apache.iceberg.rest.responses.LoadTableResponse;
+import org.apache.iceberg.types.Types;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -139,7 +144,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
   }
 
   /**
-   * Negative path: without the HS2 marker and catalog settings in the job conf, split generation
+   * Negative path: without the HS2 per-table marker and catalog settings in the job conf, split generation
    * plans from the serialized table snapshot and never sends {@code POST /plan}.
    */
   @Test
@@ -159,13 +164,12 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
   @Test
   void propagatedJobConfReloadsRestTableFromCatalog() throws IOException {
     Table table = createTableWithData();
-    Configuration sessionConf = sessionConf();
     Configuration jobConf = executorJobConf(table);
-    RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(sessionConf, CATALOG_NAME, jobConf);
+    propagateFromHs2(sessionConf(), table, jobConf);
 
     ArgumentCaptor<HTTPRequest> requestCaptor = ArgumentCaptor.forClass(HTTPRequest.class);
-    try (CloseableRestCatalog catalog = CloseableRestCatalog.load(jobConf, CATALOG_NAME)) {
-      Table resolved = catalog.loadTable(TABLE_ID.toString());
+    try (RESTCatalog catalog = loadRestCatalog(jobConf)) {
+      Table resolved = catalog.loadTable(TABLE_ID);
       assertThat(resolved).isInstanceOf(RESTTable.class);
       assertThat(resolved.newScan()).isInstanceOf(RESTTableScan.class);
     }
@@ -180,6 +184,36 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
   }
 
   /**
+   * The REST server returns {@code scan-planning-mode=server} in {@code LoadTableResponse} while the
+   * client {@code scan-planning-mode} is unset: Iceberg loads a server-planning {@link RESTTable}, and
+   * Hive follows it instead of planning locally from manifests.
+   */
+  @Test
+  void serverDecidedPlanningModeIsFollowedWithoutClientProperty() throws IOException {
+    createTableWithData();
+    Configuration sessionConf = sessionConf();
+    sessionConf.unset(
+        IcebergCatalogProperties.catalogPropertyConfigKey(CATALOG_NAME, RESTCatalogProperties.SCAN_PLANNING_MODE));
+
+    try (RESTCatalog catalog = loadRestCatalog(sessionConf)) {
+      Table table = catalog.loadTable(TABLE_ID);
+      assertThat(table).isInstanceOf(RESTTable.class);
+      assertThat(planRequestsDuringGetSplits(propagatedJobConf(sessionConf, table))).hasSize(1);
+    }
+  }
+
+  /** With the Hive kill switch off, a table the server plans is still planned locally by Hive. */
+  @Test
+  void hiveSwitchOffKeepsLocalPlanningForServerPlannedTable() throws IOException {
+    Table table = createTableWithData();
+    Configuration sessionConf = sessionConf();
+    HiveConf.setBoolVar(sessionConf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED, false);
+
+    assertThat(table).isInstanceOf(RESTTable.class);
+    assertThat(planRequestsDuringGetSplits(propagatedJobConf(sessionConf, table))).isEmpty();
+  }
+
+  /**
    * Compile-time snapshot is serialized into the job conf; if the catalog advances before split
    * generation, server-side planning must still plan the serialized snapshot, not {@code HEAD}.
    */
@@ -188,9 +222,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
     Table table = createTableWithData();
     long pinnedSnapshotId = table.currentSnapshot().snapshotId();
 
-    Configuration jobConf = executorJobConf(table);
-    jobConf.set(InputFormatConfig.TABLE_LOCATION, table.location());
-    RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(sessionConf(), CATALOG_NAME, jobConf);
+    Configuration jobConf = propagatedJobConf(table);
 
     DataFile fileB =
         DataFiles.builder(SPEC)
@@ -247,6 +279,51 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
         .isEqualTo(taggedSnapshotId);
   }
 
+  /**
+   * Reading {@code t.branch_b1} while another writer commits to {@code b1} between query compilation
+   * and split planning: the scan must use the {@code b1} head captured at compile time, not the new
+   * head the reloaded REST table sees.
+   */
+  @Test
+  void serverSidePlanningPinsBranchToSerializedTable() throws IOException {
+    Table table = createTableWithData();
+    long branchHeadId = table.currentSnapshot().snapshotId();
+    table.manageSnapshots().createBranch("b1", branchHeadId).commit();
+
+    Configuration jobConf = propagatedJobConf(restCatalog.loadTable(TABLE_ID));
+    jobConf.set(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF, "branch_b1");
+
+    appendFileB("b1");
+    assertThat(restCatalog.loadTable(TABLE_ID).refs().get("b1").snapshotId()).isNotEqualTo(branchHeadId);
+
+    assertThat(planRequestsDuringGetSplits(jobConf))
+        .singleElement()
+        .extracting(PlanTableScanRequest::snapshotId)
+        .isEqualTo(branchHeadId);
+  }
+
+  /**
+   * Reading {@code t.branch_b1} after a column was added to the table but no new data was written to
+   * {@code b1}: Iceberg reads branches with the current table schema, so {@code new_col} must still be
+   * selected. The scan therefore uses the ref instead of pinning the snapshot id, which would switch to
+   * the older snapshot schema without {@code new_col}.
+   */
+  @Test
+  void serverSidePlanningKeepsTableSchemaForBranchWithOlderSchema() throws IOException {
+    Table table = createTableWithData();
+    long branchHeadId = table.currentSnapshot().snapshotId();
+    table.manageSnapshots().createBranch("b1", branchHeadId).commit();
+    restCatalog.loadTable(TABLE_ID).updateSchema().addColumn("new_col", Types.StringType.get()).commit();
+
+    Configuration jobConf = propagatedJobConf(restCatalog.loadTable(TABLE_ID));
+    jobConf.set(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF, "branch_b1");
+
+    PlanTableScanRequest planRequest = planRequestsDuringGetSplits(jobConf).get(0);
+    assertThat(planRequest.snapshotId()).isEqualTo(branchHeadId);
+    assertThat(planRequest.useSnapshotSchema()).isFalse();
+    assertThat(planRequest.select()).contains("new_col");
+  }
+
   /** Incremental append scans are planned locally from the serialized table, without POST /plan. */
   @Test
   void incrementalAppendScanDoesNotUseServerSidePlanning() throws IOException {
@@ -260,21 +337,53 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
     assertThat(planRequestsDuringGetSplits(jobConf)).isEmpty();
   }
 
+  private static RESTCatalog loadRestCatalog(Configuration conf) {
+    return (RESTCatalog) Catalogs.loadCatalog(conf, CATALOG_NAME).orElseThrow();
+  }
+
   private Configuration propagatedJobConf(Table table) throws IOException {
+    return propagatedJobConf(sessionConf(), table);
+  }
+
+  private Configuration propagatedJobConf(Configuration sessionConf, Table table) throws IOException {
     Configuration jobConf = executorJobConf(table);
     jobConf.set(InputFormatConfig.TABLE_LOCATION, table.location());
-    RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(sessionConf(), CATALOG_NAME, jobConf);
+    propagateFromHs2(sessionConf, table, jobConf);
     return jobConf;
   }
 
+  /**
+   * Mimics what split generation in the AM sees: the per-table marker from the table's job
+   * properties, decided on the table HS2 loaded, and the catalog properties from job secrets; both are
+   * copied into the conf by {@code HiveInputFormat#addSplitsForGroup}.
+   */
+  private void propagateFromHs2(Configuration sessionConf, Table table, Configuration jobConf) {
+    Map<String, String> jobProperties = Maps.newHashMap();
+    RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(
+        sessionConf, table, TABLE_ID.toString(), jobProperties);
+    jobProperties.forEach(jobConf::set);
+
+    TableDesc tableDesc = new TableDesc();
+    Properties tableProps = new Properties();
+    tableProps.setProperty(InputFormatConfig.CATALOG_NAME, CATALOG_NAME);
+    tableDesc.setProperties(tableProps);
+    Map<String, String> jobSecrets = Maps.newHashMap();
+    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(tableDesc, jobSecrets, sessionConf);
+    jobSecrets.forEach(jobConf::set);
+  }
+
   private void appendFileB() {
+    appendFileB(SnapshotRef.MAIN_BRANCH);
+  }
+
+  private void appendFileB(String branch) {
     DataFile fileB =
         DataFiles.builder(SPEC)
             .withPath("/path/to/data-b.parquet")
             .withFileSizeInBytes(10)
             .withRecordCount(1)
             .build();
-    restCatalog.loadTable(TABLE_ID).newAppend().appendFile(fileB).commit();
+    restCatalog.loadTable(TABLE_ID).newAppend().appendFile(fileB).toBranch(branch).commit();
   }
 
   private List<PlanTableScanRequest> planRequestsDuringGetSplits(Configuration jobConf) {

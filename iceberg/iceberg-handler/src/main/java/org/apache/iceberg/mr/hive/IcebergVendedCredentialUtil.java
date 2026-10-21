@@ -103,7 +103,7 @@ public final class IcebergVendedCredentialUtil {
    * Copies vended storage credentials into job secrets for
    * {@link HiveIcebergStorageHandler#configureInputJobCredentials} (HIVE-20651).
    */
-  public static void propagateInputJobCredentials(
+  public static void propagateVendedCredentialsToJob(
       TableDesc tableDesc, Map<String, String> jobSecrets, Configuration conf) {
     if (tableDesc == null || tableDesc.getProperties() == null ||
         !requestsVendedCredentials(tableDesc.getProperties(), conf)) {
@@ -413,7 +413,7 @@ public final class IcebergVendedCredentialUtil {
    * it. That is Hive's own registry of sensitive configuration (the same one behind
    * {@code HiveConf#isHiddenConfig}) that masks values in EXPLAIN, the Tez UI, and ATS.
    */
-  static boolean isSecretKey(String key, Configuration conf) {
+  private static boolean isSecretKey(String key, Configuration conf) {
     return HiveConfUtil.getHiddenSet(conf).stream().anyMatch(key::startsWith);
   }
 

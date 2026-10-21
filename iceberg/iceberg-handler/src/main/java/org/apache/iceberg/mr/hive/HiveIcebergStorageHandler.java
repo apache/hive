@@ -279,8 +279,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets) {
-    RestCatalogScanPlanningUtil.propagateInputJobCredentials(tableDesc, secrets, conf);
-    IcebergVendedCredentialUtil.propagateInputJobCredentials(tableDesc, secrets, conf);
+    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(tableDesc, secrets, conf);
+    IcebergVendedCredentialUtil.propagateVendedCredentialsToJob(tableDesc, secrets, conf);
   }
 
   @Override
@@ -337,10 +337,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
     configureOutputTableJobConf(tableDesc, jobConf);
-    if (tableDesc != null && tableDesc.getProperties() != null) {
-      RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(
-          conf, tableDesc.getProperty(InputFormatConfig.CATALOG_NAME), jobConf);
-    }
     if (IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
       IcebergVendedCredentialUtil.refreshVendedCredentialsIfMissing(tableDesc, jobConf, conf);
     }
@@ -1733,6 +1729,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       location = table.location();
       schema = table.schema();
       spec = table.spec();
+      RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(
+          configuration, table, props.getProperty(Catalogs.NAME), map);
 
       // For intra-txn read-after-write: if the table has in-memory metadata with no metadata file
       // (i.e. uncommitted changes from a prior statement in the same txn), write the metadata to
@@ -1797,9 +1795,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       spec = PartitionSpec.unpartitioned();
     }
     props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
-
-    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-    RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(configuration, catalogName, map);
 
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
