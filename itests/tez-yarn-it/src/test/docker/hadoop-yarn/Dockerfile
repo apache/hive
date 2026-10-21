@@ -21,7 +21,7 @@
 # hive-exec classes -- must run on Java 21.  This image adds a Java 21 JDK at
 # /opt/jdk21 using a multi-stage build from eclipse-temurin:21-jdk; the daemons
 # continue to use the default Java 8.
-FROM eclipse-temurin:21-jdk AS jdk21
+FROM --platform=linux/amd64 eclipse-temurin:21-jdk AS jdk21
 FROM apache/hadoop:3.4.2
 
 USER root
