@@ -332,8 +332,9 @@ public class TezYarnClusterContainer {
 
     if (hdfsUris.isEmpty()) {
       throw new IllegalStateException(
-          "No Tez jars (filenames containing 'tez') were found on the test classpath. "
-          + "Ensure tez-api, tez-dag, tez-runtime-library, etc. are transitive dependencies.");
+          "No framework jars were found on the test classpath to stage. "
+          + "Ensure tez-api, tez-dag, tez-runtime-library, hadoop-mapreduce-client-core, "
+          + "etc. are test dependencies.");
     }
     return String.join(",", hdfsUris);
   }
@@ -341,30 +342,38 @@ public class TezYarnClusterContainer {
   /**
    * Discovers Tez framework jars from the running JVM's classpath using two complementary strategies:
    * <ol>
-   *   <li>Reflection on known Tez probe classes — works regardless of how Surefire
-   *       passes the classpath (direct {@code -cp} or manifest-only argfile JAR).</li>
+   *   <li>Reflection on known probe classes — works regardless of how Surefire passes the classpath
+   *       (direct {@code -cp} or manifest-only argfile JAR).</li>
    *   <li>Scanning {@link ManagementFactory#getRuntimeMXBean() RuntimeMXBean#getClassPath()}
    *       — a safety net when the reflection approach misses a jar (e.g. classes not loaded yet).</li>
    * </ol>
-   * Returns regular {@code .jar} files that belong to the Tez framework (see
-   * {@link #isTezFrameworkJar(String)}); this includes {@code hadoop-shim-*.jar}, which does not
-   * contain "tez" in its filename but provides {@code org.apache.tez.hadoop.shim.HadoopShimsLoader}
-   * required by {@code DAGAppMaster.serviceInit()} — omitting it makes the Tez AM fail at startup
-   * with {@code NoClassDefFoundError: org/apache/tez/hadoop/shim/HadoopShimsLoader}.
+   * Returns regular {@code .jar} files that should be staged into {@code tez.lib.uris} (see
+   * {@link #isTezFrameworkJar(String)}). This includes:
+   * <ul>
+   *   <li>{@code hadoop-shim-*.jar}: carries {@code HadoopShimsLoader} but has no "tez" in its name;
+   *       omitting it causes {@code NoClassDefFoundError: org/apache/tez/hadoop/shim/HadoopShimsLoader}
+   *       in {@code DAGAppMaster.serviceInit()}.</li>
+   *   <li>{@code hadoop-mapreduce-client-core-*.jar}: provides {@code org.apache.hadoop.mapred.JobConf}
+   *       needed by {@code MRInputAMSplitGenerator}; not present in the cluster's
+   *       {@code yarn.application.classpath} and not included in {@code tez.use.cluster.hadoop-libs}
+   *       expansion for {@code apache/hadoop:3.4.2}, so it must be staged explicitly.</li>
+   * </ul>
    */
   private static Set<Path> findTezJarsFromClasspath() {
     Set<Path> jars = new LinkedHashSet<>();
 
-    // Strategy 1: reflect on known Tez probe classes to get their source jar.
+    // Strategy 1: reflect on known probe classes to get their source jar.
     // Use Class.forName to avoid compile-time imports of Tez internal modules.
     String[] probeClassNames = {
-        "org.apache.tez.dag.api.TezConfiguration",         // tez-api
-        "org.apache.tez.common.TezConverterUtils",         // tez-common
-        "org.apache.tez.dag.app.DAGAppMaster",             // tez-dag (the Tez AM)
-        "org.apache.tez.mapreduce.hadoop.MRHelpers",       // tez-mapreduce
+        "org.apache.tez.dag.api.TezConfiguration",              // tez-api
+        "org.apache.tez.common.TezConverterUtils",              // tez-common
+        "org.apache.tez.dag.app.DAGAppMaster",                  // tez-dag (the Tez AM)
+        "org.apache.tez.mapreduce.hadoop.MRHelpers",            // tez-mapreduce
         "org.apache.tez.runtime.LogicalIOProcessorRuntimeTask", // tez-runtime-internals
-        "org.apache.tez.runtime.library.api.KeyValueReader",   // tez-runtime-library
-        "org.apache.tez.hadoop.shim.HadoopShimsLoader"     // hadoop-shim (loaded by DAGAppMaster)
+        "org.apache.tez.runtime.library.api.KeyValueReader",    // tez-runtime-library
+        "org.apache.tez.hadoop.shim.HadoopShimsLoader",         // hadoop-shim (loaded by DAGAppMaster)
+        "org.apache.hadoop.mapred.JobConf",                     // hadoop-mapreduce-client-core (MRInputAMSplitGenerator)
+        "org.apache.hadoop.mapreduce.v2.util.MRApps"            // hadoop-mapreduce-client-common (transitive from above)
     };
     for (String className : probeClassNames) {
       try {
@@ -400,16 +409,24 @@ public class TezYarnClusterContainer {
   }
 
   /**
-   * Whether a jar filename belongs to the Tez framework and should be staged into
-   * {@code tez.lib.uris}. Matches {@code tez-*} jars plus {@code hadoop-shim-*} (which carries
-   * {@code org.apache.tez.hadoop.shim.HadoopShimsLoader} but has no "tez" in its name), excluding
-   * test jars.
+   * Whether a jar should be staged into {@code tez.lib.uris}. Matches:
+   * <ul>
+   *   <li>{@code tez-*} — core Tez framework jars</li>
+   *   <li>{@code hadoop-shim-*} — carries {@code HadoopShimsLoader}; filename has no "tez"</li>
+   *   <li>{@code hadoop-mapreduce-client-core-*} and {@code hadoop-mapreduce-client-common-*} —
+   *       provide {@code JobConf} and related classes required by {@code MRInputAMSplitGenerator};
+   *       absent from the {@code apache/hadoop:3.4.2} {@code yarn.application.classpath} expansion</li>
+   * </ul>
+   * Test jars are always excluded.
    */
   private static boolean isTezFrameworkJar(String name) {
     if (name.endsWith("-tests.jar")) {
       return false;
     }
-    return name.contains("tez") || name.startsWith("hadoop-shim");
+    return name.contains("tez")
+        || name.startsWith("hadoop-shim")
+        || name.startsWith("hadoop-mapreduce-client-core")
+        || name.startsWith("hadoop-mapreduce-client-common");
   }
 
   // Package-private: only test classes in this package need direct exec access.
