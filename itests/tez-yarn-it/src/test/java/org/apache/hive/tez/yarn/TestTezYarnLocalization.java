@@ -112,18 +112,15 @@ public class TestTezYarnLocalization {
       try (Statement stmt = conn.createStatement()) {
 
         stmt.execute("CREATE TABLE IF NOT EXISTS tez_loc_test (id INT) STORED AS ORC");
-        stmt.execute("CREATE TABLE IF NOT EXISTS tez_source (id INT) STORED AS ORC");
-
-        // INSERT ... VALUES fails here: Hive stages literals on the host; the Tez AM in Docker cannot read file:// paths.
-        stmt.execute("INSERT INTO tez_loc_test SELECT count(*) FROM tez_source");
+        stmt.execute("INSERT INTO tez_loc_test VALUES (42)");
 
         try (ResultSet rs = stmt.executeQuery("SELECT id FROM tez_loc_test")) {
           Assert.assertTrue("Result set must contain at least one row", rs.next());
-          long count = rs.getLong(1);
+          int count = rs.getInt(1);
           Assert.assertEquals(
-              "INSERT SELECT count(*) FROM empty tez_source should return 0 (hive-exec.jar was localized)",
-              0L, count);
-          LOG.info("Tez query succeeded: inserted count(*) = {}", count);
+              "INSERT VALUES should return the inserted row value (hive-exec.jar was localized)",
+              42, count);
+          LOG.info("Tez query succeeded: inserted row value = {}", count);
         }
       }
     }
