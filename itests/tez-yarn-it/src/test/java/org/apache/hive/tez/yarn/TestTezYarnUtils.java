@@ -18,11 +18,11 @@
  */
 package org.apache.hive.tez.yarn;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
-import org.testcontainers.containers.Container;
-import org.testcontainers.containers.ContainerState;
 
 import java.net.ServerSocket;
 import java.net.URL;
@@ -45,26 +45,22 @@ public final class TestTezYarnUtils {
   }
 
   /**
-   * Creates the HDFS fixture directories from inside the NameNode container, which runs as the Hadoop superuser.
-   * A host-side FileSystem client lacks write permission on "/".
+   * Creates the HDFS fixture directories as the HDFS superuser through the FileSystem API.
    */
-  static void setupHdfs(ContainerState nn) throws Exception {
+  static void setupHdfs(TezYarnClusterContainer cluster) throws Exception {
     String[] dirs = {
         "/tmp",
+        HDFS_ROOT,
         HDFS_ROOT + "/warehouse",
         HDFS_ROOT + "/scratch",
         HDFS_ROOT + "/user-install"
     };
-    for (String dir : dirs) {
-      Container.ExecResult r = nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", dir);
-      if (r.getExitCode() != 0) {
-        throw new IllegalStateException("hdfs dfs -mkdir -p " + dir + " failed:\n" + r.getStderr());
+    try (FileSystem fs = cluster.newSuperuserFileSystem()) {
+      for (String dir : dirs) {
+        fs.mkdirs(new org.apache.hadoop.fs.Path(dir));
       }
-    }
-    for (String dir : new String[]{"/tmp", HDFS_ROOT}) {
-      Container.ExecResult r = nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", dir);
-      if (r.getExitCode() != 0) {
-        throw new IllegalStateException("hdfs dfs -chmod -R 777 " + dir + " failed:\n" + r.getStderr());
+      for (String dir : dirs) {
+        fs.setPermission(new org.apache.hadoop.fs.Path(dir), new FsPermission((short) 0777));
       }
     }
   }

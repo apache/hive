@@ -31,7 +31,6 @@ import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.ComposeContainer;
-import org.testcontainers.containers.Container;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
@@ -54,13 +53,14 @@ public class TezYarnClusterContainer {
 
   public static final String CONTAINER_JAVA_HOME = "/opt/jdk21";
 
-  private final String hadoop_image;
+  private final String hadoopImage;
 
   private static final int NN_RPC_PORT = 8020;
   private static final int NN_HTTP_PORT = 9870;
   private static final int RM_RPC_PORT = 8032;
   private static final int RM_HTTP_PORT = 8088;
   private static final int NM_HTTP_PORT = 8042;
+  private static final String HDFS_SUPERUSER = "hadoop";
   // Tez AM client RPC port range, published by the NM container so the host JVM can reach the AM.
   public static final int AM_CLIENT_PORT_START = 41000;
   public static final int AM_CLIENT_PORT_END = 41020;
@@ -76,11 +76,10 @@ public class TezYarnClusterContainer {
   private final ComposeContainer compose;
 
   public TezYarnClusterContainer() {
-    hadoop_image = buildHadoopImage();
+    hadoopImage = buildHadoopImage();
     String basedir = System.getProperty("basedir", ".");
     File composeFile = Paths.get(basedir, "src/test/docker/hadoop-yarn/docker-compose.yml").toFile();
-    LOG.info("Starting Tez-on-YARN cluster from {} (image {})", composeFile, hadoop_image);
-    // withLocalCompose(false): no local docker-compose binary required on CI.
+    LOG.info("Starting Tez-on-YARN cluster from {} (image {})", composeFile, hadoopImage);
     compose = new ComposeContainer(composeFile)
         .withLocalCompose(false);
   }
@@ -91,7 +90,6 @@ public class TezYarnClusterContainer {
       // Avoid flakiness: wait until HDFS has left safemode before running HDFS operations.
       waitForSafemodeExit();
       waitForNodeManagerRegistration();
-      verifyJava21InNodeManager();
     } catch (Exception e) {
       try {
         stop();
@@ -104,19 +102,6 @@ public class TezYarnClusterContainer {
 
   public void stop() {
     compose.stop();
-  }
-
-  private void verifyJava21InNodeManager() throws Exception {
-    Container.ExecResult r = nodeManagerContainer().execInContainer(
-            CONTAINER_JAVA_HOME + "/bin/java", "-version");
-    if (r.getExitCode() == 0) {
-      LOG.info("Java 21 is functional in NodeManager ({}): {}",
-              CONTAINER_JAVA_HOME, r.getStderr().trim());
-    } else {
-      throw new IllegalStateException(
-              "Java check failed in NodeManager (exit " + r.getExitCode()
-                      + "). stderr: " + r.getStderr());
-    }
   }
 
   public String getHdfsUri() {
@@ -283,8 +268,24 @@ public class TezYarnClusterContainer {
   /**
    * Uncached FileSystem so callers can close it without affecting the HiveServer2 instance.
    */
-  private FileSystem newFileSystem() throws IOException {
+  FileSystem newFileSystem() throws IOException {
     return FileSystem.newInstance(URI.create(getHdfsUri()), buildHadoopConfiguration());
+  }
+
+  FileSystem newSuperuserFileSystem() throws IOException {
+    try {
+      return FileSystem.newInstance(URI.create(getHdfsUri()), buildHadoopConfiguration(), HDFS_SUPERUSER);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IOException("Interrupted while creating HDFS superuser FileSystem client", e);
+    }
+  }
+
+  YarnClient newYarnClient() {
+    YarnClient yarnClient = YarnClient.createYarnClient();
+    yarnClient.init(buildHadoopConfiguration());
+    yarnClient.start();
+    return yarnClient;
   }
 
   private static String buildHadoopImage() {

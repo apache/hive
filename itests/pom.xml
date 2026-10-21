@@ -31,7 +31,6 @@
     <hive.path.to.root>..</hive.path.to.root>
     <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
     <assertj.version>3.27.3</assertj.version>
-    <awaitility.version>4.2.1</awaitility.version>
   </properties>
   <modules>
     <module>custom-serde</module>

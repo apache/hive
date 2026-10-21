@@ -115,13 +115,6 @@ run `StartTezYarnCluster`.
 mvn test -Pitests,tez-yarn -pl itests/tez-yarn-it -Dtest=StartTezYarnCluster
 ```
 
-Once ready, a startup banner is printed to standard output with JDBC, HDFS/YARN endpoints,
-and the log file location. Connect from a second terminal:
-
-```bash
-beeline -u 'jdbc:hive2://localhost:10000/default;auth=noSasl' -n hive
-```
-
 Useful web UIs while the cluster is up:
 
 - NameNode UI: `http://localhost:9870`

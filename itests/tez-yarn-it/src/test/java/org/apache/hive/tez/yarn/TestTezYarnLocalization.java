@@ -18,7 +18,13 @@
  */
 package org.apache.hive.tez.yarn;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.yarn.api.records.ApplicationReport;
+import org.apache.hadoop.yarn.api.records.YarnApplicationState;
+import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hive.service.server.HiveServer2;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -27,7 +33,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.Container;
-import org.testcontainers.containers.ContainerState;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,8 +41,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 
 public class TestTezYarnLocalization {
 
@@ -52,7 +59,7 @@ public class TestTezYarnLocalization {
     cluster = new TezYarnClusterContainer();
     cluster.start();
 
-    TestTezYarnUtils.setupHdfs(cluster.namenodeContainer());
+    TestTezYarnUtils.setupHdfs(cluster);
 
     String tezLibUris = cluster.uploadTezLibsToHdfs();
     LOG.info("Staged Tez libs to HDFS: {}", tezLibUris);
@@ -110,15 +117,27 @@ public class TestTezYarnLocalization {
     verifyHiveExecJarLocalizedInNm();
   }
 
-  private static void verifyHiveExecJarOnHdfs() throws IOException, InterruptedException {
-    Container.ExecResult r = cluster.namenodeContainer().execInContainer(
-            "hdfs", "dfs", "-find", TestTezYarnUtils.HDFS_ROOT + "/user-install", "-name", "hive-exec-*.jar");
+  private static void verifyHiveExecJarOnHdfs() throws IOException {
+    List<String> matchingJars = new ArrayList<>();
+    org.apache.hadoop.fs.Path searchRoot =
+        new org.apache.hadoop.fs.Path(TestTezYarnUtils.HDFS_ROOT + "/user-install");
+    try (FileSystem fs = cluster.newFileSystem()) {
+      RemoteIterator<LocatedFileStatus> files = fs.listFiles(searchRoot, true);
+      while (files.hasNext()) {
+        LocatedFileStatus file = files.next();
+        String fileName = file.getPath().getName();
+        if (fileName.startsWith("hive-exec-") && fileName.endsWith(".jar")) {
+          matchingJars.add(file.getPath().toString());
+        }
+      }
+    }
     LOG.info("HDFS hive-exec.jar search in {}/user-install: {}",
-            TestTezYarnUtils.HDFS_ROOT, r.getStdout().trim().isEmpty() ? "(none found)" : r.getStdout().trim());
+        TestTezYarnUtils.HDFS_ROOT,
+        matchingJars.isEmpty() ? "(none found)" : String.join("\n", matchingJars));
     Assert.assertFalse(
             "hive-exec.jar was not staged to HDFS under " + TestTezYarnUtils.HDFS_ROOT + "/user-install — "
                     + "TezSessionState.buildCommonLocalResources() localization step 1 appears to have failed.",
-            r.getStdout().trim().isEmpty());
+            matchingJars.isEmpty());
   }
 
   private static void verifyHiveExecJarLocalizedInNm() throws IOException, InterruptedException {
@@ -170,22 +189,22 @@ public class TestTezYarnLocalization {
   }
 
   private static void verifyTezYarnAppExists() throws Exception {
-    ContainerState rm = cluster.resourceManagerContainer();
-    Container.ExecResult result = rm.execInContainer(
-            "yarn", "application", "-list", "-appTypes", "TEZ", "-appStates", "ALL");
-    String out = result.getStdout();
-    LOG.info("YARN application list (TEZ, ALL states):\n{}", out);
-
-    Pattern appIdPattern = Pattern.compile("(application_\\d+_\\d+)");
-    Matcher matcher = appIdPattern.matcher(out);
-    boolean found = false;
-    while (matcher.find()) {
-      LOG.info("Found Tez YARN application: {}", matcher.group(1));
-      found = true;
+    List<ApplicationReport> applications;
+    try (YarnClient yarnClient = cluster.newYarnClient()) {
+      applications = yarnClient.getApplications(
+          Collections.singleton("TEZ"), EnumSet.allOf(YarnApplicationState.class));
     }
-
-    Assert.assertTrue(
+    if (applications.isEmpty()) {
+      LOG.info("YARN application list (TEZ, ALL states): (none found)");
+    } else {
+      LOG.info("YARN application list (TEZ, ALL states):");
+      for (ApplicationReport app : applications) {
+        LOG.info("Found Tez YARN application: {} ({})",
+            app.getApplicationId(), app.getYarnApplicationState());
+      }
+    }
+    Assert.assertFalse(
             "At least one Tez YARN application must be visible in the ResourceManager after running a Tez query",
-            found);
+            applications.isEmpty());
   }
 }

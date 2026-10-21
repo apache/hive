@@ -40,7 +40,7 @@ public class StartTezYarnCluster {
     TezYarnClusterContainer cluster = new TezYarnClusterContainer();
     cluster.start();
 
-    TestTezYarnUtils.setupHdfs(cluster.namenodeContainer());
+    TestTezYarnUtils.setupHdfs(cluster);
 
     String tezLibUris = cluster.uploadTezLibsToHdfs();
     LOG.info("Staged Tez libs to HDFS: {}", tezLibUris);

@@ -93,10 +93,6 @@
     <value>yarn</value>
   </property>
   <property>
-    <name>tez.local.mode</name>
-    <value>false</value>
-  </property>
-  <property>
     <name>tez.use.cluster.hadoop-libs</name>
     <value>true</value>
   </property>
