@@ -124,12 +124,16 @@ public class TestTezYarnLocalization {
    *
    * <p>Runs a Tez DAG via JDBC and asserts that:
    * <ol>
-   *   <li>The query returns the expected result (primary proof that
-   *       {@code hive-exec.jar} was localized and Hive executor classes
-   *       were available inside YARN task containers).</li>
-   *   <li>A Tez YARN application is visible in the ResourceManager
-   *       (secondary confirmation that the DAG actually ran on YARN).</li>
+   *   <li>The INSERT … SELECT completes and returns the expected row count (primary proof that
+   *       {@code hive-exec.jar} was localized and Hive executor classes were available inside
+   *       YARN task containers).</li>
+   *   <li>A Tez YARN application is visible in the ResourceManager (secondary confirmation that
+   *       the DAG actually ran on YARN).</li>
    * </ol>
+   *
+   * <p>Uses {@code INSERT … SELECT} from an HDFS-backed table rather than {@code VALUES}, because
+   * {@code VALUES} inserts compile to a local {@code file:/…/dummy_path} input that exists only on
+   * the host JVM filesystem; Tez map tasks run inside Docker containers and cannot read it.
    */
   @Test
   public void testQuerySucceedsWithAppJar() throws Exception {
@@ -138,17 +142,20 @@ public class TestTezYarnLocalization {
       try (Statement stmt = conn.createStatement()) {
 
         stmt.execute("CREATE TABLE IF NOT EXISTS tez_loc_test (id INT) STORED AS ORC");
-        stmt.execute("INSERT INTO tez_loc_test VALUES (1), (2), (3)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS tez_source (id INT) STORED AS ORC");
 
-        // COUNT(*) forces a Tez reduce task. If hive-exec.jar is not localized the task
-        // container fails with ClassNotFoundException before this assertion is reached.
-        try (ResultSet rs = stmt.executeQuery("SELECT count(*) FROM tez_loc_test")) {
+        // SELECT from an HDFS table (even empty) keeps map inputs on hdfs://namenode:8020/…,
+        // reachable from YARN containers. COUNT(*) forces a reduce vertex; if hive-exec.jar were
+        // missing from commonLocalResources the task container would fail before this returns.
+        stmt.execute("INSERT INTO tez_loc_test SELECT count(*) FROM tez_source");
+
+        try (ResultSet rs = stmt.executeQuery("SELECT id FROM tez_loc_test")) {
           Assert.assertTrue("Result set must contain at least one row", rs.next());
           long count = rs.getLong(1);
           Assert.assertEquals(
-              "SELECT count(*) FROM tez_loc_test should return 3 (hive-exec.jar was localized)",
-              3L, count);
-          LOG.info("Tez query succeeded: count(*) = {}", count);
+              "INSERT SELECT count(*) FROM empty tez_source should return 0 (hive-exec.jar was localized)",
+              0L, count);
+          LOG.info("Tez query succeeded: inserted count(*) = {}", count);
         }
       }
     }
