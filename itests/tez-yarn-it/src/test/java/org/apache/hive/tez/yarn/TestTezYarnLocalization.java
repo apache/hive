@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hive.tez.yarn;
 
@@ -57,8 +58,10 @@ public class TestTezYarnLocalization {
     cluster.start();
 
     GenericContainer<?> nn = cluster.namenodeContainer();
-    nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp");
-    nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", "/tmp");
+    var r = nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp");
+    Assert.assertEquals("hdfs dfs -mkdir -p /tmp failed:\n" + r.getStderr(), 0, r.getExitCode());
+    r = nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", "/tmp");
+    Assert.assertEquals("hdfs dfs -chmod -R 777 /tmp failed:\n" + r.getStderr(), 0, r.getExitCode());
 
     nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/warehouse");
     nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/scratch");

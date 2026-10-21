@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hive.tez.yarn;
 
@@ -45,9 +46,12 @@ public class TestHiveServer2Connectivity {
 
     hdfsUri = cluster.getHdfsUri();
 
-    cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp/hive-29483/warehouse");
-    cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp/hive-29483/scratch");
-    cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-chmod", "-R", "777", "/tmp/hive-29483");
+    var r = cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp/hive-29483/warehouse");
+    Assert.assertEquals("hdfs dfs -mkdir -p /tmp/hive-29483/warehouse failed:\n" + r.getStderr(), 0, r.getExitCode());
+    r = cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp/hive-29483/scratch");
+    Assert.assertEquals("hdfs dfs -mkdir -p /tmp/hive-29483/scratch failed:\n" + r.getStderr(), 0, r.getExitCode());
+    r = cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-chmod", "-R", "777", "/tmp/hive-29483");
+    Assert.assertEquals("hdfs dfs -chmod -R 777 /tmp/hive-29483 failed:\n" + r.getStderr(), 0, r.getExitCode());
 
     Path localScratch = Files.createTempDirectory("hive-29483-local-");
 
