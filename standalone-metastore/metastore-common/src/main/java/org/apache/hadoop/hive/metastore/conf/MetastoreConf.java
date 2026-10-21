@@ -625,10 +625,11 @@ public class MetastoreConf {
         "The database where the Hive lock sits when metastore.housekeeping.leader.election is set to lock."),
     METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
         "hive.metastore.housekeeping.threads.on", true,
-        "Whether to run the tasks under metastore.task.threads.remote on this metastore instance or not.\n" +
-            "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
-            "on Hive transactions. For a complete list of parameters required for turning on\n" +
-            "transactions, see hive.txn.manager."),
+        "Whether to run the tasks under metastore.task.threads.remote on this metastore instance when\n" +
+            "metastore.housekeeping.leader.election is host. Ignored when leader election is lock: the\n" +
+            "elected leader always runs those tasks. To disable a specific task, set its run interval\n" +
+            "to 0 (for example metastore.partition.management.task.frequency). For a complete list of\n" +
+            "parameters required for turning on transactions, see hive.txn.manager."),
     METASTORE_ACIDMETRICS_THREAD_ON("metastore.acidmetrics.thread.on",
         "hive.metastore.acidmetrics.thread.on", true,
         "Whether to run acid related metrics collection on this metastore instance."),
@@ -670,15 +671,15 @@ public class MetastoreConf {
         "Thrift API method names for which to record the per-query metrics.\n" +
             "Per-query slow detection applies to all JDBC executions while profiling is on."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", true,
-        "Whether to run the initiator thread on this metastore instance or not.\n" +
-            "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
-            "on Hive transactions. For a complete list of parameters required for turning on\n" +
-            "transactions, see hive.txn.manager."),
+        "Whether to run the initiator thread on this metastore instance when\n" +
+            "metastore.housekeeping.leader.election is host. Ignored when leader election is lock:\n" +
+            "the elected leader always runs the initiator. For a complete list of parameters required\n" +
+            "for turning on transactions, see hive.txn.manager."),
     COMPACTOR_CLEANER_ON("metastore.compactor.cleaner.on", "hive.compactor.cleaner.on", true,
-        "Whether to run the cleaner thread on this metastore instance or not.\n" +
-            "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
-            "on Hive transactions. For a complete list of parameters required for turning on\n" +
-            "transactions, see hive.txn.manager."),
+        "Whether to run the cleaner thread on this metastore instance when\n" +
+            "metastore.housekeeping.leader.election is host. Ignored when leader election is lock:\n" +
+            "the elected leader always runs the cleaner if acid is supported. For a complete list of parameters required\n" +
+            "for turning on transactions, see hive.txn.manager."),
     COMPACTOR_INITIATOR_TABLECACHE_ON("metastore.compactor.initiator.tablecache.on",
       "hive.compactor.initiator.tablecache.on", true,
       "Enable table caching in the initiator. Currently the cache is cleaned after each cycle."),
@@ -1977,6 +1978,10 @@ public class MetastoreConf {
     ICEBERG_CATALOG_SERVLET_PATH("metastore.iceberg.catalog.servlet.path",
         "hive.metastore.iceberg.catalog.servlet.path", "iceberg",
         "HMS Iceberg Catalog servlet path component of URL endpoint."
+    ),
+    ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
+        "hive.metastore.iceberg.catalog.cache.expiry", -1,
+        "HMS Iceberg Catalog cache expiry."
     ),
     ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION("metastore.iceberg.catalog.unique.table.location",
         "hive.metastore.iceberg.catalog.unique.table.location", false,

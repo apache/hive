@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
+import org.apache.iceberg.exceptions.RESTException;
 import org.apache.iceberg.rest.responses.ErrorResponse;
 import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
@@ -51,6 +52,11 @@ public class HMSCatalogServlet extends HttpServlet {
   private final Map<String, String> responseHeaders =
       ImmutableMap.of(CONTENT_TYPE, APPLICATION_JSON);
 
+  /**
+   * Creates a servlet that dispatches Iceberg REST Catalog requests to {@code restCatalogAdapter}.
+   *
+   * @param restCatalogAdapter the adapter used to execute each request
+   */
   public HMSCatalogServlet(HMSCatalogAdapter restCatalogAdapter) {
     this.restCatalogAdapter = restCatalogAdapter;
   }
@@ -84,7 +90,13 @@ public class HMSCatalogServlet extends HttpServlet {
       if (responseBody != null) {
         RESTObjectMapper.mapper().writeValue(response.getWriter(), responseBody);
       }
+    } catch (RESTException e) {
+      // A RESTException is thrown by HMSCatalogAdapter.execute() after the error handler has
+      // already written the correct HTTP status and body to the response (e.g. 404, 403).
+      // It is not an unexpected server failure, so log at DEBUG to avoid flooding the console.
+      LOG.debug("REST request resulted in a client error (already handled): {}", e.getMessage());
     } catch (RuntimeException | IOException e) {
+      // Genuine unexpected server error – log the full stack trace.
       LOG.error("Error processing REST request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
@@ -96,6 +108,10 @@ public class HMSCatalogServlet extends HttpServlet {
     restCatalogAdapter.close();
   }
 
+  /**
+   * Parsed view of a servlet request, or the {@link ErrorResponse} to return instead if parsing
+   * the request failed.
+   */
   public static class ServletRequestContext {
     private HTTPMethod method;
     private String path;
@@ -183,22 +199,41 @@ public class HMSCatalogServlet extends HttpServlet {
       return method;
     }
 
+    /**
+     * The request path, relative to the servlet, with the leading '/' removed.
+     * @return the request path
+     */
     public String path() {
       return path;
     }
 
+    /**
+     * The requested access delegation modes.
+     */
     public Set<AccessDelegationMode> accessDelegationModes() {
       return accessDelegationModes;
     }
 
+    /**
+     * The request's query parameters, keyed by parameter name.
+     * @return the query parameters
+     */
     public Map<String, String> queryParams() {
       return queryParams;
     }
 
+    /**
+     * The deserialized request body, or {@code null} if the route expects no request body.
+     * @return the request body
+     */
     public Object body() {
       return body;
     }
 
+    /**
+     * The error to return instead of dispatching the request, if parsing the request failed.
+     * @return the error, if any
+     */
     public Optional<ErrorResponse> error() {
       return Optional.ofNullable(errorResponse);
     }
