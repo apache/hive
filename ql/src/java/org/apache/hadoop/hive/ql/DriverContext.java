@@ -27,9 +27,9 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.RuntimeContextProvider;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
-import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 
@@ -139,8 +139,8 @@ public class DriverContext {
     // we don't want to nullify runtimeContext if this method is called with plan=null, which is the case when e.g.
     // driver.releasePlan() tries to release resources/objects that are known to be heavy
     if (plan != null) {
-      this.runtimeContext = Utilities.getFirstTezTask(plan.getRootTasks())
-          .map(TezTask::getRuntimeContext)
+      this.runtimeContext = Utilities.getFirstTask(plan.getRootTasks(), RuntimeContextProvider.class)
+          .map(RuntimeContextProvider::getRuntimeContext)
           .orElse(null);
       this.queryProperties = plan.getQueryProperties();
     }
