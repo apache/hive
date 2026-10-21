@@ -48,4 +48,13 @@ public class TestJdbcStorageHandlerDdlUtils {
         "org.apache.hive.storage.jdbc.JdbcStorageHandler", "sys",
         Collections.singletonMap(Constants.JDBC_DATABASE_TYPE, "METASTORE"));
   }
+
+  @Test
+  public void testAllowMetastoreTypeOutsideSysWhenConfOverrideEnabled() throws Exception {
+    HiveConf conf = new HiveConf();
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE, true);
+    JdbcStorageHandlerDdlUtils.validateMetastoreDatabaseTypeProperty(conf,
+        "org.apache.hive.storage.jdbc.JdbcStorageHandler", "attacker_db",
+        Collections.singletonMap(Constants.JDBC_DATABASE_TYPE, "METASTORE"));
+  }
 }
