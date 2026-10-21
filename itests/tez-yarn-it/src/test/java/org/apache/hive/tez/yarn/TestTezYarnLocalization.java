@@ -185,19 +185,22 @@ public class TestTezYarnLocalization {
           "find /tmp -name 'launch_container.sh' 2>/dev/null | head -3 "
           + "| xargs -I{} sh -c 'echo \"--- {} ---\"; cat {}' 2>/dev/null || true");
 
-      // syslog = Tez AM log4j output (NoClassDefFoundError etc. land here, not in stderr).
+      // Container logs live under LOG_DIRS=/var/log/hadoop/userlogs/<app>/<container>/ (per
+      // launch_container.sh), NOT /tmp. syslog is the Tez AM's log4j output -- the CLA appender
+      // routes DAGAppMaster startup errors (NoClassDefFoundError, NoSuchMethodError, etc.) there,
+      // which is why the YARN diagnostic shows an empty stderr while the AM still exits 1.
       dumpNmCommand("container syslog (Tez AM log4j output)",
-          "find /tmp -name 'syslog' -path '*/container_*/*' 2>/dev/null | head -5 "
+          "find /var/log/hadoop/userlogs -name 'syslog*' 2>/dev/null | head -10 "
           + "| xargs -I{} sh -c 'echo \"--- {} ---\"; cat {}' 2>/dev/null || true");
 
-      // stderr / prelaunch.err (usually empty, but confirm).
-      dumpNmCommand("container stderr + prelaunch.err",
-          "find /tmp \\( -name 'stderr' -o -name 'prelaunch.err' \\) -path '*/container_*/*' 2>/dev/null | head -10 "
-          + "| xargs -I{} sh -c 'echo \"--- {} ---\"; cat {}' 2>/dev/null || true");
+      // stdout / stderr / prelaunch.err from the same LOG_DIRS location.
+      dumpNmCommand("container stdout + stderr + prelaunch.err",
+          "find /var/log/hadoop/userlogs \\( -name 'stdout' -o -name 'stderr' -o -name 'prelaunch.err' \\) "
+          + "2>/dev/null | head -20 | xargs -I{} sh -c 'echo \"--- {} ---\"; cat {}' 2>/dev/null || true");
 
-      // NodeManager daemon log: pre-exec launch-script failures that bypass container stderr.
+      // NodeManager daemon log (yarn.log.dir=/var/log/hadoop): catches launch-script failures.
       dumpNmCommand("NodeManager daemon log (tail 200)",
-          "find /opt/hadoop/logs -name '*.log' 2>/dev/null | head -2 "
+          "find /var/log/hadoop -maxdepth 1 -name '*.log' 2>/dev/null | head -3 "
           + "| xargs -I{} sh -c 'echo \"--- {} ---\"; tail -200 {}' 2>/dev/null || true");
     } catch (Exception e) {
       System.out.println("Could not dump NodeManager diagnostics: " + e);
