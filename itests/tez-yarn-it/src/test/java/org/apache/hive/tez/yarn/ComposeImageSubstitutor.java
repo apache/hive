@@ -21,12 +21,15 @@ package org.apache.hive.tez.yarn;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.ImageNameSubstitutor;
 
-/** Replaces Testcontainers' pinned docker:24.0.2 compose helper with a newer CLI for modern daemons.
- *  Registered via testcontainers.properties; override with -Dtez.yarn.compose.image=docker:tag. */
+/**
+ * Replaces Testcontainers' compose helper with a newer CLI for modern daemons.
+ * Registered via testcontainers.properties.
+ * Override with -Dtez.yarn.compose.image=docker:tag.
+ */
 public class ComposeImageSubstitutor extends ImageNameSubstitutor {
 
   private static final String REPLACEMENT_IMAGE =
-      System.getProperty("tez.yarn.compose.image", "docker:27.5.1");
+      System.getProperty("tez.yarn.compose.image", "docker:27");
 
   @Override
   public DockerImageName apply(DockerImageName original) {

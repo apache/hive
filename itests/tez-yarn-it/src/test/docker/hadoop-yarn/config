@@ -31,6 +31,7 @@ MAPRED-SITE.XML_mapreduce.reduce.env=HADOOP_MAPRED_HOME=$$HADOOP_HOME
 
 YARN-SITE.XML_yarn.resourcemanager.hostname=resourcemanager
 YARN-SITE.XML_yarn.nodemanager.aux-services=mapreduce_shuffle
+YARN-SITE.XML_yarn.nodemanager.webapp.address=nodemanager:8042
 # Docker cgroup limits trip the default memory checks on NodeManager.
 YARN-SITE.XML_yarn.nodemanager.pmem-check-enabled=false
 YARN-SITE.XML_yarn.nodemanager.vmem-check-enabled=false
