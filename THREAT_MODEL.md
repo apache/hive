@@ -220,7 +220,7 @@ controls. *(maintainer — okumin)*
   functions do not provide semantic security or resistance to
   dictionary/enumeration attacks, and Hive does not claim they do. Choosing a
   masking type appropriate to the data (e.g. nullify/redact for low-entropy
-  columns) is the policy author's responsibility.
+  columns) is the policy author's responsibility.  *(documented: GenericUDFMaskHash, GenericUDFAesEncrypt, GenericUDFAesDecrypt)*.
 
 ## §8 — Key configuration levers (load-bearing)
 
