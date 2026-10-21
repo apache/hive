@@ -977,7 +977,7 @@ public class MetaToolObjectStore extends ObjectStore {
     private int columnDescriptorsRemoved;
     private int tablesValidated;
     private final List<String> details = new ArrayList<>();
-    private Throwable exception;
+    private Exception exception;
     DedupColumnsResult(int tablesScanned) {
       this.tablesScanned = tablesScanned;
     }
@@ -1025,7 +1025,7 @@ public class MetaToolObjectStore extends ObjectStore {
       details.add(detail);
     }
 
-    void catchException(Throwable exception) {
+    void catchException(Exception exception) {
       this.exception = exception;
     }
 
