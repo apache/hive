@@ -117,8 +117,6 @@ public class TestHiveServer2Connectivity {
   }
 
   private static String jdbcUrl(int port) {
-    // HS2 is configured with HIVE_SERVER2_AUTHENTICATION=NOSASL, which requires the client to
-    // set auth=noSasl explicitly.
     return "jdbc:hive2://localhost:" + port + "/default;auth=noSasl";
   }
 
