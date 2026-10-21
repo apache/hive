@@ -28,6 +28,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -59,6 +60,7 @@ import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.Snapshot;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.StaticTableOperations;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -263,7 +265,7 @@ public class HiveTableUtil {
   }
 
   /**
-   * Returns true when HS2 marked the table's catalog for server-side scan planning and the scan can
+   * Returns true when HS2 marked the table for server-side scan planning and the scan can
    * actually be planned by the REST server. Incremental append scans and metadata tables are planned
    * locally even on a {@code RESTTable}, and intra-transaction reads must see uncommitted metadata,
    * so these keep using the serialized table.
@@ -274,9 +276,9 @@ public class HiveTableUtil {
         serializedTable instanceof SerializableTable.SerializableMetadataTable) {
       return false;
     }
-    String catalogName = resolveCatalogName(conf);
-    return StringUtils.isNotBlank(catalogName) &&
-        conf.getBoolean(InputFormatConfig.serverSideScanPlanningKey(catalogName), false);
+    String tableIdentifier = conf.get(InputFormatConfig.TABLE_IDENTIFIER);
+    return StringUtils.isNotBlank(tableIdentifier) &&
+        conf.getBoolean(InputFormatConfig.serverSideScanPlanningKey(tableIdentifier), false);
   }
 
   /**
@@ -318,6 +320,25 @@ public class HiveTableUtil {
     }
     Snapshot snapshot = serializedTable.currentSnapshot();
     return snapshot != null ? scan.useSnapshot(snapshot.snapshotId()) : scan;
+  }
+
+  /**
+   * Pins a branch or tag read on a reloaded REST table to the snapshot the ref pointed at in the
+   * compile-time table. A branch whose head snapshot has an older schema keeps {@link TableScan#useRef}:
+   * branches read with the table schema, while {@link TableScan#useSnapshot} would switch to the
+   * snapshot schema and lose columns added since.
+   */
+  public static TableScan pinServerSideScanRefToSerializedTable(
+      Table serializedTable, String refName, TableScan scan) {
+    SnapshotRef ref = serializedTable.refs().get(refName);
+    if (ref == null) {
+      return scan.useRef(refName);
+    }
+    Integer refSchemaId = serializedTable.snapshot(ref.snapshotId()).schemaId();
+    if (ref.isBranch() && !Objects.equals(refSchemaId, serializedTable.schema().schemaId())) {
+      return scan.useRef(refName);
+    }
+    return scan.useSnapshot(ref.snapshotId());
   }
 
   /**

@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for the reload guard {@link HiveTableUtil#shouldReloadForServerSideScanPlanning}. The
- * Tez AM reloads from the REST catalog only when HS2 set the per-catalog marker
+ * Tez AM reloads from the REST catalog only when HS2 set the per-table marker
  * {@link InputFormatConfig#serverSideScanPlanningKey(String)} and the scan can be planned by the
  * server. End-to-end behavior is in {@code TestHiveIcebergServerSideScanPlanningServerIT}.
  */
@@ -78,11 +78,14 @@ class TestHiveIcebergServerSideScanPlanning {
     assertThat(HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serialized(table))).isFalse();
   }
 
-  /** The marker is per catalog, so a table from another catalog in the same job is not reloaded. */
+  /**
+   * The marker is per table: split generation reuses one job conf for all tables of a vertex, so the
+   * marker of one table must not make another table in the same conf reload.
+   */
   @Test
-  void doesNotReloadTableFromOtherCatalog() {
+  void doesNotReloadOtherTableInSameConf() {
     Configuration conf = buildTableConf(true);
-    conf.set(InputFormatConfig.CATALOG_NAME, "other");
+    conf.set(InputFormatConfig.TABLE_IDENTIFIER, "db.other");
     assertThat(HiveTableUtil.shouldReloadForServerSideScanPlanning(conf, serialized(table))).isFalse();
   }
 
@@ -126,7 +129,7 @@ class TestHiveIcebergServerSideScanPlanning {
         IcebergCatalogProperties.catalogPropertyConfigKey(CATALOG_NAME, CatalogUtil.ICEBERG_CATALOG_TYPE),
         CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
     if (marker) {
-      conf.setBoolean(InputFormatConfig.serverSideScanPlanningKey(CATALOG_NAME), true);
+      conf.setBoolean(InputFormatConfig.serverSideScanPlanningKey(table.name()), true);
     }
     return conf;
   }
