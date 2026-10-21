@@ -117,6 +117,13 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   private final boolean cacheOnly;
   /** Bytes of column chunks one IO thread may hold across the row group in decode and the next. */
   private final long lookaheadBudget;
+  /**
+   * Latched the first time a fetch comes back with every vectored request already complete: that
+   * stream read inline on this thread, so a lookahead has nothing to overlap with and only doubles
+   * how much cache memory the fragment holds locked at once. Self-detected rather than read off
+   * hasCapability(VECTOREDIO_*), which says nothing about asynchrony.
+   */
+  private boolean readsInline;
 
   private Object fileKey;
   private CacheTag cacheTag;
@@ -153,8 +160,9 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       // Bumps METADATA_CACHE_HIT / METADATA_CACHE_MISS so the LLAP IO summary accounts for the
       // Parquet footer lookup the same way it does for ORC's file tail.
       BooleanRef cacheHit = new BooleanRef();
-      MemoryBufferOrBuffers footerData =
-          LlapProxy.getIo().parquet().getFooterBuffersFromCache(path, jobConf, fileKey, cacheHit);
+      // A miss opens the inode the footer is keyed on, as openFile does for the data.
+      MemoryBufferOrBuffers footerData = LlapProxy.getIo().parquet().getFooterBuffersFromCache(
+          HdfsUtils.getFileIdPath(path, fileKey, daemonConf), jobConf, cacheTag, fileKey, cacheHit);
       counters.incrCounter(cacheHit.value
           ? LlapIOCounters.METADATA_CACHE_HIT : LlapIOCounters.METADATA_CACHE_MISS);
       footer = ParquetFileReader.readFooter(
@@ -239,26 +247,17 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
 
     try (LazyFile file = new LazyFile(path.getFileSystem(jobConf))) {
       Deque<RowGroupFetch> inFlight = new ArrayDeque<>();
-      // Latched the first time a fetch comes back with every vectored request already complete:
-      // that stream read inline on this thread, so a lookahead has nothing to overlap with and
-      // only doubles how much cache memory the fragment holds locked at once. Self-detected
-      // rather than read off hasCapability(VECTOREDIO_*), which says nothing about asynchrony.
-      boolean readsInline = false;
       try {
         for (int i = 0; i < selected.size() && !isStopped.get(); ++i) {
           if (inFlight.isEmpty()) {
-            RowGroupFetch started = startFetch(file, allocator, projected,
-                selected.get(i), rowGroupOf.get(selected.get(i)));
-            inFlight.add(started);
-            if (!readsInline && !started.readRanges.isEmpty() && readAlreadyComplete(started)) {
-              readsInline = true;
-            }
+            inFlight.add(startAndObserve(file, allocator, projected,
+                selected.get(i), rowGroupOf.get(selected.get(i))));
           }
           // The next row group's requests go out now so its transfer overlaps this one's decode.
           // Not once readsInline: that stream would do the transfer right here, before the decode.
           if (!readsInline && i + 1 < selected.size() && !isStopped.get() && projectedChunkBytes(
               inFlight.peek()) + projectedChunkBytes(projected, selected.get(i + 1)) <= lookaheadBudget) {
-            inFlight.add(startFetch(file, allocator, projected, selected.get(i + 1),
+            inFlight.add(startAndObserve(file, allocator, projected, selected.get(i + 1),
                 rowGroupOf.get(selected.get(i + 1))));
           }
           finishFetch(allocator, file, inFlight.poll());
@@ -378,6 +377,18 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
 
   /** One vectored range and the cache buffers it fills, in file order. */
   private record ReadRange(FileRange range, List<Part> parts) {
+  }
+
+  /** startFetch plus the inline-stream check, so lookahead fetches are examined too. */
+  private RowGroupFetch startAndObserve(LazyFile file, Allocator allocator, int[] projected,
+      BlockMetaData block, int rg) throws IOException {
+    RowGroupFetch fetch = startFetch(file, allocator, projected, block, rg);
+    // A fully cached row group issues no reads and says nothing about the stream; the first one
+    // that does, lookahead or not, decides.
+    if (!readsInline && !fetch.readRanges.isEmpty() && readAlreadyComplete(fetch)) {
+      readsInline = true;
+    }
+    return fetch;
   }
 
   private RowGroupFetch startFetch(LazyFile file, Allocator allocator, int[] projected,

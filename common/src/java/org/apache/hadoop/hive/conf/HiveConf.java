@@ -4989,9 +4989,10 @@ public class HiveConf extends Configuration {
         "query, and only has an effect with hive.llap.io.memory.mode=cache - there is nowhere to\n" +
         "put the column chunks otherwise, and the daemon declines the split. When it applies it\n" +
         "takes precedence over hive.llap.io.encode.formats, which is not consulted for a format\n" +
-        "LLAP IO reads natively. A query whose projection reaches into a nested type falls back to\n" +
-        "the vectorized Parquet reader for that split; the fallback still caches, but loses the\n" +
-        "vectored reads, the row-group lookahead and the LLAP IO counters."),
+        "LLAP IO reads natively. A query whose projection reaches into a nested type, or projects\n" +
+        "the row-lineage virtual columns, falls back to the vectorized Parquet reader for that\n" +
+        "split; the fallback still caches, but loses the vectored reads, the row-group lookahead\n" +
+        "and the LLAP IO counters."),
     LLAP_IO_ENCODE_FORMATS("hive.llap.io.encode.formats",
         "org.apache.hadoop.mapred.TextInputFormat,",
         "The table input formats for which LLAP IO should re-encode and cache data.\n" +

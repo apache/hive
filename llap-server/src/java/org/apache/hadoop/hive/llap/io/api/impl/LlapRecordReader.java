@@ -135,7 +135,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     LlapRecordReader rr = new LlapRecordReader(mapWork, job, split, tableIncludedCols, hostName,
         cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
     if (rr.rp == null) {
-      return null; // The producer declined the split; the caller uses the source reader.
+      // The producer declined the split; the caller uses the source reader. The constructor set
+      // dagId/queryId/fragmentId, and close() cannot run without a pipeline to clear them.
+      MDC.clear();
+      return null;
     }
     if (!rr.checkSchemaEvolution()) {
       rr.close();

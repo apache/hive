@@ -41,7 +41,7 @@ public final class ParquetCacheLayout {
    *
    * <p>A floor rather than the cap itself, because a buffer is always fetched whole and so a cap
    * below the allocator's maximum would not be one. At the 16 MB default for
-   * {@code hive.llap.allocator.max.alloc} the maximum wins and this never binds; it is what keeps
+   * {@code hive.llap.io.allocator.alloc.max} the maximum wins and this never binds; it is what keeps
    * the cap sane for a daemon configured with a small allocator.
    */
   private static final int MAX_RANGE_FLOOR_BYTES = 8 << 20;
@@ -67,8 +67,8 @@ public final class ParquetCacheLayout {
    * @param splitFloor size below which a remainder is left as one buffer rather than split further
    */
   public ParquetCacheLayout(int maxAlloc, long splitFloor) {
-    // Rounded, not asserted: BuddyAllocator validates its maximum as a power of two, but
-    // SimpleAllocator (LLAP IO memory mode "none") reports Integer.MAX_VALUE.
+    // BuddyAllocator validates its maximum as a power of two; the rounding only guards an allocator
+    // that does not (none is wired to this layout today).
     this.maxBuffer = Integer.highestOneBit(maxAlloc);
     // Clamped, not cast: the key is validated as a size but not against the allocator's maximum.
     this.minBuffer = (int) Math.min(splitFloor, maxBuffer);

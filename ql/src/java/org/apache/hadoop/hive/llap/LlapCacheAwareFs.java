@@ -261,6 +261,9 @@ public class LlapCacheAwareFs extends FileSystem {
 
     @Override
     public int read(byte[] array, final int arrayOffset, final int len) throws IOException {
+      if (len == 0) {
+        return 0;
+      }
       long readStartPos = position;
       DiskRangeList drl = new DiskRangeList(readStartPos, readStartPos + len);
       DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
@@ -469,7 +472,7 @@ public class LlapCacheAwareFs extends FileSystem {
 
     @Override
     public void readFully(long arg0, byte[] arg1, int arg2, int arg3) throws IOException {
-      read(arg0, arg1, 0, arg1.length);
+      read(arg0, arg1, arg2, arg3);
     }
   }
 }

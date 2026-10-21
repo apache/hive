@@ -20,9 +20,16 @@
 package org.apache.hadoop.hive.llap;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -30,13 +37,18 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.DataCache;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link LlapCacheAwareFs}, the filesystem shim that serves reads through the LLAP cache. */
 public class TestLlapCacheAwareFs {
   private static final int MB = 1 << 20;
   /** Not a power of two, as getMaxAllocation() may return; the layout rounds it down to 4MB. */
   private static final int MAX_ALLOC = 6 * MB;
+
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
 
   /** One column chunk at [1000, 1000 + 20MB), the shape VectorizedParquetRecordReader registers. */
   private static LlapCacheAwareFs.CacheAwareInputStream streamOverOneChunk() {
@@ -77,6 +89,47 @@ public class TestLlapCacheAwareFs {
   @Test
   public void theWholeChunkIsServed() {
     assertEquals(1, streamOverOneChunk().getAndValidateMissingChunks(1000L, 1000L + 20 * MB).size());
+  }
+
+  @Test
+  public void readFullyHonoursTheArrayOffsetAndLength() throws IOException {
+    // Hadoop's vectored read fallback lands here as readFully(pos, buf.array(), buf.arrayOffset(), len).
+    byte[] content = new byte[100];
+    for (int i = 0; i < content.length; ++i) {
+      content[i] = (byte) (i + 1);
+    }
+    File file = tmp.newFile("chunk.bin");
+    Files.write(file.toPath(), content);
+    TreeMap<Long, Long> chunkIndex = new TreeMap<>();
+    chunkIndex.put(0L, (long) content.length);
+    DataCache cache = mock(DataCache.class);
+    // Nothing cached: the range comes back with no data, and a null fileKey keeps it out of the cache.
+    when(cache.getFileData(any(), any(), anyLong(), any(), any())).thenAnswer(inv -> inv.getArgument(1));
+    LlapCacheAwareFs.CacheAwareInputStream stream = new LlapCacheAwareFs.CacheAwareInputStream(cache,
+        new Configuration(), chunkIndex, new Path(file.toURI()), null, 4096, null, null);
+
+    byte[] array = new byte[80];
+    Arrays.fill(array, (byte) -1);
+    stream.readFully(20, array, 10, 50);
+
+    for (int i = 0; i < 10; ++i) {
+      assertEquals("array[" + i + "]", -1, array[i]);
+    }
+    for (int i = 0; i < 50; ++i) {
+      assertEquals("array[" + (10 + i) + "]", content[20 + i], array[10 + i]);
+    }
+    for (int i = 60; i < array.length; ++i) {
+      assertEquals("array[" + i + "]", -1, array[i]);
+    }
+  }
+
+  @Test
+  public void aZeroLengthReadDoesNotConsultTheCache() throws IOException {
+    DataCache cache = mock(DataCache.class);
+    LlapCacheAwareFs.CacheAwareInputStream stream = new LlapCacheAwareFs.CacheAwareInputStream(cache,
+        new Configuration(), new TreeMap<>(), new Path("/tmp/does-not-matter"), 1L, -1, null, null);
+    assertEquals(0, stream.read(new byte[4], 2, 0));
+    verifyNoInteractions(cache);
   }
 
   // The rejections below should never fire in production: each means a bug. The chunk index holds

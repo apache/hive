@@ -322,7 +322,12 @@ class ParquetCachedPageReadStore implements PageReadStore {
 
   @Override
   public PageReader getPageReader(ColumnDescriptor descriptor) {
-    return readers.get(ColumnPath.get(descriptor.getPath()));
+    PageReader reader = readers.get(ColumnPath.get(descriptor.getPath()));
+    if (reader == null) {
+      throw new IllegalArgumentException("Column " + ColumnPath.get(descriptor.getPath())
+          + " is not in the store; cached: " + readers.keySet());
+    }
+    return reader;
   }
 
   private static final class CachedChunkPageReader implements PageReader {

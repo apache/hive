@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.VectorizedParquetInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -256,7 +258,10 @@ public class HiveVectorizedReader {
       LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
       // No per-fragment counters on the Iceberg vectorized path yet; footer lookups are
       // recorded as cache traffic but not as META hits/misses in the LLAP IO summary.
-      footerData = LlapProxy.getIo().parquet().getFooterBuffersFromCache(path, job, fileId, null);
+      // Tagged as VectorizedParquetRecordReader tags the data it caches for this file, so purging the
+      // table's entries covers the footer too.
+      CacheTag cacheTag = VectorizedParquetRecordReader.cacheTagOfParquetFile(path, job, job);
+      footerData = LlapProxy.getIo().parquet().getFooterBuffersFromCache(path, job, cacheTag, fileId, null);
     }
 
     ParquetMetadata parquetMetadata = HiveParquetUtil.readFooter(task.file(), io, job, footerData);

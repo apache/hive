@@ -312,8 +312,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     } else {
       // Fallback path outside the native encoded reader: no per-fragment counters here, so the
       // footer lookup doesn't contribute to META_HIT / META_MISS in the LLAP IO summary.
-      MemoryBufferOrBuffers footerData =
-          LlapProxy.getIo().parquet().getFooterBuffersFromCache(file, configuration, cacheKey, null);
+      MemoryBufferOrBuffers footerData = LlapProxy.getIo().parquet()
+          .getFooterBuffersFromCache(file, configuration, tag, cacheKey, null);
       return ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), filter);
     }
   }

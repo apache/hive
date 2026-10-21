@@ -93,7 +93,6 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
-import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
@@ -566,13 +565,12 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     }
 
     @Override
-    public MemoryBufferOrBuffers getFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey,
-        @Nullable BooleanRef cacheHit) throws IOException {
+    public MemoryBufferOrBuffers getFooterBuffersFromCache(Path path, JobConf conf, @Nullable CacheTag tag,
+        @Nullable Object fileKey, @Nullable BooleanRef cacheHit) throws IOException {
 
       Preconditions.checkNotNull(fileMetadataCache, "Metadata cache must not be null");
 
       boolean isReadCacheOnly = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_CACHE_ONLY);
-      CacheTag tag = VectorizedParquetRecordReader.cacheTagOfParquetFile(path, daemonConf, conf);
 
       MemoryBufferOrBuffers footerData = (fileKey == null ) ? null
           : fileMetadataCache.getFileMetadata(fileKey);

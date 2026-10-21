@@ -31,6 +31,12 @@ import org.apache.hadoop.mapred.InputFormat;
  * this one.
  */
 public interface LlapIo<T> {
+  /**
+   * Wraps {@code sourceInputFormat} so its splits are read through LLAP IO. A non-null {@code serde}
+   * selects the re-encoding producer (the hive.llap.io.encode.formats path); null selects the native
+   * producer registered for the input format's class. Returns null when this daemon has neither, and the
+   * caller serves the split with the source format (injecting the caches for a cache-only format).
+   */
   InputFormat<NullWritable, T> getInputFormat(
       InputFormat<?, ?> sourceInputFormat, Deserializer serde);
   void close();

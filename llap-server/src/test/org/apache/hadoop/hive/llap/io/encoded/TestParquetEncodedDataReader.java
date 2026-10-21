@@ -621,6 +621,27 @@ public class TestParquetEncodedDataReader {
     assertEquals(Arrays.asList(0, 1, 2), decodedAtRequest);
   }
 
+  /**
+   * The inline stream is noticed on a lookahead fetch too. With the first row group already cached, the
+   * first fetch issues no reads and so cannot tell; the lookahead of the second is the first to read, and
+   * the third row group has to wait for the second to be decoded.
+   */
+  @Test
+  public void testNoLookaheadWhenTheStreamReadsInlineBehindACachedRowGroup() throws Exception {
+    long firstGroupEnd = footer.getBlocks().get(1).getStartingPos();
+    read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), new FileSplit(file, 0, firstGroupEnd, (String[]) null));
+    decoded = 0;
+    decodedAtRequest.clear();
+
+    inlineRanges = true;
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
+
+    assertEquals(ROWS, run.rows.size());
+    // Row group 1 is requested before anything was decoded, as the lookahead of the cached group 0;
+    // row group 2 only once group 1 had been. Detecting on the first fetch alone gives [0, 1].
+    assertEquals(Arrays.asList(0, 2), decodedAtRequest);
+  }
+
   /** An allocator that hands back whole pooled buffers instead of exact slices still reads every row. */
   @Test
   public void testPooledBuffersReadEveryRow() throws Exception {
@@ -959,6 +980,31 @@ public class TestParquetEncodedDataReader {
       assertArrayEquals("row " + i, expectedRow(i), fallbackRows.get(i));
     }
     ledger.assertNothingLeaked();
+  }
+
+  /**
+   * And the native reader fills a hole the policy left in what the stock reader cached: it finds every
+   * piece around the hole and reads only the hole, so the stock reader cached on the boundaries the
+   * native reader looks pieces up by, the unaligned one included.
+   */
+  @Test
+  public void testNativeReaderRefillsAHoleInWhatTheStockReaderCached() throws Exception {
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5);
+    long chunkBytes = projectedChunkBytes(0, 1, 2, 3, 4, 5);
+    assertEquals(ROWS, readThroughCacheAwareFs(job, wholeFile()).size());
+
+    long holeAt = evictBufferOnAnUnalignedBoundary();
+    assertNotEquals("the hole should start on a split boundary, not a multiple of MAX_ALLOC",
+        0, holeAt % MAX_ALLOC);
+
+    Run run = read(jobConf(COLUMNS, TYPES, 0, 1, 2, 3, 4, 5), wholeFile());
+
+    assertEquals(ROWS, run.rows.size());
+    assertEquals("only the hole is read", 1, run.reads.size());
+    long[] hole = run.reads.getFirst();
+    assertEquals(holeAt, hole[0]);
+    assertEquals(hole[1], run.counter(LlapIOCounters.CACHE_MISS_BYTES));
+    assertEquals(chunkBytes - hole[1], run.counter(LlapIOCounters.CACHE_HIT_BYTES));
   }
 
   /**

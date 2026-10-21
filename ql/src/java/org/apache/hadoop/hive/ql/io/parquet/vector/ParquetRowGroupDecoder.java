@@ -41,7 +41,7 @@ import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
 
 /**
- * Reusable, stateless helper that builds the {@link VectorizedColumnReader} array for one Parquet
+ * Reusable helper that builds the {@link VectorizedColumnReader} array for one Parquet
  * row group, given an already-read {@link PageReadStore}. The logic here came from
  * {@link VectorizedParquetRecordReader} so that both the row-by-split reader and the LLAP
  * cache-backed consumer ({@code ParquetEncodedDataConsumer}) share one implementation of the

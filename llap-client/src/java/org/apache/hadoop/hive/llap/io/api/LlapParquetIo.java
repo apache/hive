@@ -24,6 +24,7 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.mapred.JobConf;
@@ -38,8 +39,13 @@ public interface LlapParquetIo {
   /**
    * Returns the metadata buffers associated with the Parquet file on the given path.
    * Content is either obtained from cache, or from disk if there is a cache miss.
-   * @param path Parquet file path
+   * @param path the path to open the file by on a miss: the inode path from
+   *             {@code HdfsUtils.getFileIdPath} when {@code fileKey} is an HDFS inode id, so the
+   *             footer cached under that key is read from the same inode as the data
    * @param conf jobConf
+   * @param tag cache tag of the file, computed by the caller from its name path - an inode path
+   *            carries no table or partition to compute one from. Optional; untagged footers are
+   *            not covered when the cache is purged by table.
    * @param fileKey fileId of the Parquet file (either the Long fileId of HDFS or the SyntheticFileId).
    *                Optional, if it is not provided, it will be generated, see:
    *                org.apache.hadoop.hive.ql.io.HdfsUtils#getFileId()
@@ -50,6 +56,6 @@ public interface LlapParquetIo {
    * @return
    * @throws IOException
    */
-  MemoryBufferOrBuffers getFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey,
-      @Nullable BooleanRef cacheHit) throws IOException;
+  MemoryBufferOrBuffers getFooterBuffersFromCache(Path path, JobConf conf, @Nullable CacheTag tag,
+      @Nullable Object fileKey, @Nullable BooleanRef cacheHit) throws IOException;
 }
