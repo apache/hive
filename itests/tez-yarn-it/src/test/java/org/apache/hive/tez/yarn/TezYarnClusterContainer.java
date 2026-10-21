@@ -29,21 +29,14 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.CodeSource;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public class TezYarnClusterContainer {
@@ -80,75 +73,80 @@ public class TezYarnClusterContainer {
   public TezYarnClusterContainer(boolean fixedPorts) {
     this.fixedPorts = fixedPorts;
     network = Network.newNetwork();
+    namenode = buildNameNode();
+    datanode = buildDataNode();
+    resourcemanager = buildResourceManager();
+    nodemanager = buildNodeManager();
+  }
 
+  private GenericContainer<?> buildNameNode() {
+    GenericContainer<?> c;
     if (fixedPorts) {
-      namenode = new FixedHostPortGenericContainer<>(HADOOP_IMAGE)
+      c = new FixedHostPortGenericContainer<>(HADOOP_IMAGE)
           .withFixedExposedPort(NN_RPC_PORT, NN_RPC_PORT)
-          .withFixedExposedPort(NN_HTTP_PORT, NN_HTTP_PORT)
-          .withNetwork(network)
-          .withNetworkAliases("namenode")
-          .withCommand("hdfs", "namenode")
-          .withEnv(COMMON_ENV)
-          .withEnv("ENSURE_NAMENODE_DIR", "/tmp/hadoop-hadoop/dfs/name")
-          .waitingFor(Wait.forHttp("/").forPort(NN_HTTP_PORT).withStartupTimeout(STARTUP_TIMEOUT));
-
-      resourcemanager = new FixedHostPortGenericContainer<>(HADOOP_IMAGE)
-          .withFixedExposedPort(RM_RPC_PORT, RM_RPC_PORT)
-          .withFixedExposedPort(RM_HTTP_PORT, RM_HTTP_PORT)
-          .withNetwork(network)
-          .withNetworkAliases("resourcemanager")
-          .withCommand("yarn", "resourcemanager")
-          .withEnv(COMMON_ENV)
-          .waitingFor(Wait.forHttp("/ws/v1/cluster/info").forPort(RM_HTTP_PORT).withStartupTimeout(STARTUP_TIMEOUT));
-
-      datanode = new FixedHostPortGenericContainer<>(HADOOP_IMAGE)
-          .withFixedExposedPort(DN_XFER_PORT, DN_XFER_PORT)
-          .withFixedExposedPort(DN_HTTP_PORT, DN_HTTP_PORT)
-          .withNetwork(network)
-          .withNetworkAliases("datanode")
-          .withCommand("hdfs", "datanode")
-          .withEnv(COMMON_ENV);
+          .withFixedExposedPort(NN_HTTP_PORT, NN_HTTP_PORT);
     } else {
-      namenode = new GenericContainer<>(HADOOP_IMAGE)
-          .withNetwork(network)
-          .withNetworkAliases("namenode")
-          .withCommand("hdfs", "namenode")
-          .withEnv(COMMON_ENV)
-          .withEnv("ENSURE_NAMENODE_DIR", "/tmp/hadoop-hadoop/dfs/name")
-          .withExposedPorts(NN_HTTP_PORT, NN_RPC_PORT)
-          .waitingFor(Wait.forHttp("/").forPort(NN_HTTP_PORT).withStartupTimeout(STARTUP_TIMEOUT));
-
-      resourcemanager = new GenericContainer<>(HADOOP_IMAGE)
-          .withNetwork(network)
-          .withNetworkAliases("resourcemanager")
-          .withCommand("yarn", "resourcemanager")
-          .withEnv(COMMON_ENV)
-          .withExposedPorts(RM_HTTP_PORT, RM_RPC_PORT)
-          .waitingFor(Wait.forHttp("/ws/v1/cluster/info").forPort(RM_HTTP_PORT).withStartupTimeout(STARTUP_TIMEOUT));
-
-      datanode = new GenericContainer<>(HADOOP_IMAGE)
-          .withNetwork(network)
-          .withNetworkAliases("datanode")
-          .withCommand("hdfs", "datanode")
-          .withEnv(COMMON_ENV);
+      c = new GenericContainer<>(HADOOP_IMAGE)
+          .withExposedPorts(NN_HTTP_PORT, NN_RPC_PORT);
     }
+    c.withNetwork(network)
+     .withNetworkAliases("namenode")
+     .withCommand("hdfs", "namenode")
+     .withEnv(COMMON_ENV)
+     .withEnv("ENSURE_NAMENODE_DIR", "/tmp/hadoop-hadoop/dfs/name")
+     .waitingFor(Wait.forHttp("/").forPort(NN_HTTP_PORT).withStartupTimeout(STARTUP_TIMEOUT));
+    return c;
+  }
 
+  private GenericContainer<?> buildDataNode() {
+    GenericContainer<?> c;
+    if (fixedPorts) {
+      c = new FixedHostPortGenericContainer<>(HADOOP_IMAGE)
+          .withFixedExposedPort(DN_XFER_PORT, DN_XFER_PORT)
+          .withFixedExposedPort(DN_HTTP_PORT, DN_HTTP_PORT);
+    } else {
+      c = new GenericContainer<>(HADOOP_IMAGE);
+    }
+    c.withNetwork(network)
+     .withNetworkAliases("datanode")
+     .withCommand("hdfs", "datanode")
+     .withEnv(COMMON_ENV);
+    return c;
+  }
+
+  private GenericContainer<?> buildResourceManager() {
+    GenericContainer<?> c;
+    if (fixedPorts) {
+      c = new FixedHostPortGenericContainer<>(HADOOP_IMAGE)
+          .withFixedExposedPort(RM_RPC_PORT, RM_RPC_PORT)
+          .withFixedExposedPort(RM_HTTP_PORT, RM_HTTP_PORT);
+    } else {
+      c = new GenericContainer<>(HADOOP_IMAGE)
+          .withExposedPorts(RM_HTTP_PORT, RM_RPC_PORT);
+    }
+    c.withNetwork(network)
+     .withNetworkAliases("resourcemanager")
+     .withCommand("yarn", "resourcemanager")
+     .withEnv(COMMON_ENV)
+     .waitingFor(Wait.forHttp("/ws/v1/cluster/info").forPort(RM_HTTP_PORT).withStartupTimeout(STARTUP_TIMEOUT));
+    return c;
+  }
+
+  private GenericContainer<?> buildNodeManager() {
+    GenericContainer<?> c;
     if (fixedPorts) {
       // Fixed hostname "nodemanager" and published AM_CLIENT_PORT so host JVM can reach the Tez AM.
-      nodemanager = new FixedHostPortGenericContainer<>(HADOOP_IMAGE)
+      c = new FixedHostPortGenericContainer<>(HADOOP_IMAGE)
           .withFixedExposedPort(AM_CLIENT_PORT, AM_CLIENT_PORT)
-          .withCreateContainerCmdModifier(cmd -> cmd.withHostName("nodemanager"))
-          .withNetwork(network)
-          .withNetworkAliases("nodemanager")
-          .withCommand("yarn", "nodemanager")
-          .withEnv(COMMON_ENV);
+          .withCreateContainerCmdModifier(cmd -> cmd.withHostName("nodemanager"));
     } else {
-      nodemanager = new GenericContainer<>(HADOOP_IMAGE)
-          .withNetwork(network)
-          .withNetworkAliases("nodemanager")
-          .withCommand("yarn", "nodemanager")
-          .withEnv(COMMON_ENV);
+      c = new GenericContainer<>(HADOOP_IMAGE);
     }
+    c.withNetwork(network)
+     .withNetworkAliases("nodemanager")
+     .withCommand("yarn", "nodemanager")
+     .withEnv(COMMON_ENV);
+    return c;
   }
 
   public void start() {
@@ -235,88 +233,43 @@ public class TezYarnClusterContainer {
   }
 
   public String uploadTezLibsToHdfs() throws IOException, InterruptedException {
-    String hdfsDir = "/tmp/hive-tez-yarn/tez-libs";
+    String tezDistPath = System.getProperty("tez.dist.path");
+    if (tezDistPath == null || tezDistPath.isEmpty()) {
+      throw new IllegalStateException(
+          "System property 'tez.dist.path' is not set. "
+          + "It must point to the tez-libs.tar.gz assembled from Tez Maven artifacts. "
+          + "This is set automatically by the Maven surefire configuration; "
+          + "if running tests in isolation, ensure the module was built with "
+          + "'mvn test-compile -Pitests,tez-yarn' first.");
+    }
+
+    Path tarball = Paths.get(tezDistPath);
+    if (!Files.isRegularFile(tarball)) {
+      throw new IllegalStateException(
+          "Tez distribution tarball not found at: " + tarball.toAbsolutePath()
+          + ". Run 'mvn test-compile -Pitests,tez-yarn -pl itests/tez-yarn-it' to build it.");
+    }
+
+    String fileName = tarball.getFileName().toString();
+    String containerTmp = "/tmp/" + fileName;
+    String hdfsDir = "/tmp/hive-tez-yarn";
+    String hdfsPath = hdfsDir + "/" + fileName;
+
+    LOG.info("Uploading Tez distribution tarball ({}) to HDFS path {}",
+        tarball.toAbsolutePath(), hdfsPath);
+
     GenericContainer.ExecResult mkdir = namenode.execInContainer("hdfs", "dfs", "-mkdir", "-p", hdfsDir);
     requireSuccess(mkdir, "hdfs dfs -mkdir -p " + hdfsDir);
 
-    Set<Path> tezJars = findTezJarsFromClasspath();
-    List<String> hdfsUris = new ArrayList<>();
-    for (Path jarPath : tezJars) {
-      String jarName = jarPath.getFileName().toString();
-      String containerTmp = "/tmp/" + jarName;
-      String hdfsPath = hdfsDir + "/" + jarName;
+    namenode.copyFileToContainer(MountableFile.forHostPath(tarball, 0644), containerTmp);
 
-      namenode.copyFileToContainer(MountableFile.forHostPath(jarPath, 0644), containerTmp);
-      GenericContainer.ExecResult put = namenode.execInContainer(
-          "hdfs", "dfs", "-put", "-f", containerTmp, hdfsPath);
-      requireSuccess(put, "hdfs dfs -put -f " + containerTmp + " " + hdfsPath);
+    GenericContainer.ExecResult put = namenode.execInContainer(
+        "hdfs", "dfs", "-put", "-f", containerTmp, hdfsPath);
+    requireSuccess(put, "hdfs dfs -put -f " + containerTmp + " " + hdfsPath);
 
-      hdfsUris.add("hdfs://namenode:" + NN_RPC_PORT + hdfsPath);
-    }
-
-    if (hdfsUris.isEmpty()) {
-      throw new IllegalStateException(
-          "No framework jars were found on the test classpath to stage. "
-          + "Ensure tez-api, tez-dag, tez-runtime-library, hadoop-mapreduce-client-core, "
-          + "etc. are test dependencies.");
-    }
-    return String.join(",", hdfsUris);
-  }
-
-  /** Discovers Tez jars from the classpath via probe-class reflection and string scanning; includes hadoop-shim and MR client jars absent from the cluster classpath. */
-  private static Set<Path> findTezJarsFromClasspath() {
-    Set<Path> jars = new LinkedHashSet<>();
-
-    String[] probeClassNames = {
-        "org.apache.tez.dag.api.TezConfiguration",
-        "org.apache.tez.common.TezConverterUtils",
-        "org.apache.tez.dag.app.DAGAppMaster",
-        "org.apache.tez.mapreduce.hadoop.MRHelpers",
-        "org.apache.tez.runtime.LogicalIOProcessorRuntimeTask",
-        "org.apache.tez.runtime.library.api.KeyValueReader",
-        "org.apache.tez.hadoop.shim.HadoopShimsLoader",
-        "org.apache.hadoop.mapred.JobConf",
-        "org.apache.hadoop.mapreduce.v2.util.MRApps"
-    };
-    for (String className : probeClassNames) {
-      try {
-        Class<?> cls = Class.forName(className);
-        CodeSource cs = cls.getProtectionDomain().getCodeSource();
-        if (cs != null && cs.getLocation() != null) {
-          String path = cs.getLocation().getPath();
-          if (path.endsWith(".jar")) {
-            Path p = Paths.get(path);
-            if (isTezFrameworkJar(p.getFileName().toString()) && Files.isRegularFile(p)) {
-              jars.add(p);
-            }
-          }
-        }
-      } catch (ClassNotFoundException | SecurityException ignored) {
-      }
-    }
-
-    String cp = ManagementFactory.getRuntimeMXBean().getClassPath();
-    for (String entry : cp.split(File.pathSeparator)) {
-      if (!entry.endsWith(".jar")) {
-        continue;
-      }
-      Path p = Paths.get(entry);
-      if (isTezFrameworkJar(p.getFileName().toString()) && Files.isRegularFile(p)) {
-        jars.add(p);
-      }
-    }
-
-    return jars;
-  }
-
-  private static boolean isTezFrameworkJar(String name) {
-    if (name.endsWith("-tests.jar")) {
-      return false;
-    }
-    return name.contains("tez")
-        || name.startsWith("hadoop-shim")
-        || name.startsWith("hadoop-mapreduce-client-core")
-        || name.startsWith("hadoop-mapreduce-client-common");
+    // The "#tez" fragment sets the YARN container link name for this LocalResource.
+    // YARN extracts the archive to $PWD/tez/ inside each container.
+    return "hdfs://namenode:" + NN_RPC_PORT + hdfsPath + "#tez";
   }
 
   GenericContainer<?> namenodeContainer() {

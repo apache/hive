@@ -32,9 +32,4 @@ COPY --from=jdk21 /opt/java/openjdk /opt/jdk21
 # launch time (where YARN shows exit code 1 and empty stderr).
 RUN chmod 755 /opt/jdk21/bin/java && /opt/jdk21/bin/java -version
 
-# commons-collections 3.2.2 is needed by the Tez AM's HDFS client path in
-# Tez 0.10.x; it is not bundled in apache/hadoop:3.4.2.
-RUN wget -q https://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar \
-    -P /opt/hadoop/share/hadoop/common/lib/
-
 USER hadoop

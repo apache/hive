@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.file.Files;
@@ -112,6 +113,9 @@ public class TestTezYarnLocalization {
         stmt.execute("CREATE TABLE IF NOT EXISTS tez_loc_test (id INT) STORED AS ORC");
         stmt.execute("CREATE TABLE IF NOT EXISTS tez_source (id INT) STORED AS ORC");
 
+        // TODO: INSERT INTO t VALUES (...) cannot be used here: Hive stages literal values as a
+        //   local temp file (file://<host>/dummy_path) that the Tez AM, running inside the Docker
+        //   container, cannot reach. Use SELECT over an HDFS-backed table instead.
         stmt.execute("INSERT INTO tez_loc_test SELECT count(*) FROM tez_source");
 
         try (ResultSet rs = stmt.executeQuery("SELECT id FROM tez_loc_test")) {
@@ -126,6 +130,40 @@ public class TestTezYarnLocalization {
     }
 
     verifyTezYarnAppExists();
+    verifyHiveExecJarOnHdfs();
+    verifyHiveExecJarLocalizedInNm();
+  }
+
+  /**
+   * Asserts that {@code hive-exec.jar} was staged to HDFS by
+   * {@code TezSessionState.buildCommonLocalResources()} (localization step 1).
+   * The jar is placed under {@code HIVE_USER_INSTALL_DIR} ({@value #HDFS_ROOT}/user-install/).
+   */
+  private static void verifyHiveExecJarOnHdfs() throws IOException, InterruptedException {
+    GenericContainer.ExecResult r = cluster.namenodeContainer().execInContainer(
+        "hdfs", "dfs", "-find", HDFS_ROOT + "/user-install", "-name", "hive-exec-*.jar");
+    LOG.info("HDFS hive-exec.jar search in {}/user-install: {}",
+        HDFS_ROOT, r.getStdout().trim().isEmpty() ? "(none found)" : r.getStdout().trim());
+    Assert.assertFalse(
+        "hive-exec.jar was not staged to HDFS under " + HDFS_ROOT + "/user-install — "
+        + "TezSessionState.buildCommonLocalResources() localization step 1 appears to have failed.",
+        r.getStdout().trim().isEmpty());
+  }
+
+  /**
+   * Asserts that {@code hive-exec.jar} was localized by YARN into the NodeManager container's
+   * local filesystem (localization step 2).
+   * After a Tez job completes the jar remains in the NM's localization cache under {@code /tmp}.
+   */
+  private static void verifyHiveExecJarLocalizedInNm() throws IOException, InterruptedException {
+    GenericContainer.ExecResult r = cluster.nodeManagerContainer().execInContainer(
+        "bash", "-c", "find /tmp -name 'hive-exec-*.jar' 2>/dev/null | head -5");
+    LOG.info("NodeManager hive-exec.jar localization check: {}",
+        r.getStdout().trim().isEmpty() ? "(none found)" : r.getStdout().trim());
+    Assert.assertFalse(
+        "hive-exec.jar was not found in the NodeManager container's local filesystem after Tez query — "
+        + "YARN localization step 2 appears to have failed.",
+        r.getStdout().trim().isEmpty());
   }
 
   /** Logs Tez AM and NodeManager diagnostics at teardown. */
@@ -146,10 +184,6 @@ public class TestTezYarnLocalization {
       dumpNmCommand("container stdout + stderr + prelaunch.err",
           "find /var/log/hadoop/userlogs \\( -name 'stdout' -o -name 'stderr' -o -name 'prelaunch.err' \\) "
           + "2>/dev/null | head -20 | xargs -I{} sh -c 'echo \"--- {} ---\"; cat {}' 2>/dev/null || true");
-
-      dumpNmCommand("NodeManager daemon log (tail 200)",
-          "find /var/log/hadoop -maxdepth 1 -name '*.log' 2>/dev/null | head -3 "
-          + "| xargs -I{} sh -c 'echo \"--- {} ---\"; tail -200 {}' 2>/dev/null || true");
     } catch (Exception e) {
       LOG.warn("Could not dump NodeManager diagnostics", e);
     }
@@ -172,34 +206,27 @@ public class TestTezYarnLocalization {
 
     URL hiveSite = TestTezYarnLocalization.class.getClassLoader().getResource("hive-site-yarn-it.xml");
     URL yarnSite = TestTezYarnLocalization.class.getClassLoader().getResource("yarn-site.xml");
-    if (hiveSite != null) { conf.addResource(hiveSite); }
-    if (yarnSite  != null) { conf.addResource(yarnSite); }
+    if (hiveSite != null) {
+      conf.addResource(hiveSite);
+    }
+    if (yarnSite != null) {
+      conf.addResource(yarnSite);
+    }
 
+    // Dynamic properties: values derived at runtime from container ports or temp directories.
     conf.set("fs.defaultFS", HDFS_BASE);
-    conf.setBoolean("dfs.client.use.datanode.hostname", true);
     conf.set("hive.metastore.warehouse.dir", HDFS_WAREHOUSE);
     conf.set(HiveConf.ConfVars.SCRATCH_DIR.varname, HDFS_SCRATCH);
     conf.set(HiveConf.ConfVars.LOCAL_SCRATCH_DIR.varname, localScratch.toAbsolutePath().toString());
     conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, HDFS_ROOT + "/user-install");
-
     conf.set("javax.jdo.option.ConnectionURL",
         "jdbc:derby:" + localScratch.resolve("metastore_db").toAbsolutePath() + ";create=true");
-
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL, false);
-    conf.set("hive.stats.autogather", "false");
-    conf.set("hive.stats.column.autogather", "false");
-    conf.set("yarn.resourcemanager.hostname",       "resourcemanager");
-    conf.set("yarn.resourcemanager.address",        "resourcemanager:8032");
-    conf.set("yarn.resourcemanager.webapp.address", "resourcemanager:8088");
 
     conf.set("tez.lib.uris", tezLibUris);
-    conf.setBoolean("tez.use.cluster.hadoop-libs", true);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS, false);
-    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE, 0);
 
     conf.set("tez.am.client.am.port-range",
         TezYarnClusterContainer.AM_CLIENT_PORT + "-" + TezYarnClusterContainer.AM_CLIENT_PORT);
-
     String containerEnv = "JAVA_HOME=" + TezYarnClusterContainer.CONTAINER_JAVA_21_HOME
         + ",HADOOP_HOME=/opt/hadoop"
         + ",HADOOP_MAPRED_HOME=/opt/hadoop";
@@ -208,11 +235,7 @@ public class TestTezYarnLocalization {
 
     hs2Port = findFreePort();
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, hs2Port);
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, "localhost");
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT, findFreePort());
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE, "binary");
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION, "NOSASL");
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
 
     return conf;
   }
