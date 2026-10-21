@@ -1,0 +1,66 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Workflow to validate the Tez-on-YARN resource localization integration tests
+# (HIVE-29483). These tests require Docker and a real YARN cluster, so they are
+# not part of the standard split-based CI. Runs automatically on push to
+# tez_on_yarn_it (fork testing) or manually via workflow_dispatch.
+#
+# Mirrors the local run:
+#   mvn clean install -DskipTests -Pitests   (install artifacts, incl. hive-exec.jar, to ~/.m2)
+#   mvn test -Pitests,tez-yarn -pl itests/tez-yarn-it -Dtest=TestTezYarnLocalization#testQuerySucceedsWithAppJar
+name: Tez-on-YARN localization IT
+
+on:
+  push:
+    branches:
+      - tez_on_yarn_it
+  workflow_dispatch:
+
+jobs:
+  tez-yarn-it:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Step 1 (mirrors local `mvn clean install -DskipTests -Pitests`): build and
+      # install artifacts to ~/.m2 so a real hive-exec.jar exists for Tez to
+      # localize. Scoped with -pl/-am so it finishes within the CI budget while
+      # still installing hive-exec and every upstream dependency.
+      - name: Build and install Hive to local Maven repo
+        run: mvn clean install -DskipTests -Pitests -pl itests/tez-yarn-it -am -Dmaven.javadoc.skip=true
+
+      # Step 2 (mirrors local test command): resolves hive-exec from ~/.m2.
+      # -Dsurefire.useFile=false streams the test's NodeManager/syslog diagnostics
+      # into this log so any Tez AM failure is visible directly here.
+      - name: Run Tez-on-YARN localization test
+        run: mvn test -Pitests,tez-yarn -pl itests/tez-yarn-it -Dtest=TestTezYarnLocalization#testQuerySucceedsWithAppJar -Dsurefire.useFile=false
+
+      - name: Upload surefire reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: itests/tez-yarn-it/target/surefire-reports/
