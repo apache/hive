@@ -124,16 +124,19 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     private final VarianceKind varianceKind;
 
     SupportedFunctionType() {
-      this(false);
+      this(false, null);
     }
 
     SupportedFunctionType(boolean supportDistinct) {
-      this.supportDistinct = supportDistinct;
-      this.varianceKind = null;
+      this(supportDistinct, null);
     }
 
     SupportedFunctionType(VarianceKind varianceKind) {
-      this.supportDistinct = false;
+      this(false, varianceKind);
+    }
+
+    SupportedFunctionType(boolean supportDistinct, VarianceKind varianceKind) {
+      this.supportDistinct = supportDistinct;
       this.varianceKind = varianceKind;
     }
 
