@@ -650,20 +650,22 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             .getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, partitionToday));
 
     List<String> expectedRsBucket0 = new ArrayList<>(Arrays.asList(
-        "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t2\t3\tyesterday",
-        "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t2\t4\ttoday",
-        "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t3\ttoday",
-        "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t4\tyesterday",
-        "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t4\t3\ttomorrow",
-        "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":2}\t4\t4\ttoday",
-        "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t5\t2\tyesterday",
-        "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t5\t4\ttoday",
-        "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t5\t3\tyesterday",
-        "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t6\t2\ttoday",
-        "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":2}\t6\t3\ttoday",
-        "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":3}\t6\t4\ttoday"));
-    Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0,
-        testDataProvider.getBucketData(tblName, "536870912"));
+        "1\t2\t3\tyesterday",
+        "1\t2\t4\ttoday",
+        "2\t3\t3\ttoday",
+        "2\t3\t4\tyesterday",
+        "2\t4\t3\ttomorrow",
+        "2\t4\t4\ttoday",
+        "4\t5\t2\tyesterday",
+        "4\t5\t4\ttoday",
+        "4\t5\t3\tyesterday",
+        "4\t6\t2\ttoday",
+        "4\t6\t3\ttoday",
+        "4\t6\t4\ttoday"));
+    List<String> actualRsBucket0 = executeStatementOnDriverAndReturnResults("select ROW__ID.writeid, a, b, ds from " + tblName, driver);
+    Collections.sort(expectedRsBucket0);
+    Collections.sort(actualRsBucket0);
+    Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0, actualRsBucket0);
 
     // Run major compaction and cleaner for all 3 partitions
     CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true,
@@ -693,8 +695,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         CompactorTestUtil
             .getBucketFileNames(fs, table, partitionYesterday, "base_0000005_v0000012"));
     // Check buckets contents
-    Assert.assertEquals("post-compaction bucket 0", expectedRsBucket0,
-        testDataProvider.getBucketData(tblName, "536870912"));
+    List<String> actualRsBucket0Post = executeStatementOnDriverAndReturnResults("select ROW__ID.writeid, a, b, ds from " + tblName, driver);
+    Collections.sort(expectedRsBucket0);
+    Collections.sort(actualRsBucket0Post);
+    Assert.assertEquals("post-compaction bucket 0", expectedRsBucket0, actualRsBucket0Post);
     // Check bucket file contents
     checkBucketIdAndRowIdInAcidFile(fs, new Path(todayPath, "base_0000005_v0000008"), 0);
     checkBucketIdAndRowIdInAcidFile(fs, new Path(tomorrowPath, "base_0000005_v0000010"), 0);
@@ -1238,19 +1242,21 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Verify contents of bucket files.
     // Bucket 0
     List<String> expectedRsBucket0 = Arrays
-        .asList("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t2\t3\tyesterday",
-            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t2\t4\ttoday",
-            "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t3\ttoday",
-            "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t3\t4\tyesterday",
-            "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t4\t3\ttomorrow",
-            "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":2}\t4\t4\ttoday",
-            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t5\t2\tyesterday",
-            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t5\t4\ttoday",
-            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t5\t3\tyesterday",
-            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t6\t2\ttoday",
-            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":2}\t6\t3\ttoday",
-            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":3}\t6\t4\ttoday");
-    List<String> rsBucket0 = dataProvider.getBucketData(tableName, "536870912");
+        .asList("1\t2\t3\tyesterday",
+            "1\t2\t4\ttoday",
+            "2\t3\t3\ttoday",
+            "2\t3\t4\tyesterday",
+            "2\t4\t3\ttomorrow",
+            "2\t4\t4\ttoday",
+            "4\t5\t2\tyesterday",
+            "4\t5\t4\ttoday",
+            "4\t5\t3\tyesterday",
+            "4\t6\t2\ttoday",
+            "4\t6\t3\ttoday",
+            "4\t6\t4\ttoday");
+    List<String> rsBucket0 = executeStatementOnDriverAndReturnResults("select ROW__ID.writeid, a, b, ds from " + tableName, driver);
+    Collections.sort(expectedRsBucket0);
+    Collections.sort(rsBucket0);
     Assert.assertEquals(expectedRsBucket0, rsBucket0);
 
     // Verify all contents
@@ -1811,23 +1817,31 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         .runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true, "ds=yesterday", "ds=today");
     CompactorTestUtil.runCleaner(hiveConf);
     List<String> expectedRsPtnToday = new ArrayList<>();
-    expectedRsPtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t1\t3\tNULL\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t2\t3\tNULL\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t2\t4\tNULL\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t3\t3\t1001\ttoday");
-    expectedRsPtnToday.add("{\"writeid\":3,\"bucketid\":536870912,\"rowid\":2}\t4\t4\t1005\ttoday");
+    expectedRsPtnToday.add("1\t1\t3\tNULL\ttoday");
+    expectedRsPtnToday.add("1\t2\t3\tNULL\ttoday");
+    expectedRsPtnToday.add("1\t2\t4\tNULL\ttoday");
+    expectedRsPtnToday.add("3\t3\t3\t1001\ttoday");
+    expectedRsPtnToday.add("3\t4\t4\t1005\ttoday");
+    Collections.sort(expectedRsPtnToday);
+
     List<String> expectedRsPtnYesterday = new ArrayList<>();
-    expectedRsPtnYesterday.add("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t4\tNULL\tyesterday");
-    expectedRsPtnYesterday.add("{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t3\t4\t1002\tyesterday");
-    expectedRsPtnYesterday.add("{\"writeid\":3,\"bucketid\":536936448,\"rowid\":2}\t4\t3\t1004\tyesterday");
+    expectedRsPtnYesterday.add("1\t1\t4\tNULL\tyesterday");
+    expectedRsPtnYesterday.add("3\t3\t4\t1002\tyesterday");
+    expectedRsPtnYesterday.add("3\t4\t3\t1004\tyesterday");
+    Collections.sort(expectedRsPtnYesterday);
+
     // Partition 'today'
-    List<String> rsCompactPtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  " + tblName
+    List<String> rsCompactPtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID.writeid, a, b, c, ds from " + tblName
         + " where ds='today'", driver);
-    Assert.assertEquals("compacted read", expectedRsPtnToday, rsCompactPtnToday);
+    Collections.sort(rsCompactPtnToday);
+    Assert.assertEquals("compacted read today", expectedRsPtnToday, rsCompactPtnToday);
+
     // Partition 'yesterday'
-    List<String> rsCompactPtnYesterday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  " + tblName
+    List<String> rsCompactPtnYesterday = executeStatementOnDriverAndReturnResults("select ROW__ID.writeid, a, b, c, ds from " + tblName
         + " where ds='yesterday'", driver);
-    Assert.assertEquals("compacted read", expectedRsPtnYesterday, rsCompactPtnYesterday);
+    Collections.sort(rsCompactPtnYesterday);
+    Assert.assertEquals("compacted read yesterday", expectedRsPtnYesterday, rsCompactPtnYesterday);
+
     // Clean up
     dropTables(driver, tblName);
   }

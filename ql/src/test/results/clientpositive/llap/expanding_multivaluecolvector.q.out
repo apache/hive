@@ -216,13 +216,14 @@ STAGE PLANS:
                         selectExpressions: CastStringToLong(col 6:string)(children: ListIndexColScalar(col 5:array<string>, col 2:int)(children: VectorUDFAdaptor(split(str, '#')) -> 5:array<string>) -> 6:string) -> 7:int
                     Statistics: Num rows: 4534 Data size: 1526284 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
-                      key expressions: _col2 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: string)
+                      key expressions: _col2 (type: string), rand(1234567L) (type: double)
+                      null sort order: za
+                      sort order: ++
+                      Map-reduce partition columns: _col2 (type: string), rand(1234567L) (type: double)
                       Reduce Sink Vectorization:
-                          className: VectorReduceSinkStringOperator
-                          keyColumns: 2:string
+                          className: VectorReduceSinkMultiKeyOperator
+                          keyColumns: 2:string, 8:double
+                          keyExpressions: FuncRand -> 8:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:int, 7:int
@@ -245,20 +246,20 @@ STAGE PLANS:
                     dataColumns: id:int, str:string
                     partitionColumnCount: 1
                     partitionColumns: part:string
-                    scratchColumnTypeNames: [array<string>, string, bigint]
+                    scratchColumnTypeNames: [array<string>, string, bigint, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: z
-                reduceColumnSortOrder: +
+                reduceColumnNullOrder: za
+                reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 3
-                    dataColumns: KEY._col2:string, VALUE._col0:int, VALUE._col1:int
+                    dataColumnCount: 4
+                    dataColumns: KEY._col2:string, KEY.rand(1234567l):double, VALUE._col0:int, VALUE._col1:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -268,7 +269,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [1, 2, 0]
+                    projectedOutputColumnNums: [2, 3, 0]
                 File Output Operator
                   compressed: false
                   Dp Sort State: PARTITION_SORTED

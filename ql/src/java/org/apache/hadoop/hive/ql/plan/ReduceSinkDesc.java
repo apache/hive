@@ -199,6 +199,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.setDeduplicated(isDeduplicated);
     desc.setHasOrderBy(hasOrderBy);
     desc.outputName = outputName;
+    if (getComputedFields() != null) {
+      for (String field : getComputedFields()) {
+        desc.addComputedField(field);
+      }
+    }
     return desc;
   }
 
