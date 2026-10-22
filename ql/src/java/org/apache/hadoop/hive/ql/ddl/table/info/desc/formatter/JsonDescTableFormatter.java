@@ -241,10 +241,7 @@ public class JsonDescTableFormatter extends DescTableFormatter {
 
   private void addExtendedInfo(Table table, Partition partition, MapBuilder builder) {
     if (partition != null) {
-      org.apache.hadoop.hive.metastore.api.Partition partitionInfo = partition.getTPartition().deepCopy();
-      partitionInfo.setParameters(
-          MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(partitionInfo.getParameters()));
-      builder.put("partitionInfo", partitionInfo);
+      builder.put("partitionInfo", partition.getTPartition());
     } else {
       org.apache.hadoop.hive.metastore.api.Table tableInfo = table.getTTable().deepCopy();
       tableInfo.setParameters(

@@ -375,9 +375,7 @@ class TextDescTableFormatter extends DescTableFormatter {
 
     if (table.getParameters().size() > 0) {
       tableInfo.append("Table Parameters:").append(LINE_DELIM);
-      displayAllParameters(
-          MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(table.getParameters()), tableInfo, false,
-          isOutputPadded);
+      displayAllParameters(table.getParameters(), tableInfo, false, isOutputPadded);
     }
   }
 
@@ -391,9 +389,7 @@ class TextDescTableFormatter extends DescTableFormatter {
 
     if (partition.getTPartition().getParameters().size() > 0) {
       tableInfo.append("Partition Parameters:").append(LINE_DELIM);
-      displayAllParameters(
-          MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(partition.getTPartition().getParameters()),
-          tableInfo);
+      displayAllParameters(partition.getTPartition().getParameters(), tableInfo);
     }
   }
 
@@ -432,6 +428,7 @@ class TextDescTableFormatter extends DescTableFormatter {
 
   private void displayAllParameters(Map<String, String> params, StringBuilder tableInfo, boolean escapeUnicode,
       boolean isOutputPadded) {
+    params = MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(params);
     List<String> keys = new ArrayList<>(params.keySet());
     Collections.sort(keys);
     for (String key : keys) {
