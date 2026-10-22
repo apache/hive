@@ -135,7 +135,7 @@ public class TestCBORuleFiredOnlyOnce extends TestRuleBase {
     RelNode ts2 = createTS(t2NativeMock, "t2");
     RexNode joinCondition = REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS,
         REX_BUILDER.makeInputRef(ts1.getRowType().getFieldList().get(0).getType(), 0),
-        REX_BUILDER.makeInputRef(ts2.getRowType().getFieldList().get(0).getType(), 0));
+        REX_BUILDER.makeInputRef(ts2.getRowType().getFieldList().get(0).getType(), ts1.getRowType().getFieldCount()));
 
     REL_BUILDER.push(ts1).push(ts2).join(JoinRelType.INNER, joinCondition);
     RexNode deterministic = REL_BUILDER.greaterThan(REL_BUILDER.field("c"), REL_BUILDER.literal(1));
@@ -145,7 +145,7 @@ public class TestCBORuleFiredOnlyOnce extends TestRuleBase {
     return REL_BUILDER.build();
   }
 
-  private static class HivePreFilteringRuleWithCountMatches extends HivePreFilteringRule {
+  private static final class HivePreFilteringRuleWithCountMatches extends HivePreFilteringRule {
     private static int countOnMatches;
 
     private HivePreFilteringRuleWithCountMatches() {
