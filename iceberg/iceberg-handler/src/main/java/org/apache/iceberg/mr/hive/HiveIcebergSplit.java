@@ -136,4 +136,10 @@ public class HiveIcebergSplit extends FileSplit
     innerSplit = new IcebergSplit();
     innerSplit.readFields(in);
   }
+
+  @Override
+  public String toString() {
+    return "HiveIcebergSplit [" + getPath() + ", start=" + getStart() +
+        ", length=" + getLength() + ", numBuckets=" + numBuckets + "]";
+  }
 }

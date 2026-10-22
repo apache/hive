@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.tez.common.counters.TaskCounter;
 import org.apache.tez.common.counters.TezCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -251,11 +253,8 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
         long inputRecords = -1;
         try {
-          //TODO : Need to use class instead of string.
-          // https://issues.apache.org/jira/browse/HIVE-23981
-          inputRecords = ((AbstractLogicalInput) input).getContext().getCounters().
-                  findCounter("org.apache.tez.common.counters.TaskCounter",
-                          "APPROXIMATE_INPUT_RECORDS").getValue();
+          inputRecords = ((AbstractLogicalInput) input).getContext().getCounters()
+              .findCounter(TaskCounter.APPROXIMATE_INPUT_RECORDS).getValue();
         } catch (Exception e) {
           LOG.debug("Failed to get value for counter APPROXIMATE_INPUT_RECORDS", e);
         }

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.parse.rewrite;
@@ -113,7 +114,13 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     sqlGenerator.append("FROM\n");
     sqlGenerator.append("(SELECT ");
     sqlGenerator.appendAcidSelectColumns(Operation.MERGE);
-    sqlGenerator.appendAllColsOfTargetTable();
+    if (sqlGenerator.getTargetTable().hasNonNativePartitionSupport()) {
+      // non-native partition columns are ordinary data columns of the row schema
+      sqlGenerator.appendAllColsOfTargetTable();
+    } else {
+      // native partition columns were already emitted by appendAcidSelectColumns above
+      sqlGenerator.appendNonPartitionColsOfTargetTable();
+    }
     addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, "", conf);
     sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
     sqlGenerator.appendSubQueryAlias();

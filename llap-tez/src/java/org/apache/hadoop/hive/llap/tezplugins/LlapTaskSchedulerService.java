@@ -1,15 +1,20 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.llap.tezplugins;
@@ -24,6 +29,7 @@ import org.apache.hadoop.hive.llap.tezplugins.scheduler.StatsPerDag;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 
 import org.apache.hadoop.hive.registry.impl.TezAmRegistryImpl;
@@ -198,9 +204,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
                 "Lock metrics for R/W locks LLAP task scheduler", LOCK_METRICS);
   }
 
-  // TODO: this is an ugly hack; see the same in LlapTaskCommunicator for discussion.
-  //       This only lives for the duration of the service init.
-  static LlapTaskSchedulerService instance = null;
+  private final ApplicationAttemptId appAttemptId;
 
   private final Configuration conf;
 
@@ -470,17 +474,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     this.workloadManagementEnabled =
         !StringUtils.isEmpty(conf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim());
 
-    synchronized (LlapTaskCommunicator.pluginInitLock) {
-      LlapTaskCommunicator peer = LlapTaskCommunicator.instance;
-      if (peer != null) {
-        // We are the last to initialize.
-        this.setTaskCommunicator(peer);
-        peer.setScheduler(this);
-        LlapTaskCommunicator.instance = null;
-      } else {
-        instance = this;
-      }
-    }
+    this.appAttemptId = getContext().getApplicationAttemptId();
+    LlapPluginBroker.INSTANCE.registerScheduler(appAttemptId, this);
   }
 
   private Map<Integer, Set<Integer>> getDependencyInfo(TezDAGID depsDagId) {
@@ -940,6 +935,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   @Override
   public void shutdown() {
+    LlapPluginBroker.INSTANCE.unregisterScheduler(appAttemptId, this);
     writeLock.lock();
     try {
       if (!this.isStopped.getAndSet(true)) {
@@ -3169,6 +3165,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   void setTaskCommunicator(LlapTaskCommunicator communicator) {
     this.communicator = communicator;
+  }
+
+  @VisibleForTesting
+  LlapTaskCommunicator getTaskCommunicator() {
+    return communicator;
   }
 
 

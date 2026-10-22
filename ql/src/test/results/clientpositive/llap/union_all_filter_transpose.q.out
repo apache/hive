@@ -92,9 +92,9 @@ CBO PLAN:
 HiveProject(t2.a=[$0], t2.b=[$1])
   HiveUnion(all=[true])
     HiveProject(a=[$0], b=[$1])
-      HiveFilter(condition=[=(CAST($0):DOUBLE, 1000)])
+      HiveFilter(condition=[=(CAST($0):DOUBLE, 1000.0E0)])
         HiveTableScan(table=[[default, t]], table:alias=[t])
     HiveProject(a=[$0], _o__c1=[null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
-      HiveFilter(condition=[=(CAST($0):DOUBLE, 1000)])
+      HiveFilter(condition=[=(CAST($0):DOUBLE, 1000.0E0)])
         HiveTableScan(table=[[default, t]], table:alias=[t])
 

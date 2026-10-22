@@ -9,23 +9,21 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
 
 @Description(name = "ST_GeomFromWKB",
     value = "_FUNC_(wkb) - construct an ST_Geometry from OGC well-known binary",
@@ -76,18 +74,13 @@ public class ST_GeomFromWKB extends ST_Geometry {
   public BytesWritable evaluate(BytesWritable wkb, int wkid) throws UDFArgumentException {
 
     try {
-      SpatialReference spatialReference = null;
+      Geometry geom = GeometryUtils.wkbReader().read(wkb.getBytes());
       if (wkid != GeometryUtils.WKID_UNKNOWN) {
-        spatialReference = SpatialReference.create(wkid);
+        geom.setSRID(wkid);
       }
-      byte[] byteArr = wkb.getBytes();
-      ByteBuffer byteBuf = ByteBuffer.allocate(byteArr.length);
-      byteBuf.put(byteArr);
-      OGCGeometry ogcObj = OGCGeometry.fromBinary(byteBuf);
-      ogcObj.setSpatialReference(spatialReference);
-      return GeometryUtils.geometryToEsriShapeBytesWritable(ogcObj);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(geom);
     } catch (Exception e) {  // IllegalArgumentException, GeometryException
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_GeomFromWKB: " + e);
       return null;
     }
   }

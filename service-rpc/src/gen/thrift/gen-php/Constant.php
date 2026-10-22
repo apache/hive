@@ -45,6 +45,7 @@ final class Constant extends \Thrift\Type\TConstant
                         20 => true,
                         21 => true,
                         22 => true,
+                        23 => true,
         );
     }
 
@@ -56,6 +57,7 @@ final class Constant extends \Thrift\Type\TConstant
                         12 => true,
                         13 => true,
                         14 => true,
+                        24 => true,
         );
     }
 
@@ -91,7 +93,9 @@ final class Constant extends \Thrift\Type\TConstant
                         8 => "TIMESTAMP",
                         1 => "TINYINT",
                         13 => "UNIONTYPE",
+                        23 => "UNKNOWN",
                         18 => "VARCHAR",
+                        24 => "VARIANT",
         );
     }
 

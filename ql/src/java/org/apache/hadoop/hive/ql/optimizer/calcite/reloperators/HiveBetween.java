@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
@@ -39,6 +40,11 @@ public class HiveBetween extends SqlSpecialOperator {
 
   public static final SqlSpecialOperator INSTANCE =
           new HiveBetween();
+
+  /**
+   * Ordinal of the 'negated flag' operand (if enabled, the BETWEEN is inverted: NOT BETWEEN).
+   */
+  public static final int NEGATED_FLAG_OPERAND = 0;
 
   /**
    * Ordinal of the 'value' operand.
@@ -104,6 +110,10 @@ public class HiveBetween extends SqlSpecialOperator {
     final SqlWriter.Frame frame =
         writer.startList(SqlWriter.FrameTypeEnum.create("BETWEEN"), "", "");
     call.operand(VALUE_OPERAND).unparse(writer, getLeftPrec(), 0);
+    final SqlLiteral negatedFlag = call.operand(NEGATED_FLAG_OPERAND);
+    if (negatedFlag.booleanValue()) {
+      writer.sep("NOT");
+    }
     writer.sep(super.getName());
 
     // If the expression for the lower bound contains a call to an AND

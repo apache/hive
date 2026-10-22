@@ -81,7 +81,7 @@ public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, 
     }
 
     if (InputFormatConfig.fetchVirtualColumns(conf)) {
-      readSchema = IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns(), table);
+      readSchema = IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns());
       if (IcebergTableUtil.supportsRowLineage(table.properties())) {
         readSchema = MetadataColumns.schemaWithRowLineage(readSchema);
       }

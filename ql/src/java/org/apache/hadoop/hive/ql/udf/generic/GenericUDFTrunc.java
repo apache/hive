@@ -1,6 +1,5 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
- * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership.  The ASF licenses this file
@@ -10,19 +9,17 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.math.BigDecimal;
-
 import org.apache.hadoop.hive.common.type.Date;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -97,6 +94,15 @@ public class GenericUDFTrunc extends GenericUDF {
   private transient PrimitiveCategory inputType2;
   private final Date date = new Date();
   private final Text output = new Text();
+
+  private final ByteWritable byteOutput = new ByteWritable();
+  private final ShortWritable shortOutput = new ShortWritable();
+  private final IntWritable intOutput = new IntWritable();
+  private final LongWritable longOutput = new LongWritable();
+  private final FloatWritable floatOutput = new FloatWritable();
+  private final DoubleWritable doubleOutput = new DoubleWritable();
+  private final HiveDecimalWritable decimalOutput = new HiveDecimalWritable();
+
   private transient String fmtInput;
   private transient PrimitiveObjectInspector inputOI;
   private transient PrimitiveObjectInspector inputScaleOI;
@@ -388,44 +394,44 @@ public class GenericUDFTrunc extends GenericUDF {
     case DECIMAL:
       HiveDecimalWritable decimalWritable =
           (HiveDecimalWritable) inputOI.getPrimitiveWritableObject(input);
-      HiveDecimal dec = trunc(decimalWritable.getHiveDecimal(), scale);
-      if (dec == null) {
-        return null;
-      }
-      return new HiveDecimalWritable(dec);
+      TruncUtils.trunc(decimalWritable, scale, decimalOutput);
+      return decimalOutput;
     case BYTE:
       ByteWritable byteWritable = (ByteWritable) inputOI.getPrimitiveWritableObject(input);
       if (scale >= 0) {
         return byteWritable;
-      } else {
-        return new ByteWritable((byte) trunc(byteWritable.get(), scale));
       }
+      byteOutput.set((byte) TruncUtils.trunc(byteWritable.get(), scale));
+      return byteOutput;
     case SHORT:
       ShortWritable shortWritable = (ShortWritable) inputOI.getPrimitiveWritableObject(input);
       if (scale >= 0) {
         return shortWritable;
-      } else {
-        return new ShortWritable((short) trunc(shortWritable.get(), scale));
       }
+      shortOutput.set((short) TruncUtils.trunc(shortWritable.get(), scale));
+      return shortOutput;
     case INT:
       IntWritable intWritable = (IntWritable) inputOI.getPrimitiveWritableObject(input);
       if (scale >= 0) {
         return intWritable;
-      } else {
-        return new IntWritable((int) trunc(intWritable.get(), scale));
       }
+      intOutput.set((int) TruncUtils.trunc(intWritable.get(), scale));
+      return intOutput;
     case LONG:
       LongWritable longWritable = (LongWritable) inputOI.getPrimitiveWritableObject(input);
       if (scale >= 0) {
         return longWritable;
-      } else {
-        return new LongWritable(trunc(longWritable.get(), scale));
       }
+      longOutput.set(TruncUtils.trunc(longWritable.get(), scale));
+      return longOutput;
     case FLOAT:
       float f = ((FloatWritable) inputOI.getPrimitiveWritableObject(input)).get();
-      return new FloatWritable((float) trunc(f, scale));
+      floatOutput.set((float) TruncUtils.trunc(f, scale));
+      return floatOutput;
     case DOUBLE:
-      return trunc(((DoubleWritable) inputOI.getPrimitiveWritableObject(input)), scale);
+      double d = ((DoubleWritable) inputOI.getPrimitiveWritableObject(input)).get();
+      doubleOutput.set(TruncUtils.trunc(d, scale));
+      return doubleOutput;
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric or string group data types are allowed for TRUNC function. Got "
@@ -458,43 +464,4 @@ public class GenericUDFTrunc extends GenericUDF {
       return null;
     }
   }
-
-  protected HiveDecimal trunc(HiveDecimal input, int scale) {
-    BigDecimal bigDecimal = trunc(input.bigDecimalValue(), scale);
-    return HiveDecimal.create(bigDecimal);
-  }
-
-  protected long trunc(long input, int scale) {
-    return trunc(BigDecimal.valueOf(input), scale).longValue();
-  }
-
-  protected double trunc(double input, int scale) {
-    return trunc(BigDecimal.valueOf(input), scale).doubleValue();
-  }
-
-  protected DoubleWritable trunc(DoubleWritable input, int scale) {
-    BigDecimal bigDecimal = new BigDecimal(input.get());
-    BigDecimal trunc = trunc(bigDecimal, scale);
-    DoubleWritable doubleWritable = new DoubleWritable(trunc.doubleValue());
-    return doubleWritable;
-  }
-
-  protected BigDecimal trunc(BigDecimal input, int scale) {
-    BigDecimal output = new BigDecimal(0);
-    BigDecimal pow = BigDecimal.valueOf(Math.pow(10, Math.abs(scale)));
-    if (scale >= 0) {
-      pow = BigDecimal.valueOf(Math.pow(10, scale));
-      if (scale != 0) {
-        long longValue = input.multiply(pow).longValue();
-        output = BigDecimal.valueOf(longValue).divide(pow);
-      } else {
-        output = BigDecimal.valueOf(input.longValue());
-      }
-    } else {
-      long longValue2 = input.divide(pow).longValue();
-      output = BigDecimal.valueOf(longValue2).multiply(pow);
-    }
-    return output;
-  }
-
 }

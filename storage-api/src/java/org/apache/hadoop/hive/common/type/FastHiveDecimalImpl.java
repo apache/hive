@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.common.type;
 
@@ -141,6 +142,15 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     100000000000000000L,
     1000000000000000000L, // 18
   };
+
+  public static final int MAX_LONG_POWER_OF_TEN = powerOfTenTable.length - 1;
+
+  /**
+   * Returns 10^exponent, for 0 &lt;= exponent &lt;= {@link #MAX_LONG_POWER_OF_TEN}.
+   */
+  public static long powerOfTen(int exponent) {
+    return powerOfTenTable[exponent];
+  }
 
   public static final int MAX_DECIMAL_DIGITS = 38;
 
@@ -5135,6 +5145,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
         fastResult);
 
     if (fastResult.fast0 == 0 && fastResult.fast1 == 0 && fastResult.fast2 == 0) {
+      fastResult.fastSignum = 0;
       fastResult.fastIntegerDigitCount = 0;
       fastResult.fastScale = 0;
     } else {

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.mr.hive.compaction;
@@ -286,6 +287,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
     return StreamSupport.stream(icebergTable.snapshots().spliterator(), false)
         .filter(s -> pastSnapshotTimeMil == null || s.timestampMillis() > pastSnapshotTimeMil)
         .filter(s -> s.timestampMillis() <= currentSnapshot.timestampMillis())
-        .filter(s -> !s.operation().equals(DataOperations.REPLACE));
+        // a snapshot written without a summary names no operation
+        .filter(s -> !DataOperations.REPLACE.equals(s.operation()));
   }
 }

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.metadata;
@@ -56,7 +57,7 @@ public enum VirtualColumn {
   FILE_PATH("FILE__PATH", TypeInfoFactory.stringTypeInfo),
   ROW_POSITION("ROW__POSITION", TypeInfoFactory.longTypeInfo),
   SNAPSHOT_ID("SNAPSHOT__ID", TypeInfoFactory.longTypeInfo),
-  PARTITION_PROJECTION("PARTITION__PROJECTION", TypeInfoFactory.stringTypeInfo),
+  PARTITION_NAME("PARTITION__NAME", TypeInfoFactory.stringTypeInfo),
   ROW_LINEAGE_ID("ROW__LINEAGE__ID", TypeInfoFactory.longTypeInfo),
   LAST_UPDATED_SEQUENCE_NUMBER("LAST__UPDATED__SEQUENCE__NUMBER", TypeInfoFactory.longTypeInfo),
 
@@ -73,7 +74,8 @@ public enum VirtualColumn {
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(),
           RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName(), ROWISDELETED.getName(),
           PARTITION_SPEC_ID.getName(), PARTITION_HASH.getName(), FILE_PATH.getName(), ROW_POSITION.getName(),
-          PARTITION_PROJECTION.getName(), ROW_LINEAGE_ID.getName(), LAST_UPDATED_SEQUENCE_NUMBER.getName());
+          PARTITION_NAME.getName(), ROW_LINEAGE_ID.getName(),
+          LAST_UPDATED_SEQUENCE_NUMBER.getName());
 
   public static final ImmutableMap<String, VirtualColumn> VIRTUAL_COLUMN_NAME_MAP =
        new ImmutableMap.Builder<String, VirtualColumn>().putAll(getColumnNameMap()).build();

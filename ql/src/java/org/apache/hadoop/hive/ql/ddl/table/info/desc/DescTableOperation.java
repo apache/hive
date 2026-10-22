@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.ddl.table.info.desc;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter.DescTableFormatte
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -54,7 +56,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TableConstraintsInfo;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -152,9 +153,10 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         if (table.isNonNative()) {
           HiveStorageHandler sh = table.getStorageHandler();
           
-          sh.getBasicStatistics(Partish.buildFor(table)).forEach((k, v) -> 
-              valueMap.put(k, Longs.tryParse(v)));
-          numParts = sh.getPartitionNames(table).size();
+          sh.getBasicStatistics(table).forEach((k, v) -> valueMap.put(k, Longs.tryParse(v)));
+          numParts = (int) sh.getPartitionNames(table).stream()
+              .filter(name -> !DummyPartition.isVoid(name))
+              .count();
           
         } else {
           PartitionIterable partitions = new PartitionIterable(context.getDb(), table, null,
@@ -281,11 +283,18 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private void addStatsForRegularColumn(Table table, List<ColumnStatisticsObj> colStats,
       String colName, Map<String, String> tableProps) throws HiveException {
+    if (table.isNonNative() && !StatsUtils.isPartitionStats(table, context.getConf())) {
+      // the table maintains table-level column statistics only, whose accuracy the table
+      // properties already reflect
+      colStats.addAll(context.getDb().getTableColumnStatistics(table,
+          Lists.newArrayList(colName.toLowerCase()), false));
+      return;
+    }
     List<String> parts = context.getDb().getPartitionNames(table, (short) -1);
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, Lists.newArrayList(colName.toLowerCase()),
         parts, false);
     colStats.addAll(aggrStats.getColStats());
-    
+
     if (parts.size() == aggrStats.getPartsFound()) {
       StatsSetupConst.setColumnStatsState(tableProps, Lists.newArrayList(colName.toLowerCase()));
     } else {

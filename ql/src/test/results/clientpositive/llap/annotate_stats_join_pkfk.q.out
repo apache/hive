@@ -500,10 +500,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss
-                  filterExpr: UDFToLong(ss_store_sk) is not null (type: boolean)
+                  filterExpr: ss_store_sk is not null (type: boolean)
                   Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToLong(ss_store_sk) is not null (type: boolean)
+                    predicate: ss_store_sk is not null (type: boolean)
                     Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToLong(ss_store_sk) (type: bigint)

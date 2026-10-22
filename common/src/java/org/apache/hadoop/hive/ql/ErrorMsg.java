@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql;
 
@@ -313,6 +314,7 @@ public enum ErrorMsg {
     "Not all clauses are supported with mapjoin hint. Please remove mapjoin hint."),
 
   ANALYZE_TABLE_NOSCAN_NON_NATIVE(10228, "ANALYZE TABLE NOSCAN cannot be used for " + "a non-native table"),
+  ANALYZE_PARTITION_NON_NATIVE(10449, "ANALYZE TABLE with a PARTITION clause cannot be used for a non-native table"),
 
   PARTITION_VALUE_NOT_CONTINUOUS(10234, "Partition values specified are not continuous." +
             " A subpartition value is specified without specifying the parent partition's value"),

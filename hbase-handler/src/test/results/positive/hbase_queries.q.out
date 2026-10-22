@@ -148,7 +148,7 @@ STAGE PLANS:
             alias: hbase_table_1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: UDFToDouble(key) is not null (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToDouble(key) (type: double)
@@ -604,7 +604,7 @@ STAGE PLANS:
             alias: hbase_table_1
             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: UDFToDouble(key) is not null (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)

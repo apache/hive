@@ -1,0 +1,518 @@
+PREHOOK: query: drop table if exists iceberg_cow_partitioned
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists iceberg_cow_partitioned
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table iceberg_cow_partitioned (
+  index int,
+  string_col string,
+  boolean_col boolean,
+  str_col string,
+  tinyint_col int
+) partitioned by spec(str_col, tinyint_col)
+stored by iceberg
+tblproperties ('write.update.mode'='copy-on-write')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: create external table iceberg_cow_partitioned (
+  index int,
+  string_col string,
+  boolean_col boolean,
+  str_col string,
+  tinyint_col int
+) partitioned by spec(str_col, tinyint_col)
+stored by iceberg
+tblproperties ('write.update.mode'='copy-on-write')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: insert into iceberg_cow_partitioned partition (str_col, tinyint_col)
+  values (1, 'a', true, null, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: insert into iceberg_cow_partitioned partition (str_col, tinyint_col)
+  values (1, 'a', true, null, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: default@iceberg_cow_partitioned
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Reducer 4 <- Map 3 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE), Union 2 (CONTAINS)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 2 (CONTAINS)
+        Reducer 7 <- Map 5 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: iceberg_cow_partitioned
+                  filterExpr: str_col is null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 281 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), index (type: int), string_col (type: string), boolean_col (type: boolean), 'UPDATED NULLS' (type: string), tinyint_col (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 398 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 1259 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.iceberg_cow_partitioned
+            Execution mode: vectorized
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: iceberg_cow_partitioned
+                  filterExpr: str_col is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (FILE__PATH is not null and str_col is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: index (type: int), string_col (type: string), boolean_col (type: boolean), str_col (type: string), tinyint_col (type: int), PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: PARTIAL
+                      Reduce Output Operator
+                        key expressions: _col7 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col7 (type: string)
+                        Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: boolean), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: bigint), _col8 (type: bigint)
+            Execution mode: vectorized
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: iceberg_cow_partitioned
+                  filterExpr: str_col is null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 281 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: str_col is null (type: boolean)
+                    Reduce Output Operator
+                      key expressions: FILE__PATH (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: FILE__PATH (type: string)
+                      Statistics: Num rows: 1 Data size: 281 Basic stats: COMPLETE Column stats: PARTIAL
+                      value expressions: index (type: int), string_col (type: string), boolean_col (type: boolean), tinyint_col (type: int), PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint)
+                  Filter Operator
+                    predicate: (FILE__PATH is not null and str_col is null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                    Reduce Output Operator
+                      key expressions: FILE__PATH (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: FILE__PATH (type: string)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+            Execution mode: vectorized
+        Reducer 4 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col7 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: PARTIAL
+                Select Operator
+                  expressions: _col5 (type: int), _col6 (type: bigint), _col7 (type: string), _col8 (type: bigint), _col0 (type: int), _col1 (type: string), _col2 (type: boolean), _col3 (type: string), _col4 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Statistics: Num rows: 1 Data size: 476 Basic stats: COMPLETE Column stats: PARTIAL
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3 Data size: 1259 Basic stats: COMPLETE Column stats: PARTIAL
+                    table:
+                        input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                        output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                        serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                        name: default.iceberg_cow_partitioned
+        Reducer 6 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: boolean), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: bigint), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 1 Data size: 293 Basic stats: COMPLETE Column stats: PARTIAL
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col7 ASC NULLS FIRST
+                        partition by: _col7
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 1 Data size: 293 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 293 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: _col5 (type: int), _col6 (type: bigint), _col7 (type: string), -1L (type: bigint), _col0 (type: int), _col1 (type: string), _col2 (type: boolean), null (type: string), _col4 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 385 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 1259 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.iceberg_cow_partitioned
+        Reducer 7 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col7
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col7: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col7 ASC NULLS FIRST
+                        partition by: _col7
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: _col7 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.iceberg_cow_partitioned
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: select * from iceberg_cow_partitioned
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_cow_partitioned
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	true	UPDATED NULLS	1
+PREHOOK: query: insert into iceberg_cow_partitioned partition (str_col, tinyint_col)
+  values (2, 'b', false, null, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: insert into iceberg_cow_partitioned partition (str_col, tinyint_col)
+  values (2, 'b', false, null, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: default@iceberg_cow_partitioned
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Reducer 4 <- Map 3 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE), Union 2 (CONTAINS)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 2 (CONTAINS)
+        Reducer 7 <- Map 5 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: iceberg_cow_partitioned
+                  filterExpr: str_col is null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), index (type: int), string_col (type: string), boolean_col (type: boolean), 'UPDATED NULLS' (type: string), tinyint_col (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 497 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 1565 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.iceberg_cow_partitioned
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: iceberg_cow_partitioned
+                  filterExpr: str_col is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: FILE__PATH is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: index (type: int), string_col (type: string), boolean_col (type: boolean), str_col (type: string), tinyint_col (type: int), PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: PARTIAL
+                      Reduce Output Operator
+                        key expressions: _col7 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col7 (type: string)
+                        Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: boolean), _col3 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: bigint), _col8 (type: bigint)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: iceberg_cow_partitioned
+                  filterExpr: str_col is null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: str_col is null (type: boolean)
+                    Reduce Output Operator
+                      key expressions: FILE__PATH (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: FILE__PATH (type: string)
+                      Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
+                      value expressions: index (type: int), string_col (type: string), boolean_col (type: boolean), tinyint_col (type: int), PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint)
+                  Filter Operator
+                    predicate: (FILE__PATH is not null and str_col is null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                    Reduce Output Operator
+                      key expressions: FILE__PATH (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: FILE__PATH (type: string)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+        Reducer 4 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col7 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: PARTIAL
+                Select Operator
+                  expressions: _col5 (type: int), _col6 (type: bigint), _col7 (type: string), _col8 (type: bigint), _col0 (type: int), _col1 (type: string), _col2 (type: boolean), _col3 (type: string), _col4 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: PARTIAL
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3 Data size: 1565 Basic stats: COMPLETE Column stats: PARTIAL
+                    table:
+                        input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                        output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                        serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                        name: default.iceberg_cow_partitioned
+        Reducer 6 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: boolean), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: bigint), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 1 Data size: 392 Basic stats: COMPLETE Column stats: PARTIAL
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col7 ASC NULLS FIRST
+                        partition by: _col7
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 1 Data size: 392 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 392 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: _col5 (type: int), _col6 (type: bigint), _col7 (type: string), -1L (type: bigint), _col0 (type: int), _col1 (type: string), _col2 (type: boolean), null (type: string), _col4 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 484 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 1565 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.iceberg_cow_partitioned
+        Reducer 7 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col7
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col7: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col7 ASC NULLS FIRST
+                        partition by: _col7
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: row_number_window_0
+                              name: row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: _col7 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.iceberg_cow_partitioned
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: select * from iceberg_cow_partitioned
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_cow_partitioned
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	true	UPDATED NULLS	1
+2	b	false	UPDATED NULLS	2

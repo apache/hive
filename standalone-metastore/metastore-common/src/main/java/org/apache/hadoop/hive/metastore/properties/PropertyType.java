@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore.properties;
 
@@ -182,8 +183,8 @@ public abstract class PropertyType<T> {
 
     @Nullable
     @Override public String format(Object value) {
-      if (value instanceof Boolean) {
-        return ((Boolean) value) ? "true" : "false";
+      if (value instanceof Boolean b) {
+        return b.toString();
       }
       return null;
     }
@@ -201,8 +202,8 @@ public abstract class PropertyType<T> {
 
   public static final PropertyType<Integer> INTEGER = new PropertyType<Integer>("integer") {
     @Override public Integer cast(Object value) {
-      if (value instanceof Number) {
-        return ((Number) value).intValue();
+      if (value instanceof Number n) {
+        return n.intValue();
       }
       if (value == null) {
         return null;
@@ -241,8 +242,8 @@ public abstract class PropertyType<T> {
 
   public static final PropertyType<Long> LONG = new PropertyType<Long>("long"){
     @Override public Long cast(Object value) {
-      if (value instanceof Number) {
-        return ((Number) value).longValue();
+      if (value instanceof Number n) {
+        return n.longValue();
       }
       if (value == null) {
         return null;
@@ -281,11 +282,11 @@ public abstract class PropertyType<T> {
 
   public static final PropertyType<Date> DATETIME = new PropertyType<Date>("date"){
     @Override public Date cast(Object value) {
-      if (value instanceof Number) {
-        return new Date(((Number) value).longValue());
+      if (value instanceof Number n) {
+        return new Date(n.longValue());
       }
-      if (value instanceof Date) {
-        return (Date) value;
+      if (value instanceof Date d) {
+        return d;
       }
       if (value == null) {
         return null;
@@ -322,8 +323,8 @@ public abstract class PropertyType<T> {
 
   public static final PropertyType<Double> DOUBLE = new PropertyType<Double>("double"){
     @Override public Double cast(Object value) {
-      if (value instanceof Number) {
-        return ((Number) value).doubleValue();
+      if (value instanceof Number n) {
+        return n.doubleValue();
       }
       if (value == null) {
         return null;

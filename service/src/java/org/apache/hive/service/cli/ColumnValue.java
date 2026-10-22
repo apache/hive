@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.service.cli;
@@ -211,11 +212,7 @@ public class ColumnValue {
       return stringValue((HiveDecimal)value, typeDescriptor);
     case BINARY_TYPE:
       return stringValue((String)value);
-    case ARRAY_TYPE:
-    case MAP_TYPE:
-    case STRUCT_TYPE:
-    case UNION_TYPE:
-    case USER_DEFINED_TYPE:
+    case ARRAY_TYPE, MAP_TYPE, STRUCT_TYPE, UNION_TYPE, VARIANT_TYPE, USER_DEFINED_TYPE:
       return stringValue((String)value);
     case NULL_TYPE:
       return stringValue((String)value);

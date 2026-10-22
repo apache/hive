@@ -134,7 +134,7 @@ CBO PLAN:
 HiveProject(s.a=[$0], t1.a=[$1], t1.b=[$2])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(a=[$0])
-      HiveFilter(condition=[AND(=($1, _UTF-16LE'c'), IS NOT NULL($0))])
+      HiveFilter(condition=[AND(=($1, 'c'), IS NOT NULL($0))])
         HiveTableScan(table=[[default, t1]], table:alias=[t1])
     HiveProject(a=[$0], b=[$1])
       HiveFilter(condition=[IS NOT NULL($0)])

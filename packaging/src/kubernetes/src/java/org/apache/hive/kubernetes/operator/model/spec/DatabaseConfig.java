@@ -9,22 +9,25 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.kubernetes.operator.model.spec;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.generator.annotation.Default;
+import io.fabric8.generator.annotation.Pattern;
 
 /** JDBC database connection configuration for the Hive Metastore backend. */
 public record DatabaseConfig(
     @JsonPropertyDescription("Database type: derby, mysql, postgres, mssql, or oracle")
     @Default("derby")
+    @Pattern("^(derby|mysql|postgres|mssql|oracle)$")
     String type,
     @JsonPropertyDescription("JDBC connection URL")
     String url,

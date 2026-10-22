@@ -11,6 +11,6 @@ HiveSortLimit(sort0=[$1], sort1=[$0], dir0=[ASC], dir1=[ASC], fetch=[100])
               HiveFilter(condition=[IS NOT NULL($7)])
                 HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns])
             HiveProject(r_reason_sk=[$0])
-              HiveFilter(condition=[=($2, _UTF-16LE'Did not like the warranty                                                                           ')])
+              HiveFilter(condition=[=($2, 'Did not like the warranty                                                                           ')])
                 HiveTableScan(table=[[default, reason]], table:alias=[reason])
 

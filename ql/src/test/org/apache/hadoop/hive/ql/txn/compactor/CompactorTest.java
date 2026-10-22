@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
@@ -155,6 +156,12 @@ public abstract class CompactorTest {
     }
     // Set this config to true in the base class, there are extended test classes which set this config to false.
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
+    // Disable stats by default as these tests do not assert on the stats that
+    // StatsUpdater.gatherStats produces.
+    // Note: Enabling it requires a properly configured authorizer,
+    // since post-compaction stats gathering runs ANALYZE TABLE through
+    // the Driver and triggers SessionState.setupAuth().
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);

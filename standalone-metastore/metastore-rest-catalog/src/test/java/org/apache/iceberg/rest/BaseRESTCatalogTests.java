@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -20,18 +20,31 @@
 package org.apache.iceberg.rest;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DataFiles;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.TableMetadataParser;
+import org.apache.iceberg.Transaction;
+import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.CatalogTests;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableCommit;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.ForbiddenException;
+import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.hadoop.HadoopFileIO;
+import org.apache.iceberg.rest.extension.MockHiveAuthorizer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,6 +60,8 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
   protected abstract Map<String, String> getDefaultClientConfiguration() throws Exception;
 
   protected abstract Optional<Map<String, String>> getPermissionTestClientConfiguration() throws Exception;
+
+  protected abstract Optional<Map<String, String>> getPermissionReadOnlyClientConfiguration() throws Exception;
 
   @BeforeAll
   void setupAll() throws Exception {
@@ -117,8 +132,9 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
       throw new AssertionError("Catalog operation failed", e);
     }
     try (var client = RCKUtils.initCatalogClient(properties.get())) {
-      // Should this fail?
-      Assertions.assertTrue(client.listNamespaces().contains(db));
+      // List operations are result-filtered: a user who can read nothing sees an empty listing
+      // rather than an error.
+      Assertions.assertFalse(client.listNamespaces().contains(db));
       testUnauthorizedAccess(() -> client.namespaceExists(db));
       testUnauthorizedAccess(() -> client.loadNamespaceMetadata(db));
       testUnauthorizedAccess(() -> client.createNamespace(Namespace.of("new-db")));
@@ -126,16 +142,14 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
       testUnauthorizedAccess(() -> client.setProperties(db, Collections.singletonMap("key", "value")));
       testUnauthorizedAccess(() -> client.removeProperties(db, Collections.singleton("key")));
 
-      // Should this fail?
-      Assertions.assertEquals(Collections.singletonList(table), client.listTables(db));
+      Assertions.assertTrue(client.listTables(db).isEmpty());
       testUnauthorizedAccess(() -> client.tableExists(table));
       testUnauthorizedAccess(() -> client.loadTable(table));
       testUnauthorizedAccess(() -> client.createTable(TableIdentifier.of(db, "new-table"), new Schema()));
       testUnauthorizedAccess(() -> client.renameTable(table, TableIdentifier.of(db, "new-table")));
       testUnauthorizedAccess(() -> client.dropTable(table));
 
-      // Should this fail?
-      Assertions.assertEquals(Collections.singletonList(view), client.listViews(db));
+      Assertions.assertTrue(client.listViews(db).isEmpty());
       testUnauthorizedAccess(() -> client.viewExists(view));
       testUnauthorizedAccess(() -> client.loadView(view));
       testUnauthorizedAccess(() -> client.buildView(TableIdentifier.of(db, "new-view"))
@@ -154,5 +168,181 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
     } catch (IOException e) {
       throw new AssertionError("Catalog operation failed", e);
     }
+  }
+
+  @Test
+  void testPermissionsWithReadOnlyUser() throws Exception {
+    var properties = getPermissionReadOnlyClientConfiguration();
+    if (properties.isEmpty()) {
+      return;
+    }
+    var db = Namespace.of("permission_read_only_db");
+    var emptyDb = Namespace.of("permission_read_only_db_empty");
+    var table = TableIdentifier.of(db, "test_table");
+    var view = TableIdentifier.of(db, "test_view");
+    try (var client = RCKUtils.initCatalogClient(getDefaultClientConfiguration())) {
+      client.createNamespace(db);
+      client.createNamespace(emptyDb);
+      client.createTable(table, new Schema());
+      client.buildView(view).withQuery("hive", "SELECT count(*) FROM default.permission_test")
+          .withSchema(new Schema()).withDefaultNamespace(db).create();
+    } catch (IOException e) {
+      throw new AssertionError("Catalog operation failed", e);
+    }
+    try (var client = RCKUtils.initCatalogClient(properties.get())) {
+      // A read-only user can read, so result-filtered listings still show what they may read.
+      Assertions.assertTrue(client.listNamespaces().contains(db));
+      Assertions.assertTrue(client.namespaceExists(db));
+      Assertions.assertNotNull(client.loadNamespaceMetadata(db));
+      testUnauthorizedAccess(() -> client.createNamespace(Namespace.of("new-db")));
+      testUnauthorizedAccess(() -> client.dropNamespace(emptyDb));
+      testUnauthorizedAccess(() -> client.setProperties(db, Collections.singletonMap("key", "value")));
+      testUnauthorizedAccess(() -> client.removeProperties(db, Collections.singleton("key")));
+
+      Assertions.assertEquals(Collections.singletonList(table), client.listTables(db));
+      Assertions.assertTrue(client.tableExists(table));
+      Assertions.assertNotNull(client.loadTable(table));
+      testUnauthorizedAccess(() -> client.createTable(TableIdentifier.of(db, "new-table"), new Schema()));
+      testUnauthorizedAccess(() -> client.renameTable(table, TableIdentifier.of(db, "new-table")));
+      testUnauthorizedAccess(() -> client.dropTable(table));
+
+      Assertions.assertEquals(Collections.singletonList(view), client.listViews(db));
+      Assertions.assertTrue(client.viewExists(view));
+      Assertions.assertNotNull(client.loadView(view));
+      testUnauthorizedAccess(() -> client.buildView(TableIdentifier.of(db, "new-view"))
+          .withQuery("hive", "SELECT count(*) FROM default.permission_test").withSchema(new Schema())
+          .withDefaultNamespace(db).create());
+      testUnauthorizedAccess(() -> client.renameView(view, TableIdentifier.of(db, "new-view")));
+      testUnauthorizedAccess(() -> client.dropView(view));
+
+      testUnauthorizedAccess(() -> client.newCreateTableTransaction(TableIdentifier.of(db, "test"),
+          new Schema()));
+      testUnauthorizedAccess(() -> client.newReplaceTableTransaction(TableIdentifier.of(db, "test"),
+          new Schema(), true));
+
+      var loadedTable = (BaseTable) client.loadTable(table);
+      TableMetadata base = loadedTable.operations().current();
+      TableMetadata updated = TableMetadata.buildFrom(base).setProperties(Map.of("key", "value")).build();
+      testUnauthorizedAccess(() -> client.commitTransaction(TableCommit.create(table, base, updated)));
+    } catch (IOException e) {
+      throw new AssertionError("Catalog operation failed", e);
+    }
+  }
+
+  @Test
+  void testCreateTableWithDefaultLocation() {
+    var tableIdentifier = TableIdentifier.of("default", "create-table-default");
+    Table table = catalog.buildTable(tableIdentifier, new Schema()).create();
+    Assertions.assertTrue(table.location().contains("/external/create-table-default-"));
+    Assertions.assertEquals(table.location(), catalog.loadTable(tableIdentifier).location());
+  }
+
+  @Test
+  void testCreateTableWithAllowedLocation() {
+    var tableIdentifier = TableIdentifier.of("default", "create-table-allowed");
+    var location = MockHiveAuthorizer.ALLOWED_PREFIX + "/create-table-allowed";
+    Table table = catalog.buildTable(tableIdentifier, new Schema()).withLocation(location).create();
+    Assertions.assertEquals(location, table.location());
+    Assertions.assertEquals(table.location(), catalog.loadTable(tableIdentifier).location());
+  }
+
+  @Test
+  void testCreateTableWithDeniedLocation() {
+    var tableIdentifier = TableIdentifier.of("default", "create-table-denied");
+    var location = MockHiveAuthorizer.DENIED_PREFIX + "/create-table-denied";
+    Catalog.TableBuilder builder = catalog.buildTable(tableIdentifier, new Schema()).withLocation(location);
+    Assertions.assertThrows(ForbiddenException.class, builder::create);
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+  }
+
+  @Test
+  void testStageCreateTableWithDefaultLocation() {
+    var tableIdentifier = TableIdentifier.of("default", "stage-create-table-default");
+    Transaction transaction = catalog.buildTable(tableIdentifier, new Schema()).createTransaction();
+    Assertions.assertTrue(transaction.table().location().contains("/external/stage-create-table-default-"));
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+  }
+
+  @Test
+  void testStageCreateTableWithAllowedLocation() {
+    var tableIdentifier = TableIdentifier.of("default", "stage-create-table-allowed");
+    var location = MockHiveAuthorizer.ALLOWED_PREFIX + "/stage-create-table-allowed";
+    Transaction transaction = catalog.buildTable(tableIdentifier, new Schema()).withLocation(location)
+        .createTransaction();
+    Assertions.assertEquals(location, transaction.table().location());
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+  }
+
+  @Test
+  void testStageCreateTableWithDeniedLocation() {
+    var tableIdentifier = TableIdentifier.of("default", "stage-create-table-denied");
+    var location = MockHiveAuthorizer.DENIED_PREFIX + "/stage-create-table-denied";
+    Catalog.TableBuilder builder = catalog.buildTable(tableIdentifier, new Schema()).withLocation(location);
+    Assertions.assertThrows(ForbiddenException.class, builder::createTransaction);
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+  }
+
+  private static String writeMetadataFile(String directory, String tableLocation) throws IOException {
+    var metadataLocation = directory + "/v1.metadata.json";
+    Files.deleteIfExists(java.nio.file.Path.of(metadataLocation));
+    var io = new HadoopFileIO(new Configuration(false));
+    var metadata = TableMetadata.newTableMetadata(new Schema(), PartitionSpec.unpartitioned(), tableLocation,
+        Collections.emptyMap());
+    TableMetadataParser.write(metadata, io.newOutputFile(metadataLocation));
+    return metadataLocation;
+  }
+
+  @Test
+  void testRegisterTableWithDeniedLocation() {
+    var tableIdentifier = TableIdentifier.of("default", "register-table-denied");
+    var metadataLocation = MockHiveAuthorizer.DENIED_PREFIX + "/register-table-denied/v1.metadata.json";
+    Assertions.assertThrows(ForbiddenException.class, () -> catalog.registerTable(tableIdentifier, metadataLocation));
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+  }
+
+  @Test
+  void testRegisterTableWithDeniedEmbeddedLocation() throws IOException {
+    var tableIdentifier = TableIdentifier.of("default", "register-table-embedded-denied");
+    var tableLocation = MockHiveAuthorizer.DENIED_PREFIX + "/register-table-embedded-denied";
+    var metadataLocation = writeMetadataFile(
+        MockHiveAuthorizer.ALLOWED_PREFIX + "/register-table-embedded-denied", tableLocation);
+    Assertions.assertThrows(ForbiddenException.class, () -> catalog.registerTable(tableIdentifier, metadataLocation));
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+  }
+
+  @Test
+  void testDropTablePurgeDoesNotDeleteFilesOutsideTableLocation() throws IOException {
+    var victimDirectory = java.nio.file.Path.of(MockHiveAuthorizer.ALLOWED_PREFIX, "structural-fence-victim");
+    Files.createDirectories(victimDirectory);
+    var victimFile = victimDirectory.resolve("victim-data.txt");
+    Files.writeString(victimFile, "victim data");
+
+    var tableIdentifier = TableIdentifier.of("default", "structural-fence-attacker");
+    var tableLocation = MockHiveAuthorizer.ALLOWED_PREFIX + "/structural-fence-attacker";
+    Table table = catalog.buildTable(tableIdentifier, new Schema()).withLocation(tableLocation).create();
+
+    var ownedDirectory = java.nio.file.Path.of(MockHiveAuthorizer.ALLOWED_PREFIX, "structural-fence-attacker", "data");
+    Files.createDirectories(ownedDirectory);
+    var ownedFile = ownedDirectory.resolve("owned-data.txt");
+    Files.writeString(ownedFile, "owned data");
+
+    DataFile victimDataFile = DataFiles.builder(table.spec())
+        .withPath(victimFile.toUri().toString())
+        .withFormat(FileFormat.PARQUET)
+        .withFileSizeInBytes(Files.size(victimFile))
+        .withRecordCount(1)
+        .build();
+    DataFile ownedDataFile = DataFiles.builder(table.spec())
+        .withPath(ownedFile.toUri().toString())
+        .withFormat(FileFormat.PARQUET)
+        .withFileSizeInBytes(Files.size(ownedFile))
+        .withRecordCount(1)
+        .build();
+    table.newAppend().appendFile(victimDataFile).appendFile(ownedDataFile).commit();
+
+    Assertions.assertTrue(catalog.dropTable(tableIdentifier, true));
+    Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
+    Assertions.assertTrue(Files.exists(victimFile), "purge must not delete files outside the table location");
+    Assertions.assertFalse(Files.exists(ownedFile), "purge must delete files nested inside the table location");
   }
 }

@@ -3333,7 +3333,11 @@
                     "nullable": false
                   }
                 }
-              ]
+              ],
+              "type": {
+                "type": "INTEGER",
+                "nullable": true
+              }
             }
           ]
         },

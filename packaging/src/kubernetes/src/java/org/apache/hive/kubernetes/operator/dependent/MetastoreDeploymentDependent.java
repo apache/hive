@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.kubernetes.operator.dependent;
@@ -83,6 +84,7 @@ public class MetastoreDeploymentDependent
     if (spec.envVars() != null) {
       envVars.addAll(spec.envVars());
     }
+    envVars.addAll(spec.metastore().envVars());
 
     int thriftPort = ConfigUtils.getInt(
         spec.metastore().configOverrides(),
@@ -140,7 +142,7 @@ public class MetastoreDeploymentDependent
     AutoscalingSpec msAutoscaling = spec.metastore().autoscaling();
     int initialReplicas = msAutoscaling != null && msAutoscaling.isEnabled()
         ? Math.max(1, msAutoscaling.minReplicas()) : spec.metastore().replicas();
-    Integer replicas = resolveReplicaCount(
+    int replicas = resolveReplicaCount(
         hiveCluster, context, msAutoscaling, spec.metastore().replicas(), initialReplicas);
 
     Deployment deployment = new DeploymentBuilder()
@@ -171,8 +173,7 @@ public class MetastoreDeploymentDependent
                 .withPorts(ports)
                 .withReadinessProbe(readinessProbe)
                 .withLivenessProbe(livenessProbe)
-                .withResources(buildResources(
-                    spec.metastore().resources()))
+                .withResources(spec.metastore().resources())
                 .withVolumeMounts(volumeMounts)
               .endContainer()
               .withVolumes(volumes)
@@ -181,8 +182,12 @@ public class MetastoreDeploymentDependent
         .endSpec()
         .build();
 
+    applyAffinityOverride(
+        deployment.getSpec().getTemplate().getSpec(), spec.metastore().affinity());
     applySpreadAffinityIfAbsent(
         deployment.getSpec().getTemplate().getSpec(), selectorLabels);
+    applyTolerations(
+        deployment.getSpec().getTemplate().getSpec(), spec.metastore().tolerations());
 
     // HMS uses HTTP transport mode — connections are stateless, so no session
     // drain is needed. The preStop hook simply sends SIGTERM directly to the

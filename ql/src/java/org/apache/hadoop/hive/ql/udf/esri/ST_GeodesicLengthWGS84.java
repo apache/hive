@@ -9,22 +9,24 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.MultiPath;
 import com.esri.core.geometry.Point;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,37 +68,55 @@ public class ST_GeodesicLengthWGS84 extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
-    Geometry esriGeom = ogcGeometry.getEsriGeometry();
-    switch (esriGeom.getType()) {
-    case Point:
-    case MultiPoint:
-      resultDouble.set(0.);
-      break;
-    default:
-      MultiPath lines = (MultiPath) (esriGeom);
-      int nPath = lines.getPathCount();
-      double length = 0.;
-      for (int ix = 0; ix < nPath; ix++) {
-        int curPt = lines.getPathStart(ix);
-        int pastPt = lines.getPathEnd(ix);
-        Point fromPt = lines.getPoint(curPt);
-        Point toPt = null;
-        for (int vx = curPt + 1; vx < pastPt; vx++) {
-          toPt = lines.getPoint(vx);
-          length += GeometryEngine.geodesicDistanceOnWGS84(fromPt, toPt);
-          fromPt = toPt;
+    switch (geom.getGeometryType()) {
+      case "Point", "MultiPoint" -> resultDouble.set(0.0);
+      case "LineString", "LinearRing" -> resultDouble.set(lineStringLength((LineString) geom));
+      case "MultiLineString" -> {
+        MultiLineString mls = (MultiLineString) geom;
+        double total = 0.0;
+        for (int i = 0; i < mls.getNumGeometries(); i++) {
+          total += lineStringLength((LineString) mls.getGeometryN(i));
         }
+        resultDouble.set(total);
       }
-      resultDouble.set(length);
-      break;
+      default -> resultDouble.set(0.0);
     }
 
     return resultDouble;
+  }
+
+  /**
+   * Computes the geodesic length of a single LineString by summing the ellipsoidal
+   * (WGS84) distances between consecutive vertices.  Iterates the CoordinateSequence
+   * directly to avoid per-vertex Point object allocation on the JTS side.
+   */
+  private static double lineStringLength(LineString line) {
+    CoordinateSequence seq = line.getCoordinateSequence();
+    int nPts = seq.size();
+    if (nPts < 2) {
+      return 0.0;
+    }
+    double length = 0.0;
+    for (int i = 1; i < nPts; i++) {
+      length += geodesicSegmentMeters(
+          seq.getX(i - 1), seq.getY(i - 1),
+          seq.getX(i), seq.getY(i));
+    }
+    return length;
+  }
+
+  /**
+   * Ellipsoidal geodesic distance between two lon/lat points (degrees) on the WGS84 spheroid,
+   * in meters. Delegates to the ESRI geometry library, which is retained solely for this
+   * ellipsoidal-distance computation so results match the previous implementation exactly.
+   */
+  private static double geodesicSegmentMeters(double lon1, double lat1, double lon2, double lat2) {
+    return GeometryEngine.geodesicDistanceOnWGS84(new Point(lon1, lat1), new Point(lon2, lat2));
   }
 }

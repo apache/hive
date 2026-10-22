@@ -1,20 +1,20 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore;
@@ -522,15 +522,13 @@ public class PartitionProjectionEvaluator {
     queryTextBuilder.append(SPACE);
     queryTextBuilder.append("from " + PARTITIONS);
     // if SD fields are selected add join clause with SDS
-    boolean foundSD = false;
     if (find(SD_PATTERN)) {
       queryTextBuilder.append(SPACE);
       queryTextBuilder.append(
           "left outer join " + SDS + " on " + PARTITIONS + ".\"SD_ID\" = " + SDS + ".\"SD_ID\"");
-      foundSD = true;
     }
     // if serde fields are selected add join clause on serdes
-    if (foundSD || find(SERDE_PATTERN)) {
+    if (find(SERDE_PATTERN)) {
       queryTextBuilder.append(SPACE);
       queryTextBuilder.append(
           "  left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = " + SERDES

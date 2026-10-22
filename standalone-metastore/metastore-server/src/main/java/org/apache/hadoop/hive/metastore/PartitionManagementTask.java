@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore;
@@ -83,7 +84,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   @Override
   public void run() {
     if (lock.tryLock()) {
-      String qualifiedTableName = null;
       IMetaStoreClient msc = null;
       try {
         msc = new HiveMetaStoreClient(conf);
@@ -119,12 +119,12 @@ public class PartitionManagementTask implements MetastoreTaskThread {
           // this always runs in 'sync' mode where partitions can be added and dropped
           MsckInfo msckInfo = new MsckInfo(table.getCat(), table.getDb(), table.getTable(),
               null, null, true, true, true, -1);
-          executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch));
+          executorService.submit(new MsckThread(msckInfo, msckConf, table.toString(), countDownLatch));
         }
         countDownLatch.await();
         executorService.shutdownNow();
       } catch (Exception e) {
-        LOG.error("Exception while running partition discovery task for table: " + qualifiedTableName, e);
+        LOG.error("Exception while running partition discovery task", e);
       } finally {
         if (msc != null) {
           msc.close();

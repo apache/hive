@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc.functions;
 
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.commands.InsertCompactionRequestCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
+import org.apache.hadoop.hive.metastore.utils.CompactionOrderByValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -62,6 +64,15 @@ public class CompactFunction implements TransactionalFunction<CompactionResponse
 
   @Override
   public CompactionResponse execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
+    // CompactionRequest.orderByClause is client-supplied over Thrift and is later concatenated into
+    // a query the compaction worker executes with the compaction session's privileges. Reject
+    // anything that is not a plain ORDER BY before it enters the queue.
+    try {
+      CompactionOrderByValidator.validate(rqst.getOrderByClause());
+    } catch (IllegalArgumentException e) {
+      throw new MetaException("Invalid orderByClause in compaction request for " + rqst.getDbname() + "." +
+          rqst.getTablename() + ": " + e.getMessage());
+    }
     // Put a compaction request in the queue.
     TxnStore.MutexAPI.LockHandle handle = null;
     try {

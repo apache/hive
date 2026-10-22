@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore;
@@ -420,12 +421,11 @@ public class ObjectStore implements RawStore, Configurable {
     if (descriptor == null) {
       throw new IllegalArgumentException("Unable to unwrap the store as " + iface);
     }
-    String implClassName =
-        conf.get("metastore." + descriptor.alias() + ".store.impl", "");
-    Class<?> ifaceImpl = descriptor.defaultImpl();
-    if (StringUtils.isNotEmpty(implClassName)) {
-      ifaceImpl = conf.getClass(implClassName, ifaceImpl);
-    }
+    String ifaceKey = "metastore." + descriptor.alias() + ".store.impl";
+    String implClassName = conf.getTrimmed(ifaceKey);
+    Class<?> ifaceImpl = StringUtils.isNotEmpty(implClassName)
+        ? conf.getClass(ifaceKey, descriptor.defaultImpl())
+        : descriptor.defaultImpl();
     T simpl = (T) JavaUtils.newInstance(ifaceImpl);
     List<Query> openQueries = new LinkedList<>();
     if (simpl instanceof RawStoreBundle rsb) {
@@ -449,38 +449,6 @@ public class ObjectStore implements RawStore, Configurable {
         return objectStore.pm;
       }
     };
-  }
-
-  @Override
-  public void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException {
-    if (updates == null || updates.isEmpty()) {
-      return;
-    }
-
-    new GetListHelper<TableName, Void>(createRawStoreBundle(), null) {
-      @Override
-      protected List<Void> getSqlResult() throws MetaException {
-        boolean success = false;
-        try {
-          openTransaction();
-          directSql.updateTableParams(updates, ObjectStore.this::getTable);
-          success = commitTransaction();
-        } finally {
-          rollbackAndCleanup(success, null);
-        }
-        return null;
-      }
-
-      @Override
-      protected boolean canUseJdoQuery() {
-        return false;
-      }
-
-      @Override
-      protected List<Void> getJdoResult() {
-        throw new UnsupportedOperationException("UnsupportedOperationException");
-      }
-    }.run(false);
   }
 
   /**
@@ -2952,7 +2920,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       query = pm.newQuery(MScheduledExecution.class);
       query.setFilter("scheduledQuery == currentSchedule");
-      query.setOrdering("scheduledExecutionId descending");
+      query.setOrdering("endTime descending, scheduledExecutionId descending");
       query.declareParameters("MScheduledQuery currentSchedule");
       query.setRange(0, lastN);
       List<MScheduledExecution> list = (List<MScheduledExecution>) query.execute(schq);

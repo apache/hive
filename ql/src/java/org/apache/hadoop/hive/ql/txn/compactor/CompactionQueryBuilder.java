@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
@@ -25,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.CompactionOrderByValidator;
 import org.apache.hadoop.hive.ql.exec.DDLPlanUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -143,6 +145,9 @@ abstract class CompactionQueryBuilder {
    * @param orderByClause The ORDER BY clause to use for data reordering.
    */
   public CompactionQueryBuilder setOrderByClause(String orderByClause) {
+    // The clause travels through the client-writable compaction queue; allow only a plain ORDER BY
+    // over column names before it is concatenated into a compaction query.
+    CompactionOrderByValidator.validate(orderByClause);
     this.orderByClause = orderByClause;
     return this;
   }

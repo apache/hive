@@ -9,17 +9,15 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Envelope;
-import com.esri.core.geometry.ogc.OGCPoint;
-import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils.OGCType;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -29,6 +27,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 
 import java.util.EnumSet;
 
@@ -85,7 +86,7 @@ public class ST_BinEnvelope extends GenericUDF {
       bins = new BinUtils(binSize);
     }
 
-    Envelope env = new Envelope();
+    Envelope env;
 
     if (oiBinId != null) {
       // argument 1 is a number, attempt to get the envelope with bin ID
@@ -95,19 +96,20 @@ public class ST_BinEnvelope extends GenericUDF {
       }
 
       long binId = PrimitiveObjectInspectorUtils.getLong(args[1].get(), oiBinId);
-      bins.queryEnvelope(binId, env);
+      env = bins.queryEnvelope(binId);
     } else {
       // argument 1 is a geometry, attempt to get the envelope with a point
-      OGCPoint point = binPoint.getPoint(args);
+      Point point = binPoint.getPoint(args);
 
       if (point == null) {
         return null;
       }
 
-      bins.queryEnvelope(point.X(), point.Y(), env);
+      env = bins.queryEnvelope(point.getX(), point.getY());
     }
 
-    return GeometryUtils.geometryToEsriShapeBytesWritable(env, 0, OGCType.ST_POLYGON);
+    Geometry polygon = GeometryUtils.GEOMETRY_FACTORY.toGeometry(env);
+    return GeometryUtils.geometryToEsriShapeBytesWritable(polygon);
   }
 
   @Override

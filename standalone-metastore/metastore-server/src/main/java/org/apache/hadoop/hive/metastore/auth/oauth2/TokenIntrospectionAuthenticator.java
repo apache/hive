@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore.auth.oauth2;
@@ -21,6 +22,7 @@ package org.apache.hadoop.hive.metastore.auth.oauth2;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
+import com.google.common.annotations.VisibleForTesting;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.TokenIntrospectionRequest;
 import com.nimbusds.oauth2.sdk.TokenIntrospectionResponse;
@@ -38,8 +40,7 @@ import java.time.Duration;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.hive.metastore.auth.HttpAuthenticationException;
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * RFC 7662 compliant OAuth2 token introspection based authenticator. This is must when access tokens are opaque, or
@@ -54,25 +55,26 @@ public class TokenIntrospectionAuthenticator implements OAuth2Authenticator {
     }
   }
 
-  private record TokenExpiry(Duration maxExpiration, Clock clock) implements
+  @VisibleForTesting
+  record TokenExpiry(Duration maxExpiration, Clock clock) implements
       Expiry<String, TokenIntrospectionSuccessResponse> {
     @Override
     public long expireAfterCreate(@NonNull String key, @NonNull TokenIntrospectionSuccessResponse value,
         long currentTime) {
-      final var expiresIn = Duration.between(value.getExpirationTime().toInstant(), clock.instant());
-      return Math.min(expiresIn.toNanos(), maxExpiration.toNanos());
+      final var expiresIn = Duration.between(clock.instant(), value.getExpirationTime().toInstant());
+      return Math.clamp(expiresIn.toNanos(), 0L, maxExpiration.toNanos());
     }
 
     @Override
     public long expireAfterUpdate(@NonNull String key, @NonNull TokenIntrospectionSuccessResponse value,
-        long currentTime, @NonNegative long currentDuration) {
-      final var expiresIn = Duration.between(value.getExpirationTime().toInstant(), clock.instant());
-      return Math.min(expiresIn.toNanos(), maxExpiration.toNanos());
+        long currentTime, long currentDuration) {
+      final var expiresIn = Duration.between(clock.instant(), value.getExpirationTime().toInstant());
+      return Math.clamp(expiresIn.toNanos(), 0L, maxExpiration.toNanos());
     }
 
     @Override
     public long expireAfterRead(@NonNull String key, @NonNull TokenIntrospectionSuccessResponse value, long currentTime,
-        @NonNegative long currentDuration) {
+        long currentDuration) {
       return currentDuration;
     }
   }

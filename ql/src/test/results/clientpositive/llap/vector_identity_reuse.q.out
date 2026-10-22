@@ -285,7 +285,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a2
-                  filterExpr: UDFToLong(if(int_col_5 is not null, int_col_5, UDFToInteger(smallint_col_22))) is not null (type: boolean)
+                  filterExpr: (smallint_col_22 is not null or int_col_5 is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -294,8 +294,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 5:bigint)(children: IfExprColumnCondExpr(col 4:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 4:boolean, col 1:int, col 0:smallint) -> 5:int)
-                    predicate: UDFToLong(if(int_col_5 is not null, int_col_5, UDFToInteger(smallint_col_22))) is not null (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: SelectColumnIsNotNull(col 0:smallint), SelectColumnIsNotNull(col 1:int))
+                    predicate: (smallint_col_22 is not null or int_col_5 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: int_col_5 (type: int), smallint_col_22 (type: smallint), if(int_col_5 is not null, int_col_5, UDFToInteger(smallint_col_22)) (type: int)
@@ -303,8 +303,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 0, 7]
-                          selectExpressions: IfExprColumnCondExpr(col 6:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 6:boolean, col 1:int, col 0:smallint) -> 7:int
+                          projectedOutputColumnNums: [1, 0, 5]
+                          selectExpressions: IfExprColumnCondExpr(col 4:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 4:boolean, col 1:int, col 0:smallint) -> 5:int
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: UDFToLong(_col2) (type: bigint)
@@ -313,10 +313,10 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToLong(_col2) (type: bigint)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumns: 7:bigint
+                            keyColumns: 5:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 1:int, 0:smallint, 7:int
+                            valueColumns: 1:int, 0:smallint, 5:int
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: int)
             Execution mode: vectorized, llap
@@ -335,7 +335,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: smallint_col_22:smallint, int_col_5:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: [bigint, bigint]
         Map 4 
             Map Operator Tree:
                 TableScan

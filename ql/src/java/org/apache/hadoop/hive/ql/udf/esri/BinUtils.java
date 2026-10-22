@@ -9,15 +9,16 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class BinUtils {
   final long numCols;
@@ -58,9 +59,9 @@ public class BinUtils {
    * Gets the envelope for the bin ID.
    *
    * @param binId
-   * @param envelope
+   * @return envelope
    */
-  public void queryEnvelope(long binId, Envelope envelope) {
+  public Envelope queryEnvelope(long binId) {
     long down = binId / numCols;
     long over = binId % numCols;
 
@@ -69,7 +70,7 @@ public class BinUtils {
     double ymax = extentMax - (down * binSize);
     double ymin = ymax - binSize;
 
-    envelope.setCoords(xmin, ymin, xmax, ymax);
+    return new Envelope(xmin, xmax, ymin, ymax);
   }
 
   /**
@@ -77,17 +78,17 @@ public class BinUtils {
    *
    * @param x
    * @param y
-   * @param envelope
+   * @return envelope
    */
-  public void queryEnvelope(double x, double y, Envelope envelope) {
+  public Envelope queryEnvelope(double x, double y) {
     double down = (extentMax - y) / binSize;
     double over = (x - extentMin) / binSize;
 
-    double xmin = extentMin + (over * binSize);
+    double xmin = extentMin + ((long) over * binSize);
     double xmax = xmin + binSize;
-    double ymax = extentMax - (down * binSize);
+    double ymax = extentMax - ((long) down * binSize);
     double ymin = ymax - binSize;
 
-    envelope.setCoords(xmin, ymin, xmax, ymax);
+    return new Envelope(xmin, xmax, ymin, ymax);
   }
 }

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore.directsql;
@@ -65,6 +66,7 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
 import org.apache.hadoop.hive.metastore.Batchable;
@@ -2980,7 +2982,7 @@ public class MetaStoreDirectSql {
    *  - diff desired params vs current and delete/update/insert accordingly
    * Table resolution happens per update via the provided resolver.
    */
-  public void updateTableParams(List<TableParamsUpdate> updates, TableResolver resolver)
+  public void updateTableParams(List<Map.Entry<TableParamsUpdate, Table>> updates)
       throws MetaException {
     if (!pm.currentTransaction().isActive()) {
       throw new MetaException("Direct SQL batch update requires an active transaction");
@@ -2992,11 +2994,9 @@ public class MetaStoreDirectSql {
     List<Long> tableIds = new ArrayList<>(updates.size());
     Map<Long, Optional<Map<String, String>>> tableParamsOpt = new HashMap<>();
 
-    for (TableParamsUpdate item : updates) {
-      String dbName = item.getDb_name();
-      String tableName = item.getTable_name();
-      Table tbl = resolver.resolve(item.getCat_name(), dbName, tableName);
-
+    for (Map.Entry<TableParamsUpdate, Table> entry : updates) {
+      Table tbl = entry.getValue();
+      TableParamsUpdate item = entry.getKey();
       Map<String, String> newParams = item.getParams();
       if (newParams == null || newParams.isEmpty()) {
         continue;
@@ -3007,8 +3007,8 @@ public class MetaStoreDirectSql {
 
       if (expectedKey != null) {
         if (!newParams.containsKey(expectedKey)) {
-          throw new MetaException("Expected key must be present in params for "
-              + dbName + "." + tableName);
+          throw new MetaException("Expected key must be present in params for " +
+              new org.apache.hadoop.hive.common.TableName(tbl.getCatName(), tbl.getDbName(), tbl.getTableName()));
         }
         long affected = updateTableParam(tbl, expectedKey, expectedVal, newParams.get(expectedKey));
         if (affected != 1) {
@@ -3022,10 +3022,5 @@ public class MetaStoreDirectSql {
 
     new DirectSqlUpdateParams(pm, dbType, batchSize)
         .run("\"TABLE_PARAMS\"", "\"TBL_ID\"", tableIds, tableParamsOpt);
-  }
-
-  @FunctionalInterface
-  public interface TableResolver {
-    Table resolve(String catName, String dbName, String tableName) throws MetaException;
   }
 }

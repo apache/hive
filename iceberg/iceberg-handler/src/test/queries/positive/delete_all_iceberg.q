@@ -17,7 +17,7 @@
 set hive.vectorized.execution.enabled=true;
 
 create table ice01 (id int, key int) Stored by Iceberg stored as ORC 
-  TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='false');
+  TBLPROPERTIES('format-version'='2');
 
 insert into ice01 values (1,1),(2,1),(3,1),(4,1);
 insert into ice01 values (1,2),(2,2),(3,2),(4,2);

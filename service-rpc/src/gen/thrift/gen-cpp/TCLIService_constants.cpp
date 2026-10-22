@@ -29,12 +29,14 @@ TCLIServiceConstants::TCLIServiceConstants() {
   PRIMITIVE_TYPES.insert((TTypeId::type)20);
   PRIMITIVE_TYPES.insert((TTypeId::type)21);
   PRIMITIVE_TYPES.insert((TTypeId::type)22);
+  PRIMITIVE_TYPES.insert((TTypeId::type)23);
 
   COMPLEX_TYPES.insert((TTypeId::type)10);
   COMPLEX_TYPES.insert((TTypeId::type)11);
   COMPLEX_TYPES.insert((TTypeId::type)12);
   COMPLEX_TYPES.insert((TTypeId::type)13);
   COMPLEX_TYPES.insert((TTypeId::type)14);
+  COMPLEX_TYPES.insert((TTypeId::type)24);
 
   COLLECTION_TYPES.insert((TTypeId::type)10);
   COLLECTION_TYPES.insert((TTypeId::type)11);
@@ -60,7 +62,9 @@ TCLIServiceConstants::TCLIServiceConstants() {
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)8, "TIMESTAMP"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)1, "TINYINT"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)13, "UNIONTYPE"));
+  TYPE_NAMES.insert(std::make_pair((TTypeId::type)23, "UNKNOWN"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)18, "VARCHAR"));
+  TYPE_NAMES.insert(std::make_pair((TTypeId::type)24, "VARIANT"));
 
   CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";
 

@@ -9,20 +9,22 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.plan;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.hadoop.hive.conf.Constants.JDBC_PASSWORD;
-import static org.apache.hadoop.hive.conf.Constants.JDBC_USERNAME;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapOutputFormat;
@@ -1114,16 +1117,10 @@ public final class PlanUtils {
       currentAlias = currentAlias.replace(SemanticAnalyzer.SUBQUERY_TAG_1, "")
           .replace(SemanticAnalyzer.SUBQUERY_TAG_2, "");
       ReadEntity input = viewAliasToInput.get(currentAlias);
-      if (input == null && currentInput != null) {
-        // To handle the case of - select * from (select * from V1) A;
-        // the currentInput != null check above is needed.
-        // the alias list that case would be A:V1:T. Lookup on A would return null,
-        // we need to go further to find the view inside it.
-        return currentInput;
+      if (input != null) {
+        currentInput = input;
       }
-      currentInput = input;
     }
-
     return currentInput;
   }
 
@@ -1135,11 +1132,8 @@ public final class PlanUtils {
     return LazySimpleSerDe.class;
   }
 
-  private static final String[] FILTER_OUT_FROM_EXPLAIN = {
-          TABLE_IS_CTAS,
-          JDBC_USERNAME,
-          JDBC_PASSWORD
-  };
+  private static final Set<String> FILTER_OUT_FROM_EXPLAIN =
+          Sets.union(ImmutableSet.of(TABLE_IS_CTAS), Constants.JDBC_CONNECTION_CREDENTIALS);
 
   /**
    * Get a Map of table or partition properties to be used in explain extended output.

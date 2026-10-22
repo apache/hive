@@ -9,18 +9,20 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
-import com.esri.core.geometry.ogc.OGCMultiLineString;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiLineString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,15 +57,21 @@ public class ST_Boundary extends ST_GeometryProcessing {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
     try {
-      OGCGeometry boundGeom = ogcGeometry.boundary();
-      if (boundGeom.geometryType().equals("MultiLineString") && ((OGCMultiLineString) boundGeom).numGeometries() == 1)
-        boundGeom = ((OGCMultiLineString) boundGeom).geometryN(0);  // match ST_Boundary/SQL-RDBMS
+      Geometry boundGeom = geom.getBoundary();
+      // match ST_Boundary/SQL-RDBMS: unwrap a single-geometry MultiLineString to LineString
+      if (boundGeom instanceof MultiLineString && boundGeom.getNumGeometries() == 1) {
+        boundGeom = boundGeom.getGeometryN(0);
+      }
+      // JTS returns LinearRing for polygon boundary; OGC standard requires LineString
+      if (boundGeom instanceof LinearRing linearRing) {
+        boundGeom = geom.getFactory().createLineString(linearRing.getCoordinateSequence());
+      }
       return GeometryUtils.geometryToEsriShapeBytesWritable(boundGeom);
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_Boundary: " + e);

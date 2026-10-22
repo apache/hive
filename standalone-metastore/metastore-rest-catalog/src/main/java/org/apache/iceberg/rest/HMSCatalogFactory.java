@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.iceberg.rest;
 
 import java.lang.reflect.InvocationTargetException;
@@ -59,19 +60,44 @@ public class HMSCatalogFactory {
     this.configuration = conf;
   }
   
+  /**
+   * Returns the configured servlet port.
+   * @return the servlet port
+   */
   public int getPort() {
     return port;
   }
-  
+
+  /**
+   * Returns the configured servlet path.
+   * @return the servlet path
+   */
   public String getPath() {
     return path;
   }
 
   /**
    * Creates the catalog instance.
+   * @param authorizer authorizes reads served from the table cache; the caching catalog enforces it
+   *                   on cache hits, which never reach HMS. Ignored when caching is disabled, as an
+   *                   uncached load reaches HMS and is authorized there.
    * @return the catalog
    */
-  private Catalog createCatalog() {
+  private Catalog createCatalog(IcebergAuthorizer authorizer) {
+    final HiveCatalog hiveCatalog = createHiveCatalog(configuration);
+    long expiry = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
+    return expiry > 0 ? new HMSCachingCatalog(hiveCatalog, expiry, authorizer) : hiveCatalog;
+  }
+
+  /**
+   * Builds the underlying {@link HiveCatalog} from the given configuration.
+   * <p>Exposed so tests can obtain a catalog through the exact production construction path rather
+   * than duplicating it; the servlet path wraps the result in an {@link HMSCachingCatalog} when a
+   * positive cache expiry is configured (see {@link #createCatalog(IcebergAuthorizer)}).</p>
+   * @param configuration the configuration
+   * @return the initialized HiveCatalog
+   */
+  public static HiveCatalog createHiveCatalog(Configuration configuration) {
     final Map<String, String> properties = new TreeMap<>();
     final String configUri = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS);
     // Clear THRIFT_URIS so HiveCatalog doesn't accidentally use Thrift connection
@@ -94,12 +120,14 @@ public class HMSCatalogFactory {
       // multiple HMS instances, we need a unique cache key.
       properties.put(CatalogProperties.CLIENT_POOL_CACHE_KEYS, String.format("conf:%s", SERVLET_ID_KEY));
     }
+    if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION)) {
+      properties.put(CatalogProperties.UNIQUE_TABLE_LOCATION, "true");
+    }
     final HiveCatalog hiveCatalog = new org.apache.iceberg.hive.HiveCatalog();
     hiveCatalog.setConf(configuration);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     hiveCatalog.initialize(catalogName, properties);
-    long expiry = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
-    return expiry > 0 ? new HMSCachingCatalog(hiveCatalog, expiry) : hiveCatalog;
+    return hiveCatalog;
   }
 
   /**
@@ -107,14 +135,15 @@ public class HMSCatalogFactory {
    * @param catalog the Iceberg catalog
    * @return the servlet
    */
-  private HttpServlet createServlet(Catalog catalog) {
+  private HttpServlet createServlet(Catalog catalog, IcebergAuthorizer icebergAuthorizer) {
     String authType = MetastoreConf.getVar(configuration, ConfVars.CATALOG_SERVLET_AUTH);
     // Iceberg REST client uses "catalog" by default
     List<String> scopes = Collections.singletonList("catalog");
     ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration, req -> scopes);
     String catalogName = MetastoreConf.getVar(configuration, ConfVars.CATALOG_DEFAULT);
     List<IcebergMetricsReporter> reporters = createReporters();
-    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalogName, catalog, reporters)));
+    var adapter = new HMSCatalogAdapter(catalogName, catalog, icebergAuthorizer, reporters);
+    return security.proxy(new HMSCatalogServlet(adapter));
   }
 
   private List<IcebergMetricsReporter> createReporters() {
@@ -135,7 +164,10 @@ public class HMSCatalogFactory {
    */
   private HttpServlet createServlet() {
     if (port >= 0 && path != null && !path.isEmpty()) {
-      return createServlet(createCatalog());
+      // Build the authorizer first so it can be shared: the caching catalog uses it to authorize
+      // cache hits, and the adapter uses it for list filtering and stage-create.
+      IcebergAuthorizer icebergAuthorizer = new IcebergAuthorizer(configuration);
+      return createServlet(createCatalog(icebergAuthorizer), icebergAuthorizer);
     }
     return null;
   }

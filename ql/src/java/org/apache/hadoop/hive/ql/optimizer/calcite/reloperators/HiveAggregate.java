@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
@@ -75,8 +76,8 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
         SqlTypeUtil.projectTypes(rowType, aggCall.getArgList()),
         aggCall.getType());
     return AggregateCall.create(aggFunction, aggCall.isDistinct(), aggCall.isApproximate(), aggCall.ignoreNulls(),
-        aggCall.getArgList(), aggCall.filterArg, aggCall.distinctKeys, aggCall.getCollation(), aggCall.getType(),
-        aggCall.getName());
+        aggCall.rexList, aggCall.getArgList(), aggCall.filterArg, aggCall.distinctKeys, aggCall.getCollation(),
+        aggCall.getType(), aggCall.getName());
   }
 
   @Override

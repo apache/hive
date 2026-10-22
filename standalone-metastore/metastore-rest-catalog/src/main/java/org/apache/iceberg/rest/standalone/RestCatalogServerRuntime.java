@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iceberg.rest.standalone;
 
@@ -43,6 +44,13 @@ public class RestCatalogServerRuntime {
   private String restEndpoint;
   private int port;
 
+  /**
+   * Creates the runtime for {@code conf}, validating that HMS Thrift URIs are configured.
+   *
+   * @param conf the configuration used to reach HMS
+   * @param serverProperties the Spring Boot server properties, used to detect SSL
+   * @throws IllegalArgumentException if {@code metastore.thrift.uris} is not configured
+   */
   public RestCatalogServerRuntime(Configuration conf, ServerProperties serverProperties) {
     this.conf = conf;
     this.serverProperties = serverProperties;
@@ -61,6 +69,13 @@ public class RestCatalogServerRuntime {
     }
   }
 
+  /**
+   * Records the actual port the web server bound to and computes the REST endpoint URL.
+   * The configured port may be 0 (bind to any free port), so the actual port is only known once
+   * the server has started.
+   *
+   * @param event the web server initialization event
+   */
   @EventListener
   public void onWebServerInitialized(WebServerInitializedEvent event) {
     int actualPort = event.getWebServer().getPort();
@@ -89,11 +104,19 @@ public class RestCatalogServerRuntime {
     return ssl != null && ssl.isEnabled();
   }
 
+  /**
+   * Returns the actual port the web server bound to, or {@code 0} if not yet initialized.
+   * @return the actual port
+   */
   @VisibleForTesting
   public int getPort() {
     return port;
   }
 
+  /**
+   * Returns the REST endpoint URL, or {@code null} if the web server is not yet initialized.
+   * @return the REST endpoint URL
+   */
   public String getRestEndpoint() {
     return restEndpoint;
   }

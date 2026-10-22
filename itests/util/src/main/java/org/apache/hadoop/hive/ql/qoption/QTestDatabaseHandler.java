@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.qoption;
 
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.ql.externalDB.PostgresExternalDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,40 +52,40 @@ import java.util.List;
 public class QTestDatabaseHandler implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(QTestDatabaseHandler.class);
 
-  private enum DatabaseType {
+  public enum DatabaseType {
     POSTGRES {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new PostgresExternalDB();
       }
     }, MYSQL {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new MySQLExternalDB();
       }
     }, MARIADB {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new MariaDB();
       }
     }, MSSQL {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new MSSQLServer();
       }
     }, ORACLE {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new Oracle();
       }
     }, DERBY {
       @Override
-      AbstractExternalDB create() {
+      public AbstractExternalDB create() {
         return new Derby();
       }
     };
 
-    abstract AbstractExternalDB create();
+    public abstract AbstractExternalDB create();
   }
 
   private final String scriptsDir;
@@ -91,6 +93,24 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
 
   public QTestDatabaseHandler(final String scriptDirectory) {
     this.scriptsDir = scriptDirectory;
+  }
+
+  public AbstractExternalDB initDb(String dbType, Path initScript) throws Exception {
+    return initDb(DatabaseType.valueOf(dbType.toUpperCase()), "qtestDB", initScript);
+  }
+
+  public AbstractExternalDB initDb(DatabaseType dbType, Path initScript) throws Exception {
+    return initDb(dbType, "qtestDB", initScript);
+  }
+
+  public AbstractExternalDB initDb(DatabaseType dbType, String dbName, Path initScript) throws Exception {
+    AbstractExternalDB db = dbType.create();
+    db.setName(dbName);
+    if (initScript != null) {
+      db.setInitScript(initScript);
+    }
+    db.start();
+    return db;
   }
 
   @Override

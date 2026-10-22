@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.security.authorization.command;
@@ -43,9 +44,6 @@ public final class CommandAuthorizer {
   /** @param command Passed so that authorization interface can provide more useful information in logs. */
   public static void doAuthorization(HiveOperation op, BaseSemanticAnalyzer sem, String command)
       throws HiveException, AuthorizationException {
-    if (skip(op, sem)) {
-      return;
-    }
 
     SessionState ss = SessionState.get();
 
@@ -59,30 +57,17 @@ public final class CommandAuthorizer {
     }
   }
 
-  private static boolean skip(HiveOperation op, BaseSemanticAnalyzer sem) throws HiveException {
-    // skipping the auth check for the "CREATE DATABASE" operation if database already exists
-    // we know that if the database already exists then "CREATE DATABASE" operation will fail.
-    if (op == HiveOperation.CREATEDATABASE) {
-      for (WriteEntity e : sem.getOutputs()) {
-        if(e.getType() == Entity.Type.DATABASE && sem.getDb().databaseExists(e.getName().split(":")[1])){
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
   private static Set<ReadEntity> getInputs(BaseSemanticAnalyzer sem) {
     Set<ReadEntity> additionalInputs = new HashSet<ReadEntity>();
-    for (Entity e : sem.getInputs()) {
+    for (Entity e : sem.getAllInputs()) {
       if (e.getType() == Entity.Type.PARTITION) {
         additionalInputs.add(new ReadEntity(e.getTable()));
       }
     }
 
+    // getAllInputs() includes tables read by materialized CTE sub-analyzers.
     // Sets.union keeps the values from the first set if they are present in both
-    return Sets.union(sem.getInputs(), additionalInputs);
+    return Sets.union(sem.getAllInputs(), additionalInputs);
   }
 
   private static Set<WriteEntity> getOutputs(BaseSemanticAnalyzer sem) {

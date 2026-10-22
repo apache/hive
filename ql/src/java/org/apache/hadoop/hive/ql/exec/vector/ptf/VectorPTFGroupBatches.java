@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
@@ -92,6 +93,21 @@ public class VectorPTFGroupBatches extends PTFPartition {
   RowPositionInBatch[] positionCache;
 
   List<Integer> inMemoryStartRowIndex;
+
+  /**
+   * Whether any of the evaluators is a group-aggregated streaming evaluator.
+   */
+  private boolean hasGroupAggregatedStreamingEvaluator;
+
+  /**
+   * List of row counts of each reduce key group (peer group) within the current partition.
+   */
+  private final List<Integer> aggregatedGroupRowCounts = new ArrayList<>();
+
+  /**
+   * Accumulates the row count of the reduce key group currently being buffered.
+   */
+  private int currentAggregatedGroupRowCount;
 
   /**
    * PartitionResults collects results for the currently evaluated partition. Before HIVE-24761, PTF
@@ -315,6 +331,14 @@ public class VectorPTFGroupBatches extends PTFPartition {
 
     this.blocks = new VectorSpillBlockContainer(spillLimitBufferedBatchCount, spillLocalDirs,
         bufferedColumnMap, bufferedTypeInfos);
+
+    hasGroupAggregatedStreamingEvaluator = false;
+    for (VectorPTFEvaluatorBase evaluator : evaluators) {
+      if (evaluator.isGroupAggregatedStreamingEvaluator()) {
+        hasGroupAggregatedStreamingEvaluator = true;
+        break;
+      }
+    }
   }
 
   /**
@@ -455,6 +479,23 @@ public class VectorPTFGroupBatches extends PTFPartition {
   }
 
   /**
+   * First pass for peer group aggregated streaming evaluators (e.g. cume_dist)
+   */
+  private void precomputeAggregatedStreamingResults() throws HiveException {
+    if (!hasGroupAggregatedStreamingEvaluator) {
+      return;
+    }
+    List<Integer> groupRowCounts =
+        Collections.unmodifiableList(aggregatedGroupRowCounts);
+    for (VectorPTFEvaluatorBase evaluator : evaluators) {
+      if (evaluator.isGroupAggregatedStreamingEvaluator()) {
+        evaluator.addStreamingGroupResults(groupRowCounts);
+      }
+    }
+    aggregatedGroupRowCounts.clear();
+  }
+
+  /**
    * This should be called, when all of the batches were processed for a group (all of the
    * evaluators have been evaluated for this group). The data is not needed anymore.
    */
@@ -504,6 +545,14 @@ public class VectorPTFGroupBatches extends PTFPartition {
     copyBufferedColumns(batch, bufferedBatch);
     bufferedBatch.isLastGroupBatch = isLastGroupBatch;
     cachedSize = -1; // clear cached size as we added new batches
+
+    if (hasGroupAggregatedStreamingEvaluator) {
+      currentAggregatedGroupRowCount += batch.size;
+      if (isLastGroupBatch) {
+        aggregatedGroupRowCounts.add(currentAggregatedGroupRowCount);
+        currentAggregatedGroupRowCount = 0;
+      }
+    }
   }
 
   public void resetEvaluators() {
@@ -837,6 +886,11 @@ public class VectorPTFGroupBatches extends PTFPartition {
   @VisibleForTesting
   void preFinishPartition() throws HiveException {
     int rows = size();
+
+    for (VectorPTFEvaluatorBase evaluator : evaluators) {
+      evaluator.setPartitionSize(rows);
+    }
+    precomputeAggregatedStreamingResults();
 
     positionCache = new RowPositionInBatch[rows + 1];
     partitionResults = new PartitionResults(rows);

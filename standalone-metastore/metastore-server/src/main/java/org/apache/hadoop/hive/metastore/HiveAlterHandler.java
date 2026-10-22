@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore;
 
@@ -64,6 +65,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.LinkedList;
 import java.util.Optional;
@@ -395,8 +397,14 @@ public class HiveAlterHandler implements AlterHandler {
         if (MetaStoreServerUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           assert(isReplicated == isDbReplicationTarget(db));
-          // Update table stats. For partitioned table, we update stats in alterPartition()
-          MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
+          // Update table stats. For partitioned table, we update stats in alterPartition().
+          // Force a recompute, which lists every file under the table location, only when the
+          // location actually changed: for a metadata-only alter the fast stats already present
+          // on the table are still valid, and relisting can be prohibitively expensive for
+          // formats that keep their partitioning in a transaction log (Delta, Iceberg, Hudi) and
+          // register as unpartitioned tables with millions of files under a single directory.
+          MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, isTableLocationChanged(oldt, newt),
+              environmentContext);
         }
 
         if (isPartitionedTable) {
@@ -1072,5 +1080,13 @@ public class HiveAlterHandler implements AlterHandler {
     } catch (InvalidInputException iie) {
       throw new InvalidObjectException("Invalid input to delete partition column stats." + iie);
     }
+  }
+
+  /** Whether an alter moved the table to a different data location. */
+  @VisibleForTesting
+  static boolean isTableLocationChanged(Table oldTable, Table newTable) {
+    return !Objects.equals(
+        oldTable.getSd() == null ? null : oldTable.getSd().getLocation(),
+        newTable.getSd() == null ? null : newTable.getSd().getLocation());
   }
 }

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.jdbc;
@@ -164,6 +165,8 @@ public class JdbcColumn {
       return Type.STRUCT_TYPE;
     case "uniontype":
       return Type.UNION_TYPE;
+    case serdeConstants.VARIANT_TYPE_NAME:
+      return Type.VARIANT_TYPE;
     case "void":
       /* fall through */
     case "null":
@@ -234,6 +237,8 @@ public class JdbcColumn {
         return serdeConstants.LIST_TYPE_NAME;
       case "struct":
         return serdeConstants.STRUCT_TYPE_NAME;
+      case serdeConstants.VARIANT_TYPE_NAME:
+        return serdeConstants.VARIANT_TYPE_NAME;
       default:
         throw new SQLException("Unrecognized column type: " + type);
     }

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.kubernetes.operator;
@@ -21,6 +22,7 @@ package org.apache.hive.kubernetes.operator;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.config.ResolvedControllerConfiguration;
+import io.javaoperatorsdk.operator.api.config.ControllerConfigurationOverrider;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.reconciler.HiveClusterReconciler;
 import org.apache.hive.kubernetes.operator.reconciler.HiveWorkflowSpec;
@@ -44,6 +46,13 @@ public final class HiveOperatorMain {
     // Get the annotation-derived base config, then inject our programmatic workflow spec.
     ControllerConfiguration<HiveCluster> baseConfig =
         operator.getConfigurationService().getConfigurationFor(reconciler);
+
+    // Watch only our own namespace: cluster-wide, a HiveCluster elsewhere using a field this
+    // build does not know fails to deserialise in the informer, which stops the process.
+    baseConfig = ControllerConfigurationOverrider.override(baseConfig)
+        .watchingOnlyCurrentNamespace().build();
+    LOG.info("Watching only this operator's own namespace");
+
     HiveWorkflowSpec workflowSpec = new HiveWorkflowSpec();
     ((ResolvedControllerConfiguration<HiveCluster>) baseConfig)
         .setWorkflowSpec(workflowSpec);

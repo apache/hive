@@ -109,10 +109,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t2`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t2`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
+WHERE 'pipeline' = `string_col` AND CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
+WHERE CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -129,12 +129,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: target_table
-                  filterExpr: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -229,12 +229,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: source_table
-                  filterExpr: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 7 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -336,10 +336,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t3`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t3`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
+WHERE 'pipeline' = `string_col` AND CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL
+WHERE CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL
 GROUP BY `date_col`, `decimal_col`) AS `t3` ON `t0`.`date_col` = `t3`.`date_col` AND `t0`.`decimal_col` = `t3`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -358,12 +358,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: target_table
-                  filterExpr: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -458,12 +458,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: source_table
-                  filterExpr: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 7 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -586,10 +586,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t2`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t2`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
+WHERE 'pipeline' = `string_col` AND CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
+WHERE CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -606,12 +606,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: target_table
-                  filterExpr: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -705,12 +705,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: source_table
-                  filterExpr: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 7 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -812,10 +812,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t3`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t3`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
+WHERE 'pipeline' = `string_col` AND CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL
+WHERE CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL
 GROUP BY `date_col`, `decimal_col`) AS `t3` ON `t0`.`date_col` = `t3`.`date_col` AND `t0`.`decimal_col` = `t3`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -834,12 +834,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: target_table
-                  filterExpr: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -933,12 +933,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: source_table
-                  filterExpr: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 7 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -1061,10 +1061,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t2`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t2`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
+WHERE 'pipeline' = `string_col` AND CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
+WHERE CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1081,12 +1081,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: target_table
-                  filterExpr: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -1181,12 +1181,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: source_table
-                  filterExpr: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 7 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -1288,10 +1288,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t3`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t3`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
+WHERE 'pipeline' = `string_col` AND CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL
+WHERE CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL
 GROUP BY `date_col`, `decimal_col`) AS `t3` ON `t0`.`date_col` = `t3`.`date_col` AND `t0`.`decimal_col` = `t3`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1310,12 +1310,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: target_table
-                  filterExpr: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -1410,12 +1410,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: source_table
-                  filterExpr: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 7 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -1538,10 +1538,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t2`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t2`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
+WHERE 'pipeline' = `string_col` AND CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
+WHERE CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1558,12 +1558,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: target_table
-                  filterExpr: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -1657,12 +1657,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: source_table
-                  filterExpr: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 7 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -1764,10 +1764,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t3`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t3`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
+WHERE 'pipeline' = `string_col` AND CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL
+WHERE CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' AND `date_col` IS NOT NULL
 GROUP BY `date_col`, `decimal_col`) AS `t3` ON `t0`.`date_col` = `t3`.`date_col` AND `t0`.`decimal_col` = `t3`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1786,12 +1786,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: target_table
-                  filterExpr: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: date_col (type: date), decimal_col (type: decimal(38,0))
@@ -1885,12 +1885,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: source_table
-                  filterExpr: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                  filterExpr: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                   Statistics: Num rows: 7 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null) (type: boolean)
+                    predicate: ((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: date_col (type: date), decimal_col (type: decimal(38,0))

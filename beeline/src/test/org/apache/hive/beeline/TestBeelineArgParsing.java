@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.beeline;
@@ -109,13 +110,14 @@ public class TestBeelineArgParsing {
     extraContent.put(new File("META-INF/services/java.sql.Driver"), dummyDriverClazzName);
     File jarFile = HiveTestUtils.genLocalJarForTest(u, dummyDriverClazzName, extraContent);
     String pathToDummyDriver = jarFile.getAbsolutePath();
+    String postgresVersion = System.getProperty("postgres.version");
     String pathToPostgresJar = System.getProperty("maven.local.repository")
         + File.separator + "org"
         + File.separator + "postgresql"
         + File.separator + "postgresql"
-        + File.separator + "42.7.3"
+        + File.separator + postgresVersion
         + File.separator
-        + "postgresql-42.7.3.jar";
+        + "postgresql-" + postgresVersion + ".jar";
     return Arrays.asList(new Object[][] {
         { "jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver", pathToPostgresJar, true },
         { "jdbc:dummy://host:5432/testdb", dummyDriverClazzName, pathToDummyDriver, false } });

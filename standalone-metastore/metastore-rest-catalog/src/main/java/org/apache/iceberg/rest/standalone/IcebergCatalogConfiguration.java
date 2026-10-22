@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iceberg.rest.standalone;
 
@@ -36,9 +37,20 @@ import org.springframework.context.annotation.Bean;
 @org.springframework.context.annotation.Configuration
 public class IcebergCatalogConfiguration {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergCatalogConfiguration.class);
+
+  /** The servlet path used when none is configured. */
   public static final String DEFAULT_SERVLET_PATH = "iceberg";
+
+  /** The servlet port used when none is configured. */
   public static final int DEFAULT_PORT = 8080;
 
+  /**
+   * Builds the {@link Configuration} used by the REST Catalog servlet, applying any {@code -D}
+   * arguments from the command line as configuration overrides.
+   *
+   * @param args the application's command-line arguments
+   * @return the configuration
+   */
   @Bean
   public Configuration hadoopConfiguration(ApplicationArguments args) {
     Configuration conf = MetastoreConf.newMetastoreConf();
@@ -53,6 +65,12 @@ public class IcebergCatalogConfiguration {
     return conf;
   }
 
+  /**
+   * Registers the REST Catalog servlet built from {@code conf}.
+   *
+   * @param conf the configuration
+   * @return the servlet registration
+   */
   @Bean
   public ServletRegistrationBean<HttpServlet> restCatalogServlet(Configuration conf) {
     return createRestCatalogServlet(conf);
@@ -60,6 +78,8 @@ public class IcebergCatalogConfiguration {
 
   /**
    * Creates the REST Catalog servlet registration. Shared by production config and tests.
+   * @param conf the configuration
+   * @return the servlet registration
    */
   public static ServletRegistrationBean<HttpServlet> createRestCatalogServlet(Configuration conf) {
     String servletPath = MetastoreConf.getVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_PATH);

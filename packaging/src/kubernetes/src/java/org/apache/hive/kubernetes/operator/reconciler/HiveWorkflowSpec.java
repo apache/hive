@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.kubernetes.operator.reconciler;
@@ -185,19 +186,14 @@ public final class HiveWorkflowSpec implements WorkflowSpec {
   }
 
   /**
-   * Reconcile precondition for HiveServer2: if Metastore is managed,
-   * wait for it to be ready before reconciling HS2.
+   * Reconcile precondition for HiveServer2: at least one ready Metastore replica, not every
+   * replica. An unmet reconcile precondition deletes the dependent, so requiring the full
+   * count took HiveServer2 down whenever one Metastore pod restarted.
    */
   private static Condition<?, HiveCluster> hs2Precondition() {
     return (dependentResource, primary, context) -> {
       if (!primary.getSpec().metastore().isEnabled()) {
         return true;
-      }
-      int desiredReplicas;
-      if (primary.getSpec().metastore().autoscaling().isEnabled()) {
-        desiredReplicas = Math.max(1, primary.getSpec().metastore().autoscaling().minReplicas());
-      } else {
-        desiredReplicas = primary.getSpec().metastore().replicas();
       }
       return context.getSecondaryResources(Deployment.class).stream()
           .filter(d -> d.getMetadata().getName().equals(
@@ -205,7 +201,7 @@ public final class HiveWorkflowSpec implements WorkflowSpec {
           .findFirst()
           .map(deployment -> deployment.getStatus() != null
               && deployment.getStatus().getReadyReplicas() != null
-              && deployment.getStatus().getReadyReplicas() >= desiredReplicas)
+              && deployment.getStatus().getReadyReplicas() >= 1)
           .orElse(false);
     };
   }

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
@@ -474,8 +475,12 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTERDATACONNECTOR, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERDATACONNECTOR_OWNER, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERDATACONNECTOR_URL, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.DESCDATACONNECTOR, PrivRequirement.newIOPrivRequirement(null, null));
+    // A connector definition carries the DBCP credentials for the remote source, so rendering one
+    // requires the same privilege as creating, altering or dropping it. SHOW CONNECTORS registers
+    // no entity of its own, so it is gated as a whole rather than per object.
+    op2Priv.put(HiveOperationType.DESCDATACONNECTOR, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, null));
     op2Priv.put(HiveOperationType.SHOWDATACONNECTORS, PrivRequirement.newIOPrivRequirement(null, null));
+    adminPrivOps.add(HiveOperationType.SHOWDATACONNECTORS);
 
     op2Priv.put(HiveOperationType.CREATECATALOG, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.DFS_URI),

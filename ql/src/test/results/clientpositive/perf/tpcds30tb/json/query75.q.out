@@ -1907,7 +1907,11 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
           },
           {
             "op": {
@@ -1955,7 +1959,13 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 4.218117522679961E25
@@ -3025,7 +3035,11 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
           },
           {
             "op": {
@@ -3073,7 +3087,13 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 1.6171414807076423E26
@@ -4416,7 +4436,11 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
           },
           {
             "op": {
@@ -4464,7 +4488,13 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 1.058808760561964E25
@@ -5095,7 +5125,11 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
           },
           {
             "op": {
@@ -5143,7 +5177,13 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 4.218117522679961E25
@@ -5586,7 +5626,11 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
           },
           {
             "op": {
@@ -5634,7 +5678,13 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 1.6171414807076423E26
@@ -6179,7 +6229,11 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
           },
           {
             "op": {
@@ -6227,7 +6281,13 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 1.058808760561964E25
@@ -6627,7 +6687,11 @@
                 "input": 4,
                 "name": "$4"
               }
-            ]
+            ],
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            }
           },
           {
             "op": {
@@ -6644,7 +6708,13 @@
                 "input": 5,
                 "name": "$5"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 19,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 2.4290202464284087E43

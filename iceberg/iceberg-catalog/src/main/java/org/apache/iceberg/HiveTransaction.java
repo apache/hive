@@ -19,9 +19,6 @@
 
 package org.apache.iceberg;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.StagingTableOperations;
 import org.slf4j.Logger;
@@ -37,8 +34,6 @@ import org.slf4j.LoggerFactory;
 public class HiveTransaction extends BaseTransaction {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveTransaction.class);
-
-  private static final MethodHandle CLEANUP_HANDLE = initCleanupHandle();
 
   private final HiveTableOperations hiveOps;
   private final StagingTableOperations stagingOps;
@@ -69,11 +64,7 @@ public class HiveTransaction extends BaseTransaction {
    * <p>Called by the coordinator when the batch HMS update fails after staging succeeded.
    */
   public void cleanUpOnCommitFailure() {
-    try {
-      CLEANUP_HANDLE.invoke(this);
-    } catch (Throwable t) {
-      throw new IllegalStateException("Failed to invoke cleanUpOnCommitFailure", t);
-    }
+    cleanUp();
     // delete the staged metadata JSON file
     deleteMetadataFile();
   }
@@ -89,21 +80,6 @@ public class HiveTransaction extends BaseTransaction {
       } catch (RuntimeException e) {
         LOG.warn("Failed to clean metadata file {}", metadataLocation, e);
       }
-    }
-  }
-
-  private static MethodHandle initCleanupHandle() {
-    try {
-      MethodHandles.Lookup lookup =
-          MethodHandles.privateLookupIn(BaseTransaction.class, MethodHandles.lookup());
-      return lookup.findSpecial(
-          BaseTransaction.class,
-          "cleanUpOnCommitFailure",
-          MethodType.methodType(void.class),
-          BaseTransaction.class
-      );
-    } catch (Exception e) {
-      throw new ExceptionInInitializerError(e);
     }
   }
 

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iceberg.rest;
 
@@ -57,6 +58,16 @@ class HiveIcebergRESTViewCatalogTests extends ViewCatalogTests<RESTCatalog> {
   }
 
   @Override
+  protected String viewLocation(String... paths) {
+    StringBuilder location = new StringBuilder("s3a://test/test-warehouse");
+    for (String path : paths) {
+      location.append("/").append(path);
+    }
+
+    return location.toString();
+  }
+
+  @Override
   protected boolean requiresNamespaceCreate() {
     return true;
   }
@@ -64,25 +75,5 @@ class HiveIcebergRESTViewCatalogTests extends ViewCatalogTests<RESTCatalog> {
   @Override
   protected boolean supportsServerSideRetry() {
     return true;
-  }
-
-  @Override
-  public void completeCreateView() {
-    // This test case requires https://github.com/apache/iceberg/pull/14653
-  }
-
-  @Override
-  public void createAndReplaceViewWithLocation() {
-    // This test case requires https://github.com/apache/iceberg/pull/14653
-  }
-
-  @Override
-  public void createViewWithCustomMetadataLocation() {
-    // This test case requires https://github.com/apache/iceberg/pull/14653
-  }
-
-  @Override
-  public void updateViewLocation() {
-    // This test case requires https://github.com/apache/iceberg/pull/14653
   }
 }

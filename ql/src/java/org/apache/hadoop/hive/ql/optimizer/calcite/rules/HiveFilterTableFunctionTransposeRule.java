@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
@@ -23,20 +24,16 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.metadata.RelColumnMapping;
-import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
@@ -44,17 +41,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Rule to transpose Filter and TableFunctionScan RelNodes
- *
- * We cannot use Calcite's FilterTableFunctionTransposeRule because that rule
- * uses LogicalFilter and LogicalTableFunctionScan.  We should remove this
- * class when CALCITE-5985 is fixed (and remove the CALCITE_5985_FIXED entry
- * in Bug.java)
+ * Rule to transpose Filter and TableFunctionScan RelNodes.
  */
 public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
 
   public static final HiveFilterTableFunctionTransposeRule INSTANCE =
-          new HiveFilterTableFunctionTransposeRule(HiveRelFactories.HIVE_BUILDER);
+      new HiveFilterTableFunctionTransposeRule(HiveRelFactories.HIVE_BUILDER);
 
   public HiveFilterTableFunctionTransposeRule(RelBuilderFactory relBuilderFactory) {
     super(operand(HiveFilter.class, operand(HiveTableFunctionScan.class, any())),
@@ -63,10 +55,6 @@ public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
 
   @Override
   public boolean matches(RelOptRuleCall call) {
-    if (Bug.CALCITE_5985_FIXED) {
-      throw new IllegalStateException("Class is redundant after fix is merged into Calcite");
-    }
-
     final Filter filterRel = call.rel(0);
     final HiveTableFunctionScan tfs = call.rel(1);
 

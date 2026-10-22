@@ -8,7 +8,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=
             HiveFilter(condition=[IS NOT NULL($4)])
               HiveTableScan(table=[[default, customer]], table:alias=[customer])
           HiveProject(ca_address_sk=[$0])
-            HiveFilter(condition=[=($8, _UTF-16LE'IL')])
+            HiveFilter(condition=[=($8, 'IL')])
               HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
         HiveProject(wr_returning_customer_sk=[$0], ca_state=[$1], $f2=[$2])
           HiveFilter(condition=[IS NOT NULL($2)])

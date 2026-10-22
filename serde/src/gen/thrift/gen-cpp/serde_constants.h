@@ -58,6 +58,7 @@ class serdeConstants {
   std::string STRUCT_TYPE_NAME;
   std::string UNION_TYPE_NAME;
   std::string VARIANT_TYPE_NAME;
+  std::string UNKNOWN_TYPE_NAME;
   std::string LIST_COLUMNS;
   std::string LIST_COLUMN_TYPES;
   std::string LIST_PARTITION_COLUMNS;

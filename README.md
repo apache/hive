@@ -19,7 +19,7 @@ limitations under the License.
 Apache Hive (TM)
 ================
 [![Master Build Status](https://travis-ci.org/apache/hive.svg?branch=master)](https://travis-ci.org/apache/hive/branches)
-[![Maven Central](https://maven-badges.sml.io/maven-central/org.apache.hive/hive/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.hive%22)
+[![Maven Central](https://img.shields.io/maven-central/v/org.apache.hive/hive.svg?color=brightgreen)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.hive%22)
 
 The Apache Hive (TM) data warehouse software facilitates reading,
 writing, and managing large datasets residing in distributed storage

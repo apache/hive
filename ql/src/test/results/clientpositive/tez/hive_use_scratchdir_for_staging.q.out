@@ -1,0 +1,211 @@
+PREHOOK: query: create database mydb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:mydb
+POSTHOOK: query: create database mydb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:mydb
+PREHOOK: query: create external table mydb.source_test_tbl (a string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mydb
+PREHOOK: Output: mydb@source_test_tbl
+POSTHOOK: query: create external table mydb.source_test_tbl (a string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:mydb
+POSTHOOK: Output: mydb@source_test_tbl
+PREHOOK: query: create external table mydb.target_test_tbl (a string) partitioned by (created string, day string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mydb
+PREHOOK: Output: mydb@target_test_tbl
+POSTHOOK: query: create external table mydb.target_test_tbl (a string) partitioned by (created string, day string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:mydb
+POSTHOOK: Output: mydb@target_test_tbl
+PREHOOK: query: insert into table mydb.source_test_tbl values ('a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: mydb@source_test_tbl
+POSTHOOK: query: insert into table mydb.source_test_tbl values ('a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: mydb@source_test_tbl
+POSTHOOK: Lineage: source_test_tbl.a SCRIPT []
+PREHOOK: query: insert into table mydb.source_test_tbl values ('b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: mydb@source_test_tbl
+POSTHOOK: query: insert into table mydb.source_test_tbl values ('b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: mydb@source_test_tbl
+POSTHOOK: Lineage: source_test_tbl.a SCRIPT []
+PREHOOK: query: insert into table mydb.target_test_tbl partition (created='20250101', day)
+select a, '20250101' as day
+from mydb.source_test_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: mydb@source_test_tbl
+PREHOOK: Output: mydb@target_test_tbl@created=20250101
+POSTHOOK: query: insert into table mydb.target_test_tbl partition (created='20250101', day)
+select a, '20250101' as day
+from mydb.source_test_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: mydb@source_test_tbl
+POSTHOOK: Output: mydb@target_test_tbl@created=20250101/day=20250101
+POSTHOOK: Lineage: target_test_tbl PARTITION(created=20250101,day=20250101).a SIMPLE [(source_test_tbl)source_test_tbl.FieldSchema(name:a, type:string, comment:null), ]
+PREHOOK: query: select * from mydb.target_test_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: mydb@target_test_tbl
+PREHOOK: Input: mydb@target_test_tbl@created=20250101/day=20250101
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mydb.target_test_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: mydb@target_test_tbl
+POSTHOOK: Input: mydb@target_test_tbl@created=20250101/day=20250101
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+a	20250101	20250101
+b	20250101	20250101
+PREHOOK: query: show partitions mydb.target_test_tbl
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: mydb@target_test_tbl
+POSTHOOK: query: show partitions mydb.target_test_tbl
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: mydb@target_test_tbl
+created=20250101/day=20250101
+PREHOOK: query: insert overwrite table mydb.target_test_tbl partition (created='20250101', day)
+select a, '20250101' as day
+from mydb.source_test_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: mydb@source_test_tbl
+PREHOOK: Output: mydb@target_test_tbl@created=20250101
+POSTHOOK: query: insert overwrite table mydb.target_test_tbl partition (created='20250101', day)
+select a, '20250101' as day
+from mydb.source_test_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: mydb@source_test_tbl
+POSTHOOK: Output: mydb@target_test_tbl@created=20250101/day=20250101
+POSTHOOK: Lineage: target_test_tbl PARTITION(created=20250101,day=20250101).a SIMPLE [(source_test_tbl)source_test_tbl.FieldSchema(name:a, type:string, comment:null), ]
+PREHOOK: query: select * from mydb.target_test_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: mydb@target_test_tbl
+PREHOOK: Input: mydb@target_test_tbl@created=20250101/day=20250101
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mydb.target_test_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: mydb@target_test_tbl
+POSTHOOK: Input: mydb@target_test_tbl@created=20250101/day=20250101
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+a	20250101	20250101
+b	20250101	20250101
+PREHOOK: query: show partitions mydb.target_test_tbl
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: mydb@target_test_tbl
+POSTHOOK: query: show partitions mydb.target_test_tbl
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: mydb@target_test_tbl
+created=20250101/day=20250101
+PREHOOK: query: insert overwrite table mydb.target_test_tbl partition (created='20250101', day)
+select a, '20250101' as day
+from mydb.source_test_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: mydb@source_test_tbl
+PREHOOK: Output: mydb@target_test_tbl@created=20250101
+POSTHOOK: query: insert overwrite table mydb.target_test_tbl partition (created='20250101', day)
+select a, '20250101' as day
+from mydb.source_test_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: mydb@source_test_tbl
+POSTHOOK: Output: mydb@target_test_tbl@created=20250101/day=20250101
+POSTHOOK: Lineage: target_test_tbl PARTITION(created=20250101,day=20250101).a SIMPLE [(source_test_tbl)source_test_tbl.FieldSchema(name:a, type:string, comment:null), ]
+PREHOOK: query: select * from mydb.target_test_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: mydb@target_test_tbl
+PREHOOK: Input: mydb@target_test_tbl@created=20250101/day=20250101
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mydb.target_test_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: mydb@target_test_tbl
+POSTHOOK: Input: mydb@target_test_tbl@created=20250101/day=20250101
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+a	20250101	20250101
+b	20250101	20250101
+PREHOOK: query: show partitions mydb.target_test_tbl
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: mydb@target_test_tbl
+POSTHOOK: query: show partitions mydb.target_test_tbl
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: mydb@target_test_tbl
+created=20250101/day=20250101
+PREHOOK: query: analyze table mydb.target_test_tbl partition(created='20250101', day='20250101') compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: mydb@target_test_tbl
+PREHOOK: Output: mydb@target_test_tbl
+PREHOOK: Output: mydb@target_test_tbl@created=20250101/day=20250101
+POSTHOOK: query: analyze table mydb.target_test_tbl partition(created='20250101', day='20250101') compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: mydb@target_test_tbl
+POSTHOOK: Output: mydb@target_test_tbl
+POSTHOOK: Output: mydb@target_test_tbl@created=20250101/day=20250101
+PREHOOK: query: desc formatted mydb.target_test_tbl partition(created='20250101', day='20250101')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: mydb@target_test_tbl
+POSTHOOK: query: desc formatted mydb.target_test_tbl partition(created='20250101', day='20250101')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: mydb@target_test_tbl
+# col_name            	data_type           	comment             
+a                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+created             	string              	                    
+day                 	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[20250101, 20250101]	 
+Database:           	mydb                	 
+Table:              	target_test_tbl     	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	#Masked#
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	178                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table mydb.source_test_tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: mydb@source_test_tbl
+PREHOOK: Output: database:mydb
+PREHOOK: Output: mydb@source_test_tbl
+POSTHOOK: query: drop table mydb.source_test_tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: mydb@source_test_tbl
+POSTHOOK: Output: database:mydb
+POSTHOOK: Output: mydb@source_test_tbl
+PREHOOK: query: drop table mydb.target_test_tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: mydb@target_test_tbl
+PREHOOK: Output: database:mydb
+PREHOOK: Output: mydb@target_test_tbl
+POSTHOOK: query: drop table mydb.target_test_tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: mydb@target_test_tbl
+POSTHOOK: Output: database:mydb
+POSTHOOK: Output: mydb@target_test_tbl
+PREHOOK: query: drop database mydb
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:mydb
+PREHOOK: Output: database:mydb
+POSTHOOK: query: drop database mydb
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:mydb
+POSTHOOK: Output: database:mydb

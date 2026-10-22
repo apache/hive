@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec;
@@ -788,6 +789,7 @@ public final class FunctionRegistry {
     system.registerFunction("ST_Z", ST_Z.class);
 
     // Iceberg UDFs
+    system.registerGenericUDF(serdeConstants.VARIANT_TYPE_NAME, GenericUDFToVariant.class);
     system.registerGenericUDF("parse_json", GenericUDFParseJson.class);
     system.registerGenericUDF("to_json", GenericUDFToJson.class);
     system.registerGenericUDF("variant_get", GenericUDFVariantGet.class);
@@ -1637,7 +1639,7 @@ public final class FunctionRegistry {
         udfClass == GenericUDFToVarchar.class || udfClass == GenericUDFToChar.class ||
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
         udfClass == GenericUDFToDate.class || udfClass == GenericUDFToDecimal.class ||
-        udfClass == GenericUDFToTimestampLocalTZ.class;
+        udfClass == GenericUDFToTimestampLocalTZ.class || udfClass == GenericUDFToVariant.class;
   }
 
   /**

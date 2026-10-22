@@ -1,20 +1,20 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore;
@@ -26,11 +26,14 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -237,6 +240,57 @@ public class TestPartitionProjectionEvaluator {
             false, null, null);
     // CD_PATTERN should exist since sd gets expanded to all the child nodes
     Assert.assertTrue(projectionEvaluator.find(CD_PATTERN));
+  }
+
+  /**
+   * Captures the SQL text that the evaluator hands to the PersistenceManager while answering
+   * {@link PartitionProjectionEvaluator#getPartitionsUsingProjectionList(List)}, without reaching
+   * into any private method. The PersistenceManager/Query are mocked just like in the rest of this
+   * test class; the mocked query simply returns no rows so the evaluator exits its result loop
+   * immediately after the SQL has been built and submitted.
+   */
+  private String captureGeneratedQuery(PersistenceManager mockPm,
+      List<String> projectionFields) throws Exception {
+    Query mockQuery = Mockito.mock(Query.class);
+    Mockito.when(mockPm.newQuery(Mockito.anyString(), Mockito.any())).thenReturn(mockQuery);
+    Mockito.when(mockQuery.execute()).thenReturn(Collections.emptyList());
+
+    PartitionProjectionEvaluator projectionEvaluator =
+        new PartitionProjectionEvaluator(mockPm, fieldNameToColumnName, projectionFields, false,
+            false, null, null);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("getPartitionsUsingProjectionList");
+    try {
+      projectionEvaluator.getPartitionsUsingProjectionList(Collections.singletonList(1L));
+    } finally {
+      Deadline.stopTimer();
+    }
+
+    ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
+    Mockito.verify(mockPm).newQuery(Mockito.eq("javax.jdo.query.SQL"), sqlCaptor.capture());
+    return sqlCaptor.getValue();
+  }
+
+  @Test
+  public void testSerdesNotJoinedWhenOnlySdFieldsRequested() throws Exception {
+    String generatedSql = captureGeneratedQuery(Mockito.mock(PersistenceManager.class),
+        Arrays.asList("createTime", "sd.location"));
+
+    Assert.assertTrue("sd field is requested, SDS should be joined",
+        generatedSql.contains("join " + "\"SDS\""));
+    Assert.assertFalse("no serde field is requested, SERDES should not be joined",
+        generatedSql.contains("\"SERDES\""));
+  }
+
+  @Test
+  public void testSerdesJoinedWhenSerdeFieldRequested() throws Exception {
+    String generatedSql = captureGeneratedQuery(Mockito.mock(PersistenceManager.class),
+        Arrays.asList("createTime", "sd.serdeInfo.serializationLib"));
+
+    Assert.assertTrue("sd field is implied by a serde field, SDS should be joined",
+        generatedSql.contains("join " + "\"SDS\""));
+    Assert.assertTrue("serde field is requested, SERDES should be joined",
+        generatedSql.contains("join " + "\"SERDES\""));
   }
 
   @Test(expected = MetaException.class)

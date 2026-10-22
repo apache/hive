@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.udf.generic;
@@ -22,7 +23,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrimCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrimColCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrimColScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrimScalarCol;
 
 /**
  * UDFRTrim.
@@ -33,7 +36,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrimColScalar;
     extended = "Example:\n"
     + "  > SELECT _FUNC_('facebook   ') FROM src LIMIT 1;\n" + "  'facebook'\n"
     + "  > SELECT _FUNC_('facebookxyzzyx', 'xzy') FROM src LIMIT 1;\n" + "  'facebook'")
-@VectorizedExpressions({ StringRTrimCol.class, StringRTrimColScalar.class })
+@VectorizedExpressions({
+    StringRTrimCol.class,
+    StringRTrimColScalar.class,
+    StringRTrimColCol.class,
+    StringRTrimScalarCol.class })
 public class GenericUDFRTrim extends GenericUDFBaseTrim {
   public GenericUDFRTrim() {
     super("rtrim");

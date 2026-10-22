@@ -9,20 +9,21 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.ArgumentType;
+import org.apache.hadoop.hive.ql.udf.generic.TruncUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
@@ -44,26 +45,8 @@ public class TruncDecimal extends TruncFloat {
 
   @Override
   protected void trunc(ColumnVector inputColVector, ColumnVector outputColVector, int i) {
-    HiveDecimal input = ((DecimalColumnVector) inputColVector).vector[i].getHiveDecimal();
-
-    HiveDecimal output = trunc(input);
-    ((DecimalColumnVector) outputColVector).vector[i] = new HiveDecimalWritable(output);
-  }
-
-  protected HiveDecimal trunc(HiveDecimal input) {
-    HiveDecimal pow = HiveDecimal.create(Math.pow(10, Math.abs(scale)));
-
-    if (scale >= 0) {
-      if (scale != 0) {
-        long longValue = input.multiply(pow).longValue();
-        return HiveDecimal.create(longValue).divide(pow);
-      } else {
-        return HiveDecimal.create(input.longValue());
-      }
-    } else {
-      long longValue2 = input.divide(pow).longValue();
-      return HiveDecimal.create(longValue2).multiply(pow);
-    }
+    HiveDecimalWritable input = ((DecimalColumnVector) inputColVector).vector[i];
+    TruncUtils.trunc(input, scale, ((DecimalColumnVector) outputColVector).vector[i]);
   }
 
   protected ArgumentType getInputColumnType() {

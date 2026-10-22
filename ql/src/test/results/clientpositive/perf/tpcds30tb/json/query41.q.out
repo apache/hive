@@ -697,11 +697,11 @@
                           "name": "$12"
                         },
                         {
-                          "literal": "Women",
+                          "literal": "Women                                             ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 5
+                            "precision": 50
                           }
                         }
                       ]
@@ -718,19 +718,19 @@
                           "name": "$17"
                         },
                         {
-                          "literal": "frosted",
+                          "literal": "frosted             ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 7
+                            "precision": 20
                           }
                         },
                         {
-                          "literal": "rose",
+                          "literal": "rose                ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 4
+                            "precision": 20
                           }
                         }
                       ]
@@ -747,329 +747,7 @@
                           "name": "$18"
                         },
                         {
-                          "literal": "Gross",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
-                          }
-                        },
-                        {
-                          "literal": "Lb",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 2
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 15,
-                          "name": "$15"
-                        },
-                        {
-                          "literal": "large",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
-                          }
-                        },
-                        {
-                          "literal": "medium",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 6
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "op": {
-                    "name": "AND",
-                    "kind": "AND",
-                    "syntax": "BINARY"
-                  },
-                  "operands": [
-                    {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 12,
-                          "name": "$12"
-                        },
-                        {
-                          "literal": "Women",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 17,
-                          "name": "$17"
-                        },
-                        {
-                          "literal": "black",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
-                          }
-                        },
-                        {
-                          "literal": "chocolate",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 9
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 18,
-                          "name": "$18"
-                        },
-                        {
-                          "literal": "Box",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 3
-                          }
-                        },
-                        {
-                          "literal": "Dram",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 4
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 15,
-                          "name": "$15"
-                        },
-                        {
-                          "literal": "economy",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 7
-                          }
-                        },
-                        {
-                          "literal": "petite",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 6
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "op": {
-                    "name": "AND",
-                    "kind": "AND",
-                    "syntax": "BINARY"
-                  },
-                  "operands": [
-                    {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 12,
-                          "name": "$12"
-                        },
-                        {
-                          "literal": "Men",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 3
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 17,
-                          "name": "$17"
-                        },
-                        {
-                          "literal": "magenta",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 7
-                          }
-                        },
-                        {
-                          "literal": "slate",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 18,
-                          "name": "$18"
-                        },
-                        {
-                          "literal": "Bundle",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 6
-                          }
-                        },
-                        {
-                          "literal": "Carton",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 6
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 15,
-                          "name": "$15"
-                        },
-                        {
-                          "literal": "N/A",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 3
-                          }
-                        },
-                        {
-                          "literal": "small",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "op": {
-                    "name": "AND",
-                    "kind": "AND",
-                    "syntax": "BINARY"
-                  },
-                  "operands": [
-                    {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 12,
-                          "name": "$12"
-                        },
-                        {
-                          "literal": "Men",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 3
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 17,
-                          "name": "$17"
-                        },
-                        {
-                          "literal": "cornflower",
+                          "literal": "Gross     ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
@@ -1077,40 +755,11 @@
                           }
                         },
                         {
-                          "literal": "firebrick",
+                          "literal": "Lb        ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 9
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 18,
-                          "name": "$18"
-                        },
-                        {
-                          "literal": "Oz",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 2
-                          }
-                        },
-                        {
-                          "literal": "Pound",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
+                            "precision": 10
                           }
                         }
                       ]
@@ -1127,19 +776,19 @@
                           "name": "$15"
                         },
                         {
-                          "literal": "large",
+                          "literal": "large               ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 5
+                            "precision": 20
                           }
                         },
                         {
-                          "literal": "medium",
+                          "literal": "medium              ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
+                            "precision": 20
                           }
                         }
                       ]
@@ -1165,11 +814,11 @@
                           "name": "$12"
                         },
                         {
-                          "literal": "Women",
+                          "literal": "Women                                             ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 5
+                            "precision": 50
                           }
                         }
                       ]
@@ -1186,19 +835,19 @@
                           "name": "$17"
                         },
                         {
-                          "literal": "almond",
+                          "literal": "black               ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
+                            "precision": 20
                           }
                         },
                         {
-                          "literal": "steel",
+                          "literal": "chocolate           ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 5
+                            "precision": 20
                           }
                         }
                       ]
@@ -1215,95 +864,7 @@
                           "name": "$18"
                         },
                         {
-                          "literal": "Case",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 4
-                          }
-                        },
-                        {
-                          "literal": "Tsp",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 3
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 15,
-                          "name": "$15"
-                        },
-                        {
-                          "literal": "large",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
-                          }
-                        },
-                        {
-                          "literal": "medium",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 6
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "op": {
-                    "name": "AND",
-                    "kind": "AND",
-                    "syntax": "BINARY"
-                  },
-                  "operands": [
-                    {
-                      "op": {
-                        "name": "=",
-                        "kind": "EQUALS",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 12,
-                          "name": "$12"
-                        },
-                        {
-                          "literal": "Women",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 17,
-                          "name": "$17"
-                        },
-                        {
-                          "literal": "aquamarine",
+                          "literal": "Box       ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
@@ -1311,40 +872,11 @@
                           }
                         },
                         {
-                          "literal": "purple",
+                          "literal": "Dram      ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "op": {
-                        "name": "IN",
-                        "kind": "OTHER_FUNCTION",
-                        "syntax": "SPECIAL"
-                      },
-                      "operands": [
-                        {
-                          "input": 18,
-                          "name": "$18"
-                        },
-                        {
-                          "literal": "Bunch",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 5
-                          }
-                        },
-                        {
-                          "literal": "Gram",
-                          "type": {
-                            "type": "CHAR",
-                            "nullable": false,
-                            "precision": 4
+                            "precision": 10
                           }
                         }
                       ]
@@ -1361,19 +893,19 @@
                           "name": "$15"
                         },
                         {
-                          "literal": "economy",
+                          "literal": "economy             ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 7
+                            "precision": 20
                           }
                         },
                         {
-                          "literal": "petite",
+                          "literal": "petite              ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
+                            "precision": 20
                           }
                         }
                       ]
@@ -1399,11 +931,11 @@
                           "name": "$12"
                         },
                         {
-                          "literal": "Men",
+                          "literal": "Men                                               ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 3
+                            "precision": 50
                           }
                         }
                       ]
@@ -1420,19 +952,19 @@
                           "name": "$17"
                         },
                         {
-                          "literal": "lavender",
+                          "literal": "magenta             ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 8
+                            "precision": 20
                           }
                         },
                         {
-                          "literal": "papaya",
+                          "literal": "slate               ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
+                            "precision": 20
                           }
                         }
                       ]
@@ -1449,19 +981,19 @@
                           "name": "$18"
                         },
                         {
-                          "literal": "Cup",
+                          "literal": "Bundle    ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 3
+                            "precision": 10
                           }
                         },
                         {
-                          "literal": "Pallet",
+                          "literal": "Carton    ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
+                            "precision": 10
                           }
                         }
                       ]
@@ -1478,19 +1010,19 @@
                           "name": "$15"
                         },
                         {
-                          "literal": "N/A",
+                          "literal": "N/A                 ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 3
+                            "precision": 20
                           }
                         },
                         {
-                          "literal": "small",
+                          "literal": "small               ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 5
+                            "precision": 20
                           }
                         }
                       ]
@@ -1516,11 +1048,11 @@
                           "name": "$12"
                         },
                         {
-                          "literal": "Men",
+                          "literal": "Men                                               ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 3
+                            "precision": 50
                           }
                         }
                       ]
@@ -1537,19 +1069,19 @@
                           "name": "$17"
                         },
                         {
-                          "literal": "cyan",
+                          "literal": "cornflower          ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 4
+                            "precision": 20
                           }
                         },
                         {
-                          "literal": "maroon",
+                          "literal": "firebrick           ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
+                            "precision": 20
                           }
                         }
                       ]
@@ -1566,19 +1098,19 @@
                           "name": "$18"
                         },
                         {
-                          "literal": "Each",
+                          "literal": "Oz        ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 4
+                            "precision": 10
                           }
                         },
                         {
-                          "literal": "N/A",
+                          "literal": "Pound     ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 3
+                            "precision": 10
                           }
                         }
                       ]
@@ -1595,19 +1127,487 @@
                           "name": "$15"
                         },
                         {
-                          "literal": "large",
+                          "literal": "large               ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 5
+                            "precision": 20
                           }
                         },
                         {
-                          "literal": "medium",
+                          "literal": "medium              ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
+                            "precision": 20
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "AND",
+                    "kind": "AND",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "op": {
+                        "name": "=",
+                        "kind": "EQUALS",
+                        "syntax": "BINARY"
+                      },
+                      "operands": [
+                        {
+                          "input": 12,
+                          "name": "$12"
+                        },
+                        {
+                          "literal": "Women                                             ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 50
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 17,
+                          "name": "$17"
+                        },
+                        {
+                          "literal": "almond              ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        },
+                        {
+                          "literal": "steel               ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 18,
+                          "name": "$18"
+                        },
+                        {
+                          "literal": "Case      ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 10
+                          }
+                        },
+                        {
+                          "literal": "Tsp       ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 10
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 15,
+                          "name": "$15"
+                        },
+                        {
+                          "literal": "large               ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        },
+                        {
+                          "literal": "medium              ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "AND",
+                    "kind": "AND",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "op": {
+                        "name": "=",
+                        "kind": "EQUALS",
+                        "syntax": "BINARY"
+                      },
+                      "operands": [
+                        {
+                          "input": 12,
+                          "name": "$12"
+                        },
+                        {
+                          "literal": "Women                                             ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 50
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 17,
+                          "name": "$17"
+                        },
+                        {
+                          "literal": "aquamarine          ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        },
+                        {
+                          "literal": "purple              ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 18,
+                          "name": "$18"
+                        },
+                        {
+                          "literal": "Bunch     ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 10
+                          }
+                        },
+                        {
+                          "literal": "Gram      ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 10
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 15,
+                          "name": "$15"
+                        },
+                        {
+                          "literal": "economy             ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        },
+                        {
+                          "literal": "petite              ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "AND",
+                    "kind": "AND",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "op": {
+                        "name": "=",
+                        "kind": "EQUALS",
+                        "syntax": "BINARY"
+                      },
+                      "operands": [
+                        {
+                          "input": 12,
+                          "name": "$12"
+                        },
+                        {
+                          "literal": "Men                                               ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 50
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 17,
+                          "name": "$17"
+                        },
+                        {
+                          "literal": "lavender            ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        },
+                        {
+                          "literal": "papaya              ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 18,
+                          "name": "$18"
+                        },
+                        {
+                          "literal": "Cup       ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 10
+                          }
+                        },
+                        {
+                          "literal": "Pallet    ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 10
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 15,
+                          "name": "$15"
+                        },
+                        {
+                          "literal": "N/A                 ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        },
+                        {
+                          "literal": "small               ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "AND",
+                    "kind": "AND",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "op": {
+                        "name": "=",
+                        "kind": "EQUALS",
+                        "syntax": "BINARY"
+                      },
+                      "operands": [
+                        {
+                          "input": 12,
+                          "name": "$12"
+                        },
+                        {
+                          "literal": "Men                                               ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 50
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 17,
+                          "name": "$17"
+                        },
+                        {
+                          "literal": "cyan                ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        },
+                        {
+                          "literal": "maroon              ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 18,
+                          "name": "$18"
+                        },
+                        {
+                          "literal": "Each      ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 10
+                          }
+                        },
+                        {
+                          "literal": "N/A       ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 10
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "IN",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 15,
+                          "name": "$15"
+                        },
+                        {
+                          "literal": "large               ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
+                          }
+                        },
+                        {
+                          "literal": "medium              ",
+                          "type": {
+                            "type": "CHAR",
+                            "nullable": false,
+                            "precision": 20
                           }
                         }
                       ]

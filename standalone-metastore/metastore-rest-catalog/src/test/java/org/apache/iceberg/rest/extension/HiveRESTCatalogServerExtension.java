@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -31,6 +31,9 @@ import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.rest.HMSCachingCatalog;
+import org.apache.iceberg.rest.HMSCatalogFactory;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -130,6 +133,32 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
     return restCatalogServer.getRestEndpoint();
   }
 
+  /**
+   * Builds a fresh {@link HiveCatalog} bound to the embedded metastore through the same production
+   * path the server uses ({@link HMSCatalogFactory#createHiveCatalog}). The Thrift URI is taken from
+   * the port the metastore actually bound to, so callers get a working client regardless of how the
+   * server's own configuration was mutated at startup.
+   *
+   * @return a newly initialized HiveCatalog
+   */
+  public HiveCatalog newServerCatalog() {
+    Configuration catalogConf = new Configuration(conf);
+    MetastoreConf.setVar(catalogConf, ConfVars.THRIFT_URIS, restCatalogServer.getThriftUri());
+    return HMSCatalogFactory.createHiveCatalog(catalogConf);
+  }
+
+  /**
+   * Wraps a fresh {@link #newServerCatalog()} in an {@link HMSCachingCatalog} with the given L2
+   * expiry, so tests can exercise the caching catalog directly without reaching into the server's
+   * own instance.
+   *
+   * @param expiryMs the L2 cache expiry in milliseconds
+   * @return a newly created caching catalog
+   */
+  public HMSCachingCatalog newCachingCatalog(long expiryMs) {
+    return new HMSCachingCatalog(newServerCatalog(), expiryMs);
+  }
+
   public String getOAuth2TokenEndpoint() {
     return authorizationServer.getTokenEndpoint();
   }
@@ -140,6 +169,10 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
 
   public String getOAuth2ClientCredentialForPermissionTest() {
     return authorizationServer.getClientCredentialForPermissionTest();
+  }
+
+  public String getOAuth2ClientCredentialForPermissionReadOnly() {
+    return authorizationServer.getClientCredentialForPermissionReadOnly();
   }
 
   public String getOAuth2AccessToken() {

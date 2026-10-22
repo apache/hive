@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.metastore.metastore.iface;
@@ -49,10 +50,11 @@ public interface NotificationStore {
   void addNotificationEvent(NotificationEvent event) throws MetaException;
 
   /**
-   * Remove older notification events.
+   * Remove older notification events, transaction is explicitly handled inside.
    *
    * @param olderThan Remove any events older or equal to a given number of seconds
    */
+  @MetaDescriptor.NoTransaction
   void cleanNotificationEvents(int olderThan);
 
   /**
@@ -71,9 +73,10 @@ public interface NotificationStore {
   NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst);
 
   /**
-   * Remove older notification events.
+   * Remove older notification events, transaction is explicitly handled inside.
    * @param olderThan Remove any events older or equal to a given number of seconds
    */
+  @MetaDescriptor.NoTransaction
   void cleanWriteNotificationEvents(int olderThan);
 
   /**

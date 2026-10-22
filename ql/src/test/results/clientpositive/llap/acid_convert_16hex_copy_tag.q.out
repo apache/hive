@@ -1,0 +1,124 @@
+PREHOOK: query: drop table if exists t_acid_convert_16hex
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists t_acid_convert_16hex
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table t_acid_convert_16hex (id int, name string)
+  stored as orc
+  tblproperties ('transactional'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_acid_convert_16hex
+POSTHOOK: query: create table t_acid_convert_16hex (id int, name string)
+  stored as orc
+  tblproperties ('transactional'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_acid_convert_16hex
+PREHOOK: query: insert into t_acid_convert_16hex values (1, 'a'), (2, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_acid_convert_16hex
+POSTHOOK: query: insert into t_acid_convert_16hex values (1, 'a'), (2, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_acid_convert_16hex
+POSTHOOK: Lineage: t_acid_convert_16hex.id SCRIPT []
+POSTHOOK: Lineage: t_acid_convert_16hex.name SCRIPT []
+Found 1 items
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: alter table t_acid_convert_16hex set tblproperties ('transactional'='true', 'transactional_properties'='default')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@t_acid_convert_16hex
+PREHOOK: Output: default@t_acid_convert_16hex
+POSTHOOK: query: alter table t_acid_convert_16hex set tblproperties ('transactional'='true', 'transactional_properties'='default')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@t_acid_convert_16hex
+POSTHOOK: Output: default@t_acid_convert_16hex
+PREHOOK: query: describe formatted t_acid_convert_16hex
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_acid_convert_16hex
+POSTHOOK: query: describe formatted t_acid_convert_16hex
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_acid_convert_16hex
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	178                 
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select id, name from t_acid_convert_16hex order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_acid_convert_16hex
+#### A masked pattern was here ####
+POSTHOOK: query: select id, name from t_acid_convert_16hex order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_acid_convert_16hex
+#### A masked pattern was here ####
+1	a
+2	b
+PREHOOK: query: update t_acid_convert_16hex set name = 'B' where id = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_acid_convert_16hex
+PREHOOK: Output: default@t_acid_convert_16hex
+PREHOOK: Output: default@t_acid_convert_16hex
+POSTHOOK: query: update t_acid_convert_16hex set name = 'B' where id = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_acid_convert_16hex
+POSTHOOK: Output: default@t_acid_convert_16hex
+POSTHOOK: Output: default@t_acid_convert_16hex
+POSTHOOK: Lineage: t_acid_convert_16hex.id SIMPLE []
+POSTHOOK: Lineage: t_acid_convert_16hex.name SIMPLE []
+PREHOOK: query: delete from t_acid_convert_16hex where id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_acid_convert_16hex
+PREHOOK: Output: default@t_acid_convert_16hex
+POSTHOOK: query: delete from t_acid_convert_16hex where id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_acid_convert_16hex
+POSTHOOK: Output: default@t_acid_convert_16hex
+PREHOOK: query: select id, name from t_acid_convert_16hex order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_acid_convert_16hex
+#### A masked pattern was here ####
+POSTHOOK: query: select id, name from t_acid_convert_16hex order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_acid_convert_16hex
+#### A masked pattern was here ####
+2	B
+PREHOOK: query: drop table t_acid_convert_16hex
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_acid_convert_16hex
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_acid_convert_16hex
+POSTHOOK: query: drop table t_acid_convert_16hex
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_acid_convert_16hex
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_acid_convert_16hex

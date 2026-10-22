@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.common.type;
 
@@ -2949,6 +2950,17 @@ public class TestHiveDecimal extends HiveDecimalTestBase {
     Random r = new Random(1050);
     for (BigDecimal bigDecimal : specialBigDecimals) {
       doTestRound(r, bigDecimal, HiveDecimal.ROUND_HALF_EVEN);
+    }
+  }
+
+  @Test
+  public void testRoundDownAllIntegerDigitsInPlace() {
+    String[] values = { "12345.678", "-12345.678", "12345", "99999999999999999999999999999999999999" };
+    for (String value : values) {
+      HiveDecimalWritable writable = new HiveDecimalWritable(value);
+      writable.mutateSetScale(-writable.getHiveDecimal().integerDigitCount(), BigDecimal.ROUND_DOWN);
+      assertEquals(value, 0, writable.signum());
+      assertEquals(value, HiveDecimal.ZERO, writable.getHiveDecimal());
     }
   }
 

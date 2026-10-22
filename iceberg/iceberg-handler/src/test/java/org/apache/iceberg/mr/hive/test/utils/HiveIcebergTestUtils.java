@@ -65,9 +65,10 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.HistoryEntry;
 import org.apache.iceberg.PartitionKey;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.data.GenericAppenderFactory;
+import org.apache.iceberg.data.GenericFileWriterFactory;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.Record;
@@ -77,7 +78,7 @@ import org.apache.iceberg.deletes.PositionDeleteWriter;
 import org.apache.iceberg.encryption.EncryptedOutputFile;
 import org.apache.iceberg.hadoop.HadoopOutputFile;
 import org.apache.iceberg.io.CloseableIterable;
-import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.mr.hive.test.TestHiveShell;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -349,21 +350,38 @@ public class HiveIcebergTestUtils {
    */
   public static DeleteFile createEqualityDeleteFile(Table table, String deleteFilePath, List<String> equalityFields,
       FileFormat fileFormat, List<Record> rowsToDelete) throws IOException {
+    return createEqualityDeleteFile(table, table.spec(), deleteFilePath, equalityFields, fileFormat, rowsToDelete);
+  }
+
+  /**
+   * The spec-taking variant writes the delete under any of the table's specs: an older
+   * unpartitioned spec gives the global delete a foreign engine writes.
+   */
+  public static DeleteFile createEqualityDeleteFile(Table table, PartitionSpec spec, String deleteFilePath,
+      List<String> equalityFields, FileFormat fileFormat, List<Record> rowsToDelete) throws IOException {
     List<Integer> equalityFieldIds = equalityFields.stream()
         .map(id -> table.schema().findField(id).fieldId())
         .toList();
     Schema eqDeleteRowSchema = table.schema().select(equalityFields.toArray(new String[]{}));
 
-    FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),
-        ArrayUtil.toIntArray(equalityFieldIds), eqDeleteRowSchema, null);
+    FileWriterFactory<Record> writerFactory =
+        new GenericFileWriterFactory.Builder(table)
+            .deleteFileFormat(fileFormat)
+            .equalityFieldIds(ArrayUtil.toIntArray(equalityFieldIds))
+            .equalityDeleteRowSchema(eqDeleteRowSchema)
+            .build();
     EncryptedOutputFile outputFile = table.encryption().encrypt(HadoopOutputFile.fromPath(
         new org.apache.hadoop.fs.Path(table.location(), deleteFilePath), new Configuration()));
 
-    PartitionKey part = new PartitionKey(table.spec(), eqDeleteRowSchema);
-    part.partition(rowsToDelete.get(0));
-    EqualityDeleteWriter<Record> eqWriter = appenderFactory.newEqDeleteWriter(outputFile, fileFormat, part);
-    try (EqualityDeleteWriter<Record> writer = eqWriter) {
-      writer.write(rowsToDelete);
+    PartitionKey part = null;
+    if (spec.isPartitioned()) {
+      part = new PartitionKey(spec, eqDeleteRowSchema);
+      part.partition(rowsToDelete.get(0));
+    }
+    EqualityDeleteWriter<Record> eqWriter =
+        writerFactory.newEqualityDeleteWriter(outputFile, spec, part);
+    try (eqWriter) {
+      eqWriter.write(rowsToDelete);
     }
     return eqWriter.toDeleteFile();
   }
@@ -381,9 +399,8 @@ public class HiveIcebergTestUtils {
   public static DeleteFile createPositionalDeleteFile(Table table, String deleteFilePath, FileFormat fileFormat,
       Map<String, Object> partitionValues, List<PositionDelete<Record>> deletes) throws IOException {
 
-    Schema posDeleteRowSchema = deletes.get(0).row() == null ? null : table.schema();
-    FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),
-        null, null, posDeleteRowSchema);
+    FileWriterFactory<Record> writerFactory =
+        new GenericFileWriterFactory.Builder(table).deleteFileFormat(fileFormat).build();
     EncryptedOutputFile outputFile = table.encryption().encrypt(HadoopOutputFile.fromPath(
         new org.apache.hadoop.fs.Path(table.location(), deleteFilePath), new Configuration()));
 
@@ -394,13 +411,15 @@ public class HiveIcebergTestUtils {
       partitionKey.partition(record);
     }
 
-    PositionDeleteWriter<Record> posWriter = appenderFactory.newPosDeleteWriter(outputFile, fileFormat, partitionKey);
-    try (PositionDeleteWriter<Record> writer = posWriter) {
-      deletes.forEach(del -> {
-        PositionDelete positionDelete = PositionDelete.create();
-        positionDelete.set(del.path(), del.pos(), del.row());
-        writer.write(positionDelete);
-      });
+    PositionDeleteWriter<Record> posWriter =
+        writerFactory.newPositionDeleteWriter(outputFile, table.spec(), partitionKey);
+    try (posWriter) {
+      deletes.forEach(
+          del -> {
+            PositionDelete positionDelete = PositionDelete.create();
+            positionDelete.set(del.path(), del.pos());
+            posWriter.write(positionDelete);
+          });
     }
     return posWriter.toDeleteFile();
   }

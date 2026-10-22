@@ -9,14 +9,19 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.conf;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Constants {
@@ -29,23 +34,6 @@ public class Constants {
   public static final String LLAP_LOGGER_NAME_RFA = "RFA";
   public static final String LLAP_NUM_BUCKETS = "llap.num.buckets";
   public static final String LLAP_BUCKET_ID = "llap.bucket.id";
-
-  /* Constants for Druid storage handler */
-  public static final String DRUID_HIVE_STORAGE_HANDLER_ID =
-          "org.apache.hadoop.hive.druid.DruidStorageHandler";
-  public static final String DRUID_HIVE_OUTPUT_FORMAT =
-          "org.apache.hadoop.hive.druid.io.DruidOutputFormat";
-  public static final String DRUID_DATA_SOURCE = "druid.datasource";
-  public static final String DRUID_SEGMENT_GRANULARITY = "druid.segment.granularity";
-
-  public static final String DRUID_TARGET_SHARDS_PER_GRANULARITY =
-      "druid.segment.targetShardsPerGranularity";
-  public static final String DRUID_TIMESTAMP_GRANULARITY_COL_NAME = "__time_granularity";
-  public static final String DRUID_SHARD_KEY_COL_NAME = "__druid_extra_partition_key";
-  public static final String DRUID_QUERY_JSON = "druid.query.json";
-  public static final String DRUID_QUERY_FIELD_NAMES = "druid.fieldNames";
-  public static final String DRUID_QUERY_FIELD_TYPES = "druid.fieldTypes";
-  public static final String DRUID_QUERY_TYPE = "druid.query.type";
 
   public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
       "org.apache.hive.storage.jdbc.JdbcStorageHandler";
@@ -69,6 +57,25 @@ public class Constants {
   public static final String JDBC_NUM_PARTITIONS = JDBC_CONFIG_PREFIX + ".numPartitions";
   public static final String JDBC_LOW_BOUND = JDBC_CONFIG_PREFIX + ".lowerBound";
   public static final String JDBC_UPPER_BOUND = JDBC_CONFIG_PREFIX + ".upperBound";
+
+  /**
+   * The DBCP credentials a JDBC-backed table carries in TBLPROPERTIES, or a data connector in
+   * DCPROPERTIES. Explain output drops these keys (HIVE-28838), and the connector description
+   * withholds their values, so that they round-trip only through the metastore rather than back to
+   * whoever asked. The keys that merely point at a credential -- {@link #JDBC_PASSWORD_URI},
+   * {@link #JDBC_KEYSTORE} and {@link #JDBC_KEY} -- are deliberately not included: they exist so
+   * that the password need not be stored here, and seeing where one resolves from is exactly what
+   * an administrator needs.
+   */
+  public static final Set<String> JDBC_CONNECTION_CREDENTIALS = Collections.unmodifiableSet(
+      new HashSet<>(Arrays.asList(JDBC_USERNAME, JDBC_PASSWORD)));
+
+  /**
+   * Stands in for a withheld {@link #JDBC_CONNECTION_CREDENTIALS} value where a property map is
+   * listed back to the user. A property whose value is withheld keeps its key, so that the listing
+   * says "this is set, but not shown here" rather than implying the property is absent.
+   */
+  public static final String WITHHELD_VALUE = "(withheld)";
 
   public static final String HIVE_SERVER2_JOB_CREDSTORE_PASSWORD_ENVVAR = "HIVE_JOB_CREDSTORE_PASSWORD";
   public static final String HADOOP_CREDENTIAL_PASSWORD_ENVVAR = "HADOOP_CREDSTORE_PASSWORD";

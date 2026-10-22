@@ -37,6 +37,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.CommitStateUnknownException;
+import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.hadoop.ConfigProperties;
@@ -181,7 +182,8 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
           metadata,
           removedProps,
           maxHiveTablePropertySize,
-          currentMetadataLocation());
+          currentMetadataLocation(),
+          sqlFor(metadata));
       lock.ensureActive();
 
       try {
@@ -204,7 +206,7 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
       } catch (InvalidObjectException e) {
         throw new ValidationException(e, "Invalid Hive object for %s.%s", database, viewName);
 
-      } catch (CommitFailedException | CommitStateUnknownException e) {
+      } catch (CommitFailedException | CommitStateUnknownException | ForbiddenException e) {
         throw e;
 
       } catch (Throwable e) {
@@ -273,6 +275,11 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
    */
   private boolean checkCurrentMetadataLocation(String newMetadataLocation) {
     ViewMetadata metadata = refresh();
+    if (metadata == null) {
+      // View creation may not have registered metadata yet.
+      return false;
+    }
+
     return newMetadataLocation.equals(metadata.metadataFileLocation());
   }
 
@@ -281,7 +288,8 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
   }
 
   private Table newHMSView(ViewMetadata metadata) {
-    final long currentTimeMillis = System.currentTimeMillis();
+    // epoch seconds; HMS Thrift stores these as i32
+    final int currentTimeSeconds = (int) (System.currentTimeMillis() / 1000L);
     String hmsTableOwner =
         PropertyUtil.propertyAsString(
             metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser());
@@ -291,8 +299,8 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
         table(),
         database(),
         hmsTableOwner,
-        (int) currentTimeMillis / 1000,
-        (int) currentTimeMillis / 1000,
+        currentTimeSeconds,
+        currentTimeSeconds,
         Integer.MAX_VALUE,
         null,
         Collections.emptyList(),

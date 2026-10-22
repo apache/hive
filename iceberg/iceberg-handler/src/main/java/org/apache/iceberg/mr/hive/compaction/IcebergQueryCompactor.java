@@ -21,16 +21,15 @@ package org.apache.iceberg.mr.hive.compaction;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.CompactionOrderByValidator;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -42,8 +41,10 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
 import org.apache.iceberg.PartitionField;
@@ -71,6 +72,10 @@ public class IcebergQueryCompactor extends QueryCompactor  {
     HiveConf conf = new HiveConf(context.getConf());
     CompactionInfo ci = context.getCompactionInfo();
 
+    // the settings a table carries for its compactions decide what the query reads and what it
+    // measures, so they are in hand before either is settled
+    CompactorUtil.overrideConfProps(conf, ci, tblProperties);
+
     String compactionQuery = buildCompactionQuery(context, compactTableName, conf);
 
     SessionState sessionState = setupQueryCompactionSession(conf, ci, tblProperties);
@@ -97,7 +102,7 @@ public class IcebergQueryCompactor extends QueryCompactor  {
     org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
         context.getTable().getTableName());
     Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
-    String orderBy = ci.orderByClause == null ? "" : ci.orderByClause;
+    String orderBy = validatedOrderByClause(ci.orderByClause, compactTableName);
     String fileSizePredicate = buildMinorFileSizePredicate(ci, compactTableName, conf, table);
 
     String columnsList = "*";
@@ -111,10 +116,27 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       }
     }
 
-    String compactionQuery = (ci.partName == null) ?
+    PartitionSpec spec;
+    try {
+      spec = (ci.partName == null) ? null : IcebergTableUtil.getPartitionSpec(icebergTable, ci.partName);
+    } catch (MetaException e) {
+      throw new HiveException(e);
+    }
+
+    // gather only when the compaction reads something whole: the table, or one current-spec
+    // partition of a table keeping partition-level statistics. An older spec's partition is
+    // rewritten into partitions of the current spec and describes none of them whole.
+    boolean computeColStats = ci.isMajorCompaction() && (spec == null ?
+        !icebergTable.spec().isPartitioned() :
+        IcebergTableUtil.isPartitionStats(icebergTable, conf) && spec.specId() == icebergTable.spec().specId());
+
+    boolean genericStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_COMPACTOR_GATHER_STATS);
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_STATS_COL_AUTOGATHER, genericStats && computeColStats);
+
+    String compactionQuery = (spec == null) ?
         buildFullTableCompactionQuery(compactTableName, conf, icebergTable,
             columnsList, fileSizePredicate, orderBy) :
-        buildPartitionCompactionQuery(ci, compactTableName, conf, icebergTable,
+        buildPartitionCompactionQuery(ci, compactTableName, conf, spec,
             columnsList, fileSizePredicate, orderBy);
 
     LOG.info("Compaction query: {}", compactionQuery);
@@ -173,19 +195,17 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       CompactionInfo ci,
       String compactTableName,
       HiveConf conf,
-      Table icebergTable,
+      PartitionSpec spec,
       String columnsList,
       String fileSizePredicate,
       String orderBy) throws HiveException {
     HiveConf.setBoolVar(conf, ConfVars.HIVE_CONVERT_JOIN, false);
     conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
-    conf.set(IcebergCompactionService.PARTITION_PATH, new Path(ci.partName).toString());
+    conf.set(IcebergCompactionService.PARTITION_NAME, ci.partName);
 
-    PartitionSpec spec;
     String partitionPredicate;
     try {
-      spec = IcebergTableUtil.getPartitionSpec(icebergTable, ci.partName);
       partitionPredicate = buildPartitionPredicate(ci, spec);
     } catch (MetaException e) {
       throw new HiveException(e);
@@ -214,20 +234,36 @@ public class IcebergQueryCompactor extends QueryCompactor  {
 
     Types.StructType partitionType = spec.partitionType();
     return  partitionType.fields().stream().map(field -> {
+      String column = HiveUtils.unparseIdentifier(field.name());
       String value = partSpecMap.get(field.name());
-      String literal = "NULL";
 
-      if (value != null && !value.equals("null")) {
-        String type = HiveSchemaUtil.convertToTypeString(field.type());
-        PartitionField partitionField = partitionFieldMap.get(field.name());
-        TransformSpec transformSpec = TransformSpec.fromString(partitionField.transform().toString(), field.name());
-        literal = TypeInfoUtils.convertStringToLiteralForSQL(
-            HiveIcebergFilterFactory.convertPartitionLiteral(value, transformSpec).toString(),
-            ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(type)).getPrimitiveCategory());
+      if (value == null || value.equals(ConfVars.DEFAULT_PARTITION_NAME.defaultStrVal)) {
+        return String.format("`partition`.%s IS NULL", column);
       }
 
-      return String.format("`partition`.%s %s %s", HiveUtils.unparseIdentifier(field.name()),
-          Objects.equals(literal, "NULL") ? "IS" : "=", literal);
+      TransformSpec transformSpec = TransformSpec.fromString(
+          partitionFieldMap.get(field.name()).transform().toString(), field.name());
+      TypeInfo type = TypeInfoUtils.getTypeInfoFromTypeString(HiveSchemaUtil.convertToTypeString(field.type()));
+
+      String literal = TypeInfoUtils.convertStringToLiteralForSQL(
+          HiveIcebergFilterFactory.convertPartitionLiteral(value, transformSpec).toString(),
+          ((PrimitiveTypeInfo) type).getPrimitiveCategory());
+
+      return String.format("`partition`.%s = %s", column, literal);
     }).collect(Collectors.joining(" AND "));
+  }
+
+  /**
+   * The compaction queue is written from a client-settable Thrift field: treat its contents as
+   * untrusted and re-validate here, so a clause injected before (or around) the enqueue-time
+   * check can never be concatenated into the privileged compaction query.
+   */
+  private static String validatedOrderByClause(String orderByClause, String compactTableName) throws HiveException {
+    try {
+      CompactionOrderByValidator.validate(orderByClause);
+    } catch (IllegalArgumentException e) {
+      throw new HiveException("Refusing to compact " + compactTableName + ": " + e.getMessage(), e);
+    }
+    return orderByClause == null ? "" : orderByClause;
   }
 }

@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.cli;
 
@@ -30,10 +31,10 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
@@ -115,9 +116,23 @@ public abstract class BaseStandaloneRESTCatalogServerTest {
       MetastoreConf.setVar(hmsConf, ConfVars.WAREHOUSE, warehouseDir.getAbsolutePath());
       MetastoreConf.setVar(hmsConf, ConfVars.WAREHOUSE_EXTERNAL, warehouseDir.getAbsolutePath());
 
+      configureTestSsl();
+
       hmsPort = MetaStoreTestUtils.startMetaStoreWithRetry(
           HadoopThriftAuthBridge.getBridge(), hmsConf, true, false, false, false);
       LOG.info("Started embedded HMS on port: {} (before Spring context)", hmsPort);
+    }
+
+    /**
+     * Enables HTTPS for the standalone server using a test-only keystore.
+     */
+    private static void configureTestSsl() {
+      File keystore = new File(System.getProperty("java.io.tmpdir"), "../../src/test/resources/keystore.p12");
+      System.setProperty("server.ssl.enabled", "true");
+      System.setProperty("server.ssl.key-store", keystore.getAbsolutePath());
+      System.setProperty("server.ssl.key-store-password", "changeit");
+      System.setProperty("server.ssl.key-store-type", "PKCS12");
+      System.setProperty("server.ssl.key-alias", "iceberg");
     }
   }
 
