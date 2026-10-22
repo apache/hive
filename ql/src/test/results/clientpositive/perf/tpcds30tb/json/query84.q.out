@@ -1394,26 +1394,6 @@
           "operands": [
             {
               "op": {
-                "name": ">=",
-                "kind": "GREATER_THAN_OR_EQUAL",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 1,
-                  "name": "$1"
-                },
-                {
-                  "literal": 32287,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                }
-              ]
-            },
-            {
-              "op": {
                 "name": "<=",
                 "kind": "LESS_THAN_OR_EQUAL",
                 "syntax": "BINARY"
@@ -1425,6 +1405,26 @@
                 },
                 {
                   "literal": 82287,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": ">=",
+                "kind": "GREATER_THAN_OR_EQUAL",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 1,
+                  "name": "$1"
+                },
+                {
+                  "literal": 32287,
                   "type": {
                     "type": "INTEGER",
                     "nullable": false

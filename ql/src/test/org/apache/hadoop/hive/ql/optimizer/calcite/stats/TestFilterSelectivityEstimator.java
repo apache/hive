@@ -39,6 +39,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -241,9 +242,21 @@ public class TestFilterSelectivityEstimator {
    * Note: call this method only at the beginning of a test method.
    */
   private void useFieldWithValues(String fieldname, float[] values, KllFloatsSketch sketch) {
-    currentValuesSize = values.length;
-    stats.setHistogram(sketch.toByteArray());
-    stats.setRange(rangeOf(values));
+    useFieldWithValues(fieldname, values, sketch, 0);
+  }
+
+  private void useFieldWithValues(String fieldname, float[] values, KllFloatsSketch sketch, long numNulls) {
+    if (sketch == null) {
+      stats = new ColStatistics();
+      stats.setHistogram(null);
+      stats.setRange(rangeOf(values));
+      stats.setNumNulls(numNulls);
+    } else {
+      currentValuesSize = values.length;
+      stats.setHistogram(sketch.toByteArray());
+      stats.setRange(rangeOf(values));
+      stats.setNumNulls(numNulls);
+    }
     int fieldIndex = scan.getRowType().getFieldNames().indexOf(fieldname);
     currentInputRef = REX_BUILDER.makeInputRef(scan, fieldIndex);
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(fieldIndex));
@@ -1208,8 +1221,17 @@ public class TestFilterSelectivityEstimator {
         REX_BUILDER.getTypeFactory().createSqlType(SqlTypeName.TIMESTAMP));
   }
 
+  private static RexLiteral literalDate(String date) {
+    return REX_BUILDER.makeDateLiteral(
+        DateString.fromDaysSinceEpoch((int) LocalDate.parse(date).toEpochDay()));
+  }
+
   private RexNode literalFloat(float f) {
     return REX_BUILDER.makeLiteral(f, type(SqlTypeName.FLOAT));
+  }
+
+  private RexNode literalInt(int v) {
+    return REX_BUILDER.makeLiteral(v, TYPE_FACTORY.createSqlType(INTEGER));
   }
 
   private static long timestampMillis(String timestamp) {
@@ -1221,5 +1243,196 @@ public class TestFilterSelectivityEstimator {
 
   private static long timestamp(String timestamp) {
     return timestampMillis(timestamp) / 1000;
+  }
+
+  private static final int DATE_FIELD_INDEX = 9; // f_date
+
+  private RelNode createScanWithPlanner(HiveConf conf) {
+    RelOptPlanner planner = CalcitePlanner.createPlanner(conf);
+    RelOptCluster cluster = RelOptCluster.create(planner, REX_BUILDER);
+    RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(cluster, schemaMock);
+    HiveTableScan tableScan =
+        new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), tableMock, "table", null, false, false);
+    return relBuilder.push(tableScan).build();
+  }
+
+  @Test
+  public void testComparisonMinMaxNoHistogram() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null);
+    RexNode filter = le(currentInputRef, literalInt(50));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.5, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxNoHistogramNoRange() {
+    stats = new ColStatistics();
+    stats.setHistogram(null);
+    int fieldIndex = scan.getRowType().getFieldNames().indexOf("f_integer");
+    currentInputRef = REX_BUILDER.makeInputRef(scan, fieldIndex);
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(fieldIndex));
+    RexNode filter = lt(currentInputRef, int3);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.3333333333333333, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonDateMinMaxNoHistogram() {
+    long minDays = LocalDate.parse("2020-11-01").toEpochDay();
+    long maxDays = LocalDate.parse("2020-11-07").toEpochDay();
+    stats = new ColStatistics();
+    stats.setHistogram(null);
+    stats.setRange(minDays, maxDays);
+    currentInputRef = REX_BUILDER.makeInputRef(scan, DATE_FIELD_INDEX);
+    doReturn(Collections.singletonList(stats)).when(tableMock)
+        .getColStat(Collections.singletonList(DATE_FIELD_INDEX));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, currentInputRef,
+        literalDate("2020-11-04"));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    // Epoch-second DATE bounds are stored as float; range intersection may differ slightly from 0.5
+    Assert.assertEquals(0.5, estimator.estimateSelectivity(filter), 1e-3f);
+  }
+
+  @Test
+  public void testHistogramPreferredOverMinMax() {
+    doReturn(Collections.singletonList(stats)).when(tableMock)
+        .getColStat(Collections.singletonList(0));
+    stats.setRange(0, 100);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, int3);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testBetweenMinMaxNoHistogram() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, currentInputRef, literalInt(20),
+        literalInt(40));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.2, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testNotBetweenMinMaxNoHistogram() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, currentInputRef, literalInt(20),
+        literalInt(40));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.8, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxBelowMin() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null);
+    RexNode filter = lt(currentInputRef, int0);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxAboveMax() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null);
+    RexNode filter = gt(currentInputRef, literalInt(150));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxLessThanOrEqualMax() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null);
+    RexNode filter = le(currentInputRef, literalInt(100));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxGreaterThanOrEqualMin() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null);
+    RexNode filter = ge(currentInputRef, int0);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxWhenMinEqualsMaxLessThanOrEqual() {
+    useFieldWithValues("f_integer", new float[] {5, 5}, null);
+    RexNode filter = le(currentInputRef, literalInt(5));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxWhenMinEqualsMaxLessThan() {
+    useFieldWithValues("f_integer", new float[] {5, 5}, null);
+    RexNode filter = lt(currentInputRef, literalInt(5));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxWithNulls() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null, 2);
+    doReturn((double) 20).when(tableMock).getRowCount();
+    RexNode filter = le(currentInputRef, literalInt(5));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.045, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxUniformFlagDisabled() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null);
+    HiveConf conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RANGE_SELECTIVITY_UNIFORM_DISTRIBUTION, false);
+    RelNode localScan = createScanWithPlanner(conf);
+    int fieldIndex = scan.getRowType().getFieldNames().indexOf("f_integer");
+    RexNode localInputRef = REX_BUILDER.makeInputRef(localScan, fieldIndex);
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(fieldIndex));
+    RexNode filter = le(localInputRef, literalInt(5));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(localScan, mq);
+    Assert.assertEquals(0.3333333333333333, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testSearchTwoSidedMinMaxNoHistogram() {
+    useFieldWithValues("f_integer", new float[] {0, 100}, null);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.AND, ge(currentInputRef, literalInt(20)),
+        le(currentInputRef, literalInt(40)));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.2, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonWithColRangeOnMaxValue() {
+    useFieldWithValues("f_float", new float[] {0, Float.MAX_VALUE}, null);
+    RexNode filter = le(currentInputRef, literalFloat(Float.MAX_VALUE / 2));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.5, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxNoHistogramBigintWideRange() {
+    useFieldWithValues("f_bigint", new float[] {0, (float) Long.MAX_VALUE}, null);
+    RexNode filter = le(currentInputRef, REX_BUILDER.makeLiteral((long) (Long.MAX_VALUE / 2),
+        TYPE_FACTORY.createSqlType(BIGINT)));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.5, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxNoHistogramDoubleWideRange() {
+    useFieldWithValues("f_double", new float[] {0, 1e20f}, null);
+    RexNode filter = le(currentInputRef, REX_BUILDER.makeLiteral(5e19, TYPE_FACTORY.createSqlType(SqlTypeName.DOUBLE)));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.5, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxNoHistogramDecimalWideRange() {
+    useFieldWithValues("f_decimal10s3", new float[] {0, 1000}, null);
+    RexNode filter = le(currentInputRef, REX_BUILDER.makeLiteral(500, decimalType(10, 3)));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.5, estimator.estimateSelectivity(filter), DELTA);
   }
 }

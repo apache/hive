@@ -879,14 +879,16 @@
               },
               "operands": [
                 {
-                  "input": 17,
-                  "name": "$17"
+                  "input": 32,
+                  "name": "$32"
                 },
                 {
-                  "literal": 0,
+                  "literal": 1,
                   "type": {
-                    "type": "INTEGER",
-                    "nullable": false
+                    "type": "DECIMAL",
+                    "nullable": false,
+                    "precision": 1,
+                    "scale": 0
                   }
                 }
               ]
@@ -899,16 +901,14 @@
               },
               "operands": [
                 {
-                  "input": 32,
-                  "name": "$32"
+                  "input": 17,
+                  "name": "$17"
                 },
                 {
-                  "literal": 1,
+                  "literal": 0,
                   "type": {
-                    "type": "DECIMAL",
-                    "nullable": false,
-                    "precision": 1,
-                    "scale": 0
+                    "type": "INTEGER",
+                    "nullable": false
                   }
                 }
               ]
@@ -2995,14 +2995,16 @@
               },
               "operands": [
                 {
-                  "input": 17,
-                  "name": "$17"
+                  "input": 32,
+                  "name": "$32"
                 },
                 {
-                  "literal": 0,
+                  "literal": 1,
                   "type": {
-                    "type": "INTEGER",
-                    "nullable": false
+                    "type": "DECIMAL",
+                    "nullable": false,
+                    "precision": 1,
+                    "scale": 0
                   }
                 }
               ]
@@ -3015,16 +3017,14 @@
               },
               "operands": [
                 {
-                  "input": 32,
-                  "name": "$32"
+                  "input": 17,
+                  "name": "$17"
                 },
                 {
-                  "literal": 1,
+                  "literal": 0,
                   "type": {
-                    "type": "DECIMAL",
-                    "nullable": false,
-                    "precision": 1,
-                    "scale": 0
+                    "type": "INTEGER",
+                    "nullable": false
                   }
                 }
               ]
@@ -4648,14 +4648,16 @@
               },
               "operands": [
                 {
-                  "input": 9,
-                  "name": "$9"
+                  "input": 21,
+                  "name": "$21"
                 },
                 {
-                  "literal": 0,
+                  "literal": 1,
                   "type": {
-                    "type": "INTEGER",
-                    "nullable": false
+                    "type": "DECIMAL",
+                    "nullable": false,
+                    "precision": 1,
+                    "scale": 0
                   }
                 }
               ]
@@ -4668,16 +4670,14 @@
               },
               "operands": [
                 {
-                  "input": 21,
-                  "name": "$21"
+                  "input": 9,
+                  "name": "$9"
                 },
                 {
-                  "literal": 1,
+                  "literal": 0,
                   "type": {
-                    "type": "DECIMAL",
-                    "nullable": false,
-                    "precision": 1,
-                    "scale": 0
+                    "type": "INTEGER",
+                    "nullable": false
                   }
                 }
               ]
