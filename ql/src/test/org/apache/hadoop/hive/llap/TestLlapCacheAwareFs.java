@@ -68,27 +68,30 @@ public class TestLlapCacheAwareFs {
   }
 
   @Test
-  public void aMissOffTheMaxAllocGridIsServed() {
+  public void aMissOffTheMaxAllocGridIsServed() throws IOException {
     // A gap need not align to MAX_ALLOC: evicting the second buffer leaves [4,8) MB, and neither
     // end is a multiple of 6MB.
-    SortedMap<Long, Long> chunks =
-        streamOverOneChunk().getAndValidateMissingChunks(1000L + 4 * MB, 1000L + 8 * MB);
-    assertEquals(1, chunks.size());
-    assertEquals(1000L, (long) chunks.firstKey());
+    try (LlapCacheAwareFs.CacheAwareInputStream stream = streamOverOneChunk()) {
+      SortedMap<Long, Long> chunks = stream.getAndValidateMissingChunks(1000L + 4 * MB, 1000L + 8 * MB);
+      assertEquals(1, chunks.size());
+      assertEquals(1000L, (long) chunks.firstKey());
+    }
   }
 
   @Test
-  public void aMissEndingMidChunkIsServed() {
+  public void aMissEndingMidChunkIsServed() throws IOException {
     // A gap may end mid-chunk on any boundary: evicting the fourth buffer leaves [12,16) MB, whose
     // end is not a multiple of 6MB.
-    SortedMap<Long, Long> chunks =
-        streamOverOneChunk().getAndValidateMissingChunks(1000L + 12 * MB, 1000L + 16 * MB);
-    assertEquals(1, chunks.size());
+    try (LlapCacheAwareFs.CacheAwareInputStream stream = streamOverOneChunk()) {
+      assertEquals(1, stream.getAndValidateMissingChunks(1000L + 12 * MB, 1000L + 16 * MB).size());
+    }
   }
 
   @Test
-  public void theWholeChunkIsServed() {
-    assertEquals(1, streamOverOneChunk().getAndValidateMissingChunks(1000L, 1000L + 20 * MB).size());
+  public void theWholeChunkIsServed() throws IOException {
+    try (LlapCacheAwareFs.CacheAwareInputStream stream = streamOverOneChunk()) {
+      assertEquals(1, stream.getAndValidateMissingChunks(1000L, 1000L + 20 * MB).size());
+    }
   }
 
   @Test
@@ -105,12 +108,12 @@ public class TestLlapCacheAwareFs {
     DataCache cache = mock(DataCache.class);
     // Nothing cached: the range comes back with no data, and a null fileKey keeps it out of the cache.
     when(cache.getFileData(any(), any(), anyLong(), any(), any())).thenAnswer(inv -> inv.getArgument(1));
-    LlapCacheAwareFs.CacheAwareInputStream stream = new LlapCacheAwareFs.CacheAwareInputStream(cache,
-        new Configuration(), chunkIndex, new Path(file.toURI()), null, 4096, null, null);
-
     byte[] array = new byte[80];
     Arrays.fill(array, (byte) -1);
-    stream.readFully(20, array, 10, 50);
+    try (LlapCacheAwareFs.CacheAwareInputStream stream = new LlapCacheAwareFs.CacheAwareInputStream(cache,
+        new Configuration(), chunkIndex, new Path(file.toURI()), null, 4096, null, null)) {
+      stream.readFully(20, array, 10, 50);
+    }
 
     for (int i = 0; i < 10; ++i) {
       assertEquals("array[" + i + "]", -1, array[i]);
@@ -126,9 +129,10 @@ public class TestLlapCacheAwareFs {
   @Test
   public void aZeroLengthReadDoesNotConsultTheCache() throws IOException {
     DataCache cache = mock(DataCache.class);
-    LlapCacheAwareFs.CacheAwareInputStream stream = new LlapCacheAwareFs.CacheAwareInputStream(cache,
-        new Configuration(), new TreeMap<>(), new Path("/tmp/does-not-matter"), 1L, -1, null, null);
-    assertEquals(0, stream.read(new byte[4], 2, 0));
+    try (LlapCacheAwareFs.CacheAwareInputStream stream = new LlapCacheAwareFs.CacheAwareInputStream(cache,
+        new Configuration(), new TreeMap<>(), new Path("/tmp/does-not-matter"), 1L, -1, null, null)) {
+      assertEquals(0, stream.read(new byte[4], 2, 0));
+    }
     verifyNoInteractions(cache);
   }
 
@@ -137,21 +141,27 @@ public class TestLlapCacheAwareFs {
   // that same footer, so every miss lies inside registered chunks.
 
   @Test(expected = AssertionError.class)
-  public void aMissBelowEveryRegisteredChunkIsRejected() {
-    streamOverOneChunk().getAndValidateMissingChunks(0L, 500L);
+  public void aMissBelowEveryRegisteredChunkIsRejected() throws IOException {
+    try (LlapCacheAwareFs.CacheAwareInputStream stream = streamOverOneChunk()) {
+      stream.getAndValidateMissingChunks(0L, 500L);
+    }
   }
 
   @Test(expected = AssertionError.class)
-  public void aMissRunningPastTheLastRegisteredChunkIsRejected() {
-    streamOverOneChunk().getAndValidateMissingChunks(1000L + 19 * MB, 1000L + 21 * MB);
+  public void aMissRunningPastTheLastRegisteredChunkIsRejected() throws IOException {
+    try (LlapCacheAwareFs.CacheAwareInputStream stream = streamOverOneChunk()) {
+      stream.getAndValidateMissingChunks(1000L + 19 * MB, 1000L + 21 * MB);
+    }
   }
 
   @Test(expected = AssertionError.class)
-  public void aMissInTheHoleBetweenTwoChunksIsRejected() {
+  public void aMissInTheHoleBetweenTwoChunksIsRejected() throws IOException {
     // The hole is an unprojected column's chunk, which is never registered.
     TreeMap<Long, Long> chunkIndex = new TreeMap<>();
     chunkIndex.put(1000L, 1000L + 20 * MB);
     chunkIndex.put(1000L + 21 * MB, 1000L + 30 * MB);
-    streamOver(chunkIndex).getAndValidateMissingChunks(1000L + 20 * MB, 1000L + 20 * MB + 8);
+    try (LlapCacheAwareFs.CacheAwareInputStream stream = streamOver(chunkIndex)) {
+      stream.getAndValidateMissingChunks(1000L + 20 * MB, 1000L + 20 * MB + 8);
+    }
   }
 }
