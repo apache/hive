@@ -134,8 +134,6 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
           ioCxtRef.setDeletedRecord(recordIdentifier != null && recordIdentifier.isDeleteEvent());
         } else {
           ioCxtRef.parseRecordIdentifier(jobConf);
-          ioCxtRef.parsePositionDeleteInfo(jobConf);
-          ioCxtRef.parseRowLineageInfo(jobConf);
         }
       }
       return retVal;
@@ -182,6 +180,9 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
   private void initIOContext(long startPos, boolean isBlockPointer,
       Path inputPath) {
     ioCxtRef = this.getIOContext();
+    if (recordReader instanceof IOContextAwareRecordReader reader) {
+      reader.setIOContext(ioCxtRef);
+    }
     ioCxtRef.setCurrentBlockStart(startPos);
     ioCxtRef.setBlockPointer(isBlockPointer);
     ioCxtRef.setInputPath(inputPath);
