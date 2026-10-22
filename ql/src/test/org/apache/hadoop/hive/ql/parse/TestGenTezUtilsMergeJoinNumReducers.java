@@ -9,15 +9,17 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -32,28 +34,25 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Reproduces a reduce-side merge join bug: {@link GenTezUtils#createReduceWork} sets each
- * {@link ReduceWork}'s numReduceTasks purely from that branch's own ReduceSinkOperator, with no
- * cross-check against sibling ReduceSinkOperators that feed the same downstream
- * {@link CommonMergeJoinOperator}. When two such siblings end up with different numReducers
- * (e.g. because Tez auto-parallelism at runtime shrinks one side's task count but not the
- * other's), rows with the same join key can land in different reduce tasks on each side,
- * causing the merge join to silently miss matches.
+ * Tests merge-join reducer estimates and traits in {@link GenTezUtils#createReduceWork}.
+ * Sibling {@link ReduceWork}s are combined into one Tez vertex, so aligning their estimates
+ * must not change input hashing or disable that vertex's adaptive parallelism.
  */
 public class TestGenTezUtilsMergeJoinNumReducers {
 
@@ -88,14 +87,13 @@ public class TestGenTezUtilsMergeJoinNumReducers {
     groupBy = new GroupByOperator(cCtx);
     groupBy.setConf(new GroupByDesc());
     groupBy.getConf().setKeys(new ArrayList<>());
-    wireParentChild(rsBigTable, groupBy);
+    OperatorFactory.makeChild(rsBigTable, groupBy);
 
     rsSmallTable = newReduceSink(cCtx, SMALL_TABLE_NUM_REDUCERS);
-    // AUTOPARALLEL is what makes the mismatch a real bug: it tells ShuffleVertexManager this
-    // side's task count is free to shrink at runtime, independently of the other side's.
+    // AUTOPARALLEL marks this input's reducer count as an estimate rather than a fixed count.
     rsSmallTable.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
     dummyStore = new TezDummyStoreOperator(cCtx);
-    wireParentChild(rsSmallTable, dummyStore);
+    OperatorFactory.makeChild(rsSmallTable, dummyStore);
 
     CommonMergeJoinOperator mergeJoin = new CommonMergeJoinOperator(cCtx);
     groupBy.setChildOperators(newList(mergeJoin));
@@ -103,28 +101,44 @@ public class TestGenTezUtilsMergeJoinNumReducers {
     mergeJoin.setParentOperators(newList(groupBy, dummyStore));
   }
 
-  /**
-   * Both ReduceSinkOperators feed the same CommonMergeJoinOperator (one via a GroupBy, one via
-   * a DummyStore), but start out with different numReducers, and the DummyStore side carries
-   * AUTOPARALLEL - i.e. its task count is free to drift at runtime. Today, createReduceWork does
-   * not reconcile them: this assertion fails against unfixed code (5 != 20) and should pass once
-   * GenTezUtils normalizes numReducers across merge-join siblings.
-   */
-  @Test
-  public void testSiblingReduceSinksFeedingMergeJoinGetSameNumReducers() throws Exception {
-    ReduceWork rwBigTable = createReduceWorkFor(rsBigTable, groupBy);
-    ReduceWork rwSmallTable = createReduceWorkFor(rsSmallTable, dummyStore);
-
-    assertEquals("both sides of the merge join must partition into the same number of tasks",
-        rwBigTable.getNumReduceTasks(), rwSmallTable.getNumReduceTasks());
+  @After
+  public void tearDown() throws Exception {
+    SessionState.get().close();
   }
 
   /**
-   * When a CommonMergeJoinOperator's parents are plain ReduceSinkOperators with no
-   * TezDummyStoreOperator sibling, both sides already run as tags of the same single Tez
-   * vertex and share its one parallelism setting. Normalization must be a no-op here: it must
-   * not touch numReducers or strip the AUTOPARALLEL trait, since there is no independent-vertex
-   * mismatch to protect against.
+   * Inputs represented by separate ReduceWorks start with different reducer estimates.
+   * Normalize the estimates before the works are combined into the merge-join vertex.
+   */
+  @Test
+  public void testSiblingReduceSinksFeedingMergeJoinGetSameNumReducers() throws Exception {
+    ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, false);
+    ReduceWork rwBigTable = createReduceWorkFor(rsBigTable, groupBy);
+
+    assertEquals(SMALL_TABLE_NUM_REDUCERS, rsBigTable.getConf().getNumReducers());
+    assertEquals(SMALL_TABLE_NUM_REDUCERS, rsSmallTable.getConf().getNumReducers());
+    ReduceWork rwSmallTable = createReduceWorkFor(rsSmallTable, dummyStore);
+
+    assertEquals(SMALL_TABLE_NUM_REDUCERS, rwBigTable.getNumReduceTasks().intValue());
+    assertEquals(rwBigTable.getNumReduceTasks(), rwSmallTable.getNumReduceTasks());
+  }
+
+  @Test
+  public void testSiblingReduceSinksAreNormalizedWhenDummyStoreIsVisitedFirst() throws Exception {
+    ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, false);
+    ReduceWork rwSmallTable = createReduceWorkFor(rsSmallTable, dummyStore);
+
+    assertEquals(SMALL_TABLE_NUM_REDUCERS, rsBigTable.getConf().getNumReducers());
+    assertEquals(SMALL_TABLE_NUM_REDUCERS, rsSmallTable.getConf().getNumReducers());
+    ReduceWork rwBigTable = createReduceWorkFor(rsBigTable, groupBy);
+
+    assertEquals(SMALL_TABLE_NUM_REDUCERS, rwSmallTable.getNumReduceTasks().intValue());
+    assertEquals(rwSmallTable.getNumReduceTasks(), rwBigTable.getNumReduceTasks());
+  }
+
+  /**
+   * Plain ReduceSink parents are handled as tags of one ReduceWork rather than as separate
+   * ReduceWorks. Their counts and traits must remain untouched by this normalization.
    */
   @Test
   public void testMergeJoinWithoutDummyStoreSiblingIsNotNormalized() throws Exception {
@@ -139,13 +153,12 @@ public class TestGenTezUtilsMergeJoinNumReducers {
     rsRight.setChildOperators(newList(mergeJoin));
     mergeJoin.setParentOperators(newList(rsLeft, rsRight));
 
-    ReduceWork rwLeft = createReduceWorkFor(rsLeft, mergeJoin);
-    ReduceWork rwRight = createReduceWorkFor(rsRight, mergeJoin);
+    createReduceWorkFor(rsLeft, mergeJoin);
 
     assertEquals("numReducers must be untouched when there is no DummyStore sibling",
-        (long) BIG_TABLE_NUM_REDUCERS, (long) rwLeft.getNumReduceTasks());
+        BIG_TABLE_NUM_REDUCERS, rsLeft.getConf().getNumReducers());
     assertEquals("numReducers must be untouched when there is no DummyStore sibling",
-        (long) SMALL_TABLE_NUM_REDUCERS, (long) rwRight.getNumReduceTasks());
+        SMALL_TABLE_NUM_REDUCERS, rsRight.getConf().getNumReducers());
     assertTrue("AUTOPARALLEL must survive when there is no DummyStore sibling to protect against",
         rsLeft.getConf().getReducerTraits().contains(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
     assertTrue("AUTOPARALLEL must survive when there is no DummyStore sibling to protect against",
@@ -167,12 +180,12 @@ public class TestGenTezUtilsMergeJoinNumReducers {
     GroupByOperator bigTableSide = new GroupByOperator(cCtx);
     bigTableSide.setConf(new GroupByDesc());
     bigTableSide.getConf().setKeys(new ArrayList<>());
-    wireParentChild(rsTwoBuckets, bigTableSide);
+    OperatorFactory.makeChild(rsTwoBuckets, bigTableSide);
 
     ReduceSinkOperator rsThreeBuckets = newReduceSink(cCtx, 3);
     rsThreeBuckets.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.FIXED));
     TezDummyStoreOperator smallTableSide = new TezDummyStoreOperator(cCtx);
-    wireParentChild(rsThreeBuckets, smallTableSide);
+    OperatorFactory.makeChild(rsThreeBuckets, smallTableSide);
 
     CommonMergeJoinOperator mergeJoin = new CommonMergeJoinOperator(cCtx);
     bigTableSide.setChildOperators(newList(mergeJoin));
@@ -188,12 +201,170 @@ public class TestGenTezUtilsMergeJoinNumReducers {
         3L, (long) rwThreeBuckets.getNumReduceTasks());
   }
 
+  /**
+   * If one merge-join input's lineage is too deep for the search to resolve, normalizing only the
+   * inputs that were found would leave the unresolved one with a different numReducers.
+   * No input may be touched in that case.
+   */
+  @Test
+  public void testUnresolvableSiblingLineageLeavesAllInputsUntouched() throws Exception {
+    ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, false);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    ReduceSinkOperator rsLeft = newReduceSink(cCtx, BIG_TABLE_NUM_REDUCERS);
+    rsLeft.getConf().setReducerTraits(
+        EnumSet.of(ReduceSinkDesc.ReducerTraits.UNIFORM, ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+    GroupByOperator leftSide = newGroupBy(cCtx);
+    OperatorFactory.makeChild(rsLeft, leftSide);
+
+    ReduceSinkOperator rsRight = newReduceSink(cCtx, SMALL_TABLE_NUM_REDUCERS);
+    rsRight.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+    // Longer than the lineage search depth, so rsRight cannot be reached from the DummyStore.
+    GroupByOperator rightRoot = newGroupBy(cCtx);
+    OperatorFactory.makeChild(rsRight, rightRoot);
+    Operator<?> rightSide = rightRoot;
+    for (int i = 1; i < 10; i++) {
+      GroupByOperator op = newGroupBy(cCtx);
+      OperatorFactory.makeChild(rightSide, op);
+      rightSide = op;
+    }
+    TezDummyStoreOperator dummyStore = new TezDummyStoreOperator(cCtx);
+    OperatorFactory.makeChild(rightSide, dummyStore);
+
+    CommonMergeJoinOperator mergeJoin = new CommonMergeJoinOperator(cCtx);
+    leftSide.setChildOperators(newList(mergeJoin));
+    dummyStore.setChildOperators(newList(mergeJoin));
+    mergeJoin.setParentOperators(newList(leftSide, dummyStore));
+
+    createReduceWorkFor(rsLeft, leftSide);
+
+    assertTrue("UNIFORM must survive: clearing it changes the hash function used for this input",
+        rsLeft.getConf().getReducerTraits().contains(ReduceSinkDesc.ReducerTraits.UNIFORM));
+    assertTrue("AUTOPARALLEL must survive when the merge join's lineage is unresolved",
+        rsLeft.getConf().getReducerTraits().contains(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+    assertEquals("numReducers must be untouched when the merge join's lineage is unresolved",
+        (long) BIG_TABLE_NUM_REDUCERS, (long) rsLeft.getConf().getNumReducers());
+    assertEquals("numReducers must be untouched when the merge join's lineage is unresolved",
+        (long) SMALL_TABLE_NUM_REDUCERS, (long) rsRight.getConf().getNumReducers());
+    assertTrue("AUTOPARALLEL must survive when the merge join's lineage is unresolved",
+        rsRight.getConf().getReducerTraits().contains(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+
+    ReduceWork rwRight = createReduceWorkFor(rsRight, rightRoot);
+    assertEquals(BIG_TABLE_NUM_REDUCERS, rsLeft.getConf().getNumReducers());
+    assertEquals(SMALL_TABLE_NUM_REDUCERS, rsRight.getConf().getNumReducers());
+    assertEquals(SMALL_TABLE_NUM_REDUCERS, rwRight.getNumReduceTasks().intValue());
+  }
+
+  /**
+   * A merge join reached from an upstream ReduceSink only by passing through another
+   * ReduceSink belongs to that later shuffle stage. Creating the upstream work must not normalize
+   * that later stage's inputs or disable the upstream stage's adaptive parallelism.
+   */
+  @Test
+  public void testMergeJoinBehindAnotherShuffleLeavesLaterInputsUntouched() throws Exception {
+    ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, true);
+    CompilationOpContext cCtx = new CompilationOpContext();
+
+    ReduceSinkOperator rsUpstream = newReduceSink(cCtx, BIG_TABLE_NUM_REDUCERS);
+    rsUpstream.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+    GroupByOperator upstreamGroupBy = newGroupBy(cCtx);
+    OperatorFactory.makeChild(rsUpstream, upstreamGroupBy);
+
+    ReduceSinkOperator rsMid = newReduceSink(cCtx, BIG_TABLE_NUM_REDUCERS);
+    rsMid.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+    OperatorFactory.makeChild(upstreamGroupBy, rsMid);
+    GroupByOperator midGroupBy = newGroupBy(cCtx);
+    OperatorFactory.makeChild(rsMid, midGroupBy);
+
+    ReduceSinkOperator rsSmall = newReduceSink(cCtx, SMALL_TABLE_NUM_REDUCERS);
+    rsSmall.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+    TezDummyStoreOperator dummyStore = new TezDummyStoreOperator(cCtx);
+    OperatorFactory.makeChild(rsSmall, dummyStore);
+
+    CommonMergeJoinOperator mergeJoin = new CommonMergeJoinOperator(cCtx);
+    midGroupBy.setChildOperators(newList(mergeJoin));
+    dummyStore.setChildOperators(newList(mergeJoin));
+    mergeJoin.setParentOperators(newList(midGroupBy, dummyStore));
+
+    ReduceWork rwUpstream = createReduceWorkFor(rsUpstream, upstreamGroupBy);
+
+    assertTrue("an upstream stage behind another shuffle must keep its adaptive parallelism",
+        rwUpstream.isAutoReduceParallelism());
+    assertEquals("a later shuffle must not be normalized while creating upstream work",
+        BIG_TABLE_NUM_REDUCERS, rsMid.getConf().getNumReducers());
+    assertEquals("a later shuffle must not be normalized while creating upstream work",
+        SMALL_TABLE_NUM_REDUCERS, rsSmall.getConf().getNumReducers());
+  }
+
+  @Test
+  public void testMergeJoinPreservesUniformHashingWithoutAutoParallelism() throws Exception {
+    ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, false);
+    EnumSet<ReduceSinkDesc.ReducerTraits> traits =
+        EnumSet.of(ReduceSinkDesc.ReducerTraits.UNIFORM, ReduceSinkDesc.ReducerTraits.AUTOPARALLEL);
+    rsBigTable.getConf().setReducerTraits(traits);
+    rsSmallTable.getConf().setReducerTraits(traits);
+    rsBigTable.getConf().setNumReducers(8);
+    rsSmallTable.getConf().setNumReducers(32);
+
+    ReduceWork rwBigTable = createReduceWorkFor(rsBigTable, groupBy);
+    ReduceWork rwSmallTable = createReduceWorkFor(rsSmallTable, dummyStore);
+
+    // UNIFORM selects whole-key Murmur hashing. Clearing it can put correlated composite keys
+    // such as (a, a) in a single partition even when there are 32 reducers.
+    assertEquals(traits, rsBigTable.getConf().getReducerTraits());
+    assertEquals(traits, rsSmallTable.getConf().getReducerTraits());
+    assertTrue(rwBigTable.isUniformDistribution());
+    assertTrue(rwSmallTable.isUniformDistribution());
+    assertEquals(32, rwBigTable.getNumReduceTasks().intValue());
+    assertEquals(32, rwSmallTable.getNumReduceTasks().intValue());
+    assertFalse(rwBigTable.isAutoReduceParallelism());
+    assertFalse(rwSmallTable.isAutoReduceParallelism());
+  }
+
+  @Test
+  public void testMergeJoinPreservesAdaptiveParallelism() throws Exception {
+    ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, true);
+    ctx.conf.setFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR, 0.25f);
+    ctx.conf.setFloatVar(HiveConf.ConfVars.TEZ_MAX_PARTITION_FACTOR, 2.0f);
+    ctx.conf.setIntVar(HiveConf.ConfVars.MAX_REDUCERS, 1000);
+    EnumSet<ReduceSinkDesc.ReducerTraits> traits =
+        EnumSet.of(ReduceSinkDesc.ReducerTraits.UNIFORM, ReduceSinkDesc.ReducerTraits.AUTOPARALLEL);
+    rsBigTable.getConf().setReducerTraits(traits);
+    rsSmallTable.getConf().setReducerTraits(traits);
+    rsBigTable.getConf().setNumReducers(100);
+    rsSmallTable.getConf().setNumReducers(400);
+
+    ReduceWork rwBigTable = createReduceWorkFor(rsBigTable, groupBy);
+    ReduceWork rwSmallTable = createReduceWorkFor(rsSmallTable, dummyStore);
+
+    assertEquals(traits, rsBigTable.getConf().getReducerTraits());
+    assertEquals(traits, rsSmallTable.getConf().getReducerTraits());
+    for (ReduceWork work : new ReduceWork[] {rwBigTable, rwSmallTable}) {
+      assertTrue("merge-join inputs share one vertex and may adapt together",
+          work.isAutoReduceParallelism());
+      assertEquals(100, work.getMinReduceTasks());
+      assertEquals(800, work.getMaxReduceTasks());
+      assertTrue(work.getEdgePropRef().isAutoReduce());
+      assertEquals(100, work.getEdgePropRef().getMinReducer());
+      assertEquals(800, work.getEdgePropRef().getMaxReducer());
+    }
+  }
+
+  private static GroupByOperator newGroupBy(CompilationOpContext cCtx) {
+    GroupByOperator op = new GroupByOperator(cCtx);
+    op.setConf(new GroupByDesc());
+    op.getConf().setKeys(new ArrayList<>());
+    return op;
+  }
+
   private ReduceWork createReduceWorkFor(ReduceSinkOperator rs, Operator<?> root) throws Exception {
     MapWork preceedingWork = new MapWork("Map for " + rs);
     tezWork.add(preceedingWork);
     ctx.preceedingWork = preceedingWork;
     ctx.parentOfRoot = rs;
-    return GenTezUtils.createReduceWork(ctx, root, tezWork);
+    ReduceWork work = GenTezUtils.createReduceWork(ctx, root, tezWork);
+    // GenTezWork cuts every shuffle edge after creating a ReduceWork.
+    root.removeParents();
+    return work;
   }
 
   private static ReduceSinkOperator newReduceSink(CompilationOpContext cCtx, int numReducers) {
@@ -205,12 +376,6 @@ public class TestGenTezUtilsMergeJoinNumReducers {
     rs.getConf().setValueSerializeInfo(tableDesc);
     rs.getConf().setNumReducers(numReducers);
     return rs;
-  }
-
-  private static void wireParentChild(
-      Operator<? extends OperatorDesc> parent, Operator<? extends OperatorDesc> child) {
-    parent.setChildOperators(newList(child));
-    child.setParentOperators(newList(parent));
   }
 
   @SafeVarargs

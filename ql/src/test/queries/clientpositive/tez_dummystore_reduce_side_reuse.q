@@ -9,8 +9,9 @@ set hive.optimize.bucketmapjoin=true;
 -- NodeManager at once. This forces the Tez AM to sequentially REUSE the same container
 -- for multiple tasks of the Reducer vertex within this single query - the ObjectCache
 -- entry (keyed by vertex name, scoped per-query) then hands the second task the SAME
--- already-initialized operator instances the first task used, exercising
--- TezDummyStoreOperator's wiring cleanup on closeOp().
+-- already-initialized operator instances the first task used. Those instances still hold
+-- the CommonMergeJoinOperator as a child of TezDummyStoreOperator from the first task, which
+-- ReduceRecordProcessor.getJoinParentOp must tolerate.
 set mapred.reduce.tasks=8;
 set hive.exec.reducers.max=8;
 set hive.tez.container.size=2048;
@@ -32,9 +33,8 @@ INSERT INTO dummystore_src VALUES
 -- GROUP BY, the other picks the "latest" row per id via ROW_NUMBER. Both sides shuffle into
 -- a Reducer vertex containing a DummyStore + CommonMergeJoinOperator pipeline. With 8
 -- reducer tasks contending for a couple of containers, some containers must sequentially
--- process more than one task of this vertex, exercising TezDummyStoreOperator's wiring
--- cleanup on closeOp() and ReduceRecordProcessor's close ordering for the last group in
--- each task's merge-scan order.
+-- process more than one task of this vertex, so the cached DummyStore wiring described above
+-- is reused by a later task.
 EXPLAIN
 SELECT b.id, b.max_val, e.enrch_val
 FROM
