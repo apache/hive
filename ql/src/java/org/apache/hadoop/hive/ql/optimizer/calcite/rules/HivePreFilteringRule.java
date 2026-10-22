@@ -75,133 +75,134 @@ public class HivePreFilteringRule extends ReduceExpressionsRule<ReduceExpression
 
   @Override
   public boolean matches(RelOptRuleCall call) {
-    final Filter filter = call.rel(0);
-    final RelNode filterChild = call.rel(1);
-
-    // If the filter is already on top of a TableScan,
-    // we can bail out
-    if (filterChild instanceof TableScan) {
-      return false;
-    }
-
-    HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
-
-    // If this operator has been visited already by the rule,
-    // we do not need to apply the optimization
-    if (registry != null && registry.getVisited(this).contains(filter)) {
-      return false;
-    }
-
-    return true;
+    return false;
+    //    final Filter filter = call.rel(0);
+    //    final RelNode filterChild = call.rel(1);
+    //
+    //    // If the filter is already on top of a TableScan,
+    //    // we can bail out
+    //    if (filterChild instanceof TableScan) {
+    //      return false;
+    //    }
+    //
+    //    HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
+    //
+    //    // If this operator has been visited already by the rule,
+    //    // we do not need to apply the optimization
+    //    if (registry != null && registry.getVisited(this).contains(filter)) {
+    //      return false;
+    //    }
+    //
+    //    return true;
   }
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    final Filter filter = call.rel(0);
-
-    // 0. Register that we have visited this operator in this rule
-    HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
-    if (registry != null) {
-      registry.registerVisited(this, filter);
-    }
-
-    final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
-
-    // 1. Recompose filter possibly by pulling out common elements from DNF
-    // expressions
-    RexNode topFilterCondition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
-
-    // 2. We extract possible candidates to be pushed down
-    List<RexNode> operandsToPushDown = new ArrayList<>();
-    List<RexNode> deterministicExprs = new ArrayList<>();
-    List<RexNode> nonDeterministicExprs = new ArrayList<>();
-
-    switch (topFilterCondition.getKind()) {
-    case AND:
-      ImmutableList<RexNode> operands = RexUtil.flattenAnd(((RexCall) topFilterCondition)
-          .getOperands());
-      Set<String> operandsToPushDownDigest = new HashSet<String>();
-      List<RexNode> extractedCommonOperands = null;
-
-      for (RexNode operand : operands) {
-        if (operand.getKind() == SqlKind.OR) {
-          extractedCommonOperands = extractCommonOperands(rexBuilder, filter.getInput(), operand, maxCNFNodeCount);
-          for (RexNode extractedExpr : extractedCommonOperands) {
-            if (operandsToPushDownDigest.add(extractedExpr.toString())) {
-              operandsToPushDown.add(extractedExpr);
-            }
-          }
-        }
-
-        // TODO: Make expr traversal recursive. Extend to traverse inside
-        // elements of DNF/CNF & extract more deterministic pieces out.
-        if (HiveCalciteUtil.isDeterministic(operand)) {
-          deterministicExprs.add(operand);
-        } else {
-          nonDeterministicExprs.add(operand);
-        }
-      }
-
-      // Pull out Deterministic exprs from non-deterministic and push down
-      // deterministic expressions as a separate filter
-      // NOTE: Hive by convention doesn't pushdown non deterministic expressions
-      if (nonDeterministicExprs.size() > 0) {
-        for (RexNode expr : deterministicExprs) {
-          if (!operandsToPushDownDigest.contains(expr.toString())) {
-            operandsToPushDown.add(expr);
-            operandsToPushDownDigest.add(expr.toString());
-          }
-        }
-
-        topFilterCondition = RexUtil.pullFactors(rexBuilder,
-            RexUtil.composeConjunction(rexBuilder, nonDeterministicExprs, false));
-      }
-
-      break;
-
-    case OR:
-      operandsToPushDown = extractCommonOperands(rexBuilder, filter.getInput(), topFilterCondition, maxCNFNodeCount);
-      break;
-    default:
-      return;
-    }
-
-    // 2. If we did not generate anything for the new predicate, we bail out
-    if (operandsToPushDown.isEmpty()) {
-      return;
-    }
-
-    // The created expressions must be reduced/folded before we check if they are pushed already below.
-    // Comparing reduced with no reduced predicates may cause this rule to fire indefinitely failing to reach a
-    // fixpoint.
-    reduceExpressions(filter,
-        operandsToPushDown,
-        RelOptPredicateList.EMPTY,
-        true,
-        config.matchNullability(),
-        config.treatDynamicCallsAsConstant());
-    // 3. If the new conjuncts are already present in the plan, we bail out
-    final List<RexNode> newConjuncts = HiveCalciteUtil.getPredsNotPushedAlready(filter.getInput(),
-        operandsToPushDown);
-    RexNode newPredicate = RexUtil.composeConjunction(rexBuilder, newConjuncts, false);
-    if (newPredicate.isAlwaysTrue()) {
-      return;
-    }
-
-    // 4. Otherwise, we create a new condition
-    final RexNode newChildFilterCondition = RexUtil.pullFactors(rexBuilder, newPredicate);
-
-    // 5. We create the new filter that might be pushed down
-    RelNode newChildFilter = filterFactory.createFilter(filter.getInput(), newChildFilterCondition);
-    RelNode newTopFilter = filterFactory.createFilter(newChildFilter, topFilterCondition);
-
-    // 6. We register both so we do not fire the rule on them again
-    if (registry != null) {
-      registry.registerVisited(this, newChildFilter);
-      registry.registerVisited(this, newTopFilter);
-    }
-
-    call.transformTo(newTopFilter);
+    //    final Filter filter = call.rel(0);
+    //
+    //    // 0. Register that we have visited this operator in this rule
+    //    HiveRulesRegistry registry = call.getPlanner().getContext().unwrap(HiveRulesRegistry.class);
+    //    if (registry != null) {
+    //      registry.registerVisited(this, filter);
+    //    }
+    //
+    //    final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
+    //
+    //    // 1. Recompose filter possibly by pulling out common elements from DNF
+    //    // expressions
+    //    RexNode topFilterCondition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
+    //
+    //    // 2. We extract possible candidates to be pushed down
+    //    List<RexNode> operandsToPushDown = new ArrayList<>();
+    //    List<RexNode> deterministicExprs = new ArrayList<>();
+    //    List<RexNode> nonDeterministicExprs = new ArrayList<>();
+    //
+    //    switch (topFilterCondition.getKind()) {
+    //    case AND:
+    //      ImmutableList<RexNode> operands = RexUtil.flattenAnd(((RexCall) topFilterCondition)
+    //          .getOperands());
+    //      Set<String> operandsToPushDownDigest = new HashSet<String>();
+    //      List<RexNode> extractedCommonOperands = null;
+    //
+    //      for (RexNode operand : operands) {
+    //        if (operand.getKind() == SqlKind.OR) {
+    //          extractedCommonOperands = extractCommonOperands(rexBuilder, filter.getInput(), operand, maxCNFNodeCount);
+    //          for (RexNode extractedExpr : extractedCommonOperands) {
+    //            if (operandsToPushDownDigest.add(extractedExpr.toString())) {
+    //              operandsToPushDown.add(extractedExpr);
+    //            }
+    //          }
+    //        }
+    //
+    //        // TODO: Make expr traversal recursive. Extend to traverse inside
+    //        // elements of DNF/CNF & extract more deterministic pieces out.
+    //        if (HiveCalciteUtil.isDeterministic(operand)) {
+    //          deterministicExprs.add(operand);
+    //        } else {
+    //          nonDeterministicExprs.add(operand);
+    //        }
+    //      }
+    //
+    //      // Pull out Deterministic exprs from non-deterministic and push down
+    //      // deterministic expressions as a separate filter
+    //      // NOTE: Hive by convention doesn't pushdown non deterministic expressions
+    //      if (nonDeterministicExprs.size() > 0) {
+    //        for (RexNode expr : deterministicExprs) {
+    //          if (!operandsToPushDownDigest.contains(expr.toString())) {
+    //            operandsToPushDown.add(expr);
+    //            operandsToPushDownDigest.add(expr.toString());
+    //          }
+    //        }
+    //
+    //        topFilterCondition = RexUtil.pullFactors(rexBuilder,
+    //            RexUtil.composeConjunction(rexBuilder, nonDeterministicExprs, false));
+    //      }
+    //
+    //      break;
+    //
+    //    case OR:
+    //      operandsToPushDown = extractCommonOperands(rexBuilder, filter.getInput(), topFilterCondition, maxCNFNodeCount);
+    //      break;
+    //    default:
+    //      return;
+    //    }
+    //
+    //    // 2. If we did not generate anything for the new predicate, we bail out
+    //    if (operandsToPushDown.isEmpty()) {
+    //      return;
+    //    }
+    //
+    //    // The created expressions must be reduced/folded before we check if they are pushed already below.
+    //    // Comparing reduced with no reduced predicates may cause this rule to fire indefinitely failing to reach a
+    //    // fixpoint.
+    //    reduceExpressions(filter,
+    //        operandsToPushDown,
+    //        RelOptPredicateList.EMPTY,
+    //        true,
+    //        config.matchNullability(),
+    //        config.treatDynamicCallsAsConstant());
+    //    // 3. If the new conjuncts are already present in the plan, we bail out
+    //    final List<RexNode> newConjuncts = HiveCalciteUtil.getPredsNotPushedAlready(filter.getInput(),
+    //        operandsToPushDown);
+    //    RexNode newPredicate = RexUtil.composeConjunction(rexBuilder, newConjuncts, false);
+    //    if (newPredicate.isAlwaysTrue()) {
+    //      return;
+    //    }
+    //
+    //    // 4. Otherwise, we create a new condition
+    //    final RexNode newChildFilterCondition = RexUtil.pullFactors(rexBuilder, newPredicate);
+    //
+    //    // 5. We create the new filter that might be pushed down
+    //    RelNode newChildFilter = filterFactory.createFilter(filter.getInput(), newChildFilterCondition);
+    //    RelNode newTopFilter = filterFactory.createFilter(newChildFilter, topFilterCondition);
+    //
+    //    // 6. We register both so we do not fire the rule on them again
+    //    if (registry != null) {
+    //      registry.registerVisited(this, newChildFilter);
+    //      registry.registerVisited(this, newTopFilter);
+    //    }
+    //
+    //    call.transformTo(newTopFilter);
 
   }
 
