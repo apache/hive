@@ -48,6 +48,7 @@
         <exclude>junit:*</exclude>
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
+        <exclude>org.apache.hive:hive-beeline:*:standalone</exclude>
         <exclude>org.apache.hive:hive-contrib</exclude>
         <exclude>*:*:tests</exclude>
       </excludes>
