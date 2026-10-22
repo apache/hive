@@ -44,27 +44,39 @@ class TokenAuthHiveClientPool extends HiveClientPool {
     this.hiveConf = super.hiveConf();
   }
 
-  private void setDelegationToken() {
-    IMetaStoreClient tokenClient = null;
+  private synchronized void setDelegationToken() {
+    UserGroupInformation currentUgi;
     try {
-      UserGroupInformation currentUgi = SecurityUtils.getUGI();
-      if (currentUgi.getAuthenticationMethod() != UserGroupInformation.AuthenticationMethod.PROXY) {
-        return;
-      }
-      hiveConf.unset(MetastoreConf.ConfVars.TOKEN_SIGNATURE.getVarname());
+      currentUgi = SecurityUtils.getUGI();
+    } catch (IOException e) {
+      throw new RuntimeMetaException(e, "Failed to get metastore delegation token");
+    }
+    if (currentUgi.getAuthenticationMethod() != UserGroupInformation.AuthenticationMethod.PROXY) {
+      return;
+    }
+
+    String tokenSignatureVar = MetastoreConf.ConfVars.TOKEN_SIGNATURE.getVarname();
+    String previousSignature = hiveConf.get(tokenSignatureVar);
+    IMetaStoreClient tokenClient = null;
+    boolean tokenApplied = false;
+    try {
       UserGroupInformation realUser = currentUgi.getRealUser();
       if (realUser == null) {
         realUser = UserGroupInformation.getLoginUser();
       }
       final UserGroupInformation tokenFetcher = realUser;
+      HiveConf tokenFetchConf = new HiveConf(hiveConf);
+      tokenFetchConf.unset(tokenSignatureVar);
       tokenClient =
           tokenFetcher.doAs(
               (PrivilegedExceptionAction<IMetaStoreClient>)
-                  () -> new HiveMetaStoreClient(hiveConf));
+                  () -> new HiveMetaStoreClient(tokenFetchConf));
       String proxyUser = currentUgi.getUserName();
-      String delegationTokenStr = tokenClient.getDelegationToken(proxyUser, proxyUser);
+      String renewer = tokenFetcher.getUserName();
+      String delegationTokenStr = tokenClient.getDelegationToken(proxyUser, renewer);
       SecurityUtils.setTokenStr(currentUgi, delegationTokenStr, DELEGATION_TOKEN_SERVICE);
       MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.TOKEN_SIGNATURE, DELEGATION_TOKEN_SERVICE);
+      tokenApplied = true;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeMetaException(e, "Failed to get metastore delegation token");
@@ -75,6 +87,13 @@ class TokenAuthHiveClientPool extends HiveClientPool {
     } finally {
       if (tokenClient != null) {
         tokenClient.close();
+      }
+      if (!tokenApplied) {
+        if (previousSignature == null) {
+          hiveConf.unset(tokenSignatureVar);
+        } else {
+          hiveConf.set(tokenSignatureVar, previousSignature);
+        }
       }
     }
   }

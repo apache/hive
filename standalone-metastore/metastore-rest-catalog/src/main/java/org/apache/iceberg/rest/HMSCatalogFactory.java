@@ -86,6 +86,7 @@ public class HMSCatalogFactory {
     if (!StringUtils.isEmpty(configUri)) {
       properties.put(CatalogProperties.URI, configUri);
       // Remote HMS: isolate metastore client pools per authenticated REST user so set_ugi matches the caller.
+      // Idle pools are evicted by CachedClientPool; the JVM-wide cache also has a fixed entry limit.
       if (configuration.get(SERVLET_ID_KEY) == null) {
         properties.put(CatalogProperties.CLIENT_POOL_CACHE_KEYS, CLIENT_POOL_USER_CACHE_KEY);
       }

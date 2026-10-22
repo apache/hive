@@ -163,8 +163,8 @@ public class TestCachedClientPool {
         ImmutableMap.of(CatalogProperties.CLIENT_POOL_CACHE_KEYS, "user_name");
 
     CachedClientPool pool = new CachedClientPool(hiveConf, properties);
-    HiveClientPool fooPool = foo.doAs((PrivilegedAction<HiveClientPool>) pool::clientPool);
-    HiveClientPool barPool = bar.doAs((PrivilegedAction<HiveClientPool>) pool::clientPool);
+    HiveClientPool fooPool = foo.doAs((PrivilegedAction<HiveClientPool>) () -> pool.clientPool());
+    HiveClientPool barPool = bar.doAs((PrivilegedAction<HiveClientPool>) () -> pool.clientPool());
     assertThat(fooPool).isNotSameAs(barPool);
   }
 

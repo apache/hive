@@ -68,10 +68,13 @@ import org.immutables.value.Value;
  * When user_name or ugi is configured and Hadoop security is enabled, pooled clients use
  * metastore delegation tokens so Thrift connections authenticate as the current proxy
  * user (for example the REST catalog end user) rather than only the catalog service principal.
+ * Per-user cache entries are bounded and expire after the configured idle interval.
  */
 public class CachedClientPool implements ClientPool<IMetaStoreClient, TException> {
 
   private static final String CONF_ELEMENT_PREFIX = "conf:";
+  /** Upper bound on distinct client pools cached in this JVM (e.g. per REST user). */
+  private static final int CLIENT_POOL_CACHE_MAX_ENTRIES = 1000;
 
   private static Cache<Key, HiveClientPool> clientPoolCache;
 
@@ -114,6 +117,7 @@ public class CachedClientPool implements ClientPool<IMetaStoreClient, TException
       // We use a scheduler with one thread to clean up expired clients.
       clientPoolCache =
           Caffeine.newBuilder()
+              .maximumSize(CLIENT_POOL_CACHE_MAX_ENTRIES)
               .expireAfterAccess(evictionInterval, TimeUnit.MILLISECONDS)
               .removalListener((ignored, value, cause) -> ((HiveClientPool) value).close())
               .scheduler(
@@ -162,12 +166,27 @@ public class CachedClientPool implements ClientPool<IMetaStoreClient, TException
       if (trimmed.toLowerCase(Locale.ROOT).startsWith(CONF_ELEMENT_PREFIX)) {
         continue;
       }
-      KeyElementType type = KeyElementType.valueOf(trimmed.toUpperCase(Locale.ROOT));
+      KeyElementType type = parseNamedKeyElementType(trimmed);
       if (type == KeyElementType.UGI || type == KeyElementType.USER_NAME) {
         return true;
       }
     }
     return false;
+  }
+
+  private static KeyElementType parseNamedKeyElementType(String trimmed) {
+    try {
+      KeyElementType type = KeyElementType.valueOf(trimmed.toUpperCase(Locale.ROOT));
+      switch (type) {
+        case UGI:
+        case USER_NAME:
+          return type;
+        default:
+          throw new ValidationException("Unknown key element %s", trimmed);
+      }
+    } catch (IllegalArgumentException e) {
+      throw new ValidationException("Unknown key element %s", trimmed);
+    }
   }
 
   @VisibleForTesting
@@ -190,17 +209,10 @@ public class CachedClientPool implements ClientPool<IMetaStoreClient, TException
             !confElements.containsKey(key), "Conf key element %s already specified", key);
         confElements.put(key, conf.get(key));
       } else {
-        KeyElementType type = KeyElementType.valueOf(trimmed.toUpperCase());
-        switch (type) {
-          case UGI:
-          case USER_NAME:
-            ValidationException.check(
-                !types.contains(type), "%s key element already specified", type.name());
-            types.add(type);
-            break;
-          default:
-            throw new ValidationException("Unknown key element %s", trimmed);
-        }
+        KeyElementType type = parseNamedKeyElementType(trimmed);
+        ValidationException.check(
+            !types.contains(type), "%s key element already specified", type.name());
+        types.add(type);
       }
     }
     for (KeyElementType type : types) {
