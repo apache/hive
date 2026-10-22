@@ -60,5 +60,21 @@ create table T2_timestamp row format serde 'org.apache.hadoop.hive.serde2.OpenCS
 select * from T2_timestamp;
 
 
+-- HIVE-30205, execute CTAS with and without vectorization
+-- The two tables T2_vec and T2_novec are expected to have the same content
+set hive.vectorized.execution.enabled=true;
 
+create table T1_vec(f1 char(1), f2 varchar(10), f3 int, f4 tinyint, f5 bigint, f6 decimal(10,2), f7 float, f8 boolean, f9 date, f10 timestamp, f11 binary);
+insert into T1_vec values ('a', 'abc', 1, 11, 11, 1.25, 2.25, true, cast('2024-01-01' as date), cast('2016-01-01 00:00:00' as timestamp), encode('abc', 'UTF-8'));
+create table T2_vec row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_vec;
+select * from T2_vec;
+
+set hive.vectorized.execution.enabled=false;
+
+create table T1_novec(f1 char(1), f2 varchar(10), f3 int, f4 tinyint, f5 bigint, f6 decimal(10,2), f7 float, f8 boolean, f9 date, f10 timestamp, f11 binary);
+insert into T1_novec values ('a', 'abc', 1, 11, 11, 1.25, 2.25, true, cast('2024-01-01' as date), cast('2016-01-01 00:00:00' as timestamp), encode('abc', 'UTF-8'));
+create table T2_novec row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_novec;
+select * from T2_novec;
 
