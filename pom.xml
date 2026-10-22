@@ -180,7 +180,7 @@
     <kudu.version>1.17.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.16.0</libthrift.version>
+    <libthrift.version>0.23.0</libthrift.version>
     <log4j2.version>2.25.3</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
@@ -197,7 +197,7 @@
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.16.0</parquet.version>
-    <pig.version>0.16.0</pig.version>
+    <pig.version>0.23.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.25.5</protobuf.version>
     <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
