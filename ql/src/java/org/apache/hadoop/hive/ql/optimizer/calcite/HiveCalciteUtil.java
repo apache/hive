@@ -49,9 +49,12 @@ import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexLambda;
+import org.apache.calcite.rex.RexLambdaRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexNodeAndFieldIndex;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexPatternFieldRef;
 import org.apache.calcite.rex.RexShuttle;
@@ -70,8 +73,10 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -837,19 +842,6 @@ public class HiveCalciteUtil {
     return deterministicFuncWithSingleInputRef;
   }
 
-  public static <T> ImmutableMap<Integer, T> getColInfoMap(List<T> hiveCols,
-      int startIndx) {
-    Builder<Integer, T> bldr = ImmutableMap.<Integer, T> builder();
-
-    int indx = startIndx;
-    for (T ci : hiveCols) {
-      bldr.put(indx, ci);
-      indx++;
-    }
-
-    return bldr.build();
-  }
-
   public static ImmutableSet<Integer> shiftVColsSet(Set<Integer> hiveVCols, int shift) {
     ImmutableSet.Builder<Integer> bldr = ImmutableSet.<Integer> builder();
 
@@ -1138,6 +1130,21 @@ public class HiveCalciteUtil {
 
     @Override
     public Boolean visitPatternFieldRef(RexPatternFieldRef fieldRef) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitLambda(RexLambda lambda) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitLambdaRef(RexLambdaRef lambdaRef) {
+      return false;
+    }
+
+    @Override
+    public Boolean visitNodeAndFieldIndex(RexNodeAndFieldIndex nodeAndFieldIndex) {
       return false;
     }
   }

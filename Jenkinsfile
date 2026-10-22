@@ -158,6 +158,9 @@ def hdbPodTemplate(closure) {
     emptyDirVolume(mountPath: '/var/lib/docker', memory: false),
     emptyDirVolume(mountPath: '/certs', memory: false)
   ], yaml:'''
+metadata:
+  annotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
 spec:
   securityContext:
     fsGroup: 1000

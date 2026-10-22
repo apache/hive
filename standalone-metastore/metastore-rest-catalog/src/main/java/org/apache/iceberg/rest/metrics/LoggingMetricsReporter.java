@@ -33,6 +33,11 @@ import java.time.Instant;
 public class LoggingMetricsReporter implements IcebergMetricsReporter {
   private static final Logger LOG = LoggerFactory.getLogger(LoggingMetricsReporter.class);
 
+  /**
+   * Creates a reporter that logs events.
+   *
+   * @param conf unused; present so the reporter can be instantiated by configuration
+   */
   public LoggingMetricsReporter(Configuration conf) {
   }
 

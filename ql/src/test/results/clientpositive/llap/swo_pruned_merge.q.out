@@ -261,10 +261,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
-                  filterExpr: (ds is not null and UDFToDouble(hr) is not null) (type: boolean)
+                  filterExpr: (ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ds is not null and UDFToDouble(hr) is not null) (type: boolean)
+                    predicate: (ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ds (type: string), UDFToDouble(hr) (type: double)

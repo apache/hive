@@ -448,8 +448,10 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   /**
    * see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
    */
+  // Copy suffix is either a numeric counter (HDFS/local: _copy_N) or a 16-hex per-query
+  // uniqueness tag (non-atomic-rename FS such as S3A: _copy_<queryTag>).
   private static final Pattern ORIGINAL_PATTERN_COPY =
-    Pattern.compile("[0-9]+_[0-9]+" + "_copy_" + "[0-9]+");
+      Pattern.compile("[0-9]+_[0-9]+" + "_copy_" + "(?:[0-9]{1,6}|[0-9a-fA-F]{16})");
 
   /**
    * It's assumed everywhere that original data files are named according to

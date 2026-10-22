@@ -241,9 +241,13 @@ public class AcidUtils {
       Pattern.compile("[0-9]+_[0-9]+");
   /**
    * @see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
+   *
+   * The copy suffix is either a numeric counter (HDFS/local: _copy_N) or a
+   * 16-hex per-query uniqueness tag (non-atomic-rename FS such as S3A:
+   * _copy_&lt;queryTag&gt;). See ParsedOutputFileName#REGEX.
    */
   public static final Pattern ORIGINAL_PATTERN_COPY =
-    Pattern.compile("[0-9]+_[0-9]+" + COPY_KEYWORD + "[0-9]+");
+      Pattern.compile("[0-9]+_[0-9]+" + COPY_KEYWORD + "(?:[0-9]{1,6}|[0-9a-fA-F]{16})");
 
   public static final PathFilter acidHiddenFileFilter = new PathFilter() {
     @Override
@@ -451,8 +455,11 @@ public class AcidUtils {
         return new BucketMetaData(bucketId, 0);
       }
       else if(ORIGINAL_PATTERN_COPY.matcher(bucketFileName).matches()) {
-        int copyNumber = Integer.parseInt(
-            bucketFileName.substring(bucketFileName.lastIndexOf('_') + 1));
+        String copySuffix = bucketFileName.substring(bucketFileName.lastIndexOf('_') + 1);
+        // Copy suffix is either a numeric counter or a 16-hex per-query uniqueness tag.
+        // Hex-tagged files are unordered peers from concurrent writers on an
+        // non-atomic-rename FS, so there is no meaningful copy number to assign — use 0.
+        int copyNumber = StringUtils.isNumeric(copySuffix) ? Integer.parseInt(copySuffix) : 0;
         int bucketId = Integer
             .parseInt(bucketFileName.substring(0, bucketFileName.indexOf('_')));
         return new BucketMetaData(bucketId, copyNumber);

@@ -19,8 +19,11 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
 import java.util.List;
+import java.util.Set;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -40,8 +43,6 @@ public class TransformSpec {
   private String columnName;
   private TransformType transformType;
   private Integer transformParam;
-
-  private String fieldName;
 
   public TransformSpec() {
   }
@@ -76,13 +77,6 @@ public class TransformSpec {
     this.transformParam = transformParam;
   }
 
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
-  }
-
-  public String getFieldName() {
-    return fieldName;
-  }
 
   public String transformTypeString() {
     if (transformType == null) {
@@ -92,20 +86,53 @@ public class TransformSpec {
         "[" + width + "]").orElse("");
   }
     
-  public static String toNamedStruct(List<TransformSpec> partTransformSpec, Configuration conf) {
-    return "named_struct(" +
-      partTransformSpec.stream().map(spec ->
-          "'" + spec.getFieldName() + "', " + spec.toHiveExpr(conf))
-        .collect(Collectors.joining(", ")) +
-      ")";
+  /**
+   * The partition transforms the statement being compiled declared, or null if it declared none.
+   * A CREATE has to be read this way: the table it describes does not exist to be asked yet.
+   */
+  @SuppressWarnings("unchecked")
+  public static List<TransformSpec> fromQueryState(Configuration conf) {
+    return SessionStateUtil.getResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
+        .map(spec -> (List<TransformSpec>) spec)
+        .orElse(null);
+  }
+
+
+  /**
+   * Builds the struct of source values a stats gather carries alongside each group. The transforms
+   * decide which rows form a partition, but only the values they were applied to let the table name
+   * it, and every row of a group belongs to one partition, so any of them answers for the group.
+   *
+   * <p>{@code identity(p), month(ts), bucket(id, 4)} yields
+   * <pre>named_struct('p', `p`, 'ts', min(`ts`), 'id', min(`id`))</pre>
+   */
+  public static String toSourceStructExpr(List<TransformSpec> partTransformSpec, Configuration conf) {
+    Set<String> groupedColumns = partTransformSpec.stream()
+        .filter(spec -> spec.getTransformType() == TransformType.IDENTITY)
+        .map(TransformSpec::getColumnName)
+        .collect(Collectors.toSet());
+
+    return partTransformSpec.stream()
+        .map(TransformSpec::getColumnName).distinct()
+        .map(columnName -> {
+          String identifier = unparseIdentifier(columnName, conf);
+          // an identity transform groups by the column itself, which already answers for the group
+          return "'" + columnName + "', " +
+              (groupedColumns.contains(columnName) ? identifier : "min(" + identifier + ")");
+        })
+        .collect(Collectors.joining(", ", "named_struct(", ")"));
   }
   
   public String toHiveExpr(Configuration conf) {
-    String identifier = unparseIdentifier(columnName, conf);
+    return toHiveExpr(unparseIdentifier(columnName, conf));
+  }
+
+  /** The transform applied to an operand, which is a column of its own table or a value of one. */
+  public String toHiveExpr(String operand) {
     if (transformType == TransformSpec.TransformType.IDENTITY) {
-      return identifier;
+      return operand;
     }
-    String fn = "iceberg_" + transformType.name().toLowerCase() + "(" + identifier;
+    String fn = "iceberg_" + transformType.name().toLowerCase() + "(" + operand;
     switch (transformType) {
       case BUCKET:
       case TRUNCATE:

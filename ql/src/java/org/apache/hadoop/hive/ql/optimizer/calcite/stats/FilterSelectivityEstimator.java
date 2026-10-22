@@ -937,12 +937,16 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of "val1 &lt;= column &lt; val2"
    */
   static double rangedSelectivity(KllFloatsSketch kll, float val1, float val2) {
-    if (val1 >= val2) {
+    if (val1 >= val2 || val2 <= kll.getMinItem() || val1 > kll.getMaxItem()) {
       return 0;
     }
     float[] splitPoints = new float[] { val1, val2 };
     double[] boundaries = kll.getCDF(splitPoints, QuantileSearchCriteria.EXCLUSIVE);
-    return boundaries[1] - boundaries[0];
+    // due to the way the KLL sketch is constructed,
+    // it is not possible to differentiate selectivity values below the error
+    // (e.g., if the error is 2%, a real selectivity of 1.5% might be estimated as 0% by KLL)
+    double normalizedRankError = kll.getNormalizedRankError(false);
+    return Math.max(boundaries[1] - boundaries[0], normalizedRankError);
   }
 
   /**
@@ -1015,8 +1019,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @throws IllegalArgumentException if leftValue is equal to rightValue
    */
   public static double betweenSelectivity(KllFloatsSketch kll, float leftValue, float rightValue) {
-    // column >= leftValue AND column <= rightValue
-    if (rightValue < leftValue) {
+    // is it possible to fulfill the BETWEEN?
+    if (rightValue < leftValue || rightValue < kll.getMinItem() || leftValue > kll.getMaxItem()) {
       return 0;
     }
     if (Double.compare(leftValue, rightValue) == 0) {

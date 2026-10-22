@@ -68,9 +68,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
-Reducer 4 <- Map 1 (SIMPLE_EDGE)
-Reducer 5 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 6 <- Map 5 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 7 <- Map 5 (SIMPLE_EDGE)
 
 Stage-4
   Stats Work{}
@@ -82,57 +83,88 @@ Stage-4
             Stage-2
               Union 3
               <-Reducer 2 [CONTAINS]
-                File Output Operator [FS_46]
+                File Output Operator [FS_97]
                   table:{"name:":"default.ice01"}
-                  Select Operator [SEL_44] (rows=7 width=206)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-                    Merge Join Operator [MERGEJOIN_43] (rows=7 width=206)
-                      Conds:RS_59._col4=RS_65._col0(Left Semi),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
+                  Select Operator [SEL_95] (rows=7 width=206)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                    Merge Join Operator [MERGEJOIN_94] (rows=7 width=206)
+                      Conds:RS_113._col4=RS_24._col0(Left Semi),Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                     <-Map 1 [SIMPLE_EDGE] vectorized
-                      SHUFFLE [RS_59]
+                      SHUFFLE [RS_113]
                         PartitionCols:_col4
-                        Select Operator [SEL_56] (rows=7 width=188)
-                          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-                          Filter Operator [FIL_53] (rows=7 width=188)
+                        Select Operator [SEL_111] (rows=7 width=188)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                          Filter Operator [FIL_109] (rows=7 width=188)
                             predicate:((((id = 2) or (id > 4)) is null or (id < 2) or ((id > 2) and (id <= 4))) and FILE__PATH is not null)
                             TableScan [TS_0] (rows=7 width=188)
                               default@ice01,ice01,Tbl:COMPLETE,Col:NONE,Output:["id","name"]
-                    <-Reducer 4 [SIMPLE_EDGE] vectorized
-                      SHUFFLE [RS_65]
+                    <-Reducer 6 [SIMPLE_EDGE]
+                      SHUFFLE [RS_24]
                         PartitionCols:_col0
-                        Group By Operator [GBY_64] (rows=3 width=4)
+                        Group By Operator [GBY_22] (rows=7 width=4)
                           Output:["_col0"],keys:_col0
-                          Select Operator [SEL_63] (rows=3 width=4)
-                            Output:["_col0"]
-                            Filter Operator [FIL_62] (rows=3 width=4)
-                              predicate:(row_number_window_0 = 1)
-                              PTF Operator [PTF_61] (rows=7 width=4)
-                                Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col4 ASC NULLS FIRST","partition by:":"_col4"}]
-                                Select Operator [SEL_60] (rows=7 width=4)
-                                  Output:["_col4"]
-                                <-Map 1 [SIMPLE_EDGE] vectorized
-                                  SHUFFLE [RS_57]
-                                    PartitionCols:FILE__PATH
-                                    Filter Operator [FIL_54] (rows=7 width=4)
-                                      predicate:(((id = 2) or (id > 4)) and FILE__PATH is not null)
-                                       Please refer to the previous TableScan [TS_0]
-              <-Reducer 5 [CONTAINS] vectorized
-                File Output Operator [FS_70]
+                          Merge Join Operator [MERGEJOIN_90] (rows=7 width=4)
+                            Conds:RS_126._col0=RS_120._col0(Left Semi),Output:["_col0"]
+                          <-Map 5 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_120]
+                              PartitionCols:_col0
+                              Group By Operator [GBY_118] (rows=7 width=4)
+                                Output:["_col0"],keys:_col0
+                                Select Operator [SEL_115] (rows=7 width=4)
+                                  Output:["_col0"]
+                                  Filter Operator [FIL_114] (rows=7 width=4)
+                                    predicate:(((id = 2) or (id > 4)) and FILE__PATH is not null)
+                                    TableScan [TS_12] (rows=7 width=4)
+                                      default@ice01,ice01,Tbl:COMPLETE,Col:NONE,Output:["id"]
+                          <-Reducer 7 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_126]
+                              PartitionCols:_col0
+                              Select Operator [SEL_125] (rows=3 width=4)
+                                Output:["_col0"]
+                                Filter Operator [FIL_124] (rows=3 width=4)
+                                  predicate:(row_number_window_0 = 1)
+                                  PTF Operator [PTF_123] (rows=7 width=4)
+                                    Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col4 ASC NULLS FIRST","partition by:":"_col4"}]
+                                    Select Operator [SEL_122] (rows=7 width=4)
+                                      Output:["_col4"]
+                                    <-Map 5 [SIMPLE_EDGE] vectorized
+                                      SHUFFLE [RS_116]
+                                        PartitionCols:FILE__PATH
+                                         Please refer to the previous Filter Operator [FIL_114]
+              <-Reducer 4 [CONTAINS]
+                File Output Operator [FS_108]
                   table:{"name:":"default.ice01"}
-                  Select Operator [SEL_69] (rows=3 width=188)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-                    Filter Operator [FIL_68] (rows=3 width=188)
-                      predicate:(row_number_window_0 = 1)
-                      PTF Operator [PTF_67] (rows=7 width=188)
-                        Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col4 ASC NULLS FIRST","partition by:":"_col4"}]
-                        Select Operator [SEL_66] (rows=7 width=188)
-                          Output:["_col0","_col1","_col2","_col3","_col4","_col6"]
-                        <-Map 1 [SIMPLE_EDGE] vectorized
-                          SHUFFLE [RS_58]
-                            PartitionCols:FILE__PATH
-                            Filter Operator [FIL_55] (rows=7 width=188)
-                              predicate:((id = 2) or (id > 4))
-                               Please refer to the previous TableScan [TS_0]
+                  Select Operator [SEL_106] (rows=3 width=206)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                    Merge Join Operator [MERGEJOIN_105] (rows=3 width=206)
+                      Conds:SEL_104._col2=DUMMY_STORE_93._col0(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col6"]
+                    <-Dummy Store [DUMMY_STORE_93]
+                        Select Operator [SEL_42] (rows=3 width=4)
+                          Output:["_col0","_col1"]
+                          Group By Operator [GBY_41] (rows=3 width=4)
+                            Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
+                    <-Select Operator [SEL_104] (rows=3 width=188)
+                        Output:["_col0","_col1","_col2","_col3","_col4"]
+                        Filter Operator [FIL_102] (rows=3 width=188)
+                          predicate:(row_number_window_0 = 1)
+                          PTF Operator [PTF_100] (rows=7 width=188)
+                            Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col4 ASC NULLS FIRST","partition by:":"_col4"}]
+                            Select Operator [SEL_98] (rows=7 width=188)
+                              Output:["_col0","_col1","_col2","_col3","_col4"]
+                            <-Map 5 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_121]
+                                PartitionCols:_col0
+                                Group By Operator [GBY_119] (rows=7 width=4)
+                                  Output:["_col0","_col1"],aggregations:["count()"],keys:FILE__PATH
+                                  Select Operator [SEL_117] (rows=7 width=4)
+                                    Output:["FILE__PATH"]
+                                     Please refer to the previous Filter Operator [FIL_114]
+                            <-Map 1 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_112]
+                                PartitionCols:FILE__PATH
+                                Filter Operator [FIL_110] (rows=7 width=188)
+                                  predicate:(((id = 2) or (id > 4)) and FILE__PATH is not null)
+                                   Please refer to the previous TableScan [TS_0]
 
 PREHOOK: query: delete from ice01 where id>4 OR id=2
 PREHOOK: type: QUERY

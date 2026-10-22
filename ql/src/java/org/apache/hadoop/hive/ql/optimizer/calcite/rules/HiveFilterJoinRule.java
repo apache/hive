@@ -27,22 +27,17 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.plan.RelOptUtil.InputFinder;
-import org.apache.calcite.plan.RelOptUtil.RexInputConverter;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.rules.FilterJoinRule;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
@@ -209,7 +204,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
     // Try to push down above filters. These are typically where clause
     // filters. They can be pushed down if they are not on the NULL
     // generating side.
-    boolean filterPushed = classifyFilters(
+    boolean filterPushed = RelOptUtil.classifyFilters(
         join,
         aboveFilters,
         joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI,
@@ -250,7 +245,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
     // that is, the result set may be smaller. The right can not be pushed
     // into for the same reason.
     if (joinType != JoinRelType.ANTI
-        && classifyFilters(
+        && RelOptUtil.classifyFilters(
         join,
         joinFilters,
         false,
@@ -340,150 +335,6 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
       }
     }
     return conjunctions;
-  }
-
-  /**
-   * Classifies filters according to where they should be processed. They
-   * either stay where they are, are pushed to the join (if they originated
-   * from above the join), or are pushed to one of the children. Filters that
-   * are pushed are added to list passed in as input parameters.
-   *
-   * @param joinRel      join node
-   * @param filters      filters to be classified
-   * @param pushInto     whether filters can be pushed into the join
-   * @param pushLeft     true if filters can be pushed to the left
-   * @param pushRight    true if filters can be pushed to the right
-   * @param joinFilters  list of filters to push to the join
-   * @param leftFilters  list of filters to push to the left child
-   * @param rightFilters list of filters to push to the right child
-   * @return whether at least one filter was pushed
-   */
-  private static boolean classifyFilters(
-      RelNode joinRel,
-      List<RexNode> filters,
-      boolean pushInto,
-      boolean pushLeft,
-      boolean pushRight,
-      List<RexNode> joinFilters,
-      List<RexNode> leftFilters,
-      List<RexNode> rightFilters) {
-    if (Bug.CALCITE_4499_FIXED) {
-      throw new AssertionError("Remove this method when [CALCITE-4499] "
-          + "has been fixed and use directly Calcite's RelOptUtil.classifyFilters.");
-    }
-    RexBuilder rexBuilder = joinRel.getCluster().getRexBuilder();
-    List<RelDataTypeField> joinFields = joinRel.getRowType().getFieldList();
-    final int nSysFields = 0; // joinRel.getSystemFieldList().size();
-    final List<RelDataTypeField> leftFields =
-        joinRel.getInputs().get(0).getRowType().getFieldList();
-    final int nFieldsLeft = leftFields.size();
-    final List<RelDataTypeField> rightFields =
-        joinRel.getInputs().get(1).getRowType().getFieldList();
-    final int nFieldsRight = rightFields.size();
-    final int nTotalFields = nFieldsLeft + nFieldsRight;
-
-    // set the reference bitmaps for the left and right children
-    ImmutableBitSet leftBitmap =
-        ImmutableBitSet.range(nSysFields, nSysFields + nFieldsLeft);
-    ImmutableBitSet rightBitmap =
-        ImmutableBitSet.range(nSysFields + nFieldsLeft, nTotalFields);
-
-    final List<RexNode> filtersToRemove = new ArrayList<>();
-    for (RexNode filter : filters) {
-      final InputFinder inputFinder = InputFinder.analyze(filter);
-      final ImmutableBitSet inputBits = inputFinder.build();
-
-      // REVIEW - are there any expressions that need special handling
-      // and therefore cannot be pushed?
-
-      // filters can be pushed to the left child if the left child
-      // does not generate NULLs and the only columns referenced in
-      // the filter originate from the left child
-      if (pushLeft && leftBitmap.contains(inputBits)) {
-        // ignore filters that always evaluate to true
-        if (!filter.isAlwaysTrue()) {
-          // adjust the field references in the filter to reflect
-          // that fields in the left now shift over by the number
-          // of system fields
-          final RexNode shiftedFilter =
-              shiftFilter(
-                  nSysFields,
-                  nSysFields + nFieldsLeft,
-                  -nSysFields,
-                  rexBuilder,
-                  joinFields,
-                  nTotalFields,
-                  leftFields,
-                  filter);
-
-          leftFilters.add(shiftedFilter);
-        }
-        filtersToRemove.add(filter);
-
-        // filters can be pushed to the right child if the right child
-        // does not generate NULLs and the only columns referenced in
-        // the filter originate from the right child
-      } else if (pushRight && rightBitmap.contains(inputBits)) {
-        if (!filter.isAlwaysTrue()) {
-          // adjust the field references in the filter to reflect
-          // that fields in the right now shift over to the left;
-          // since we never push filters to a NULL generating
-          // child, the types of the source should match the dest
-          // so we don't need to explicitly pass the destination
-          // fields to RexInputConverter
-          final RexNode shiftedFilter =
-              shiftFilter(
-                  nSysFields + nFieldsLeft,
-                  nTotalFields,
-                  -(nSysFields + nFieldsLeft),
-                  rexBuilder,
-                  joinFields,
-                  nTotalFields,
-                  rightFields,
-                  filter);
-          rightFilters.add(shiftedFilter);
-        }
-        filtersToRemove.add(filter);
-
-      } else {
-        // If the filter can't be pushed to either child, we may push them into the join
-        if (pushInto) {
-          if (!joinFilters.contains(filter)) {
-            joinFilters.add(filter);
-          }
-          filtersToRemove.add(filter);
-        }
-      }
-    }
-
-    // Remove filters after the loop, to prevent concurrent modification.
-    if (!filtersToRemove.isEmpty()) {
-      filters.removeAll(filtersToRemove);
-    }
-
-    // Did anything change?
-    return !filtersToRemove.isEmpty();
-  }
-
-  private static RexNode shiftFilter(
-      int start,
-      int end,
-      int offset,
-      RexBuilder rexBuilder,
-      List<RelDataTypeField> joinFields,
-      int nTotalFields,
-      List<RelDataTypeField> rightFields,
-      RexNode filter) {
-    int[] adjustments = new int[nTotalFields];
-    for (int i = start; i < end; i++) {
-      adjustments[i] = offset;
-    }
-    return filter.accept(
-        new RexInputConverter(
-            rexBuilder,
-            joinFields,
-            rightFields,
-            adjustments));
   }
 }
 

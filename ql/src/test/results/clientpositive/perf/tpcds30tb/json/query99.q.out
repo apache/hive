@@ -597,7 +597,11 @@
                             "input": 33,
                             "name": "$33"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "BIGINT",
+                          "nullable": true
+                        }
                       },
                       {
                         "literal": 30,
@@ -673,7 +677,11 @@
                                 "input": 33,
                                 "name": "$33"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 30,
@@ -706,7 +714,11 @@
                                 "input": 33,
                                 "name": "$33"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 60,
@@ -784,7 +796,11 @@
                                 "input": 33,
                                 "name": "$33"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 60,
@@ -817,7 +833,11 @@
                                 "input": 33,
                                 "name": "$33"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 90,
@@ -895,7 +915,11 @@
                                 "input": 33,
                                 "name": "$33"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 90,
@@ -928,7 +952,11 @@
                                 "input": 33,
                                 "name": "$33"
                               }
-                            ]
+                            ],
+                            "type": {
+                              "type": "BIGINT",
+                              "nullable": true
+                            }
                           },
                           {
                             "literal": 120,
@@ -999,7 +1027,11 @@
                             "input": 33,
                             "name": "$33"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "BIGINT",
+                          "nullable": true
+                        }
                       },
                       {
                         "literal": 120,

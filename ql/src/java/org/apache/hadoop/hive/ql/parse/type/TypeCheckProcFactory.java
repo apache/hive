@@ -140,6 +140,8 @@ public class TypeCheckProcFactory<T> {
         serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_DECIMAL,
         serdeConstants.DECIMAL_TYPE_NAME);
+    CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_VARIANT,
+        serdeConstants.VARIANT_TYPE_NAME);
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_MAP, "toMap");
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_LIST, "toArray");
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_STRUCT, "toStruct");
@@ -596,6 +598,19 @@ public class TypeCheckProcFactory<T> {
   }
 
   /**
+   * Rejects a by-name reference to a column marked ambiguous at a subquery/CTE boundary
+   * (HIVE-29580). Call after each by-name resolution of a user-written column reference;
+   * expression-map resolutions (processGByExpr) stay unchecked so Hive's own rewrites can
+   * reference marked columns.
+   */
+  static void checkAmbiguousName(ColumnInfo colInfo) throws SemanticException {
+    if (colInfo != null && colInfo.hasAmbiguousName()) {
+      throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(
+          colInfo.getAlias() + " in " + colInfo.getTabAlias()));
+    }
+  }
+
+  /**
    * Processor for table columns.
    */
   public class ColumnExprProcessor implements SemanticNodeProcessor {
@@ -660,6 +675,7 @@ public class TypeCheckProcFactory<T> {
             return null;
           }
           // It's a column.
+          checkAmbiguousName(colInfo);
           return exprFactory.toExpr(colInfo, usedRR, offset);
         } else {
           // It's a table alias.
@@ -694,6 +710,7 @@ public class TypeCheckProcFactory<T> {
           }
         } else {
           // It's a column.
+          checkAmbiguousName(colInfo);
           return exprFactory.toExpr(colInfo, usedRR, offset);
         }
       }
@@ -1300,6 +1317,7 @@ public class TypeCheckProcFactory<T> {
             ErrorMsg.INVALID_COLUMN.getMsg(), expr.getChild(1)), expr);
         return null;
       }
+      checkAmbiguousName(colInfo);
       return exprFactory.toExpr(colInfo, usedRR, offset);
     }
 

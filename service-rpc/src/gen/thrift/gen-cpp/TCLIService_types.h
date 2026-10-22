@@ -33,7 +33,8 @@ struct TProtocolVersion {
     HIVE_CLI_SERVICE_PROTOCOL_V8 = 7,
     HIVE_CLI_SERVICE_PROTOCOL_V9 = 8,
     HIVE_CLI_SERVICE_PROTOCOL_V10 = 9,
-    HIVE_CLI_SERVICE_PROTOCOL_V11 = 10
+    HIVE_CLI_SERVICE_PROTOCOL_V11 = 10,
+    HIVE_CLI_SERVICE_PROTOCOL_V12 = 11
   };
 };
 
@@ -68,7 +69,8 @@ struct TTypeId {
     INTERVAL_YEAR_MONTH_TYPE = 20,
     INTERVAL_DAY_TIME_TYPE = 21,
     TIMESTAMPLOCALTZ_TYPE = 22,
-    UNKNOWN_TYPE = 23
+    UNKNOWN_TYPE = 23,
+    VARIANT_TYPE = 24
   };
 };
 
@@ -4740,6 +4742,10 @@ void swap(TRenewDelegationTokenResp &a, TRenewDelegationTokenResp &b);
 
 std::ostream& operator<<(std::ostream& out, const TRenewDelegationTokenResp& obj);
 
+typedef struct _TProgressUpdateResp__isset {
+  _TProgressUpdateResp__isset() : queueMetrics(false) {}
+  bool queueMetrics :1;
+} _TProgressUpdateResp__isset;
 
 class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
  public:
@@ -4750,7 +4756,8 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
                       : progressedPercentage(0),
                         status(static_cast<TJobExecutionStatus::type>(0)),
                         footerSummary(),
-                        startTime(0) {
+                        startTime(0),
+                        queueMetrics() {
   }
 
   virtual ~TProgressUpdateResp() noexcept;
@@ -4764,6 +4771,9 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
   TJobExecutionStatus::type status;
   std::string footerSummary;
   int64_t startTime;
+  std::string queueMetrics;
+
+  _TProgressUpdateResp__isset __isset;
 
   void __set_headerNames(const std::vector<std::string> & val);
 
@@ -4776,6 +4786,8 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
   void __set_footerSummary(const std::string& val);
 
   void __set_startTime(const int64_t val);
+
+  void __set_queueMetrics(const std::string& val);
 
   bool operator == (const TProgressUpdateResp & rhs) const
   {
@@ -4790,6 +4802,10 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
     if (!(footerSummary == rhs.footerSummary))
       return false;
     if (!(startTime == rhs.startTime))
+      return false;
+    if (__isset.queueMetrics != rhs.__isset.queueMetrics)
+      return false;
+    else if (__isset.queueMetrics && !(queueMetrics == rhs.queueMetrics))
       return false;
     return true;
   }

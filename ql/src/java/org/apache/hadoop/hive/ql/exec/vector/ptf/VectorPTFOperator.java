@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.exec.vector.ptf;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -102,9 +103,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private String[] outputColumnNames;
   private TypeInfo[] outputTypeInfos;
   private DataTypePhysicalVariation[] outputDataTypePhysicalVariations;
-
-  private int evaluatorCount;
-  private String[] evaluatorFunctionNames;
 
   private int[] orderColumnMap;
   private Type[] orderColumnVectorTypes;
@@ -191,9 +189,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
      */
     vOutContext = new VectorizationContext(getName(), this.vContext);
     setupVOutContext();
-
-    evaluatorFunctionNames = this.vectorDesc.getEvaluatorFunctionNames();
-    evaluatorCount = evaluatorFunctionNames.length;
 
     orderColumnMap = vectorPTFInfo.getOrderColumnMap();
     orderColumnVectorTypes = vectorPTFInfo.getOrderColumnVectorTypes();
@@ -333,8 +328,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     }
 
     streamingEvaluatorNums = VectorPTFDesc.getStreamingEvaluatorNums(evaluators);
-
-    allEvaluatorsAreStreaming = (streamingEvaluatorNums.length == evaluatorCount);
+    allEvaluatorsAreStreaming = VectorPTFDesc.getAllEvaluatorsAreStreaming(evaluators);
 
     groupBatches = new VectorPTFGroupBatches(
         hconf, vectorDesc.getVectorizedPTFMaxMemoryBufferingBatchCount());
@@ -442,10 +436,11 @@ public class VectorPTFOperator extends Operator<PTFDesc>
      * 1. order columns
      * 2. the non-key input columns
      * 3. any streaming columns that will already have their output values
-     * 4. scratch columns (as they're used by input expressions of evaluators)
+     * 4. scratch columns holding the results of evaluator input expressions
      */
+    final int[] bufferedScratchIndices = getEvaluatorInputScratchIndices();
     int bufferedColumnCount = orderColumnMap.length + nonKeyInputColumnMap.length
-        + streamingEvaluatorNums.length + scratchColumnPositions.length;
+        + streamingEvaluatorNums.length + bufferedScratchIndices.length;
     this.bufferedColumnMap = new int[bufferedColumnCount];
     this.bufferedTypeInfos = new TypeInfo[bufferedColumnCount];
 
@@ -481,11 +476,29 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       bufferedTypeInfos[bufferedMapIndex] = outputTypeInfos[streamingEvaluatorNum];
     }
 
-    for (int i = 0; i < scratchColumnPositions.length; i++) {
+    for (int i = 0; i < bufferedScratchIndices.length; i++) {
+      final int scratchIndex = bufferedScratchIndices[i];
       final int bufferedMapIndex = orderColumnCount + nonKeyInputColumnCount + streamingEvaluatorCount + i;
-      bufferedColumnMap[bufferedMapIndex] = scratchColumnPositions[i];
-      bufferedTypeInfos[bufferedMapIndex] = TypeInfoUtils.getTypeInfoFromTypeString(vOutContext.getScratchColumnTypeNames()[i]);
+      bufferedColumnMap[bufferedMapIndex] = scratchColumnPositions[scratchIndex];
+      bufferedTypeInfos[bufferedMapIndex] =
+          TypeInfoUtils.getTypeInfoFromTypeString(vOutContext.getScratchColumnTypeNames()[scratchIndex]);
     }
+  }
+
+  /**
+   * Returns the indices (into scratchColumnPositions) of the scratch columns written by evaluator
+   * input expressions. Those are evaluated before a batch is buffered, so their results must be
+   * buffered too. The other scratch columns belong to child operators, which recompute them after
+   * the batch is forwarded; buffering them is wasted work and fails for complex types.
+   */
+  private int[] getEvaluatorInputScratchIndices() {
+    final Set<Integer> inputExprColumns = Arrays.stream(evaluators)
+        .filter(evaluator -> evaluator.inputVecExpr != null)
+        .map(evaluator -> evaluator.inputVecExpr.getOutputColumnNum())
+        .collect(Collectors.toSet());
+    return IntStream.range(0, scratchColumnPositions.length)
+        .filter(i -> inputExprColumns.contains(scratchColumnPositions[i]))
+        .toArray();
   }
 
   private void initExpressionColumns() {

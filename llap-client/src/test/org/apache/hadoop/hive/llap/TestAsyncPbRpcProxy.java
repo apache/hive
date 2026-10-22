@@ -19,26 +19,47 @@
 
 package org.apache.hadoop.hive.llap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.google.protobuf.Message;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
-public class TestAsyncPbRpcProxy {
+class TestAsyncPbRpcProxy {
 
-  @Test (timeout = 5000)
-  public void testMultipleNodes() throws Exception {
+  /**
+   * Front-loads one-time initialization (Mockito, log4j2 (transitively), classloading) that would
+   * otherwise happen inside the first test's timeout window. A timeout here indicates a
+   * starved executor, not a test bug (HIVE-26089).
+   */
+  @BeforeAll
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  static void warmUp() {
+    // Initializes Mockito (agent attach, mock-class generation). Mock classes are
+    // generated and cached per type, so warm both types the tests use.
+    mock(Message.class);
+    mock(LlapProtocolClientProxy.ExecuteRequestCallback.class);
+    // Loads the RequestManager class hierarchy. Also initializes log4j2, because the
+    // constructor touches a logger (via AsyncResponseHandler).
+    new RequestManagerForTest(1);
+    // Loads the request classes and LlapNodeId, including its Guava cache.
+    new CallableRequestForTest(LlapNodeId.getInstance("warmup-host", 0), null, null);
+  }
+
+  @Test
+  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  void testMultipleNodes() throws Exception {
     RequestManagerForTest requestManager = new RequestManagerForTest(1);
 
     LlapNodeId nodeId1 = LlapNodeId.getInstance("host1", 1025);
@@ -59,16 +80,16 @@ public class TestAsyncPbRpcProxy {
     assertEquals(2, requestManager.numSubmissionsCounters);
     assertNotNull(requestManager.numInvocationsPerNode.get(nodeId1));
     assertNotNull(requestManager.numInvocationsPerNode.get(nodeId2));
-    Assert.assertEquals(1, requestManager.numInvocationsPerNode.get(nodeId1).getValue().intValue());
-    Assert.assertEquals(1, requestManager.numInvocationsPerNode.get(nodeId2).getValue().intValue());
+    assertEquals(1, requestManager.numInvocationsPerNode.get(nodeId1).getValue().intValue());
+    assertEquals(1, requestManager.numInvocationsPerNode.get(nodeId2).getValue().intValue());
     assertEquals(0, requestManager.currentLoopSkippedRequests.size());
     assertEquals(0, requestManager.currentLoopSkippedRequests.size());
     assertEquals(0, requestManager.currentLoopDisabledNodes.size());
   }
 
-  @org.junit.Ignore("HIVE-26089")
-  @Test(timeout = 5000)
-  public void testSingleInvocationPerNode() throws Exception {
+  @Test
+  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  void testSingleInvocationPerNode() throws Exception {
     RequestManagerForTest requestManager = new RequestManagerForTest(1);
 
     LlapNodeId nodeId1 = LlapNodeId.getInstance("host1", 1025);
@@ -83,7 +104,7 @@ public class TestAsyncPbRpcProxy {
     requestManager.process();
     assertEquals(1, requestManager.numSubmissionsCounters);
     assertNotNull(requestManager.numInvocationsPerNode.get(nodeId1));
-    Assert.assertEquals(1, requestManager.numInvocationsPerNode.get(nodeId1).getValue().intValue());
+    assertEquals(1, requestManager.numInvocationsPerNode.get(nodeId1).getValue().intValue());
     assertEquals(0, requestManager.currentLoopSkippedRequests.size());
 
     // Second request for host. Single invocation since the last has not completed.
@@ -92,7 +113,7 @@ public class TestAsyncPbRpcProxy {
     requestManager.process();
     assertEquals(1, requestManager.numSubmissionsCounters);
     assertNotNull(requestManager.numInvocationsPerNode.get(nodeId1));
-    Assert.assertEquals(1, requestManager.numInvocationsPerNode.get(nodeId1).getValue().intValue());
+    assertEquals(1, requestManager.numInvocationsPerNode.get(nodeId1).getValue().intValue());
     assertEquals(1, requestManager.currentLoopSkippedRequests.size());
     assertEquals(1, requestManager.currentLoopDisabledNodes.size());
     assertTrue(requestManager.currentLoopDisabledNodes.contains(nodeId1));
@@ -102,7 +123,7 @@ public class TestAsyncPbRpcProxy {
     requestManager.process();
     assertEquals(2, requestManager.numSubmissionsCounters);
     assertNotNull(requestManager.numInvocationsPerNode.get(nodeId1));
-    Assert.assertEquals(2, requestManager.numInvocationsPerNode.get(nodeId1).getValue().intValue());
+    assertEquals(2, requestManager.numInvocationsPerNode.get(nodeId1).getValue().intValue());
     assertEquals(0, requestManager.currentLoopSkippedRequests.size());
     assertEquals(0, requestManager.currentLoopDisabledNodes.size());
     assertFalse(requestManager.currentLoopDisabledNodes.contains(nodeId1));
@@ -114,7 +135,7 @@ public class TestAsyncPbRpcProxy {
     int numSubmissionsCounters = 0;
     private Map<LlapNodeId, MutableInt> numInvocationsPerNode = new HashMap<>();
 
-    public RequestManagerForTest(int numThreads) {
+    RequestManagerForTest(int numThreads) {
       super(numThreads, 1);
     }
 

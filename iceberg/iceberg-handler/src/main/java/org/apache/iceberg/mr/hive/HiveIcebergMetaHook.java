@@ -159,7 +159,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   private static final List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> EMPTY_FILTER =
       Lists.newArrayList(org.apache.commons.lang3.tuple.Pair.of(1, new byte[0]));
   static final String MIGRATED_TO_ICEBERG = "MIGRATED_TO_ICEBERG";
-  static final String DECIMAL64_VECTORIZATION = "iceberg.decimal64.vectorization";
   static final String MANUAL_ICEBERG_METADATA_LOCATION_CHANGE = "MANUAL_ICEBERG_METADATA_LOCATION_CHANGE";
 
   private boolean deleteIcebergTable;
@@ -172,13 +171,27 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   private AlterTableType currentAlterTableOp;
   private HiveLock commitLock;
   private List<SQLDefaultConstraint> sqlDefaultConstraints;
+  private boolean createTableCommitted;
 
   public HiveIcebergMetaHook(Configuration conf) {
     super(conf);
   }
 
   @Override
+  public void rollbackCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (createTableCommitted && tableProperties != null && Catalogs.hiveCatalog(conf, tableProperties)) {
+      try {
+        Catalogs.dropTable(conf, tableProperties);
+      } catch (Exception e) {
+        LOG.warn("Failed to clean up table during rollback of CREATE TABLE for {}.{}",
+            hmsTable.getDbName(), hmsTable.getTableName(), e);
+      }
+    }
+  }
+
+  @Override
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    createTableCommitted = true;
     if (HiveTableUtil.isIcebergView(hmsTable)) {
       tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
       Map<String, String> tblProps =

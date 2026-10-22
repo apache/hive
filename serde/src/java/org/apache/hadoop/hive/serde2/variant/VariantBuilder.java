@@ -95,7 +95,7 @@ public class VariantBuilder {
     }
     // Determine the number of bytes required per offset entry.
     // The largest offset is the one-past-the-end value, which is total string size. It's very
-    // unlikely that the number of keys could be larger, but incorporate that into the calcualtion
+    // unlikely that the number of keys could be larger, but incorporate that into the calculation
     // in case of pathological data.
     long maxSize = Math.max(dictionaryStringSize, numKeys);
     if (maxSize > SIZE_LIMIT) {

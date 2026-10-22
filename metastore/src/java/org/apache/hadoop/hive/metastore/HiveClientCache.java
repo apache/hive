@@ -200,7 +200,7 @@ public class HiveClientCache {
     // Add a shutdown hook for cleanup, if there are elements remaining in the cache which were not cleaned up.
     // This is the best effort approach. Ignore any error while doing so. Notice that most of the clients
     // would get cleaned up via either the removalListener or the close() call, only the active clients
-    // that are in the cache or expired but being used in other threads wont get cleaned. The following code will only
+    // that are in the cache or expired but being used in other threads won't get cleaned. The following code will only
     // clean the active cache ones. The ones expired from cache but being hold by other threads are in the mercy
     // of finalize() being called.
     Thread cleanupHiveClientShutdownThread = new Thread() {

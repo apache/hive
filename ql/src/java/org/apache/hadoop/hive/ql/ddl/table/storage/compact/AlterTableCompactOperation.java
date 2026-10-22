@@ -91,6 +91,10 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     Map<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMap =
         convertPartitionsFromThriftToDB(getPartitions(table));
 
+    if (desc.getPartitionSpec() != null && !partitionMap.isEmpty() && table.getStorageHandler() != null) {
+      table.getStorageHandler().validateCompactionPartition(table, partitionMap.keySet().iterator().next());
+    }
+
     TxnStore txnHandler = TxnUtils.getTxnStore(context.getConf());
 
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),
@@ -131,11 +135,11 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
                 compactionRequest, ServerUtils.hostname(), txnHandler, context.getConf());
         parseCompactionResponse(compactionResponse, table, partitionMapEntry.getKey());
       }
-      // If Iceberg table had partition evolution, it will create compaction request without partition specification,
-      // and it will compact all files from old partition specs, besides compacting partitions of current spec in parallel.
+      // If Iceberg table had partition evolution and the where filter is not supplied, it will create a compaction
+      // request without partition specification, and it will compact all files from old partition specs, 
+      // besides compacting partitions of current spec in parallel.
       if (DDLUtils.isIcebergTable(table) && table.getStorageHandler().hasUndergonePartitionEvolution(table) && 
-          (desc.getFilterExpr() == null || !table.getStorageHandler()
-              .getPartitionsByExpr(table, desc.getFilterExpr(), false).isEmpty())) {
+          desc.getFilterExpr() == null) {
         compactionRequest.setPartitionname(null);
         CompactionResponse compactionResponse = txnHandler.compact(compactionRequest);
         parseCompactionResponse(compactionResponse, table, compactionRequest.getPartitionname());

@@ -30,6 +30,9 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addSourceColumnsForRowLineage;
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.supportsRowLineage;
+
 public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
 
   private final HiveConf conf;
@@ -46,6 +49,8 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
   public ParseUtils.ReparseResult rewrite(Context context, DeleteStatement deleteBlock)
       throws SemanticException {
 
+    boolean isRowLineageSupported = supportsRowLineage(deleteBlock.getTargetTable());
+
     ASTNode whereTree = deleteBlock.getWhereTree();
     String whereClause = "true";
     if (whereTree != null) {
@@ -57,7 +62,8 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
 
     MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
-    cowWithClauseBuilder.appendWith(sqlGenerator, filePathCol, whereClause);
+    cowWithClauseBuilder.appendWith(
+        sqlGenerator, null, filePathCol, whereClause, true, isRowLineageSupported, "");
 
     sqlGenerator.append("insert into table ");
     sqlGenerator.append(sqlGenerator.getTargetTableFullName());
@@ -66,6 +72,7 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
     sqlGenerator.append(" select ");
     sqlGenerator.appendAcidSelectColumns(Context.Operation.DELETE);
     sqlGenerator.removeLastChar();
+    addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, "", conf);
 
     sqlGenerator.append(" from ");
     sqlGenerator.append(sqlGenerator.getTargetTableFullName());
@@ -76,9 +83,10 @@ public class CopyOnWriteDeleteRewriter implements Rewriter<DeleteStatement> {
     sqlGenerator.append("\n");
     // Add the file path filter that matches the delete condition.
     sqlGenerator.append("AND ").append(filePathCol);
-    sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from t )");
+    sqlGenerator.append(" IN ( select ").append(filePathCol).append(" from ")
+        .append(cowWithClauseBuilder.getMarkerCteName()).append(" )");
     sqlGenerator.append("\nunion all");
-    sqlGenerator.append("\nselect * from t");
+    sqlGenerator.append("\nselect * from ").append(cowWithClauseBuilder.getMarkerCteName());
 
     ParseUtils.ReparseResult rr = ParseUtils.parseRewrittenQuery(context, sqlGenerator.toString());
     Context rewrittenCtx = rr.rewrittenCtx;

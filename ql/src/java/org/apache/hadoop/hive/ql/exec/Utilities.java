@@ -262,6 +262,8 @@ public final class Utilities {
   public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
   public static final String CREATE_TIME = "create_time";
   public static final String SNAPSHOT_REF = "snapshot_ref";
+  public static final String AS_OF_VERSION = "as_of_version";
+  public static final String AS_OF_TIMESTAMP = "as_of_timestamp";
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
@@ -770,6 +772,12 @@ public final class Utilities {
     }
     if (tbl.getSnapshotRef() != null) {
       props.put(SNAPSHOT_REF, tbl.getSnapshotRef());
+    }
+    if (tbl.getAsOfVersion() != null) {
+      props.put(AS_OF_VERSION, tbl.getAsOfVersion());
+    }
+    if (tbl.getAsOfTimestamp() != null) {
+      props.put(AS_OF_TIMESTAMP, tbl.getAsOfTimestamp());
     }
     return new TableDesc(tbl.getInputFormatClass(), tbl.getOutputFormatClass(), props, tbl.getCatName());
   }

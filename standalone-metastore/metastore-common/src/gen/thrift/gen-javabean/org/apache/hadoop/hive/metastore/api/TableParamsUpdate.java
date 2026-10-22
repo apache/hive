@@ -11,9 +11,7 @@ package org.apache.hadoop.hive.metastore.api;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class TableParamsUpdate implements org.apache.thrift.TBase<TableParamsUpdate, TableParamsUpdate._Fields>, java.io.Serializable, Cloneable, Comparable<TableParamsUpdate> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TableParamsUpdate");
 
-  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("cat_name", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("db_name", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("table_name", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("table_name", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField PARAMS_FIELD_DESC = new org.apache.thrift.protocol.TField("params", org.apache.thrift.protocol.TType.MAP, (short)4);
   private static final org.apache.thrift.protocol.TField EXPECTED_PARAM_KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("expected_param_key", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField EXPECTED_PARAM_VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("expected_param_value", org.apache.thrift.protocol.TType.STRING, (short)6);
@@ -21,18 +19,14 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TableParamsUpdateStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TableParamsUpdateTupleSchemeFactory();
 
-  private @org.apache.thrift.annotation.Nullable java.lang.String cat_name; // optional
-  private @org.apache.thrift.annotation.Nullable java.lang.String db_name; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String table_name; // required
+  private @org.apache.thrift.annotation.Nullable TableName table_name; // required
   private @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,java.lang.String> params; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String expected_param_key; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String expected_param_value; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    CAT_NAME((short)1, "cat_name"),
-    DB_NAME((short)2, "db_name"),
-    TABLE_NAME((short)3, "table_name"),
+    TABLE_NAME((short)1, "table_name"),
     PARAMS((short)4, "params"),
     EXPECTED_PARAM_KEY((short)5, "expected_param_key"),
     EXPECTED_PARAM_VALUE((short)6, "expected_param_value");
@@ -51,11 +45,7 @@ package org.apache.hadoop.hive.metastore.api;
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // CAT_NAME
-          return CAT_NAME;
-        case 2: // DB_NAME
-          return DB_NAME;
-        case 3: // TABLE_NAME
+        case 1: // TABLE_NAME
           return TABLE_NAME;
         case 4: // PARAMS
           return PARAMS;
@@ -104,16 +94,12 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.EXPECTED_PARAM_KEY,_Fields.EXPECTED_PARAM_VALUE};
+  private static final _Fields optionals[] = {_Fields.EXPECTED_PARAM_KEY,_Fields.EXPECTED_PARAM_VALUE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("cat_name", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("table_name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "TableName")));
     tmpMap.put(_Fields.PARAMS, new org.apache.thrift.meta_data.FieldMetaData("params", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
@@ -130,12 +116,10 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public TableParamsUpdate(
-    java.lang.String db_name,
-    java.lang.String table_name,
+    TableName table_name,
     java.util.Map<java.lang.String,java.lang.String> params)
   {
     this();
-    this.db_name = db_name;
     this.table_name = table_name;
     this.params = params;
   }
@@ -144,14 +128,8 @@ package org.apache.hadoop.hive.metastore.api;
    * Performs a deep copy on <i>other</i>.
    */
   public TableParamsUpdate(TableParamsUpdate other) {
-    if (other.isSetCat_name()) {
-      this.cat_name = other.cat_name;
-    }
-    if (other.isSetDb_name()) {
-      this.db_name = other.db_name;
-    }
     if (other.isSetTable_name()) {
-      this.table_name = other.table_name;
+      this.table_name = new TableName(other.table_name);
     }
     if (other.isSetParams()) {
       java.util.Map<java.lang.String,java.lang.String> __this__params = new java.util.HashMap<java.lang.String,java.lang.String>(other.params);
@@ -171,8 +149,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   @Override
   public void clear() {
-    this.cat_name = null;
-    this.db_name = null;
     this.table_name = null;
     this.params = null;
     this.expected_param_key = null;
@@ -180,59 +156,11 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.lang.String getCat_name() {
-    return this.cat_name;
-  }
-
-  public void setCat_name(@org.apache.thrift.annotation.Nullable java.lang.String cat_name) {
-    this.cat_name = cat_name;
-  }
-
-  public void unsetCat_name() {
-    this.cat_name = null;
-  }
-
-  /** Returns true if field cat_name is set (has been assigned a value) and false otherwise */
-  public boolean isSetCat_name() {
-    return this.cat_name != null;
-  }
-
-  public void setCat_nameIsSet(boolean value) {
-    if (!value) {
-      this.cat_name = null;
-    }
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getDb_name() {
-    return this.db_name;
-  }
-
-  public void setDb_name(@org.apache.thrift.annotation.Nullable java.lang.String db_name) {
-    this.db_name = db_name;
-  }
-
-  public void unsetDb_name() {
-    this.db_name = null;
-  }
-
-  /** Returns true if field db_name is set (has been assigned a value) and false otherwise */
-  public boolean isSetDb_name() {
-    return this.db_name != null;
-  }
-
-  public void setDb_nameIsSet(boolean value) {
-    if (!value) {
-      this.db_name = null;
-    }
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getTable_name() {
+  public TableName getTable_name() {
     return this.table_name;
   }
 
-  public void setTable_name(@org.apache.thrift.annotation.Nullable java.lang.String table_name) {
+  public void setTable_name(@org.apache.thrift.annotation.Nullable TableName table_name) {
     this.table_name = table_name;
   }
 
@@ -336,27 +264,11 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case CAT_NAME:
-      if (value == null) {
-        unsetCat_name();
-      } else {
-        setCat_name((java.lang.String)value);
-      }
-      break;
-
-    case DB_NAME:
-      if (value == null) {
-        unsetDb_name();
-      } else {
-        setDb_name((java.lang.String)value);
-      }
-      break;
-
     case TABLE_NAME:
       if (value == null) {
         unsetTable_name();
       } else {
-        setTable_name((java.lang.String)value);
+        setTable_name((TableName)value);
       }
       break;
 
@@ -390,12 +302,6 @@ package org.apache.hadoop.hive.metastore.api;
   @org.apache.thrift.annotation.Nullable
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case CAT_NAME:
-      return getCat_name();
-
-    case DB_NAME:
-      return getDb_name();
-
     case TABLE_NAME:
       return getTable_name();
 
@@ -419,10 +325,6 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     switch (field) {
-    case CAT_NAME:
-      return isSetCat_name();
-    case DB_NAME:
-      return isSetDb_name();
     case TABLE_NAME:
       return isSetTable_name();
     case PARAMS:
@@ -447,24 +349,6 @@ package org.apache.hadoop.hive.metastore.api;
       return false;
     if (this == that)
       return true;
-
-    boolean this_present_cat_name = true && this.isSetCat_name();
-    boolean that_present_cat_name = true && that.isSetCat_name();
-    if (this_present_cat_name || that_present_cat_name) {
-      if (!(this_present_cat_name && that_present_cat_name))
-        return false;
-      if (!this.cat_name.equals(that.cat_name))
-        return false;
-    }
-
-    boolean this_present_db_name = true && this.isSetDb_name();
-    boolean that_present_db_name = true && that.isSetDb_name();
-    if (this_present_db_name || that_present_db_name) {
-      if (!(this_present_db_name && that_present_db_name))
-        return false;
-      if (!this.db_name.equals(that.db_name))
-        return false;
-    }
 
     boolean this_present_table_name = true && this.isSetTable_name();
     boolean that_present_table_name = true && that.isSetTable_name();
@@ -509,14 +393,6 @@ package org.apache.hadoop.hive.metastore.api;
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((isSetCat_name()) ? 131071 : 524287);
-    if (isSetCat_name())
-      hashCode = hashCode * 8191 + cat_name.hashCode();
-
-    hashCode = hashCode * 8191 + ((isSetDb_name()) ? 131071 : 524287);
-    if (isSetDb_name())
-      hashCode = hashCode * 8191 + db_name.hashCode();
-
     hashCode = hashCode * 8191 + ((isSetTable_name()) ? 131071 : 524287);
     if (isSetTable_name())
       hashCode = hashCode * 8191 + table_name.hashCode();
@@ -544,26 +420,6 @@ package org.apache.hadoop.hive.metastore.api;
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.compare(isSetCat_name(), other.isSetCat_name());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetCat_name()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cat_name, other.cat_name);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.compare(isSetDb_name(), other.isSetDb_name());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetDb_name()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db_name, other.db_name);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = java.lang.Boolean.compare(isSetTable_name(), other.isSetTable_name());
     if (lastComparison != 0) {
       return lastComparison;
@@ -625,24 +481,6 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("TableParamsUpdate(");
     boolean first = true;
 
-    if (isSetCat_name()) {
-      sb.append("cat_name:");
-      if (this.cat_name == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.cat_name);
-      }
-      first = false;
-    }
-    if (!first) sb.append(", ");
-    sb.append("db_name:");
-    if (this.db_name == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.db_name);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("table_name:");
     if (this.table_name == null) {
       sb.append("null");
@@ -684,10 +522,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetDb_name()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'db_name' is unset! Struct:" + toString());
-    }
-
     if (!isSetTable_name()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'table_name' is unset! Struct:" + toString());
     }
@@ -733,25 +567,10 @@ package org.apache.hadoop.hive.metastore.api;
           break;
         }
         switch (schemeField.id) {
-          case 1: // CAT_NAME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.cat_name = iprot.readString();
-              struct.setCat_nameIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // DB_NAME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.db_name = iprot.readString();
-              struct.setDb_nameIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 3: // TABLE_NAME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.table_name = iprot.readString();
+          case 1: // TABLE_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.table_name = new TableName();
+              struct.table_name.read(iprot);
               struct.setTable_nameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -806,21 +625,9 @@ package org.apache.hadoop.hive.metastore.api;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.cat_name != null) {
-        if (struct.isSetCat_name()) {
-          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
-          oprot.writeString(struct.cat_name);
-          oprot.writeFieldEnd();
-        }
-      }
-      if (struct.db_name != null) {
-        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
-        oprot.writeString(struct.db_name);
-        oprot.writeFieldEnd();
-      }
       if (struct.table_name != null) {
         oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
-        oprot.writeString(struct.table_name);
+        struct.table_name.write(oprot);
         oprot.writeFieldEnd();
       }
       if (struct.params != null) {
@@ -867,8 +674,7 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, TableParamsUpdate struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeString(struct.db_name);
-      oprot.writeString(struct.table_name);
+      struct.table_name.write(oprot);
       {
         oprot.writeI32(struct.params.size());
         for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter1487 : struct.params.entrySet())
@@ -878,19 +684,13 @@ package org.apache.hadoop.hive.metastore.api;
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetCat_name()) {
+      if (struct.isSetExpected_param_key()) {
         optionals.set(0);
       }
-      if (struct.isSetExpected_param_key()) {
+      if (struct.isSetExpected_param_value()) {
         optionals.set(1);
       }
-      if (struct.isSetExpected_param_value()) {
-        optionals.set(2);
-      }
-      oprot.writeBitSet(optionals, 3);
-      if (struct.isSetCat_name()) {
-        oprot.writeString(struct.cat_name);
-      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetExpected_param_key()) {
         oprot.writeString(struct.expected_param_key);
       }
@@ -902,9 +702,8 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, TableParamsUpdate struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.db_name = iprot.readString();
-      struct.setDb_nameIsSet(true);
-      struct.table_name = iprot.readString();
+      struct.table_name = new TableName();
+      struct.table_name.read(iprot);
       struct.setTable_nameIsSet(true);
       {
         org.apache.thrift.protocol.TMap _map1488 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
@@ -919,16 +718,12 @@ package org.apache.hadoop.hive.metastore.api;
         }
       }
       struct.setParamsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.cat_name = iprot.readString();
-        struct.setCat_nameIsSet(true);
-      }
-      if (incoming.get(1)) {
         struct.expected_param_key = iprot.readString();
         struct.setExpected_param_keyIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(1)) {
         struct.expected_param_value = iprot.readString();
         struct.setExpected_param_valueIsSet(true);
       }

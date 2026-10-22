@@ -110,6 +110,7 @@ function run_llap {
   export LLAP_DAEMON_LOG_DIR="${LLAP_DAEMON_LOG_DIR:-/tmp/llapDaemonLogs}"
   export LLAP_DAEMON_TMP_DIR="${LLAP_DAEMON_TMP_DIR:-/tmp/llapDaemonTmp}"
   export LOCAL_DIRS="${LOCAL_DIRS:-/tmp/llap-local}"
+  export LLAP_DAEMON_LD_PATH="${LLAP_DAEMON_LD_PATH:-$HADOOP_HOME/lib/native}"
   mkdir -p "${LLAP_DAEMON_LOG_DIR}" "${LLAP_DAEMON_TMP_DIR}" "${LOCAL_DIRS}"
 
   # runLlapDaemon.sh expects jars under ${LLAP_DAEMON_HOME}/lib.
@@ -141,7 +142,9 @@ function run_tezam {
   : "${LOG_DIRS:="/opt/tez/logs"}"
   : "${APP_SUBMIT_TIME_ENV:=$(($(date +%s) * 1000))}"
   : "${TEZ_AM_EXTERNAL_ID:="tez-session-${HOSTNAME:-tezam}"}"
-  export USER LOCAL_DIRS LOG_DIRS APP_SUBMIT_TIME_ENV TEZ_AM_EXTERNAL_ID
+  # HiveServer2 and the metastore get it from hadoop-config.sh, LLAP from runLlapDaemon.sh; the AM starts with plain java
+  : "${MALLOC_ARENA_MAX:=4}"
+  export USER LOCAL_DIRS LOG_DIRS APP_SUBMIT_TIME_ENV TEZ_AM_EXTERNAL_ID MALLOC_ARENA_MAX
 
   export HADOOP_HOME="${HADOOP_HOME:-/opt/hadoop}"
   export TEZ_HOME="${TEZ_HOME:-/opt/tez}"
@@ -177,7 +180,8 @@ if [ -d "${HIVE_CUSTOM_CONF_DIR:-}" ]; then
   export TEZ_CONF_DIR=$HIVE_CONF_DIR
 fi
 
-export HADOOP_CLIENT_OPTS="${HADOOP_CLIENT_OPTS:-} -Xmx1G ${SERVICE_OPTS:-}"
+# default heap first so user-provided -Xmx wins (last one applies)
+export HADOOP_CLIENT_OPTS="-Xmx1G ${HADOOP_CLIENT_OPTS:-} ${SERVICE_OPTS:-}"
 if [[ "${SKIP_SCHEMA_INIT}" == "false" && ( "${SERVICE_NAME}" == "hiveserver2" || "${SERVICE_NAME}" == "metastore" ) ]]; then
   # handles schema initialization
   initialize_hive

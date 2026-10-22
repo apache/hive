@@ -266,6 +266,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -1407,7 +1409,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.rewriteCTEToSubq(cteAlias, cteName, cteQBExpr);
   }
 
-  private final CTEClause rootClause = new CTEClause(null, null, null);
+  final CTEClause rootClause = new CTEClause(null, null, null);
 
   @Override
   public List<Task<?>> getAllRootTasks() {
@@ -1422,10 +1424,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public Set<ReadEntity> getAllInputs() {
-    Set<ReadEntity> readEntities = new HashSet<ReadEntity>(getInputs());
+    Set<ReadEntity> readEntities = new LinkedHashSet<>(getInputs());
     for (CTEClause cte : rootClause.asExecutionOrder()) {
       if (cte.source != null) {
-        readEntities.addAll(cte.source.getInputs());
+        readEntities.addAll(cte.source.getAllInputs());
       }
     }
     return readEntities;
@@ -1436,7 +1438,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Set<WriteEntity> writeEntities = new HashSet<WriteEntity>(getOutputs());
     for (CTEClause cte : rootClause.asExecutionOrder()) {
       if (cte.source != null) {
-        writeEntities.addAll(cte.source.getOutputs());
+        writeEntities.addAll(cte.source.getAllOutputs());
       }
     }
     return writeEntities;
@@ -1596,9 +1598,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("{} will be materialized into {}", cteName, location);
     cte.source = analyzer;
-
+    
     ctx.addMaterializedTable(cteName, table, getMaterializedTableStats(analyzer.getSinkOp()));
-
     return table;
   }
 
@@ -4015,6 +4016,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             colList.add(Pair.of(colInfo, colSrcRR));
             oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
                 colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+            oColInfo.setAmbiguousName(colInfo.hasAmbiguousName());
             inputColsProcessed.put(colInfo, oColInfo);
           }
           if (ensureUniqueCols) {
@@ -4102,6 +4104,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           colList.add(Pair.of(colInfo, input));
           oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
               colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+          oColInfo.setAmbiguousName(colInfo.hasAmbiguousName());
           inputColsProcessed.put(colInfo, oColInfo);
         }
         assert nonNull(tmp);
@@ -4738,6 +4741,52 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
+  /**
+   * Helper method to parse the excluded columns from an EXCLUDE AST node. Returns an unmodifiable
+   * set to ensure the caller cannot accidentally mutate the result.
+   */
+  private Set<ColumnInfo> processExcludeColumns(
+      ASTNode excludeNode, String starTabAlias, RowResolver inputRR) throws SemanticException {
+    Set<ColumnInfo> localExcluded = new HashSet<>();
+    for (int e = 0; e < excludeNode.getChildCount(); e++) {
+      String excludeColName = unescapeIdentifier(excludeNode.getChild(e).getText()).toLowerCase();
+      ColumnInfo colInfo = inputRR.get(starTabAlias, excludeColName);
+      if (colInfo != null) {
+        localExcluded.add(colInfo);
+      }
+    }
+    return Collections.unmodifiableSet(localExcluded);
+  }
+
+  protected record ExcludeResult(String tableAlias, Set<ColumnInfo> excludedColumns) {}
+
+  /**
+   * Parses a TOK_ALLCOLREF node (e.g. `*` or `t.* EXCLUDE (a)`) to extract the table alias and the
+   * set of columns to be excluded.
+   */
+  protected ExcludeResult processAllColRefAndExclude(ASTNode expr, RowResolver inputRR)
+      throws SemanticException {
+
+    String starTabAlias = null;
+
+    // Zero-allocation initialization for queries that don't use EXCLUDE.
+    Set<ColumnInfo> excludedColumns = Set.of();
+
+    if (expr.getChildren() != null) {
+      for (Node childNode : expr.getChildren()) {
+        ASTNode child = (ASTNode) childNode;
+        switch (child.getType()) {
+          case HiveParser.TOK_TABNAME -> starTabAlias = getUnescapedName(child).toLowerCase();
+          case HiveParser.TOK_TABCOLNAME ->
+              excludedColumns = processExcludeColumns(child, starTabAlias, inputRR);
+          default ->
+              throw new SemanticException(
+                  "Unexpected node type in TOK_ALLCOLREF: " + child.getType());
+        }
+      }
+    }
+    return new ExcludeResult(starTabAlias, excludedColumns);
+  }
 
   private Operator<?> genSelectPlan(String dest, QB qb, Operator<?> input,
                                     Operator<?> inputForSelectStar) throws SemanticException {
@@ -4915,9 +4964,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // The real expression
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         int initPos = pos;
-        pos = genExprNodeDescRegex(".*", expr.getChildCount() == 0 ? null
-                : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
-            expr, colList, null, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
+
+        ExcludeResult excludeResult = processAllColRefAndExclude(expr, inputRR);
+        String starTabAlias = excludeResult.tableAlias();
+        Set<ColumnInfo> excludeCols = excludeResult.excludedColumns();
+        if (excludeCols.isEmpty()) {
+          excludeCols = null;
+        }
+
+        pos = genExprNodeDescRegex(".*", starTabAlias,
+            expr, colList, excludeCols, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
         if (unparseTranslator.isEnabled()) {
           offset += pos - initPos - 1;
         }
@@ -8608,6 +8664,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     fileSinkDesc.setWriteOperation(writeOperation);
+    if (writeOperation != Context.Operation.OTHER
+        && dest_tab != null
+        && dest_tab.getStorageHandler() != null) {
+      boolean copyOnWrite =
+          dest_tab.getStorageHandler().shouldOverwrite(dest_tab, ctx.getOperation());
+      fileSinkDesc.setCopyOnWrite(copyOnWrite);
+    }
 
     fileSinkDesc.setTemporary(destTableIsTemporary);
     fileSinkDesc.setMaterialization(destTableIsMaterialization);
@@ -8848,6 +8911,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void genAutoColumnStatsGatheringPipeline(Table table, Map<String, String> partSpec, Operator curr,
                                                    boolean isInsertInto, boolean useTableValueConstructor)
       throws SemanticException {
+    if (isInsertInto && table.hasNonNativePartitionSupport() && StatsUtils.isPartitionStats(table, conf)) {
+      // this table keeps its column statistics per partition, and an insert reaches too few of them
+      // to pay for grouping the gather by partition; they stand until something covers the table
+      LOG.debug("Skipping column stats autogather for insert into partition-level table {}",
+          table.getTableName());
+      return;
+    }
     LOG.info("Generate an operator pipeline to autogather column stats for table " + table.getTableName()
         + " in query " + ctx.getCmd());
     ColumnStatsAutoGatherContext columnStatsAutoGatherContext = null;
@@ -12278,34 +12348,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
-    if (HiveConf.getVar(conf, HIVE_STATS_DBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getTempDirForInterimJobPath(tab.getPath()).toString();
-      LOG.debug("Set stats collection dir : " + statsTmpLoc);
-      tsDesc.setTmpStatsDir(statsTmpLoc);
+    // basic statistics the storage handler keeps make scan-side gathering redundant, and it keeps the scan from
+    // vectorizing
+    if (!BasicStatsNoJobTask.storageHandlerOwnsBasicStats(tab)) {
+      setupStatsGathering(tsDesc, tab, alias, rwsch);
     }
-    tsDesc.setGatherStats(true);
-    tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-
-    // append additional virtual columns for storing statistics
-    Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
-    List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
-    while (vcs.hasNext()) {
-      VirtualColumn vc = vcs.next();
-      rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),
-          vc.getTypeInfo(), alias, true, vc.getIsHidden()));
-      vcList.add(vc);
-    }
-    tsDesc.addVirtualCols(vcList);
-
-    String tblName = tab.getTableName();
-    // Theoretically the key prefix could be any unique string shared
-    // between TableScanOperator (when publishing) and StatsTask (when aggregating).
-    // Here we use
-    // db_name.table_name + partitionSec
-    // as the prefix for easy of read during explain and debugging.
-    // Currently, partition spec can only be static partition.
-    String k = FileUtils.escapePathName(tblName).toLowerCase() + Path.SEPARATOR;
-    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName()).toLowerCase() + "." + k);
 
     // set up WriteEntity for replication and txn stats
     WriteEntity we = new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED);
@@ -12347,6 +12394,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+  }
+
+  private void setupStatsGathering(TableScanDesc tsDesc, Table tab, String alias, RowResolver rwsch) {
+    if (HiveConf.getVar(conf, HIVE_STATS_DBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
+      String statsTmpLoc = ctx.getTempDirForInterimJobPath(tab.getPath()).toString();
+      LOG.debug("Set stats collection dir : " + statsTmpLoc);
+      tsDesc.setTmpStatsDir(statsTmpLoc);
+    }
+    tsDesc.setGatherStats(true);
+    tsDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+
+    // append additional virtual columns for storing statistics
+    Iterator<VirtualColumn> vcs = VirtualColumn.getStatsRegistry(conf).iterator();
+    List<VirtualColumn> vcList = new ArrayList<>();
+    while (vcs.hasNext()) {
+      VirtualColumn vc = vcs.next();
+      rwsch.put(alias, vc.getName(), new ColumnInfo(vc.getName(),
+          vc.getTypeInfo(), alias, true, vc.getIsHidden()));
+      vcList.add(vc);
+    }
+    tsDesc.addVirtualCols(vcList);
+
+    String tblName = tab.getTableName();
+    // Theoretically the key prefix could be any unique string shared
+    // between TableScanOperator (when publishing) and StatsTask (when aggregating).
+    // Here we use
+    // db_name.table_name + partitionSec
+    // as the prefix for easy of read during explain and debugging.
+    // Currently, partition spec can only be static partition.
+    String k = FileUtils.escapePathName(tblName).toLowerCase() + Path.SEPARATOR;
+    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName()).toLowerCase() + "." + k);
   }
 
   private Operator genPlan(QB parent, QBExpr qbexpr) throws SemanticException {
@@ -13388,7 +13466,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
         ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
         // view column access info is carried by this.getColumnAccessInfo().
-        setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+        setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this));
       }
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.LOGICAL_OPTIMIZATION);
@@ -13427,7 +13505,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 11. put accessed columns to readEntity
     if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
-      putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
+      putAccessedColumnsToReadEntity(getAllInputs(), columnAccessInfo);
     }
 
     if (isCacheEnabled && lookupInfo != null) {
@@ -15289,7 +15367,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private QueryResultsCache.QueryInfo createCacheQueryInfoForQuery(QueryResultsCache.LookupInfo lookupInfo) {
     long queryTime = SessionState.get().getQueryCurrentTimestamp().toEpochMilli();
     return new QueryResultsCache.QueryInfo(queryTime, lookupInfo, queryState.getHiveOperation(),
-        resultSchema, getTableAccessInfo(), getColumnAccessInfo(), inputs);
+        resultSchema, getTableAccessInfo(), getColumnAccessInfo(), getAllInputs());
   }
 
   /**

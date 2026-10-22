@@ -18,6 +18,11 @@
  */
 
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
+import org.apache.hadoop.hive.ql.exec.tez.TezSession;
+import org.apache.hadoop.hive.ql.exec.tez.Utils;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue.NoOpQueueMetricsCollector;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue.QueueMetricsCollector;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue.YarnQueueMetricsCollector;
 
 import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 
@@ -40,9 +45,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
-import org.apache.hadoop.hive.ql.exec.tez.Utils;
+import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -78,6 +82,7 @@ public class TezJobMonitor {
   private static final int MAX_CHECK_INTERVAL = 1000;
   private static final int MAX_RETRY_INTERVAL = 2500;
   private static final int MAX_RETRY_FAILURES = (MAX_RETRY_INTERVAL / MAX_CHECK_INTERVAL) + 1;
+  private static final long MIN_QUEUE_METRICS_REFRESH_INTERVAL_MS = 1000L;
 
   private final TezSession session;
   private final PerfLogger perfLogger;
@@ -120,6 +125,7 @@ public class TezJobMonitor {
   private final RenderStrategy.UpdateFunction updateFunction;
   // compile time tez counters
   private final TezCounters counters;
+  private final QueueMetricsCollector metricsCollector;
 
   public TezJobMonitor(TezSession session, List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf,
       DAG dag, Context ctx, final TezCounters counters, PerfLogger perfLogger) {
@@ -135,6 +141,9 @@ public class TezJobMonitor {
     this.counters = counters;
     this.shouldCollectSummaryString = conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED) &&
         conf.getBoolVar(ConfVars.HIVE_QUERY_HISTORY_EXEC_SUMMARY_ENABLED);
+
+    // Initialize YARN queue metrics collector if enabled
+    this.metricsCollector = initializeMetricsCollector();
   }
 
   private RenderStrategy.UpdateFunction updateFunction() {
@@ -143,6 +152,96 @@ public class TezJobMonitor {
         && !SessionState.get().isHiveServerQuery()
         ? new RenderStrategy.InPlaceUpdateFunction(this, perfLogger)
         : new RenderStrategy.LogToFileFunction(this, perfLogger);
+  }
+
+  /**
+   * Initializes the YARN queue metrics collector based on configuration.
+   * When metrics collection is disabled or initialization fails, a no-op collector is returned.
+   *
+   * <p>Metrics collection requires:
+   * <ul>
+   *   <li>Positive {@link ConfVars#HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL} value</li>
+   *   <li>Available {@link YarnClient} from Tez session</li>
+   * </ul>
+   *
+   * <p>The refresh interval is validated against {@value #MIN_QUEUE_METRICS_REFRESH_INTERVAL_MS}ms minimum.
+   * Thread pool management is delegated to {@link QueueMetricsRefreshPool}.
+   *
+   * @return {@link YarnQueueMetricsCollector} if enabled, otherwise {@link NoOpQueueMetricsCollector#INSTANCE}.
+   *         Never returns null.
+   * @see #getValidatedRefreshInterval()
+   * @see #getValidatedQueueName()
+   */
+  private QueueMetricsCollector initializeMetricsCollector() {
+
+    try {
+      // Get and validate refresh interval
+      long refreshInterval = getValidatedRefreshInterval();
+      if (refreshInterval <= 0) {
+        return NoOpQueueMetricsCollector.INSTANCE;
+      }
+
+      // Get YarnClient from session
+      YarnClient yarnClient = session.getYarnClient();
+      if (yarnClient == null) {
+        LOG.warn("YarnClient not available, skipping queue metrics collection");
+        return NoOpQueueMetricsCollector.INSTANCE;
+      }
+
+      // Get queue name, default to "default" if not specified
+      String queueName = getValidatedQueueName();
+
+      // Use the DAG name as the query identifier for logging
+      String dagName = dag.getName();
+
+      LOG.info("Initializing YARN queue metrics collector for queue: {}, refresh interval: {}ms",
+          queueName, refreshInterval);
+
+      return new YarnQueueMetricsCollector(yarnClient, queueName, refreshInterval, dagName);
+    } catch (Exception e) {
+      LOG.warn("Unable to initialize YARN queue metrics collector", e);
+      return NoOpQueueMetricsCollector.INSTANCE;
+    }
+  }
+
+  /**
+   * Retrieves and validates the queue metrics refresh interval from configuration.
+   *
+   * @return validated refresh interval in milliseconds, or -1 if disabled
+   */
+  private long getValidatedRefreshInterval() {
+    // Get refresh interval — controls whether the feature is enabled.
+    // interval <= 0 means disabled (default is 0s = disabled).
+    long refreshInterval = HiveConf.getTimeVar(hiveConf,
+        ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, TimeUnit.MILLISECONDS);
+
+    if (refreshInterval <= 0) {
+      LOG.debug("Queue metrics collection disabled (refresh interval: {}ms)", refreshInterval);
+      return -1;
+    }
+
+    // Validate minimum refresh interval (at least 1 second)
+    if (refreshInterval < MIN_QUEUE_METRICS_REFRESH_INTERVAL_MS) {
+      LOG.warn("Queue metrics refresh interval {}ms is less than minimum {}ms, using {}ms",
+          refreshInterval, MIN_QUEUE_METRICS_REFRESH_INTERVAL_MS, MIN_QUEUE_METRICS_REFRESH_INTERVAL_MS);
+      refreshInterval = MIN_QUEUE_METRICS_REFRESH_INTERVAL_MS;
+    }
+
+    return refreshInterval;
+  }
+
+  /**
+   * Retrieves and validates the queue name from the session.
+   *
+   * @return validated queue name, defaults to "default" if not specified
+   */
+  private String getValidatedQueueName() {
+    String queueName = session.getQueueName();
+    if (queueName == null || queueName.trim().isEmpty()) {
+      queueName = "default";
+      LOG.info("Queue name not specified. For metrics monitoring, using 'default' as queue name");
+    }
+    return queueName;
   }
 
   private boolean isProfilingEnabled() {
@@ -158,7 +257,6 @@ public class TezJobMonitor {
     int rc = 0;
     DAGStatus status = null;
     Map<String, Progress> vertexProgressMap = null;
-
 
     long monitorStartTime = System.currentTimeMillis();
     synchronized (shutdownList) {
@@ -313,6 +411,11 @@ public class TezJobMonitor {
           synchronized (shutdownList) {
             shutdownList.remove(dagClient);
           }
+
+          // Close metrics collector (no-op if disabled)
+          metricsCollector.close();
+          LOG.debug("Closed metrics collector for queue: {}", metricsCollector.getQueueName());
+
           break;
         }
       }
@@ -531,7 +634,7 @@ public class TezJobMonitor {
   ProgressMonitor progressMonitor(DAGStatus status, Map<String, Progress> progressMap) {
     try {
       return new TezProgressMonitor(dagClient, status, topSortedWorks, progressMap, console,
-          executionStartTime);
+          executionStartTime, metricsCollector);
     } catch (IOException | TezException e) {
       console.printInfo("Getting  Progress Information: " + e.getMessage() + " stack trace: " +
           ExceptionUtils.getStackTrace(e));

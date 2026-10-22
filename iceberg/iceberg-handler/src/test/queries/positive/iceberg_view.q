@@ -76,6 +76,25 @@ desc formatted v_hive;
 drop view v_hive;
 
 -----------------------------------------------------------------------------------------
+-- Native Hive partitioned view on Iceberg base table
+-----------------------------------------------------------------------------------------
+
+create view v_hive_part partitioned on (dept_id) as
+  select first_name, last_name, dept_id from src_ice;
+
+alter view v_hive_part add partition (dept_id=1);
+
+show partitions v_hive_part;
+
+select first_name from v_hive_part where dept_id=1 order by first_name;
+
+alter view v_hive_part drop partition (dept_id=1);
+
+show partitions v_hive_part;
+
+drop view v_hive_part;
+
+-----------------------------------------------------------------------------------------
 -- Replace Iceberg logical view with a Hive-native logical view
 -----------------------------------------------------------------------------------------
 

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.QTestMiniClusters;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.hooks.ExplainFormattedCBOHook;
 import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
+import org.apache.hadoop.hive.ql.qoption.QTestDatabaseHandler;
 
 public class CliConfigs {
 
@@ -202,7 +203,64 @@ public class CliConfigs {
       }
     }
   }
-  
+
+  public static class MiniLlapLocalPostgresJdbcCliConfig extends AbstractCliConfig {
+    private final QTestDatabaseHandler.DatabaseType databaseType;
+    private final String jdbcInitScript;
+    private final String externalTablesInitScript;
+
+    public MiniLlapLocalPostgresJdbcCliConfig() {
+      super(CoreJdbcCliDriver.class);
+      try {
+        databaseType = QTestDatabaseHandler.DatabaseType.POSTGRES;
+        jdbcInitScript = "q_test_tpcds_schema.postgres.sql";
+        externalTablesInitScript = "q_test_tpcds_external_tables_schema.postgres.sql";
+
+        setQueryDir("ql/src/test/queries/clientpositive/perf");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive/jdbc/postgres");
+        setResultsDir("ql/src/test/results/clientpositive/jdbc/postgres");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+        setCustomConfigValueMap(createConfVarsStringMap());
+        excludesFrom(testConfigProps, "jdbc.disabled.query.files");
+        // Run CBO plans only
+        includeCboQueryFiles();
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+
+    private void includeCboQueryFiles() {
+      File[] cboQueryFiles = new File(getQueryDirectory())
+          .listFiles((dir, name) -> name.startsWith("cbo") && name.endsWith(".q"));
+      if (cboQueryFiles != null) {
+        for (File f : cboQueryFiles) {
+          includeQuery(f.getName());
+        }
+      }
+    }
+
+    private static Map<HiveConf.ConfVars, String> createConfVarsStringMap() {
+      Map<HiveConf.ConfVars, String> conf = new EnumMap<>(HiveConf.ConfVars.class);
+      conf.put(HiveConf.ConfVars.PRE_EXEC_HOOKS, "");
+      conf.put(HiveConf.ConfVars.POST_EXEC_HOOKS, "");
+      conf.put(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, "-1");
+      return conf;
+    }
+
+    public QTestDatabaseHandler.DatabaseType getDatabaseType() {
+      return databaseType;
+    }
+
+    public String getJdbcInitScript() {
+      return jdbcInitScript;
+    }
+
+    public String getExternalTablesInitScript() {
+      return externalTablesInitScript;
+    }
+  }
+
   public static class MiniLlapLocalCompactorCliConfig extends AbstractCliConfig {
 
     public MiniLlapLocalCompactorCliConfig() {
@@ -342,7 +400,7 @@ public class CliConfigs {
       }
     }
   }
-
+  
   public static class NegativeLlapLocalCliConfig extends AbstractCliConfig {
     public NegativeLlapLocalCliConfig() {
       super(CoreNegativeCliDriver.class);
@@ -628,7 +686,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "iceberg.llap.only.query.files");
         excludesFrom(testConfigProps, "iceberg.llap.query.compactor.files");
         excludesFrom(testConfigProps, "iceberg.llap.query.rest.hms.files");
-        excludesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
+        excludesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.s3.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
@@ -704,13 +762,57 @@ public class CliConfigs {
     }
   }
 
-  public static class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver extends AbstractCliConfig {
+  public static class TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver extends AbstractCliConfig {
 
-    public TestIcebergRESTCatalogGravitinoLlapLocalCliDriver() {
+    public TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver() {
       super(CoreCliDriver.class);
       try {
         setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
-        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.s3.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class TestIcebergRESTCatalogGravitinoAdlsLlapLocalCliDriver extends AbstractCliConfig {
+
+    public TestIcebergRESTCatalogGravitinoAdlsLlapLocalCliDriver() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.adls.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver extends AbstractCliConfig {
+
+    public TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.gcs.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");

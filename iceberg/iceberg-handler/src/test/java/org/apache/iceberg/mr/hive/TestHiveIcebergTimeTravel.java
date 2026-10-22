@@ -22,11 +22,17 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.HistoryEntry;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.data.Record;
+import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Test;
@@ -218,5 +224,28 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
         "WHERE sv.first_name=tv.first_name");
 
     Assert.assertEquals(8, rows.size());
+  }
+
+  @Test
+  public void testSelectBranchTagAndAsOfWithEqualityDeletes() throws IOException {
+    Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        formatVersion);
+    List<Record> toDelete = TestHelper.RecordsBuilder
+        .newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).add(1L, "Bob", null).build();
+    DeleteFile deleteFile = HiveIcebergTestUtils.createEqualityDeleteFile(table, "dummyPath",
+        ImmutableList.of("customer_id", "first_name"), fileFormat, toDelete);
+    table.newRowDelta().addDeletes(deleteFile).commit();
+    long snapshotId = table.currentSnapshot().snapshotId();
+    table.newRowDelta().removeDeletes(deleteFile).commit();
+    shell.executeStatement("ALTER TABLE customers CREATE BRANCH eq_branch FOR SYSTEM_VERSION AS OF " + snapshotId);
+    shell.executeStatement("ALTER TABLE customers CREATE TAG eq_tag FOR SYSTEM_VERSION AS OF " + snapshotId);
+
+    Assert.assertEquals(2, shell.executeStatement("SELECT * FROM default.customers.branch_eq_branch").size());
+    Assert.assertEquals(2, shell.executeStatement("SELECT * FROM default.customers.tag_eq_tag").size());
+    Assert.assertEquals(2,
+        shell.executeStatement("SELECT * FROM customers FOR SYSTEM_VERSION AS OF " + snapshotId).size());
+    Assert.assertEquals(2, shell.executeStatement(
+        "SELECT * FROM customers FOR SYSTEM_TIME AS OF '" + timestampAfterSnapshot(table, 1) + "'").size());
   }
 }

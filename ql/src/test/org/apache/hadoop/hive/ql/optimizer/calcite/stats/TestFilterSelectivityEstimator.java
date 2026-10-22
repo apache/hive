@@ -130,6 +130,7 @@ public class TestFilterSelectivityEstimator {
   private static final KllFloatsSketch KLL3 = StatisticsTestUtils.createKll(VALUES3);
   private static final KllFloatsSketch KLL_TIME = StatisticsTestUtils.createKll(VALUES_TIME);
   private static final float DELTA = 1e-7f;
+  private static final double MIN_KLL_SELECTIVITY = 0.013294757464848584;
   private static final RexBuilder REX_BUILDER = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
   private static final RelDataTypeFactory TYPE_FACTORY = REX_BUILDER.getTypeFactory();
 
@@ -270,6 +271,25 @@ public class TestFilterSelectivityEstimator {
     ColStatistics colStatistics = new ColStatistics();
     colStatistics.setHistogram(new byte[0]);
     Assert.assertFalse(isHistogramAvailable(colStatistics));
+  }
+
+  /**
+   * Check the KLL resolution.
+   * <p>
+   * The resolution may not be lower than the minimum rank error [HIVE-29365].
+   * </p> */
+  @Test
+  public void testKllResolution() {
+    Assert.assertEquals(MIN_KLL_SELECTIVITY, betweenSelectivity(KLL, 1.20f, 1.21f), DELTA);
+
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, inputRef0, literalFloat(1.20f)),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, literalFloat(1.21f)));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(MIN_KLL_SELECTIVITY, estimator.estimateSelectivity(filter), DELTA);
   }
 
   @Test

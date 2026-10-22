@@ -505,9 +505,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .orElse(RewritePolicy.DEFAULT.name()));
 
       if (rewritePolicy != RewritePolicy.DEFAULT) {
-        String partitionPath = jobContexts.stream()
+        String partitionName = jobContexts.stream()
             .findAny()
-            .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_PATH))
+            .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_NAME))
             .orElse(null);
 
         long fileSizeThreshold = jobContexts.stream()
@@ -516,7 +516,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             .map(Long::parseLong)
             .orElse(-1L);
 
-        commitCompaction(table, snapshotId, startTime, filesForCommit, partitionPath, fileSizeThreshold);
+        commitCompaction(table, snapshotId, startTime, filesForCommit, partitionName, fileSizeThreshold);
       } else {
         commitOverwrite(table, branchName, snapshotId, startTime, filesForCommit);
       }
@@ -623,14 +623,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param snapshotId    The snapshot id of the table to use for validation
    * @param startTime     The start time of the commit - used only for logging
    * @param results       The object containing the new files
-   * @param partitionPath The path of the compacted partition
+   * @param partitionName The name of the compacted partition
    */
   private void commitCompaction(Table table, Long snapshotId, long startTime, FilesForCommit results,
-      String partitionPath, long fileSizeThreshold) {
+      String partitionName, long fileSizeThreshold) {
     List<DataFile> existingDataFiles =
-        IcebergCompactionUtil.getDataFiles(table, snapshotId, partitionPath, fileSizeThreshold);
+        IcebergCompactionUtil.getDataFiles(table, snapshotId, partitionName, fileSizeThreshold);
     List<DeleteFile> existingDeleteFiles = fileSizeThreshold == -1 ?
-        IcebergCompactionUtil.getDeleteFiles(table, snapshotId, partitionPath) : Collections.emptyList();
+        IcebergCompactionUtil.getDeleteFiles(table, snapshotId, partitionName) : Collections.emptyList();
 
     Transaction txn = IcebergAcidUtil.getOrCreateTransaction(table, jobConf);
 
@@ -644,7 +644,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
     commit(txn, rewriteFiles);
     LOG.info("Compaction commit took {} ms for table: {} partition: {} with {} file(s)",
-        System.currentTimeMillis() - startTime, table, StringUtils.defaultString(partitionPath, "N/A"),
+        System.currentTimeMillis() - startTime, table, StringUtils.defaultString(partitionName, "N/A"),
         results.dataFiles().size());
   }
 

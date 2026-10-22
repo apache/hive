@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.IOContext;
+import org.apache.hadoop.hive.ql.io.IOContextAwareRecordReader;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.iceberg.DataFile;
@@ -37,8 +39,6 @@ import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
-import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.ScanTaskGroup;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.avro.Avro;
@@ -71,10 +71,11 @@ import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 
-public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T> {
+public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T> implements IOContextAwareRecordReader {
   private Iterator<FileScanTask> tasks;
   private CloseableIterator<T> currentIterator;
   private T current;
+  private IOContext ioContext;
 
   @Override
   public void initialize(InputSplit split, TaskAttemptContext newContext) {
@@ -85,13 +86,24 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     this.currentIterator = nextTask();
   }
 
+  /**
+   * Sets the IOContext the virtual columns of each row are written into. MapredIcebergRecordReader passes on the
+   * IOContext its wrapper hands over after initialize() opened the first file, because HiveInputFormat handles an
+   * interrupt only while it creates the reader (HIVE-25751); each file's iterator therefore reads it per row.
+   */
+  @Override
+  public void setIOContext(IOContext ioCxt) {
+    this.ioContext = ioCxt;
+  }
+
   private CloseableIterator<T> nextTask() {
-    CloseableIterator<T> closeableIterator = open(tasks.next(), expectedSchema).iterator();
+    FileScanTask task = tasks.next();
+    CloseableIterator<T> closeableIterator = open(task, expectedSchema).iterator();
     if (!isFetchVirtualColumns() || Utilities.getIsVectorized(conf)) {
       return closeableIterator;
     }
     return new IcebergAcidUtil.VirtualColumnAwareIterator<>(closeableIterator,
-        expectedSchema, conf);
+        expectedSchema.columns(), task, () -> ioContext);
   }
 
   @Override
@@ -262,19 +274,12 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   }
 
   private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {
-    PartitionSpec spec = task.spec();
-    Set<Integer> idColumns = spec.identitySourceIds();
-    Schema partitionSchema = TypeUtil.select(expectedSchema, idColumns);
-    boolean projectsIdentityPartitionColumns = !partitionSchema.columns().isEmpty();
-    if (expectedSchema.findField(MetadataColumns.PARTITION_COLUMN_ID) != null) {
-      Types.StructType partitionType = Partitioning.partitionType(table);
-      return PartitionUtil.constantsMap(task, partitionType, converter);
-    } else if (projectsIdentityPartitionColumns) {
-      Types.StructType partitionType = Partitioning.partitionType(table);
-      return PartitionUtil.constantsMap(task, partitionType, converter);
-    } else {
-      return Collections.emptyMap();
+    boolean projectsIdentityPartitionColumns = !TypeUtil.select(expectedSchema, task.spec().identitySourceIds())
+        .columns().isEmpty();
+    if (expectedSchema.findField(MetadataColumns.SPEC_ID.fieldId()) != null || projectsIdentityPartitionColumns) {
+      return PartitionUtil.constantsMap(task, converter);
     }
+    return Collections.emptyMap();
   }
 
   private static Schema schemaWithoutConstantsAndMeta(Schema readSchema, Map<Integer, ?> idToConstant) {

@@ -1,0 +1,73 @@
+PREHOOK: query: drop view if exists reg_view
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists reg_view
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop view if exists deferred_view
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists deferred_view
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop table if exists base_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists base_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table base_table(i int, s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@base_table
+POSTHOOK: query: create table base_table(i int, s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@base_table
+PREHOOK: query: create view deferred_view as
+select i, s from base_table
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@base_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@deferred_view
+POSTHOOK: query: create view deferred_view as
+select i, s from base_table
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@base_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@deferred_view
+POSTHOOK: Lineage: deferred_view.i SIMPLE [(base_table)base_table.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: deferred_view.s SIMPLE [(base_table)base_table.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: alter view deferred_view set tblproperties ('Authorized'='false')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@deferred_view
+PREHOOK: Output: default@deferred_view
+POSTHOOK: query: alter view deferred_view set tblproperties ('Authorized'='false')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@deferred_view
+POSTHOOK: Output: default@deferred_view
+PREHOOK: query: create view reg_view as
+with c as (
+  select i, s from deferred_view
+)
+select i, s from c
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@base_table
+PREHOOK: Input: default@deferred_view
+PREHOOK: Output: database:default
+PREHOOK: Output: default@reg_view
+POSTHOOK: query: create view reg_view as
+with c as (
+  select i, s from deferred_view
+)
+select i, s from c
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@base_table
+POSTHOOK: Input: default@deferred_view
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@reg_view
+POSTHOOK: Lineage: reg_view.i SIMPLE [(base_table)base_table.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: reg_view.s SIMPLE [(base_table)base_table.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: grant select on table reg_view to user user_unauth
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@reg_view
+POSTHOOK: query: grant select on table reg_view to user user_unauth
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@reg_view
+FAILED: HiveAccessControlException Permission denied: Principal [name=user_unauth, type=USER] does not have following privileges for operation QUERY [[SELECT] on Object [type=TABLE_OR_VIEW, name=hive.default.base_table]]

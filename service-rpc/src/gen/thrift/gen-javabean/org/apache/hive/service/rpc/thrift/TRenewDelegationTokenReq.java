@@ -333,11 +333,7 @@ package org.apache.hive.service.rpc.thrift;
     first = false;
     if (!first) sb.append(", ");
     sb.append("delegationToken:");
-    if (this.delegationToken == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.delegationToken);
-    }
+    sb.append("*** REDACTED ***");
     first = false;
     sb.append(")");
     return sb.toString();

@@ -1760,51 +1760,51 @@
                   "name": "$17"
                 },
                 {
-                  "literal": "burnished",
+                  "literal": "burnished           ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 9
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "chocolate",
+                  "literal": "chocolate           ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 9
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "dim",
+                  "literal": "dim                 ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 3
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "maroon",
+                  "literal": "maroon              ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 6
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "navajo",
+                  "literal": "navajo              ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 6
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "steel",
+                  "literal": "steel               ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 5
+                    "precision": 20
                   }
                 }
               ]
@@ -6423,51 +6423,51 @@
                   "name": "$17"
                 },
                 {
-                  "literal": "burnished",
+                  "literal": "burnished           ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 9
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "chocolate",
+                  "literal": "chocolate           ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 9
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "dim",
+                  "literal": "dim                 ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 3
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "maroon",
+                  "literal": "maroon              ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 6
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "navajo",
+                  "literal": "navajo              ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 6
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "steel",
+                  "literal": "steel               ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 5
+                    "precision": 20
                   }
                 }
               ]

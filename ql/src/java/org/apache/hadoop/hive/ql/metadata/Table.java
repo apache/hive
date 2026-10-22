@@ -285,7 +285,9 @@ public class Table implements Serializable {
     // check for validity
     validateName(conf);
 
-    if (getCols().isEmpty()) {
+    if (getCols().isEmpty() && !hasNonNativePartitionSupport()) {
+      // a non-native table's data-column view excludes the handler partition columns and is
+      // legitimately empty when every column is a partition transform source
       throw new HiveException("at least one column must be specified for the table");
     }
     validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
@@ -1463,16 +1465,21 @@ public class Table implements Serializable {
     List<VirtualColumn> virtualColumns = new ArrayList<>();
     if (!isNonNative()) {
       virtualColumns.addAll(VirtualColumn.getRegistry());
+      return virtualColumns;
     }
-    if (isNonNative() && AcidUtils.isNonNativeAcidTable(this)) {
+    if (AcidUtils.isNonNativeAcidTable(this)) {
       virtualColumns.addAll(getStorageHandler().acidVirtualColumns());
     }
-    if (isNonNative() && getStorageHandler().areSnapshotsSupported() &&
-        isBlank(getMetaTable())) {
+    if (!isBlank(getMetaTable())) {
+      return virtualColumns;
+    }
+    if (hasNonNativePartitionSupport()) {
+      virtualColumns.add(VirtualColumn.PARTITION_NAME);
+    }
+    if (getStorageHandler().areSnapshotsSupported()) {
       virtualColumns.add(VirtualColumn.SNAPSHOT_ID);
     }
-    if (isNonNative() && getStorageHandler().supportsRowLineage(getTTable().getParameters()) &&
-        isBlank(getMetaTable())) {
+    if (getStorageHandler().supportsRowLineage(getTTable().getParameters())) {
       virtualColumns.add(VirtualColumn.ROW_LINEAGE_ID);
       virtualColumns.add(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
     }

@@ -258,8 +258,7 @@ public class HiveAuthFactory {
     try {
       delegationTokenManager.cancelDelegationToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException(
-          "Error canceling delegation token " + delegationToken, "08S01", e);
+      throw new HiveSQLException(delegationTokenErrorMessage("canceling"), "08S01", e);
     }
   }
 
@@ -271,8 +270,7 @@ public class HiveAuthFactory {
     try {
       delegationTokenManager.renewDelegationToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException(
-          "Error renewing delegation token " + delegationToken, "08S01", e);
+      throw new HiveSQLException(delegationTokenErrorMessage("renewing"), "08S01", e);
     }
   }
 
@@ -284,7 +282,7 @@ public class HiveAuthFactory {
     try {
       return delegationTokenManager.verifyDelegationToken(delegationToken);
     } catch (IOException e) {
-      String msg =  "Error verifying delegation token " + delegationToken;
+      String msg = delegationTokenErrorMessage("verifying");
       LOG.error(msg, e);
       throw new HiveSQLException(msg, "08S01", e);
     }
@@ -298,9 +296,12 @@ public class HiveAuthFactory {
     try {
       return delegationTokenManager.getUserFromToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException(
-          "Error extracting user from delegation token " + delegationToken, "08S01", e);
+      throw new HiveSQLException(delegationTokenErrorMessage("extracting user from"), "08S01", e);
     }
+  }
+
+  private static String delegationTokenErrorMessage(String operation) {
+    return "Error " + operation + " delegation token";
   }
 
   public static void verifyProxyAccess(String realUser, String proxyUser, String ipAddress,

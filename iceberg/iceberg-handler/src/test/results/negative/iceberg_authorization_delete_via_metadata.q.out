@@ -1,0 +1,31 @@
+PREHOOK: query: drop table if exists ice_tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists ice_tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table ice_tbl (id int, val string) partitioned by (p int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: create table ice_tbl (id int, val string) partitioned by (p int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tbl
+PREHOOK: query: insert into ice_tbl values 
+(1, 'a', 10), (2, 'b', 10), (3, 'c', 20), (4, 'd', 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values 
+(1, 'a', 10), (2, 'b', 10), (3, 'c', 20), (4, 'd', 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+PREHOOK: query: grant select on table ice_tbl to user read_only_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: grant select on table ice_tbl to user read_only_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@ice_tbl
+FAILED: HiveAccessControlException Permission denied: Principal [name=read_only_user, type=USER] does not have following privileges for operation QUERY [[DELETE] on Object [type=TABLE_OR_VIEW, name=hive.default.ice_tbl]]

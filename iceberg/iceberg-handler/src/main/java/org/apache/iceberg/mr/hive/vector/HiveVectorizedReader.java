@@ -184,7 +184,7 @@ public class HiveVectorizedReader {
       }
 
       CloseableIterable<HiveBatchContext> vrbIterable =
-          createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues, idToConstant);
+          createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues, task);
 
       return deleteFilter != null ? deleteFilter.filterBatch(vrbIterable) : vrbIterable;
 
@@ -231,13 +231,6 @@ public class HiveVectorizedReader {
     // TODO: add support for reading files with positional deletes with LLAP (LLAP would need to provide file row num)
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null && task.deletes().isEmpty() && !InputFormatConfig.fetchVirtualColumns(job)) {
-      boolean isDecimal64Disabled =
-          job.getBoolean(HiveIcebergInputFormat.getDecimal64DisableConfName(tableName), false);
-      if (isDecimal64Disabled) {
-        // The LLAP ORC reader derives decimal64 support from this job var, not the plan; clear it so
-        // it emits full decimal instead.
-        HiveConf.setVar(job, HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED, "");
-      }
       recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, path, null, readColumnIds,
           job, start, length, reporter);
     }
@@ -293,12 +286,12 @@ public class HiveVectorizedReader {
 
   private static CloseableIterable<HiveBatchContext> createVectorizedRowBatchIterable(
       RecordReader<NullWritable, VectorizedRowBatch> hiveRecordReader, JobConf job, int[] partitionColIndices,
-      Object[] partitionValues, Map<Integer, ?> idToConstant) {
+      Object[] partitionValues, FileScanTask task) {
 
     HiveBatchIterator iterator =
-        new HiveBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues, idToConstant);
+        new HiveBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues, task);
 
-    return new CloseableIterable<HiveBatchContext>() {
+    return new CloseableIterable<>() {
 
       @Override
       public CloseableIterator iterator() {
