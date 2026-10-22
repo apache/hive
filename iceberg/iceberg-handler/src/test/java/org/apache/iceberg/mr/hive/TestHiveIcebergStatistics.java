@@ -1694,8 +1694,8 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         "(3, timestamp '2023-11-11 23:59:59')");
     shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
 
-    // partitionToPath URL-escapes the ISO rendering (':' -> %3A)
-    List<String> partNames = ImmutableList.of("ts=2023-11-11T23%3A59%3A59", "ts=2024-06-01T10%3A00%3A00");
+    // PARTITION__NAME and stats keys use the display rendering (decoded from partitionToPath)
+    List<String> partNames = ImmutableList.of("ts=2023-11-11T23:59:59", "ts=2024-06-01T10:00:00");
     Assert.assertEquals(partNames, colStatsPartNames(identifier));
     assertAggrColStatsRange(identifier, "id", partNames, 1, 3);
   }
@@ -3243,7 +3243,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     // every row renders its own writing spec's name
     Assert.assertEquals(6, rows.size());
     Assert.assertEquals(DummyPartition.VOID, rows.get(0)[1]);
-    Assert.assertEquals("s=a+b", rows.get(1)[1]);
+    Assert.assertEquals("s=a b", rows.get(1)[1]);
     Assert.assertEquals("ts_day=2024-06-01", rows.get(2)[1]);
     Assert.assertEquals("ts_day=" + NULL_PART, rows.get(3)[1]);
     Integer bucket = Transforms.bucket(4).bind(Types.StringType.get()).apply("bucketed");

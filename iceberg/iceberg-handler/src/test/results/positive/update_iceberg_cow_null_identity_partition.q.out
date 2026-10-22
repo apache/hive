@@ -274,6 +274,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@iceberg_cow_partitioned
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	a	true	UPDATED NULLS	1
+PREHOOK: query: select * from iceberg_cow_partitioned where str_col = 'UPDATED NULLS'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_cow_partitioned where str_col = 'UPDATED NULLS'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	true	UPDATED NULLS	1
 PREHOOK: query: insert into iceberg_cow_partitioned partition (str_col, tinyint_col)
   values (2, 'b', false, null, 2)
 PREHOOK: type: QUERY
@@ -516,3 +525,21 @@ POSTHOOK: Input: default@iceberg_cow_partitioned
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	a	true	UPDATED NULLS	1
 2	b	false	UPDATED NULLS	2
+PREHOOK: query: select * from iceberg_cow_partitioned where str_col = 'UPDATED NULLS'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_cow_partitioned where str_col = 'UPDATED NULLS'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	true	UPDATED NULLS	1
+2	b	false	UPDATED NULLS	2
+PREHOOK: query: show partitions iceberg_cow_partitioned
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: query: show partitions iceberg_cow_partitioned
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@iceberg_cow_partitioned
+str_col=UPDATED NULLS/tinyint_col=1
+str_col=UPDATED NULLS/tinyint_col=2
