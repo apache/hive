@@ -76,8 +76,6 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
 
     this.firstRowId = task.file().firstRowId();
     this.fileSequenceNumber = task.file().fileSequenceNumber();
-
-    RowLineageUtils.initializeRowLineageColumns(vrbCtx, batch);
   }
 
   @Override
@@ -89,6 +87,8 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
     if (!advanced) {
       try {
 
+        // Arm lineage columns before each batch: if row 0 is still the -1 placeholder, the column was not in the file.
+        RowLineageUtils.initializeRowLineageColumns(vrbCtx, batch);
         if (!recordReader.next(key, batch)) {
           batch.size = 0;
         }
@@ -136,19 +136,20 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               break;
             case ROW_LINEAGE_ID:
               LongColumnVector rowIdLcv = (LongColumnVector) batch.cols[idx];
+              // No file-level id: leave null; else synthesize per-row ids or merge with values read from storage.
               if (firstRowId == null) {
                 rowIdLcv.noNulls = false;
                 rowIdLcv.isNull[0] = true;
                 rowIdLcv.isRepeating = true;
                 break;
               }
-              // If vector[0] is still -1, the reader didn't find the column in the file.
-              if (rowIdLcv.vector[0] == -1L) {
+              if (rowIdLcv.noNulls && rowIdLcv.vector[0] == -1L) {
+                // -1 placeholder still present: column missing from file for this data path.
                 for (int i = 0; i < batch.size; i++) {
                   rowIdLcv.vector[i] = firstRowId + rowOffset + i;
                 }
               } else {
-                // Lineage data was found (could be 0). Preserve it and fill only the NULL gaps.
+                // Fill null slots only; keep non-null values from the file (e.g. after COW rewrite).
                 for (int i = 0; i < batch.size; i++) {
                   if (rowIdLcv.isNull[i]) {
                     rowIdLcv.vector[i] = firstRowId + rowOffset + i;
@@ -162,6 +163,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
 
             case LAST_UPDATED_SEQUENCE_NUMBER:
               LongColumnVector lusnLcv = (LongColumnVector) batch.cols[idx];
+              // No sequence number at file level: leave null.
               if (fileSequenceNumber == null) {
                 lusnLcv.noNulls = false;
                 lusnLcv.isNull[0] = true;
@@ -169,13 +171,13 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
                 break;
               }
 
-              // If vector[0] is still -1, apply the file-level sequence number to the whole batch.
-              if (lusnLcv.vector[0] == -1L) {
+              if (lusnLcv.noNulls && lusnLcv.vector[0] == -1L) {
+                // -1 placeholder: column not in file; use file sequence for every row in the batch.
                 for (int i = 0; i < batch.size; i++) {
                   lusnLcv.vector[i] = fileSequenceNumber;
                 }
               } else {
-                // Lineage data found in file, fill only the gaps where data is missing.
+                // Same pattern as ROW_LINEAGE_ID: propagate file values, default missing cells to file sequence.
                 for (int i = 0; i < batch.size; i++) {
                   if (!lusnLcv.noNulls && lusnLcv.isNull[i]) {
                     lusnLcv.vector[i] = fileSequenceNumber;
