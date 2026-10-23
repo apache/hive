@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.index.IndexManager;
@@ -45,33 +44,34 @@ public final class BootstrapIndexer {
   private static final Logger LOG = LoggerFactory.getLogger(BootstrapIndexer.class);
   private static final List<TableDocument> END_OF_STREAM = List.of();
 
-  private final Configuration configuration;
   private final IndexManager indexManager;
   private final IndexOptions indexConfig;
+  private final Configuration configuration;
   private final Indexer indexer;
-  private final IMetaStoreClient client;
-  private final boolean shareFetchClient;
+  private final MetastoreClientProvider clientProvider;
   private Progress progress;
 
   /** Package-private for unit tests: fetch workers reuse the injected client. */
   BootstrapIndexer(IndexManager indexManager,
       Indexer indexer,
-      IMetaStoreClient client,
-      boolean shareFetchClient) {
+      MetastoreClientProvider provider) {
     this.indexManager = indexManager;
     this.configuration = indexManager.mapping().configuration();
     this.indexConfig = new IndexOptions(configuration);
     this.indexer = indexer;
-    this.client = client;
-    this.shareFetchClient = shareFetchClient;
+    this.clientProvider = provider;
   }
 
   void run(long notificationId) throws Exception {
     long start = System.currentTimeMillis();
-    List<String> databases = client.getAllDatabases();
-    BatchPlan plan = planBatches(databases);
-    LOG.info("Bootstrap indexer planned {} table(s) in {} batch(es) across {} database(s)",
-        plan.plannedTableCount(), plan.batches().size(), databases.size());
+    final BatchPlan plan;
+    try (MetastoreClientProvider.MetastoreClientBundle clientBundle =
+             clientProvider.getMetastoreClient(configuration)) {
+      List<String> databases = clientBundle.client().getAllDatabases();
+      plan = planBatches(databases, clientBundle.client());
+      LOG.info("Bootstrap indexer planned {} table(s) in {} batch(es) across {} database(s)", plan.plannedTableCount(),
+          plan.batches().size(), databases.size());
+    }
 
     BlockingQueue<List<TableDocument>> indexQueue =
         new ArrayBlockingQueue<>(indexConfig.getBootstrapQueueDepth());
@@ -109,7 +109,7 @@ public final class BootstrapIndexer {
     }
   }
 
-  private BatchPlan planBatches(List<String> databases) throws Exception {
+  private BatchPlan planBatches(List<String> databases, IMetaStoreClient client) throws Exception {
     int batchSize = indexConfig.getBootstrapBatchSize();
     List<TableBatch> planned = new ArrayList<>();
     int plannedTableCount = 0;
@@ -132,12 +132,9 @@ public final class BootstrapIndexer {
       if (failure.get() != null) {
         return;
       }
-      if (shareFetchClient) {
-        fetchBatch(batch, indexQueue, failure, client);
-        return;
-      }
-      try (IMetaStoreClient fetchClient = RetryingMetaStoreClient.getProxy(configuration, true)) {
-        fetchBatch(batch, indexQueue, failure, fetchClient);
+      try (MetastoreClientProvider.MetastoreClientBundle clientBundle =
+               clientProvider.getMetastoreClient(configuration)) {
+        fetchBatch(batch, indexQueue, failure, clientBundle.client());
       }
     } catch (Exception e) {
       recordFailure(failure, e);

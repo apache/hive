@@ -73,7 +73,7 @@ public final class IndexSession implements Closeable {
 
   public void initialize() throws Exception {
     indexer = new Indexer(indexManager, modelRegistry);
-    metastoreIndexer = new MetastoreIndexer(configuration, indexManager, indexer);
+    metastoreIndexer = MetastoreIndexer.getMetastoreIndexer(configuration, indexManager, indexer, null);
     metastoreIndexer.start();
     searcherManager = new SearcherManager(indexer.writer(), null);
     service.scheduleAtFixedRate(this::maybeRefreshIndex, 0,

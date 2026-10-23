@@ -69,7 +69,8 @@ public class TestMetastoreEventHandlerFailureRecovery {
 
     try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
       AtomicInteger batchAttempts = new AtomicInteger();
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf, client);
+      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
+          configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false));
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
@@ -112,7 +113,8 @@ public class TestMetastoreEventHandlerFailureRecovery {
         .thenReturn(response(good, poison));
 
     try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf, client);
+      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
+          configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false));
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
@@ -155,7 +157,8 @@ public class TestMetastoreEventHandlerFailureRecovery {
         .thenReturn(emptyResponse());
 
     try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf, client);
+      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
+          configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false));
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
@@ -194,7 +197,8 @@ public class TestMetastoreEventHandlerFailureRecovery {
 
     try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
       AtomicBoolean sawBatchFailure = new AtomicBoolean();
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf, client);
+      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
+          configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false));
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {

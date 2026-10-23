@@ -17,6 +17,7 @@
 
 package org.apache.hive.search.metastore;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -31,8 +32,9 @@ import org.apache.hadoop.hive.metastore.leader.LeaderException;
 import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
 
 @SuppressWarnings("rawtypes, unchecked")
-public class MetastoreCluster implements AutoCloseable {
+public class MetastoreCluster implements Closeable {
   private static final String CLUSTER_ELECTION_METHOD = "metastore.index.election.method";
+  // Single lifecycle per JVM; no reload.
   private static final Map<String, Pair<LeaderElection, Object>> CACHED = new ConcurrentHashMap<>();
 
   static {
