@@ -92,6 +92,17 @@ public class InputFormatConfig {
     return VENDED_STORAGE_CREDENTIALS + "." + tableName;
   }
 
+  /**
+   * Set by HS2 per table when split generation should reload the table from the REST catalog and
+   * plan it server-side. Keyed per table because the REST server decides the planning mode per table
+   * and split generation reuses one job conf for all tables of a vertex.
+   */
+  public static final String SERVER_SIDE_SCAN_PLANNING_PREFIX = "iceberg.mr.server-side-scan-planning.";
+
+  public static String serverSideScanPlanningKey(String tableIdentifier) {
+    return SERVER_SIDE_SCAN_PLANNING_PREFIX + tableIdentifier;
+  }
+
   public static final String SORT_ORDER = "sort.order";
   public static final String SORT_COLUMNS = "sort.columns";
   public static final String ZORDER = "ZORDER";

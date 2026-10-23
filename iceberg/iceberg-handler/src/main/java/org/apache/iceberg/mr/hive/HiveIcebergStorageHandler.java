@@ -279,17 +279,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets) {
-    if (!IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
-      return;
-    }
-    try {
-      Table table =
-          IcebergVendedCredentialUtil.getTableWithVendedCredentials(tableDesc.getProperties(), conf);
-      String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
-      IcebergVendedCredentialUtil.propagateToJob(table, catalogName, null, secrets, conf);
-    } catch (NoSuchTableException ex) {
-      // Table may not exist yet for CTAS; credentials will not be available.
-    }
+    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(tableDesc, secrets, conf);
+    IcebergVendedCredentialUtil.propagateVendedCredentialsToJob(tableDesc, secrets, conf);
   }
 
   @Override
@@ -385,7 +376,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
     jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
 
-    String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
+    String catalogName = tableDesc.getProperty(InputFormatConfig.CATALOG_NAME);
     if (catalogName != null) {
       jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
     }
@@ -1738,6 +1729,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       location = table.location();
       schema = table.schema();
       spec = table.spec();
+      RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(
+          configuration, table, props.getProperty(Catalogs.NAME), map);
 
       // For intra-txn read-after-write: if the table has in-memory metadata with no metadata file
       // (i.e. uncommitted changes from a prior statement in the same txn), write the metadata to
