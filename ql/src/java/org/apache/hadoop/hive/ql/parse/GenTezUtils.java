@@ -203,52 +203,64 @@ public class GenTezUtils {
    */
   private static void normalizeMergeJoinReducers(ReduceSinkOperator reduceSink) {
     CommonMergeJoinOperator mergeJoin = findDownstreamMergeJoin(reduceSink, 8);
-    if (mergeJoin == null) {
+    if (mergeJoin == null || !hasDummyStoreParent(mergeJoin)) {
       return;
     }
-    boolean hasDummyStoreSibling = false;
-    for (Operator<?> parent : mergeJoin.getParentOperators()) {
-      if (parent instanceof TezDummyStoreOperator) {
-        hasDummyStoreSibling = true;
-        break;
-      }
-    }
-    if (!hasDummyStoreSibling) {
+    List<ReduceSinkOperator> allRS = findUpstreamRSs(mergeJoin);
+    if (allRS == null || !hasEstimatedReducers(allRS)) {
       return;
     }
-    List<ReduceSinkOperator> allRS = new ArrayList<>();
-    for (Operator<?> parent : mergeJoin.getParentOperators()) {
-      ReduceSinkOperator rsAnc = findUpstreamRS(parent, 8);
-      if (rsAnc == null) {
-        // Normalizing only the inputs that could be found would leave this one with a different
-        // numReducers. Leave every input untouched.
-        return;
-      }
-      allRS.add(rsAnc);
-    }
-    boolean anySiblingHasEstimatedReducers = false;
-    for (ReduceSinkOperator rs : allRS) {
-      if (rs.getConf().getReducerTraits().contains(AUTOPARALLEL)
-          || rs.getConf().getReducerTraits().contains(UNIFORM)) {
-        anySiblingHasEstimatedReducers = true;
-        break;
-      }
-    }
-    if (!anySiblingHasEstimatedReducers) {
-      return;
-    }
-    int maxNR = 0;
-    for (ReduceSinkOperator rs : allRS) {
-      if (rs.getConf().getNumReducers() > maxNR) {
-        maxNR = rs.getConf().getNumReducers();
-      }
-    }
+    int maxNR = maxNumReducers(allRS);
     if (maxNR <= 0) {
       return;
     }
     for (ReduceSinkOperator rs : allRS) {
       rs.getConf().setNumReducers(maxNR);
     }
+  }
+
+  private static boolean hasDummyStoreParent(CommonMergeJoinOperator mergeJoin) {
+    for (Operator<?> parent : mergeJoin.getParentOperators()) {
+      if (parent instanceof TezDummyStoreOperator) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the ReduceSink feeding each parent of the merge join, or null if any parent's lineage
+   * cannot be resolved. Normalizing only the inputs that could be found would leave the unresolved
+   * one with a different numReducers, so the caller must leave every input untouched in that case.
+   */
+  private static List<ReduceSinkOperator> findUpstreamRSs(CommonMergeJoinOperator mergeJoin) {
+    List<ReduceSinkOperator> allRS = new ArrayList<>();
+    for (Operator<?> parent : mergeJoin.getParentOperators()) {
+      ReduceSinkOperator rsAnc = findUpstreamRS(parent, 8);
+      if (rsAnc == null) {
+        return null;
+      }
+      allRS.add(rsAnc);
+    }
+    return allRS;
+  }
+
+  private static boolean hasEstimatedReducers(List<ReduceSinkOperator> allRS) {
+    for (ReduceSinkOperator rs : allRS) {
+      if (rs.getConf().getReducerTraits().contains(AUTOPARALLEL)
+          || rs.getConf().getReducerTraits().contains(UNIFORM)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static int maxNumReducers(List<ReduceSinkOperator> allRS) {
+    int maxNR = 0;
+    for (ReduceSinkOperator rs : allRS) {
+      maxNR = Math.max(maxNR, rs.getConf().getNumReducers());
+    }
+    return maxNR;
   }
 
   private static CommonMergeJoinOperator findDownstreamMergeJoin(
@@ -267,8 +279,8 @@ public class GenTezUtils {
         return null;
       }
       curr = children.get(0);
-      if (curr instanceof CommonMergeJoinOperator) {
-        return (CommonMergeJoinOperator) curr;
+      if (curr instanceof CommonMergeJoinOperator mergeJoin) {
+        return mergeJoin;
       }
       // Another ReduceSink starts a later shuffle stage. A merge join reached only past it belongs
       // to that stage, not to this RS, so stop here instead of attributing it to this RS.
@@ -280,8 +292,8 @@ public class GenTezUtils {
   }
 
   private static ReduceSinkOperator findUpstreamRS(Operator<?> op, int maxDepth) {
-    if (op instanceof ReduceSinkOperator) {
-      return (ReduceSinkOperator) op;
+    if (op instanceof ReduceSinkOperator reduceSink) {
+      return reduceSink;
     }
     Operator<?> curr = op;
     for (int d = 0; d < maxDepth; d++) {
@@ -296,8 +308,8 @@ public class GenTezUtils {
         return null;
       }
       curr = parents.get(0);
-      if (curr instanceof ReduceSinkOperator) {
-        return (ReduceSinkOperator) curr;
+      if (curr instanceof ReduceSinkOperator upstreamRS) {
+        return upstreamRS;
       }
     }
     return null;

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -69,7 +70,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
   private TezDummyStoreOperator dummyStore;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     HiveConf conf = new HiveConfForTest(getClass());
     SessionState.start(conf);
 
@@ -102,7 +103,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() throws IOException {
     SessionState.get().close();
   }
 
@@ -111,7 +112,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
    * Normalize the estimates before the works are combined into the merge-join vertex.
    */
   @Test
-  public void testSiblingReduceSinksFeedingMergeJoinGetSameNumReducers() throws Exception {
+  public void testSiblingReduceSinksFeedingMergeJoinGetSameNumReducers() {
     ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, false);
     ReduceWork rwBigTable = createReduceWorkFor(rsBigTable, groupBy);
 
@@ -124,7 +125,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
   }
 
   @Test
-  public void testSiblingReduceSinksAreNormalizedWhenDummyStoreIsVisitedFirst() throws Exception {
+  public void testSiblingReduceSinksAreNormalizedWhenDummyStoreIsVisitedFirst() {
     ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, false);
     ReduceWork rwSmallTable = createReduceWorkFor(rsSmallTable, dummyStore);
 
@@ -141,7 +142,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
    * ReduceWorks. Their counts and traits must remain untouched by this normalization.
    */
   @Test
-  public void testMergeJoinWithoutDummyStoreSiblingIsNotNormalized() throws Exception {
+  public void testMergeJoinWithoutDummyStoreSiblingIsNotNormalized() {
     CompilationOpContext cCtx = new CompilationOpContext();
     ReduceSinkOperator rsLeft = newReduceSink(cCtx, BIG_TABLE_NUM_REDUCERS);
     rsLeft.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
@@ -173,7 +174,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
    * would break the bucket-to-reducer correspondence the join relies on.
    */
   @Test
-  public void testMergeJoinWithFixedDifferentBucketCountsIsNotNormalized() throws Exception {
+  public void testMergeJoinWithFixedDifferentBucketCountsIsNotNormalized() {
     CompilationOpContext cCtx = new CompilationOpContext();
     ReduceSinkOperator rsTwoBuckets = newReduceSink(cCtx, 2);
     rsTwoBuckets.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.FIXED));
@@ -207,7 +208,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
    * No input may be touched in that case.
    */
   @Test
-  public void testUnresolvableSiblingLineageLeavesAllInputsUntouched() throws Exception {
+  public void testUnresolvableSiblingLineageLeavesAllInputsUntouched() {
     ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, false);
     CompilationOpContext cCtx = new CompilationOpContext();
     ReduceSinkOperator rsLeft = newReduceSink(cCtx, BIG_TABLE_NUM_REDUCERS);
@@ -227,13 +228,13 @@ public class TestGenTezUtilsMergeJoinNumReducers {
       OperatorFactory.makeChild(rightSide, op);
       rightSide = op;
     }
-    TezDummyStoreOperator dummyStore = new TezDummyStoreOperator(cCtx);
-    OperatorFactory.makeChild(rightSide, dummyStore);
+    TezDummyStoreOperator rightDummyStore = new TezDummyStoreOperator(cCtx);
+    OperatorFactory.makeChild(rightSide, rightDummyStore);
 
     CommonMergeJoinOperator mergeJoin = new CommonMergeJoinOperator(cCtx);
     leftSide.setChildOperators(newList(mergeJoin));
-    dummyStore.setChildOperators(newList(mergeJoin));
-    mergeJoin.setParentOperators(newList(leftSide, dummyStore));
+    rightDummyStore.setChildOperators(newList(mergeJoin));
+    mergeJoin.setParentOperators(newList(leftSide, rightDummyStore));
 
     createReduceWorkFor(rsLeft, leftSide);
 
@@ -260,7 +261,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
    * that later stage's inputs or disable the upstream stage's adaptive parallelism.
    */
   @Test
-  public void testMergeJoinBehindAnotherShuffleLeavesLaterInputsUntouched() throws Exception {
+  public void testMergeJoinBehindAnotherShuffleLeavesLaterInputsUntouched() {
     ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, true);
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -277,13 +278,13 @@ public class TestGenTezUtilsMergeJoinNumReducers {
 
     ReduceSinkOperator rsSmall = newReduceSink(cCtx, SMALL_TABLE_NUM_REDUCERS);
     rsSmall.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
-    TezDummyStoreOperator dummyStore = new TezDummyStoreOperator(cCtx);
-    OperatorFactory.makeChild(rsSmall, dummyStore);
+    TezDummyStoreOperator smallDummyStore = new TezDummyStoreOperator(cCtx);
+    OperatorFactory.makeChild(rsSmall, smallDummyStore);
 
     CommonMergeJoinOperator mergeJoin = new CommonMergeJoinOperator(cCtx);
     midGroupBy.setChildOperators(newList(mergeJoin));
-    dummyStore.setChildOperators(newList(mergeJoin));
-    mergeJoin.setParentOperators(newList(midGroupBy, dummyStore));
+    smallDummyStore.setChildOperators(newList(mergeJoin));
+    mergeJoin.setParentOperators(newList(midGroupBy, smallDummyStore));
 
     ReduceWork rwUpstream = createReduceWorkFor(rsUpstream, upstreamGroupBy);
 
@@ -296,7 +297,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
   }
 
   @Test
-  public void testMergeJoinPreservesUniformHashingWithoutAutoParallelism() throws Exception {
+  public void testMergeJoinPreservesUniformHashingWithoutAutoParallelism() {
     ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, false);
     EnumSet<ReduceSinkDesc.ReducerTraits> traits =
         EnumSet.of(ReduceSinkDesc.ReducerTraits.UNIFORM, ReduceSinkDesc.ReducerTraits.AUTOPARALLEL);
@@ -321,7 +322,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
   }
 
   @Test
-  public void testMergeJoinPreservesAdaptiveParallelism() throws Exception {
+  public void testMergeJoinPreservesAdaptiveParallelism() {
     ctx.conf.setBoolVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM, true);
     ctx.conf.setFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR, 0.25f);
     ctx.conf.setFloatVar(HiveConf.ConfVars.TEZ_MAX_PARTITION_FACTOR, 2.0f);
@@ -356,7 +357,7 @@ public class TestGenTezUtilsMergeJoinNumReducers {
     return op;
   }
 
-  private ReduceWork createReduceWorkFor(ReduceSinkOperator rs, Operator<?> root) throws Exception {
+  private ReduceWork createReduceWorkFor(ReduceSinkOperator rs, Operator<?> root) {
     MapWork preceedingWork = new MapWork("Map for " + rs);
     tezWork.add(preceedingWork);
     ctx.preceedingWork = preceedingWork;
