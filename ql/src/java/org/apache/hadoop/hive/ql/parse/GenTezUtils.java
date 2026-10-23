@@ -206,8 +206,8 @@ public class GenTezUtils {
     if (mergeJoin == null || !hasDummyStoreParent(mergeJoin)) {
       return;
     }
-    List<ReduceSinkOperator> allRS = findUpstreamRSs(mergeJoin);
-    if (allRS == null || !hasEstimatedReducers(allRS)) {
+    List<ReduceSinkOperator> allRS = findUpstreamRSs(mergeJoin).orElse(Collections.emptyList());
+    if (allRS.isEmpty() || !hasEstimatedReducers(allRS)) {
       return;
     }
     int maxNR = maxNumReducers(allRS);
@@ -229,20 +229,21 @@ public class GenTezUtils {
   }
 
   /**
-   * Returns the ReduceSink feeding each parent of the merge join, or null if any parent's lineage
-   * cannot be resolved. Normalizing only the inputs that could be found would leave the unresolved
-   * one with a different numReducers, so the caller must leave every input untouched in that case.
+   * Returns the ReduceSink feeding each parent of the merge join, or empty if the lineage of any
+   * parent cannot be resolved. Normalizing only the inputs that could be found would leave the
+   * unresolved one with a different numReducers, so the caller must leave every input untouched.
    */
-  private static List<ReduceSinkOperator> findUpstreamRSs(CommonMergeJoinOperator mergeJoin) {
+  private static Optional<List<ReduceSinkOperator>> findUpstreamRSs(
+      CommonMergeJoinOperator mergeJoin) {
     List<ReduceSinkOperator> allRS = new ArrayList<>();
     for (Operator<?> parent : mergeJoin.getParentOperators()) {
       ReduceSinkOperator rsAnc = findUpstreamRS(parent, 8);
       if (rsAnc == null) {
-        return null;
+        return Optional.empty();
       }
       allRS.add(rsAnc);
     }
-    return allRS;
+    return Optional.of(allRS);
   }
 
   private static boolean hasEstimatedReducers(List<ReduceSinkOperator> allRS) {
