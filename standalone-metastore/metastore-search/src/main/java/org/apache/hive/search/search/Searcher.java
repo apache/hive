@@ -91,16 +91,7 @@ public final class Searcher implements AutoCloseable {
     int size = request.limit() > 0 ? request.limit() : searchConfig.getDefaultLimit();
     Query query =
         switch (request.body()) {
-          case MatchQuery match -> {
-            Query matchQuery = compileMatchQuery(match.resolve(mapping));
-            if (filter == null) {
-              yield matchQuery;
-            }
-            yield new BooleanQuery.Builder()
-                .add(matchQuery, BooleanClause.Occur.MUST)
-                .add(filter, BooleanClause.Occur.FILTER)
-                .build();
-          }
+          case MatchQuery match -> compileMatchQuery(match.resolve(mapping), filter);
           case SemanticQuery semantic -> compileSemanticQuery(semantic.resolve(mapping), size, filter);
           case HybridQuery hybrid -> compileFusionQuery(hybrid.resolve(mapping), size, filter);
         };
@@ -137,7 +128,7 @@ public final class Searcher implements AutoCloseable {
   private Query compileFusionQuery(HybridQuery query, int semanticK, Query filter)
       throws SearchException {
     Query matchQuery = new BayesianScoreQuery(
-        compileMatchQuery(query.toMatchQuery().resolve(mapping)),
+        compileMatchQuery(query.toMatchQuery().resolve(mapping), filter),
         parameters.alpha(), parameters.beta(), parameters.baseRate());
     Query semanticQuery = compileSemanticQuery(query.toSemanticQuery().resolve(mapping), semanticK, filter);
     float semanticWeight = query.semanticWeight(searchConfig);
@@ -163,7 +154,7 @@ public final class Searcher implements AutoCloseable {
         MetastoreTableMapper.FIELD_DB + TableDocument.FILTER_SUFFIX, databaseName));
   }
 
-  private Query compileMatchQuery(MatchQuery match)
+  private Query compileMatchQuery(MatchQuery match, Query filter)
       throws SearchException {
     if (StringUtils.isNotEmpty(match.field())) {
       return booleanShould(lexicalClausesForField(match.field(), match.queryText(), 1.0f),
@@ -181,7 +172,14 @@ public final class Searcher implements AutoCloseable {
     if (!added) {
       throw new SearchException("No lexically searchable table fields are configured");
     }
-    return builder.build();
+    Query searchQuery = builder.build();
+    if (filter != null) {
+      return new BooleanQuery.Builder()
+          .add(searchQuery, BooleanClause.Occur.MUST)
+          .add(filter, BooleanClause.Occur.FILTER)
+          .build();
+    }
+    return searchQuery;
   }
 
   private Query booleanShould(List<Query> clauses, String ifEmptyMessage) throws SearchException {

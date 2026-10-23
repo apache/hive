@@ -29,8 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
@@ -42,7 +40,6 @@ import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.config.IndexOptions;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +55,7 @@ public class MetastoreEventHandler implements Closeable {
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final List<MetastoreEventListener> listeners = Collections.synchronizedList(new ArrayList<>());
   private final IndexOptions indexConfig;
-  private final IMetaStoreClient client;
+  private final MetastoreClientProvider clientProvider;
   private final MessageDeserializer deserializer;
   private Thread eventPoller;
   private long lastEventId;
@@ -67,22 +64,11 @@ public class MetastoreEventHandler implements Closeable {
   private int consecutiveBatchFailures;
   private long failedBatchStartId = -1;
 
-  MetastoreEventHandler(Configuration configuration) throws TException {
-    this(configuration, RetryingMetaStoreClient.getProxy(configuration, true));
-  }
-
-  /** Package-private for unit tests with a stub {@link IMetaStoreClient}. */
-  MetastoreEventHandler(Configuration configuration, IMetaStoreClient client) {
+  MetastoreEventHandler(Configuration configuration, MetastoreClientProvider clientProvider) {
     Configuration conf = new Configuration(Objects.requireNonNull(configuration));
     this.indexConfig = new IndexOptions(conf);
-    this.client = Objects.requireNonNull(client);
+    this.clientProvider = Objects.requireNonNull(clientProvider);
     this.deserializer = MessageFactory.getDefaultInstance(conf).getDeserializer();
-  }
-
-  public static MetastoreEventHandler of(Configuration conf, MetastoreEventListener... listeners)
-      throws TException {
-    MetastoreEventHandler catalogService = new MetastoreEventHandler(conf);
-    return catalogService.addListeners(listeners);
   }
 
   public MetastoreEventHandler addListeners(MetastoreEventListener... listeners) {
@@ -137,19 +123,20 @@ public class MetastoreEventHandler implements Closeable {
     } catch (InterruptedException ignored) {
       // ignore
     }
-    if (client != null) {
-      client.close();
-    }
   }
 
   public int getNextMetastoreEvents(int eventCount) throws IndexNotHealthyException {
     try {
       NotificationEventRequest request = new NotificationEventRequest(lastEventId);
       request.setMaxEvents(eventCount);
-      NotificationEventResponse resp = client.getNextNotification(request, true, null);
-      if (resp == null || resp.getEvents() == null || resp.getEvents().isEmpty()) {
-        LOG.debug("No event found since the last event id: {}", lastEventId);
-        return 0;
+      final NotificationEventResponse resp;
+      try (MetastoreClientProvider.MetastoreClientBundle clientBundle =
+               clientProvider.getMetastoreClient(indexConfig.configuration())) {
+        resp = clientBundle.client().getNextNotification(request, true, null);
+        if (resp == null || resp.getEvents() == null || resp.getEvents().isEmpty()) {
+          LOG.debug("No event found since the last event id: {}", lastEventId);
+          return 0;
+        }
       }
 
       List<NotificationEvent> events = resp.getEvents();

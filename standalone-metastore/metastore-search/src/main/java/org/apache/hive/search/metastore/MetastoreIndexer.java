@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -40,38 +41,51 @@ import org.slf4j.LoggerFactory;
 public final class MetastoreIndexer implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreIndexer.class);
 
-  private final IMetaStoreClient client;
+  private final MetastoreClientProvider clientProvider;
   private final long lastEventId;
   private final Indexer indexer;
   private final MetastoreCluster cluster;
   private final MetastoreEventHandler handler;
   private final IndexManager indexManager;
   private final FlushIndexListener flushIndexListener;
-  private final boolean shareBootstrapFetchClient;
+  private final IMetaStoreClient client;
 
-  public MetastoreIndexer(Configuration configuration, IndexManager indexManager, Indexer indexer)
+  public static MetastoreIndexer getMetastoreIndexer(Configuration configuration,
+      IndexManager indexManager, Indexer indexer, MetastoreClientProvider clientProvider)
       throws Exception {
-    this(configuration, indexManager, indexer,
-        RetryingMetaStoreClient.getProxy(configuration, true), false);
+    if (clientProvider == null) {
+      IMetaStoreClient client = RetryingMetaStoreClient.getProxy(configuration, true);
+      Thread currentThread = Thread.currentThread();
+      clientProvider = conf -> {
+        if (currentThread == Thread.currentThread()) {
+          return new MetastoreClientProvider.MetastoreClientBundle(client, false);
+        }
+        return new MetastoreClientProvider.MetastoreClientBundle(RetryingMetaStoreClient.getProxy(conf, true), true);
+      };
+    }
+    return new MetastoreIndexer(configuration, indexManager, indexer, clientProvider);
   }
 
-  MetastoreIndexer(Configuration configuration, IndexManager indexManager, Indexer indexer,
-      IMetaStoreClient client) throws Exception {
-    this(configuration, indexManager, indexer, client, true);
-  }
-
-  MetastoreIndexer(Configuration configuration, IndexManager indexManager, Indexer indexer,
-      IMetaStoreClient client, boolean shareBootstrapFetchClient) throws Exception {
-    this.client = client;
-    this.shareBootstrapFetchClient = shareBootstrapFetchClient;
-    this.indexer = indexer;
-    this.indexManager = indexManager;
-    this.flushIndexListener = new FlushIndexListener(configuration);
-    this.handler = new MetastoreEventHandler(configuration, client);
-    this.handler.addListeners(flushIndexListener, indexManager);
-    this.cluster = new MetastoreCluster(configuration, flushIndexListener);
-    this.lastEventId = initialize();
-    this.indexManager.setNid(lastEventId);
+  private MetastoreIndexer(Configuration configuration,
+                           IndexManager indexManager,
+                           Indexer indexer,
+                           MetastoreClientProvider clientProvider) throws Exception {
+    try {
+      this.clientProvider = clientProvider;
+      this.client = clientProvider.getMetastoreClient(configuration).client();
+      this.indexer = indexer;
+      this.indexManager = indexManager;
+      this.flushIndexListener = new FlushIndexListener(configuration);
+      this.handler = new MetastoreEventHandler(configuration, clientProvider);
+      this.handler.addListeners(flushIndexListener, indexManager);
+      this.cluster = new MetastoreCluster(configuration, flushIndexListener);
+      this.lastEventId = initialize();
+      this.indexManager.setNid(lastEventId);
+    } catch (Exception e) {
+      LOG.error("Failed to initialize the MetastoreIndexer", e);
+      close();
+      throw e;
+    }
   }
 
   private boolean rebuildIndex() throws Exception {
@@ -143,14 +157,13 @@ public final class MetastoreIndexer implements Closeable {
     new BootstrapIndexer(
         indexManager,
         indexer,
-        client,
-        shareBootstrapFetchClient).run(notificationId);
+        clientProvider).run(notificationId);
     return notificationId;
   }
 
   public void start() throws Exception {
-    handler.start(lastEventId);
     flushIndexListener.start(lastEventId);
+    handler.start(lastEventId);
   }
 
   /** Package-private for integration tests. */
@@ -194,7 +207,7 @@ public final class MetastoreIndexer implements Closeable {
         continue;
       }
       long notificationId = manifest.lastEventId();
-      if (notificationId > 0 && canCatchUp(notificationId)) {
+      if (notificationId >= 0 && canCatchUp(notificationId)) {
         if (indexManager.restoreBackup()) {
           return notificationId;
         }
@@ -208,10 +221,8 @@ public final class MetastoreIndexer implements Closeable {
   @Override
   public void close() throws IOException {
     try {
-      cluster.close();
-      handler.close();
+      IOUtils.closeQuietly(cluster, handler, flushIndexListener);
     } finally {
-      flushIndexListener.close();
       client.close();
     }
   }
@@ -219,7 +230,7 @@ public final class MetastoreIndexer implements Closeable {
   private class FlushIndexListener
       implements MetastoreEventListener,
       LeaderElection.LeadershipStateListener,
-      AutoCloseable {
+      Closeable {
     private volatile long eventId;
     private volatile long lastCommittedEventId;
     private volatile boolean isLeader;
@@ -266,7 +277,7 @@ public final class MetastoreIndexer implements Closeable {
           }
         }
       });
-      commitTask.setName("Index-Commit");
+      commitTask.setName("Index-Committer");
       commitTask.setDaemon(true);
       return commitTask;
     }
@@ -292,7 +303,7 @@ public final class MetastoreIndexer implements Closeable {
         }
       });
       replicateTask.setDaemon(true);
-      replicateTask.setName("Index-Replica");
+      replicateTask.setName("Index-Replicator");
       return replicateTask;
     }
 

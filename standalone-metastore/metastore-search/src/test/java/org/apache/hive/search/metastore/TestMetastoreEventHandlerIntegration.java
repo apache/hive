@@ -78,7 +78,8 @@ public class TestMetastoreEventHandlerIntegration {
 
     try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
       AtomicReference<MetastoreEventListener.IndexTask> lastTask = new AtomicReference<>();
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf, client);
+      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
+          configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false));
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
@@ -138,7 +139,8 @@ public class TestMetastoreEventHandlerIntegration {
 
     try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
       AtomicReference<MetastoreEventListener.IndexTask> lastTask = new AtomicReference<>();
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf, client);
+      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
+          configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false));
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
@@ -194,7 +196,8 @@ public class TestMetastoreEventHandlerIntegration {
         .thenReturn(emptyResponse());
 
     try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf, client);
+      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
+          configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false));
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
