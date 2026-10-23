@@ -21,8 +21,6 @@ package org.apache.iceberg.hive;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -32,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
@@ -271,12 +270,7 @@ public class MetastoreLock implements HiveLock {
   private LockInfo createLock() throws LockException {
     LockInfo lockInfo = new LockInfo();
 
-    String hostName;
-    try {
-      hostName = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException uhe) {
-      throw new LockException(uhe, "Error generating host name");
-    }
+    String hostName = ServerUtils.hostname();
 
     LockComponent lockComponent =
             new LockComponent(LockType.EXCL_WRITE, LockLevel.TABLE, databaseName);
