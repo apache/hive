@@ -117,17 +117,21 @@ public class TestHiveSemiJoinRule {
     RelBuilder builder = buildJoinPlan(fixture, JoinRelType.INNER);
     RelNode plan = builder.project(builder.field("t2id")).build();
 
-    String expectedPrePlan = "HiveProject(t2id=[$1])\n"
-        + "  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])\n"
-        + "    HiveAggregate(group=[{0}])\n"
-        + "      LogicalTableScan(table=[[t1]])\n"
-        + "    LogicalTableScan(table=[[t2]])\n";
+    String expectedPrePlan = """
+        HiveProject(t2id=[$1])
+          HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveAggregate(group=[{0}])
+              LogicalTableScan(table=[[t1]])
+            LogicalTableScan(table=[[t2]])
+        """;
 
-    String expectedPostPlan = "HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])\n"
-        + "  HiveProject(t2id=[$0])\n"
-        + "    LogicalTableScan(table=[[t2]])\n"
-        + "  HiveProject(t1id=[$0])\n"
-        + "    LogicalTableScan(table=[[t1]])\n";
+    String expectedPostPlan = """
+        HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+          HiveProject(t2id=[$0])
+            LogicalTableScan(table=[[t2]])
+          HiveProject(t1id=[$0])
+            LogicalTableScan(table=[[t1]])
+        """;
 
     assertPlans(fixture.getPlanner(), plan, expectedPrePlan, expectedPostPlan);
   }
