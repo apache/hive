@@ -655,8 +655,8 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
       // raw allocations that cleanup can safely deallocate.
       for (Part part : parts) {
         MemoryBuffer fresh = part.buffer;
-        MemoryBuffer[] pair = new MemoryBuffer[] {fresh};
-        DiskRange[] range = new DiskRange[] {part.range};
+        MemoryBuffer[] pair = {fresh};
+        DiskRange[] range = {part.range};
         lowLevelCache.putFileData(fileKey, range, pair, 0, Priority.NORMAL, counters, cacheTag);
         if (pair[0] != fresh) {
           // The cache kept its own buffer (locked for us) and unlocked ours without freeing it.

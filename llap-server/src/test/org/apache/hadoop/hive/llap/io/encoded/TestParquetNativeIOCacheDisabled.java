@@ -37,7 +37,7 @@ import org.junit.Test;
 public class TestParquetNativeIOCacheDisabled {
 
   @BeforeClass
-  public static void setUpClass() throws Exception {
+  public static void setUpClass() {
     HiveConf daemonConf = new HiveConf();
     HiveConf.setVar(daemonConf, ConfVars.LLAP_IO_MEMORY_MODE, "none");
     HiveConf.setBoolVar(daemonConf, ConfVars.LLAP_IO_PARQUET_NATIVE_ENABLED, true);

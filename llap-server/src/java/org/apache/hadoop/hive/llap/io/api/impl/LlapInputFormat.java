@@ -161,7 +161,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
 
   /** Only called when {@link #canWrapToRows} held, so the cast is safe. */
   private RecordReader<NullWritable, VectorizedRowBatch> wrapToRows(
-      LlapRecordReader rr, List<Integer> includedCols, InputSplit split) throws IOException {
+      LlapRecordReader rr, List<Integer> includedCols, InputSplit split) {
     LlapIoImpl.LOG.info("Using batch-to-row converter for split: " + split);
     return bogusCast(((BatchToRowInputFormat) sourceInputFormat).getWrapper(
         rr, rr.getVectorizedRowBatchCtx(), includedCols));

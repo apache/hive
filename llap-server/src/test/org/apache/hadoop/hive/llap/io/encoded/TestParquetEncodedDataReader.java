@@ -354,7 +354,8 @@ public class TestParquetEncodedDataReader {
     JobConf probe = new JobConf(job);
     probe.unset(new Path(Utilities.getPlanPath(job), Utilities.MAP_PLAN_NAME).toUri().getPath());
     assertNotNull("the task thread's work map should hold the plan", Utilities.getMapWork(probe));
-    assertNull("the IO thread's work map should hold no plan", ioThread.submit(() -> Utilities.getMapWork(probe)).get());
+    assertNull("the IO thread's work map should hold no plan",
+        ioThread.submit(() -> Utilities.getMapWork(probe)).get());
   }
 
   /** Whole file, every column: all rows arrive, in DEFAULT_SIZE batches, with decimals as Decimal64. */
@@ -1258,7 +1259,7 @@ public class TestParquetEncodedDataReader {
   }
 
   /** Runs the producer's split-admission decision; null means the split was declined. */
-  private ReadPipeline readPipelineFor(JobConf job) throws Exception {
+  private ReadPipeline readPipelineFor(JobConf job) {
     ParquetColumnVectorProducer producer =
         new ParquetColumnVectorProducer(ledger, ledger, daemonConf, CACHE_METRICS, IO_METRICS);
     return producer.createReadPipeline(new CapturingConsumer(), wholeFile(),
@@ -1271,7 +1272,7 @@ public class TestParquetEncodedDataReader {
    * {@link VectorizedRowBatchCtx#init} overloads hardcode an empty needed-virtual-column array, so
    * the ctx {@link #mapWorkFor} produces cannot express one.
    */
-  private static JobConf withNeededVirtualColumn(JobConf job, VirtualColumn vc) throws Exception {
+  private static JobConf withNeededVirtualColumn(JobConf job, VirtualColumn vc) {
     VectorizedRowBatchCtx dataOnly = Utilities.getMapWork(job).getVectorizedRowBatchCtx();
     String[] names = ArrayUtils.add(dataOnly.getRowColumnNames(), vc.getName());
     TypeInfo[] types = ArrayUtils.add(dataOnly.getRowColumnTypeInfos(), vc.getTypeInfo());

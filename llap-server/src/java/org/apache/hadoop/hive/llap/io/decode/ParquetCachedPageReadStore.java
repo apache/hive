@@ -302,19 +302,6 @@ class ParquetCachedPageReadStore implements PageReadStore {
     return to;
   }
 
-  /**
-   * Carries a page's checksum onto the decompressed copy of it, which is a new object and would
-   * otherwise report no checksum at all. Upstream's chunk reader does this at each of its three
-   * decompression sites, and the page parity test compares {@code getCrc()}, so a page that lost it
-   * here would read back differently from the same page off a file.
-   */
-  private static <T extends Page> T withCrc(Page from, T to) {
-    if (from.getCrc().isPresent()) {
-      to.setCrc(from.getCrc().getAsInt());
-    }
-    return to;
-  }
-
   @Override
   public long getRowCount() {
     return rowCount;
@@ -402,6 +389,19 @@ class ParquetCachedPageReadStore implements PageReadStore {
           compressedDictionaryPage.getUncompressedSize(), "dictionary page");
       return withCrc(compressedDictionaryPage, new DictionaryPage(bytes,
           compressedDictionaryPage.getDictionarySize(), compressedDictionaryPage.getEncoding()));
+    }
+
+    /**
+     * Carries a page's checksum onto the decompressed copy of it, which is a new object and would
+     * otherwise report no checksum at all. Upstream's chunk reader does this at each of its three
+     * decompression sites, and the page parity test compares {@code getCrc()}, so a page that lost it
+     * here would read back differently from the same page off a file.
+     */
+    private static <T extends Page> T withCrc(Page from, T to) {
+      if (from.getCrc().isPresent()) {
+        to.setCrc(from.getCrc().getAsInt());
+      }
+      return to;
     }
 
     private BytesInput decompress(BytesInput bytes, int uncompressedSize, String what) {
