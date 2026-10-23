@@ -79,12 +79,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_llap_n0
 PREHOOK: query: CREATE TABLE parquet_llap_v2_n0(t tinyint, i int, s string, d double) STORED AS PARQUET
-TBLPROPERTIES ('parquet.compression'='SNAPPY')
+TBLPROPERTIES ('parquet.compression'='LZ4_RAW')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_llap_v2_n0
 POSTHOOK: query: CREATE TABLE parquet_llap_v2_n0(t tinyint, i int, s string, d double) STORED AS PARQUET
-TBLPROPERTIES ('parquet.compression'='SNAPPY')
+TBLPROPERTIES ('parquet.compression'='LZ4_RAW')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_llap_v2_n0
@@ -358,7 +358,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_llap_v2_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 17777
+   HDFS_BYTES_READ: 18146
    HDFS_BYTES_WRITTEN: 132
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -380,8 +380,8 @@ Stage-1 HIVE COUNTERS:
    TOTAL_TABLE_ROWS_WRITTEN: 0
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 24576
-   ALLOCATED_USED_BYTES: 17077
-   CACHE_MISS_BYTES: 17077
+   ALLOCATED_USED_BYTES: 17446
+   CACHE_MISS_BYTES: 17446
    METADATA_CACHE_MISS: 1
    NUM_DECODED_BATCHES: 1
    NUM_VECTOR_BATCHES: 3
@@ -419,7 +419,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_TS_0: 2098
    TOTAL_TABLE_ROWS_WRITTEN: 0
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 17077
+   CACHE_HIT_BYTES: 17446
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 1
    NUM_DECODED_BATCHES: 1

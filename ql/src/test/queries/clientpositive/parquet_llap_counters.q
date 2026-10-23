@@ -41,7 +41,7 @@ CREATE TABLE parquet_llap_n0(t tinyint,
 STORED AS PARQUET;
 
 CREATE TABLE parquet_llap_v2_n0(t tinyint, i int, s string, d double) STORED AS PARQUET
-TBLPROPERTIES ('parquet.compression'='SNAPPY');
+TBLPROPERTIES ('parquet.compression'='LZ4_RAW');
 
 -- order by, so this lands as a single file and the byte counters below are the same every run.
 insert overwrite table parquet_llap_n0 select t, si, i, b, f, d, bo, s, cast(ts as date) as da,
@@ -50,7 +50,9 @@ order by t, si, i, b, f, d, bo, s, da, `dec`;
 
 -- The same columns written with data pages V2, whose headers carry the level lengths outside the
 -- compressed body: a separate branch of the page parsing the native reader does over the cache.
--- Snappy, so the cached pages go through decompression rather than being handed through as they are.
+-- Compressed, so the cached pages go through decompression rather than being handed through as they
+-- are. LZ4_RAW rather than Snappy: it compresses in pure Java, so the bytes, and the counters below,
+-- are the same on every platform, while native Snappy hashes differently on ARM and on x86.
 set parquet.writer.version=v2;
 insert overwrite table parquet_llap_v2_n0 select t, i, s, d from parquet_llap_staging_n0 order by t, i, s, d;
 set parquet.writer.version=v1;
