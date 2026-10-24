@@ -17,7 +17,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: (ws_warehouse_sk is not null and ws_ship_mode_sk is not null and ws_web_site_sk is not null and ws_ship_date_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_99_container, bigKeyColName:ws_ship_date_sk, smallTablePos:1, keyRatio:0.18438885128604865
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_99_container, bigKeyColName:ws_ship_date_sk, smallTablePos:1, keyRatio:0.18874868559411145
                   Statistics: Num rows: 21600036511 Data size: 863828698536 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ws_warehouse_sk is not null and ws_ship_mode_sk is not null and ws_web_site_sk is not null and ws_ship_date_sk is not null) (type: boolean)

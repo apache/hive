@@ -18,7 +18,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_returns
                   filterExpr: sr_cdemo_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:sr_cdemo_sk, smallTablePos:1, keyRatio:2.536782067417032E-6
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:sr_cdemo_sk, smallTablePos:1, keyRatio:3.165346123830631E-4
                   Statistics: Num rows: 8634166995 Data size: 66673356440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: sr_cdemo_sk is not null (type: boolean)
@@ -87,7 +87,7 @@ STAGE PLANS:
                 TableScan
                   alias: customer
                   filterExpr: (c_current_hdemo_sk is not null and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:c_current_hdemo_sk, smallTablePos:1, keyRatio:2.836375E-4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_117_container, bigKeyColName:c_current_addr_sk, smallTablePos:1, keyRatio:0.0012005495051284623
                   Statistics: Num rows: 80000000 Data size: 24275219040 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c_current_hdemo_sk is not null and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
@@ -151,7 +151,7 @@ STAGE PLANS:
                 TableScan
                   alias: household_demographics
                   filterExpr: hd_income_band_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_118_container, bigKeyColName:hd_income_band_sk, smallTablePos:1, keyRatio:0.3001388888888889
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_118_container, bigKeyColName:hd_income_band_sk, smallTablePos:1, keyRatio:0.3
                   Statistics: Num rows: 7200 Data size: 115200 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: hd_income_band_sk is not null (type: boolean)

@@ -42,7 +42,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: (ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_customer_sk is not null and ss_store_sk is not null and ss_promo_sk is not null and ss_item_sk BETWEEN DynamicValue(RS_58_catalog_sales_cs_item_sk_min) AND DynamicValue(RS_58_catalog_sales_cs_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_58_catalog_sales_cs_item_sk_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_993_container, bigKeyColName:ss_item_sk, smallTablePos:1, keyRatio:1.8543009129597497E-9
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_993_container, bigKeyColName:ss_item_sk, smallTablePos:1, keyRatio:0.018186147186147188
                   Statistics: Num rows: 82510879939 Data size: 32917667058984 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_customer_sk is not null and ss_store_sk is not null and ss_promo_sk is not null and ss_item_sk BETWEEN DynamicValue(RS_58_catalog_sales_cs_item_sk_min) AND DynamicValue(RS_58_catalog_sales_cs_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_58_catalog_sales_cs_item_sk_bloom_filter))) (type: boolean)
@@ -364,7 +364,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: (ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_customer_sk is not null and ss_store_sk is not null and ss_promo_sk is not null and ss_item_sk BETWEEN DynamicValue(RS_156_catalog_sales_cs_item_sk_min) AND DynamicValue(RS_156_catalog_sales_cs_item_sk_max) and ss_item_sk BETWEEN DynamicValue(RS_196_item_i_item_sk_min) AND DynamicValue(RS_196_item_i_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_156_catalog_sales_cs_item_sk_bloom_filter)) and in_bloom_filter(ss_item_sk, DynamicValue(RS_196_item_i_item_sk_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_1008_container, bigKeyColName:ss_item_sk, smallTablePos:1, keyRatio:1.8543009129597497E-9
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_1008_container, bigKeyColName:ss_item_sk, smallTablePos:1, keyRatio:0.018186147186147188
                   Statistics: Num rows: 82510879939 Data size: 32917667058984 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_customer_sk is not null and ss_store_sk is not null and ss_promo_sk is not null and ss_item_sk BETWEEN DynamicValue(RS_196_item_i_item_sk_min) AND DynamicValue(RS_196_item_i_item_sk_max) and ss_item_sk BETWEEN DynamicValue(RS_156_catalog_sales_cs_item_sk_min) AND DynamicValue(RS_156_catalog_sales_cs_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_196_item_i_item_sk_bloom_filter)) and in_bloom_filter(ss_item_sk, DynamicValue(RS_156_catalog_sales_cs_item_sk_bloom_filter))) (type: boolean)

@@ -752,7 +752,7 @@ STAGE PLANS:
                 TableScan
                   alias: tab_part_n11
                   filterExpr: (key > 2) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.202
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.3333333333333333
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -1304,7 +1304,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: key is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.6322314049586777
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:key, smallTablePos:0, keyRatio:1.0
                   Statistics: Num rows: 242 Data size: 968 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1934,7 +1934,7 @@ STAGE PLANS:
                 TableScan
                   alias: big
                   filterExpr: i is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:i, smallTablePos:0, keyRatio:1.1
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:i, smallTablePos:0, keyRatio:3.0
                   Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i is not null (type: boolean)
@@ -2398,7 +2398,7 @@ STAGE PLANS:
                 TableScan
                   alias: my_dim
                   filterExpr: ((filter_col) IN ('VAL1', 'VAL2') and join_col is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:join_col, smallTablePos:0, keyRatio:1.0
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:join_col, smallTablePos:0, keyRatio:0.0
                   Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

@@ -19,7 +19,7 @@ STAGE PLANS:
                 TableScan
                   alias: inventory
                   filterExpr: inv_quantity_on_hand BETWEEN 100 AND 500 (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_81_container, bigKeyColName:inv_item_sk, smallTablePos:1, keyRatio:6.143045734361187E-10
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_81_container, bigKeyColName:inv_item_sk, smallTablePos:1, keyRatio:0.0016329217682025598
                   Statistics: Num rows: 1627857000 Data size: 32231551088 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: inv_quantity_on_hand BETWEEN 100 AND 500 (type: boolean)
@@ -120,7 +120,7 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_sales
                   filterExpr: (cs_item_sk BETWEEN DynamicValue(RS_12_item_i_item_sk_min) AND DynamicValue(RS_12_item_i_item_sk_max) and in_bloom_filter(cs_item_sk, DynamicValue(RS_12_item_i_item_sk_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_83_container, bigKeyColName:cs_item_sk, smallTablePos:0, keyRatio:0.001642857105836333
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_83_container, bigKeyColName:cs_item_sk, smallTablePos:0, keyRatio:1.8398268398268398E-4
                   Statistics: Num rows: 43220864887 Data size: 345766919096 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cs_item_sk BETWEEN DynamicValue(RS_12_item_i_item_sk_min) AND DynamicValue(RS_12_item_i_item_sk_max) and in_bloom_filter(cs_item_sk, DynamicValue(RS_12_item_i_item_sk_bloom_filter))) (type: boolean)
