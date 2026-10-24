@@ -260,8 +260,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       LOG.debug("From {}, the file includes are {}", includes, DebugUtils.toString(fileIncludes));
     }
 
-    consumer.setUseDecimal64ColumnVectors(HiveConf.getVar(jobConf,
-      ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64"));
+    consumer.setUseDecimal64ColumnVectors(HiveConf.isDecimal64VectorizationEnabled(jobConf));
     consumer.setFileMetadata(fileMetadata);
     consumer.setSchemaEvolution(evolution);
     isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
@@ -510,11 +509,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    */
   private void ensureOrcReader() throws IOException {
     if (orcReader != null) return;
-    path = split.getPath();
-    if (fileKey instanceof Long && HiveConf.getBoolVar(
-        daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
-      path = HdfsUtils.getFileIdPath(path, (long)fileKey);
-    }
+    path = HdfsUtils.getFileIdPath(split.getPath(), fileKey, daemonConf);
     LlapIoImpl.ORC_LOGGER.trace("Creating reader for {} ({})", path, split.getPath());
     long startTime = counters.startTimeCounter();
     ReaderOptions opts = EncodedOrcFile.readerOptions(jobConf).filesystem(fsSupplier).fileMetadata(fileMetadata);
