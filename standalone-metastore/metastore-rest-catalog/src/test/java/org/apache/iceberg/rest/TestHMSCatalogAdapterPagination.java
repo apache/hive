@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
@@ -62,7 +63,7 @@ class TestHMSCatalogAdapterPagination {
     Mockito.when(nsCatalog.listNamespaces()).thenReturn(fakeNamespaces);
     Mockito.when(nsCatalog.listNamespaces(Mockito.any())).thenReturn(fakeNamespaces);
 
-    adapter = new HMSCatalogAdapter("test", catalog, null, Collections.emptyList());
+    adapter = new HMSCatalogAdapter("test", catalog, null, null, Collections.emptyList());
 
     response = Mockito.mock(HttpServletResponse.class);
     stringWriter = new StringWriter();
@@ -81,7 +82,7 @@ class TestHMSCatalogAdapterPagination {
     // Missing pageSize (should call unpaginated and succeed without NumberFormatException)
     Map<String, String> vars = ImmutableMap.of("pageToken", "0");
     ListNamespacesResponse res =
-        adapter.execute(HTTPMethod.GET, "v1/namespaces", vars, null, response);
+        adapter.execute(HTTPMethod.GET, "v1/namespaces", Set.of(), vars, null, response);
 
     if (res == null) {
       System.err.println("Error output: " + stringWriter);
@@ -95,7 +96,7 @@ class TestHMSCatalogAdapterPagination {
     // Both pageToken and pageSize (should call paginated and slice without errors)
     Map<String, String> vars = ImmutableMap.of("pageToken", "0", "pageSize", "2");
     ListNamespacesResponse res =
-        adapter.execute(HTTPMethod.GET, "v1/namespaces", vars, null, response);
+        adapter.execute(HTTPMethod.GET, "v1/namespaces", Set.of(), vars, null, response);
 
     Assertions.assertNotNull(res, "Response should not be null");
     Assertions.assertEquals(2, res.namespaces().size(), "Should return exactly 2 paginated items");
@@ -106,7 +107,7 @@ class TestHMSCatalogAdapterPagination {
     // pageSize without pageToken
     Map<String, String> vars = ImmutableMap.of("pageSize", "2");
     ListNamespacesResponse res =
-        adapter.execute(HTTPMethod.GET, "v1/namespaces", vars, null, response);
+        adapter.execute(HTTPMethod.GET, "v1/namespaces", Set.of(), vars, null, response);
 
     Assertions.assertNotNull(res, "Response should not be null");
     Assertions.assertEquals(2, res.namespaces().size(), "Should return exactly 2 paginated items");
@@ -117,7 +118,7 @@ class TestHMSCatalogAdapterPagination {
     // Invalid pageSize (should return null and write error to response)
     Map<String, String> vars = ImmutableMap.of("pageSize", "invalid");
     ListNamespacesResponse res =
-        adapter.execute(HTTPMethod.GET, "v1/namespaces", vars, null, response);
+        adapter.execute(HTTPMethod.GET, "v1/namespaces", Set.of(), vars, null, response);
 
     Assertions.assertNull(res, "Response should be null because it encountered an error");
     Assertions.assertTrue(

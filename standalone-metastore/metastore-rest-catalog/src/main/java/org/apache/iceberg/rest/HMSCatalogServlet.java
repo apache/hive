@@ -20,8 +20,11 @@
 package org.apache.iceberg.rest;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -44,7 +47,7 @@ public class HMSCatalogServlet extends HttpServlet {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServlet.class);
   private static final String CONTENT_TYPE = "Content-Type";
   private static final String APPLICATION_JSON = "application/json";
-  
+
   private final HMSCatalogAdapter restCatalogAdapter;
   private final Map<String, String> responseHeaders =
       ImmutableMap.of(CONTENT_TYPE, APPLICATION_JSON);
@@ -79,6 +82,7 @@ public class HMSCatalogServlet extends HttpServlet {
           restCatalogAdapter.execute(
               context.method(),
               context.path(),
+              context.accessDelegationModes(),
               context.queryParams(),
               context.body(),
               response);
@@ -111,6 +115,7 @@ public class HMSCatalogServlet extends HttpServlet {
   public static class ServletRequestContext {
     private HTTPMethod method;
     private String path;
+    private Set<AccessDelegationMode> accessDelegationModes;
     private Map<String, String> queryParams;
     private Object body;
 
@@ -123,10 +128,12 @@ public class HMSCatalogServlet extends HttpServlet {
     private ServletRequestContext(
         HTTPMethod method,
         String path,
+        Set<AccessDelegationMode> accessDelegationModes,
         Map<String, String> queryParams,
         Object body) {
       this.method = method;
       this.path = path;
+      this.accessDelegationModes = accessDelegationModes;
       this.queryParams = queryParams;
       this.body = body;
     }
@@ -152,6 +159,21 @@ public class HMSCatalogServlet extends HttpServlet {
                 .build());
       }
 
+      var accessDelegationModes = Arrays
+          .stream(Optional.ofNullable(request.getHeader("X-Iceberg-Access-Delegation")).orElse("").split(","))
+          .map(String::trim)
+          .filter(header -> !header.isEmpty())
+          .map(header -> switch (header) {
+            case "vended-credentials" -> AccessDelegationMode.VENDED_CREDENTIALS;
+            case "remote-signing" -> AccessDelegationMode.REMOTE_SIGNING;
+            default -> {
+              LOG.warn("Unknown access delegation mode: {}", header);
+              yield null;
+            }
+          })
+          .filter(Objects::nonNull)
+          .collect(Collectors.toUnmodifiableSet());
+
       Route route = routeContext.first();
       Object requestBody = null;
       if (route.requestClass() != null) {
@@ -170,7 +192,7 @@ public class HMSCatalogServlet extends HttpServlet {
           request.getParameterMap().entrySet().stream()
               .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()[0]));
 
-      return new ServletRequestContext(method, path, queryParams, requestBody);
+      return new ServletRequestContext(method, path, accessDelegationModes, queryParams, requestBody);
     }
 
     HTTPMethod method() {
@@ -183,6 +205,13 @@ public class HMSCatalogServlet extends HttpServlet {
      */
     public String path() {
       return path;
+    }
+
+    /**
+     * The requested access delegation modes.
+     */
+    public Set<AccessDelegationMode> accessDelegationModes() {
+      return accessDelegationModes;
     }
 
     /**
