@@ -30,8 +30,11 @@ import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetAllWriteEventInfoRequest;
 import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsRequest;
 import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsResponse;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -60,6 +63,8 @@ import static org.junit.Assert.fail;
 
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.junit.experimental.categories.Category;
+
+import javax.jdo.PersistenceManager;
 
 /**
  * Test the filtering behavior at HMS client and HMS server. The configuration at each test
@@ -199,6 +204,8 @@ public class TestFilterHooks {
   private static String postgres_type = "postgres";
   private static String postgres_url = "jdbc:postgresql://localhost:5432";
 
+  private static final long WRITE_EVENT_TXN_ID_WITH_FILTER = 4242L;
+  private static final long WRITE_EVENT_TXN_ID_NO_FILTER = 4243L;
 
   protected HiveMetaStoreClient createClient(Configuration metaStoreConf) throws Exception {
     try {
@@ -354,7 +361,27 @@ public class TestFilterHooks {
     testFilterForTables(true);
     testFilterForPartition(true);
     testFilterForCompaction();
+    testFilterForWriteEventInfo();
     testFilterForDataConnector();
+  }
+
+  /**
+   * Server-side filtering disabled: write event rows are returned even when the filter hook blocks.
+   * @throws Exception
+   */
+  @Test
+  public void testWriteEventInfoWithoutServerFilter() throws Exception {
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_CLIENT_FILTER_ENABLED, false);
+    DBNAME1 = "db_testWriteEventNoFilter_1";
+    DBNAME2 = "db_testWriteEventNoFilter_2";
+    creatEnv(conf);
+
+    insertWriteEventRow(WRITE_EVENT_TXN_ID_NO_FILTER, DBNAME1, TAB1);
+    GetAllWriteEventInfoRequest req = new GetAllWriteEventInfoRequest();
+    req.setTxnId(WRITE_EVENT_TXN_ID_NO_FILTER);
+    req.setDbName(DBNAME1);
+    req.setTableName(TAB1);
+    assertEquals(1, client.getAllWriteEventInfo(req).size());
   }
 
   /**
@@ -503,6 +530,26 @@ public class TestFilterHooks {
 
   protected void testFilterForCompaction() throws Exception {
     assertEquals(0, client.showCompactions().getCompacts().size());
+  }
+
+  protected void testFilterForWriteEventInfo() throws Exception {
+    insertWriteEventRow(WRITE_EVENT_TXN_ID_WITH_FILTER, DBNAME1, TAB1);
+
+    GetAllWriteEventInfoRequest req = new GetAllWriteEventInfoRequest();
+    req.setTxnId(WRITE_EVENT_TXN_ID_WITH_FILTER);
+    req.setDbName(DBNAME1);
+    req.setTableName(TAB1);
+
+    List<WriteEventInfo> events = client.getAllWriteEventInfo(req);
+    assertEquals("Blocked tables should not appear in write event info", 0, events.size());
+  }
+
+  private void insertWriteEventRow(long txnId, String dbName, String tableName) throws Exception {
+    ObjectStore objectStore = new ObjectStore();
+    objectStore.setConf(conf);
+    PersistenceManager pm = objectStore.getPersistenceManager();
+    pm.makePersistent(new MTxnWriteNotificationLog(
+        txnId, 1L, 1, dbName, tableName, "", "", "", ""));
   }
 
   protected void testFilterForDataConnector() throws Exception {
