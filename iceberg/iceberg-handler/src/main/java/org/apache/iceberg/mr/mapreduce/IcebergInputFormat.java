@@ -58,7 +58,9 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
+import org.apache.iceberg.mr.hive.variant.VariantFilePruner;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types.StructType;
 import org.apache.iceberg.util.SerializationUtil;
@@ -192,13 +194,19 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
     scan = scan.planWith(workerPool);
 
+    VariantFilePruner variantPruner =
+        VariantFilePruner.of(scan.schema(), HiveIcebergInputFormat.readerFilter(conf), scan.isCaseSensitive());
+    if (variantPruner != null) {
+      scan = scan.includeColumnStats(variantPruner.variantColumns());
+    }
+
     boolean allowDataFilesWithinTableLocationOnly =
         conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
             HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.defaultBoolVal);
     Path tableLocation = new Path(conf.get(InputFormatConfig.TABLE_LOCATION));
 
     String[] groupingPartitionColumns = conf.getStrings(InputFormatConfig.GROUPING_PARTITION_COLUMNS);
-    generateInputSplits(scan, table, groupingPartitionColumns, taskGroup -> {
+    generateInputSplits(scan, table, groupingPartitionColumns, variantPruner, taskGroup -> {
       if (applyResidual && model == InputFormatConfig.InMemoryDataModel.HIVE) {
         // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
         checkResiduals(taskGroup);
@@ -227,9 +235,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   }
 
   private static void generateInputSplits(Scan<?, FileScanTask, CombinedScanTask> scan, Table table,
-      String[] groupingPartitionColumns, Consumer<ScanTaskGroup<FileScanTask>> consumer) {
+      String[] groupingPartitionColumns, VariantFilePruner variantPruner,
+      Consumer<ScanTaskGroup<FileScanTask>> consumer) {
     if (groupingPartitionColumns == null) {
-      try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
+      try (CloseableIterable<CombinedScanTask> tasksIterable = planTasks(scan, variantPruner)) {
         tasksIterable.forEach(consumer);
       } catch (IOException e) {
         throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
@@ -237,7 +246,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     } else {
       final StructType groupingKeyType = Partitioning.groupingKeyType(
           table.schema().select(groupingPartitionColumns), table.specs().values());
-      try (CloseableIterable<FileScanTask> taskIterable = scan.planFiles()) {
+      try (CloseableIterable<FileScanTask> taskIterable = planFiles(scan, variantPruner)) {
         final List<FileScanTask> tasks = Lists.newArrayList(taskIterable);
         final List<ScanTaskGroup<FileScanTask>> partitionScanTaskGroups =
             TableScanUtil.planTaskGroups(
@@ -251,6 +260,26 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
       }
     }
+  }
+
+  /**
+   * Plans the files left after variant pruning into tasks with the same split sizing as {@code scan.planTasks()}.
+   */
+  private static CloseableIterable<CombinedScanTask> planTasks(Scan<?, FileScanTask, CombinedScanTask> scan,
+      VariantFilePruner variantPruner) {
+    if (variantPruner == null) {
+      return scan.planTasks();
+    }
+    CloseableIterable<FileScanTask> splitFiles =
+        TableScanUtil.splitFiles(planFiles(scan, variantPruner), scan.targetSplitSize());
+    return TableScanUtil.planTasks(
+        splitFiles, scan.targetSplitSize(), scan.splitLookback(), scan.splitOpenFileCost());
+  }
+
+  private static CloseableIterable<FileScanTask> planFiles(Scan<?, FileScanTask, CombinedScanTask> scan,
+      VariantFilePruner variantPruner) {
+    CloseableIterable<FileScanTask> files = scan.planFiles();
+    return variantPruner == null ? files : CloseableIterable.filter(files, variantPruner::mayMatch);
   }
 
   private static void checkResiduals(ScanTaskGroup<FileScanTask> task) {
