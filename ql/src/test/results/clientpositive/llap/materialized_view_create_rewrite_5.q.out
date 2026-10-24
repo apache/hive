@@ -203,16 +203,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 #### A masked pattern was here ####
-1
-1
-1
-1
-1
-1
 3
 3
 3
 3
+1
+1
+1
+1
+1
+1
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
@@ -401,7 +401,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
-	numFiles            	2                   
+	numFiles            	3                   
 	numRows             	10                  
 	rawDataSize         	0                   
 	totalSize           	#Masked#
@@ -484,14 +484,14 @@ POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Input: default@cmv_mat_view_n6
 #### A masked pattern was here ####
-1
-1
-1
-1
-1
-1
 3
 3
+1
+1
+1
+1
+1
+1
 3
 3
 PREHOOK: query: UPDATE cmv_basetable_2_n3 SET a=2 WHERE a=1
@@ -729,14 +729,14 @@ POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Input: default@cmv_mat_view_n6
 #### A masked pattern was here ####
-2
-2
-2
-2
 3
 3
 3
 3
+2
+2
+2
+2
 PREHOOK: query: DELETE FROM cmv_basetable_2_n3 WHERE a=2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n3

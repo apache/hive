@@ -231,6 +231,7 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select * from `v1_n9`
+order by key, value
 limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@masking_test_subq_n1
@@ -238,6 +239,7 @@ PREHOOK: Input: default@src
 PREHOOK: Input: default@v1_n9
 #### A masked pattern was here ####
 POSTHOOK: query: select * from `v1_n9`
+order by key, value
 limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@masking_test_subq_n1
