@@ -28,6 +28,25 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 
+/**
+ * Default {@link ReaderWithOffsets} adapter used by
+ * {@link SerDeEncodedDataReader} when the source {@link RecordReader} cannot expose
+ * per-row byte offsets into the underlying split. Each {@link #next()} advances the
+ * source reader one row and {@link #getCurrentRow()} returns the last value it wrote,
+ * which the encode loop feeds to
+ * {@link SerDeEncodedDataReader.EncodingWriter#writeOneRow(Writable)}. Because there
+ * is one {@code sourceReader.next(key, value)} call per {@code next()}, the value
+ * produced by the source InputFormat must be a single row's {@link Writable}; a
+ * source that returns a batch-shaped value per {@code next()} (e.g. a vectorized
+ * Parquet reader returning a {@code VectorizedRowBatch}) will silently lose all but
+ * the first row of every batch.
+ *
+ * <p>Also handles table-level header/footer skipping via {@link Utilities#skipHeader}
+ * and {@link FooterBuffer}, and always reports {@link #hasOffsets()} as {@code false}
+ * so that the encode path uses the entire split as a single stripe. Sub-classes such
+ * as {@link LineRrOffsetReader} override the offset accessors when the source reader
+ * can pin file positions.
+ */
 class PassThruOffsetReader implements ReaderWithOffsets {
   protected final RecordReader sourceReader;
   protected final Object key;
