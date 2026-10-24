@@ -38,6 +38,7 @@ public final class ConfigUtils {
   public static final String COMPONENT_METASTORE = "metastore";
   public static final String COMPONENT_LLAP = "llap";
   public static final String COMPONENT_TEZAM = "tezam";
+  public static final String CONFIG_HASH_ANNOTATION = "hive.apache.org/config-hash";
 
   /** Returns the autoscaler component key for a specific LLAP cluster (e.g., "llap-llap0"). */
   public static String llapComponentKey(String llapName) {
