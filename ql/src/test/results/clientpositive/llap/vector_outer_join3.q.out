@@ -4006,7 +4006,7 @@ POSTHOOK: Input: default@small_alltypesorc_a_n1
                               "input vertices:": {
                                 "1": "Reducer 4"
                               },
-                              "Statistics:": "Num rows: 24 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE",
+                              "Statistics:": "Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE",
                               "OperatorId:": "MAPJOIN_70",
                               "children": {
                                 "Group By Operator": {
@@ -4023,7 +4023,7 @@ POSTHOOK: Input: default@small_alltypesorc_a_n1
                                     "vectorProcessingMode:": "HASH",
                                     "projectedOutputColumnNums:": "[0]"
                                   },
-                                  "minReductionHashAggr:": "0.9583333",
+                                  "minReductionHashAggr:": "0.95",
                                   "mode:": "hash",
                                   "outputColumnNames:": [
                                     "_col0"
