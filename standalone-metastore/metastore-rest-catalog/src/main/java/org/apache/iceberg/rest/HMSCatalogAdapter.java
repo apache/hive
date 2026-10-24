@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.rest;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import java.io.Closeable;
@@ -651,17 +652,33 @@ public class HMSCatalogAdapter implements Closeable {
     }
   }
 
-  private static Namespace namespaceFromPathVars(Map<String, String> pathVars) {
-    return RESTUtil.decodeNamespace(pathVars.get("namespace"), "%1F");
+  /**
+   * Decodes a namespace path variable according to RFC 3986 path segment rules, preserving '+'
+   * literals rather than converting them to spaces (as standard form URL-decoding would).
+   */
+  @VisibleForTesting
+  static Namespace namespaceFromPathVars(Map<String, String> pathVars) {
+    return RESTUtil.decodeNamespaceAsPathSegment(
+        pathVars.get("namespace"), RESTUtil.NAMESPACE_SEPARATOR_URLENCODED_UTF_8);
   }
 
-  private static TableIdentifier identFromPathVars(Map<String, String> pathVars) {
+  /**
+   * Decodes table identifier path variables using RFC 3986 path segment decoding so that special
+   * characters (e.g. '+') are preserved.
+   */
+  @VisibleForTesting
+  static TableIdentifier identFromPathVars(Map<String, String> pathVars) {
     return TableIdentifier.of(
-        namespaceFromPathVars(pathVars), RESTUtil.decodeString(pathVars.get("table")));
+        namespaceFromPathVars(pathVars), RESTUtil.decodePathSegment(pathVars.get("table")));
   }
 
-  private static TableIdentifier viewIdentFromPathVars(Map<String, String> pathVars) {
+  /**
+   * Decodes view identifier path variables using RFC 3986 path segment decoding so that special
+   * characters (e.g. '+') are preserved.
+   */
+  @VisibleForTesting
+  static TableIdentifier viewIdentFromPathVars(Map<String, String> pathVars) {
     return TableIdentifier.of(
-        namespaceFromPathVars(pathVars), RESTUtil.decodeString(pathVars.get("view")));
+        namespaceFromPathVars(pathVars), RESTUtil.decodePathSegment(pathVars.get("view")));
   }
 }
