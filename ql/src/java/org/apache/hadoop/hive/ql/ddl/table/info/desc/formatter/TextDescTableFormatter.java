@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
+import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
@@ -427,6 +428,7 @@ class TextDescTableFormatter extends DescTableFormatter {
 
   private void displayAllParameters(Map<String, String> params, StringBuilder tableInfo, boolean escapeUnicode,
       boolean isOutputPadded) {
+    params = MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(params);
     List<String> keys = new ArrayList<>(params.keySet());
     Collections.sort(keys);
     for (String key : keys) {
