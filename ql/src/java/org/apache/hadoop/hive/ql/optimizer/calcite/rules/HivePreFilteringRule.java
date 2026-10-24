@@ -54,6 +54,10 @@ import static org.apache.calcite.rel.rules.ReduceExpressionsRule.FilterReduceExp
  *  of the latter by other rules.
  *  It is a reduction rule cause along with splitting it needs to reduce some of the new conditions to ensure that it
  *  can reach a fix point.
+ *  <p>
+ *  Note: Use in conjunction with {@link HiveRulesRegistry} to avoid applying this rule endlessly,
+ *  leading to stack overflows.
+ *  </p>
  */
 public class HivePreFilteringRule extends ReduceExpressionsRule<ReduceExpressionsRule.Config> {
 
