@@ -11,7 +11,6 @@ set hive.auto.convert.join.noconditionaltask.size=30000;
 set hive.optimize.bucketingsorting=false;
 
 set hive.optimize.ppd=true;
-set hive.optimize.index.filter=true;
 set hive.tez.bucket.pruning=true;
 set hive.fetch.task.conversion=none;
 set hive.support.concurrency=true;

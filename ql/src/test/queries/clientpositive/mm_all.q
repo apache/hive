@@ -299,7 +299,6 @@ drop table skewjoin_mm;
 
 set hive.optimize.skewjoin=false;
 
-set hive.optimize.index.filter=true;
 set hive.auto.convert.join=false;
 CREATE TABLE parquet1_mm(id INT) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only");
 INSERT INTO parquet1_mm VALUES(1), (2);

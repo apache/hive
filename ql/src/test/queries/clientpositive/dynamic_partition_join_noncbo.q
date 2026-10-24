@@ -504,7 +504,6 @@ DROP TABLE t0;
 DROP TABLE t1;
 DROP TABLE t3;
 
-set hive.optimize.index.filter=true;
 set hive.cbo.enable=false;
 
 set hive.auto.convert.sortmerge.join.to.mapjoin=false;

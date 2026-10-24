@@ -172,8 +172,7 @@ public class Optimizer {
 
     if (HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.TEZ_OPTIMIZE_BUCKET_PRUNING)
-        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_PPD)
-        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER)) {
+        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_PPD)) {
       final boolean compatMode =
           HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT);
       transformations.add(new FixedBucketPruningOptimizer(compatMode));
