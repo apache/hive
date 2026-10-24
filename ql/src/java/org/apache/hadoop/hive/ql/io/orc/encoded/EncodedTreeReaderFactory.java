@@ -2315,6 +2315,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     case STRING:
     case DECIMAL:
     case TIMESTAMP:
+    case TIMESTAMP_INSTANT:
     case DATE:
       return getPrimitiveTreeReader(columnIndex, schema, codec, columnEncoding, present, data, dictionary, lengths,
           secondary, context, vectors, useDecimal64ColumnVectors);
@@ -2440,6 +2441,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       return TimestampStreamReader.builder().setColumnIndex(columnIndex).setPresentStream(present)
           .setSecondsStream(data).setNanosStream(secondary).setCompressionCodec(codec).setColumnEncoding(columnEncoding)
           .setVectors(vectors).setContext(context).setIsInstant(false).build();
+    case TIMESTAMP_INSTANT:
+      return TimestampStreamReader.builder().setColumnIndex(columnIndex).setPresentStream(present)
+          .setSecondsStream(data).setNanosStream(secondary).setCompressionCodec(codec).setColumnEncoding(columnEncoding)
+          .setVectors(vectors).setContext(context).setIsInstant(true).build();
     case DATE:
       return DateStreamReader.builder().setColumnIndex(columnIndex).setPresentStream(present).setDataStream(data)
           .setCompressionCodec(codec).setColumnEncoding(columnEncoding).setVectors(vectors).setContext(context).build();
