@@ -1029,14 +1029,14 @@ public class MetaToolObjectStore extends ObjectStore {
       this.exception = exception;
     }
 
-    public Exception getException() {
+    public Throwable getException() {
       return exception;
     }
   }
 
   public DedupColumnsResult dedupColumns(String catalogFilter, String dbFilter, String tableFilter,
-      AtomicReference<String> progress, boolean isDryRun, boolean isVerbose) {
-    return new ColumnDeduplicator(this.createRawStoreBundle(), progress, isDryRun, isVerbose)
+      AtomicReference<String> progress, boolean isDryRun, boolean isVerbose, boolean clearMarker) {
+    return new ColumnDeduplicator(this.createRawStoreBundle(), progress, isDryRun, isVerbose, clearMarker)
         .run(catalogFilter, dbFilter, tableFilter);
   }
 }
