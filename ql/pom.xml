@@ -193,6 +193,11 @@
       <artifactId>kryo5</artifactId>
     </dependency>
     <dependency>
+      <!-- Experimental plan serialization engine (hive.plan.serialization.engine=fory). -->
+      <groupId>org.apache.fory</groupId>
+      <artifactId>fory-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
     </dependency>
@@ -1110,6 +1115,7 @@
                   <include>org.apache.hive:hive-service-rpc</include>
                   <include>com.esotericsoftware.kryo:kryo5</include>
                   <include>org.objenesis:objenesis</include>
+                  <include>org.apache.fory:fory-core</include>
                   <include>org.apache.parquet:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>
                   <include>org.apache.thrift:libfb303</include>

@@ -211,7 +211,6 @@ import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.kryo5.Kryo;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -462,7 +461,6 @@ public final class Utilities {
     }
 
     InputStream in = null;
-    Kryo kryo = SerializationUtilities.borrowKryo();
     try {
       String engine = HiveConf.getVar(conf, ConfVars.HIVE_EXECUTION_ENGINE);
       Path localPath = path;
@@ -492,27 +490,27 @@ public final class Utilities {
 
       if(MAP_PLAN_NAME.equals(name)){
         if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
-          gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
+          gWork = SerializationUtilities.deserializePlanWithEngine(conf, in, MapWork.class);
         } else if(MergeFileMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-          gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
+          gWork = SerializationUtilities.deserializePlanWithEngine(conf, in, MergeFileWork.class);
         } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-          gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
+          gWork = SerializationUtilities.deserializePlanWithEngine(conf, in, ColumnTruncateWork.class);
         } else {
           throw new RuntimeException("unable to determine work from configuration ."
               + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS));
         }
       } else if (REDUCE_PLAN_NAME.equals(name)) {
         if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
-          gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
+          gWork = SerializationUtilities.deserializePlanWithEngine(conf, in, ReduceWork.class);
         } else {
           throw new RuntimeException("unable to determine work from configuration ."
               + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS));
         }
       } else if (name.contains(MERGE_PLAN_NAME)) {
         if (name.startsWith(MAPNAME)) {
-          gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
+          gWork = SerializationUtilities.deserializePlanWithEngine(conf, in, MapWork.class);
         } else if (name.startsWith(REDUCENAME)) {
-          gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
+          gWork = SerializationUtilities.deserializePlanWithEngine(conf, in, ReduceWork.class);
         } else {
           throw new RuntimeException("Unknown work type: " + name);
         }
@@ -530,7 +528,6 @@ public final class Utilities {
       LOG.error(msg, e);
       throw new RuntimeException(msg, e);
     } finally {
-      SerializationUtilities.releaseKryo(kryo);
       IOUtils.closeStream(in);
     }
   }
@@ -578,7 +575,6 @@ public final class Utilities {
   }
 
   private static Path setBaseWork(Configuration conf, BaseWork w, Path hiveScratchDir, String name, boolean useCache) {
-    Kryo kryo = SerializationUtilities.borrowKryo(conf);
     try {
       setPlanPath(conf, hiveScratchDir);
 
@@ -594,7 +590,7 @@ public final class Utilities {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         try {
           out = new DeflaterOutputStream(byteOut, new Deflater(Deflater.BEST_SPEED));
-          SerializationUtilities.serializePlan(kryo, w, out);
+          SerializationUtilities.serializePlanWithEngine(conf, w, out);
           out.close();
           out = null;
         } finally {
@@ -609,7 +605,7 @@ public final class Utilities {
         FileSystem fs = planPath.getFileSystem(conf);
         try {
           out = fs.create(planPath);
-          SerializationUtilities.serializePlan(kryo, w, out);
+          SerializationUtilities.serializePlanWithEngine(conf, w, out);
           out.close();
           out = null;
           long fileLen = fs.getFileStatus(planPath).getLen();
@@ -646,8 +642,6 @@ public final class Utilities {
       String msg = "Error caching " + name;
       LOG.error(msg, e);
       throw new RuntimeException(msg, e);
-    } finally {
-      SerializationUtilities.releaseKryo(kryo);
     }
   }
 
