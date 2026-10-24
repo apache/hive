@@ -519,6 +519,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       try {
         curatorFramework.delete().forPath(zLock.getPath());
       } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
         curatorFramework.delete().forPath(zLock.getPath());
       }
 
@@ -527,12 +528,14 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       try {
         children = curatorFramework.getChildren().forPath(name);
       } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
         children = curatorFramework.getChildren().forPath(name);
       }
       if (children == null || children.isEmpty()) {
         try {
           curatorFramework.delete().forPath(name);
         } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
           curatorFramework.delete().forPath(name);
         }
       }

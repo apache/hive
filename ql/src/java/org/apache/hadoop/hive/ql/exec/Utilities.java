@@ -4846,6 +4846,9 @@ public final class Utilities {
       try {
         cleanFuture.get();
       } catch (InterruptedException | ExecutionException e) {
+        if (e instanceof InterruptedException) {
+          Thread.currentThread().interrupt();
+        }
         executor.shutdownNow();
         if (e.getCause() instanceof IOException) {
           throw (IOException) e.getCause();
