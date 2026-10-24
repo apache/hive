@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import com.google.common.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,8 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
       ReflectiveRelMetadataProvider.reflectiveSource(
           BuiltInMethod.DISTINCT_ROW_COUNT.method, new HiveRelMdDistinctRowCount());
 
-  private HiveRelMdDistinctRowCount() {
+  @VisibleForTesting
+  HiveRelMdDistinctRowCount() {
   }
 
   public Double getDistinctRowCount(HiveTableScan htRel, RelMetadataQuery mq, ImmutableBitSet groupKey,
@@ -61,6 +63,12 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     List<ColStatistics> colStats = htRel.getColStat(projIndxLst);
     Double noDistinctRows = 1.0;
     for (ColStatistics cStat : colStats) {
+      // unknown (< 0) or zero NDV yields 0; null (Calcite's
+      // "unknown") would need matching guards in
+      // HiveRelMdRowCount's PK-FK analysis
+      if (cStat.getCountDistint() <= 0) {
+        return 0.0;
+      }
       noDistinctRows *= cStat.getCountDistint();
     }
 
