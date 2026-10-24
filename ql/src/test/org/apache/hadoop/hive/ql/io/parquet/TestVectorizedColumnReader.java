@@ -26,7 +26,10 @@ import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.parquet.format.converter.ParquetMetadataConverter;
+import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
@@ -37,6 +40,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.apache.parquet.hadoop.api.ReadSupport.PARQUET_READ_SCHEMA;
 
@@ -184,5 +188,53 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
     JobConf jobConf = new JobConf(conf);
     TestVectorizedParquetRecordReader testReader = new TestVectorizedParquetRecordReader(fsplit, jobConf);
     Assert.assertNull("Test should return null split from getSplit() method", testReader.getSplit(null));
+  }
+
+  /**
+   * A caller that has already ruled row groups out names the ones left, and the reader reads those and no
+   * others. Nothing else in the suite would notice if the picks were ignored: the rows returned and their
+   * positions are the same either way, so only the blocks the reader settled on can show it.
+   */
+  @Test
+  public void testReaderReadsOnlyThePickedRowGroups() throws Exception {
+    Configuration conf = newSingleColumnConf();
+    Job vectorJob = new Job(conf, "read vector");
+    ParquetInputFormat.setInputPaths(vectorJob, file);
+    initialVectorizedRowBatchCtx(conf);
+    FileSplit fsplit = getFileSplit(vectorJob);
+    JobConf jobConf = new JobConf(conf);
+    ParquetMetadata footer = ParquetFileReader.readFooter(jobConf, file, ParquetMetadataConverter.NO_FILTER);
+    int rowGroups = footer.getBlocks().size();
+
+    boolean[] everyRowGroup = new boolean[rowGroups];
+    Arrays.fill(everyRowGroup, true);
+    Assert.assertEquals("Picking every row group should read the whole split",
+        rowGroups, readerOver(footer, everyRowGroup, fsplit, jobConf).getFilteredBlocks().size());
+
+    Assert.assertNull("Picking no row group should leave the reader nothing to read",
+        readerOver(footer, new boolean[rowGroups], fsplit, jobConf).getFilteredBlocks());
+
+    VectorizedParquetInputFormat inputFormat = new VectorizedParquetInputFormat();
+    Assert.assertThrows("Picks belonging to another footer should be refused, not applied by index",
+        IOException.class, () -> inputFormat.setMetadata(footer, new boolean[rowGroups + 1]));
+  }
+
+  private static VectorizedParquetRecordReader readerOver(ParquetMetadata footer, boolean[] includedRowGroups,
+      FileSplit fsplit, JobConf jobConf) throws IOException {
+    VectorizedParquetInputFormat inputFormat = new VectorizedParquetInputFormat();
+    inputFormat.setMetadata(footer, includedRowGroups);
+    return (VectorizedParquetRecordReader) inputFormat.getRecordReader(fsplit, jobConf, Reporter.NULL);
+  }
+
+  private static Configuration newSingleColumnConf() {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS, "int32_field");
+    conf.set(IOConstants.COLUMNS_TYPES, "int");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    conf.set(PARQUET_READ_SCHEMA, "message test { required int32 int32_field;}");
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, "//tmp");
+    return conf;
   }
 }
