@@ -19,13 +19,13 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.tez.LlapObjectCache;
 
@@ -92,15 +92,11 @@ public class ObjectCacheFactory {
   private static ObjectCache getLlapObjectCache(String queryId) {
     // If order of events (i.e. dagstart and fragmentstart) was guaranteed, we could just
     // create the cache when dag starts, and blindly return it to execution here.
-    if (queryId == null) throw new RuntimeException("Query ID cannot be null");
-    ObjectCache result = llapQueryCaches.get(queryId);
-    if (result != null) return result;
-    result = new LlapObjectCache();
-    ObjectCache old = llapQueryCaches.putIfAbsent(queryId, result);
-    if (old == null) {
-      LOG.info("Created object cache for " + queryId);
-    }
-    return (old != null) ? old : result;
+    Objects.requireNonNull(queryId, "Query ID cannot be null");
+    return llapQueryCaches.computeIfAbsent(queryId, k -> {
+      LOG.info("Created object cache for {}", k);
+      return new LlapObjectCache();
+    });
   }
 
   public static void removeLlapQueryCache(String queryId) {
