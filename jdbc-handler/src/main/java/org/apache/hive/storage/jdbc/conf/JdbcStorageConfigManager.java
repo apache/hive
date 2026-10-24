@@ -20,6 +20,7 @@ package org.apache.hive.storage.jdbc.conf;
 
 import java.io.IOException;
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -59,13 +60,20 @@ public class JdbcStorageConfigManager {
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
                JdbcStorageConfig.QUERY);
 
+  private static final String SYS_DATABASE_NAME = "sys";
+
   private JdbcStorageConfigManager() {
   }
 
   public static void copyConfigurationToJob(Properties props, Map<String, String> jobProps)
     throws HiveException, IOException {
+    copyConfigurationToJob(props, jobProps, null);
+  }
+
+  public static void copyConfigurationToJob(Properties props, Map<String, String> jobProps, String dbName)
+    throws HiveException, IOException {
     checkRequiredPropertiesAreDefined(props);
-    resolveMetadata(props);
+    resolveMetadata(props, dbName);
     for (Entry<Object, Object> entry : props.entrySet()) {
       String key = String.valueOf(entry.getKey());
       if (!key.equals(CONFIG_PWD) &&
@@ -119,8 +127,13 @@ public class JdbcStorageConfigManager {
 
   public static void copySecretsToJob(Properties props, Map<String, String> jobSecrets)
       throws HiveException, IOException {
+    copySecretsToJob(props, jobSecrets, null);
+  }
+
+  public static void copySecretsToJob(Properties props, Map<String, String> jobSecrets, String dbName)
+      throws HiveException, IOException {
     checkRequiredPropertiesAreDefined(props);
-    resolveMetadata(props);
+    resolveMetadata(props, dbName);
     String passwd = getPasswordFromProperties(props, Function.identity());
     if (passwd != null) {
       jobSecrets.put(CONFIG_PWD, passwd);
@@ -129,8 +142,13 @@ public class JdbcStorageConfigManager {
 
   public static Configuration convertPropertiesToConfiguration(Properties props)
     throws HiveException, IOException {
+    return convertPropertiesToConfiguration(props, null);
+  }
+
+  public static Configuration convertPropertiesToConfiguration(Properties props, String dbName)
+    throws HiveException, IOException {
     checkRequiredPropertiesAreDefined(props);
-    resolveMetadata(props);
+    resolveMetadata(props, dbName);
     Configuration conf = new Configuration();
 
     for (Entry<Object, Object> entry : props.entrySet()) {
@@ -171,7 +189,7 @@ public class JdbcStorageConfigManager {
     return ((value == null) || (value.trim().isEmpty()));
   }
 
-  private static void resolveMetadata(Properties props) throws HiveException, IOException {
+  private static void resolveMetadata(Properties props, String dbName) throws HiveException, IOException {
     DatabaseType dbType = DatabaseType.valueOf(
       props.getProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
 
@@ -179,6 +197,7 @@ public class JdbcStorageConfigManager {
 
     if (dbType == DatabaseType.METASTORE) {
       HiveConf hconf = Hive.get().getConf();
+      assertMetastoreDatabaseTypeAllowed(props, dbName, hconf);
       props.setProperty(JdbcStorageConfig.JDBC_URL.getPropertyName(),
           getMetastoreConnectionURL(hconf));
       props.setProperty(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(),
@@ -196,6 +215,41 @@ public class JdbcStorageConfigManager {
       props.setProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(),
           getMetastoreDatabaseType(hconf));
     }
+  }
+
+  static void assertMetastoreDatabaseTypeAllowed(Properties props, String dbName) throws HiveException {
+    assertMetastoreDatabaseTypeAllowed(props, dbName, Hive.get().getConf());
+  }
+
+  static void assertMetastoreDatabaseTypeAllowed(Properties props, String dbName, HiveConf hconf)
+      throws HiveException {
+    String effectiveDb = dbName;
+    if (isEmptyString(effectiveDb)) {
+      effectiveDb = props.getProperty(hive_metastoreConstants.META_TABLE_DB);
+    }
+    if (isEmptyString(effectiveDb)) {
+      effectiveDb = getDatabaseNameFromTableProperty(props.getProperty(
+          hive_metastoreConstants.META_TABLE_NAME));
+    }
+    if (!isEmptyString(effectiveDb) && SYS_DATABASE_NAME.equalsIgnoreCase(effectiveDb.trim())) {
+      return;
+    }
+    if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE)) {
+      return;
+    }
+    throw new HiveException(
+        "hive.sql.database.type=METASTORE is only permitted for tables in the SYS database");
+  }
+
+  private static String getDatabaseNameFromTableProperty(String metaTableName) {
+    if (isEmptyString(metaTableName)) {
+      return null;
+    }
+    int dotIndex = metaTableName.indexOf('.');
+    if (dotIndex <= 0) {
+      return null;
+    }
+    return metaTableName.substring(0, dotIndex);
   }
 
   private static String getMetastoreDatabaseType(HiveConf conf) {
