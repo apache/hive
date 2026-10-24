@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.TaskQueue;
@@ -142,6 +143,9 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       if (pwd != null) {
         MetastoreConf.setVar(job, MetastoreConf.ConfVars.PWD, "HIVE");
       }
+
+      // the merge job is submitted directly, not through ExecDriver
+      JavaVersionUtils.addOpensFlags(job);
 
       // submit the job
       try (JobClient jc = new JobClient(job)) {
