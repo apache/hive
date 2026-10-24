@@ -102,6 +102,9 @@ public class LlapServlet extends HttpServlet {
         ExitCode ret = driver.run(LlapStatusServiceCommandLine.parseArguments(new String[] {"-n", clusterName}), 0);
         if (ret == ExitCode.SUCCESS) {
           driver.outputJson(writer);
+        } else {
+          response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+          response.setHeader(HttpConstants.CACHE_CONTROL, "no-store");
         }
 
       } finally {
@@ -112,6 +115,7 @@ public class LlapServlet extends HttpServlet {
     } catch (Exception e) {
       LOG.error("Caught exception while processing llap status request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.setHeader(HttpConstants.CACHE_CONTROL, "no-store");
     }
   }
 }
