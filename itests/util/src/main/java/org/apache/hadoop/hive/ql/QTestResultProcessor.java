@@ -94,7 +94,7 @@ public class QTestResultProcessor {
     // specified below. This ensures the behavior remains the same as before this
     // refactoring.
     // It would be better to throw an error than silently pick one and ignore the
-    // rest but it is out of the scope of the current change. 
+    // rest but it is out of the scope of the current change.
     if (operations.contains(Operation.SORT)) {
       ss.out = new SortPrintStream(fo, "UTF-8");
     } else if (operations.contains(Operation.HASH)) {
