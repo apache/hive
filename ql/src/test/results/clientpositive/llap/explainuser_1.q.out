@@ -3462,8 +3462,10 @@ POSTHOOK: Lineage: tgt_rc_merge_test_n0.key SIMPLE [(src_rc_merge_test_n0)src_rc
 POSTHOOK: Lineage: tgt_rc_merge_test_n0.value SIMPLE [(src_rc_merge_test_n0)src_rc_merge_test_n0.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: show table extended like `tgt_rc_merge_test_n0`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@tgt_rc_merge_test_n0
 POSTHOOK: query: show table extended like `tgt_rc_merge_test_n0`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@tgt_rc_merge_test_n0
 tableName:tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -3542,8 +3544,10 @@ POSTHOOK: Input: default@tgt_rc_merge_test_n0
 POSTHOOK: Output: default@tgt_rc_merge_test_n0
 PREHOOK: query: show table extended like `tgt_rc_merge_test_n0`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@tgt_rc_merge_test_n0
 POSTHOOK: query: show table extended like `tgt_rc_merge_test_n0`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@tgt_rc_merge_test_n0
 tableName:tgt_rc_merge_test_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat

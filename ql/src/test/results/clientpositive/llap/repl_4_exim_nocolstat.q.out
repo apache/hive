@@ -89,8 +89,10 @@ emp_state           	string
 #### A masked pattern was here ####
 PREHOOK: query: show table extended like repldst
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@repldst
 POSTHOOK: query: show table extended like repldst
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@repldst
 tableName:repldst
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

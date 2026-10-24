@@ -32,8 +32,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_rc_merge_test_stat
 PREHOOK: query: show table extended like `src_rc_merge_test_stat`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src_rc_merge_test_stat
 POSTHOOK: query: show table extended like `src_rc_merge_test_stat`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src_rc_merge_test_stat
 tableName:src_rc_merge_test_stat
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -85,8 +87,10 @@ POSTHOOK: Input: default@src_rc_merge_test_stat
 POSTHOOK: Output: default@src_rc_merge_test_stat
 PREHOOK: query: show table extended like `src_rc_merge_test_stat`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src_rc_merge_test_stat
 POSTHOOK: query: show table extended like `src_rc_merge_test_stat`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src_rc_merge_test_stat
 tableName:src_rc_merge_test_stat
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -151,8 +155,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
 PREHOOK: query: show table extended like `src_rc_merge_test_part_stat` partition (ds='2011')
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src_rc_merge_test_part_stat
 POSTHOOK: query: show table extended like `src_rc_merge_test_part_stat` partition (ds='2011')
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
 tableName:src_rc_merge_test_part_stat
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -218,8 +224,10 @@ POSTHOOK: Input: default@src_rc_merge_test_part_stat
 POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
 PREHOOK: query: show table extended like `src_rc_merge_test_part_stat` partition (ds='2011')
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src_rc_merge_test_part_stat
 POSTHOOK: query: show table extended like `src_rc_merge_test_part_stat` partition (ds='2011')
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
 tableName:src_rc_merge_test_part_stat
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
