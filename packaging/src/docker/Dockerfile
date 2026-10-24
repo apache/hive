@@ -67,8 +67,7 @@ RUN tar -xzv \
     tar -xzv \
       --exclude="apache-tez-$TEZ_VERSION-bin/share" \
       -f /opt/apache-tez-$TEZ_VERSION-bin.tar.gz \
-      -C /opt; \
-    mkdir -p /opt/tez-snapshot;
+      -C /opt;
 
 FROM eclipse-temurin:21-jdk-ubi9-minimal AS run
 
@@ -97,12 +96,9 @@ ENV PATH=$HIVE_HOME/bin:$HADOOP_HOME/bin:$PATH
 COPY --from=env --chown=hive /opt/hadoop-$HADOOP_VERSION $HADOOP_HOME
 COPY --from=env --chown=hive /opt/apache-hive-$HIVE_VERSION-bin $HIVE_HOME
 COPY --from=env --chown=hive /opt/apache-tez-$TEZ_VERSION-bin $TEZ_HOME
-COPY --from=env --chown=hive /opt/tez-snapshot /opt/tez-snapshot
 
-# When TEZ_SNAPSHOT_VERSION is set, fetch Tez snapshot jars from the Maven snapshot repository
-# and place them under /opt/tez-snapshot. At runtime, entrypoint.sh symlinks these into
-# $HIVE_HOME/lib with a "0-" prefix so they sort first in bin/hive's classpath glob, ensuring
-# snapshot classes take precedence over the Tez release jars bundled with Hive.
+# When TEZ_SNAPSHOT_VERSION is set, the Tez Maven snapshot replaces the Tez release in TEZ_HOME, and the tez-api an
+# older Hive release bundles leaves $HIVE_HOME/lib, so that every process runs that one Tez.
 # Maven snapshot repositories use timestamped filenames (e.g. tez-api-1.0.0-20250101.jar),
 # so we fetch maven-metadata.xml first to resolve the exact filename before downloading the jar.
 RUN set -eux; \
@@ -120,10 +116,10 @@ RUN set -eux; \
         jar_file="${artifact}-${snapshot_value}.jar"; \
         jar_url="${version_url}/${jar_file}"; \
         echo "jar_url=${jar_url}"; \
-        wget -q "${jar_url}" -O "/opt/tez-snapshot/${jar_file}"; \
+        rm -f "${TEZ_HOME}/${artifact}"-*.jar "${HIVE_HOME}/lib/${artifact}"-*.jar; \
+        wget -q "${jar_url}" -O "${TEZ_HOME}/${jar_file}"; \
       done; \
-      echo "Downloaded Tez snapshot jars under /opt/tez-snapshot:"; \
-      ls -1 /opt/tez-snapshot/*.jar; \
+      echo "Applied Tez ${TEZ_SNAPSHOT_VERSION} overlay to ${TEZ_HOME}"; \
     else \
       echo "TEZ_SNAPSHOT_VERSION not set. Skipping Tez snapshot download."; \
     fi; \
@@ -139,8 +135,7 @@ RUN chmod +x /entrypoint.sh && \
     mkdir -p $HIVE_HOME/scratch && \
     chown hive $HIVE_HOME/scratch && \
     mkdir -p /home/hive/.beeline && \
-    chown hive /home/hive/.beeline && \
-    chown -R hive /opt/tez-snapshot
+    chown hive /home/hive/.beeline
 
 USER hive
 WORKDIR $HIVE_HOME
