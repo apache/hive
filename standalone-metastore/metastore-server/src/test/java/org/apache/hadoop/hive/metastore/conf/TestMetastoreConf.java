@@ -420,6 +420,9 @@ public class TestMetastoreConf {
     Assert.assertTrue(MetastoreConf.isPrintable(ConfVars.STR_TEST_ENTRY.getVarname()));
     Assert.assertFalse(MetastoreConf.isPrintable(ConfVars.PWD.getVarname()));
     Assert.assertFalse(MetastoreConf.isPrintable(ConfVars.PWD.getHiveName()));
+    Assert.assertFalse(MetastoreConf.isPrintable(ConfVars.METASTORE_PLAIN_LDAP_BIND_PASSWORD.getVarname()));
+    Assert.assertFalse(MetastoreConf.isPrintable(ConfVars.METASTORE_PLAIN_LDAP_BIND_PASSWORD.getHiveName()));
+    Assert.assertFalse(MetastoreConf.isPrintable(ConfVars.THRIFT_AUTH_CONFIG_PASSWORD.getVarname()));
   }
 
   @Test

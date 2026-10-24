@@ -2354,7 +2354,7 @@ public abstract class TestHiveMetaStore {
 
 
   @Test
-  public void testGetConfigValue() {
+  public void testGetConfigValue() throws TException {
 
     String val = "value";
 
@@ -2372,17 +2372,19 @@ public abstract class TestHiveMetaStore {
       }
     }
 
-    boolean threwException = false;
+    assertConfigValueBlocked("javax.jdo.option.ConnectionPassword");
+    assertConfigValueBlocked(ConfVars.SSL_KEYSTORE_PASSWORD.getVarname());
+    assertConfigValueBlocked(ConfVars.METASTORE_PLAIN_LDAP_BIND_PASSWORD.getVarname());
+    assertConfigValueBlocked(ConfVars.THRIFT_AUTH_CONFIG_PASSWORD.getVarname());
+  }
+
+  private void assertConfigValueBlocked(String key) throws TException {
     try {
-      // Attempting to get the password should throw an exception
-      client.getConfigValue("javax.jdo.option.ConnectionPassword", "password");
+      client.getConfigValue(key, "password");
+      fail("Expected ConfigValSecurityException for key " + key);
     } catch (ConfigValSecurityException e) {
-      threwException = true;
-    } catch (TException e) {
-      e.printStackTrace();
-      fail();
+      // expected
     }
-    assert (threwException);
   }
 
   private static void adjust(HiveMetaStoreClient client, Partition part,
