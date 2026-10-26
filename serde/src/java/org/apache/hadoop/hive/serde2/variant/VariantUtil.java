@@ -127,6 +127,15 @@ public class VariantUtil {
   // string size) + (size bytes of string content).
   public static final int LONG_STR = 16;
 
+  // Time value without time zone. Content is 8-byte little-endian signed integer that represents
+  // the number of microseconds since midnight.
+  public static final int TIME = 17;
+  // Timestamp value with nanosecond precision. Content is 8-byte little-endian signed integer that
+  // represents the number of nanoseconds elapsed since the Unix epoch, 1970-01-01 00:00:00 UTC.
+  public static final int TIMESTAMP_NANOS = 18;
+  // Timestamp_ntz value with nanosecond precision. It has the same content as `TIMESTAMP_NANOS`
+  // but should always be interpreted as if the local time zone is UTC.
+  public static final int TIMESTAMP_NTZ_NANOS = 19;
   // UUID, 16-byte big-endian.
   public static final int UUID = 20;
 
@@ -247,6 +256,9 @@ public class VariantUtil {
     TIMESTAMP_NTZ,
     FLOAT,
     BINARY,
+    TIME,
+    TIMESTAMP_NANOS,
+    TIMESTAMP_NTZ_NANOS,
     UUID,
   }
 
@@ -279,6 +291,9 @@ public class VariantUtil {
         case FLOAT -> Type.FLOAT;
         case BINARY -> Type.BINARY;
         case LONG_STR -> Type.STRING;
+        case TIME -> Type.TIME;
+        case TIMESTAMP_NANOS -> Type.TIMESTAMP_NANOS;
+        case TIMESTAMP_NTZ_NANOS -> Type.TIMESTAMP_NTZ_NANOS;
         case UUID -> Type.UUID;
         default -> throw unknownPrimitiveTypeInVariant(typeInfo);
       };
@@ -304,7 +319,8 @@ public class VariantUtil {
         case INT1 -> 2;
         case INT2 -> 3;
         case INT4, DATE, FLOAT -> 5;
-        case INT8, DOUBLE, TIMESTAMP, TIMESTAMP_NTZ -> 9;
+        case INT8, DOUBLE, TIMESTAMP, TIMESTAMP_NTZ, TIME, TIMESTAMP_NANOS,
+            TIMESTAMP_NTZ_NANOS -> 9;
         case DECIMAL4 -> 6;
         case DECIMAL8 -> 10;
         case DECIMAL16 -> 18;
@@ -333,22 +349,27 @@ public class VariantUtil {
 
   // Get a long value from variant value `value[pos...]`.
   // It is only legal to call it if `getType` returns one of `Type.LONG/DATE/TIMESTAMP/
-  // TIMESTAMP_NTZ`. If the type is `DATE`, the return value is guaranteed to fit into an int and
-  // represents the number of days from the Unix epoch.
+  // TIMESTAMP_NTZ/TIME/TIMESTAMP_NANOS/TIMESTAMP_NTZ_NANOS`. If the type is `DATE`, the return
+  // value is guaranteed to fit into an int and represents the number of days from the Unix epoch.
   // If the type is `TIMESTAMP/TIMESTAMP_NTZ`, the return value represents the number of
   // microseconds from the Unix epoch.
+  // If the type is `TIME`, the return value represents the number of microseconds since midnight.
+  // If the type is `TIMESTAMP_NANOS/TIMESTAMP_NTZ_NANOS`, the return value represents the number of
+  // nanoseconds from the Unix epoch.
   // Throw `MALFORMED_VARIANT` if the variant is malformed.
   public static long getLong(byte[] value, int pos) {
     checkIndex(pos, value.length);
     int basicType = value[pos] & BASIC_TYPE_MASK;
     int typeInfo = (value[pos] >> BASIC_TYPE_BITS) & TYPE_INFO_MASK;
-    String exceptionMessage = "Expect type to be LONG/DATE/TIMESTAMP/TIMESTAMP_NTZ";
+    String exceptionMessage = "Expect type to be LONG/DATE/TIMESTAMP/TIMESTAMP_NTZ/TIME/" +
+        "TIMESTAMP_NANOS/TIMESTAMP_NTZ_NANOS";
     if (basicType != PRIMITIVE) throw new IllegalStateException(exceptionMessage);
     return switch (typeInfo) {
       case INT1 -> readLong(value, pos + 1, 1);
       case INT2 -> readLong(value, pos + 1, 2);
       case INT4, DATE -> readLong(value, pos + 1, 4);
-      case INT8, TIMESTAMP, TIMESTAMP_NTZ -> readLong(value, pos + 1, 8);
+      case INT8, TIMESTAMP, TIMESTAMP_NTZ, TIME, TIMESTAMP_NANOS, TIMESTAMP_NTZ_NANOS ->
+          readLong(value, pos + 1, 8);
       default -> throw new IllegalStateException(exceptionMessage);
     };
   }
