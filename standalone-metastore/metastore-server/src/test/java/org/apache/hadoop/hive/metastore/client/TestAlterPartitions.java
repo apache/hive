@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -257,6 +258,85 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     assertPartitionChanged(newPart, testValues.get(3), PARTCOL_SCHEMA);
     assertPartitionsHaveCorrectValues(newParts, testValues);
 
+  }
+
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testAlterPartitionPreservesCreateTimeWhenUnset() throws Exception {
+    verifyAlterPartitionCreateTime(null, false);
+  }
+
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testAlterPartitionPreservesCreateTimeWhenZero() throws Exception {
+    verifyAlterPartitionCreateTime(0, false);
+  }
+
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testAlterPartitionPreservesCreateTimeWhenNegative() throws Exception {
+    verifyAlterPartitionCreateTime(-1, false);
+  }
+
+  @Test
+  public void testAlterPartitionAcceptsExplicitCreateTime() throws Exception {
+    verifyAlterPartitionCreateTime(NEW_CREATE_TIME, false);
+  }
+
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testRenamePartitionPreservesCreateTimeWhenUnset() throws Exception {
+    verifyAlterPartitionCreateTime(null, true);
+  }
+
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testRenamePartitionPreservesCreateTimeWhenZero() throws Exception {
+    verifyAlterPartitionCreateTime(0, true);
+  }
+
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testRenamePartitionPreservesCreateTimeWhenNegative() throws Exception {
+    verifyAlterPartitionCreateTime(-1, true);
+  }
+
+  @Test
+  public void testRenamePartitionAcceptsExplicitCreateTime() throws Exception {
+    verifyAlterPartitionCreateTime(NEW_CREATE_TIME, true);
+  }
+
+  // Temporary partitions are kept in the session and do not go through HiveAlterHandler.
+  private void verifyAlterPartitionCreateTime(Integer requestedCreateTime, boolean rename) throws Exception {
+    createTable4PartColsParts(client);
+    Partition partition = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
+    int createTime = partition.getCreateTime();
+    assertTrue(createTime > 0);
+
+    setRequestedCreateTime(partition, requestedCreateTime);
+    partition.putToParameters("test_key", "test_value");
+    if (rename) {
+      List<String> oldValues = new ArrayList<>(partition.getValues());
+      partition.setValues(Lists.newArrayList("2018", "01", "16"));
+      client.renamePartition(DB_NAME, TABLE_NAME, oldValues, partition);
+      assertTrue(client.listPartitions(DB_NAME, TABLE_NAME, oldValues, (short)-1).isEmpty());
+    } else {
+      client.alter_partition(DB_NAME, TABLE_NAME, partition);
+    }
+
+    Partition altered = client.getPartition(DB_NAME, TABLE_NAME, partition.getValues());
+    int expectedCreateTime = requestedCreateTime != null && requestedCreateTime > 0
+        ? requestedCreateTime : createTime;
+    assertEquals(expectedCreateTime, altered.getCreateTime());
+    assertEquals("test_value", altered.getParameters().get("test_key"));
+  }
+
+  private static void setRequestedCreateTime(Partition partition, Integer requestedCreateTime) {
+    partition.setCreateTime(requestedCreateTime == null ? 0 : requestedCreateTime);
+    if (requestedCreateTime == null) {
+      partition.unsetCreateTime();
+      assertFalse(partition.isSetCreateTime());
+    }
   }
 
   @Test
@@ -656,6 +736,52 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       assertPartitionChanged(oldParts.get(i), testValues.get(i), PARTCOL_SCHEMA);
     }
     assertPartitionsHaveCorrectValues(newParts, testValues);
+  }
+
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testAlterPartitionsPreserveCreateTimeWhenUnset() throws Exception {
+    verifyAlterPartitionsCreateTime(null);
+  }
+
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testAlterPartitionsPreserveCreateTimeWhenZero() throws Exception {
+    verifyAlterPartitionsCreateTime(0);
+  }
+
+  @Test
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
+  public void testAlterPartitionsPreserveCreateTimeWhenNegative() throws Exception {
+    verifyAlterPartitionsCreateTime(-1);
+  }
+
+  @Test
+  public void testAlterPartitionsAcceptExplicitCreateTime() throws Exception {
+    verifyAlterPartitionsCreateTime(NEW_CREATE_TIME);
+  }
+
+  private void verifyAlterPartitionsCreateTime(Integer requestedCreateTime) throws Exception {
+    createTable4PartColsParts(client);
+    List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
+    Map<List<String>, Integer> createTimes = new HashMap<>();
+    for (Partition partition : partitions) {
+      assertTrue(partition.getCreateTime() > 0);
+      createTimes.put(new ArrayList<>(partition.getValues()), partition.getCreateTime());
+      setRequestedCreateTime(partition, requestedCreateTime);
+      partition.putToParameters("test_key", "test_value");
+    }
+
+    client.alter_partitions(DB_NAME, TABLE_NAME, partitions);
+
+    List<Partition> altered = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
+    assertEquals(partitions.size(), altered.size());
+    for (Partition partition : altered) {
+      int expectedCreateTime = requestedCreateTime != null && requestedCreateTime > 0
+          ? requestedCreateTime : createTimes.get(partition.getValues());
+      assertEquals(expectedCreateTime, partition.getCreateTime());
+      assertEquals("test_value", partition.getParameters().get("test_key"));
+    }
   }
 
   @Test(expected = InvalidOperationException.class)
