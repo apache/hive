@@ -27,7 +27,7 @@ STAGE PLANS:
                 TableScan
                   alias: src1
                   filterExpr: ((UDFToDouble(key) > 9.0D) and (UDFToDouble(key) < 11.0D)) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_40_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.11
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_40_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.17405063291139242
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) > 9.0D) and (UDFToDouble(key) < 11.0D)) (type: boolean)
@@ -2606,7 +2606,7 @@ STAGE PLANS:
                 TableScan
                   alias: src1
                   filterExpr: ((UDFToDouble(key) > 9.0D) and (UDFToDouble(key) < 11.0D)) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_40_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.11
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_40_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.17405063291139242
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) > 9.0D) and (UDFToDouble(key) < 11.0D)) (type: boolean)
@@ -3388,7 +3388,7 @@ STAGE PLANS:
                 TableScan
                   alias: src2
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.332
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.5253164556962026
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
@@ -3520,7 +3520,7 @@ STAGE PLANS:
                 TableScan
                   alias: src1
                   filterExpr: ((UDFToDouble(key) > 9.0D) and (UDFToDouble(key) < 10.0D)) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_50_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.11
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_50_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.17405063291139242
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) > 9.0D) and (UDFToDouble(key) < 10.0D)) (type: boolean)

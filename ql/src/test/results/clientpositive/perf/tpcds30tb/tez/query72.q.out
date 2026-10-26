@@ -24,7 +24,7 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_sales
                   filterExpr: (cs_quantity is not null and cs_bill_hdemo_sk is not null and cs_bill_cdemo_sk is not null and cs_ship_date_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_255_container, bigKeyColName:cs_bill_cdemo_sk, smallTablePos:1, keyRatio:1.4649422226409529E-9
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_254_container, bigKeyColName:cs_bill_hdemo_sk, smallTablePos:1, keyRatio:0.16664352173309263
                   Statistics: Num rows: 43005109025 Data size: 2576434485612 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cs_quantity is not null and cs_bill_hdemo_sk is not null and cs_bill_cdemo_sk is not null and cs_ship_date_sk is not null) (type: boolean)
@@ -296,7 +296,7 @@ STAGE PLANS:
                 TableScan
                   alias: d2
                   filterExpr: (d_week_seq is not null and d_week_seq BETWEEN DynamicValue(RS_16_d1_d_week_seq_min) AND DynamicValue(RS_16_d1_d_week_seq_max) and d_date_sk BETWEEN DynamicValue(RS_37_inventory_inv_date_sk_min) AND DynamicValue(RS_37_inventory_inv_date_sk_max) and in_bloom_filter(d_week_seq, DynamicValue(RS_16_d1_d_week_seq_bloom_filter)) and in_bloom_filter(d_date_sk, DynamicValue(RS_37_inventory_inv_date_sk_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_256_container, bigKeyColName:d_week_seq, smallTablePos:1, keyRatio:0.03248504428534271
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_256_container, bigKeyColName:d_week_seq, smallTablePos:1, keyRatio:0.03248650084093122
                   Statistics: Num rows: 73049 Data size: 876588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (d_week_seq is not null and d_week_seq BETWEEN DynamicValue(RS_16_d1_d_week_seq_min) AND DynamicValue(RS_16_d1_d_week_seq_max) and d_date_sk BETWEEN DynamicValue(RS_37_inventory_inv_date_sk_min) AND DynamicValue(RS_37_inventory_inv_date_sk_max) and in_bloom_filter(d_week_seq, DynamicValue(RS_16_d1_d_week_seq_bloom_filter)) and in_bloom_filter(d_date_sk, DynamicValue(RS_37_inventory_inv_date_sk_bloom_filter))) (type: boolean)

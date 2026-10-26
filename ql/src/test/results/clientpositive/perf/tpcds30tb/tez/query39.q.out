@@ -19,7 +19,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_150_container, bigKeyColName:inv_date_sk, smallTablePos:1, keyRatio:0.01703273444780469
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_150_container, bigKeyColName:inv_date_sk, smallTablePos:1, keyRatio:0.12015503875968993
                   Statistics: Num rows: 1627857000 Data size: 45254407088 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: inv_date_sk (type: bigint), inv_warehouse_sk (type: bigint), inv_quantity_on_hand (type: int), inv_item_sk (type: bigint)
@@ -119,7 +119,7 @@ STAGE PLANS:
                 TableScan
                   alias: inventory
                   filterExpr: (inv_warehouse_sk BETWEEN DynamicValue(RS_10_inventory_inv_warehouse_sk_min) AND DynamicValue(RS_10_inventory_inv_warehouse_sk_max) and in_bloom_filter(inv_warehouse_sk, DynamicValue(RS_10_inventory_inv_warehouse_sk_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_152_container, bigKeyColName:inv_date_sk, smallTablePos:1, keyRatio:0.01703273444780469
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_152_container, bigKeyColName:inv_date_sk, smallTablePos:1, keyRatio:0.12015503875968993
                   Statistics: Num rows: 1627857000 Data size: 45254407088 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (inv_warehouse_sk BETWEEN DynamicValue(RS_10_inventory_inv_warehouse_sk_min) AND DynamicValue(RS_10_inventory_inv_warehouse_sk_max) and in_bloom_filter(inv_warehouse_sk, DynamicValue(RS_10_inventory_inv_warehouse_sk_bloom_filter))) (type: boolean)

@@ -17,7 +17,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:ws_item_sk, smallTablePos:1, keyRatio:0.19660190591366014
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:ws_item_sk, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 21594638446 Data size: 2763811786336 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ws_item_sk (type: bigint), ws_net_paid (type: decimal(7,2)), ws_sold_date_sk (type: bigint)

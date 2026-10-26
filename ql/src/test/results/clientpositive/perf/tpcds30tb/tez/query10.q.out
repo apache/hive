@@ -116,7 +116,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: (c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_163_container, bigKeyColName:c_current_addr_sk, smallTablePos:1, keyRatio:0.00250005
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_163_container, bigKeyColName:c_current_addr_sk, smallTablePos:1, keyRatio:0.003063590424978383
                   Statistics: Num rows: 80000000 Data size: 1897611080 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)

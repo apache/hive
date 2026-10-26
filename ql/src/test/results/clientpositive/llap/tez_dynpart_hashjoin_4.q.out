@@ -134,7 +134,7 @@ STAGE PLANS:
                 TableScan
                   alias: ta
                   filterExpr: ((start_date = DATE'2023-11-27') and product_id is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_30_container, bigKeyColName:product_id, smallTablePos:0, keyRatio:4.0E-4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_30_container, bigKeyColName:product_id, smallTablePos:0, keyRatio:0.6666666666666666
                   Statistics: Num rows: 200000000 Data size: 12000000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((start_date = DATE'2023-11-27') and product_id is not null) (type: boolean)

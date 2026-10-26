@@ -17,7 +17,7 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_sales
                   filterExpr: (cs_promo_sk is not null and cs_bill_cdemo_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_94_container, bigKeyColName:cs_bill_cdemo_sk, smallTablePos:1, keyRatio:0.0028366486625829453
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_94_container, bigKeyColName:cs_bill_cdemo_sk, smallTablePos:1, keyRatio:0.014285706848340874
                   Statistics: Num rows: 43005109025 Data size: 15959723945900 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cs_promo_sk is not null and cs_bill_cdemo_sk is not null) (type: boolean)

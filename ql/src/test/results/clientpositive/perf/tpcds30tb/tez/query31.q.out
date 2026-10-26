@@ -26,7 +26,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: ws_bill_addr_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_393_container, bigKeyColName:ws_bill_addr_sk, smallTablePos:1, keyRatio:0.05037635576628538
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_393_container, bigKeyColName:ws_bill_addr_sk, smallTablePos:1, keyRatio:0.9999999750000006
                   Statistics: Num rows: 21594638446 Data size: 2763789503808 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_bill_addr_sk is not null (type: boolean)
@@ -76,7 +76,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_addr_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_401_container, bigKeyColName:ss_addr_sk, smallTablePos:1, keyRatio:0.049193881825049336
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_401_container, bigKeyColName:ss_addr_sk, smallTablePos:1, keyRatio:0.9999999750000006
                   Statistics: Num rows: 82510879939 Data size: 10327822006760 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_addr_sk is not null (type: boolean)
@@ -126,7 +126,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_addr_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_403_container, bigKeyColName:ss_addr_sk, smallTablePos:1, keyRatio:0.049193881825049336
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_403_container, bigKeyColName:ss_addr_sk, smallTablePos:1, keyRatio:0.9999999750000006
                   Statistics: Num rows: 82510879939 Data size: 10327822006760 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_addr_sk is not null (type: boolean)
@@ -176,7 +176,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: ws_bill_addr_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_395_container, bigKeyColName:ws_bill_addr_sk, smallTablePos:1, keyRatio:0.05037635576628538
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_395_container, bigKeyColName:ws_bill_addr_sk, smallTablePos:1, keyRatio:0.9999999750000006
                   Statistics: Num rows: 21594638446 Data size: 2763789503808 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_bill_addr_sk is not null (type: boolean)
@@ -414,7 +414,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: ws_bill_addr_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_397_container, bigKeyColName:ws_bill_addr_sk, smallTablePos:1, keyRatio:0.05037635576628538
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_397_container, bigKeyColName:ws_bill_addr_sk, smallTablePos:1, keyRatio:0.9999999750000006
                   Statistics: Num rows: 21594638446 Data size: 2763789503808 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_bill_addr_sk is not null (type: boolean)
@@ -464,7 +464,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_addr_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_399_container, bigKeyColName:ss_addr_sk, smallTablePos:1, keyRatio:0.049193881825049336
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_399_container, bigKeyColName:ss_addr_sk, smallTablePos:1, keyRatio:0.9999999750000006
                   Statistics: Num rows: 82510879939 Data size: 10327822006760 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_addr_sk is not null (type: boolean)
