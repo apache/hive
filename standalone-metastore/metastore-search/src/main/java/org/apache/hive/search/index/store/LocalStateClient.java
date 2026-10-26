@@ -79,12 +79,7 @@ public record LocalStateClient(Directory directory, String indexName)
     if (StringUtils.isEmpty(embedder)) {
       return Optional.empty();
     }
-    long eventId;
-    try {
-      eventId = Long.parseLong(nid);
-    } catch (NumberFormatException e) {
-      throw new IndexIOException("Invalid commit checkpoint in index metadata: nid=" + nid, e);
-    }
+    long eventId = Long.parseLong(nid);;
     List<IndexManifest.IndexFile> files = new ArrayList<>();
     for (String file : commitUserData.getValue()) {
       if (isStagingFile(file)) {
