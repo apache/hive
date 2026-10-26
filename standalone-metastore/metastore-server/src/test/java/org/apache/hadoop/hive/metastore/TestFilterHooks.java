@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +33,9 @@ import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsRequest;
 import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -490,6 +494,20 @@ public class TestFilterHooks {
         client.getPartitionsByNames(DBNAME1, TAB2,
             Lists.newArrayList("name=value1")).size();
         fail("getPartitionsByNames() should fail with blocking mode at server side");
+      } catch (NoSuchObjectException e) {
+        // Excepted
+      }
+      // get_partitions_with_specs should enforce the same table-level filter hook check
+      // as the other partition listing RPCs
+      GetPartitionsRequest request = new GetPartitionsRequest();
+      request.setDbName(DBNAME1);
+      request.setTblName(TAB2);
+      request.setProjectionSpec(new GetProjectionsSpec());
+      request.getProjectionSpec().setFieldList(Collections.singletonList("values"));
+      request.setFilterSpec(new GetPartitionsFilterSpec());
+      try {
+        client.getPartitionsWithSpecs(request);
+        fail("getPartitionsWithSpecs() should fail with blocking mode at server side");
       } catch (NoSuchObjectException e) {
         // Excepted
       }
