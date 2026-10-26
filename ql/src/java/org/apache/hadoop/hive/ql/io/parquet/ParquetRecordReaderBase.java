@@ -96,6 +96,15 @@ public abstract class ParquetRecordReaderBase {
   }
 
   /**
+   * Whether the row group at this index in the file's footer is one to read. A caller that has ruled some
+   * out with a filter Parquet cannot express drops them here, which leaves the footer the file's own - and
+   * the footer is what row positions are read from.
+   */
+  protected boolean includeRowGroup(int rowGroupIndex) {
+    return true;
+  }
+
+  /**
    * gets a ParquetInputSplit corresponding to a split given by Hive
    *
    * @param conf The JobConf of the Hive job
@@ -130,9 +139,11 @@ public abstract class ParquetRecordReaderBase {
     final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
     final long splitStart = fileSplit.getStart();
     final long splitLength = fileSplit.getLength();
-    for (final BlockMetaData block : blocks) {
+    for (int rowGroupIndex = 0; rowGroupIndex < blocks.size(); ++rowGroupIndex) {
+      final BlockMetaData block = blocks.get(rowGroupIndex);
       final long firstDataPage = block.getColumns().get(0).getFirstDataPageOffset();
-      if (firstDataPage >= splitStart && firstDataPage < splitStart + splitLength) {
+      if (firstDataPage >= splitStart && firstDataPage < splitStart + splitLength
+          && includeRowGroup(rowGroupIndex)) {
         splitGroup.add(block);
       }
     }
