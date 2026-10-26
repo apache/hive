@@ -1393,11 +1393,13 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-internals</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-library</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
         <exclusions>
           <exclusion>
             <groupId>io.netty</groupId>
@@ -1409,6 +1411,7 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-api</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
         <exclusions>
           <exclusion>
             <groupId>com.sun.jersey</groupId>
@@ -1424,12 +1427,13 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-dag</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-mapreduce</artifactId>
         <version>${tez.version}</version>
-        <optional>true</optional>
+        <scope>provided</scope>
         <exclusions>
           <exclusion>
             <groupId>io.netty</groupId>
@@ -1465,11 +1469,14 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-common</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-protobuf-history-plugin</artifactId>
         <version>${tez.version}</version>
+        <!-- compile, not provided: ql shades these classes into hive-exec, which needs them with or without Tez
+             on the classpath (HIVE-29003); ql marks the dependency optional so the jar stays out of lib/. -->
         <exclusions>
           <exclusion>
             <groupId>*</groupId>

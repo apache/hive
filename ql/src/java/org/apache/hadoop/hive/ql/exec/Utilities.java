@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -2862,8 +2861,14 @@ public final class Utilities {
     return getTasks(tasks, new TaskFilterFunction<>(TezTask.class));
   }
 
-  public static Optional<TezTask> getFirstTezTask(List<Task<? extends Serializable>> tasks) {
-    return getTezTasks(tasks).stream().findFirst();
+  /**
+   * Returns the first task in the graph of the given type.
+   *
+   * <p>Pass an interface rather than a task class to keep a caller on the compile path from loading an
+   * execution-engine class for a query that has none.
+   */
+  public static <T> Optional<T> getFirstTask(List<Task<?>> tasks, Class<T> type) {
+    return getTasks(tasks, new TaskFilterFunction<>(type)).stream().findFirst();
   }
 
   public static List<ExecDriver> getMRTasks(List<Task<?>> tasks) {
