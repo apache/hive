@@ -100,22 +100,16 @@ public final class IcebergVendedCredentialUtil {
   }
 
   /**
-   * Copies vended storage credentials into job secrets for
-   * {@link HiveIcebergStorageHandler#configureInputJobCredentials} (HIVE-20651).
+   * Copies vended storage credentials of a table loaded via {@link #getTableWithVendedCredentials} into
+   * job secrets for {@link HiveIcebergStorageHandler#configureInputJobCredentials} (HIVE-20651).
    */
   public static void propagateVendedCredentialsToJob(
-      TableDesc tableDesc, Map<String, String> jobSecrets, Configuration conf) {
-    if (tableDesc == null || tableDesc.getProperties() == null ||
+      Table table, TableDesc tableDesc, Map<String, String> jobSecrets, Configuration conf) {
+    if (table == null || tableDesc == null || tableDesc.getProperties() == null ||
         !requestsVendedCredentials(tableDesc.getProperties(), conf)) {
       return;
     }
-    String catalogName = tableDesc.getProperty(InputFormatConfig.CATALOG_NAME);
-    try {
-      Table table = getTableWithVendedCredentials(tableDesc.getProperties(), conf);
-      propagateToJob(table, catalogName, null, jobSecrets, conf);
-    } catch (NoSuchTableException ex) {
-      // Table may not exist yet for CTAS; credentials will not be available.
-    }
+    propagateToJob(table, tableDesc.getProperty(InputFormatConfig.CATALOG_NAME), null, jobSecrets, conf);
   }
 
   /**

@@ -210,7 +210,37 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
     HiveConf.setBoolVar(sessionConf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED, false);
 
     assertThat(table).isInstanceOf(RESTTable.class);
+    assertThat(catalogSecrets(sessionConf, table)).isEmpty();
     assertThat(planRequestsDuringGetSplits(propagatedJobConf(sessionConf, table))).isEmpty();
+  }
+
+  /**
+   * For a table Iceberg resolved for server-side planning, every {@code iceberg.catalog.<catalog>.*}
+   * entry of the table's catalog goes to job secrets (HIVE-20651), whatever its name, so custom auth
+   * properties such as {@code header.Authorization} are never exposed in plain job properties. Other
+   * catalogs and unrelated keys are not copied.
+   */
+  @Test
+  void catalogSecretsCopyAllCatalogPropertiesForServerPlannedTable() throws IOException {
+    Table table = createTableWithData();
+    Configuration sessionConf = sessionConf();
+    String headerKey = IcebergCatalogProperties.catalogPropertyConfigKey(CATALOG_NAME, "header.Authorization");
+    sessionConf.set(headerKey, "Bearer token");
+    String otherCatalogKey = IcebergCatalogProperties.catalogPropertyConfigKey("other", CatalogProperties.URI);
+    sessionConf.set(otherCatalogKey, "http://other:8181");
+    sessionConf.set("unrelated.key", "skip");
+
+    assertThat(table).isInstanceOf(RESTTable.class);
+    assertThat(catalogSecrets(sessionConf, table))
+        .containsEntry(headerKey, "Bearer token")
+        .containsEntry(
+            IcebergCatalogProperties.catalogPropertyConfigKey(CATALOG_NAME, CatalogProperties.URI),
+            httpServer.getURI().toString())
+        .containsEntry(
+            IcebergCatalogProperties.catalogPropertyConfigKey(CATALOG_NAME, CatalogUtil.ICEBERG_CATALOG_TYPE),
+            CatalogUtil.ICEBERG_CATALOG_TYPE_REST)
+        .doesNotContainKey(otherCatalogKey)
+        .doesNotContainKey("unrelated.key");
   }
 
   /**
@@ -362,14 +392,17 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
     RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(
         sessionConf, table, TABLE_ID.toString(), jobProperties);
     jobProperties.forEach(jobConf::set);
+    catalogSecrets(sessionConf, table).forEach(jobConf::set);
+  }
 
+  private static Map<String, String> catalogSecrets(Configuration sessionConf, Table table) {
     TableDesc tableDesc = new TableDesc();
     Properties tableProps = new Properties();
     tableProps.setProperty(InputFormatConfig.CATALOG_NAME, CATALOG_NAME);
     tableDesc.setProperties(tableProps);
     Map<String, String> jobSecrets = Maps.newHashMap();
-    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(tableDesc, jobSecrets, sessionConf);
-    jobSecrets.forEach(jobConf::set);
+    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(table, tableDesc, jobSecrets, sessionConf);
+    return jobSecrets;
   }
 
   private void appendFileB() {

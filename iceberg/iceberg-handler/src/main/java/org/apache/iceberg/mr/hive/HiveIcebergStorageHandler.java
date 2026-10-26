@@ -279,8 +279,23 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets) {
-    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(tableDesc, secrets, conf);
-    IcebergVendedCredentialUtil.propagateVendedCredentialsToJob(tableDesc, secrets, conf);
+    Properties props = tableDesc.getProperties();
+    if (props == null) {
+      return;
+    }
+    if (!IcebergVendedCredentialUtil.requestsVendedCredentials(props, conf) &&
+        !RestCatalogScanPlanningUtil.isServerSideScanPlanningEnabled(conf)) {
+      return;
+    }
+    Table table;
+    try {
+      table = IcebergVendedCredentialUtil.getTableWithVendedCredentials(props, conf);
+    } catch (NoSuchTableException e) {
+      // Table may not exist yet for CTAS; there is nothing to plan or vend credentials for.
+      return;
+    }
+    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(table, tableDesc, secrets, conf);
+    IcebergVendedCredentialUtil.propagateVendedCredentialsToJob(table, tableDesc, secrets, conf);
   }
 
   @Override

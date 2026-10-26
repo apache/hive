@@ -80,6 +80,7 @@ import org.apache.iceberg.mapping.NameMapping;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.util.SerializationUtil;
@@ -326,17 +327,25 @@ public class HiveTableUtil {
    * Pins a branch or tag read on a reloaded REST table to the snapshot the ref pointed at in the
    * compile-time table. A branch whose head snapshot has an older schema keeps {@link TableScan#useRef}:
    * branches read with the table schema, while {@link TableScan#useSnapshot} would switch to the
-   * snapshot schema and lose columns added since.
+   * snapshot schema and lose columns added since. In that case the live ref head must still match the
+   * compile-time snapshot id, or the branch moved after compilation and this method fails fast.
+   *
+   * @throws IllegalStateException if the ref is absent from the serialized table, or the branch head moved
    */
   public static TableScan pinServerSideScanRefToSerializedTable(
       Table serializedTable, String refName, TableScan scan) {
     SnapshotRef ref = serializedTable.refs().get(refName);
-    if (ref == null) {
-      return scan.useRef(refName);
-    }
+    Preconditions.checkState(
+        ref != null,
+        "Cannot find reference %s in compile-time table metadata",
+        refName);
     Integer refSchemaId = serializedTable.snapshot(ref.snapshotId()).schemaId();
     if (ref.isBranch() && !Objects.equals(refSchemaId, serializedTable.schema().schemaId())) {
-      return scan.useRef(refName);
+      TableScan pinned = scan.useRef(refName);
+      Preconditions.checkState(
+          pinned.snapshot().snapshotId() == ref.snapshotId(),
+          "Branch %s moved since query compilation", refName);
+      return pinned;
     }
     return scan.useSnapshot(ref.snapshotId());
   }

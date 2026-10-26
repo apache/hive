@@ -25,7 +25,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -51,8 +50,8 @@ import org.apache.iceberg.rest.RESTCatalogProperties;
  *
  * <p>{@link #setScanPlanningMode(Configuration, String, String)},
  * {@link #getScanPlanningMode(Configuration, String)} and
- * {@link #propagateCatalogSecretsToJob(TableDesc, Map, Configuration)} are public so tests in other Maven modules
- * (for example {@code itests/hive-iceberg-rest-server}) can configure scan planning; those modules
+ * {@link #propagateCatalogSecretsToJob(Table, TableDesc, Map, Configuration)} are public so tests in other
+ * Maven modules (for example {@code itests/hive-iceberg-rest-server}) can configure scan planning; those modules
  * compile against this artifact as a JAR and cannot call package-private members. They are not
  * intended as a general operator or application API.
  *
@@ -99,32 +98,24 @@ public final class RestCatalogScanPlanningUtil {
   }
 
   /**
-   * Returns true when catalog properties should be copied into the Tez job so split generation can
-   * reload a live REST catalog table for server-side scan planning.
+   * Returns true when split generation should reload the live REST table for server-side scan planning:
+   * the Hive kill switch is on and Iceberg resolved the loaded table for server-side planning. Both the
+   * per-table marker and the catalog job secrets are gated on this.
    */
-  static boolean shouldPropagateCatalogPropertiesToJob(String catalogName, Configuration conf) {
-    String resolvedCatalogName = HiveTableUtil.resolveCatalogName(conf, catalogName);
-    if (StringUtils.isEmpty(resolvedCatalogName) || conf == null) {
-      return false;
-    }
-    return CatalogUtil.ICEBERG_CATALOG_TYPE_REST.equals(
-        IcebergCatalogProperties.getCatalogType(conf, resolvedCatalogName)) &&
-        isServerSideScanPlanningEnabled(conf);
+  static boolean shouldPlanServerSide(Configuration sessionConf, Table table) {
+    return isServerSideScanPlanningEnabled(sessionConf) && usesServerSideScanPlanning(table);
   }
 
   /**
    * Writes the per-table {@link InputFormatConfig#serverSideScanPlanningKey(String)} marker and the
-   * session default catalog into the table's job properties when the loaded table plans server-side
-   * and the Hive kill switch is on. The {@code iceberg.catalog.<catalog>.*} entries go through job
-   * secrets instead, see {@link #propagateCatalogSecretsToJob(TableDesc, Map, Configuration)}.
+   * session default catalog into the table's job properties when {@link #shouldPlanServerSide} holds.
+   * The {@code iceberg.catalog.<catalog>.*} entries go through job secrets instead, see
+   * {@link #propagateCatalogSecretsToJob(Table, TableDesc, Map, Configuration)}.
    * Session values replace existing entries so a session {@code SET} wins.
    */
   public static void propagateCatalogPropertiesToJob(
       Configuration sessionConf, Table table, String tableIdentifier, Map<String, String> jobProperties) {
-    if (sessionConf == null || jobProperties == null) {
-      return;
-    }
-    if (!isServerSideScanPlanningEnabled(sessionConf) || !usesServerSideScanPlanning(table)) {
+    if (jobProperties == null || !shouldPlanServerSide(sessionConf, table)) {
       return;
     }
     jobProperties.put(InputFormatConfig.serverSideScanPlanningKey(tableIdentifier), Boolean.TRUE.toString());
@@ -138,20 +129,22 @@ public final class RestCatalogScanPlanningUtil {
   /**
    * Copies all {@code iceberg.catalog.<catalog>.*} entries from the HS2 session into job secrets
    * (HIVE-20651), so catalog credentials never land in plain job properties. Only split generation in
-   * the AM needs them to load the REST catalog; {@code HiveInputFormat#addSplitsForGroup} copies job
-   * secrets into the job conf before {@code getSplits}.
+   * the AM needs them to load the REST catalog, so they ship only when {@link #shouldPlanServerSide}
+   * holds for the loaded table, the same decision as the per-table marker;
+   * {@code HiveInputFormat#addSplitsForGroup} copies job secrets into the job conf before {@code getSplits}.
    */
   public static void propagateCatalogSecretsToJob(
-      TableDesc tableDesc, Map<String, String> jobSecrets, Configuration sessionConf) {
-    if (tableDesc == null || tableDesc.getProperties() == null || jobSecrets == null || sessionConf == null) {
+      Table table, TableDesc tableDesc, Map<String, String> jobSecrets, Configuration sessionConf) {
+    if (tableDesc == null || tableDesc.getProperties() == null || jobSecrets == null ||
+        !shouldPlanServerSide(sessionConf, table)) {
       return;
     }
-    String catalogName = tableDesc.getProperty(InputFormatConfig.CATALOG_NAME);
-    if (!shouldPropagateCatalogPropertiesToJob(catalogName, sessionConf)) {
+    String catalogName =
+        HiveTableUtil.resolveCatalogName(sessionConf, tableDesc.getProperty(InputFormatConfig.CATALOG_NAME));
+    if (StringUtils.isEmpty(catalogName)) {
       return;
     }
-    String catalogPrefix = IcebergCatalogProperties.CATALOG_CONFIG_PREFIX +
-        HiveTableUtil.resolveCatalogName(sessionConf, catalogName) + ".";
+    String catalogPrefix = IcebergCatalogProperties.CATALOG_CONFIG_PREFIX + catalogName + ".";
     sessionConf.forEach(entry -> {
       if (entry.getKey().startsWith(catalogPrefix)) {
         jobSecrets.put(entry.getKey(), entry.getValue());

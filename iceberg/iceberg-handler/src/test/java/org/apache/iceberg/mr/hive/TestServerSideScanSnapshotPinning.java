@@ -25,11 +25,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.CatalogUtil;
-import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.hadoop.HadoopTables;
@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TestServerSideScanSnapshotPinning {
 
@@ -49,6 +50,7 @@ class TestServerSideScanSnapshotPinning {
   private static final Schema SCHEMA =
       new Schema(Types.NestedField.required(1, "id", Types.LongType.get()));
   private static final PartitionSpec SPEC = PartitionSpec.unpartitioned();
+  private static final String BRANCH = "b";
 
   @TempDir
   private Path warehouse;
@@ -56,25 +58,13 @@ class TestServerSideScanSnapshotPinning {
   @Test
   void pinsScanToSerializedSnapshotWhenCatalogHasAdvanced() throws Exception {
     Table table = new HadoopTables().create(SCHEMA, SPEC, warehouse.toString());
-    DataFile fileA =
-        DataFiles.builder(SPEC)
-            .withPath(warehouse + "/data-a.parquet")
-            .withFileSizeInBytes(10)
-            .withRecordCount(1)
-            .build();
-    table.newAppend().appendFile(fileA).commit();
+    appendFile(table, "data-a.parquet");
     long pinnedSnapshotId = table.currentSnapshot().snapshotId();
 
     Configuration conf = buildServerModeConf(table);
     Table serializedTable = HiveTableUtil.deserializeTable(conf, table.name());
 
-    DataFile fileB =
-        DataFiles.builder(SPEC)
-            .withPath(warehouse + "/data-b.parquet")
-            .withFileSizeInBytes(10)
-            .withRecordCount(1)
-            .build();
-    table.newAppend().appendFile(fileB).commit();
+    appendFile(table, "data-b.parquet");
     assertThat(table.currentSnapshot().snapshotId()).isNotEqualTo(pinnedSnapshotId);
 
     TableScan scan =
@@ -91,14 +81,7 @@ class TestServerSideScanSnapshotPinning {
   @Test
   void pinnedScanAllowsColumnSelection() {
     Table table = new HadoopTables().create(SCHEMA, SPEC, warehouse.toString());
-    table.newAppend()
-        .appendFile(
-            DataFiles.builder(SPEC)
-                .withPath(warehouse + "/data-a.parquet")
-                .withFileSizeInBytes(10)
-                .withRecordCount(1)
-                .build())
-        .commit();
+    appendFile(table, "data-a.parquet");
     Configuration conf = buildServerModeConf(table);
     Table serializedTable = HiveTableUtil.deserializeTable(conf, table.name());
 
@@ -106,6 +89,103 @@ class TestServerSideScanSnapshotPinning {
         HiveTableUtil.pinServerSideScanToSerializedTable(conf, serializedTable, table.newScan())
             .select("id");
     assertThat(scan.schema().columns()).extracting(Types.NestedField::name).containsExactly("id");
+  }
+
+  @Test
+  void failsWhenRefMissingFromSerializedTable() {
+    Table table = new HadoopTables().create(SCHEMA, SPEC, warehouse.toString());
+    appendFile(table, "data-a.parquet");
+    Configuration conf = buildServerModeConf(table);
+    Table serializedTable = HiveTableUtil.deserializeTable(conf, table.name());
+    table.manageSnapshots().createBranch(BRANCH, table.currentSnapshot().snapshotId()).commit();
+
+    assertThatThrownBy(() ->
+            HiveTableUtil.pinServerSideScanRefToSerializedTable(
+                serializedTable, BRANCH, table.newScan()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Cannot find reference " + BRANCH);
+  }
+
+  @Test
+  void pinsOlderSchemaBranchWithUseRefWhenBranchHasNotMoved() throws Exception {
+    Table table = new HadoopTables().create(SCHEMA, SPEC, warehouse.toString());
+    appendFile(table, "data-a.parquet");
+    long branchSnapshotId = table.currentSnapshot().snapshotId();
+    table.manageSnapshots().createBranch(BRANCH, branchSnapshotId).commit();
+
+    table.updateSchema().addColumn("extra", Types.StringType.get()).commit();
+    appendFile(table, "data-b.parquet");
+
+    Configuration conf = buildServerModeConf(table);
+    Table serializedTable = HiveTableUtil.deserializeTable(conf, table.name());
+    assertThat(serializedTable.snapshot(branchSnapshotId).schemaId())
+        .isNotEqualTo(serializedTable.schema().schemaId());
+
+    TableScan scan =
+        HiveTableUtil.pinServerSideScanRefToSerializedTable(serializedTable, BRANCH, table.newScan());
+    assertThat(scan.snapshot().snapshotId()).isEqualTo(branchSnapshotId);
+    assertThat(scan.schema().columns())
+        .extracting(Types.NestedField::name)
+        .containsExactly("id", "extra");
+
+    List<String> plannedPaths = Lists.newArrayList();
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
+      tasks.forEach(task -> plannedPaths.add(task.file().location()));
+    }
+    assertThat(plannedPaths).anyMatch(path -> path.contains("data-a.parquet"));
+    assertThat(plannedPaths).noneMatch(path -> path.contains("data-b.parquet"));
+  }
+
+  @Test
+  void failsWhenBranchMovedSinceCompilation() {
+    Table table = new HadoopTables().create(SCHEMA, SPEC, warehouse.toString());
+    appendFile(table, "data-a.parquet");
+    long branchSnapshotId = table.currentSnapshot().snapshotId();
+    table.manageSnapshots().createBranch(BRANCH, branchSnapshotId).commit();
+
+    table.updateSchema().addColumn("extra", Types.StringType.get()).commit();
+    appendFile(table, "data-b.parquet");
+
+    Configuration conf = buildServerModeConf(table);
+    Table serializedTable = HiveTableUtil.deserializeTable(conf, table.name());
+    SnapshotRef compileTimeRef = serializedTable.refs().get(BRANCH);
+    assertThat(compileTimeRef).isNotNull();
+    assertThat(compileTimeRef.snapshotId()).isEqualTo(branchSnapshotId);
+    assertThat(serializedTable.snapshot(branchSnapshotId).schemaId())
+        .isNotEqualTo(serializedTable.schema().schemaId());
+
+    appendFileOnBranch(table, BRANCH, "data-c.parquet");
+    assertThat(table.refs().get(BRANCH).snapshotId()).isNotEqualTo(branchSnapshotId);
+
+    assertThatThrownBy(() ->
+            HiveTableUtil.pinServerSideScanRefToSerializedTable(
+                serializedTable, BRANCH, table.newScan()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Branch " + BRANCH + " moved since query compilation");
+  }
+
+  @Test
+  void pinsTagWithUseSnapshotWhenServerSideTableReloaded() throws Exception {
+    Table table = new HadoopTables().create(SCHEMA, SPEC, warehouse.toString());
+    appendFile(table, "data-a.parquet");
+    long taggedSnapshot = table.currentSnapshot().snapshotId();
+    String tag = "t1";
+    table.manageSnapshots().createTag(tag, taggedSnapshot).commit();
+
+    Configuration conf = buildServerModeConf(table);
+    Table serializedTable = HiveTableUtil.deserializeTable(conf, table.name());
+
+    appendFile(table, "data-b.parquet");
+    assertThat(table.currentSnapshot().snapshotId()).isNotEqualTo(taggedSnapshot);
+
+    TableScan scan =
+        HiveTableUtil.pinServerSideScanRefToSerializedTable(serializedTable, tag, table.newScan());
+    List<String> plannedPaths = Lists.newArrayList();
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
+      tasks.forEach(task -> plannedPaths.add(task.file().location()));
+    }
+    assertThat(plannedPaths).anyMatch(path -> path.contains("data-a.parquet"));
+    assertThat(plannedPaths).noneMatch(path -> path.contains("data-b.parquet"));
   }
 
   @Test
@@ -119,6 +199,29 @@ class TestServerSideScanSnapshotPinning {
     TableScan pinned =
         HiveTableUtil.pinServerSideScanToSerializedTable(conf, serializedTable, scan);
     assertThat(pinned).isSameAs(scan);
+  }
+
+  private void appendFile(Table table, String fileName) {
+    table.newAppend()
+        .appendFile(
+            DataFiles.builder(table.spec())
+                .withPath(warehouse + "/" + fileName)
+                .withFileSizeInBytes(10)
+                .withRecordCount(1)
+                .build())
+        .commit();
+  }
+
+  private void appendFileOnBranch(Table table, String branch, String fileName) {
+    table.newAppend()
+        .toBranch(branch)
+        .appendFile(
+            DataFiles.builder(table.spec())
+                .withPath(warehouse + "/" + fileName)
+                .withFileSizeInBytes(10)
+                .withRecordCount(1)
+                .build())
+        .commit();
   }
 
   private Configuration buildServerModeConf(Table table) {
