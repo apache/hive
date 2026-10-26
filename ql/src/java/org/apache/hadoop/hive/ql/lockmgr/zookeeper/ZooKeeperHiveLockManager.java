@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.lockmgr.zookeeper;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -39,7 +40,6 @@ import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -71,12 +71,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   private static String clientIp;
 
   static {
-    clientIp = "UNKNOWN";
-    try {
-      InetAddress clientAddr = InetAddress.getLocalHost();
-      clientIp = clientAddr.getHostAddress();
-    } catch (Exception e1) {
-    }
+    clientIp = ServerUtils.getHostAddressString(ServerUtils.hostname());
   }
 
   public ZooKeeperHiveLockManager() {
