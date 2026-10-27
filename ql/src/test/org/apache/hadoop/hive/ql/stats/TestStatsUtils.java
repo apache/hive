@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -634,4 +635,29 @@ class TestStatsUtils {
     assertEquals(allColumnStats.getFirst(), colStatNotNeededButExists);
   }
 
+  @Test
+  void testCombineDistinctValuesScalesTheSmallerCountsByTheIndependenceFactor() {
+    long a = 1_000_000, b = 10_000, c = 100;
+    assertEquals(a, combine(0, c, a, b));
+    assertEquals((long) ((long) (a * Math.sqrt(b)) * Math.pow(c, 0.25)), combine(0.5, c, a, b));
+    assertEquals((long) ((long) (a * Math.pow(b, 0.25)) * Math.pow(c, 0.0625)), combine(0.25, c, a, b));
+    assertEquals(a * b * c, combine(1, c, a, b));
+  }
+
+  private static long combine(double independenceFactor, Long... distinctVals) {
+    return StatsUtils.combineDistinctValues(new ArrayList<>(List.of(distinctVals)), independenceFactor);
+  }
+
+  @Test
+  void testMultiKeyJoinIndependenceFactor() {
+    HiveConf conf = new HiveConf();
+    assertEquals(0.25, StatsUtils.getMultiKeyJoinIndependenceFactor(conf,
+        HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS));
+    conf.setFloatVar(HiveConf.ConfVars.HIVE_STATS_MULTI_KEY_JOINS_INDEPENDENCE_FACTOR, 0f);
+    assertEquals(0, StatsUtils.getMultiKeyJoinIndependenceFactor(conf,
+        HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS));
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS, false);
+    assertEquals(0.5, StatsUtils.getMultiKeyJoinIndependenceFactor(conf,
+        HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS));
+  }
 }

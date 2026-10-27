@@ -53,14 +53,14 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col3
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 20 Data size: 3560 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: hash(_col0,_col3) (type: int)
                           outputColumnNames: _col0
-                          Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 20 Data size: 3560 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col0)
-                            minReductionHashAggr: 0.9818182
+                            minReductionHashAggr: 0.95
                             mode: hash
                             outputColumnNames: _col0
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
