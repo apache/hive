@@ -214,22 +214,30 @@ public class IcebergTableUtil {
   }
 
   public static Snapshot getTableSnapshot(Table table, org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    return getTableSnapshot(table, hmsTable.getAsOfTimestamp(), hmsTable.getAsOfVersion(), hmsTable.getSnapshotRef());
+  }
+
+  /**
+   * The snapshot a scan reads: as of a time, as of a version (a snapshot id or a ref name), the head of a branch or
+   * tag, or the current one.
+   */
+  static Snapshot getTableSnapshot(Table table, String asOfTimestamp, String asOfVersion, String snapshotRef) {
     long snapshotId = -1;
 
-    if (hmsTable.getAsOfTimestamp() != null) {
+    if (asOfTimestamp != null) {
       ZoneId timeZone = SessionState.get() == null ?
           new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
-      TimestampTZ time = TimestampTZUtil.parse(hmsTable.getAsOfTimestamp(), timeZone);
+      TimestampTZ time = TimestampTZUtil.parse(asOfTimestamp, timeZone);
       snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, time.toEpochMilli());
 
-    } else if (hmsTable.getAsOfVersion() != null) {
+    } else if (asOfVersion != null) {
       try {
-        snapshotId = Long.parseLong(hmsTable.getAsOfVersion());
+        snapshotId = Long.parseLong(asOfVersion);
       } catch (NumberFormatException e) {
-        SnapshotRef ref = table.refs().get(hmsTable.getAsOfVersion());
+        SnapshotRef ref = table.refs().get(asOfVersion);
         if (ref == null) {
           throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " +
-              hmsTable.getAsOfVersion());
+              asOfVersion);
         }
         snapshotId = ref.snapshotId();
       }
@@ -237,7 +245,7 @@ public class IcebergTableUtil {
     if (snapshotId > 0) {
       return table.snapshot(snapshotId);
     }
-    return getTableSnapshot(table, hmsTable.getSnapshotRef());
+    return getTableSnapshot(table, snapshotRef);
   }
 
   static Snapshot getTableSnapshot(Table table, String snapshotRef) {

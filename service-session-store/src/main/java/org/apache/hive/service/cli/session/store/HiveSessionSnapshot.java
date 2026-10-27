@@ -34,6 +34,7 @@ public class HiveSessionSnapshot {
   private final String ipAddress;
   private final String currentDatabase;
   private final Map<String, String> overriddenConfigurations;
+  private final Map<String, String> hiveVariables;
   private final List<String> addedJars;
   private final List<String> addedFiles;
   private final Map<String, String> tempTableDefinitions;
@@ -50,6 +51,7 @@ public class HiveSessionSnapshot {
       @JsonProperty("ipAddress") String ipAddress,
       @JsonProperty("currentDatabase") String currentDatabase,
       @JsonProperty("overriddenConfigurations") Map<String, String> overriddenConfigurations,
+      @JsonProperty("hiveVariables") Map<String, String> hiveVariables,
       @JsonProperty("addedJars") List<String> addedJars,
       @JsonProperty("addedFiles") List<String> addedFiles,
       @JsonProperty("tempTableDefinitions") Map<String, String> tempTableDefinitions,
@@ -64,6 +66,7 @@ public class HiveSessionSnapshot {
     this.currentDatabase = currentDatabase;
     this.overriddenConfigurations = overriddenConfigurations != null
         ? new HashMap<>(overriddenConfigurations) : Collections.emptyMap();
+    this.hiveVariables = hiveVariables != null ? new HashMap<>(hiveVariables) : Collections.emptyMap();
     this.addedJars = addedJars != null ? new ArrayList<>(addedJars) : Collections.emptyList();
     this.addedFiles = addedFiles != null ? new ArrayList<>(addedFiles) : Collections.emptyList();
     this.tempTableDefinitions = tempTableDefinitions != null
@@ -100,6 +103,11 @@ public class HiveSessionSnapshot {
   @JsonProperty("overriddenConfigurations")
   public Map<String, String> getOverriddenConfigurations() {
     return overriddenConfigurations;
+  }
+
+  @JsonProperty("hiveVariables")
+  public Map<String, String> getHiveVariables() {
+    return hiveVariables;
   }
 
   @JsonProperty("addedJars")
@@ -152,6 +160,7 @@ public class HiveSessionSnapshot {
     private String ipAddress;
     private String currentDatabase;
     private Map<String, String> overriddenConfigurations;
+    private Map<String, String> hiveVariables;
     private List<String> addedJars;
     private List<String> addedFiles;
     private Map<String, String> tempTableDefinitions;
@@ -183,6 +192,11 @@ public class HiveSessionSnapshot {
 
     public Builder overriddenConfigurations(Map<String, String> overriddenConfigurations) {
       this.overriddenConfigurations = overriddenConfigurations;
+      return this;
+    }
+
+    public Builder hiveVariables(Map<String, String> hiveVariables) {
+      this.hiveVariables = hiveVariables;
       return this;
     }
 
@@ -229,7 +243,7 @@ public class HiveSessionSnapshot {
 
     public HiveSessionSnapshot build() {
       return new HiveSessionSnapshot(sessionHandleId, username, ipAddress, currentDatabase,
-          overriddenConfigurations, addedJars, addedFiles, tempTableDefinitions,
+          overriddenConfigurations, hiveVariables, addedJars, addedFiles, tempTableDefinitions,
           tempTablePartitionDefinitions, tempFunctionDefinitions, protocolVersion, creationTime,
           lastAccessTime);
     }

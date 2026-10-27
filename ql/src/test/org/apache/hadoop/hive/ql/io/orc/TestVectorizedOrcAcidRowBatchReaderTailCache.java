@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
+import org.apache.hadoop.hive.llap.io.api.LlapOrcIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -81,8 +82,10 @@ public class TestVectorizedOrcAcidRowBatchReaderTailCache {
     try (Reader reader = OrcFile.createReader(path, OrcFile.readerOptions(conf))) {
       cachedTail = new OrcTail(reader.getFileTail(), reader.getSerializedFileFooter());
     }
+    LlapOrcIo orcIo = mock(LlapOrcIo.class);
+    when(orcIo.getTailFromCache(any(), any(), any(), any())).thenReturn(cachedTail);
     LlapIo<?> llapIo = mock(LlapIo.class);
-    when(llapIo.getOrcTailFromCache(any(), any(), any(), any())).thenReturn(cachedTail);
+    when(llapIo.orc()).thenReturn(orcIo);
 
     try (MockedStatic<LlapProxy> proxy = mockStatic(LlapProxy.class)) {
       proxy.when(LlapProxy::isDaemon).thenReturn(true);

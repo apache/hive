@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -84,7 +83,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import static java.util.stream.Collectors.toList;
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
 class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
@@ -94,6 +92,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
   private final FileSplit split;
   private final IncludesImpl includes;
+  private final List<Integer> missingColIndices;
   private final SearchArgument sarg;
   private final VectorizedRowBatchCtx rbCtx;
   private final boolean isVectorized;
@@ -135,7 +134,13 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     if (mapWork == null) return null; // No compatible MapWork.
     LlapRecordReader rr = new LlapRecordReader(mapWork, job, split, tableIncludedCols, hostName,
         cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
-    if (!rr.checkOrcSchemaEvolution()) {
+    if (rr.rp == null) {
+      // The producer declined the split; the caller uses the source reader. The constructor set
+      // dagId/queryId/fragmentId, and close() cannot run without a pipeline to clear them.
+      MDC.clear();
+      return null;
+    }
+    if (!rr.checkSchemaEvolution()) {
       rr.close();
       throwIfCacheOnlyRead(HiveConf.getBoolVar(job, ConfVars.LLAP_IO_CACHE_ONLY));
       return null;
@@ -183,9 +188,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     int queueLimitMin = getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_MIN, job, daemonConf);
     long bestEffortSize = getLongQueueVar(ConfVars.LLAP_IO_CVB_BUFFERED_SIZE, job, daemonConf);
 
-    final boolean
-        decimal64Support =
-        HiveConf.getVar(job, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+    final boolean decimal64Support = HiveConf.isDecimal64VectorizationEnabled(job);
     int
         limit =
         determineQueueLimit(bestEffortSize,
@@ -228,6 +231,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, includes, sarg, counters, includes,
         sourceInputFormat, sourceSerDe, reporter, job, mapWork.getPathToPartitionInfo());
+    missingColIndices = includes.getReaderLogicalColumnIds().stream()
+        .filter(idx -> !includes.getLogicalOrderedColumnIds().contains(idx)).toList();
   }
 
   private static int getQueueVar(ConfVars var, JobConf jobConf, Configuration daemonConf) {
@@ -348,8 +353,14 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     executor.submit(rp.getReadCallable());
   }
 
-  private boolean checkOrcSchemaEvolution() {
+  private boolean checkSchemaEvolution() {
     SchemaEvolution evolution = rp.getSchemaEvolution();
+    if (evolution == null) {
+      // Only the ORC pipeline hangs an ORC SchemaEvolution off the ReadPipeline; other formats
+      // (native Parquet today) handle column resolution themselves, so there is nothing to
+      // validate here.
+      return true;
+    }
 
     if (evolution.hasConversion() && !evolution.isOnlyImplicitConversion()) {
 
@@ -445,8 +456,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         cvb.swapColumnVector(ixInReadSet, vrb.cols, ixInVrb);
       }
       // null out col vectors for which the (ORC) file had no data
-      List<Integer> missingColIndices = includes.getReaderLogicalColumnIds().stream()
-          .filter(idx -> !includes.getLogicalOrderedColumnIds().contains(idx)).collect(toList());
       if (missingColIndices.size() != (cvb.cols.length - cvbColsPresent)) {
         throw new RuntimeException("Unexpected number of missing columns, expected " + missingColIndices.size() +
             ", but reader returned " + (cvb.cols.length - cvbColsPresent) + " missing column vectors.");
@@ -656,6 +665,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     this.partitionValues = partitionValues;
   }
 
+  ReadPipeline getReadPipeline() {
+    return rp;
+  }
+
   /** This class encapsulates include-related logic for LLAP readers. It is not actually specific
    *  to LLAP IO but in LLAP IO in particular, I want to encapsulate all this mess for now until
    *  we have smth better like Schema Evolution v2. This can also hypothetically encapsulate
@@ -791,7 +804,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
             "orc.force.positional.evolution turned on.");
         return;
       }
-      logicalOrderedColumnIds = new LinkedList<>();
+      logicalOrderedColumnIds = new ArrayList<>();
       Map<Integer, String> fileSchemaMap = new HashMap<>();
       Map<String, Integer> readSchemaMap = new HashMap<>();
       int order = 0;
@@ -881,7 +894,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
      * @param evolution - provided by ORC libs as per file schema and read schema
      */
     private void adjustPhysicalColumnIds(SchemaEvolution evolution) {
-      LinkedList<Integer> newFilePhysicalColumnIds = new LinkedList<>();
+      List<Integer> newFilePhysicalColumnIds = new ArrayList<>();
       boolean[] firstLevelPhysicalIncludes = OrcInputFormat.firstLevelFileIncludes(evolution);
       for (int i = 1; i < firstLevelPhysicalIncludes.length; ++i) {
         if (firstLevelPhysicalIncludes[i]) {

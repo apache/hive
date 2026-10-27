@@ -23,6 +23,9 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import java.util.Map;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -73,6 +76,11 @@ public abstract class SizeBasedBigTableSelectorForAutoSMJ {
   }
 
   protected long getSize(HiveConf conf, Table table) {
+    // a storage handler serves the size from its own metadata; the table's parameters do not
+    // hold it, and listing the table's location can take minutes on object storage
+    if (table.isNonNative()) {
+      return handlerSize(table);
+    }
     Path path = table.getPath();
     String size = table.getProperty("totalSize");
     return getSize(conf, size, path);
@@ -83,5 +91,46 @@ public abstract class SizeBasedBigTableSelectorForAutoSMJ {
     String size = partition.getParameters().get("totalSize");
 
     return getSize(conf, size, path);
+  }
+
+  /**
+   * Sums the sizes of the given partitions. For a storage-handler table the partition statistics
+   * are fetched from the handler in one batch; when the handler has no statistics for some
+   * partition the sum would fall short, so the table-level size is used instead.
+   */
+  protected long getSize(HiveConf conf, Table table, List<Partition> partitions) {
+    if (!table.isNonNative()) {
+      long total = 0;
+      for (Partition partition : partitions) {
+        total += getSize(conf, partition);
+      }
+      return total;
+    }
+    List<String> partNames = partitions.stream().map(Partition::getName).toList();
+    Map<String, Map<String, String>> stats =
+        table.getStorageHandler().getAggrBasicStatsFor(table, partNames);
+    long total = 0;
+    for (String partName : partNames) {
+      Map<String, String> partStats = stats.get(partName);
+      String size = partStats != null ? partStats.get(StatsSetupConst.TOTAL_SIZE) : null;
+      long partSize = NumberUtils.toLong(size, -1);
+      if (partSize < 0) {
+        // a partition without statistics would make the sum an underestimate, so fall back to
+        // the whole-table size: it may overestimate the scan but never underestimates it
+        return handlerSize(table);
+      }
+      total += partSize;
+    }
+    return total;
+  }
+
+  private static long handlerSize(Table table) {
+    if (!table.getStorageHandler().canProvideBasicStatistics()) {
+      return -1;
+    }
+    Map<String, String> stats = table.getStorageHandler().getBasicStatistics(table);
+    return NumberUtils.toLong(
+        stats != null ? stats.get(StatsSetupConst.TOTAL_SIZE) : null,
+        -1);
   }
 }

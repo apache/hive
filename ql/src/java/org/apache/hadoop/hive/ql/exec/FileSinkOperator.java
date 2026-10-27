@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AffectedRowsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -149,6 +150,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient String counterGroup;
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
   public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
+  private transient long affectedRowCount;
   private transient Set<String> dynamicPartitionSpecs = new HashSet<>();
 
   /**
@@ -178,6 +180,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Path[] outPathsCommitted;
     Path[] finalPaths;
     RecordWriter[] outWriters;
+    boolean[] outWritersClosed;
     RecordUpdater[] updaters;
     Stat stat;
     int acidLastBucket = -1;
@@ -221,6 +224,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       outPathsCommitted = new Path[numFiles];
       finalPaths = new Path[numFiles];
       outWriters = new RecordWriter[numFiles];
+      outWritersClosed = new boolean[numFiles];
       updaters = new RecordUpdater[numFiles];
       LOG.debug("Created slots for {}", numFiles);
       stat = new Stat();
@@ -229,9 +233,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     public void closeWriters(boolean abort, List<Path> deleteDeltas) throws HiveException {
       Exception exception = null;
       for (int idx = 0; idx < outWriters.length; idx++) {
-        if (outWriters[idx] != null) {
+        if (outWriters[idx] != null && !outWritersClosed[idx]) {
           try {
             outWriters[idx].close(abort);
+            recordAffectedRows(outWriters[idx]);
+            outWritersClosed[idx] = true;
             updateProgress();
           } catch (IOException e) {
             exception = e;
@@ -287,6 +293,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // Made an attempt to close all writers.
       if (exception != null) {
         throw new HiveException(exception);
+      }
+    }
+
+    private void recordAffectedRows(RecordWriter writer) {
+      if (writer instanceof AffectedRowsProvidingRecordWriter affectedRowsWriter) {
+        affectedRowCount = Math.max(affectedRowCount, 0) + affectedRowsWriter.getAffectedRows();
       }
     }
 
@@ -354,8 +366,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       for (int idx = 0; idx < outWriters.length; idx++) {
         if (outWriters[idx] != null) {
           try {
-            LOG.debug("Aborted: closing: " + outWriters[idx].toString());
-            outWriters[idx].close(abort);
+            if (!outWritersClosed[idx]) {
+              LOG.debug("Aborted: closing: " + outWriters[idx].toString());
+              outWriters[idx].close(abort);
+              outWritersClosed[idx] = true;
+            }
             if (delete) {
               fs.delete(outPaths[idx], true);
             }
@@ -524,6 +539,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient FileSystem fs;
   protected transient Serializer serializer;
   protected final transient LongWritable row_count = new LongWritable();
+  private final transient LongWritable modifiedRowCount = new LongWritable();
 
   /**
    * The evaluators for the multiFile sprayer. If the table under consideration has 1000 buckets,
@@ -743,6 +759,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       numRows = 0;
       cntr = 1;
+      affectedRowCount = -1;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
       statsMap.put(getCounterName(Counter.RECORDS_OUT), row_count);
@@ -755,7 +772,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       //Counter for number of rows that are associated with a destination table in FileSinkOperator.
       //This count is used to get total number of rows in an insert query.
       if (conf.getTableInfo() != null && conf.getTableInfo().getTableName() != null) {
-        statsMap.put(TOTAL_TABLE_ROWS_WRITTEN, row_count);
+        statsMap.put(TOTAL_TABLE_ROWS_WRITTEN, modifiedRowCount);
       }
     } catch (HiveException e) {
       throw e;
@@ -860,6 +877,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fsp.outPaths = Arrays.copyOf(fsp.outPaths, bucketId + 1);
         fsp.finalPaths = Arrays.copyOf(fsp.finalPaths, bucketId + 1);
         fsp.outWriters = Arrays.copyOf(fsp.outWriters, bucketId + 1);
+        fsp.outWritersClosed = Arrays.copyOf(fsp.outWritersClosed, bucketId + 1);
         statsFromRecordWriter = Arrays.copyOf(statsFromRecordWriter, bucketId + 1);
       }
       createBucketForFileIdx(fsp, bucketId);
@@ -1566,6 +1584,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           fsp.commit(fs, commitPaths, deleteDeltas);
         }
       }
+      long modifiedRows = numRows;
+      if (conf.isDeleteOfSplitUpdate()) {
+        modifiedRows = 0;
+      } else if (affectedRowCount >= 0) {
+        modifiedRows = affectedRowCount;
+      }
+      modifiedRowCount.set(modifiedRows);
       if (conf.isMmTable() || conf.isDirectInsert()) {
         boolean isDelete = AcidUtils.Operation.DELETE.equals(conf.getAcidOperation());
         Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(),

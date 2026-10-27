@@ -339,7 +339,6 @@
                       <exclude>dnsjava:*</exclude>
                       <exclude>io.airlift:*</exclude>
                       <exclude>io.dropwizard.metrics:*</exclude>
-                      <exclude>io.netty:netty-handler</exclude>
                       <exclude>io.netty:netty-resolver</exclude>
                       <exclude>io.netty:netty-buffer</exclude>
                       <exclude>io.netty:netty-transport</exclude>

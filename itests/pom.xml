@@ -50,6 +50,7 @@
     <module>qtest-iceberg</module>
     <module>test-docker</module>
     <module>hive-iceberg</module>
+    <module>tez-yarn-it</module>
   </modules>
   <dependencyManagement>
     <dependencies>
@@ -496,6 +497,11 @@
         <artifactId>assertj-core</artifactId>
         <version>${assertj.version}</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

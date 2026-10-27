@@ -159,7 +159,7 @@
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <!-- Upgrade roaringbit version whenever upgrading iceberg version -->
-    <iceberg.version>1.11.0</iceberg.version>
+    <iceberg.version>1.12.0</iceberg.version>
     <immutables.version>2.9.2</immutables.version>
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
     <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
@@ -195,7 +195,7 @@
     <mysql.version>8.2.0</mysql.version>
     <postgres.version>42.7.12</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
-    <opencsv.version>5.9</opencsv.version>
+    <opencsv.version>5.12.0</opencsv.version>
     <orc.version>2.3.0</orc.version>
     <otel.version>1.60.1</otel.version>
     <mockito-core.version>5.17.0</mockito-core.version>
@@ -211,7 +211,7 @@
     <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
     <protoc.path>${env.PROTOC_PATH}</protoc.path>
     <rat.version>0.16.1</rat.version>
-    <roaringbit.version>1.3.0</roaringbit.version>
+    <roaringbit.version>1.6.23</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
@@ -226,7 +226,7 @@
     <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.2</xerces.version>
     <xmlsec.version>2.3.4</xmlsec.version>
-    <zookeeper.version>3.8.4</zookeeper.version>
+    <zookeeper.version>3.9.6</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
     <curator.version>5.7.1</curator.version>
@@ -285,6 +285,12 @@
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>bundle</artifactId>
+        <version>${aws-java-sdk.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>apache5-client</artifactId>
         <version>${aws-java-sdk.version}</version>
         <scope>provided</scope>
       </dependency>
@@ -1387,11 +1393,13 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-internals</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-library</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
         <exclusions>
           <exclusion>
             <groupId>io.netty</groupId>
@@ -1403,6 +1411,7 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-api</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
         <exclusions>
           <exclusion>
             <groupId>com.sun.jersey</groupId>
@@ -1418,12 +1427,13 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-dag</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-mapreduce</artifactId>
         <version>${tez.version}</version>
-        <optional>true</optional>
+        <scope>provided</scope>
         <exclusions>
           <exclusion>
             <groupId>io.netty</groupId>
@@ -1459,11 +1469,14 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-common</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-protobuf-history-plugin</artifactId>
         <version>${tez.version}</version>
+        <!-- compile, not provided: ql shades these classes into hive-exec, which needs them with or without Tez
+             on the classpath (HIVE-29003); ql marks the dependency optional so the jar stays out of lib/. -->
         <exclusions>
           <exclusion>
             <groupId>*</groupId>

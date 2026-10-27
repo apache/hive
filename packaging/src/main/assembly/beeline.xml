@@ -39,7 +39,7 @@
             <useTransitiveDependencies>true</useTransitiveDependencies>
             <includes>
                 <include>org.apache.hadoop:hadoop-common:jar</include>
-                <include>org.apache.hive:hive-beeline:jar</include>
+                <include>org.apache.hive:hive-beeline:jar:standalone</include>
                 <include>org.apache.hive:hive-common:jar</include>
                 <include>org.apache.hive:hive-exec:jar</include>
                 <include>org.apache.hive:hive-jdbc</include>
@@ -72,15 +72,6 @@
                 <include>bin/hive-config.sh</include>
             </includes>
             <outputDirectory>/</outputDirectory>
-        </fileSet>
-
-        <fileSet>
-            <fileMode>755</fileMode>
-            <directory>${project.parent.basedir}/beeline/target</directory>
-            <outputDirectory>lib</outputDirectory>
-            <includes>
-                <include>jar-with-dependencies.jar</include>
-            </includes>
         </fileSet>
     </fileSets>
 

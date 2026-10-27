@@ -92,7 +92,7 @@ public final class PersistableSessionUtils {
 
   /**
    * Determines whether a SQL statement changes session state that should
-   * be persisted (database, configs, JARs, temp tables, temp functions).
+   * be persisted (database, configs, hive variables, JARs, temp tables, temp functions).
    */
   public static boolean isStateChangingCommand(String statement) {
     if (statement == null) {
@@ -210,6 +210,8 @@ public final class PersistableSessionUtils {
         .currentDatabase(sessionState != null ? sessionState.getCurrentDatabase() : null)
         .overriddenConfigurations(sessionState != null
             ? new HashMap<>(sessionState.getOverriddenConfigurations()) : null)
+        .hiveVariables(sessionState != null
+            ? new HashMap<>(sessionState.getHiveVariables()) : null)
         .addedJars(jars)
         .addedFiles(files)
         .tempTableDefinitions(tempTableDefs)
@@ -313,7 +315,7 @@ public final class PersistableSessionUtils {
 
   /**
    * Hydrates a recovered session from a snapshot: restores database, configs,
-   * JARs, files, temp functions, and temp tables.
+   * hive variables, JARs, files, temp functions, and temp tables.
    */
   public static void hydrateSession(HiveSession session, HiveSessionSnapshot snapshot)
       throws HiveSQLException {
@@ -326,6 +328,11 @@ public final class PersistableSessionUtils {
         for (Map.Entry<String, String> entry : snapshot.getOverriddenConfigurations().entrySet()) {
           session.getHiveConf().set(entry.getKey(), entry.getValue());
           sessionState.getOverriddenConfigurations().put(entry.getKey(), entry.getValue());
+        }
+      }
+      if (snapshot.getHiveVariables() != null) {
+        for (Map.Entry<String, String> entry : snapshot.getHiveVariables().entrySet()) {
+          sessionState.getHiveVariables().put(entry.getKey(), entry.getValue());
         }
       }
       if (snapshot.getAddedJars() != null) {

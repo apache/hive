@@ -646,7 +646,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           String cboMsg = "Plan not optimized by CBO.";
           boolean isMissingStats = noColsMissingStats.get() > 0;
           if (isMissingStats) {
-            LOG.error("CBO failed due to missing column stats (see previous errors), skipping CBO");
+            LOG.error("CBO failed due to missing column stats (see previous messages), skipping CBO");
             cboMsg = "Plan not optimized by CBO due to missing statistics. Please check log for more details.";
           } else if (e instanceof CalciteSemanticException) {
             CalciteSemanticException cse = (CalciteSemanticException) e;
