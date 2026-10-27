@@ -81,6 +81,12 @@ explain insert into pacd_xy_p partition (p) (y, x, p) select x, y, 'e' from pacd
 insert into pacd_xy_t (y, x) select * from pacd_xy tablesample (5 rows) order by 1 desc limit 1;
 select x, y from pacd_xy_t;
 truncate table pacd_xy_t;
+insert into pacd_xy_t (y, x) select distinct * from pacd_xy tablesample (5 rows) order by 1 desc limit 1;
+select x, y from pacd_xy_t;
+truncate table pacd_xy_t;
+insert into pacd_xy_t (y) select distinct * from pacd_n tablesample (5 rows) order by 1 desc nulls last limit 1;
+select x, y from pacd_xy_t;
+truncate table pacd_xy_t;
 insert into pacd_xy_t (y, x) select a.x, b.y from pacd_xy tablesample (5 rows) a join pacd_xy b on a.x = b.x order by b.y desc limit 1;
 select x, y from pacd_xy_t;
 truncate table pacd_xy_t;

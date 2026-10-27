@@ -89,3 +89,6 @@ select x, y from iws_t;
 truncate table iws_t;
 insert into iws_t (y, x) select a.x, b.y from iws_src a join iws_src2 b on a.x = b.x order by a.x desc limit 1;
 select x, y from iws_t;
+truncate table iws_t;
+insert into iws_t (y, x) select distinct * from iws_src2;
+select x, y from iws_t order by x;

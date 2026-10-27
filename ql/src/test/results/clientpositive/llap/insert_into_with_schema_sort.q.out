@@ -1332,3 +1332,30 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@iws_t
 #### A masked pattern was here ####
 10	3
+PREHOOK: query: truncate table iws_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@iws_t
+POSTHOOK: query: truncate table iws_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@iws_t
+PREHOOK: query: insert into iws_t (y, x) select distinct * from iws_src2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iws_src2
+PREHOOK: Output: default@iws_t
+POSTHOOK: query: insert into iws_t (y, x) select distinct * from iws_src2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iws_src2
+POSTHOOK: Output: default@iws_t
+POSTHOOK: Lineage: iws_t.x SIMPLE [(iws_src2)iws_src2.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: iws_t.y SIMPLE [(iws_src2)iws_src2.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from iws_t order by x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iws_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from iws_t order by x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iws_t
+#### A masked pattern was here ####
+10	3
+20	1
+30	2

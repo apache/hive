@@ -4800,7 +4800,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator<?> genSelectPlan(String dest, QB qb, Operator<?> input,
                                     Operator<?> inputForSelectStar) throws SemanticException {
     ASTNode selExprList = qb.getParseInfo().getSelForClause(dest);
-    Operator<?> op = genSelectPlan(dest, selExprList, qb, input, inputForSelectStar, false);
+    Operator<?> op = genSelectPlan(dest, selExprList, qb, input, inputForSelectStar, false, true);
 
     LOG.debug("Created Select Plan for clause: {}", dest);
 
@@ -4809,7 +4809,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Operator<?> genSelectPlan(String dest, ASTNode selExprList, QB qb, Operator<?> input,
-                                    Operator<?> inputForSelectStar, boolean outerLV) throws SemanticException {
+                                    Operator<?> inputForSelectStar, boolean outerLV,
+                                    boolean applyInsertSpec) throws SemanticException {
 
     LOG.debug("tree: {}", selExprList.toStringTree());
 
@@ -5044,7 +5045,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         pos++;
       }
     }
-    Operator output = generateSelectOperator(dest, selExprList, qb, input, exprList, out_rwsch, colList, selectStar, posn);
+    Operator output = generateSelectOperator(dest, selExprList, qb, input, exprList, out_rwsch, colList,
+        selectStar, posn, applyInsertSpec);
     if (isInTransform) {
       output = genScriptPlan(trfm, qb, output);
     }
@@ -5055,7 +5057,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
               && qb.getParseInfo().getDestSchemaForClause(dest) != null) {
         List<ExprNodeDesc> expColList = explodeColListForUDTF(colList);
-        output = generateSelectOperator(dest, selExprList, qb, output, exprList, opParseCtx.get(output).getRowResolver(), expColList, selectStar, posn);
+        output = generateSelectOperator(dest, selExprList, qb, output, exprList,
+            opParseCtx.get(output).getRowResolver(), expColList, selectStar, posn, applyInsertSpec);
       }
     }
 
@@ -5081,15 +5084,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param colList The list of column expressions to be included in the Select operator.
    * @param selectStar A boolean indicating whether the SELECT clause includes a wildcard (*).
    * @param posn The position of the current expression in the SELECT clause.
+   * @param applyInsertSpec Whether to apply the INSERT target column list to this projection.
    * @return The generated Select operator.
    * @throws SemanticException If there is an error during the generation of the operator.
    */
   private Operator<?> generateSelectOperator(String dest, ASTNode selExprList, QB qb, Operator<?> input,
                                              ASTNode exprList, RowResolver out_rwsch, List<ExprNodeDesc> colList,
-                                          boolean selectStar, int posn) throws SemanticException {
+                                             boolean selectStar, int posn,
+                                             boolean applyInsertSpec) throws SemanticException {
     selectStar = selectStar && exprList.getChildCount() == posn + 1;
 
-    out_rwsch = handleInsertStatementSpec(colList, dest, out_rwsch, qb, selExprList);
+    if (applyInsertSpec) {
+      out_rwsch = handleInsertStatementSpec(colList, dest, out_rwsch, qb, selExprList);
+    }
 
     List<String> columnNames = new ArrayList<>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
@@ -11710,7 +11717,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
                 ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
                 if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
-                  curr = genSelectPlan(dest, qb, curr, curr);
+                  // The final SELECT applies the INSERT column list; this projection only expands the star.
+                  curr = genSelectPlan(dest, selExprList, qb, curr, curr, false, false);
                   RowResolver rr = opParseCtx.get(curr).getRowResolver();
                   qbp.setSelExprForClause(dest, genSelectDIAST(rr));
                 }
@@ -12823,7 +12831,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QB blankQb = new QB(null, null, false);
     Operator udtfPath = genSelectPlan(null, (ASTNode) lateralViewTree
             .getChild(0), blankQb, lvForward, null,
-        lateralViewTree.getType() == HiveParser.TOK_LATERAL_VIEW_OUTER);
+        lateralViewTree.getType() == HiveParser.TOK_LATERAL_VIEW_OUTER, true);
     // add udtf aliases to QB
     for (String udtfAlias : blankQb.getAliases()) {
       qb.addAlias(udtfAlias);

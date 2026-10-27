@@ -1731,6 +1731,56 @@ PREHOOK: Output: default@pacd_xy_t
 POSTHOOK: query: truncate table pacd_xy_t
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: insert into pacd_xy_t (y, x) select distinct * from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (y, x) select distinct * from pacd_xy tablesample (5 rows) order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:y, type:int, comment:null), ]
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_xy)pacd_xy.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+10	3
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
+PREHOOK: query: insert into pacd_xy_t (y) select distinct * from pacd_n tablesample (5 rows) order by 1 desc nulls last limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_n
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: insert into pacd_xy_t (y) select distinct * from pacd_n tablesample (5 rows) order by 1 desc nulls last limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_n
+POSTHOOK: Output: default@pacd_xy_t
+POSTHOOK: Lineage: pacd_xy_t.x SIMPLE []
+POSTHOOK: Lineage: pacd_xy_t.y SIMPLE [(pacd_n)pacd_n.FieldSchema(name:d, type:int, comment:null), ]
+PREHOOK: query: select x, y from pacd_xy_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from pacd_xy_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pacd_xy_t
+#### A masked pattern was here ####
+NULL	3
+PREHOOK: query: truncate table pacd_xy_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pacd_xy_t
+POSTHOOK: query: truncate table pacd_xy_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pacd_xy_t
 PREHOOK: query: insert into pacd_xy_t (y, x) select a.x, b.y from pacd_xy tablesample (5 rows) a join pacd_xy b on a.x = b.x order by b.y desc limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pacd_xy

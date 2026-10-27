@@ -1131,6 +1131,28 @@ public class TestSemanticAnalyzer {
   }
 
   @Test
+  public void testInsertColumnListDistinctStarPositionWhenCboDeclines() throws Exception {
+    for (String projection : new String[] {"*", "table1.*"}) {
+      SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(
+          "insert into table2 (value, key) select distinct " + projection
+              + " from table1 tablesample (1 rows) order by 1");
+      assertTrue(analyzer.getCboInfo(), analyzer.getCboInfo().startsWith("Plan not optimized by CBO because"));
+      List<ReduceSinkDesc> sortSinks = new ArrayList<>();
+      for (ReduceSinkDesc rs : reduceSinks(analyzer)) {
+        if (rs.getKeyCols().size() == 1) {
+          sortSinks.add(rs);
+        }
+      }
+      assertEquals(sortSinks.toString(), 1, sortSinks.size());
+      ReduceSinkDesc rs = sortSinks.get(0);
+      // select list column 1 is key (a string), which the target column order places at _col1
+      assertColumns(rs.getKeyCols(), "_col1");
+      assertEquals(TypeInfoFactory.stringTypeInfo, rs.getKeyCols().get(0).getTypeInfo());
+      assertEquals("+", rs.getOrder());
+    }
+  }
+
+  @Test
   public void testInsertColumnListPositionInExtraLimitStepWhenCboDeclines() throws Exception {
     // an INSERT with a LIMIT gets a second reduce sink, whose input copies the select output in target column order
     SemanticAnalyzer analyzer = (SemanticAnalyzer) analyzeWithCbo(
