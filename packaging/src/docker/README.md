@@ -70,9 +70,11 @@ There are some arguments to specify the component version:
 -hadoop <hadoop version>
 -tez <tez version>
 -hive <hive version> 
+-aws-sdk auto|none|<aws sdk v2 version>
 ```
 If the version is not provided, it will read the version from current `pom.xml`:
-`project.version`, `hadoop.version` and `tez.version` for Hive, Hadoop and Tez respectively. 
+`project.version`, `hadoop.version`, `tez.version` and `aws-java-sdk.version` for Hive, Hadoop, Tez and the
+AWS SDK respectively. 
 
 For example, the following command uses Hive 4.0.0, Hadoop `hadoop.version` and Tez `tez.version` to build the image,
 ```shell
@@ -84,6 +86,40 @@ together with Hadoop 3.1.0 and Tez 0.10.1 to build the image,
 ./build.sh -hadoop 3.1.0 -tez 0.10.1
 ```
 After building successfully, you get a Docker image named `apache/hive` by default, tagged by the provided Hive version.
+
+##### AWS SDK bundle (s3a:// support)
+Since Hadoop 3.4.3, `hadoop-aws` sits on the default classpath but the AWS SDK v2 it links against is no longer
+part of the Hadoop distribution, so the image supplies it. The Dockerfile bakes `software.amazon.awssdk:bundle`
+into `/opt/hive/lib`; `build.sh` keeps a copy in `packaging/cache` so it is not downloaded on every build.
+Without it, touching an `s3a://` path fails with
+`NoClassDefFoundError: software/amazon/awssdk/core/exception/SdkException`.
+
+The bundle version is `aws-java-sdk.version` (2.35.4), the SDK Hadoop 3.4.3 is built and qualified against
+([HADOOP-19654](https://issues.apache.org/jira/browse/HADOOP-19654)), rather than a newer release. That SDK reworked
+checksum handling, and the S3A defaults in 3.4.3 (`fs.s3a.checksum.generation=false`, `fs.s3a.checksum.validation=false`,
+`fs.s3a.request.md5.header=true`) were chosen for compatibility and performance against it, keeping per-request
+checksum work off the S3 read and write paths.
+
+`-aws-sdk` takes one of three values:
+
+| value | effect |
+|---|---|
+| `auto` (default) | `aws-java-sdk.version` from `pom.xml` |
+| `none` | no bundle, ~650MB smaller image. `s3a://` then fails at runtime. |
+| `<version>` | an explicit `software.amazon.awssdk:bundle` version |
+
+Hadoop releases that ship their own bundle (up to 3.4.2) keep it, and no second one is added.
+
+```shell
+./build.sh -tez 0.10.5 -aws-sdk none
+./build.sh -tez 0.10.5 -aws-sdk 2.42.25
+```
+
+Images built straight from the Dockerfile take the version as the `AWS_SDK_VERSION` build argument; leaving it
+empty is the same as `none`.
+
+A jar mounted at `/tmp/ext-jars` is copied into `/opt/hive/lib` at startup, so a different SDK version can be
+supplied at run time without rebuilding.
 
 #### Run services
 

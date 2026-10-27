@@ -146,7 +146,7 @@
     <guava.version>22.0</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.2.220</h2database.version>
-    <hadoop.version>3.4.2</hadoop.version>
+    <hadoop.version>3.4.3</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.3</hamcrest.version>
     <hbase.version>2.5.6-hadoop3</hbase.version>
@@ -239,7 +239,10 @@
     <datasketches.version>2.0.0</datasketches.version>
     <spotbugs.version>4.8.6</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
-    <aws-java-sdk.version>2.42.25</aws-java-sdk.version>
+    <!-- Kept at the version hadoop.version is built and qualified against (HADOOP-19654 for 3.4.3): S3A's checksum
+         defaults are tuned for compatibility and performance against that SDK. Also the bundle baked into the Docker
+         image for s3a://. -->
+    <aws-java-sdk.version>2.35.4</aws-java-sdk.version>
     <aws-secretsmanager-caching.version>2.2.0</aws-secretsmanager-caching.version>
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
@@ -286,10 +289,12 @@
         <version>${aws-java-sdk.version}</version>
         <scope>provided</scope>
       </dependency>
+      <!-- Backs Iceberg's default "apache" http-client.type for S3FileIO. It is not part of the bundle, and its first GA
+           release is 2.41.0; the preview of aws-java-sdk.version keeps it on the same SDK as the bundle. -->
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>apache5-client</artifactId>
-        <version>${aws-java-sdk.version}</version>
+        <version>${aws-java-sdk.version}-PREVIEW</version>
         <scope>provided</scope>
       </dependency>
       <dependency>

@@ -21,15 +21,21 @@ HIVE_VERSION=
 HADOOP_VERSION=
 TEZ_VERSION=
 TEZ_SNAPSHOT_VERSION=
+AWS_SDK=auto
 usage() {
     cat <<EOF 1>&2
-Usage: $0 [-h] [-hadoop <Hadoop version>] -tez <Tez release version> [-tez-snapshot [<Maven snapshot version>]] [-hive <Hive version>] [-repo <Docker repo>]
+Usage: $0 [-h] [-hadoop <Hadoop version>] -tez <Tez release version> [-tez-snapshot [<Maven snapshot version>]] [-hive <Hive version>] [-aws-sdk auto|none|<version>] [-repo <Docker repo>]
 Build the Hive Docker image (reused for LLAP too)
 -help                Display help
 -hadoop              Build image with the specified Hadoop version (default: from Maven pom)
 -tez                 Required. Tez release tarball version (apache-tez-\$TEZ_VERSION-bin.tar.gz from archive)
 -tez-snapshot <ver>  Optional. When a snapshot version is given, the Tez Maven snapshot replaces the Tez release in the image. With no version, the release is used.
 -hive                Build image with the specified Hive version
+-aws-sdk <value>     Optional. AWS SDK v2 bundle for s3a:// support. One of:
+                       auto      (default) aws-java-sdk.version from the Maven pom
+                       none      no bundle in the image, keeping it ~650MB smaller. s3a:// paths then fail at runtime.
+                       <version> an explicit software.amazon.awssdk:bundle version
+                     Hadoop releases that ship their own bundle (up to 3.4.2) keep it and get no other.
 -repo                Docker repository
 EOF
 }
@@ -60,6 +66,11 @@ while [ $# -gt 0 ]; do
     -hive)
       shift
       HIVE_VERSION=$1
+      shift
+      ;;
+    -aws-sdk)
+      shift
+      AWS_SDK=$1
       shift
       ;;
     -repo)
@@ -110,6 +121,36 @@ if [ ! -f "$CACHE_DIR/$TEZ_FILE_NAME" ]; then
   mv "$CACHE_DIR/$TEZ_FILE_NAME.tmp" "$CACHE_DIR/$TEZ_FILE_NAME"
 fi
 
+# The Dockerfile adds the AWS SDK v2 bundle for s3a:// (~650MB, hence the opt-out).
+# It is cached here so that local builds do not download it every time.
+case "$AWS_SDK" in
+  auto)
+    AWS_SDK_VERSION=$(mvn -f "$SOURCE_DIR/pom.xml" -q help:evaluate -Dexpression=aws-java-sdk.version -DforceStdout)
+    ;;
+  none)
+    AWS_SDK_VERSION=
+    ;;
+  *)
+    AWS_SDK_VERSION=$AWS_SDK
+    ;;
+esac
+
+# Releases up to 3.4.2 ship their own bundle, which the Dockerfile keeps instead.
+if [ -n "$AWS_SDK_VERSION" ] && ! tar -tzf "$CACHE_DIR/$HADOOP_FILE_NAME" | grep -q 'share/hadoop/.*/bundle-.*\.jar'; then
+  AWS_SDK_FILE_NAME="bundle-$AWS_SDK_VERSION.jar"
+  AWS_SDK_URL=${AWS_SDK_URL:-"https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/$AWS_SDK_VERSION/$AWS_SDK_FILE_NAME"}
+  if [ ! -f "$CACHE_DIR/$AWS_SDK_FILE_NAME" ]; then
+    echo "Downloading AWS SDK v2 bundle from $AWS_SDK_URL..."
+    if ! curl --fail -L "$AWS_SDK_URL" -o "$CACHE_DIR/$AWS_SDK_FILE_NAME.tmp"; then
+      echo "Failed to download the AWS SDK v2 bundle, exiting..."
+      exit 1
+    fi
+    mv "$CACHE_DIR/$AWS_SDK_FILE_NAME.tmp" "$CACHE_DIR/$AWS_SDK_FILE_NAME"
+  fi
+  mkdir -p "$WORK_DIR/aws-jars"
+  cp "$CACHE_DIR/$AWS_SDK_FILE_NAME" "$WORK_DIR/aws-jars/"
+fi
+
 if [ -n "$HIVE_VERSION" ]; then
   HIVE_FILE_NAME="apache-hive-$HIVE_VERSION-bin.tar.gz"
   if [ ! -f "$CACHE_DIR/$HIVE_FILE_NAME" ]; then
@@ -143,6 +184,7 @@ DOCKER_BUILD_ARGS=(
   --build-arg "HIVE_VERSION=$HIVE_VERSION"
   --build-arg "HADOOP_VERSION=$HADOOP_VERSION"
   --build-arg "TEZ_VERSION=$TEZ_VERSION"
+  --build-arg "AWS_SDK_VERSION=$AWS_SDK_VERSION"
 )
 if [ -n "$TEZ_SNAPSHOT_VERSION" ]; then
   DOCKER_BUILD_ARGS+=(--build-arg "TEZ_SNAPSHOT_VERSION=$TEZ_SNAPSHOT_VERSION")
