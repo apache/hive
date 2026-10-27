@@ -87,12 +87,10 @@ public abstract class VectorPTFEvaluatorAbstractVariance extends VectorPTFEvalua
     }
   }
 
-  // SQL standard: null for zero elements (zero or one element for the sample variants).
   protected final boolean isResultNull() {
     return GenericUDAFVariance.isVarianceNull(count, varianceKind);
   }
 
-  // Valid only when isResultNull() is false.  For one element the population variants return 0.
   protected final double calculateResult() {
     return GenericUDAFVariance.calculateVarianceFamilyResult(variance, count, varianceKind);
   }

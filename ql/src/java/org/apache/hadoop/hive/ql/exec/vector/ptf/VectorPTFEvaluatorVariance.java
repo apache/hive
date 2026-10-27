@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.VarianceKind;
 import org.apache.hadoop.hive.ql.udf.ptf.Range;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import com.google.common.base.Preconditions;
 
@@ -93,34 +92,25 @@ public class VectorPTFEvaluatorVariance extends VectorPTFEvaluatorAbstractVarian
   }
 
   private void iterateLongs(LongColumnVector colVector, int size) {
-    final long[] vector = colVector.vector;
-    final boolean noNulls = colVector.noNulls;
-    final boolean[] isNull = colVector.isNull;
     for (int i = 0; i < size; i++) {
-      if (noNulls || !isNull[i]) {
-        iterate((double) vector[i]);
+      if (colVector.noNulls || !colVector.isNull[i]) {
+        iterate((double) colVector.vector[i]);
       }
     }
   }
 
   private void iterateDoubles(DoubleColumnVector colVector, int size) {
-    final double[] vector = colVector.vector;
-    final boolean noNulls = colVector.noNulls;
-    final boolean[] isNull = colVector.isNull;
     for (int i = 0; i < size; i++) {
-      if (noNulls || !isNull[i]) {
-        iterate(vector[i]);
+      if (colVector.noNulls || !colVector.isNull[i]) {
+        iterate(colVector.vector[i]);
       }
     }
   }
 
   private void iterateDecimals(DecimalColumnVector colVector, int size) {
-    final HiveDecimalWritable[] vector = colVector.vector;
-    final boolean noNulls = colVector.noNulls;
-    final boolean[] isNull = colVector.isNull;
     for (int i = 0; i < size; i++) {
-      if (noNulls || !isNull[i]) {
-        iterate(vector[i].doubleValue());
+      if (colVector.noNulls || !colVector.isNull[i]) {
+        iterate(colVector.vector[i].doubleValue());
       }
     }
   }

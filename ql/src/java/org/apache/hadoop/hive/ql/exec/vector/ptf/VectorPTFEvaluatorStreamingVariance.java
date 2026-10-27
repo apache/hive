@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.VarianceKind;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import com.google.common.base.Preconditions;
 
@@ -99,12 +98,9 @@ public class VectorPTFEvaluatorStreamingVariance extends VectorPTFEvaluatorAbstr
 
   private void evaluateLongs(LongColumnVector colVector, DoubleColumnVector outputColVector,
       int size) {
-    final long[] vector = colVector.vector;
-    final boolean noNulls = colVector.noNulls;
-    final boolean[] isNull = colVector.isNull;
     for (int i = 0; i < size; i++) {
-      if (noNulls || !isNull[i]) {
-        aggregate((double) vector[i]);
+      if (colVector.noNulls || !colVector.isNull[i]) {
+        aggregate((double) colVector.vector[i]);
       }
       setOutput(outputColVector, i);
     }
@@ -112,12 +108,9 @@ public class VectorPTFEvaluatorStreamingVariance extends VectorPTFEvaluatorAbstr
 
   private void evaluateDoubles(DoubleColumnVector colVector, DoubleColumnVector outputColVector,
       int size) {
-    final double[] vector = colVector.vector;
-    final boolean noNulls = colVector.noNulls;
-    final boolean[] isNull = colVector.isNull;
     for (int i = 0; i < size; i++) {
-      if (noNulls || !isNull[i]) {
-        aggregate(vector[i]);
+      if (colVector.noNulls || !colVector.isNull[i]) {
+        aggregate(colVector.vector[i]);
       }
       setOutput(outputColVector, i);
     }
@@ -125,12 +118,9 @@ public class VectorPTFEvaluatorStreamingVariance extends VectorPTFEvaluatorAbstr
 
   private void evaluateDecimals(DecimalColumnVector colVector, DoubleColumnVector outputColVector,
       int size) {
-    final HiveDecimalWritable[] vector = colVector.vector;
-    final boolean noNulls = colVector.noNulls;
-    final boolean[] isNull = colVector.isNull;
     for (int i = 0; i < size; i++) {
-      if (noNulls || !isNull[i]) {
-        aggregate(vector[i].doubleValue());
+      if (colVector.noNulls || !colVector.isNull[i]) {
+        aggregate(colVector.vector[i].doubleValue());
       }
       setOutput(outputColVector, i);
     }

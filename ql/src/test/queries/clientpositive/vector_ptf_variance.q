@@ -51,23 +51,19 @@ INSERT INTO vector_ptf_variance_t VALUES
 -- NON-VECTORIZED: baseline output the vectorized run must match
 set hive.vectorized.execution.ptf.enabled=false;
 
--- 1. All the function names, default frame (RANGE UNBOUNDED PRECEDING AND CURRENT ROW, ties on k)
+-- 1. All the function names with the default frame (RANGE UNBOUNDED PRECEDING AND CURRENT ROW,
+--    ties on k) and all the input types over the whole partition
 select id, p, k, d,
-variance(d) over w as var, var_pop(d) over w as var_pop, var_samp(d) over w as var_samp,
-std(d) over w as std, stddev(d) over w as sd, stddev_pop(d) over w as sd_pop,
-stddev_samp(d) over w as sd_samp
+variance(d) over w1 as var, var_pop(d) over w1 as var_pop, var_samp(d) over w1 as var_samp,
+std(d) over w1 as std, stddev(d) over w1 as sd, stddev_pop(d) over w1 as sd_pop,
+stddev_samp(d) over w1 as sd_samp,
+var_samp(ti) over w2 as ti, var_samp(si) over w2 as si, var_samp(i) over w2 as i,
+var_samp(bi) over w2 as bi, var_samp(f) over w2 as f, var_samp(d) over w2 as d_part,
+var_samp(dec_s) over w2 as dec_s, var_samp(dec_l) over w2 as dec_l
 from vector_ptf_variance_t
-window w as (partition by p order by k);
+window w1 as (partition by p order by k), w2 as (partition by p);
 
--- 2. All the input types, whole partition
-select id, p,
-var_samp(ti) over w as ti, var_samp(si) over w as si, var_samp(i) over w as i,
-var_samp(bi) over w as bi, var_samp(f) over w as f, var_samp(d) over w as d,
-var_samp(dec_s) over w as dec_s, var_samp(dec_l) over w as dec_l
-from vector_ptf_variance_t
-window w as (partition by p);
-
--- 3. Streaming: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+-- 2. Streaming: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
 select id, p, k,
 var_pop(ti) over w as ti, stddev_samp(si) over w as si, variance(i) over w as i,
 stddev_pop(bi) over w as bi, var_samp(f) over w as f, stddev(d) over w as d,
@@ -75,7 +71,7 @@ var_samp(dec_s) over w as dec_s, stddev_samp(dec_l) over w as dec_l
 from vector_ptf_variance_t
 window w as (partition by p order by k, id rows between unbounded preceding and current row);
 
--- 4. Bounded frames
+-- 3. Bounded frames
 select id, p, k, i,
 var_samp(i) over (partition by p order by k, id rows between 2 preceding and current row) as r2p,
 stddev_pop(i) over (partition by p order by k, id rows between 1 preceding and unbounded following) as r1p,
@@ -83,7 +79,7 @@ var_pop(i) over (partition by p order by k range between 2 preceding and current
 stddev_samp(i) over (partition by p order by k, id rows between current row and unbounded following) as rcf
 from vector_ptf_variance_t;
 
--- 5. Streaming and non-streaming evaluators together with other functions in one PTF
+-- 4. Streaming and non-streaming evaluators together with other functions in one PTF
 select id, p, k, dec_s,
 row_number() over (partition by p order by k, id) as rn,
 stddev_samp(dec_s) over (partition by p order by k, id rows between unbounded preceding and current row) as sd_stream,
@@ -92,15 +88,12 @@ avg(dec_s) over (partition by p order by k, id) as av,
 variance(dec_l) over (partition by p order by k, id rows between 2 preceding and current row) as var_rows
 from vector_ptf_variance_t;
 
--- 6. Expression arguments, ORDER BY without PARTITION BY and an empty OVER clause
+-- 5. Expression and constant (repeating) arguments, ORDER BY without PARTITION BY and an empty
+--    OVER clause
 select id, p, k,
 stddev_pop(si + 1) over (order by id) as sd_expr,
 var_samp(d * 2) over (order by id rows between unbounded preceding and current row) as var_expr,
-stddev_samp(f) over () as sd_all
-from vector_ptf_variance_t;
-
--- 7. Constant arguments (repeating input vectors)
-select id, p, k,
+stddev_samp(f) over () as sd_all,
 var_pop(2) over (partition by p order by k, id rows between unbounded preceding and current row) as var_const_stream,
 stddev_samp(1.5) over (partition by p) as sd_const,
 variance(cast(null as int)) over (partition by p order by k, id rows between unbounded preceding and current row) as var_null_stream,
@@ -113,25 +106,24 @@ set hive.vectorized.execution.ptf.enabled=true;
 
 explain vectorization expression
 select id, p, k, d,
-variance(d) over w as var, var_pop(d) over w as var_pop, var_samp(d) over w as var_samp,
-std(d) over w as std, stddev(d) over w as sd, stddev_pop(d) over w as sd_pop,
-stddev_samp(d) over w as sd_samp
+variance(d) over w1 as var, var_pop(d) over w1 as var_pop, var_samp(d) over w1 as var_samp,
+std(d) over w1 as std, stddev(d) over w1 as sd, stddev_pop(d) over w1 as sd_pop,
+stddev_samp(d) over w1 as sd_samp,
+var_samp(ti) over w2 as ti, var_samp(si) over w2 as si, var_samp(i) over w2 as i,
+var_samp(bi) over w2 as bi, var_samp(f) over w2 as f, var_samp(d) over w2 as d_part,
+var_samp(dec_s) over w2 as dec_s, var_samp(dec_l) over w2 as dec_l
 from vector_ptf_variance_t
-window w as (partition by p order by k);
+window w1 as (partition by p order by k), w2 as (partition by p);
 
 select id, p, k, d,
-variance(d) over w as var, var_pop(d) over w as var_pop, var_samp(d) over w as var_samp,
-std(d) over w as std, stddev(d) over w as sd, stddev_pop(d) over w as sd_pop,
-stddev_samp(d) over w as sd_samp
+variance(d) over w1 as var, var_pop(d) over w1 as var_pop, var_samp(d) over w1 as var_samp,
+std(d) over w1 as std, stddev(d) over w1 as sd, stddev_pop(d) over w1 as sd_pop,
+stddev_samp(d) over w1 as sd_samp,
+var_samp(ti) over w2 as ti, var_samp(si) over w2 as si, var_samp(i) over w2 as i,
+var_samp(bi) over w2 as bi, var_samp(f) over w2 as f, var_samp(d) over w2 as d_part,
+var_samp(dec_s) over w2 as dec_s, var_samp(dec_l) over w2 as dec_l
 from vector_ptf_variance_t
-window w as (partition by p order by k);
-
-select id, p,
-var_samp(ti) over w as ti, var_samp(si) over w as si, var_samp(i) over w as i,
-var_samp(bi) over w as bi, var_samp(f) over w as f, var_samp(d) over w as d,
-var_samp(dec_s) over w as dec_s, var_samp(dec_l) over w as dec_l
-from vector_ptf_variance_t
-window w as (partition by p);
+window w1 as (partition by p order by k), w2 as (partition by p);
 
 explain vectorization expression
 select id, p, k,
@@ -172,14 +164,11 @@ avg(dec_s) over (partition by p order by k, id) as av,
 variance(dec_l) over (partition by p order by k, id rows between 2 preceding and current row) as var_rows
 from vector_ptf_variance_t;
 
+explain vectorization expression
 select id, p, k,
 stddev_pop(si + 1) over (order by id) as sd_expr,
 var_samp(d * 2) over (order by id rows between unbounded preceding and current row) as var_expr,
-stddev_samp(f) over () as sd_all
-from vector_ptf_variance_t;
-
-explain vectorization expression
-select id, p, k,
+stddev_samp(f) over () as sd_all,
 var_pop(2) over (partition by p order by k, id rows between unbounded preceding and current row) as var_const_stream,
 stddev_samp(1.5) over (partition by p) as sd_const,
 variance(cast(null as int)) over (partition by p order by k, id rows between unbounded preceding and current row) as var_null_stream,
@@ -187,6 +176,9 @@ stddev_pop(cast(null as double)) over (partition by p order by k) as sd_null
 from vector_ptf_variance_t;
 
 select id, p, k,
+stddev_pop(si + 1) over (order by id) as sd_expr,
+var_samp(d * 2) over (order by id rows between unbounded preceding and current row) as var_expr,
+stddev_samp(f) over () as sd_all,
 var_pop(2) over (partition by p order by k, id rows between unbounded preceding and current row) as var_const_stream,
 stddev_samp(1.5) over (partition by p) as sd_const,
 variance(cast(null as int)) over (partition by p order by k, id rows between unbounded preceding and current row) as var_null_stream,
