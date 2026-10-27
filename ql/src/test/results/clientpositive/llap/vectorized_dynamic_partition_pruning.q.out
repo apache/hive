@@ -1918,31 +1918,28 @@ STAGE PLANS:
                       expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Filter Operator
-                        predicate: _col0 is not null (type: boolean)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: double)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: double)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col0 (type: double)
+                      Select Operator
+                        expressions: _col0 (type: double)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: double)
+                          minReductionHashAggr: 0.4
+                          mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Group By Operator
-                            keys: _col0 (type: double)
-                            minReductionHashAggr: 0.4
-                            mode: hash
-                            outputColumnNames: _col0
+                          Dynamic Partitioning Event Operator
+                            Target column: hr (string)
+                            Target Input: srcpart
+                            Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            Dynamic Partitioning Event Operator
-                              Target column: hr (string)
-                              Target Input: srcpart
-                              Partition key expr: UDFToDouble(hr)
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Target Vertex: Map 1
+                            Target Vertex: Map 1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -2064,10 +2061,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (UDFToDouble(hr) * 2.0D) is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) * 2.0D) is not null (type: boolean)
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (UDFToDouble(hr) * 2.0D) (type: double)
@@ -2285,15 +2282,12 @@ STAGE PLANS:
                       expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Filter Operator
-                        predicate: _col0 is not null (type: boolean)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: double)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: double)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -2415,10 +2409,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (UDFToDouble(hr) * 2.0D) is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) * 2.0D) is not null (type: boolean)
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (UDFToDouble(hr) * 2.0D) (type: double)
@@ -2594,10 +2588,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (UDFToDouble(hr) * 2.0D) is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) * 2.0D) is not null (type: boolean)
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: CAST( (UDFToDouble(hr) * 2.0D) AS STRING) (type: string)
@@ -5918,31 +5912,28 @@ STAGE PLANS:
                       expressions: UDFToDouble(UDFToInteger((hr / 2.0D))) (type: double)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Filter Operator
-                        predicate: _col0 is not null (type: boolean)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: double)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: double)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: _col0 (type: double)
+                      Select Operator
+                        expressions: _col0 (type: double)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: double)
+                          minReductionHashAggr: 0.4
+                          mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Group By Operator
-                            keys: _col0 (type: double)
-                            minReductionHashAggr: 0.4
-                            mode: hash
-                            outputColumnNames: _col0
+                          Dynamic Partitioning Event Operator
+                            Target column: hr (string)
+                            Target Input: srcpart
+                            Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            Dynamic Partitioning Event Operator
-                              Target column: hr (string)
-                              Target Input: srcpart
-                              Partition key expr: UDFToDouble(hr)
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Target Vertex: Map 1
+                            Target Vertex: Map 1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -6040,10 +6031,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (UDFToDouble(hr) * 2.0D) is not null (type: boolean)
+                  filterExpr: UDFToDouble(hr) is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) * 2.0D) is not null (type: boolean)
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (UDFToDouble(hr) * 2.0D) (type: double)
