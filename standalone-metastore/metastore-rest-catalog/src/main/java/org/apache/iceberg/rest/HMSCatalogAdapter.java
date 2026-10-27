@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.SortedMap;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
@@ -57,6 +59,7 @@ import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 import org.apache.iceberg.rest.metrics.IcebergMetricsReporter;
 import org.apache.iceberg.rest.requests.CommitTransactionRequest;
@@ -84,12 +87,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.11.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
+ * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.12.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
 public class HMSCatalogAdapter implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
   private static final Splitter SLASH = Splitter.on('/').omitEmptyStrings();
+  private static final Splitter COMMA = Splitter.on(',').trimResults().omitEmptyStrings();
 
   private static final String PAGE_TOKEN = "pageToken";
   private static final String PAGE_SIZE = "pageSize";
@@ -100,6 +104,17 @@ public class HMSCatalogAdapter implements Closeable {
 
   /** Index of the first prefix segment, right after "v1". */
   private static final int PREFIX_START = 1;
+
+  private static final String ETAG = "ETag";
+  private static final String IF_NONE_MATCH = "If-None-Match";
+  private static final Map<String, String> DEFAULT_SNAPSHOT_QUERY_PARAMS =
+      ImmutableMap.of(
+          RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER,
+          RESTCatalogProperties.SNAPSHOT_LOADING_MODE_DEFAULT.name().toLowerCase(Locale.ROOT));
+  private static final Map<String, String> REFS_SNAPSHOT_QUERY_PARAMS =
+      ImmutableMap.of(
+          RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER,
+          RESTCatalogProperties.SnapshotMode.REFS.name().toLowerCase(Locale.ROOT));
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
       ImmutableMap.<Class<? extends Exception>, Integer>builder()
@@ -371,17 +386,21 @@ public class HMSCatalogAdapter implements Closeable {
         .build();
   }
 
-  private LoadTableResponse createTable(Map<String, String> vars, Object body) {
+  private LoadTableResponse createTable(
+      Map<String, String> vars, Object body, Map<String, String> responseHeaders) {
     Namespace namespace = namespaceFromPathVars(vars);
     CreateTableRequest request = castRequest(CreateTableRequest.class, body);
     request.validate();
+    final LoadTableResponse loadTableResponse;
     if (request.stageCreate()) {
       Map<String, String> namespaceMetadata = asNamespaceCatalog.loadNamespaceMetadata(namespace);
       icebergAuthorizer.validateStageCreateTable(catalogName, namespace, namespaceMetadata, request);
-      return CatalogHandlers.stageTableCreate(catalog, namespace, request);
+      loadTableResponse = CatalogHandlers.stageTableCreate(catalog, namespace, request);
     } else {
-      return CatalogHandlers.createTable(catalog, namespace, request);
+      loadTableResponse = CatalogHandlers.createTable(catalog, namespace, request);
     }
+    attachETagHeader(loadTableResponse, responseHeaders);
+    return loadTableResponse;
   }
 
   private RESTResponse dropTable(Map<String, String> vars) {
@@ -402,29 +421,50 @@ public class HMSCatalogAdapter implements Closeable {
     return null;
   }
 
-  private LoadTableResponse loadTable(Map<String, String> vars) {
+  private LoadTableResponse loadTable(
+      Map<String, String> vars,
+      Map<String, String> queryParams,
+      Map<String, String> headers,
+      Map<String, String> responseHeaders) {
     TableIdentifier ident = identFromPathVars(vars);
     String snapshots = vars.get(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER);
     RESTCatalogProperties.SnapshotMode mode = RESTCatalogProperties.SNAPSHOT_LOADING_MODE_DEFAULT;
     if (snapshots != null) {
       mode = RESTCatalogProperties.SnapshotMode.valueOf(snapshots.toUpperCase(Locale.ROOT));
     }
-    return CatalogHandlers.loadTable(catalog, ident, mode);
+    LoadTableResponse loadTableResponse = CatalogHandlers.loadTable(catalog, ident, mode);
+    if (loadTableResponse != null && loadTableResponse.metadataLocation() != null) {
+      String eTag =
+          ETagProvider.of(
+              loadTableResponse.metadataLocation(),
+              effectiveSnapshotQueryParams(queryParams, mode));
+      responseHeaders.put(ETAG, eTag);
+      if (matchesETag(headers.get(IF_NONE_MATCH), eTag)) {
+        return null;
+      }
+    }
+    return loadTableResponse;
   }
 
-  private LoadTableResponse registerTable(Map<String, String> vars, Object body) {
+  private LoadTableResponse registerTable(
+      Map<String, String> vars, Object body, Map<String, String> responseHeaders) {
     Namespace namespace = namespaceFromPathVars(vars);
     RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
     request.validate();
     Map<String, String> namespaceMetadata = asNamespaceCatalog.loadNamespaceMetadata(namespace);
     icebergAuthorizer.validateRegisterTable(catalogName, namespace, namespaceMetadata, request);
-    return CatalogHandlers.registerTable(catalog, namespace, request);
+    LoadTableResponse loadTableResponse = CatalogHandlers.registerTable(catalog, namespace, request);
+    attachETagHeader(loadTableResponse, responseHeaders);
+    return loadTableResponse;
   }
 
-  private LoadTableResponse updateTable(Map<String, String> vars, Object body) {
+  private LoadTableResponse updateTable(
+      Map<String, String> vars, Object body, Map<String, String> responseHeaders) {
     TableIdentifier ident = identFromPathVars(vars);
     UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
-    return CatalogHandlers.updateTable(catalog, ident, request);
+    LoadTableResponse loadTableResponse = CatalogHandlers.updateTable(catalog, ident, request);
+    attachETagHeader(loadTableResponse, responseHeaders);
+    return loadTableResponse;
   }
 
   private RESTResponse renameTable(Object body) {
@@ -530,7 +570,12 @@ public class HMSCatalogAdapter implements Closeable {
 
   @SuppressWarnings({"unchecked"})
   private <T extends RESTResponse> T handleRequest(
-      Route route, Map<String, String> vars, Object body) {
+      Route route,
+      Map<String, String> vars,
+      Map<String, String> queryParams,
+      Map<String, String> headers,
+      Object body,
+      Map<String, String> responseHeaders) {
     return (T) switch (route) {
       case CONFIG -> config();
       case LIST_NAMESPACES -> listNamespaces(vars);
@@ -540,12 +585,12 @@ public class HMSCatalogAdapter implements Closeable {
       case DROP_NAMESPACE -> dropNamespace(vars);
       case UPDATE_NAMESPACE -> updateNamespace(vars, body);
       case LIST_TABLES -> listTables(vars);
-      case CREATE_TABLE -> createTable(vars, body);
+      case CREATE_TABLE -> createTable(vars, body, responseHeaders);
       case DROP_TABLE -> dropTable(vars);
       case TABLE_EXISTS -> tableExists(vars);
-      case LOAD_TABLE -> loadTable(vars);
-      case REGISTER_TABLE -> registerTable(vars, body);
-      case UPDATE_TABLE -> updateTable(vars, body);
+      case LOAD_TABLE -> loadTable(vars, queryParams, headers, responseHeaders);
+      case REGISTER_TABLE -> registerTable(vars, body, responseHeaders);
+      case UPDATE_TABLE -> updateTable(vars, body, responseHeaders);
       case RENAME_TABLE -> renameTable(body);
       case REPORT_METRICS -> reportMetrics(vars, body);
       case COMMIT_TRANSACTION -> commitTransaction(body);
@@ -566,6 +611,16 @@ public class HMSCatalogAdapter implements Closeable {
       Map<String, String> queryParams,
       Object body,
       HttpServletResponse response) throws IOException {
+    return execute(method, path, Map.of(), queryParams, body, response);
+  }
+
+  <T extends RESTResponse> T execute(
+      HTTPMethod method,
+      String path,
+      Map<String, String> headers,
+      Map<String, String> queryParams,
+      Object body,
+      HttpServletResponse response) throws IOException {
     ErrorResponse.Builder errorBuilder = ErrorResponse.builder();
     Pair<Route, Map<String, String>> routeAndVars = Route.from(method, path);
     if (routeAndVars != null) {
@@ -575,7 +630,12 @@ public class HMSCatalogAdapter implements Closeable {
           vars.putAll(queryParams);
         }
         vars.putAll(routeAndVars.second());
-        return handleRequest(routeAndVars.first(), vars.build(), body);
+        Route route = routeAndVars.first();
+        Map<String, String> responseHeaders = Maps.newHashMap();
+        T result = handleRequest(
+            route, vars.build(), queryParams, toCaseInsensitiveHeaders(headers), body, responseHeaders);
+        applyResponseStatusAndHeaders(response, route, result, responseHeaders);
+        return result;
       } catch (RuntimeException e) {
         configureResponseFromException(e, errorBuilder);
       }
@@ -589,6 +649,106 @@ public class HMSCatalogAdapter implements Closeable {
     response.setStatus(error.code());
     RESTObjectMapper.mapper().writeValue(response.getWriter(), error);
     return null;
+  }
+
+  private static <T extends RESTResponse> void applyResponseStatusAndHeaders(
+      HttpServletResponse response,
+      Route route,
+      T result,
+      Map<String, String> responseHeaders) {
+    if (response != null) {
+      responseHeaders.forEach(response::setHeader);
+      if (result == null) {
+        if (route == Route.LOAD_TABLE) {
+          response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        } else if (HMSCatalogServlet.shouldReturn204(route)) {
+          response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns a case-insensitive copy of the incoming request headers map, or the map itself if
+   * already case-insensitive, ensuring RFC 9110 compliant case-insensitive HTTP header lookups.
+   *
+   * @param headers the incoming request headers map
+   * @return a case-insensitive headers map, or an empty map if null or empty
+   */
+  private static Map<String, String> toCaseInsensitiveHeaders(Map<String, String> headers) {
+    if (headers == null || headers.isEmpty()) {
+      return Map.of();
+    }
+    if (headers instanceof SortedMap<?, ?> sorted
+        && sorted.comparator() == String.CASE_INSENSITIVE_ORDER) {
+      return headers;
+    }
+    Map<String, String> caseInsensitive = Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
+    caseInsensitive.putAll(headers);
+    return caseInsensitive;
+  }
+
+  /**
+   * Attaches an RFC 9110 compliant ETag header computed from the metadata location and the default
+   * snapshot loading query parameters to the response headers map.
+   *
+   * @param loadTableResponse the table response containing metadata location
+   * @param responseHeaders the response headers map to attach the ETag header to
+   */
+  private static void attachETagHeader(
+      LoadTableResponse loadTableResponse, Map<String, String> responseHeaders) {
+    Optional.ofNullable(loadTableResponse)
+        .map(LoadTableResponse::metadataLocation)
+        .ifPresent(loc -> responseHeaders.put(
+            ETAG, ETagProvider.of(loc, DEFAULT_SNAPSHOT_QUERY_PARAMS)));
+  }
+
+  /**
+   * Normalizes query parameters for table loading by ensuring the active {@link
+   * RESTCatalogProperties.SnapshotMode} is explicitly reflected, returning pre-allocated immutable
+   * defaults when possible to minimize allocations.
+   *
+   * @param queryParams the incoming query parameters
+   * @param mode the resolved snapshot mode
+   * @return normalized query parameters including the snapshot mode parameter
+   */
+  private static Map<String, String> effectiveSnapshotQueryParams(
+      Map<String, String> queryParams, RESTCatalogProperties.SnapshotMode mode) {
+    if (queryParams == null
+        || queryParams.isEmpty()
+        || (queryParams.size() == 1
+            && queryParams.containsKey(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER))) {
+      return mode == RESTCatalogProperties.SnapshotMode.ALL
+          ? DEFAULT_SNAPSHOT_QUERY_PARAMS
+          : REFS_SNAPSHOT_QUERY_PARAMS;
+    }
+    Map<String, String> normalized = Maps.newHashMapWithExpectedSize(queryParams.size() + 1);
+    normalized.putAll(queryParams);
+    normalized.put(
+        RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER, mode.name().toLowerCase(Locale.ROOT));
+    return normalized;
+  }
+
+  /**
+   * Evaluates an HTTP {@code If-None-Match} header against the current ETag according to RFC 9110
+   * §13.1.2. Supports wildcard {@code "*"}, weak comparison (ignoring {@code W/} prefix), and
+   * comma-delimited lists of multiple ETags.
+   *
+   * @param ifNoneMatchHeader the incoming If-None-Match header value, if any
+   * @param currentETag the computed ETag of the current table state
+   * @return true if the header matches the current ETag or contains "*", false otherwise
+   */
+  private static boolean matchesETag(String ifNoneMatchHeader, String currentETag) {
+    if (ifNoneMatchHeader == null || currentETag == null) {
+      return false;
+    }
+    for (String candidate : COMMA.split(ifNoneMatchHeader)) {
+      String trimmed = candidate.startsWith("W/") ? candidate.substring(2) : candidate;
+      if ("*".equals(trimmed) || trimmed.equals(currentETag)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
