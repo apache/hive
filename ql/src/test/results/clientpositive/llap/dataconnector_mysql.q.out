@@ -72,8 +72,8 @@ WITH SERDEPROPERTIES (
   'serialization.format'='1')
 TBLPROPERTIES (
   'hive.sql.database.type'='MYSQL', 
-  'hive.sql.dbcp.password'='qtestpassword', 
-  'hive.sql.dbcp.username'='root', 
+  'hive.sql.dbcp.password'='(withheld)', 
+  'hive.sql.dbcp.username'='(withheld)', 
   'hive.sql.jdbc.driver'='com.mysql.jdbc.Driver', 
   'hive.sql.jdbc.url'='jdbc:mysql://localhost:3306/qdb', 
   'hive.sql.schema'='qdb', 
