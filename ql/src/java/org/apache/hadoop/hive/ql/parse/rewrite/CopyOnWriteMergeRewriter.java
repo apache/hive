@@ -19,7 +19,6 @@
 
 package org.apache.hadoop.hive.ql.parse.rewrite;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,9 +37,11 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetValuesClauseBase;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -53,6 +54,7 @@ import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.shouldAddRowLin
 import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.TARGET_PREFIX;
 
 public class CopyOnWriteMergeRewriter extends MergeRewriter {
+  private static final String SOURCE_PRESENCE_COLUMN = "hive_cow_source_row_marker";
 
   public CopyOnWriteMergeRewriter(Hive db, HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     super(db, conf, sqlGeneratorFactory);
@@ -71,15 +73,23 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     sqlGenerator.append('\n');
     
     List<MergeStatement.WhenClause> whenClauses = Lists.newArrayList(mergeStatement.getWhenClauses());
-    
-    Optional<String> extraPredicate = whenClauses.stream()
-      .filter(whenClause -> !(whenClause instanceof MergeStatement.InsertClause))
-      .map(MergeStatement.WhenClause::getExtraPredicate)
-      .map(Strings::nullToEmpty)
-      .reduce((p1, p2) -> isNotBlank(p2) ? p1 + " OR " + p2 : p2);
+
+    List<MergeStatement.WhenClause> matchedClauses = whenClauses.stream()
+        .filter(whenClause -> !(whenClause instanceof MergeStatement.InsertClause))
+        .toList();
+    String combinedExtraPredicate = null;
+    if (!matchedClauses.isEmpty()
+        && matchedClauses.stream().noneMatch(whenClause -> !isNotBlank(whenClause.getExtraPredicate()))) {
+      combinedExtraPredicate = matchedClauses.stream()
+          .map(MergeStatement.WhenClause::getExtraPredicate)
+          .map(predicate -> parenthesizePredicate(predicate))
+          .collect(Collectors.joining(" OR "));
+    }
 
     whenClauses.removeIf(whenClause -> whenClause instanceof MergeStatement.DeleteClause);
-    extraPredicate.ifPresent(p -> whenClauses.add(new MergeStatement.DeleteClause(p, null)));
+    if (!matchedClauses.isEmpty()) {
+      whenClauses.add(new MergeStatement.DeleteClause(combinedExtraPredicate, null));
+    }
 
     MergeStatement.MergeSqlGenerator mergeSqlGenerator = createMergeSqlGenerator(mergeStatement, sqlGenerator);
 
@@ -113,6 +123,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     
     String targetAlias = mergeStatement.getTargetAlias();
     String onClauseAsString = replaceColumnRefsWithTargetPrefix(targetAlias, mergeStatement.getOnClauseAsText());
+    String sourcePresenceCol = sourcePresenceColumn(mergeStatement, conf);
 
     sqlGenerator.newCteExpr();
     
@@ -125,13 +136,38 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     sqlGenerator.append(targetAlias);
     sqlGenerator.append('\n');
     sqlGenerator.indent().append(hasWhenNotMatchedInsertClause ? "FULL OUTER JOIN" : "LEFT OUTER JOIN").append("\n");
-    sqlGenerator.indent().append(sourceAlias);
+    sqlGenerator.indent().append("(SELECT ").append(sourceName).append(".*, TRUE AS ")
+        .append(sourcePresenceCol)
+        .append(" FROM ").append(sourceAlias).append("\n) ").append(sourceName);
     sqlGenerator.append('\n');
     sqlGenerator.indent().append("ON ").append(onClauseAsString);
     sqlGenerator.append('\n');
     sqlGenerator.append(")");
     
     sqlGenerator.addCteExpr();
+  }
+
+  private static String parenthesizePredicate(String predicate) {
+    return "(\n" + predicate + "\n)";
+  }
+
+  private static String sourcePresenceColumn(MergeStatement mergeStatement, HiveConf conf) {
+    Set<String> reservedColumns = new HashSet<>();
+    mergeStatement.getTargetTable().getAllCols().forEach(column ->
+        reservedColumns.add(column.getName().toLowerCase(Locale.ROOT)));
+
+    StringBuilder sqlText = new StringBuilder(mergeStatement.getOnClauseAsText())
+        .append(' ').append(mergeStatement.getSourceAlias());
+    mergeStatement.getWhenClauses().forEach(whenClause ->
+        sqlText.append(' ').append(whenClause.getExtraPredicate()));
+
+    String candidate = SOURCE_PRESENCE_COLUMN;
+    int suffix = 0;
+    while (reservedColumns.contains(candidate.toLowerCase(Locale.ROOT))
+        || sqlText.toString().toLowerCase(Locale.ROOT).contains(candidate.toLowerCase(Locale.ROOT))) {
+      candidate = SOURCE_PRESENCE_COLUMN + "_" + ++suffix;
+    }
+    return HiveUtils.unparseIdentifier(candidate, conf);
   }
 
   private static String replaceColumnRefsWithTargetPrefix(String columnRef, String strValue) {
@@ -183,11 +219,14 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
       sqlGenerator.append("\n   WHERE ");
       
-      StringBuilder whereClause = new StringBuilder(insertClause.getPredicate());
-      
+      String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
+      String sourcePresenceCol = sourcePresenceColumn(mergeStatement, conf);
+      StringBuilder whereClause = new StringBuilder(filePathCol).append(" IS NULL AND ")
+          .append(sourcePresenceCol).append(" IS NOT NULL");
+
       if (insertClause.getExtraPredicate() != null) {
         //we have WHEN NOT MATCHED AND <boolean expr> THEN INSERT
-        whereClause.append(" AND ").append(insertClause.getExtraPredicate());
+        whereClause.append(" AND ").append(parenthesizePredicate(insertClause.getExtraPredicate()));
       }
       sqlGenerator.append(
           replaceColumnRefsWithTargetPrefix(targetAlias, whereClause.toString()));
@@ -199,6 +238,10 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       Table targetTable = mergeStatement.getTargetTable();
       String targetAlias = mergeStatement.getTargetAlias();
       String onClauseAsString = mergeStatement.getOnClauseAsText();
+      String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
+      String sourcePresenceCol = sourcePresenceColumn(mergeStatement, conf);
+      String matchedPredicate = parenthesizePredicate(onClauseAsString) + " AND " + filePathCol
+          + " IS NOT NULL AND " + sourcePresenceCol + " IS NOT NULL";
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       sqlGenerator.append("    -- update clause (insert part)\n").append("SELECT ");
@@ -217,7 +260,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nFROM " + mergeStatement.getSourceName());
 
       addWhereClauseOfUpdate(
-          onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator,
+          matchedPredicate, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator,
           columnRefsFunc);
       sqlGenerator.append("\n");
     }
@@ -227,7 +270,6 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
                                          String hintStr, MultiInsertSqlGenerator sqlGenerator) {
       String targetAlias = mergeStatement.getTargetAlias();
       String sourceName = mergeStatement.getSourceName();
-      String onClausePredicate = mergeStatement.getOnClausePredicate();
 
       UnaryOperator<String> columnRefsFunc = value -> replaceColumnRefsWithTargetPrefix(targetAlias, value);
       List<String> deleteValues = sqlGenerator.getDeleteValues(Context.Operation.DELETE);
@@ -246,22 +288,21 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       sqlGenerator.append("\nFROM " + sourceName);
       sqlGenerator.indent().append("WHERE ");
 
-      StringBuilder whereClause = new StringBuilder(onClauseAsString);
+      String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
+      String sourcePresenceCol = sourcePresenceColumn(mergeStatement, conf);
+      StringBuilder whereClause = new StringBuilder(parenthesizePredicate(onClauseAsString))
+          .append(" AND ").append(filePathCol).append(" IS NOT NULL AND ")
+          .append(sourcePresenceCol).append(" IS NOT NULL");
       if (isNotBlank(extraPredicate)) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-        whereClause.append(" AND ").append(extraPredicate);
+        whereClause.append(" AND ").append(parenthesizePredicate(extraPredicate));
       }
       String whereClauseStr = columnRefsFunc.apply(whereClause.toString());
-      String filePathCol = HiveUtils.unparseIdentifier(TARGET_PREFIX + VirtualColumn.FILE_PATH.getName(), conf);
       cowWithClauseBuilder.appendWith(sqlGenerator, sourceName, filePathCol, whereClauseStr, false,
           isRowLineageSupported, TARGET_PREFIX);
 
-      if (isNotBlank(onClausePredicate)) {
-        whereClause.append(" OR ").append(onClausePredicate);
-      }
       sqlGenerator.append("\n").indent();
-      sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", columnRefsFunc.apply(
-          whereClause.toString())));
+      sqlGenerator.append("( NOT(%s) OR (%s) IS NULL )".replace("%s", whereClauseStr));
       
       sqlGenerator.append("\n").indent();
       // Add the file path filter that matches the delete condition.

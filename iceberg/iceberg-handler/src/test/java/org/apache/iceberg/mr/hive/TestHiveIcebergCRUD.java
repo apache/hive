@@ -616,6 +616,159 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   @Test
+  public void testCopyOnWriteMergeKeepsTargetNullJoinKey() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_null_join_key");
+    createCopyOnWriteTable(identifier, TableProperties.MERGE_MODE);
+    shell.executeStatement("CREATE TABLE cow_merge_null_join_key_source (a int, b string)");
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (1, 'target-one'), (NULL, 'target-null'), (2, 'target-two')");
+    shell.executeStatement("INSERT INTO cow_merge_null_join_key_source " +
+        "VALUES (1, 'source-one'), (3, 'source-three')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " t " +
+            "USING cow_merge_null_join_key_source s ON t.a = s.a " +
+            "WHEN MATCHED THEN UPDATE SET b = s.b " +
+            "WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b)");
+
+    Assert.assertEquals(2, numModifiedRows);
+    Assert.assertEquals(4, shell.executeStatement("SELECT * FROM " + identifier).size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a IS NULL AND b = 'target-null'").size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 3 AND b = 'source-three'").size());
+    Assert.assertEquals(0, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE b IS NULL").size());
+  }
+
+  @Test
+  public void testCopyOnWriteInsertOnlyMergeDoesNotUseNullJoinKeyTargetAsSourceOnly() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_insert_null_join_key");
+    createCopyOnWriteTable(identifier, TableProperties.MERGE_MODE);
+    shell.executeStatement("CREATE TABLE cow_merge_insert_null_join_key_source (a int, b string)");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (NULL, 'target-null')");
+    shell.executeStatement("INSERT INTO cow_merge_insert_null_join_key_source VALUES (5, 'source-five')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " t " +
+            "USING cow_merge_insert_null_join_key_source s ON t.a = s.a " +
+            "WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b)");
+
+    Assert.assertEquals(1, numModifiedRows);
+    Assert.assertEquals(2, shell.executeStatement("SELECT * FROM " + identifier).size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a IS NULL AND b = 'target-null'").size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 5 AND b = 'source-five'").size());
+    Assert.assertEquals(0, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE b IS NULL").size());
+  }
+
+  @Test
+  public void testCopyOnWriteMergeUnknownPredicateFallsThroughToNextClause() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_unknown_predicate");
+    createCopyOnWriteTable(identifier, TableProperties.MERGE_MODE);
+    shell.executeStatement("CREATE TABLE cow_merge_unknown_predicate_source (a int, b string)");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, NULL)");
+    shell.executeStatement("INSERT INTO cow_merge_unknown_predicate_source VALUES (1, 'source')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " t " +
+            "USING cow_merge_unknown_predicate_source s ON t.a = s.a " +
+            "WHEN MATCHED AND t.b = 'delete' THEN DELETE " +
+            "WHEN MATCHED THEN UPDATE SET b = 'updated'");
+
+    Assert.assertEquals(1, numModifiedRows);
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 1 AND b = 'updated'").size());
+  }
+
+  @Test
+  public void testCopyOnWriteMergePreservesMatchedPredicateGrouping() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_predicate_grouping");
+    createCopyOnWriteTable(identifier, TableProperties.MERGE_MODE);
+    shell.executeStatement("CREATE TABLE cow_merge_predicate_grouping_source (a int, b string)");
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (1, 'one'), (2, 'two'), (3, 'three')");
+    shell.executeStatement("INSERT INTO cow_merge_predicate_grouping_source " +
+        "VALUES (1, 'source-one'), (3, 'source-three'), (4, 'source-four')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " t " +
+            "USING cow_merge_predicate_grouping_source s ON t.a = s.a " +
+            "WHEN MATCHED AND t.a = 1 OR t.a = 2 THEN UPDATE SET b = 'updated' " +
+            "WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b)");
+
+    Assert.assertEquals(2, numModifiedRows);
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 1 AND b = 'updated'").size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 2 AND b = 'two'").size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 3 AND b = 'three'").size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 4 AND b = 'source-four'").size());
+  }
+
+  @Test
+  public void testCopyOnWriteMergeNullSafeJoinDoesNotMatchNullExtendedTargetRow() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_null_safe_join");
+    createCopyOnWriteTable(identifier, TableProperties.MERGE_MODE);
+    shell.executeStatement("CREATE TABLE cow_merge_null_safe_join_source (a int, b string)");
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (NULL, 'target-null'), (1, 'target-one')");
+    shell.executeStatement("INSERT INTO cow_merge_null_safe_join_source " +
+        "VALUES (1, 'source-one'), (2, 'source-two')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " t " +
+            "USING cow_merge_null_safe_join_source s ON t.a <=> s.a " +
+            "WHEN MATCHED THEN UPDATE SET b = s.b " +
+            "WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b)");
+
+    Assert.assertEquals(2, numModifiedRows);
+    Assert.assertEquals(3, shell.executeStatement("SELECT * FROM " + identifier).size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a IS NULL AND b = 'target-null'").size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 1 AND b = 'source-one'").size());
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 2 AND b = 'source-two'").size());
+  }
+
+  @Test
+  public void testCopyOnWriteMergeSourcePresenceColumnCollision() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_source_presence_collision");
+    createCopyOnWriteTable(identifier, TableProperties.MERGE_MODE);
+    shell.executeStatement("CREATE TABLE cow_merge_source_presence_collision_source " +
+        "(a int, b string, hive_cow_source_row string)");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'target-one')");
+    shell.executeStatement("INSERT INTO cow_merge_source_presence_collision_source " +
+        "VALUES (1, 'source-one', 'user-column')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " t " +
+            "USING cow_merge_source_presence_collision_source s ON t.a = s.a " +
+            "WHEN MATCHED THEN UPDATE SET b = s.b");
+
+    Assert.assertEquals(1, numModifiedRows);
+    Assert.assertEquals(1, shell.executeStatement("SELECT * FROM " + identifier +
+        " WHERE a = 1 AND b = 'source-one'").size());
+  }
+
+  @Test
   public void testUpdateStatementPartitioned() {
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("last_name").bucket("customer_id", 16).build();
