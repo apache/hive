@@ -3914,7 +3914,7 @@ public class HMSHandler extends PrivilegeHandler {
       authorizeProxyPrivilege();
       List<RuntimeStat> res = getMS().getRuntimeStats(rqst.getMaxWeight(), rqst.getMaxCreateTime());
       return res;
-    } catch (Exception e) {
+    } catch (TException e) {
       LOG.error("Caught exception", e);
       ex = e;
       throw e;
@@ -4031,7 +4031,7 @@ public class HMSHandler extends PrivilegeHandler {
   }
 
   @Override
-  public void add_replication_metrics(ReplicationMetricList replicationMetricList) throws MetaException{
+  public void add_replication_metrics(ReplicationMetricList replicationMetricList) throws TException {
     startFunction("add_replication_metrics");
     Exception ex = null;
     try {
@@ -4048,7 +4048,7 @@ public class HMSHandler extends PrivilegeHandler {
 
   @Override
   public ReplicationMetricList get_replication_metrics(GetReplicationMetricsRequest
-                                                           getReplicationMetricsRequest) throws MetaException{
+                                                           getReplicationMetricsRequest) throws TException {
     startFunction("get_replication_metrics");
     Exception ex = null;
     try {
@@ -4196,16 +4196,14 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
 
   @Override
   public List<WriteEventInfo> get_all_write_event_info(GetAllWriteEventInfoRequest request)
-      throws MetaException {
+      throws TException {
     startFunction("get_all_write_event_info");
     Exception ex = null;
     try {
       authorizeProxyPrivilege();
       List<WriteEventInfo> writeEventInfoList =
           getMS().getAllWriteEventInfo(request.getTxnId(), request.getDbName(), request.getTableName());
-      List<WriteEventInfo> filtered = FilterUtils.filterWriteEventInfoIfEnabled(
-          isServerFilterEnabled, filterHook, getDefaultCatalog(conf), writeEventInfoList);
-      return filtered == null ? Collections.emptyList() : filtered;
+      return writeEventInfoList == null ? Collections.emptyList() : writeEventInfoList;
     } catch (Exception e) {
       LOG.error("Caught exception", e);
       ex = e;

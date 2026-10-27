@@ -25,16 +25,20 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -50,6 +54,16 @@ public class TestReplicationMetrics extends MetaStoreClientTest {
 
   public TestReplicationMetrics(String name, AbstractMetaStoreService metaStore) throws Exception {
     this.metaStore = metaStore;
+  }
+
+  @BeforeClass
+  public static void startMetaStores() {
+    // The remote mini-HMS marks the whole JVM as remote, so authorizeProxyPrivilege() would also reject the
+    // (non-proxy) test user on this API. Disable it for this test.
+    Map<MetastoreConf.ConfVars, String> msConf = new HashMap<>();
+    Map<String, String> extraConf = new HashMap<>();
+    extraConf.put(MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.getVarname(), "false");
+    startMetaStores(msConf, extraConf);
   }
 
   @Before

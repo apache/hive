@@ -853,7 +853,7 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     return ms.getNotificationEventsCount(rqst);
   }
 
-  protected void authorizeProxyPrivilege() throws MetaException {
+  protected void authorizeProxyPrivilege() throws TException {
     // Skip the auth in embedded mode or if the auth is disabled
     if (!HiveMetaStore.isMetaStoreRemote() ||
         !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH) ||
@@ -865,12 +865,12 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
       user = SecurityUtils.getUGI().getShortUserName();
     } catch (Exception ex) {
       LOG.error("Cannot obtain username", ex);
-      throw new MetaException(ex.getMessage());
+      throw new TException(ex);
     }
     if (!MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf, getIPAddress())) {
       LOG.error("Not authorized to make the get_notification_events_count call. You can try to disable " +
           MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.toString());
-      throw new MetaException("User " + user + " is not allowed to perform this API call");
+      throw new TException("User " + user + " is not allowed to perform this API call");
     }
   }
 
