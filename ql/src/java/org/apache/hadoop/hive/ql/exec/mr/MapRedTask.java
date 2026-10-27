@@ -190,7 +190,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       OutputStream out = null;
       try {
         out = FileSystem.getLocal(conf).create(planPath);
-        SerializationUtilities.serializePlan(plan, out);
+        SerializationUtilities.serializePlanWithEngine(conf, plan, out);
         out.close();
         out = null;
       } finally {

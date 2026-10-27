@@ -183,6 +183,9 @@
     <junit.vintage.version>5.13.3</junit.vintage.version>
     <kafka.version>3.9.1</kafka.version>
     <kryo.version>5.5.0</kryo.version>
+    <!-- Evaluation-only: candidate Kryo alternative. Not used in production code.
+         "Apache Fury" was renamed to "Apache Fory"; artifact/package/class names below reflect the new name. -->
+    <fory.version>1.7.6</fory.version>
     <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.17.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
@@ -318,6 +321,12 @@
         <groupId>com.esotericsoftware.kryo</groupId>
         <artifactId>kryo5</artifactId>
         <version>${kryo.version}</version>
+      </dependency>
+      <dependency>
+        <!-- Evaluation-only: candidate Kryo alternative. Not used in production code. -->
+        <groupId>org.apache.fory</groupId>
+        <artifactId>fory-core</artifactId>
+        <version>${fory.version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>

@@ -178,7 +178,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       OutputStream out = null;
       try {
         out = FileSystem.getLocal(conf).create(planPath);
-        SerializationUtilities.serializePlan(plan, out);
+        SerializationUtilities.serializePlanWithEngine(conf, plan, out);
         out.close();
         out = null;
       } finally {
