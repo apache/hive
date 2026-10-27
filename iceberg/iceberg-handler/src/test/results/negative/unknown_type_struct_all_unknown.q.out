@@ -1,0 +1,8 @@
+PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_struct (
+  id INT,
+  s STRUCT<u:UNKNOWN>
+) STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_struct
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Column 's' of type struct<3: u: optional unknown> is not supported: a struct must have at least one field that is not of type unknown
