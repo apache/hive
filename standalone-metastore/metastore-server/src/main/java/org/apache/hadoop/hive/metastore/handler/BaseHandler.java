@@ -874,6 +874,28 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
+  /**
+   * Tells whether the caller may be treated as a trusted proxy/operator (e.g. HiveServer2 or the compactor),
+   * using the same rules as {@link #authorizeProxyPrivilege()} but without failing the call: the caller is
+   * trusted in embedded mode, when the proxy check is disabled, in test mode, or when the user has host-proxy
+   * privileges.
+   */
+  protected boolean hasProxyPrivilege() throws TException {
+    if (!HiveMetaStore.isMetaStoreRemote() ||
+        !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH) ||
+        conf.getBoolean(HIVE_IN_TEST.getVarname(), false)) {
+      return true;
+    }
+    String user;
+    try {
+      user = SecurityUtils.getUGI().getShortUserName();
+    } catch (Exception ex) {
+      LOG.error("Cannot obtain username", ex);
+      throw new TException(ex);
+    }
+    return MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf, getIPAddress());
+  }
+
   @Override
   public CmRecycleResponse cm_recycle(final CmRecycleRequest request) throws MetaException {
     wh.recycleDirToCmPath(new Path(request.getDataPath()), request.isPurge());

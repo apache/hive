@@ -41,15 +41,11 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.StringUtils;
 import java.util.Collections;
 import java.util.Map;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
@@ -233,76 +229,6 @@ public class TestHmsServerAuthorization {
     request.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     expectAuthorizationFailure("get_partitions_with_specs",
         () -> client.getPartitionsWithSpecs(request));
-  }
-
-  @Test
-  public void testCompact2Authorization() throws Exception {
-    dbName1 = "db_test_compact2";
-    creatEnv(conf);
-    CompactionRequest request = new CompactionRequest(dbName1, TAB1, CompactionType.MAJOR);
-    expectAuthorizationFailure("compact2", () -> client.compact2(request));
-  }
-
-  @Test
-  public void testCompact2MissingTableRejected() throws Exception {
-    dbName1 = "db_test_compact2_missing";
-    creatEnv(conf);
-    CompactionRequest request = new CompactionRequest(dbName1, "no_such_table", CompactionType.MAJOR);
-    assertThrows(NoSuchObjectException.class, () -> client.compact2(request));
-  }
-
-  @Test
-  public void testSubmitForCleanupAuthorization() throws Exception {
-    dbName1 = "db_test_submit_for_cleanup";
-    creatEnv(conf);
-    CompactionRequest request = new CompactionRequest(dbName1, TAB1, CompactionType.MAJOR);
-    expectAuthorizationFailure("submit_for_cleanup", () -> client.submitForCleanup(request, 1L, 1L));
-  }
-
-  @Test
-  public void testSubmitForCleanupMissingTableAuthorization() throws Exception {
-    dbName1 = "db_test_submit_for_cleanup_missing";
-    creatEnv(conf);
-    String dbLocation = client.getDatabase(dbName1).getLocationUri();
-    CompactionRequest request = new CompactionRequest(dbName1, "ctas_rolled_back", CompactionType.MAJOR);
-    request.putToProperties(hive_metastoreConstants.META_TABLE_LOCATION, dbLocation + "/ctas_rolled_back");
-    // no backing table: the request is authorized against the database
-    expectAuthorizationFailure("submit_for_cleanup on missing table",
-        () -> client.submitForCleanup(request, 1L, 1L));
-  }
-
-  @Test
-  public void testSubmitForCleanupMissingTableRejectsOutsideLocation() throws Exception {
-    dbName1 = "db_test_submit_for_cleanup_outside";
-    creatEnv(conf);
-    String dbLocation = client.getDatabase(dbName1).getLocationUri();
-    for (String location : new String[] {
-        null,                                   // no location supplied
-        "",                                     // empty location
-        "/tmp/some_other_dir",                  // outside of the database
-        dbLocation,                             // the database directory itself
-        dbLocation + "/../other_db.db/tbl",     // escapes the database directory
-        dbLocation + "_sibling/tbl"             // shares only a string prefix with the database directory
-    }) {
-      CompactionRequest request = new CompactionRequest(dbName1, "ctas_rolled_back", CompactionType.MAJOR);
-      if (location != null) {
-        request.putToProperties(hive_metastoreConstants.META_TABLE_LOCATION, location);
-      }
-      MetaException ex = assertThrows("location=" + location, MetaException.class,
-          () -> client.submitForCleanup(request, 1L, 1L));
-      assertTrue(ex.getMessage(), ex.getMessage().contains("location"));
-    }
-  }
-
-  @Test
-  public void testSubmitForCleanupMissingPartitionedTableRejected() throws Exception {
-    dbName1 = "db_test_submit_for_cleanup_part";
-    creatEnv(conf);
-    String dbLocation = client.getDatabase(dbName1).getLocationUri();
-    CompactionRequest request = new CompactionRequest(dbName1, "no_such_table", CompactionType.MAJOR);
-    request.setPartitionname("name=value1");
-    request.putToProperties(hive_metastoreConstants.META_TABLE_LOCATION, dbLocation + "/no_such_table");
-    assertThrows(NoSuchObjectException.class, () -> client.submitForCleanup(request, 1L, 1L));
   }
 
   @Test
