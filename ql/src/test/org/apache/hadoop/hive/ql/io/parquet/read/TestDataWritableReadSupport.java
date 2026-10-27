@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 
 import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.testConversion;
 import static org.junit.Assert.assertEquals;
@@ -126,21 +125,22 @@ public class TestDataWritableReadSupport {
 
   @Test
   public void testNoProjectedColumnRequestsNoColumn() {
-    MessageType fileSchema = MessageTypeParser.parseMessageType(
-      "message hive_schema {\n"
-        + "  optional int32 a;\n"
-        + "  optional binary b;\n"
-        + "}\n");
+    MessageType fileSchema = MessageTypeParser.parseMessageType("""
+        message hive_schema {
+          optional int32 a;
+          optional binary b;
+        }
+        """);
     Configuration conf = new Configuration();
     conf.set(IOConstants.COLUMNS, "a,b");
     conf.set(IOConstants.COLUMNS_TYPES, "int,string");
     conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
 
     assertEquals(0, DataWritableReadSupport.getRequestedSchema(false, Arrays.asList("a", "b"),
-      Arrays.asList(TypeInfoFactory.intTypeInfo, TypeInfoFactory.stringTypeInfo), fileSchema, conf)
-      .getFieldCount());
+        Arrays.asList(TypeInfoFactory.intTypeInfo, TypeInfoFactory.stringTypeInfo), fileSchema, conf)
+        .getFieldCount());
     assertEquals(0, new DataWritableReadSupport()
-      .init(new InitContext(conf, Collections.emptyMap(), fileSchema))
-      .getRequestedSchema().getFieldCount());
+        .init(new InitContext(conf, Collections.emptyMap(), fileSchema))
+        .getRequestedSchema().getFieldCount());
   }
 }
