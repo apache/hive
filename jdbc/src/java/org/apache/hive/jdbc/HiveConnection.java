@@ -836,7 +836,7 @@ public class HiveConnection implements java.sql.Connection {
           }
           return ret;
         }
-        return super.retryRequest(response, executionCount, context);
+        return false;
       }
 
       @Override

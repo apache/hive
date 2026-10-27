@@ -464,7 +464,7 @@
         <scope>runtime</scope>
       </dependency>
       <dependency>
-        <groupId>org.apache.httpcomponents5</groupId>
+        <groupId>org.apache.httpcomponents.core5</groupId>
         <artifactId>httpcore5</artifactId>
         <version>${httpcomponents5.core.version}</version>
       </dependency>
