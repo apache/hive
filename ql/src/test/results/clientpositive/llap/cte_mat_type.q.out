@@ -50,6 +50,8 @@ FROM dept_avg da
 WHERE da.avg_salary < 100000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dept_avg
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO
 WITH dept_avg AS (
@@ -67,6 +69,8 @@ FROM dept_avg da
 WHERE da.avg_salary < 100000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dept_avg
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(d_name=[$0], _c1=[$1])

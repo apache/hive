@@ -33,10 +33,12 @@ POSTHOOK: Output: default@ice_date
 PREHOOK: query: delete from ice_date where a = 1 and b = '2021-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_date
+PREHOOK: Output: default@ice_date
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: delete from ice_date where a = 1 and b = '2021-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_date
+POSTHOOK: Output: default@ice_date
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from ice_date
 PREHOOK: type: QUERY
@@ -330,10 +332,12 @@ POSTHOOK: Output: default@test_delete_config
 PREHOOK: query: explain delete from test_delete_config where b < 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_delete_config
+PREHOOK: Output: default@test_delete_config
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain delete from test_delete_config where b < 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_delete_config
+POSTHOOK: Output: default@test_delete_config
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

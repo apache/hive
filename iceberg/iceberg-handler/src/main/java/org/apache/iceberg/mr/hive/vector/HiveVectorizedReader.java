@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.VectorizedParquetInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -231,14 +233,7 @@ public class HiveVectorizedReader {
     // TODO: add support for reading files with positional deletes with LLAP (LLAP would need to provide file row num)
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null && task.deletes().isEmpty() && !InputFormatConfig.fetchVirtualColumns(job)) {
-      boolean isDecimal64Disabled =
-          job.getBoolean(HiveIcebergInputFormat.getDecimal64DisableConfName(tableName), false);
-      if (isDecimal64Disabled) {
-        // The LLAP ORC reader derives decimal64 support from this job var, not the plan; clear it so
-        // it emits full decimal instead.
-        HiveConf.setVar(job, HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED, "");
-      }
-      recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, path, null, readColumnIds,
+      recordReader = LlapProxy.getIo().orc().vectorizedReaderForPath(fileId, path, null, readColumnIds,
           job, start, length, reporter);
     }
 
@@ -261,7 +256,12 @@ public class HiveVectorizedReader {
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null && LlapProxy.getIo().usingLowLevelCache()) {
       LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
-      footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId);
+      // No per-fragment counters on the Iceberg vectorized path yet; footer lookups are
+      // recorded as cache traffic but not as META hits/misses in the LLAP IO summary.
+      // Tagged as VectorizedParquetRecordReader tags the data it caches for this file, so purging the
+      // table's entries covers the footer too.
+      CacheTag cacheTag = VectorizedParquetRecordReader.cacheTagOfParquetFile(path, job, job);
+      footerData = LlapProxy.getIo().parquet().getFooterBuffersFromCache(path, job, cacheTag, fileId, null);
     }
 
     ParquetMetadata parquetMetadata = HiveParquetUtil.readFooter(task.file(), io, job, footerData);

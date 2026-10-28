@@ -165,6 +165,8 @@ public class JdbcColumn {
       return Type.STRUCT_TYPE;
     case "uniontype":
       return Type.UNION_TYPE;
+    case serdeConstants.VARIANT_TYPE_NAME:
+      return Type.VARIANT_TYPE;
     case "void":
       /* fall through */
     case "null":
@@ -235,6 +237,8 @@ public class JdbcColumn {
         return serdeConstants.LIST_TYPE_NAME;
       case "struct":
         return serdeConstants.STRUCT_TYPE_NAME;
+      case serdeConstants.VARIANT_TYPE_NAME:
+        return serdeConstants.VARIANT_TYPE_NAME;
       default:
         throw new SQLException("Unrecognized column type: " + type);
     }

@@ -48,7 +48,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
   SELECT * FROM src
@@ -62,7 +64,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -272,7 +276,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
   SELECT * FROM src
@@ -286,7 +292,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(a.key=[$0])
@@ -310,7 +318,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
   SELECT * FROM src
@@ -324,7 +334,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -493,7 +505,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
   SELECT * FROM src
@@ -507,7 +521,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(key=[$0], value=[$1])
@@ -577,7 +593,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_no_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
   SELECT * FROM src_no_stats
@@ -591,7 +609,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_no_stats
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -801,7 +821,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_no_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
   SELECT * FROM src_no_stats
@@ -815,7 +837,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_no_stats
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(a.key=[$0])
@@ -839,7 +863,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_no_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
   SELECT * FROM src_no_stats
@@ -853,7 +879,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_no_stats
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1022,7 +1050,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_no_stats
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
   SELECT * FROM src_no_stats
@@ -1036,7 +1066,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_no_stats
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(key=[$0], value=[$1])
@@ -1118,7 +1150,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_partial_stats_key
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
   SELECT * FROM src_partial_stats_key
@@ -1132,7 +1166,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_partial_stats_key
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1342,7 +1378,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_partial_stats_key
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
   SELECT * FROM src_partial_stats_key
@@ -1356,7 +1394,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_partial_stats_key
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(a.key=[$0])
@@ -1380,7 +1420,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_partial_stats_key
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
   SELECT * FROM src_partial_stats_key
@@ -1394,7 +1436,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_partial_stats_key
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1563,7 +1607,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_partial_stats_key
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
   SELECT * FROM src_partial_stats_key
@@ -1577,7 +1623,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_partial_stats_key
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(key=[$0], value=[$1])
@@ -1659,7 +1707,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_partial_stats_value
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
   SELECT * FROM src_partial_stats_value
@@ -1673,7 +1723,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_partial_stats_value
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1883,7 +1935,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_partial_stats_value
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
   SELECT * FROM src_partial_stats_value
@@ -1897,7 +1951,9 @@ SELECT a.key
 FROM materialized_cte2 a
 JOIN materialized_cte2 b ON (a.key = b.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_partial_stats_value
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(a.key=[$0])
@@ -1921,7 +1977,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_partial_stats_value
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN WITH materialized_cte1 AS (
   SELECT * FROM src_partial_stats_value
@@ -1935,7 +1993,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_partial_stats_value
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2104,7 +2164,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 PREHOOK: type: QUERY
+PREHOOK: Input: default@materialized_cte1
 PREHOOK: Input: default@materialized_cte2
+PREHOOK: Input: default@src_partial_stats_value
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN CBO WITH materialized_cte1 AS (
   SELECT * FROM src_partial_stats_value
@@ -2118,7 +2180,9 @@ SELECT * FROM materialized_cte2
 UNION ALL
 SELECT * FROM materialized_cte2
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@materialized_cte1
 POSTHOOK: Input: default@materialized_cte2
+POSTHOOK: Input: default@src_partial_stats_value
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(key=[$0], value=[$1])

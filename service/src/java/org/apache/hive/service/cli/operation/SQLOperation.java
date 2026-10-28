@@ -79,6 +79,8 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.apache.hive.service.cli.session.HiveSessionImpl;
+import org.apache.hive.service.cli.session.PersistableSessionUtils;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 
 import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
@@ -649,6 +651,10 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_SUCCEEDED_QUERIES);
       queryInfo.updateState(state.toString());
+      HiveSessionImpl impl = PersistableSessionUtils.unwrapSession(parentSession);
+      if (impl != null) {
+        impl.onOperationFinished(statement);
+      }
       break;
     case INITIALIZED:
       /* fall through */

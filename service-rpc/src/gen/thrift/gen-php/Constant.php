@@ -57,6 +57,7 @@ final class Constant extends \Thrift\Type\TConstant
                         12 => true,
                         13 => true,
                         14 => true,
+                        24 => true,
         );
     }
 
@@ -94,6 +95,7 @@ final class Constant extends \Thrift\Type\TConstant
                         13 => "UNIONTYPE",
                         23 => "UNKNOWN",
                         18 => "VARCHAR",
+                        24 => "VARIANT",
         );
     }
 

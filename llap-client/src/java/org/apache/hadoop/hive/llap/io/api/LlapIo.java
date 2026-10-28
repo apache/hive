@@ -19,27 +19,24 @@
 
 package org.apache.hadoop.hive.llap.io.api;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.io.CacheTag;
-import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.orc.impl.OrcTail;
 
-import javax.annotation.Nullable;
-
+/**
+ * The LLAP IO facade: what a caller can do with the daemon's cache and IO threads regardless of
+ * the file format in front of it. Whatever only one format has is on that format's own interface,
+ * {@link #orc()} or {@link #parquet()}, so adding a format adds an accessor rather than widening
+ * this one.
+ */
 public interface LlapIo<T> {
+  /**
+   * Wraps {@code sourceInputFormat} so its splits are read through LLAP IO. A non-null {@code serde}
+   * selects the re-encoding producer (the hive.llap.io.encode.formats path); null selects the native
+   * producer registered for the input format's class. Returns null when this daemon has neither, and the
+   * caller serves the split with the source format (injecting the caches for a cache-only format).
+   */
   InputFormat<NullWritable, T> getInputFormat(
       InputFormat<?, ?> sourceInputFormat, Deserializer serde);
   void close();
@@ -51,34 +48,11 @@ public interface LlapIo<T> {
    */
   long purge();
 
-  /**
-   * Returns a deserialized OrcTail instance associated with the ORC file on the given path.
-   * Raw content is either obtained from cache, or from disk if there is a cache miss.
-   * @param path Orc file path
-   * @param conf jobConf
-   * @param tag a CacheTag instance must be provided as that's needed for cache insertion
-   * @param fileKey fileId of the ORC file (either the Long fileId of HDFS or the SyntheticFileId).
-   *                Optional, if it is not provided, it will be generated, see:
-   *                org.apache.hadoop.hive.ql.io.HdfsUtils#getFileId()
-   * @return The tail of the ORC file
-   * @throws IOException ex
-   */
-  OrcTail getOrcTailFromCache(Path path, Configuration conf, CacheTag tag, @Nullable Object fileKey) throws IOException;
+  /** The ORC-specific operations; never null. */
+  LlapOrcIo orc();
 
-
-  /**
-   * Returns the metadata buffers associated with the Parquet file on the given path.
-   * Content is either obtained from cache, or from disk if there is a cache miss.
-   * @param path Parquet file path
-   * @param conf jobConf
-   * @param fileKey fileId of the Parquet file (either the Long fileId of HDFS or the SyntheticFileId).
-   *                Optional, if it is not provided, it will be generated, see:
-   *                org.apache.hadoop.hive.ql.io.HdfsUtils#getFileId()
-   * @return
-   * @throws IOException
-   */
-  MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey)
-      throws IOException;
+  /** The Parquet-specific operations; never null. */
+  LlapParquetIo parquet();
 
   /**
    * Handles request to evict entities specified in the request object.
@@ -88,24 +62,6 @@ public interface LlapIo<T> {
   long evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest);
 
   void initCacheOnlyInputFormat(InputFormat<?, ?> inputFormat);
-
-  /**
-   * Creates an LLAP record reader for a given file, by creating a split from this file, and passing it into a new
-   * LLAP record reader. May return null when attempting with unsupported schema evolution between reader and file
-   * schemas.
-   * Useful if a file is read multiple times as LLAP will cache it. Should be used for rather smaller files.
-   * @param fileKey - file ID, if null it will be determined during read but for additional performance cost
-   * @param path - path for the file to read
-   * @param tag - cache tag associated with this file (required for LLAP administrative purposes)
-   * @param tableIncludedCols - list of column #'s to be read from the file
-   * @param conf - job conf for this read. Schema serialized herein should be aligned with tableIncludedCols
-   * @param offset - required offset to start reading from
-   * @param length - required reading length
-   * @return
-   * @throws IOException
-   */
-  RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path, CacheTag tag,
-      List<Integer> tableIncludedCols, JobConf conf, long offset, long length, Reporter reporter) throws IOException;
 
   /**
    * Extract and return the cache content metadata.

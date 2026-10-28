@@ -853,7 +853,7 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     return ms.getNotificationEventsCount(rqst);
   }
 
-  private void authorizeProxyPrivilege() throws TException {
+  protected void authorizeProxyPrivilege() throws TException {
     // Skip the auth in embedded mode or if the auth is disabled
     if (!HiveMetaStore.isMetaStoreRemote() ||
         !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH) ||

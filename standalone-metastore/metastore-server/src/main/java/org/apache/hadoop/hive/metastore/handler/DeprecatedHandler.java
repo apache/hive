@@ -95,6 +95,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.thrift.TException;
@@ -1017,6 +1018,10 @@ public abstract class DeprecatedHandler extends BaseHandler {
     int ret = -1;
     Exception ex = null;
     try {
+      GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], tblName);
+      getTableRequest.setCatName(parsedDbName[CAT_NAME]);
+      Table table = get_table_core(getTableRequest);
+      firePreEvent(new PreReadTableEvent(table, this));
       ret = getMS().getNumPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tblName, filter);
     } catch (Exception e) {
@@ -1039,6 +1044,17 @@ public abstract class DeprecatedHandler extends BaseHandler {
     GetPartitionsByNamesRequest request = new GetPartitionsByNamesRequest(dbName, tblName);
     request.setNames(partNames);
     return get_partitions_by_names_req(request).getPartitions();
+  }
+
+  @Deprecated
+  @Override
+  public Partition exchange_partition(Map<String, String> partitionSpecs,
+      String sourceDbName, String sourceTableName, String destDbName,
+      String destTableName) throws TException {
+    exchange_partitions(partitionSpecs, sourceDbName, sourceTableName, destDbName, destTableName);
+    // Wouldn't it make more sense to return the first element of the list returned by the
+    // previous call?
+    return new Partition();
   }
 
   @Override

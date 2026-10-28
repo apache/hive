@@ -24,16 +24,13 @@ CREATE TABLE x (name VARCHAR(50), age TINYINT, num_clicks BIGINT)
 stored by iceberg stored as orc 
 TBLPROPERTIES ('external.table.purge'='true', 'format-version'='2', 'compactor.threshold.target.size'='1500');
 
-insert into x values 
-('amy', 35, 123412344),
-('adxfvy', 36, 123412534),
-('amsdfyy', 37, 123417234),
-('asafmy', 38, 123412534);
-
-insert into x values 
-('amerqwy', 39, 123441234),
-('amyxzcv', 40, 123341234),
-('erweramy', 45, 122341234);
+insert into x values ('amy', 35, 123412344);
+insert into x values ('adxfvy', 36, 123412534);
+insert into x values ('amsdfyy', 37, 123417234);
+insert into x values ('asafmy', 38, 123412534);
+insert into x values ('amerqwy', 39, 123441234);
+insert into x values ('amyxzcv', 40, 123341234);
+insert into x values ('erweramy', 45, 122341234);
 
 select * from default.x.data_files;
 select count(*) from default.x.data_files;

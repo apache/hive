@@ -20,8 +20,11 @@
 package org.apache.iceberg.rest;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -29,13 +32,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
+import org.apache.iceberg.exceptions.RESTException;
 import org.apache.iceberg.rest.responses.ErrorResponse;
 import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java">RESTCatalogServlet.java</a>
+ * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.11.0/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java">RESTCatalogServlet.java</a>
  * The RESTCatalogServlet provides a servlet implementation used in combination with a
  * RESTCatalogAdaptor to proxy the REST Spec to any Catalog implementation.
  */
@@ -43,11 +47,16 @@ public class HMSCatalogServlet extends HttpServlet {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogServlet.class);
   private static final String CONTENT_TYPE = "Content-Type";
   private static final String APPLICATION_JSON = "application/json";
-  
+
   private final HMSCatalogAdapter restCatalogAdapter;
   private final Map<String, String> responseHeaders =
       ImmutableMap.of(CONTENT_TYPE, APPLICATION_JSON);
 
+  /**
+   * Creates a servlet that dispatches Iceberg REST Catalog requests to {@code restCatalogAdapter}.
+   *
+   * @param restCatalogAdapter the adapter used to execute each request
+   */
   public HMSCatalogServlet(HMSCatalogAdapter restCatalogAdapter) {
     this.restCatalogAdapter = restCatalogAdapter;
   }
@@ -73,6 +82,7 @@ public class HMSCatalogServlet extends HttpServlet {
           restCatalogAdapter.execute(
               context.method(),
               context.path(),
+              context.accessDelegationModes(),
               context.queryParams(),
               context.body(),
               response);
@@ -80,7 +90,13 @@ public class HMSCatalogServlet extends HttpServlet {
       if (responseBody != null) {
         RESTObjectMapper.mapper().writeValue(response.getWriter(), responseBody);
       }
+    } catch (RESTException e) {
+      // A RESTException is thrown by HMSCatalogAdapter.execute() after the error handler has
+      // already written the correct HTTP status and body to the response (e.g. 404, 403).
+      // It is not an unexpected server failure, so log at DEBUG to avoid flooding the console.
+      LOG.debug("REST request resulted in a client error (already handled): {}", e.getMessage());
     } catch (RuntimeException | IOException e) {
+      // Genuine unexpected server error – log the full stack trace.
       LOG.error("Error processing REST request", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
@@ -92,9 +108,14 @@ public class HMSCatalogServlet extends HttpServlet {
     restCatalogAdapter.close();
   }
 
+  /**
+   * Parsed view of a servlet request, or the {@link ErrorResponse} to return instead if parsing
+   * the request failed.
+   */
   public static class ServletRequestContext {
     private HTTPMethod method;
     private String path;
+    private Set<AccessDelegationMode> accessDelegationModes;
     private Map<String, String> queryParams;
     private Object body;
 
@@ -107,10 +128,12 @@ public class HMSCatalogServlet extends HttpServlet {
     private ServletRequestContext(
         HTTPMethod method,
         String path,
+        Set<AccessDelegationMode> accessDelegationModes,
         Map<String, String> queryParams,
         Object body) {
       this.method = method;
       this.path = path;
+      this.accessDelegationModes = accessDelegationModes;
       this.queryParams = queryParams;
       this.body = body;
     }
@@ -136,6 +159,21 @@ public class HMSCatalogServlet extends HttpServlet {
                 .build());
       }
 
+      var accessDelegationModes = Arrays
+          .stream(Optional.ofNullable(request.getHeader("X-Iceberg-Access-Delegation")).orElse("").split(","))
+          .map(String::trim)
+          .filter(header -> !header.isEmpty())
+          .map(header -> switch (header) {
+            case "vended-credentials" -> AccessDelegationMode.VENDED_CREDENTIALS;
+            case "remote-signing" -> AccessDelegationMode.REMOTE_SIGNING;
+            default -> {
+              LOG.warn("Unknown access delegation mode: {}", header);
+              yield null;
+            }
+          })
+          .filter(Objects::nonNull)
+          .collect(Collectors.toUnmodifiableSet());
+
       Route route = routeContext.first();
       Object requestBody = null;
       if (route.requestClass() != null) {
@@ -154,25 +192,48 @@ public class HMSCatalogServlet extends HttpServlet {
           request.getParameterMap().entrySet().stream()
               .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()[0]));
 
-      return new ServletRequestContext(method, path, queryParams, requestBody);
+      return new ServletRequestContext(method, path, accessDelegationModes, queryParams, requestBody);
     }
 
     HTTPMethod method() {
       return method;
     }
 
+    /**
+     * The request path, relative to the servlet, with the leading '/' removed.
+     * @return the request path
+     */
     public String path() {
       return path;
     }
 
+    /**
+     * The requested access delegation modes.
+     */
+    public Set<AccessDelegationMode> accessDelegationModes() {
+      return accessDelegationModes;
+    }
+
+    /**
+     * The request's query parameters, keyed by parameter name.
+     * @return the query parameters
+     */
     public Map<String, String> queryParams() {
       return queryParams;
     }
 
+    /**
+     * The deserialized request body, or {@code null} if the route expects no request body.
+     * @return the request body
+     */
     public Object body() {
       return body;
     }
 
+    /**
+     * The error to return instead of dispatching the request, if parsing the request failed.
+     * @return the error, if any
+     */
     public Optional<ErrorResponse> error() {
       return Optional.ofNullable(errorResponse);
     }

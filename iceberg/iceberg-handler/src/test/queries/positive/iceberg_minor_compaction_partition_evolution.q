@@ -38,6 +38,8 @@ tblproperties ('format-version'='2');
 
 insert into ice_orc VALUES ('fn2','ln2', 1), ('fn1','ln1', 1);
 insert into ice_orc VALUES ('fn4','ln4', 1), ('fn3','ln3', 1);
+insert into ice_orc VALUES ('fn15','ln15', 1);
+insert into ice_orc VALUES ('fn16','ln16', 1);
 
 delete from ice_orc where last_name in ('ln4');
 
@@ -45,6 +47,8 @@ alter table ice_orc set partition spec(dept_id);
 
 insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6'), ('fn5','ln5');
 insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8'), ('fn7','ln7');
+insert into ice_orc PARTITION(dept_id=2) VALUES ('fn17','ln17');
+insert into ice_orc PARTITION(dept_id=2) VALUES ('fn18','ln18');
 
 delete from ice_orc where last_name in ('ln8');
 
@@ -73,6 +77,8 @@ alter table ice_orc set partition spec();
 
 insert into ice_orc VALUES ('fn9','ln9', 3), ('fn10','ln10', 3);
 insert into ice_orc VALUES ('fn11','ln11', 3), ('fn12','ln12', 3);
+insert into ice_orc VALUES ('fn19','ln19', 3);
+insert into ice_orc VALUES ('fn20','ln20', 3);
 
 select * from ice_orc;
 describe formatted ice_orc;

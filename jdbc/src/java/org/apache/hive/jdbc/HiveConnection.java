@@ -307,9 +307,21 @@ public class HiveConnection implements java.sql.Connection {
     this.fetchThreads = hiveConnection.fetchThreads;
   }
 
-  @VisibleForTesting
   protected int getNumRetries() {
     return maxRetries;
+  }
+
+  boolean isPersistableSession() {
+    String varname = ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY.varname;
+    String prefixedKey = Utils.JdbcConnectionParams.HIVE_CONF_PREFIX + varname;
+    String fetchStrategy = connParams.getHiveConfs().get(prefixedKey);
+    if (fetchStrategy == null) {
+      fetchStrategy = connParams.getHiveConfs().get(varname);
+    }
+    if (fetchStrategy == null) {
+      fetchStrategy = connParams.getSessionVars().get(prefixedKey);
+    }
+    return fetchStrategy != null && !"NEVER".equalsIgnoreCase(fetchStrategy);
   }
 
   @VisibleForTesting
@@ -377,6 +389,8 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10);
+    supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V11);
+    supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V12);
 
     if (isBrowserAuthMode()) {
       try {
@@ -559,6 +573,18 @@ public class HiveConnection implements java.sql.Connection {
       transport.open();
     }
     logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
+  }
+
+  void reconnect() throws SQLException {
+    try {
+      if (transport != null && transport.isOpen()) {
+        transport.close();
+      }
+      openTransport();
+      client = newSynchronizedClient(new TCLIService.Client(new TBinaryProtocol(transport)));
+    } catch (Exception e) {
+      throw new SQLException("Failed to reconnect transport", "08S01", e);
+    }
   }
 
   public String getConnectedUrl() {

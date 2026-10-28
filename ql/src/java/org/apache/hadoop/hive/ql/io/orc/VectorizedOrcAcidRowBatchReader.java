@@ -211,8 +211,7 @@ public class VectorizedOrcAcidRowBatchReader
         return innerReader.getProgress();
       }
     };
-    final boolean useDecimal64ColumnVectors = HiveConf
-      .getVar(conf, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+    final boolean useDecimal64ColumnVectors = HiveConf.isDecimal64VectorizationEnabled(conf);
     if (useDecimal64ColumnVectors) {
       this.vectorizedRowBatchBase = ((RecordReaderImpl) innerReader).createRowBatch(true);
     } else {
@@ -706,7 +705,8 @@ public class VectorizedOrcAcidRowBatchReader
     return keyIntervalTmp;
   }
 
-  private static class ReaderData implements Closeable {
+  @VisibleForTesting
+  static class ReaderData implements Closeable {
     OrcTail orcTail;
     Reader reader;
 
@@ -728,12 +728,15 @@ public class VectorizedOrcAcidRowBatchReader
    * @return ReaderData object where the orcTail is not null. Reader can be null, but if we had to create
    * one we return that as well for further reuse.
    */
-  private static ReaderData getOrcReaderData(Path path, Configuration conf, CacheTag cacheTag, Object fileKey) throws IOException {
+  @VisibleForTesting
+  static ReaderData getOrcReaderData(Path path, Configuration conf, CacheTag cacheTag, Object fileKey)
+      throws IOException {
     ReaderData readerData = new ReaderData();
     if (shouldReadDeleteDeltasWithLlap(conf, true)) {
       try {
-        readerData.orcTail = LlapProxy.getIo().getOrcTailFromCache(path, conf, cacheTag, fileKey);
+        readerData.orcTail = LlapProxy.getIo().orc().getTailFromCache(path, conf, cacheTag, fileKey);
         readerData.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).orcTail(readerData.orcTail));
+        return readerData;
       } catch (IllegalCacheConfigurationException icce) {
         throw new IOException("LLAP cache is not configured properly while delete delta caching is turned on", icce);
       }
@@ -1513,8 +1516,7 @@ public class VectorizedOrcAcidRowBatchReader
 
         this.bucketForSplit = bucket;
 
-        final boolean useDecimal64ColumnVector = HiveConf.getVar(conf, ConfVars
-          .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+        final boolean useDecimal64ColumnVector = HiveConf.isDecimal64VectorizationEnabled(conf);
         if (useDecimal64ColumnVector) {
           this.batch = acidEmptyStructSchema.createRowBatchV2();
         } else {
@@ -1658,7 +1660,7 @@ public class VectorizedOrcAcidRowBatchReader
           c.set(ConvertAstToSearchArg.SARG_PUSHDOWN, sargToKryo(deleteDeltaSarg));
         }
         return wrapLlapVectorizedRecordReader(
-            LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, deleteDeltaFile, tag,
+            LlapProxy.getIo().orc().vectorizedReaderForPath(fileId, deleteDeltaFile, tag,
             DELETE_DELTA_INCLUDE_COLUMNS, c, 0L, Long.MAX_VALUE, null)
         );
       }

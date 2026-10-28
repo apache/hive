@@ -456,6 +456,10 @@
       <artifactId>groovy-all</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.jodd</groupId>
       <artifactId>jodd-util</artifactId>
       <version>${jodd.version}</version>
@@ -612,7 +616,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
-      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
@@ -655,7 +658,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-runtime-library</artifactId>
-      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
@@ -694,7 +696,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-runtime-internals</artifactId>
-      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -738,7 +739,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-mapreduce</artifactId>
-      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
@@ -780,7 +780,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-dag</artifactId>
-      <optional>true</optional>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -1149,6 +1148,7 @@
                   <include>com.github.luben:zstd-jni</include>
                   <include>org.locationtech.jts:jts-core</include>
                   <include>org.locationtech.jts.io:jts-io-common</include>
+                  <include>com.googlecode.json-simple:json-simple</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.apache.tez:tez-protobuf-history-plugin</include>
                 </includes>

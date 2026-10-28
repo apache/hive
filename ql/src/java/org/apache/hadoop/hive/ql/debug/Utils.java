@@ -62,7 +62,7 @@ public class Utils {
   }
 
   /**
-   * Dumps process heap to a file in temp directoty.
+   * Dumps process heap to a file in temp directory.
    * @param args Strings to use to build a file name (dump_arg0_arg1_....).
    */
   public static void dumpHeapToTmp(String... args) {

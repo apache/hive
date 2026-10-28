@@ -411,6 +411,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       map.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname, Integer.toString(fetchSize));
       map.put(HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname,
           String.valueOf(hiveConf.getBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST)));
+      map.put(HiveConf.ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY.varname,
+          hiveConf.getVar(ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY));
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
       resp.setConfiguration(map);
       resp.setStatus(OK_STATUS);
@@ -550,7 +552,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       throws HiveSQLException, IOException {
     final String ipAddress = getIpAddress();
 
-    LOG.info("Creating Hive session handle for user [{}] from IP {}", req.getUsername(), ipAddress);
+    LOG.info("Creating Hive session handle for user [{}] from IP {}", userName, ipAddress);
 
     TProtocolVersion protocol = getMinVersion(CLIService.SERVER_VERSION,
         req.getClient_protocol());

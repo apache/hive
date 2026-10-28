@@ -1,0 +1,101 @@
+PREHOOK: query: select t.d from (select 'a' as c, 'b' as c, 'x' as d) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select t.d from (select 'a' as c, 'b' as c, 'x' as d) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+x
+PREHOOK: query: with c1 as (select 'a' as c, 'b' as c, 'x' as d)
+select d from c1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: with c1 as (select 'a' as c, 'b' as c, 'x' as d)
+select d from c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+x
+PREHOOK: query: select count(1) from (select 'a' as c, 'b' as c) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from (select 'a' as c, 'b' as c) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(*) from (select key, key from src) subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select key, key from src) subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+500
+PREHOOK: query: create table wjt1 (k int, v int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wjt1
+POSTHOOK: query: create table wjt1 (k int, v int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wjt1
+PREHOOK: query: create table wjt2 (k int, w int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wjt2
+POSTHOOK: query: create table wjt2 (k int, w int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wjt2
+PREHOOK: query: select t.v from (select a.*, b.* from wjt1 a join wjt2 b on a.k = b.k) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wjt1
+PREHOOK: Input: default@wjt2
+#### A masked pattern was here ####
+POSTHOOK: query: select t.v from (select a.*, b.* from wjt1 a join wjt2 b on a.k = b.k) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wjt1
+POSTHOOK: Input: default@wjt2
+#### A masked pattern was here ####
+PREHOOK: query: select * from (select * from (select 'a' as c, 'b' as c) a) b
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from (select 'a' as c, 'b' as c) a) b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b
+PREHOOK: query: select count(*) from src a where exists (select 'x' as c, 'y' as c from src b where b.key = a.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from src a where exists (select 'x' as c, 'y' as c from src b where b.key = a.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+500
+Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from src where exists (select 'a' as c, 'b' as c from src)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from src where exists (select 'a' as c, 'b' as c from src)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+500
+PREHOOK: query: select count(*) from (select value from src group by value having exists (select 'x' as c, 'y' as c from src b where b.value = src.value)) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select value from src group by value having exists (select 'x' as c, 'y' as c from src b where b.value = src.value)) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+309

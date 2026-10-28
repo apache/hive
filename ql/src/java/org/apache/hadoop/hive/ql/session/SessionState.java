@@ -833,7 +833,9 @@ public class SessionState implements ISessionAuthState {
     String sessionId = getSessionId();
     // 4. HDFS session path
     hdfsSessionPath = new Path(hdfsScratchDirURIString, sessionId);
-    createPath(conf, hdfsSessionPath, scratchDirPermission, false, true);
+    boolean deleteOnExit = StringUtils.isBlank(
+        conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_CLASS));
+    createPath(conf, hdfsSessionPath, scratchDirPermission, false, deleteOnExit);
     conf.set(HDFS_SESSION_PATH_KEY, hdfsSessionPath.toUri().toString());
     // 5. hold a lock file in HDFS session dir to indicate the it is in use
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SCRATCH_DIR_LOCK)) {
@@ -1135,6 +1137,10 @@ public class SessionState implements ISessionAuthState {
   public static Registry getRegistry() {
     SessionState session = get();
     return session != null ? session.registry : null;
+  }
+
+  public Registry getSessionRegistry() {
+    return registry;
   }
 
   public static Registry getRegistryForWrite() {

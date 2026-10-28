@@ -23,10 +23,12 @@ POSTHOOK: Output: default@tbl_ice
 PREHOOK: query: delete from tbl_ice where b in ('one', 'four') or a = 22
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: default@tbl_ice
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: delete from tbl_ice where b in ('one', 'four') or a = 22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from tbl_ice order by a
 PREHOOK: type: QUERY

@@ -293,6 +293,10 @@ public class HiveSemiJoinRule {
         return;
       }
 
+      if (join.getJoinType() != JoinRelType.INNER) {
+        return;
+      }
+
       final Aggregate aggregate = call.rel(2);
       final RelNode aggregateInput = call.rel(3);
       final RelNode right = call.rel(4);

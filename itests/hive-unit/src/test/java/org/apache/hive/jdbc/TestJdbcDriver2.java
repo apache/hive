@@ -1123,6 +1123,22 @@ public class TestJdbcDriver2 {
     stmt.close();
   }
 
+  @Test
+  public void testVariantType() throws Exception {
+    try (Statement stmt = con.createStatement()) {
+      stmt.execute("drop table if exists variant_table");
+      stmt.execute("create table variant_table (v variant) stored by iceberg tblproperties ('format-version'='3')");
+      stmt.execute("insert into variant_table values (parse_json('{\"name\":\"John\",\"age\":30}'))");
+
+      try (ResultSet res = stmt.executeQuery("select v from variant_table")) {
+        assertTrue(res.next());
+        assertEquals("{\"age\":30,\"name\":\"John\"}", res.getString(1));
+        assertFalse(res.next());
+      }
+      stmt.execute("drop table variant_table");
+    }
+  }
+
   private void doTestSelectAll(String tableName, int maxRows, int fetchSize) throws Exception {
     boolean isPartitionTable = tableName.equals(partitionedTableName);
 
