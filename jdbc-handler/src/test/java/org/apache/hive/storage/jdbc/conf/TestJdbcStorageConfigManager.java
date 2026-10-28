@@ -18,6 +18,9 @@
  */
 package org.apache.hive.storage.jdbc.conf;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -29,6 +32,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.fail;
 
 public class TestJdbcStorageConfigManager {
 
@@ -84,6 +88,57 @@ public class TestJdbcStorageConfigManager {
 
     Map<String, String> jobMap = new HashMap<>();
     JdbcStorageConfigManager.copyConfigurationToJob(props, jobMap);
+  }
+
+  @Test
+  public void testMetastoreDatabaseTypeRejectedOutsideSys() throws Exception {
+    Properties props = new Properties();
+    props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.METASTORE.toString());
+    props.put(JdbcStorageConfig.QUERY.getPropertyName(), "SELECT 1");
+    try {
+      JdbcStorageConfigManager.assertMetastoreDatabaseTypeAllowed(props, "attacker_db", new HiveConf());
+      fail("Expected HiveException for METASTORE type outside SYS");
+    } catch (HiveException expected) {
+      assertThat(expected.getMessage(), is(equalTo(
+          "hive.sql.database.type=METASTORE is only permitted for tables in the SYS database")));
+    }
+  }
+
+  @Test
+  public void testMetastoreDatabaseTypeAllowedInSys() throws Exception {
+    Properties props = new Properties();
+    props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.METASTORE.toString());
+    props.put(JdbcStorageConfig.QUERY.getPropertyName(), "SELECT 1");
+    JdbcStorageConfigManager.assertMetastoreDatabaseTypeAllowed(props, "sys", new HiveConf());
+  }
+
+  @Test
+  public void testMetastoreDatabaseTypeAllowedFromTablePropertiesDbName() throws Exception {
+    Properties props = new Properties();
+    props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.METASTORE.toString());
+    props.put(hive_metastoreConstants.META_TABLE_DB, "SYS");
+    JdbcStorageConfigManager.assertMetastoreDatabaseTypeAllowed(props, null, new HiveConf());
+  }
+
+  @Test
+  public void testMetastoreDatabaseTypeAllowedFromMetaTableName() throws Exception {
+    Properties props = new Properties();
+    props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.METASTORE.toString());
+    props.put(hive_metastoreConstants.META_TABLE_NAME, "sys.dbs");
+    JdbcStorageConfigManager.assertMetastoreDatabaseTypeAllowed(props, null, new HiveConf());
+  }
+
+  @Test
+  public void testMetastoreDatabaseTypeRejectedWhenOnlySessionDbWouldBeSys() throws Exception {
+    Properties props = new Properties();
+    props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.METASTORE.toString());
+    props.put(hive_metastoreConstants.META_TABLE_NAME, "attacker_db.exfil");
+    try {
+      JdbcStorageConfigManager.assertMetastoreDatabaseTypeAllowed(props, null, new HiveConf());
+      fail("Expected HiveException for METASTORE table outside SYS");
+    } catch (HiveException expected) {
+      // expected
+    }
   }
 
   @Test

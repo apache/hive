@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.ql.qoption;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -46,11 +47,21 @@ public class QTestSysDbHandler implements QTestOptionHandler {
   @Override
   public void beforeTest(QTestUtil qt) throws Exception {
     if (enabled) {
-      String schemaVersion = MetaStoreSchemaInfoFactory.get(qt.getConf()).getHiveSchemaVersion();
-      String stsdbPath =
-          HiveTestEnvSetup.HIVE_ROOT + "/standalone-metastore/metastore-server/src/main/sql/hive/hive-schema-" + schemaVersion + ".hive.sql";
-      qt.getCliDriver().processLine("source " + stsdbPath);
-      qt.getCliDriver().processLine("use default");
+      HiveConf conf = qt.getConf();
+      boolean previousAllowMetastoreJdbc = HiveConf.getBoolVar(conf,
+          HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE);
+      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE, true);
+      try {
+        String schemaVersion = MetaStoreSchemaInfoFactory.get(qt.getConf()).getHiveSchemaVersion();
+        String stsdbPath =
+            HiveTestEnvSetup.HIVE_ROOT + "/standalone-metastore/metastore-server/src/main/sql/hive/hive-schema-"
+                + schemaVersion + ".hive.sql";
+        qt.getCliDriver().processLine("source " + stsdbPath);
+        qt.getCliDriver().processLine("use default");
+      } finally {
+        HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE,
+            previousAllowMetastoreJdbc);
+      }
     }
   }
 

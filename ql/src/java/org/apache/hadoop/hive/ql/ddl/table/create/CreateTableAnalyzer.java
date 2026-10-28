@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.JdbcStorageHandlerDdlUtils;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortOrderUtils;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
@@ -621,8 +622,10 @@ public class CreateTableAnalyzer extends CalcitePlanner {
                 isTemporary, isTransactional, isManaged,
                 new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
         isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
+        JdbcStorageHandlerDdlUtils.validateMetastoreDatabaseTypeProperty(conf,
+            storageFormat.getStorageHandler(), qualifiedTabName.getDb(), tblProps);
         addDbAndTabToOutputs(new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-            TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
+            isExt ? TableType.EXTERNAL_TABLE : TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
         if (!Strings.isNullOrEmpty(sortOrder)) {
           tblProps.put("default-sort-order", sortOrder);
         }
@@ -731,6 +734,10 @@ public class CreateTableAnalyzer extends CalcitePlanner {
             HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
           isExt = true;
         }
+        String ctlStorageHandler = likeTable != null
+            ? likeTable.getProperty(META_TABLE_STORAGE) : storageFormat.getStorageHandler();
+        JdbcStorageHandlerDdlUtils.validateMetastoreDatabaseTypeProperty(conf, ctlStorageHandler,
+            qualifiedTabName.getDb(), tblProps);
         CreateTableLikeDesc crtTblLikeDesc =
             new CreateTableLikeDesc(dbDotTab, isExt, isTemporary, storageFormat.getInputFormat(),
                 storageFormat.getOutputFormat(), location, storageFormat.getSerde(), storageFormat.getSerdeProps(),

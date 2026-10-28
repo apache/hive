@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLDescWithTableProperties;
+import org.apache.hadoop.hive.ql.ddl.JdbcStorageHandlerDdlUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -449,6 +450,9 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
     /* Validate skewed information. */
     ValidationUtility.validateSkewedInformation(colNames, this.getSkewedColNames(),
         this.getSkewedColValues());
+
+    JdbcStorageHandlerDdlUtils.validateMetastoreDatabaseTypeProperty(conf, getStorageHandler(),
+        tableName.getDb(), getTblProps());
   }
 
   private static void assertColumnsMatchSchema(List<String> schema, Iterable<String> colNames) throws SemanticException {
