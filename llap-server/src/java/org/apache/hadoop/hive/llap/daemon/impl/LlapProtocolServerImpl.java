@@ -42,7 +42,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.CacheEntryList;
@@ -95,11 +94,9 @@ public class LlapProtocolServerImpl extends AbstractService
   private TokenRequiresSigning isSigningRequiredConfig = TokenRequiresSigning.TRUE;
   private LlapTokenManager llapTokenManager = new DummyTokenManager();
 
-  public LlapProtocolServerImpl(SecretManager secretManager, int numHandlers,
-      ContainerRunner containerRunner, AtomicReference<InetSocketAddress> srvAddress,
-      AtomicReference<InetSocketAddress> mngAddress, int srvPort,
-      int mngPort, DaemonId daemonId,
-      LlapDaemonExecutorMetrics executorMetrics) {
+  public LlapProtocolServerImpl(SecretManager secretManager, int numHandlers, ContainerRunner containerRunner,
+      AtomicReference<InetSocketAddress> srvAddress, AtomicReference<InetSocketAddress> mngAddress, int srvPort,
+      int mngPort, LlapDaemonExecutorMetrics executorMetrics) {
     super("LlapDaemonProtocolServerImpl");
     this.numHandlers = numHandlers;
     this.containerRunner = containerRunner;

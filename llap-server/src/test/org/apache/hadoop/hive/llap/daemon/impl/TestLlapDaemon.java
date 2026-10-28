@@ -106,7 +106,7 @@ public class TestLlapDaemon {
     HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE, 3);
 
     daemon = new LlapDaemon(hiveConf, 4, LlapDaemon.getTotalHeapSize(), true, false,
-            -1, new String[1], 0,0, 0, defaultWebPort, "TestLlapDaemon");
+            -1, new String[1], 0, 0, 0, defaultWebPort, "TestLlapDaemon");
   }
 
    @Test
@@ -155,7 +155,7 @@ public class TestLlapDaemon {
     int enabledQueue = 2;
 
     daemon = new LlapDaemon(hiveConf, 1, LlapDaemon.getTotalHeapSize(), false, false,
-        -1, new String[1], 0,0, 0, defaultWebPort, "TestLlapDaemon");
+        -1, new String[1], 0, 0, 0, defaultWebPort, "TestLlapDaemon");
 
     trySetMock(daemon, LlapRegistryService.class, mockRegistry);
 

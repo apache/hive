@@ -331,7 +331,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.secretManager = sm;
     this.server = new LlapProtocolServerImpl(secretManager, numHandlers, this, srvAddress, mngAddress, srvPort,
-        mngPort, daemonId, metrics).withTokenManager(this.llapTokenManager);
+        mngPort, metrics).withTokenManager(this.llapTokenManager);
 
     LlapUgiManager llapUgiManager = LlapUgiManager.getInstance(daemonConf);
 
@@ -623,8 +623,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       LlapDaemon.initializeLogging(daemonConf);
       llapDaemon =
           new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo, isDirectCache,
-              ioMemoryBytes, localDirs, rpcPort,
-              mngPort, shufflePort, webPort, appName);
+              ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort, appName);
 
       LOG.info("Adding shutdown hook for LlapDaemon");
       ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);
