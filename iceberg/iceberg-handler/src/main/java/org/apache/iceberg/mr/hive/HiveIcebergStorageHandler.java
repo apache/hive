@@ -245,8 +245,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   private static final List<FieldSchema> EMPTY_ORDERING = ImmutableList.of();
 
-  private static final List<FieldSchema> EMPTY_COLUMNS = ImmutableList.of();
-
   private static final List<FieldSchema> DV_DISTRIBUTION = schema(ImmutableList.of(FILE_PATH));
 
   @Override
@@ -406,14 +404,23 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     configureJobConf(tableDesc, jobConf);
     Properties props = tableDesc.getProperties();
     String key = InputFormatConfig.REWRITABLE_DELETES_PREFIX + tableDesc.getTableName();
-    if (sinkDesc.getWriteOperation() != Operation.DELETE || sinkDesc.isCopyOnWrite() ||
-        IcebergTableUtil.formatVersion(Maps.fromProperties(props)) < 3 || jobConf.get(key) != null) {
+    String planned = jobConf.get(key);
+    boolean plan = sinkDesc.getWriteOperation() == Operation.DELETE && !sinkDesc.isCopyOnWrite() &&
+        IcebergTableUtil.formatVersion(Maps.fromProperties(props)) >= 3;
+    if (planned == null && !plan) {
       return;
     }
     Table table = IcebergTableUtil.getTable(jobConf, props);
-    String location = HiveTableUtil.rewritableDeletesLocation(table.location(), jobConf);
-    WriterBuilder.writeRewritableDeletes(table, props.getProperty(Catalogs.SNAPSHOT_REF), location);
-    jobConf.set(key, location);
+    // the key can come from the session: keep only a location planned for this query, by another sink of the table
+    if (planned != null && !HiveTableUtil.isRewritableDeletesLocation(table.location(), jobConf, planned)) {
+      jobConf.unset(key);
+      planned = null;
+    }
+    if (plan && planned == null) {
+      String location = HiveTableUtil.rewritableDeletesLocation(table.location(), jobConf);
+      WriterBuilder.writeRewritableDeletes(table, props.getProperty(Catalogs.SNAPSHOT_REF), location);
+      jobConf.set(key, location);
+    }
   }
 
   @Override
@@ -1658,7 +1665,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public List<FieldSchema> acidDistributeColumns(org.apache.hadoop.hive.ql.metadata.Table table,
       Operation operation) {
-    return IcebergTableUtil.formatVersion(table.getParameters()) >= 3 ? DV_DISTRIBUTION : EMPTY_COLUMNS;
+    return IcebergTableUtil.formatVersion(table.getParameters()) >= 3 ? DV_DISTRIBUTION : ImmutableList.of();
   }
 
   @Override

@@ -307,9 +307,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   private static void deleteRewritableDeletes(OutputTable output, Collection<JobContext> jobContexts) {
+    String key = InputFormatConfig.REWRITABLE_DELETES_PREFIX + output.tableName;
     jobContexts.stream()
-        .map(jobContext -> jobContext.getJobConf().get(InputFormatConfig.REWRITABLE_DELETES_PREFIX + output.tableName))
-        .filter(Objects::nonNull)
+        .map(JobContext::getJobConf)
+        // the key can come from the session: remove only a location planned for this query
+        .filter(conf -> conf.get(key) != null &&
+            HiveTableUtil.isRewritableDeletesLocation(output.table.location(), conf, conf.get(key)))
+        .map(conf -> conf.get(key))
         .distinct()
         .forEach(location -> {
           try {

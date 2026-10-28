@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -338,5 +339,25 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
     Assert.assertTrue("planned for the DML", rewritableDeletesSeen);
     Assert.assertEquals(ROWS, count("SELECT count(*) FROM dv_abort"));
     Assert.assertEquals("left behind", List.of(), rewritableDeletes(new Path(table.location()), shell.getHiveConf()));
+  }
+
+  /**
+   * A session can set the key of the rewritable deletes: no writer reads that location and no commit removes it.
+   */
+  @Test
+  public void testRewritableDeletesOfTheSessionAreIgnored() throws IOException {
+    createSingleFileTable("dv_session");
+    testTables.createTable(shell, "dv_session_v2", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, records(0, ROWS), 2);
+    File file = temp.newFile();
+    long deleted = LongStream.range(0, ROWS).filter(i -> i % 5 == 0).count();
+    for (String table : List.of("dv_session", "dv_session_v2")) {
+      shell.setHiveSessionValue(InputFormatConfig.REWRITABLE_DELETES_PREFIX + "default." + table,
+          file.toURI().toString());
+      shell.executeStatement("INSERT INTO " + table + " SELECT * FROM " + table + " WHERE customer_id = 1");
+      shell.executeStatement("DELETE FROM " + table + " WHERE customer_id % 5 = 0");
+      Assert.assertEquals(ROWS + 1 - deleted, count("SELECT count(*) FROM " + table));
+    }
+    Assert.assertTrue(file.exists());
   }
 }
