@@ -33,7 +33,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.ql.Context.Operation;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.TaskAttemptID;
@@ -60,7 +59,6 @@ import org.apache.iceberg.util.ContentFileUtil;
 import org.apache.iceberg.util.DeleteFileSet;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SerializationUtil;
-import org.apache.iceberg.util.SnapshotUtil;
 
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT;
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT;
@@ -155,9 +153,8 @@ public class WriterBuilder {
   }
 
   private Map<String, DeleteFileSet> rewritableDeletes(UnaryOperator<String> ops) {
-    // the target ref of the write, a reducer does not see the ref of the scan
-    String ref = HiveUtils.getTableSnapshotRef(ops.apply(Catalogs.SNAPSHOT_REF));
-    Snapshot snapshot = SnapshotUtil.latestSnapshot(table, ref);
+    // the ref the write commits to: OUTPUT_TABLE_SNAPSHOT_REF is only set for split planning
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, ops.apply(Catalogs.SNAPSHOT_REF));
     boolean caseSensitive = ObjectUtils.defaultIfNull(
         Boolean.parseBoolean(ops.apply(InputFormatConfig.CASE_SENSITIVE)),
         InputFormatConfig.CASE_SENSITIVE_DEFAULT);

@@ -248,7 +248,7 @@ public class IcebergTableUtil {
     return getTableSnapshot(table, snapshotRef);
   }
 
-  static Snapshot getTableSnapshot(Table table, String snapshotRef) {
+  public static Snapshot getTableSnapshot(Table table, String snapshotRef) {
     if (snapshotRef != null) {
       String ref = HiveUtils.getTableSnapshotRef(snapshotRef);
       return table.snapshot(ref);
