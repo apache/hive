@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -389,6 +390,8 @@ public class MRCompactor implements Compactor {
               "count={}. TxnIdRange[{},{}}]",
           compactionType, job.getJobName(), job.getQueueName(), curDirNumber, obsoleteDirNumber, minTxn, maxTxn);
     }
+    // compaction jobs are submitted directly, not through ExecDriver
+    JavaVersionUtils.addOpensFlags(job);
     try (JobClient jc = new JobClient(job)) {
       RunningJob rj = jc.submitJob(job);
       if (LOG.isInfoEnabled()) {
