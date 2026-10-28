@@ -52,8 +52,8 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.metastore.PartitionsIterable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.thrift.TException;
 
@@ -163,7 +163,6 @@ public class HiveAlterHandler implements AlterHandler {
 
     try {
       boolean rename = false;
-      List<Partition> parts;
 
       // Switching tables between catalogs is not allowed.
       if (!catalogName.equalsIgnoreCase(newt.getCatName())) {
@@ -361,32 +360,25 @@ public class HiveAlterHandler implements AlterHandler {
 
           // alterPartition is only for changing the partition location in the table rename
           if (dataWasMoved) {
-            PartitionsRequest req = new PartitionsRequest(newDbName, newTblName);
-            req.setCatName(catName);
-            req.setMaxParts((short) -1);
-            parts = handler.get_partitions_req(req).getPartitions();
-
-            for (Partition part : parts) {
-              String oldPartLoc = part.getSd().getLocation();
-              if (oldPartLoc.contains(oldTblLocPath)) {
-                URI oldUri = new Path(oldPartLoc).toUri();
-                String newPath = oldUri.getPath().replace(oldTblLocPath, newTblLocPath);
-                Path newPartLocPath = new Path(oldUri.getScheme(), oldUri.getAuthority(), newPath);
-                part.getSd().setLocation(newPartLocPath.toString());
+            TableName renamedTable = new TableName(catalogName, newDbName, newTblName);
+            PartitionsIterable partitionBatches = PartitionsIterable.create(
+                msdb, renamedTable, partitionBatchSize);
+            for (List<Partition> parts : partitionBatches) {
+              for (Partition part : parts) {
+                String oldPartLoc = part.getSd().getLocation();
+                if (oldPartLoc.contains(oldTblLocPath)) {
+                  URI oldUri = new Path(oldPartLoc).toUri();
+                  String newPath = oldUri.getPath().replace(oldTblLocPath, newTblLocPath);
+                  Path newPartLocPath = new Path(oldUri.getScheme(), oldUri.getAuthority(), newPath);
+                  part.getSd().setLocation(newPartLocPath.toString());
+                }
+                part.setDbName(newDbName);
+                part.setTableName(newTblName);
               }
-              part.setDbName(newDbName);
-              part.setTableName(newTblName);
+              msdb.alterPartitions(catalogName, newDbName, newTblName,
+                  parts.stream().map(Partition::getValues).collect(Collectors.toList()),
+                  parts, newt.getWriteId(), writeIdList);
             }
-
-            Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
-              @Override
-              public List<Void> run(List<Partition> input) throws Exception {
-                msdb.alterPartitions(catalogName, newDbName, newTblName,
-                    input.stream().map(Partition::getValues).collect(Collectors.toList()),
-                    input, newt.getWriteId(), writeIdList);
-                return Collections.emptyList();
-              }
-            });
           }
           Deadline.checkTimeout();
         } else {
@@ -423,45 +415,40 @@ public class HiveAlterHandler implements AlterHandler {
             msdb.alterTable(catalogName, databaseName, tableName, newt, null);
 
             if (cascade || retainOnColRemoval) {
-              PartitionsRequest req = new PartitionsRequest(dbname, name);
-              req.setCatName(catName);
-              req.setMaxParts((short) -1);
-              parts = handler.get_partitions_req(req).getPartitions();
               Table table = oldt;
               int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
                   MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
               Map<List<String>, List<List<String>>> changedColsToPartNames = new HashMap<>();
-              Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
-                @Override
-                public List<Void> run(List<Partition> input) throws Exception {
-                  List<Partition> oldParts = new ArrayList<>(input.size());
-                  List<List<String>> partVals = input.stream().map(Partition::getValues).collect(Collectors.toList());
-                  for (Partition part : input) {
-                    Partition oldPart = new Partition(part);
-                    List<FieldSchema> oldCols = part.getSd().getCols();
-                    part.getSd().setCols(newt.getSd().getCols());
-                    List<String> deletedCols = new ArrayList<>();
-                    updateOrGetPartitionColumnStats(msdb, catalogName, databaseName,
-                        tableName, part.getValues(), oldCols, table, part, deletedCols);
-                    if (!deletedCols.isEmpty()) {
-                      changedColsToPartNames.compute(deletedCols, (k, v) -> {
-                        if (v == null) v = new ArrayList<>();
-                        v.add(part.getValues());
-                        return v;
-                      });
-                    }
-                    if (!cascade) {
-                      // update changed properties (stats)
-                      oldPart.setParameters(part.getParameters());
-                      oldParts.add(oldPart);
-                    }
+              TableName qualifiedTable = new TableName(catalogName, databaseName, tableName);
+              PartitionsIterable partitionBatches = PartitionsIterable.create(
+                  msdb, qualifiedTable, partitionBatchSize);
+              for (List<Partition> input : partitionBatches) {
+                List<Partition> oldParts = new ArrayList<>(input.size());
+                List<List<String>> partVals = input.stream().map(Partition::getValues).collect(Collectors.toList());
+                for (Partition part : input) {
+                  Partition oldPart = new Partition(part);
+                  List<FieldSchema> oldCols = part.getSd().getCols();
+                  part.getSd().setCols(newt.getSd().getCols());
+                  List<String> deletedCols = new ArrayList<>();
+                  updateOrGetPartitionColumnStats(msdb, catalogName, databaseName,
+                      tableName, part.getValues(), oldCols, table, part, deletedCols);
+                  if (!deletedCols.isEmpty()) {
+                    changedColsToPartNames.compute(deletedCols, (k, v) -> {
+                      if (v == null) v = new ArrayList<>();
+                      v.add(part.getValues());
+                      return v;
+                    });
                   }
-                  Deadline.checkTimeout();
-                  msdb.alterPartitions(catalogName, databaseName, tableName,
-                      partVals, (cascade) ? input : oldParts, newt.getWriteId(), writeIdList);
-                  return Collections.emptyList();
+                  if (!cascade) {
+                    // update changed properties (stats)
+                    oldPart.setParameters(part.getParameters());
+                    oldParts.add(oldPart);
+                  }
                 }
-              });
+                Deadline.checkTimeout();
+                msdb.alterPartitions(catalogName, databaseName, tableName,
+                    partVals, (cascade) ? input : oldParts, newt.getWriteId(), writeIdList);
+              }
 
               for (Map.Entry<List<String>, List<List<String>>> entry : changedColsToPartNames.entrySet()) {
                 List<String> partNames = new ArrayList<>();
