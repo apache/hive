@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.metastore.metastore.GetHelper;
 import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
+import org.apache.hadoop.hive.metastore.metastore.PartitionsIterable;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
@@ -948,13 +949,24 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       protected Integer getJdoResult() throws MetaException, NoSuchObjectException {
         try {
           TableStore tableStore = siblingStore(TableStore.class);
-          List<Partition> parts = tableStore.getPartitions(tn, GetPartitionsArgs.getAllPartitions());
-          for (Partition part : parts) {
-            Partition newPart = new Partition(part);
-            StatsSetupConst.clearColumnStatsState(newPart.getParameters());
-            tableStore.alterPartition(tn, part.getValues(), newPart, writeIdList);
+          int retrieveBatchSize = MetastoreConf.getIntVar(conf,
+              MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+          List<String> partNames = tableStore.listPartitionNames(tn, null, null, null, -1);
+          if (partNames.isEmpty()) {
+            return 0;
           }
-          return parts.size();
+          PartitionsIterable partitionBatches = PartitionsIterable.create(
+              tableStore, tn, retrieveBatchSize, partNames);
+          int count = 0;
+          for (List<Partition> parts : partitionBatches) {
+            for (Partition part : parts) {
+              Partition newPart = new Partition(part);
+              StatsSetupConst.clearColumnStatsState(newPart.getParameters());
+              tableStore.alterPartition(tn, part.getValues(), newPart, writeIdList);
+            }
+            count += parts.size();
+          }
+          return count;
         } catch (InvalidObjectException e) {
           LOG.error("error updating parts", e);
           return -1;
