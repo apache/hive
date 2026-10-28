@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.LongStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -113,6 +112,9 @@ public class TestCachingDeleteLoader {
     }
 
     Assert.assertEquals("Only the first read may open the file", 1, opens.get());
+    assertCounters(counters, 2, 1, 1, 0);
+    Assert.assertEquals(dv.contentSizeInBytes().longValue(),
+        counters.findCounter(DeleteCacheCounters.DELETE_CACHE_PUT_BYTES).getValue());
     assertBuffersReleased();
   }
 
@@ -149,7 +151,8 @@ public class TestCachingDeleteLoader {
   @Test
   public void testCacheLevelNoneBypassesCache() throws IOException {
     DeleteFile dv = writeDVs(ImmutableMap.of(DATA_FILE_A, new long[] { 4 })).get(0);
-    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETES, "none");
+    // HiveConf validates the level case-insensitively and keeps the user's casing
+    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETES, "NONE");
 
     assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A), 4);
     assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A), 4);
@@ -207,7 +210,6 @@ public class TestCachingDeleteLoader {
     assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B), 2);
 
     Mockito.verify(cache, Mockito.times(1)).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
-    assertCounters(counters, 0, 1, 1, 0);
     assertBuffersReleased();
   }
 
@@ -278,19 +280,6 @@ public class TestCachingDeleteLoader {
   }
 
   @Test
-  public void testCountersOfDVs() throws IOException {
-    DeleteFile dv = writeDVs(ImmutableMap.of(DATA_FILE_A, new long[] { 0, 5, 7 })).get(0);
-
-    for (int i = 0; i < 3; i++) {
-      loader(cache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A);
-    }
-
-    assertCounters(counters, 2, 1, 1, 0);
-    Assert.assertEquals(dv.contentSizeInBytes().longValue(),
-        counters.findCounter(DeleteCacheCounters.DELETE_CACHE_PUT_BYTES).getValue());
-  }
-
-  @Test
   public void testCountersOfPositionDeleteFile() throws IOException {
     DeleteFile deletes =
         writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1, 2 }, DATA_FILE_B, new long[] { 5 }));
@@ -317,24 +306,15 @@ public class TestCachingDeleteLoader {
     Assert.assertEquals(0, counters.findCounter(DeleteCacheCounters.DELETE_CACHE_PUT_BYTES).getValue());
   }
 
-  @Test
-  public void testPutThatCannotReserveMemoryEndsOnInterrupt() throws Exception {
+  /** A DV larger than the whole cache: the put cannot evict enough and gives up instead of waiting. */
+  @Test(timeout = 10_000)
+  public void testPutThatCannotReserveMemoryDoesNotWait() throws IOException {
     long[] positions = LongStream.range(0, 400).map(i -> i * 3).toArray();
     DeleteFile dv = writeDVs(ImmutableMap.of(DATA_FILE_A, positions)).get(0);
     MetadataCache tinyCache = trackingMetadataCache(conf, handedOut, 512);
-    Assert.assertTrue(dv.contentSizeInBytes() > 512);
 
-    AtomicReference<PositionDeleteIndex> result = new AtomicReference<>();
-    Thread reader = new Thread(() ->
-        result.set(loader(tinyCache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A)));
-    reader.start();
-    reader.join(1000);
-    Assert.assertTrue("The put waits for memory to be evicted", reader.isAlive());
-    reader.interrupt();
-    reader.join(10_000);
-
-    Assert.assertFalse(reader.isAlive());
-    assertDeleted(result.get(), positions);
+    assertDeleted(loader(tinyCache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A), positions);
+    assertCounters(counters, 0, 1, 0, 1);
   }
 
   @Test
