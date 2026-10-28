@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
@@ -47,7 +48,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TruncateTableRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
@@ -55,6 +55,8 @@ import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionsEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
+import org.apache.hadoop.hive.metastore.metastore.PartitionsIterable;
+import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
@@ -76,8 +78,7 @@ public class TruncateTableHandler
   private Warehouse wh;
   private RawStore ms;
   private Table table;
-  private List<Partition> partitions;
-  private List<Partition> newPartitions;
+  private List<String> reqPartNames;
   private Table newTable;
   private boolean isPartitioned;
 
@@ -96,40 +97,19 @@ public class TruncateTableHandler
     this.isPartitioned = 0 != table.getPartitionKeysSize();
 
     this.ms = handler.getMS();
-    if (request.getPartNames() == null) {
-      if (isPartitioned) {
-        this.partitions = ms.getPartitions(catName, dbName,
-            request.getTableName(), GetPartitionsArgs.getAllPartitions());
-      }
-    } else {
-      this.partitions = ms.getPartitionsByNames(catName, dbName,
-          request.getTableName(), request.getPartNames());
+    if (isPartitioned) {
+      this.reqPartNames = request.getPartNames();
     }
     this.wh = handler.getWh();
 
-    HMSHandler hmsHandler = (HMSHandler) handler;
-    if (isPartitioned && partitions != null) {
-      this.newPartitions = new ArrayList<>(partitions.size());
-      for (Partition partition : partitions) {
-        Partition newPart = partition.deepCopy();
-        updateStatsForTruncate(newPart.getParameters(), new EnvironmentContext());
-        if (request.getWriteId() > 0) {
-          newPart.setWriteId(request.getWriteId());
-        }
-        newPart.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
-            .currentTimeMillis() / 1000));
-        hmsHandler.firePreEvent(new PreAlterPartitionEvent(dbName, request.getTableName(), table,
-            partition.getValues(), newPart, handler));
-        newPartitions.add(newPart);
-      }
-    } else if (!isPartitioned) {
+    if (!isPartitioned) {
       newTable = table.deepCopy();
       updateStatsForTruncate(newTable.getParameters(), new EnvironmentContext());
       // TODO: this should actually pass thru and set writeId for txn stats.
       if (request.getWriteId() > 0) {
         newTable.setWriteId(request.getWriteId());
       }
-      hmsHandler.firePreEvent(new PreAlterTableEvent(table, newTable, handler));
+      ((HMSHandler) handler).firePreEvent(new PreAlterTableEvent(table, newTable, handler));
     }
   }
 
@@ -142,40 +122,150 @@ public class TruncateTableHandler
         .map(Boolean::parseBoolean)
         .orElse(false);
 
-    if (TxnUtils.isTransactionalTable(table) || !skipDataDeletion) {
-      if (!skipDataDeletion) {
-        isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
-        Database db = handler.get_database_core(catName, dbName);
-        needCmRecycle = ReplChangeManager.shouldEnableCm(db, table);
-      }
-      List<Path> locations = new ArrayList<>();
-      if (0 != table.getPartitionKeysSize()) {
-        for (Partition partition : partitions) {
-          locations.add(new Path(partition.getSd().getLocation()));
+    boolean success;
+    if (isPartitioned) {
+      success = truncatePartitionedTable(isSkipTrash, needCmRecycle, skipDataDeletion);
+    } else {
+      if (TxnUtils.isTransactionalTable(table) || !skipDataDeletion) {
+        if (!skipDataDeletion) {
+          isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
+          Database db = handler.get_database_core(catName, dbName);
+          needCmRecycle = ReplChangeManager.shouldEnableCm(db, table);
         }
-      } else {
-        locations.add(new Path(table.getSd().getLocation()));
-      }
-      // This is not transactional
-      for (Path location : locations) {
+        Path location = new Path(table.getSd().getLocation());
         if (!skipDataDeletion) {
           truncateDataFiles(location, isSkipTrash, needCmRecycle);
         } else {
-          // For Acid tables we don't need to delete the old files, only write an empty baseDir.
-          // Compaction and cleaner will take care of the rest
           addTruncateBaseFile(location, request.getWriteId(),
               handler.getConf(), AcidMetaDataFile.DataFormat.TRUNCATED);
         }
       }
-    }
-    // Alter the table/partition stats and also notify truncate table event
-    boolean success;
-    if (isPartitioned) {
-      success = alterPartitionsForTruncate();
-    } else {
       success = alterTableStatsForTruncate();
     }
     return new TruncateTableResult(success);
+  }
+
+  private PartitionsIterable newPartitionBatches(int batchSize) throws MetaException {
+    TableName qualifiedTable = new TableName(catName, dbName, request.getTableName());
+    if (reqPartNames != null) {
+      return PartitionsIterable.create(
+          ms.unwrap(TableStore.class), qualifiedTable, batchSize, reqPartNames);
+    }
+    return PartitionsIterable.create(ms, qualifiedTable, batchSize);
+  }
+
+  private boolean truncatePartitionedTable(boolean isSkipTrash, boolean needCmRecycle, boolean skipDataDeletion)
+      throws TException, IOException {
+    if (reqPartNames != null && reqPartNames.isEmpty()) {
+      return true;
+    }
+    int batchSize = MetastoreConf.getIntVar(handler.getConf(),
+        MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    PartitionsIterable partitionBatches = newPartitionBatches(batchSize);
+
+    boolean truncatePartitionData = TxnUtils.isTransactionalTable(table) || !skipDataDeletion;
+    if (truncatePartitionData && !skipDataDeletion) {
+      isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
+      Database db = handler.get_database_core(catName, dbName);
+      needCmRecycle = ReplChangeManager.shouldEnableCm(db, table);
+    }
+
+    boolean success = true;
+    for (List<Partition> partitions : partitionBatches) {
+      if (partitions.isEmpty()) {
+        continue;
+      }
+      EnvironmentContext environmentContext = new EnvironmentContext();
+      List<Partition> newPartitions = buildTruncatedPartitions(partitions, environmentContext);
+      if (truncatePartitionData) {
+        truncatePartitions(partitions, isSkipTrash, needCmRecycle, skipDataDeletion);
+      }
+      if (!alterPartitions(partitions, newPartitions, environmentContext)) {
+        success = false;
+        break;
+      }
+    }
+    return success;
+  }
+
+  private void truncatePartitions(List<Partition> partitions, boolean isSkipTrash,
+      boolean needCmRecycle, boolean skipDataDeletion) throws IOException, MetaException {
+    for (Partition partition : partitions) {
+      Path location = new Path(partition.getSd().getLocation());
+      if (!skipDataDeletion) {
+        truncateDataFiles(location, isSkipTrash, needCmRecycle);
+      } else {
+        addTruncateBaseFile(location, request.getWriteId(),
+            handler.getConf(), AcidMetaDataFile.DataFormat.TRUNCATED);
+      }
+    }
+  }
+
+  private List<Partition> buildTruncatedPartitions(List<Partition> partitions,
+      EnvironmentContext environmentContext) throws TException {
+    List<Partition> newPartitions = new ArrayList<>(partitions.size());
+    for (Partition partition : partitions) {
+      Partition newPart = partition.deepCopy();
+      updateStatsForTruncate(newPart.getParameters(), environmentContext);
+      if (request.getWriteId() > 0) {
+        newPart.setWriteId(request.getWriteId());
+      }
+      newPart.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
+          .currentTimeMillis() / 1000));
+      ((HMSHandler) handler).firePreEvent(new PreAlterPartitionEvent(dbName, request.getTableName(), table,
+          partition.getValues(), newPart, handler));
+      newPartitions.add(newPart);
+    }
+    return newPartitions;
+  }
+
+  private boolean alterPartitions(List<Partition> partitions, List<Partition> newPartitions,
+      EnvironmentContext environmentContext) throws TException {
+    boolean success = false;
+    ms.openTransaction();
+    try {
+      List<List<String>> partValsList = new ArrayList<>(newPartitions.size());
+      for (Partition newPartition : newPartitions) {
+        partValsList.add(newPartition.getValues());
+      }
+      ms.alterPartitions(catName, dbName, request.getTableName(), partValsList, newPartitions,
+          request.getWriteId(), request.getValidWriteIdList());
+      notifyTruncatePartListeners(handler.getTransactionalListeners(),
+          partitions, newPartitions, true, environmentContext);
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+      notifyTruncatePartListeners(handler.getListeners(), partitions, newPartitions, success, environmentContext);
+    }
+    return success;
+  }
+
+  private void notifyTruncatePartListeners(List<? extends MetaStoreEventListener> listeners,
+      List<Partition> oldPartitions,
+      List<Partition> newPartitions, boolean success,
+      EnvironmentContext environmentContext) throws TException {
+    if (listeners.isEmpty() || oldPartitions.isEmpty()) {
+      return;
+    }
+    boolean mergeEvents = MetastoreConf.getBoolVar(handler.getConf(),
+        MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
+    if (mergeEvents) {
+      MetaStoreListenerNotifier.notifyEvent(listeners,
+          EventMessage.EventType.ALTER_PARTITIONS,
+          new AlterPartitionsEvent(oldPartitions, newPartitions, table, true, success, handler),
+          environmentContext);
+    } else {
+      for (int i = 0; i < oldPartitions.size(); i++) {
+        Partition newPart = newPartitions.get(i);
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+            EventMessage.EventType.ALTER_PARTITION,
+            new AlterPartitionEvent(oldPartitions.get(i), newPart, table, true, success,
+                newPart.getWriteId(), handler),
+            environmentContext);
+      }
+    }
   }
 
   private void updateStatsForTruncate(Map<String,String> props, EnvironmentContext environmentContext) {
@@ -195,57 +285,6 @@ public class TruncateTableHandler
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS, StatsSetupConst.TRUE);
     //then invalidate column stats
     StatsSetupConst.clearColumnStatsState(props);
-  }
-
-  private boolean alterPartitionsForTruncate() throws TException {
-    EnvironmentContext environmentContext = new EnvironmentContext();
-    if (partitions == null || partitions.isEmpty()) {
-      return true;
-    }
-    List<List<String>> partValsList = new ArrayList<>();
-    for (Partition partition: newPartitions) {
-      partValsList.add(partition.getValues());
-    }
-    boolean success = false;
-    boolean mergeEvents = MetastoreConf.getBoolVar(handler.getConf(),
-        MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
-    ms.openTransaction();
-    try {
-      ms.alterPartitions(catName, dbName, request.getTableName(), partValsList, newPartitions,
-        request.getWriteId(), request.getValidWriteIdList());
-      if (mergeEvents) {
-        MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
-            EventMessage.EventType.ALTER_PARTITIONS,
-            new AlterPartitionsEvent(partitions, newPartitions, table, true, true, handler), environmentContext);
-      } else {
-        for (int i = 0; i < partitions.size(); i++) {
-          Partition oldPart = partitions.get(i);
-          Partition newPart = newPartitions.get(i);
-          MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
-              EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(oldPart, newPart, table, true, true, newPart.getWriteId(), handler),
-              environmentContext);
-        }
-      }
-      success = ms.commitTransaction();
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      }
-      if (mergeEvents) {
-        MetaStoreListenerNotifier.notifyEvent(handler.getListeners(), EventMessage.EventType.ALTER_PARTITIONS,
-            new AlterPartitionsEvent(partitions, newPartitions, table, true, success, handler), environmentContext);
-      } else {
-        for (int i = 0; i < partitions.size(); i++) {
-          Partition oldPart = partitions.get(i);
-          Partition newPart = newPartitions.get(i);
-          MetaStoreListenerNotifier.notifyEvent(handler.getListeners(), EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(oldPart, newPart, table, true, success, newPart.getWriteId(), handler),
-              environmentContext);
-        }
-      }
-    }
-    return success;
   }
 
   private boolean alterTableStatsForTruncate() throws TException {
