@@ -92,6 +92,9 @@ set hive.llap.io.cache.only=true;
 select count(*), sum(i), max(s), max(d) from parquet_llap_v2_n0 where t > -100;
 set hive.llap.io.cache.only=false;
 
+-- No column projected: the native reader fetches no chunk and still counts every row.
+select count(*) from parquet_llap_n0;
+
 DROP TABLE parquet_llap_staging_n0;
 DROP TABLE parquet_llap_n0;
 DROP TABLE parquet_llap_v2_n0;
