@@ -1,0 +1,11 @@
+PREHOOK: query: create table pacd_neg (d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacd_neg
+POSTHOOK: query: create table pacd_neg (d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacd_neg
+FAILED: SemanticException [Error 10221]: Invalid position alias in Order By
+ Position alias: 2 does not exist
+The Select List is indexed from 1 to 1
