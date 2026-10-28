@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.pac4j.saml.credentials.SAML2Credentials.SAMLAttribute;
+import org.pac4j.saml.credentials.SAML2AuthenticationCredentials.SAMLAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
