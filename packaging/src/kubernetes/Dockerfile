@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM eclipse-temurin:21-jre-ubi9-minimal
+FROM eclipse-temurin:25-jre-ubi10-minimal
 
 ARG OPERATOR_JAR=target/hive-kubernetes-operator-*-shaded.jar
 
