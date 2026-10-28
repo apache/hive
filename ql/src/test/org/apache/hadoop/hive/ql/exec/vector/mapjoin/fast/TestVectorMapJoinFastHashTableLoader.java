@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.Throwables;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -47,11 +46,14 @@ import org.mockito.Mockito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -178,8 +180,8 @@ public class TestVectorMapJoinFastHashTableLoader {
         new MapJoinMemoryExhaustionError("simulated expand failure while draining partition 0");
 
     MapJoinTableContainer[] tables = new MapJoinTableContainer[2];
-    AtomicReference<Throwable> thrown = new AtomicReference<>();
-    int sealed;
+    Throwable thrown;
+    VectorMapJoinFastTableContainer tableContainer;
 
     try (MockedConstruction<VectorMapJoinFastTableContainer> construction =
         Mockito.mockConstruction(VectorMapJoinFastTableContainer.class, (container, ctx) -> {
@@ -197,19 +199,14 @@ public class TestVectorMapJoinFastHashTableLoader {
         })) {
 
       VectorMapJoinFastHashTableLoader loader = loaderFor(EST_KEYS, EST_KEYS, new Rows());
-      try {
-        loader.load(tables, null);
-      } catch (Throwable t) {
-        thrown.set(t);
-      }
-      sealed = Mockito.mockingDetails(construction.constructed().get(0)).getInvocations().stream()
-          .filter(i -> "seal".equals(i.getMethod().getName())).toList().size();
+      thrown = assertThrows(Throwable.class, () -> loader.load(tables, null));
+      tableContainer = construction.constructed().get(0);
     }
 
     assertEquals("one of " + NUM_THREADS + " partitions must have been dropped",
         ROWS - ROWS / NUM_THREADS, loadedRows.get());
     assertNull("a hash table missing a partition must never be published", tables[1]);
-    assertEquals("a hash table missing a partition must never be sealed", 0, sealed);
-    assertSame("the drain thread's Error must reach the caller", injected, Throwables.getRootCause(thrown.get()));
+    verify(tableContainer, never()).seal();
+    assertSame("the drain thread's Error must reach the caller", injected, Throwables.getRootCause(thrown));
   }
 }

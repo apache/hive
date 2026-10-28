@@ -29,10 +29,9 @@ import static org.junit.Assert.assertEquals;
 public class TestHashTableLoaderKeyCountForSizing {
 
   /**
-   * Measured on q23 at 10Tb. The small side is customer: 65,000,000 rows, estimated at exactly
-   * that many distinct keys, while APPROXIMATE_INPUT_RECORDS read 320,243,730 -- 4.93x the rows
-   * the table has. Letting the counter raise the estimate sized for 320M and asked for 8.59GB of
-   * slot arrays against a 5.15GB threshold. Sized from 65M the load takes 2.15GB and 10 seconds.
+   * The counter counts rows, the estimate distinct keys. A table sized from the smaller can at
+   * worst rehash; one sized from a larger count can ask for more than the memory threshold and
+   * fail the query.
    */
   @Test
   public void aRecordCountDoesNotSizeAKeyIndexedTable() {
@@ -40,9 +39,8 @@ public class TestHashTableLoaderKeyCountForSizing {
   }
 
   /**
-   * Measured on the same q23: Reducer 9's estimate was 21,666,666 for a table of 17,975 rows, the
-   * counter read 18,166. Sizing from the estimate allocates 512 MiB of slot arrays per task for
-   * it; the counter bounds it to 0.5 MiB, and the table still never rehashes.
+   * An estimate can be far too high as well: 21,666,666 keys where the counter reads 18,166.
+   * Sizing from the estimate allocates 512 MiB of slot arrays per task, the counter 0.5 MiB.
    */
   @Test
   public void aRecordCountBoundsAnEstimateFromAbove() {
