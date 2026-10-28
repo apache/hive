@@ -81,6 +81,7 @@ public final class HiveMetaTool {
       execute(args);
     } catch (Exception e) {
       status = -1;
+      e.printStackTrace(System.err);
       LOGGER.error("Exception occured", e);
     } finally {
       ExitUtil.terminate(status);
