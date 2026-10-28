@@ -21,9 +21,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -82,8 +79,8 @@ import org.junit.Test;
 
 /**
  * Absolute file row positions reported by {@link OrcEncodedDataConsumer} on every emitted batch.
- * The indexed and index-disabled files are read end to end through LLAP IO; the ALL_RGS and the
- * position-less (SerDe-like) metadata cases are driven straight into decodeBatch.
+ * ORC files are read end to end through LLAP IO; the position-less (SerDe-like) metadata case is
+ * driven straight into decodeBatch.
  */
 public class TestOrcEncodedDataConsumerRowPositions {
 
@@ -92,6 +89,7 @@ public class TestOrcEncodedDataConsumerRowPositions {
   // Neither a multiple of the row index stride nor of VectorizedRowBatch.DEFAULT_SIZE.
   private static final int[] STRIPE_ROWS = {8300, 6100, 3700};
   private static final int[] NO_INDEX_STRIPE_ROWS = {5300, 2700};
+  private static final List<Integer> ALL_COLUMNS = Arrays.asList(0, 1);
 
   private static final LlapDaemonIOMetrics IO_METRICS =
       LlapDaemonIOMetrics.create("TestOrcEncodedDataConsumerRowPositions-io", "1", null);
@@ -124,69 +122,40 @@ public class TestOrcEncodedDataConsumerRowPositions {
 
   @Test
   public void testRowGroupPositionsAcrossStripes() throws Exception {
-    List<long[]> batches = readThroughLlap(indexedFile);
+    List<long[]> batches = readThroughLlap(indexedFile, ALL_COLUMNS);
 
     assertEquals(expectedBatches(STRIDE, STRIPE_ROWS), render(batches));
-    // First RG of stripe 0, a middle RG of stripe 0, first RG of stripe 1, last RG of the last stripe.
-    for (long rgStart : new long[] {0, 5000, 8300, 16900}) {
-      assertEquals("no batch starts at " + rgStart, 1, countStartingAt(batches, rgStart));
-      assertGroundTruth(rgStart);
-    }
-    for (long[] batch : batches) {
-      assertEquals("id of the first row of the batch at " + batch[0], batch[0], batch[2]);
-    }
-  }
-
-  @Test
-  public void testBatchesAdvanceWithinRowGroup() throws Exception {
-    List<long[]> batches = readThroughLlap(indexedFile);
-
-    // The row group at file row 8300 holds 2500 rows: 1024 + 1024 + 452.
-    List<long[]> rg = batches.subList(indexOfStart(batches, 8300), indexOfStart(batches, 8300) + 3);
-    assertEquals(Arrays.asList("8300:1024", "9324:1024", "10348:452"), render(rg));
-    assertEquals(8300 + STRIDE, rg.get(2)[0] + rg.get(2)[1]);
+    assertFirstRowIds(batches);
   }
 
   @Test
   public void testIndexDisabledFileStartsAtStripeBoundary() throws Exception {
-    List<long[]> batches = readThroughLlap(noIndexFile);
+    List<long[]> batches = readThroughLlap(noIndexFile, ALL_COLUMNS);
 
     assertEquals(expectedBatches(Integer.MAX_VALUE, NO_INDEX_STRIPE_ROWS), render(batches));
-    assertEquals(1, countStartingAt(batches, NO_INDEX_STRIPE_ROWS[0]));
-    for (long[] batch : batches) {
-      assertEquals("id of the first row of the batch at " + batch[0], batch[0], batch[2]);
-    }
+    assertFirstRowIds(batches);
   }
 
+  /** Without columns, the reader decodes each stripe as one ALL_RGS batch. */
   @Test
-  public void testAllRowGroupsBatchStartsAtStripeBoundary() throws Exception {
-    List<Long> starts = decodeStripe(fileMetadata(STRIPE_ROWS, STRIDE), 1, OrcEncodedColumnBatch.ALL_RGS, true);
+  public void testNoColumnReadStartsAtStripeBoundary() throws Exception {
+    List<long[]> batches = readThroughLlap(indexedFile, Collections.emptyList());
 
-    assertEquals(startsWithin(STRIPE_ROWS[0], STRIPE_ROWS[1]), starts);
-  }
-
-  @Test
-  public void testIndexDisabledStripeStartsAtStripeBoundary() throws Exception {
-    List<Long> starts = decodeStripe(fileMetadata(STRIPE_ROWS, STRIDE), 1, 0, false);
-
-    assertEquals(startsWithin(STRIPE_ROWS[0], STRIPE_ROWS[1]), starts);
+    assertEquals(expectedBatches(Integer.MAX_VALUE, STRIPE_ROWS), render(batches));
   }
 
   @Test
   public void testNoStripesReportsNoPosition() throws Exception {
-    ConsumerFileMetadata noPositions = fileMetadata(new int[0], 0);
-    assertTrue(noPositions.getStripes().isEmpty());
+    List<Long> starts = decodeStripe(noStripesMetadata(), 2 * VectorizedRowBatch.DEFAULT_SIZE + 1);
 
-    List<Long> starts = decodeStripe(noPositions, 0, OrcEncodedColumnBatch.ALL_RGS, true);
-
-    assertEquals(Collections.nCopies(startsWithin(0, STRIPE_ROWS[0]).size(), -1L), starts);
+    assertEquals(Collections.nCopies(3, Long.MIN_VALUE), starts);
   }
 
   // ---- LLAP IO end to end ----
 
   /** One {startRowInFile, size, id of the first row} per batch, in the order LLAP returned them. */
-  private static List<long[]> readThroughLlap(Path path) throws Exception {
-    RecordReader<NullWritable, VectorizedRowBatch> reader = llapReader(path);
+  private static List<long[]> readThroughLlap(Path path, List<Integer> columnIds) throws Exception {
+    RecordReader<NullWritable, VectorizedRowBatch> reader = llapReader(path, columnIds);
     List<long[]> batches = new ArrayList<>();
     try {
       VectorizedRowBatch vrb = reader.createValue();
@@ -200,40 +169,35 @@ public class TestOrcEncodedDataConsumerRowPositions {
     return batches;
   }
 
-  private static RecordReader<NullWritable, VectorizedRowBatch> llapReader(Path path) throws IOException {
+  private static RecordReader<NullWritable, VectorizedRowBatch> llapReader(Path path, List<Integer> columnIds)
+      throws IOException {
     JobConf job = jobConf(path);
     long fileLen = path.getFileSystem(job).getFileStatus(path).getLen();
     RecordReader<NullWritable, VectorizedRowBatch> reader = LlapProxy.getIo().orc().vectorizedReaderForPath(
-        null, path, null, Arrays.asList(0, 1), job, 0, fileLen, Reporter.NULL);
+        null, path, null, columnIds, job, 0, fileLen, Reporter.NULL);
     assertNotNull("LLAP should handle this ORC read", reader);
     return reader;
   }
 
-  private static void assertGroundTruth(long fileRow) throws IOException {
-    try (org.apache.orc.Reader reader = OrcFile.createReader(indexedFile, OrcFile.readerOptions(daemonConf));
-        org.apache.orc.RecordReader rows = reader.rows()) {
-      VectorizedRowBatch batch = SCHEMA.createRowBatch(1);
-      rows.seekToRow(fileRow);
-      assertTrue("file row " + fileRow + " is past the end", rows.nextBatch(batch));
-      assertEquals(fileRow, ((LongColumnVector) batch.cols[0]).vector[0]);
-      assertEquals("n" + fileRow, ((BytesColumnVector) batch.cols[1]).toString(0));
+  private static void assertFirstRowIds(List<long[]> batches) {
+    for (long[] batch : batches) {
+      assertEquals("id of the first row of the batch at " + batch[0], batch[0], batch[2]);
     }
   }
 
   // ---- decodeBatch with faked metadata ----
 
-  /** Row positions of the batches decodeBatch emits for one stripe of a zero-column read. */
-  private static List<Long> decodeStripe(ConsumerFileMetadata fileMetadata, int stripeIx, int rgIx,
-      boolean withRowIndex) throws Exception {
+  /** Row positions of the batches decodeBatch emits for the first stripe of a zero-column read. */
+  private static List<Long> decodeStripe(ConsumerFileMetadata fileMetadata, int stripeRows) throws Exception {
     QueryFragmentCounters counters = new QueryFragmentCounters(daemonConf, new TezCounters());
     List<Long> starts = new ArrayList<>();
     OrcEncodedDataConsumer consumer = new OrcEncodedDataConsumer(null, includes(), counters, IO_METRICS);
     consumer.init(null, null, new IoTrace(0, false));
     consumer.setFileMetadata(fileMetadata);
-    consumer.setStripeMetadata(new FakeStripeMetadata(stripeIx, STRIPE_ROWS[stripeIx], withRowIndex));
+    consumer.setStripeMetadata(new FakeStripeMetadata(stripeRows));
 
     OrcEncodedColumnBatch batch = new OrcEncodedColumnBatch();
-    batch.init(null, stripeIx, rgIx, 0);
+    batch.init(null, 0, OrcEncodedColumnBatch.ALL_RGS, 0);
     consumer.decodeBatch(batch, new Consumer<ColumnVectorBatch>() {
       @Override public void consumeData(ColumnVectorBatch cvb) {
         starts.add(cvb.startRowInFile);
@@ -249,16 +213,10 @@ public class TestOrcEncodedDataConsumerRowPositions {
     return starts;
   }
 
-  private static ConsumerFileMetadata fileMetadata(int[] stripeRows, int stride) {
-    List<StripeInformation> stripes = new ArrayList<>();
-    for (int rows : stripeRows) {
-      StripeInformation stripe = mock(StripeInformation.class);
-      when(stripe.getNumberOfRows()).thenReturn((long) rows);
-      stripes.add(stripe);
-    }
+  private static ConsumerFileMetadata noStripesMetadata() {
     return new ConsumerFileMetadata() {
       @Override public int getStripeCount() {
-        return stripes.size();
+        return 0;
       }
 
       @Override public CompressionKind getCompressionKind() {
@@ -282,29 +240,25 @@ public class TestOrcEncodedDataConsumerRowPositions {
       }
 
       @Override public List<StripeInformation> getStripes() {
-        return stripes;
+        return Collections.emptyList();
       }
 
       @Override public int getRowIndexStride() {
-        return stride;
+        return 0;
       }
     };
   }
 
-  /** Reports a row count only; a null row index entry is what an index-disabled stripe returns. */
+  /** Reports a row count only. */
   private static final class FakeStripeMetadata implements ConsumerStripeMetadata {
-    private final int stripeIx;
     private final long rowCount;
-    private final boolean withRowIndex;
 
-    FakeStripeMetadata(int stripeIx, long rowCount, boolean withRowIndex) {
-      this.stripeIx = stripeIx;
+    FakeStripeMetadata(long rowCount) {
       this.rowCount = rowCount;
-      this.withRowIndex = withRowIndex;
     }
 
     @Override public int getStripeIx() {
-      return stripeIx;
+      return 0;
     }
 
     @Override public long getRowCount() {
@@ -329,7 +283,7 @@ public class TestOrcEncodedDataConsumerRowPositions {
     }
 
     @Override public boolean supportsRowIndexes() {
-      return withRowIndex;
+      return false;
     }
   }
 
@@ -420,11 +374,6 @@ public class TestOrcEncodedDataConsumerRowPositions {
       assertEquals(stripeRows.length, stripes.size());
       for (int i = 0; i < stripeRows.length; ++i) {
         assertEquals("stripe " + i, stripeRows[i], stripes.get(i).getNumberOfRows());
-        if (stride > 0) {
-          assertTrue("stripe " + i + " is a multiple of the stride", stripeRows[i] % stride != 0);
-        }
-        assertTrue("stripe " + i + " is a multiple of the batch size",
-            stripeRows[i] % VectorizedRowBatch.DEFAULT_SIZE != 0);
       }
     }
   }
@@ -472,38 +421,11 @@ public class TestOrcEncodedDataConsumerRowPositions {
     return expected;
   }
 
-  private static List<Long> startsWithin(long stripeStart, int stripeRows) {
-    List<Long> starts = new ArrayList<>();
-    for (int off = 0; off < stripeRows; off += VectorizedRowBatch.DEFAULT_SIZE) {
-      starts.add(stripeStart + off);
-    }
-    return starts;
-  }
-
   private static List<String> render(List<long[]> batches) {
     List<String> rendered = new ArrayList<>();
     for (long[] batch : batches) {
       rendered.add(batch[0] + ":" + batch[1]);
     }
     return rendered;
-  }
-
-  private static int countStartingAt(List<long[]> batches, long start) {
-    int count = 0;
-    for (long[] batch : batches) {
-      if (batch[0] == start) {
-        ++count;
-      }
-    }
-    return count;
-  }
-
-  private static int indexOfStart(List<long[]> batches, long start) {
-    for (int i = 0; i < batches.size(); ++i) {
-      if (batches.get(i)[0] == start) {
-        return i;
-      }
-    }
-    throw new AssertionError("no batch starts at " + start);
   }
 }

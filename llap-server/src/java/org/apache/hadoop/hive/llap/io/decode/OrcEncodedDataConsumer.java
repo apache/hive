@@ -144,8 +144,8 @@ public class OrcEncodedDataConsumer
       }
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
-      long rgStartRow = stripeStartRows == null ? -1 : stripeStartRows[currentStripeIndex]
-          + ((rgIdx == OrcEncodedColumnBatch.ALL_RGS || noIndex) ? 0 : (long) rgIdx * fileMetadata.getRowIndexStride());
+      long rgStartRow = stripeStartRows == null ? Long.MIN_VALUE : stripeStartRows[currentStripeIndex]
+          + (rgIdx == OrcEncodedColumnBatch.ALL_RGS ? 0 : (long) rgIdx * fileMetadata.getRowIndexStride());
       TypeDescription fileSchema = fileMetadata.getSchema();
 
       if (columnReaders == null || !sameStripe || noIndex) {
@@ -164,7 +164,8 @@ public class OrcEncodedDataConsumer
 
         ColumnVectorBatch cvb = takeBatch(batchSize);
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
-        cvb.startRowInFile = rgStartRow < 0 ? -1 : rgStartRow + (long) i * VectorizedRowBatch.DEFAULT_SIZE;
+        cvb.startRowInFile = stripeStartRows == null
+            ? Long.MIN_VALUE : rgStartRow + (long) i * VectorizedRowBatch.DEFAULT_SIZE;
         for (int idx = 0; idx < columnReaders.length; ++idx) {
           /*
            * Currently, ORC's TreeReaderFactory class does this:

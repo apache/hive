@@ -583,11 +583,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     return lastCvb;
   }
 
+  /** Long.MIN_VALUE (unknown) when the producer does not track row positions. */
   @Override
   public long getRowNumber() {
-    if (lastCvb.startRowInFile < 0) {
-      throw new IllegalStateException("Row positions are not provided by " + rp.getClass().getSimpleName());
-    }
     return lastCvb.startRowInFile;
   }
 

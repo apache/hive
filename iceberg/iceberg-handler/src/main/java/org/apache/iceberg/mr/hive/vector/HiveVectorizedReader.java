@@ -219,7 +219,7 @@ public class HiveVectorizedReader {
     // Need to turn positional schema evolution off since we use column name based schema evolution for projection
     // and Iceberg will make a mapping between the file schema and the current reading schema.
     job.setBoolean(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), false);
-    // Row positions are derived from the batch index, so the reader must not filter rows within a batch.
+    // Row positions are derived from the batch index, and ORC's row-level filter can drop rows and whole batches.
     job.setBoolean(OrcConf.ALLOW_SARG_TO_FILTER.getHiveConfName(), false);
 
     // Metadata information has to be passed along in the OrcSplit. Without specifying this, the vectorized
@@ -230,8 +230,7 @@ public class HiveVectorizedReader {
     VectorizedReadUtils.handleIcebergProjection(task, job,
         VectorizedReadUtils.deserializeToShadedOrcTail(serializedOrcTail).getSchema(), residual);
 
-    // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases.
-    // Position deletes and the virtual columns are served from the row positions the reader reports.
+    // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null) {
       recordReader = LlapProxy.getIo().orc().vectorizedReaderForPath(fileId, path, null, readColumnIds,

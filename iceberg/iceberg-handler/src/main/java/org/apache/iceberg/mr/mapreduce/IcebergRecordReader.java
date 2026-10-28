@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.io.IOContextAwareRecordReader;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hive.iceberg.org.apache.orc.OrcConf;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileFormat;
@@ -264,6 +265,8 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
         .filter(residual)
         .caseSensitive(isCaseSensitive())
         .split(task.start(), task.length());
+    // Row positions are derived from the batch index, and ORC's row-level filter can drop rows and whole batches.
+    orcReadBuilder.config(OrcConf.ALLOW_SARG_TO_FILTER.getHiveConfName(), "false");
 
     if (getNameMapping() != null) {
       orcReadBuilder.withNameMapping(NameMappingParser.fromJson(getNameMapping()));
