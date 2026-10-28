@@ -149,6 +149,7 @@ public class TestHiveVectorizedReader {
     job.setBoolean(HiveConf.ConfVars.LLAP_IO_ENABLED.varname, true);
 
     JobConf daemonConf = new JobConf(job);
+    // Off in the query conf only: the tag of the put below shows that the daemon conf decides it
     job.setBoolean(HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE.varname, false);
 
     List<LlapBufferOrBuffers> handedOut = Lists.newArrayList();
