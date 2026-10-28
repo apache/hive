@@ -244,7 +244,6 @@
     <aws-java-sdk.version>2.42.25</aws-java-sdk.version>
     <aws-secretsmanager-caching.version>2.2.0</aws-secretsmanager-caching.version>
     <jansi.version>2.4.0</jansi.version>
-    <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
     <spring-boot.version>2.7.18</spring-boot.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>

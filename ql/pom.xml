@@ -30,7 +30,6 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <reflections.version>0.10.2</reflections.version>
-    <atlas.version>2.4.0</atlas.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -51,59 +50,6 @@
     <dependency>
       <groupId>org.graalvm.truffle</groupId>
       <artifactId>truffle-runtime</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.atlas</groupId>
-      <artifactId>atlas-client-v2</artifactId>
-      <version>${atlas.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>jul-to-slf4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.atlas</groupId>
-      <artifactId>atlas-client-common</artifactId>
-      <version>${atlas.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>jul-to-slf4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-client</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.atlas</groupId>
-      <artifactId>atlas-intg</artifactId>
-      <version>${atlas.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>jul-to-slf4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-context</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-configuration</groupId>
