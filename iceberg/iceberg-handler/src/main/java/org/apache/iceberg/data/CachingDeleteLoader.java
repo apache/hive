@@ -22,6 +22,7 @@ package org.apache.iceberg.data;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.hadoop.conf.Configuration;
@@ -57,6 +58,8 @@ import org.slf4j.LoggerFactory;
 
 public class CachingDeleteLoader extends BaseDeleteLoader {
   private static final Logger LOG = LoggerFactory.getLogger(CachingDeleteLoader.class);
+  // A put that finds the cache full evicts while that frees memory, then fails instead of waiting for memory.
+  private static final AtomicBoolean DO_NOT_WAIT = new AtomicBoolean(true);
 
   private final ObjectCache cache;
   private final Function<DeleteFile, InputFile> loadInputFile;
@@ -87,7 +90,7 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
     this.loadInputFile = loadInputFile;
     this.conf = conf;
     this.context = context;
-    String cacheLevel = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETES);
+    String cacheLevel = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETES).toLowerCase();
     this.metadataCache = "none".equals(cacheLevel) ? null : metadataCache;
     this.cacheConf = cacheConf;
     this.cachePositionDeleteFiles = "all".equals(cacheLevel);
@@ -140,7 +143,7 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
       throw new UncheckedIOException(e);
     }
     PositionDeleteIndex index = PositionDeleteIndex.deserialize(bytes, dv);
-    putCached(key, bytes, cacheTag(dv));
+    putCached(key, bytes, dv);
     return index;
   }
 
@@ -163,7 +166,7 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
         bytes = Deletes.toPositionIndex(filePath, CloseableIterable.<StructLike>empty(), deleteFile)
             .serialize().array();
       }
-      putCached(key, bytes, cacheTag(deleteFile));
+      putCached(key, bytes, deleteFile);
     }
     return DeletionVectors.deserialize(bytes, deleteFile);
   }
@@ -200,11 +203,12 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
     }
   }
 
-  // Best effort: the deletes are already loaded, so failing to cache them must not fail the read. With task counters,
-  // only the first failure of a task is logged at INFO.
-  private void putCached(DeletesKey key, byte[] bytes, CacheTag tag) {
+  // Best effort: the deletes are already loaded, so caching them must neither fail nor block the read. With task
+  // counters, only the first failure of a task is logged at INFO.
+  private void putCached(DeletesKey key, byte[] bytes, DeleteFile deleteFile) {
     try {
-      metadataCache.decRefBuffer(metadataCache.putFileMetadata(key, ByteBuffer.wrap(bytes), tag, null));
+      metadataCache.decRefBuffer(
+          metadataCache.putFileMetadata(key, ByteBuffer.wrap(bytes), cacheTag(deleteFile), DO_NOT_WAIT));
       counter(DeleteCacheCounters.DELETE_CACHE_PUT).increment(1);
       counter(DeleteCacheCounters.DELETE_CACHE_PUT_BYTES).increment(bytes.length);
     } catch (RuntimeException e) {
