@@ -160,14 +160,14 @@ public class WriterBuilder {
   }
 
   private Map<String, DeleteFileSet> rewritableDeletes(UnaryOperator<String> ops) {
-    String location = ops.apply(InputFormatConfig.REWRITABLE_DELETES_PREFIX + tableName);
-    if (location != null) {
-      return loadRewritableDeletes(location);
+    if (!context.useDVs()) {
+      // a writer of partition-scoped position deletes rewrites none
+      return null;
     }
-    Preconditions.checkState(!context.useDVs(),
+    String location = ops.apply(InputFormatConfig.REWRITABLE_DELETES_PREFIX + tableName);
+    Preconditions.checkState(location != null,
         "The rewritable deletes of the DV writers of %s were not planned for the job", tableName);
-    // a writer of partition-scoped position deletes rewrites none
-    return null;
+    return loadRewritableDeletes(location);
   }
 
   /**
