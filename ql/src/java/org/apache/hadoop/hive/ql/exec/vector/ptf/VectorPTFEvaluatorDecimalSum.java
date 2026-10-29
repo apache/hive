@@ -48,10 +48,10 @@ public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorAbstractSum<
 
   @Override
   protected void accumulatePartitionOnlyBatch(int batchSize) throws HiveException {
-    if(partitionOnlyConstantValue == null){
+    if (partitionOnlyConstantValue == null) {
       return;
     }
-    partitionOnlyDecimalConstant.set((HiveDecimalWritable)partitionOnlyConstantValue);
+    partitionOnlyDecimalConstant.set((HiveDecimalWritable) partitionOnlyConstantValue);
     temp.setFromLong(batchSize);
     temp.mutateMultiply(partitionOnlyDecimalConstant);
     if (isGroupResultNull) {
@@ -76,7 +76,7 @@ public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorAbstractSum<
     if (size == 0) {
       return;
     }
-    if(usePartitionOnlyConstant){
+    if (usePartitionOnlyConstant) {
       accumulatePartitionOnlyBatch(size);
       return;
     }
