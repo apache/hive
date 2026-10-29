@@ -63,53 +63,39 @@ public final class IcebergVendedCredentialUtil {
   private IcebergVendedCredentialUtil() {
   }
 
+  /** Vended credentials split per HIVE-20651: plain job properties vs job secrets. */
+  record VendedJobConf(Map<String, String> properties, Map<String, String> secrets) {
+    static final VendedJobConf EMPTY = new VendedJobConf(Map.of(), Map.of());
+  }
+
   /**
-   * Copies vended credentials from the table FileIO into Hive job configuration.
+   * Maps vended credentials from the table FileIO to Hive job configuration.
    *
    * <p>Follows the HIVE-20651 split used by {@code JdbcStorageHandler}: sensitive values (including
-   * the serialized {@link StorageCredential} list) go to {@code jobSecrets}; non-secret config such
-   * as endpoint and path-style access go to {@code jobProperties}.
+   * the serialized {@link StorageCredential} list) go to {@link VendedJobConf#secrets()}; non-secret
+   * config such as endpoint and path-style access go to {@link VendedJobConf#properties()}.
    *
    * @param table loaded Iceberg table; its catalog-qualified name keys the credentials blob,
    *        since REST catalogs mint credentials per table (the table pointer carries the same
    *        name, so executors resolve the matching key)
-   * @param catalogName Hive catalog name ({@link InputFormatConfig#CATALOG_NAME})
-   * @param jobProperties Tez/MR non-secret job properties; may be {@code null}
-   * @param jobSecrets sensitive keys and serialized credentials; may be {@code null}
+   * @param catalogName Hive catalog name, resolved by {@link HiveTableUtil#resolveCatalogName}
    * @param conf session conf used to preserve host-side endpoint overrides
    */
-  public static void propagateToJob(Table table, String catalogName, Map<String, String> jobProperties,
-      Map<String, String> jobSecrets, Configuration conf) {
-
+  static VendedJobConf toJobConf(Table table, String catalogName, Configuration conf) {
     List<StorageCredential> credentials =
         withConfigurationOverrides(catalogName, extractCredentials(table), conf);
-
     if (credentials.isEmpty()) {
-      return;
+      return VendedJobConf.EMPTY;
     }
-
-    if (jobSecrets != null) {
-      jobSecrets.put(
-          InputFormatConfig.vendedCredentialsKey(table.name()),
-          serializeToSingleLineBase64(Lists.newArrayList(credentials)));
-    }
-
+    Map<String, String> properties = new LinkedHashMap<>();
+    Map<String, String> secrets = new LinkedHashMap<>();
+    secrets.put(
+        InputFormatConfig.vendedCredentialsKey(table.name()),
+        serializeToSingleLineBase64(Lists.newArrayList(credentials)));
     for (StorageCredential credential : credentials) {
-      addCredentialEntries(catalogName, credential, jobProperties, jobSecrets, conf);
+      addCredentialEntries(catalogName, credential, properties, secrets, conf);
     }
-  }
-
-  /**
-   * Copies vended storage credentials of a table loaded via {@link #getTableWithVendedCredentials} into
-   * job secrets for {@link HiveIcebergStorageHandler#configureInputJobCredentials} (HIVE-20651).
-   */
-  public static void propagateVendedCredentialsToJob(
-      Table table, TableDesc tableDesc, Map<String, String> jobSecrets, Configuration conf) {
-    if (table == null || tableDesc == null || tableDesc.getProperties() == null ||
-        !requestsVendedCredentials(tableDesc.getProperties(), conf)) {
-      return;
-    }
-    propagateToJob(table, tableDesc.getProperty(InputFormatConfig.CATALOG_NAME), null, jobSecrets, conf);
+    return new VendedJobConf(properties, secrets);
   }
 
   /**
@@ -138,10 +124,8 @@ public final class IcebergVendedCredentialUtil {
       addCredentialEntry(
           catalogName, scope, mapper, entry.getKey(), entry.getValue(), jobProperties, jobSecrets, conf);
     }
-    if (jobProperties != null) {
-      Support.additionalNonSecretHadoopProperties(mapper, scope, config)
-          .forEach(jobProperties::putIfAbsent);
-    }
+    Support.additionalNonSecretHadoopProperties(mapper, scope, config)
+        .forEach(jobProperties::putIfAbsent);
   }
 
   /**
@@ -149,8 +133,7 @@ public final class IcebergVendedCredentialUtil {
    *
    * <p>Skips blank values, applies session catalog overrides via {@link #resolveCredentialValue},
    * then sends non-secret keys (endpoint, path-style access, etc.) to {@code jobProperties} and
-   * secret keys (access key, secret key, session token) to {@code jobSecrets}. Either map may be
-   * {@code null} when {@link #propagateToJob} is called for only properties or only secrets.
+   * secret keys (access key, secret key, session token) to {@code jobSecrets}.
    */
   private static void addCredentialEntry(String catalogName, String scope,
       HadoopMapper mapper, String icebergKey, String value,
@@ -161,12 +144,10 @@ public final class IcebergVendedCredentialUtil {
     }
     String resolvedValue = resolveCredentialValue(catalogName, icebergKey, value, conf);
 
-    if (jobProperties != null && !isSecretKey(icebergKey, conf)) {
-      addNonSecretCredentialEntry(catalogName, scope, mapper, icebergKey, resolvedValue, jobProperties);
-    }
-
-    if (jobSecrets != null && isSecretKey(icebergKey, conf)) {
+    if (isSecretKey(icebergKey, conf)) {
       addSecretCredentialEntry(scope, mapper, icebergKey, resolvedValue, jobSecrets);
+    } else {
+      addNonSecretCredentialEntry(catalogName, scope, mapper, icebergKey, resolvedValue, jobProperties);
     }
   }
 
@@ -307,18 +288,13 @@ public final class IcebergVendedCredentialUtil {
       return;
     }
 
-    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-    if (catalogName == null) {
-      return;
-    }
-
+    String catalogName =
+        HiveTableUtil.resolveCatalogName(configuration, props.getProperty(InputFormatConfig.CATALOG_NAME));
     try {
       Table table = getTableWithVendedCredentials(props, configuration);
-      Map<String, String> jobProps = new LinkedHashMap<>();
-      Map<String, String> secrets = new LinkedHashMap<>();
-      propagateToJob(table, catalogName, jobProps, secrets, configuration);
-      jobProps.forEach(jobConf::set);
-      mergeJobSecrets(tableDesc, secrets);
+      VendedJobConf vended = toJobConf(table, catalogName, configuration);
+      vended.properties().forEach(jobConf::set);
+      mergeJobSecrets(tableDesc, vended.secrets());
     } catch (NoSuchTableException ex) {
       // Table may not exist yet for CTAS; credentials will not be available.
     }

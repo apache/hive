@@ -73,8 +73,9 @@ class TestServerSideScanSnapshotPinning {
     try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
       tasks.forEach(task -> plannedPaths.add(task.file().location()));
     }
-    assertThat(plannedPaths).anyMatch(path -> path.contains("data-a.parquet"));
-    assertThat(plannedPaths).noneMatch(path -> path.contains("data-b.parquet"));
+    assertThat(plannedPaths)
+        .anyMatch(path -> path.contains("data-a.parquet"))
+        .noneMatch(path -> path.contains("data-b.parquet"));
     assertThat(table.currentSnapshot().snapshotId()).isNotEqualTo(pinnedSnapshotId);
   }
 
@@ -98,10 +99,9 @@ class TestServerSideScanSnapshotPinning {
     Configuration conf = buildServerModeConf(table);
     Table serializedTable = HiveTableUtil.deserializeTable(conf, table.name());
     table.manageSnapshots().createBranch(BRANCH, table.currentSnapshot().snapshotId()).commit();
+    TableScan scan = table.newScan();
 
-    assertThatThrownBy(() ->
-            HiveTableUtil.pinServerSideScanRefToSerializedTable(
-                serializedTable, BRANCH, table.newScan()))
+    assertThatThrownBy(() -> HiveTableUtil.pinServerSideScanRefToSerializedTable(serializedTable, BRANCH, scan))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Cannot find reference " + BRANCH);
   }
@@ -132,8 +132,9 @@ class TestServerSideScanSnapshotPinning {
     try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
       tasks.forEach(task -> plannedPaths.add(task.file().location()));
     }
-    assertThat(plannedPaths).anyMatch(path -> path.contains("data-a.parquet"));
-    assertThat(plannedPaths).noneMatch(path -> path.contains("data-b.parquet"));
+    assertThat(plannedPaths)
+        .anyMatch(path -> path.contains("data-a.parquet"))
+        .noneMatch(path -> path.contains("data-b.parquet"));
   }
 
   @Test
@@ -156,10 +157,9 @@ class TestServerSideScanSnapshotPinning {
 
     appendFileOnBranch(table, BRANCH, "data-c.parquet");
     assertThat(table.refs().get(BRANCH).snapshotId()).isNotEqualTo(branchSnapshotId);
+    TableScan scan = table.newScan();
 
-    assertThatThrownBy(() ->
-            HiveTableUtil.pinServerSideScanRefToSerializedTable(
-                serializedTable, BRANCH, table.newScan()))
+    assertThatThrownBy(() -> HiveTableUtil.pinServerSideScanRefToSerializedTable(serializedTable, BRANCH, scan))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Branch " + BRANCH + " moved since query compilation");
   }
@@ -184,8 +184,9 @@ class TestServerSideScanSnapshotPinning {
     try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
       tasks.forEach(task -> plannedPaths.add(task.file().location()));
     }
-    assertThat(plannedPaths).anyMatch(path -> path.contains("data-a.parquet"));
-    assertThat(plannedPaths).noneMatch(path -> path.contains("data-b.parquet"));
+    assertThat(plannedPaths)
+        .anyMatch(path -> path.contains("data-a.parquet"))
+        .noneMatch(path -> path.contains("data-b.parquet"));
   }
 
   @Test

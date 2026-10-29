@@ -283,8 +283,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (props == null) {
       return;
     }
-    if (!IcebergVendedCredentialUtil.requestsVendedCredentials(props, conf) &&
-        !RestCatalogScanPlanningUtil.isServerSideScanPlanningEnabled(conf)) {
+    boolean vendedCredentials = IcebergVendedCredentialUtil.requestsVendedCredentials(props, conf);
+    if (!vendedCredentials && !RestCatalogScanPlanningUtil.isServerSideScanPlanningEnabled(conf)) {
       return;
     }
     Table table;
@@ -294,8 +294,14 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       // Table may not exist yet for CTAS; there is nothing to plan or vend credentials for.
       return;
     }
-    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(table, tableDesc, secrets, conf);
-    IcebergVendedCredentialUtil.propagateVendedCredentialsToJob(table, tableDesc, secrets, conf);
+    String catalogName = HiveTableUtil.resolveCatalogName(conf, props.getProperty(InputFormatConfig.CATALOG_NAME));
+
+    if (RestCatalogScanPlanningUtil.shouldPlanServerSide(conf, table)) {
+      RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(catalogName, secrets, conf);
+    }
+    if (vendedCredentials) {
+      secrets.putAll(IcebergVendedCredentialUtil.toJobConf(table, catalogName, conf).secrets());
+    }
   }
 
   @Override
@@ -1761,8 +1767,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
 
       if (isVendedCredentials) {
-        String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-        IcebergVendedCredentialUtil.propagateToJob(table, catalogName, map, null, configuration);
+        String catalogName =
+            HiveTableUtil.resolveCatalogName(configuration, props.getProperty(InputFormatConfig.CATALOG_NAME));
+        IcebergVendedCredentialUtil.toJobConf(table, catalogName, configuration)
+            .properties().forEach(map::putIfAbsent);
         // Serializing the table as-is would embed its FileIO, and with it the vended credentials,
         // into plain job properties: ship a copy over a secret-free FileIO instead; executors
         // restore the credentials from the Credentials channel (setCredentials).

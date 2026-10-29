@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.rest;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.apache.hadoop.conf.Configuration;
@@ -37,7 +36,6 @@ import org.apache.iceberg.rest.responses.LoadTableResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import static org.apache.iceberg.TestBase.FILE_A;
 import static org.apache.iceberg.TestBase.SCHEMA;
@@ -45,6 +43,7 @@ import static org.apache.iceberg.TestBase.SPEC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -58,7 +57,7 @@ class TestRestCatalogScanPlanningServerIT extends TestBaseWithRESTServer {
 
   @Override
   protected RESTCatalogAdapter createAdapterForServer() {
-    return Mockito.spy(
+    return spy(
         new RESTCatalogAdapter(backendCatalog) {
           @Override
           protected <T extends RESTResponse> T execute(

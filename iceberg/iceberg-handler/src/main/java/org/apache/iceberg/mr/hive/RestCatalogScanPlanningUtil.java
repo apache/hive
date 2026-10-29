@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -50,7 +49,7 @@ import org.apache.iceberg.rest.RESTCatalogProperties;
  *
  * <p>{@link #setScanPlanningMode(Configuration, String, String)},
  * {@link #getScanPlanningMode(Configuration, String)} and
- * {@link #propagateCatalogSecretsToJob(Table, TableDesc, Map, Configuration)} are public so tests in other
+ * {@link #propagateCatalogPropertiesToJob(Configuration, Table, String, Map)} are public so tests in other
  * Maven modules (for example {@code itests/hive-iceberg-rest-server}) can configure scan planning; those modules
  * compile against this artifact as a JAR and cannot call package-private members. They are not
  * intended as a general operator or application API.
@@ -110,7 +109,7 @@ public final class RestCatalogScanPlanningUtil {
    * Writes the per-table {@link InputFormatConfig#serverSideScanPlanningKey(String)} marker and the
    * session default catalog into the table's job properties when {@link #shouldPlanServerSide} holds.
    * The {@code iceberg.catalog.<catalog>.*} entries go through job secrets instead, see
-   * {@link #propagateCatalogSecretsToJob(Table, TableDesc, Map, Configuration)}.
+   * {@link #propagateCatalogSecretsToJob(String, Map, Configuration)}.
    * Session values replace existing entries so a session {@code SET} wins.
    */
   public static void propagateCatalogPropertiesToJob(
@@ -129,18 +128,12 @@ public final class RestCatalogScanPlanningUtil {
   /**
    * Copies all {@code iceberg.catalog.<catalog>.*} entries from the HS2 session into job secrets
    * (HIVE-20651), so catalog credentials never land in plain job properties. Only split generation in
-   * the AM needs them to load the REST catalog, so they ship only when {@link #shouldPlanServerSide}
-   * holds for the loaded table, the same decision as the per-table marker;
+   * the AM needs them to load the REST catalog, so the caller ships them only when
+   * {@link #shouldPlanServerSide} holds for the loaded table, the same decision as the per-table marker;
    * {@code HiveInputFormat#addSplitsForGroup} copies job secrets into the job conf before {@code getSplits}.
    */
-  public static void propagateCatalogSecretsToJob(
-      Table table, TableDesc tableDesc, Map<String, String> jobSecrets, Configuration sessionConf) {
-    if (tableDesc == null || tableDesc.getProperties() == null || jobSecrets == null ||
-        !shouldPlanServerSide(sessionConf, table)) {
-      return;
-    }
-    String catalogName =
-        HiveTableUtil.resolveCatalogName(sessionConf, tableDesc.getProperty(InputFormatConfig.CATALOG_NAME));
+  static void propagateCatalogSecretsToJob(
+      String catalogName, Map<String, String> jobSecrets, Configuration sessionConf) {
     if (StringUtils.isEmpty(catalogName)) {
       return;
     }

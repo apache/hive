@@ -20,15 +20,12 @@
 package org.apache.iceberg.mr.hive;
 
 import java.util.Map;
-import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
-import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.rest.RESTCatalogProperties;
 import org.junit.jupiter.api.Test;
@@ -105,25 +102,26 @@ public class TestRestCatalogScanPlanningUtil {
   }
 
   /**
-   * Catalog secrets follow the same decision as the marker: a REST catalog table that Iceberg resolved
-   * to client-side planning gets no {@code iceberg.catalog.<catalog>.*} secrets, even with the Hive kill
-   * switch on and client {@code server} mode. The positive case needs a REST server and is in
-   * {@code TestHiveIcebergServerSideScanPlanningServerIT}.
+   * Every {@code iceberg.catalog.<catalog>.*} entry of the given catalog goes to job secrets, whatever
+   * its name, so custom auth properties such as {@code header.Authorization} are never exposed in plain
+   * job properties. Other catalogs and unrelated keys are not copied.
    */
   @Test
-  void propagateCatalogSecretsToJobSkipsTableNotPlannedServerSide() {
-    Map<String, String> jobSecrets = Maps.newHashMap();
-    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(
-        Mockito.mock(Table.class), tableDesc("ice01"), jobSecrets, restSessionConf());
-    assertThat(jobSecrets).isEmpty();
-  }
+  void propagateCatalogSecretsToJobCopiesOnlyTheCatalogProperties() {
+    Configuration sessionConf = restSessionConf();
+    String headerKey = IcebergCatalogProperties.catalogPropertyConfigKey("ice01", "header.Authorization");
+    sessionConf.set(headerKey, "Bearer token");
+    String otherCatalogKey = IcebergCatalogProperties.catalogPropertyConfigKey("ice02", "uri");
+    sessionConf.set(otherCatalogKey, "http://other:8181");
+    sessionConf.set("unrelated.key", "skip");
 
-  private static TableDesc tableDesc(String catalogName) {
-    TableDesc tableDesc = new TableDesc();
-    Properties tableProps = new Properties();
-    tableProps.setProperty(InputFormatConfig.CATALOG_NAME, catalogName);
-    tableDesc.setProperties(tableProps);
-    return tableDesc;
+    Map<String, String> jobSecrets = Maps.newHashMap();
+    RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob("ice01", jobSecrets, sessionConf);
+
+    assertThat(jobSecrets)
+        .containsEntry(headerKey, "Bearer token")
+        .containsEntry(IcebergCatalogProperties.catalogPropertyConfigKey("ice01", "uri"), "http://localhost:8181")
+        .doesNotContainKeys(otherCatalogKey, "unrelated.key");
   }
 
   private static Configuration restSessionConf() {
