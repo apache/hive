@@ -234,10 +234,6 @@ public abstract class VectorPTFEvaluatorBase {
     usePartitionOnlyConstant = true;
   }
 
-  protected boolean getUsePartitionOnlyConstant() {
-    return usePartitionOnlyConstant;
-  }
-
   public void updatePartitionOnlyConstant(Object value) {
     if (!usePartitionOnlyConstant) {
       return;

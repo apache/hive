@@ -41,10 +41,10 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorAbstractSum<D
 
   @Override
   protected void accumulatePartitionOnlyBatch(int batchSize) {
-    if(partitionOnlyConstantValue == null){
+    if (partitionOnlyConstantValue == null) {
       return;
     }
-    double increment = ((Double)partitionOnlyConstantValue) * batchSize;
+    double increment = ((Double) partitionOnlyConstantValue) * batchSize;
     if (isGroupResultNull) {
       sum = increment;
       isGroupResultNull = false;
