@@ -153,7 +153,7 @@ public class WriterBuilder {
   }
 
   private Map<String, DeleteFileSet> rewritableDeletes(UnaryOperator<String> ops) {
-    // the ref the write commits to: OUTPUT_TABLE_SNAPSHOT_REF is only set for split planning
+    // the branch the write commits to
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, ops.apply(Catalogs.SNAPSHOT_REF));
     boolean caseSensitive = ObjectUtils.defaultIfNull(
         Boolean.parseBoolean(ops.apply(InputFormatConfig.CASE_SENSITIVE)),
