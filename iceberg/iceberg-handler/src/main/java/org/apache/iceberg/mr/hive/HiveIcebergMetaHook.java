@@ -97,7 +97,6 @@ import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
-import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.Transaction;
@@ -112,12 +111,13 @@ import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.expressions.UnboundTerm;
+import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveLock;
-import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.IcebergTableProperties;
 import org.apache.iceberg.hive.IcebergViewSupport;
+import org.apache.iceberg.hive.MetastoreLock;
 import org.apache.iceberg.hive.NoLock;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
@@ -293,7 +293,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
           context.getProperties().get(OLD_TABLE_NAME)).toString());
     }
     if (commitLock == null) {
-      commitLock = lockObject(hmsTable);
+      commitLock = lockObject(hmsTable, context);
     }
 
     try {
@@ -305,26 +305,35 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     }
   }
 
-  private HiveLock lockObject(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // an alter without an operation type, e.g. a statistics update, changes nothing in Iceberg: the metadata_location
-    // CAS protects it without a lock
-    if (!HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf) || currentAlterTableOp == null) {
+  /**
+   * The HMS lock Hive's Iceberg commits take, for an alter that commits to Iceberg and writes the metadata_location to
+   * HMS. An alter without an operation type commits nothing to Iceberg: the metadata_location CAS protects it instead.
+   */
+  private HiveLock lockObject(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context) {
+    Map<String, String> params = hmsTable.getParameters();
+    if (currentAlterTableOp == null || Boolean.parseBoolean(context.getProperties().get(SKIP_METASTORE_ALTER)) ||
+        !params.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP) ||
+        !HiveTableOperations.hiveLockEnabled(params, conf)) {
       return new NoLock();
     }
-    // the lock Hive's commits of the table take
-    return Catalogs.hiveTableOps(conf, tableProperties).<HiveLock>map(HiveTableOperations::metastoreLock)
-        .orElseGet(NoLock::new);
+    return new MetastoreLock(
+        conf,
+        new CachedClientPool(conf, Maps.fromProperties(tableProperties)),
+        tableProperties.getProperty(InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME),
+        hmsTable.getDbName(),
+        hmsTable.getTableName());
   }
 
   private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws TException, InterruptedException {
-    Optional<HiveTableOperations> hiveOps =
-        currentAlterTableOp == null ? Catalogs.hiveTableOps(conf, tableProperties) : Optional.empty();
-    if (hiveOps.isPresent()) {
+    if (currentAlterTableOp == null) {
       // nothing to commit to Iceberg: read the current metadata_location from HMS, as HiveTableOperations does
-      HiveTableOperations ops = hiveOps.get();
-      keepCurrentMetadataLocation(hmsTable.getParameters(), ops,
-          ops.loadHmsTable().getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP), context);
+      if (hmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+        String currentMetadataLocation = new CachedClientPool(conf, Maps.fromProperties(tableProperties))
+            .run(client -> client.getTable(hmsTable.getDbName(), hmsTable.getTableName()))
+            .getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+        keepCurrentMetadataLocation(hmsTable.getParameters(), currentMetadataLocation, context);
+      }
       return;
     }
     try {
@@ -411,11 +420,11 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       Preconditions.checkArgument(icebergTable != null,
           "Cannot perform table migration to Iceberg and setting the snapshot location in one step. " +
               "Please migrate the table first");
-      TableOperations ops = ((BaseTable) icebergTable).operations();
-      TableMetadata currentMetadata = ops.current();
+      TableMetadata currentMetadata = ((BaseTable) icebergTable).operations().current();
       if (context.getProperties().containsKey(MANUAL_ICEBERG_METADATA_LOCATION_CHANGE)) {
         String newMetadataLocation = tblParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-        TableMetadata newMetadata = TableMetadataParser.read(ops.io(), newMetadataLocation);
+        FileIO io = ((BaseTable) icebergTable).operations().io();
+        TableMetadata newMetadata = TableMetadataParser.read(io, newMetadataLocation);
         if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
           throw new UnsupportedOperationException(
               String.format("Cannot change iceberg table %s metadata location pointing to another table's metadata %s",
@@ -423,7 +432,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
           );
         }
       }
-      keepCurrentMetadataLocation(tblParams, ops, currentMetadata.metadataFileLocation(), context);
+      keepCurrentMetadataLocation(tblParams, currentMetadata.metadataFileLocation(), context);
     }
   }
 
@@ -431,8 +440,8 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
    * Makes the alter carry the current metadata location unless the user sets it. Without a lock, HMS applies the alter
    * only if no commit moved the metadata location since it was read.
    */
-  private void keepCurrentMetadataLocation(Map<String, String> tblParams, TableOperations ops,
-      String currentMetadataLocation, EnvironmentContext context) {
+  private void keepCurrentMetadataLocation(Map<String, String> tblParams, String currentMetadataLocation,
+      EnvironmentContext context) {
     String metadataLocation = tblParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
     if (!currentMetadataLocation.equals(metadataLocation) &&
         !context.getProperties().containsKey(MANUAL_ICEBERG_METADATA_LOCATION_CHANGE)) {
@@ -445,8 +454,10 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
           "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
           metadataLocation, currentMetadataLocation);
     }
-    if (commitLock instanceof NoLock && ops instanceof HiveOperationsBase hiveOps) {
-      hiveOps.hmsEnvContext(currentMetadataLocation).forEach(context::putToProperties);
+    if (commitLock instanceof NoLock) {
+      context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY,
+          BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, currentMetadataLocation);
     }
   }
 

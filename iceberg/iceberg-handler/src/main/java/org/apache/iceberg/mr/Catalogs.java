@@ -35,8 +35,6 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
-import org.apache.iceberg.hive.HiveCatalog;
-import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -215,19 +213,6 @@ public final class Catalogs {
     Preconditions.checkNotNull(location, "Table location not set");
     SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(props, schema);
     return new HadoopTables(conf).create(schema, spec, sortOrder, map, location);
-  }
-
-  /**
-   * Returns the operations of a HiveCatalog table without loading its metadata.
-   * @param conf a Hadoop conf
-   * @param props the controlling properties
-   * @return the table operations, or empty if the table is not in a HiveCatalog
-   */
-  public static Optional<HiveTableOperations> hiveTableOps(Configuration conf, Properties props) {
-    return loadCatalog(conf, props.getProperty(InputFormatConfig.CATALOG_NAME))
-        .filter(HiveCatalog.class::isInstance)
-        .map(catalog -> (HiveTableOperations) ((HiveCatalog) catalog).newTableOps(
-            TableIdentifier.parse(props.getProperty(NAME))));
   }
 
   public static void renameTable(Configuration conf, Properties props, TableIdentifier to) {
