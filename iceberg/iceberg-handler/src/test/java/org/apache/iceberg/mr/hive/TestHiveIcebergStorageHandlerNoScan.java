@@ -33,23 +33,29 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
@@ -66,8 +72,11 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
@@ -1556,14 +1565,82 @@ public class TestHiveIcebergStorageHandlerNoScan {
     testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     Assert.assertFalse(table.io().newInputFile(expiredMetadataLocation).exists());
+    String currentMetadataLocation = TableUtil.metadataFileLocation(testTables.loadTable(identifier));
 
+    // an alter that loads the Iceberg table, e.g. setting a table property
     HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(shell.getHiveConf());
+    EnvironmentContext environmentContext = new EnvironmentContext(Maps.newHashMap(
+        ImmutableMap.of(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, AlterTableType.ADDPROPS.name())));
+    metaHook.preAlterTable(hmsTable, environmentContext);
+    metaHook.rollbackAlterTable(hmsTable, environmentContext);
+
+    Assert.assertEquals(currentMetadataLocation,
+        hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
+  }
+
+  @Test
+  public void testMetaHookWithoutOperationTypeReadsNoMetadata() throws Exception {
+    Assume.assumeTrue("Enough to check for one type only",
+        testTableType.equals(TestTableType.HIVE_CATALOG));
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(identifier);
+
+    Configuration conf = new Configuration(shell.getHiveConf());
+    conf.set(
+        IcebergCatalogProperties.catalogPropertyConfigKey(testTables.catalogName(), CatalogProperties.FILE_IO_IMPL),
+        MetadataReadCountingFileIO.class.getName());
+    HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(conf);
     EnvironmentContext environmentContext = new EnvironmentContext(Maps.newHashMap());
+    MetadataReadCountingFileIO.METADATA_READS.set(0);
     metaHook.preAlterTable(hmsTable, environmentContext);
     metaHook.commitAlterTable(hmsTable, environmentContext);
 
-    Assert.assertEquals(TableUtil.metadataFileLocation(testTables.loadTable(identifier)),
-        hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
+    Assert.assertEquals(0, MetadataReadCountingFileIO.METADATA_READS.get());
+  }
+
+  /**
+   * Counts the table metadata files opened.
+   */
+  public static class MetadataReadCountingFileIO extends HadoopFileIO {
+    private static final AtomicInteger METADATA_READS = new AtomicInteger();
+
+    @Override
+    public InputFile newInputFile(String path) {
+      if (path.endsWith(".metadata.json")) {
+        METADATA_READS.incrementAndGet();
+      }
+      return super.newInputFile(path);
+    }
+  }
+
+  @Test
+  public void testMetaHookWithoutOperationTypeAndHiveLock() throws Exception {
+    Assume.assumeTrue("Enough to check for one type only",
+        testTableType.equals(TestTableType.HIVE_CATALOG));
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    Table table = testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        SPEC, FileFormat.PARQUET, ImmutableList.of(), 2, ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "true"));
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(identifier);
+
+    // an alter without an operation type, e.g. a statistics update, with an Iceberg commit after the meta hook
+    HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(shell.getHiveConf());
+    EnvironmentContext environmentContext = new EnvironmentContext(Maps.newHashMap());
+    metaHook.preAlterTable(hmsTable, environmentContext);
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    String committedMetadataLocation = TableUtil.metadataFileLocation(testTables.loadTable(identifier));
+
+    MetaException rejected = Assert.assertThrows(MetaException.class, () -> shell.metastore().run(client -> {
+      client.alter_table_with_environmentContext(
+          hmsTable.getDbName(), hmsTable.getTableName(), hmsTable, environmentContext);
+      return null;
+    }));
+    metaHook.rollbackAlterTable(hmsTable, environmentContext);
+    Assert.assertTrue(rejected.getMessage(), rejected.getMessage().startsWith("The table has been modified"));
+    Assert.assertEquals(committedMetadataLocation, shell.metastore().getTable(identifier).getParameters()
+        .get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
   }
 
   @Test
