@@ -88,7 +88,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (a = 22) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -283,7 +283,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (a = 226784902765739L) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -504,7 +504,7 @@ STAGE PLANS:
                   Statistics: Num rows: 7 Data size: 1288 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (b = 'ddd') (type: boolean)
-                    Statistics: Num rows: 4 Data size: 928 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -745,7 +745,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (b = DATE'2022-02-07') (type: boolean)
-                    Statistics: Num rows: 2 Data size: 208 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -933,7 +933,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (a = 1.156748927566759E11D) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -1115,7 +1115,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 128 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((a = 1.156748927566759E11D) and (b = DATE'2022-02-07')) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 2 Data size: 128 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col3
