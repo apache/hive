@@ -341,7 +341,8 @@ public class VectorizedOrcAcidRowBatchReader
       if (deleteEventRegistry.isEmpty() && !rowIdProjected) {
         Path parent = orcSplit.getPath().getParent();
         while (parent != null && !rootPath.equals(parent)) {
-          if (parent.getName().startsWith(AcidUtils.BASE_PREFIX)) {
+          String parentName = parent.getName();
+          if (parentName.startsWith(AcidUtils.BASE_PREFIX)) {
             /**
              * The assumption here is that any base_x is filtered out by
              * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)}
@@ -351,7 +352,8 @@ public class VectorizedOrcAcidRowBatchReader
              */
             readerOptions.includeAcidColumns(false);
             break;
-          } else {
+          } else if (parentName.startsWith(AcidUtils.DELTA_PREFIX)
+              || parentName.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
             ParsedDeltaLight pd = ParsedDeltaLight.parse(parent);
             if (validWriteIdList.isWriteIdRangeValid(pd.getMinWriteId(),
                 pd.getMaxWriteId()) == ValidWriteIdList.RangeResponse.ALL) {
@@ -361,6 +363,11 @@ public class VectorizedOrcAcidRowBatchReader
               break;
             }
           }
+          // Any other directory name (e.g. HIVE_UNION_SUBDIR_<N>/ produced by
+          // an INSERT ... UNION ALL against a table that was later converted
+          // to full ACID) is not an ACID container — skip it and keep walking
+          // up. Feeding such a name into ParsedDeltaLight.parse would throw
+          // NumberFormatException.
           parent = parent.getParent();
         }
       }
