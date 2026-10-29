@@ -399,8 +399,9 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   }
 
   /**
-   * Perform a check on the current iceberg table whether a metadata change can be performed. A table is eligible if
-   * the current metadata uuid and the new metadata uuid matches.
+   * Perform a check on the current iceberg table whether a metadata change can be performed. A manual change is
+   * eligible if the current metadata uuid and the new metadata uuid matches; any other alter keeps the current
+   * metadata location.
    * @param tblParams hms table properties, must be non-null
    */
   private void assertNotCrossTableMetadataLocationChange(Map<String, String> tblParams, EnvironmentContext context) {
@@ -409,17 +410,17 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
           "Cannot perform table migration to Iceberg and setting the snapshot location in one step. " +
               "Please migrate the table first");
       String newMetadataLocation = tblParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-      FileIO io = ((BaseTable) icebergTable).operations().io();
-      TableMetadata newMetadata = TableMetadataParser.read(io, newMetadataLocation);
       TableMetadata currentMetadata = ((BaseTable) icebergTable).operations().current();
-      if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
-        throw new UnsupportedOperationException(
-            String.format("Cannot change iceberg table %s metadata location pointing to another table's metadata %s",
-                icebergTable.name(), newMetadataLocation)
-        );
-      }
-      if (!currentMetadata.metadataFileLocation().equals(newMetadataLocation) &&
-          !context.getProperties().containsKey(MANUAL_ICEBERG_METADATA_LOCATION_CHANGE)) {
+      if (context.getProperties().containsKey(MANUAL_ICEBERG_METADATA_LOCATION_CHANGE)) {
+        FileIO io = ((BaseTable) icebergTable).operations().io();
+        TableMetadata newMetadata = TableMetadataParser.read(io, newMetadataLocation);
+        if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
+          throw new UnsupportedOperationException(
+              String.format("Cannot change iceberg table %s metadata location pointing to another table's metadata %s",
+                  icebergTable.name(), newMetadataLocation)
+          );
+        }
+      } else if (!currentMetadata.metadataFileLocation().equals(newMetadataLocation)) {
         // If we got here then this is an alter table operation where the table to be changed had an Iceberg commit
         // meanwhile. The base metadata locations differ, while we know that this wasn't an intentional, manual
         // metadata_location set by a user. To protect the interim commit we need to refresh the metadata file location.

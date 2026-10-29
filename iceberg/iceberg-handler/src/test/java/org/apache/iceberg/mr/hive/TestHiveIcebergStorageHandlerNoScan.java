@@ -1540,6 +1540,33 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testMetaHookWithExpiredMetadataLocation() throws Exception {
+    Assume.assumeTrue("Enough to check for one type only",
+        testTableType.equals(TestTableType.HIVE_CATALOG));
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    Table table = testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        SPEC, FileFormat.PARQUET, ImmutableList.of(), 2,
+        ImmutableMap.of(TableProperties.METADATA_PREVIOUS_VERSIONS_MAX, "1"));
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(identifier);
+    String expiredMetadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+
+    // two commits after the HMS table was read retire the metadata file it points to
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    Assert.assertFalse(table.io().newInputFile(expiredMetadataLocation).exists());
+
+    HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(shell.getHiveConf());
+    EnvironmentContext environmentContext = new EnvironmentContext(Maps.newHashMap());
+    metaHook.preAlterTable(hmsTable, environmentContext);
+    metaHook.commitAlterTable(hmsTable, environmentContext);
+
+    Assert.assertEquals(TableUtil.metadataFileLocation(testTables.loadTable(identifier)),
+        hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
+  }
+
+  @Test
   public void testCommandsWithPartitionClause() throws IOException {
     TableIdentifier target = TableIdentifier.of("default", "target");
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)

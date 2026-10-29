@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -238,6 +239,22 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   @WithMockedStorageHandler
   public void testStatsUpdateDoesNotRevertConcurrentInsert() throws Exception {
     Assume.assumeTrue(testTableType == TestTableType.HIVE_CATALOG);
+    insertDuringStatsUpdate(false);
+  }
+
+  @Test
+  @WithMockedStorageHandler
+  public void testColumnStatsUpdateDoesNotFailOnConcurrentInsert() throws Exception {
+    // the column statistics state is updated through the meta hook only when Iceberg stores the statistics
+    Assume.assumeTrue(testTableType == TestTableType.HIVE_CATALOG && statsSource.equals("iceberg"));
+    insertDuringStatsUpdate(true);
+  }
+
+  /**
+   * Inserts a row while another client inserts one in between the meta hook and the HMS call of this insert's
+   * basic statistics update, or of the column statistics state update that follows it.
+   */
+  private void insertDuringStatsUpdate(boolean columnStats) throws Exception {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
@@ -247,7 +264,6 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         "'" + HiveIcebergStorageHandlerAlterStub.class.getName() + "'");
     shell.executeStatement("INSERT INTO customers VALUES (0, 'Alice', 'Brown')");
 
-    // Another client inserts while this session's stats update is between the meta hook and HMS
     FutureTask<List<Object[]>> otherInsert = new FutureTask<>(() -> {
       HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
       try {
@@ -256,10 +272,14 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         shell.closeSession();
       }
     });
-    HiveIcebergStorageHandlerAlterStub.afterPreAlterTable(() -> {
+    Callable<?> runOtherInsert = () -> {
       Thread.ofVirtual().start(otherInsert).join();
       return null;
-    });
+    };
+    HiveIcebergStorageHandlerAlterStub.afterPreAlterTable(columnStats ? () -> {
+      HiveIcebergStorageHandlerAlterStub.afterPreAlterTable(runOtherInsert);
+      return null;
+    } : runOtherInsert);
     shell.executeStatement("INSERT INTO customers VALUES (2, 'Trudy', 'Pink')");
     Assert.assertTrue("the other insert ran during the stats update", otherInsert.isDone());
     otherInsert.get();

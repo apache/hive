@@ -318,7 +318,15 @@ public class ColStatsProcessor implements IStatsProcessor {
     } else {
       StatsSetupConst.removeColumnStatsState(tbl.getParameters(), colNames);
     }
-    db.alterTable(tbl.getFullyQualifiedName(), tbl, environmentContext, false);
+    try {
+      db.alterTable(tbl.getFullyQualifiedName(), tbl, environmentContext, false);
+    } catch (HiveException e) {
+      // the rows are committed already: a lost update costs the statistics state, not the statement
+      if (isStatsReliable) {
+        throw e;
+      }
+      LOG.warn("Unable to update the column statistics state of {}", tbl.getFullyQualifiedName(), e);
+    }
   }
 
   /**
