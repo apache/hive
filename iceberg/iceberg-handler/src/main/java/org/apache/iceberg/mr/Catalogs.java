@@ -187,7 +187,20 @@ public final class Catalogs {
    * @return true if the Catalog is HiveCatalog
    */
   public static boolean hiveCatalog(Configuration conf, Properties props) {
-    return IcebergCatalogProperties.assertCatalogType(conf, props, CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE, null);
+    return IcebergCatalogProperties.assertCatalogType(conf, props, CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE, null) ||
+        IcebergCatalogProperties.assertCatalogType(conf, props, CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE,
+            CatalogUtil.ICEBERG_CATALOG_HIVE);
+  }
+
+  /**
+   * Returns the name of the catalog the table is loaded from and committed through
+   * @param conf a Hadoop conf
+   * @param props the controlling properties
+   * @return the catalog name
+   */
+  public static String catalogName(Configuration conf, Properties props) {
+    String resolvedName = resolveCatalogName(conf, props.getProperty(InputFormatConfig.CATALOG_NAME));
+    return resolvedName == null ? ICEBERG_DEFAULT_CATALOG_NAME : resolvedName;
   }
 
   /**
@@ -229,7 +242,7 @@ public final class Catalogs {
   }
 
   static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
-    String resolvedName = catalogName != null ? catalogName : configuredDefaultCatalogName(conf);
+    String resolvedName = resolveCatalogName(conf, catalogName);
     String catalogType = IcebergCatalogProperties.getCatalogType(conf, resolvedName);
     if (NO_CATALOG_TYPE.equalsIgnoreCase(catalogType)) {
       return Optional.empty();
@@ -238,6 +251,10 @@ public final class Catalogs {
       return Optional.of(CatalogUtil.buildIcebergCatalog(name,
           IcebergCatalogProperties.getCatalogProperties(conf, name), conf));
     }
+  }
+
+  private static String resolveCatalogName(Configuration conf, String catalogName) {
+    return catalogName != null ? catalogName : configuredDefaultCatalogName(conf);
   }
 
   /**

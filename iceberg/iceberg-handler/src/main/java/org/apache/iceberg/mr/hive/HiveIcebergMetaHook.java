@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -307,19 +308,23 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
   /**
    * The HMS lock Hive's Iceberg commits take, for an alter that commits to Iceberg and writes the metadata_location to
-   * HMS. An alter without an operation type commits nothing to Iceberg: the metadata_location CAS protects it instead.
+   * HMS. The metadata_location CAS protects an alter without an operation type, which commits nothing to Iceberg, and
+   * an alter under external locking, whose statement already holds its Hive lock of the table.
    */
   private HiveLock lockObject(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context) {
     Map<String, String> params = hmsTable.getParameters();
-    if (currentAlterTableOp == null || Boolean.parseBoolean(context.getProperties().get(SKIP_METASTORE_ALTER)) ||
-        !params.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP) ||
-        !HiveTableOperations.hiveLockEnabled(params, conf)) {
+    boolean writesMetadataLocation = currentAlterTableOp != null &&
+        !Boolean.parseBoolean(context.getProperties().get(SKIP_METASTORE_ALTER)) &&
+        params.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+    boolean excludesWriters = HiveTableOperations.hiveLockEnabled(params, conf) &&
+        !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED);
+    if (!writesMetadataLocation || !excludesWriters) {
       return new NoLock();
     }
     return new MetastoreLock(
         conf,
         new CachedClientPool(conf, Maps.fromProperties(tableProperties)),
-        tableProperties.getProperty(InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME),
+        Catalogs.catalogName(conf, tableProperties),
         hmsTable.getDbName(),
         hmsTable.getTableName());
   }
@@ -431,20 +436,20 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
                   icebergTable.name(), newMetadataLocation)
           );
         }
+        expectMetadataLocation(currentMetadata.metadataFileLocation(), context);
+      } else {
+        keepCurrentMetadataLocation(tblParams, currentMetadata.metadataFileLocation(), context);
       }
-      keepCurrentMetadataLocation(tblParams, currentMetadata.metadataFileLocation(), context);
     }
   }
 
   /**
-   * Makes the alter carry the current metadata location unless the user sets it. Without a lock, HMS applies the alter
-   * only if no commit moved the metadata location since it was read.
+   * Makes the alter carry the current metadata location.
    */
   private void keepCurrentMetadataLocation(Map<String, String> tblParams, String currentMetadataLocation,
       EnvironmentContext context) {
     String metadataLocation = tblParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-    if (!currentMetadataLocation.equals(metadataLocation) &&
-        !context.getProperties().containsKey(MANUAL_ICEBERG_METADATA_LOCATION_CHANGE)) {
+    if (!currentMetadataLocation.equals(metadataLocation)) {
       // If we got here then this is an alter table operation where the table to be changed had an Iceberg commit
       // meanwhile. The base metadata locations differ, while we know that this wasn't an intentional, manual
       // metadata_location set by a user. To protect the interim commit we need to refresh the metadata file location.
@@ -454,6 +459,13 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
           "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
           metadataLocation, currentMetadataLocation);
     }
+    expectMetadataLocation(currentMetadataLocation, context);
+  }
+
+  /**
+   * Without a lock, HMS applies the alter only if no commit moved the metadata location since it was read.
+   */
+  private void expectMetadataLocation(String currentMetadataLocation, EnvironmentContext context) {
     if (commitLock instanceof NoLock) {
       context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY,
           BaseMetastoreTableOperations.METADATA_LOCATION_PROP);

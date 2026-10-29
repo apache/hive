@@ -81,7 +81,7 @@ import org.apache.iceberg.mr.hive.stats.IcebergPartitionStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergStoredStats;
 import org.apache.iceberg.mr.hive.test.TestTables;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
-import org.apache.iceberg.mr.hive.test.concurrent.HiveIcebergStorageHandlerAlterStub;
+import org.apache.iceberg.mr.hive.test.concurrent.HiveIcebergStorageHandlerStub;
 import org.apache.iceberg.mr.hive.test.concurrent.WithMockedStorageHandler;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
@@ -261,7 +261,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
         ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "false"),
-        "'" + HiveIcebergStorageHandlerAlterStub.class.getName() + "'");
+        "'" + HiveIcebergStorageHandlerStub.class.getName() + "'");
     shell.executeStatement("INSERT INTO customers VALUES (0, 'Alice', 'Brown')");
 
     FutureTask<List<Object[]>> otherInsert = new FutureTask<>(() -> {
@@ -276,14 +276,14 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
       Thread.ofVirtual().start(otherInsert).join();
       return null;
     };
-    HiveIcebergStorageHandlerAlterStub.afterPreAlterTable(columnStats ? () -> {
-      HiveIcebergStorageHandlerAlterStub.afterPreAlterTable(runOtherInsert);
+    HiveIcebergStorageHandlerStub.afterPreAlterTable(columnStats ? () -> {
+      HiveIcebergStorageHandlerStub.afterPreAlterTable(runOtherInsert);
       return null;
     } : runOtherInsert);
     try {
       shell.executeStatement("INSERT INTO customers VALUES (2, 'Trudy', 'Pink')");
     } finally {
-      HiveIcebergStorageHandlerAlterStub.afterPreAlterTable(null);
+      HiveIcebergStorageHandlerStub.afterPreAlterTable(null);
     }
     Assert.assertTrue("the other insert ran during the stats update", otherInsert.isDone());
     otherInsert.get();
