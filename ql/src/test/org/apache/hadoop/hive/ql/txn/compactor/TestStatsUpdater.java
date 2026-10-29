@@ -36,13 +36,13 @@ public class TestStatsUpdater {
 
     HiveConf conf = new HiveConf();
     Map<String, String> tableProperties = new HashMap<String, String>() {{
-      put(COMPACTOR_PREFIX + "test.property", "test-value");
+      put(COMPACTOR_PREFIX + "hive.compactor.stats.test.property", "test-value");
     }};
 
     Map<String, String> ciProperties = new HashMap<>();
     HiveConf statsUpdaterConf = statsUpdater.setUpDriverSession(conf, "testQueue", tableProperties, ciProperties);
 
-    assertThat(statsUpdaterConf.get("test.property"), is("test-value"));
+    assertThat(statsUpdaterConf.get("hive.compactor.stats.test.property"), is("test-value"));
   }
 
   @Test
@@ -52,12 +52,12 @@ public class TestStatsUpdater {
     HiveConf conf = new HiveConf();
     Map<String, String> tableProperties = new HashMap<>();
     Map<String, String> ciProperties = new HashMap<String, String>() {{
-      put(COMPACTOR_PREFIX + "test.property", "test-value");
+      put(COMPACTOR_PREFIX + "hive.compactor.stats.test.property", "test-value");
     }};
 
     HiveConf statsUpdaterConf = statsUpdater.setUpDriverSession(conf, "testQueue", tableProperties, ciProperties);
 
-    assertThat(statsUpdaterConf.get("test.property"), is("test-value"));
+    assertThat(statsUpdaterConf.get("hive.compactor.stats.test.property"), is("test-value"));
   }
 
   @Test
@@ -65,15 +65,15 @@ public class TestStatsUpdater {
     StatsUpdater statsUpdater = new StatsUpdater();
 
     HiveConf conf = new HiveConf();
-    conf.set(COMPACTOR_PREFIX + "test.property", "test-value");
+    conf.set(COMPACTOR_PREFIX + "hive.compactor.stats.test.property", "test-value");
 
     Map<String, String> tableProperties = new HashMap<String, String>() {{
-      put(COMPACTOR_PREFIX + "test.property", "changed-in-table-properties");
+      put(COMPACTOR_PREFIX + "hive.compactor.stats.test.property", "changed-in-table-properties");
     }};
 
     HiveConf statsUpdaterConf = statsUpdater.setUpDriverSession(conf, "testQueue", tableProperties, emptyMap());
 
-    assertThat(statsUpdaterConf.get("test.property"), is("changed-in-table-properties"));
+    assertThat(statsUpdaterConf.get("hive.compactor.stats.test.property"), is("changed-in-table-properties"));
   }
 
   @Test
@@ -81,18 +81,18 @@ public class TestStatsUpdater {
     StatsUpdater statsUpdater = new StatsUpdater();
 
     HiveConf conf = new HiveConf();
-    conf.set(COMPACTOR_PREFIX + "test.property", "test-value");
+    conf.set(COMPACTOR_PREFIX + "hive.compactor.stats.test.property", "test-value");
 
     Map<String, String> tableProperties = new HashMap<String, String>() {{
-      put(COMPACTOR_PREFIX + "test.property", "changed-in-table-properties");
+      put(COMPACTOR_PREFIX + "hive.compactor.stats.test.property", "changed-in-table-properties");
     }};
 
     Map<String, String> ciProperties = new HashMap<String, String>() {{
-      put(COMPACTOR_PREFIX + "test.property", "changed-in-compaction-info");
+      put(COMPACTOR_PREFIX + "hive.compactor.stats.test.property", "changed-in-compaction-info");
     }};
 
     HiveConf statsUpdaterConf = statsUpdater.setUpDriverSession(conf, "testQueue", tableProperties, ciProperties);
 
-    assertThat(statsUpdaterConf.get("test.property"), is("changed-in-compaction-info"));
+    assertThat(statsUpdaterConf.get("hive.compactor.stats.test.property"), is("changed-in-compaction-info"));
   }
 }
