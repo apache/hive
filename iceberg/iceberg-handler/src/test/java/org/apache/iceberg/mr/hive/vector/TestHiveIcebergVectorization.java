@@ -219,6 +219,31 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     validation.apply(1501);
   }
 
+  /**
+   * ORC can filter the rows of a batch by the pushed down predicate; row positions and deletes must still apply to
+   * the right rows.
+   */
+  @Test
+  public void testHiveDeleteFilterWithOrcRowFiltering() {
+    Assume.assumeTrue(fileFormat == FileFormat.ORC);
+
+    Schema schema = new Schema(optional(1, "customer_id", Types.LongType.get()));
+    List<Record> records = TestHelper.generateRandomRecords(schema, 30000, 0L);
+    for (int i = 0; i < records.size(); ++i) {
+      records.get(i).setField("customer_id", (long) i);
+    }
+    testTables.createTable(shell, "vectordelete", schema, PartitionSpec.unpartitioned(), fileFormat, records, 2);
+    shell.executeStatement("DELETE FROM vectordelete WHERE customer_id = 25000");
+
+    shell.setHiveSessionValue("orc.sarg.to.filter", true);
+    shell.setHiveSessionValue("orc.filter.use.selected", true);
+    List<Object[]> result = shell.executeStatement(
+        "select customer_id, ROW__POSITION from vectordelete where customer_id in (25000, 25001)");
+
+    Assert.assertEquals(1, result.size());
+    Assert.assertArrayEquals(new Object[] { 25001L, 25001L }, result.get(0));
+  }
+
   @Test
   public void testHiveDeleteFilterWithFilteredParquetBlock() {
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET);

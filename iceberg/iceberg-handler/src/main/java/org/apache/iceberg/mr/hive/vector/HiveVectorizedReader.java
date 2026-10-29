@@ -24,8 +24,10 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -61,7 +63,6 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
@@ -89,7 +90,8 @@ public class HiveVectorizedReader {
   }
 
   public static CloseableIterable<HiveBatchContext> reader(Table table, Path path, FileScanTask task,
-      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual, Schema readSchema) {
+      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual, Schema readSchema,
+      FileMetadataCache metadataCache, Configuration cacheConf) {
 
     HiveDeleteFilter deleteFilter = null;
     Schema requiredSchema = readSchema;
@@ -102,7 +104,7 @@ public class HiveVectorizedReader {
             protected DeleteLoader newDeleteLoader() {
               return new CachingDeleteLoader(
                   deleteFile -> EncryptingFileIO.combine(table.io(), table.encryption()).newInputFile(deleteFile),
-                  context.getConfiguration());
+                  context, metadataCache, cacheConf);
             }
           };
       requiredSchema = deleteFilter.requiredSchema();
@@ -220,6 +222,8 @@ public class HiveVectorizedReader {
     // Need to turn positional schema evolution off since we use column name based schema evolution for projection
     // and Iceberg will make a mapping between the file schema and the current reading schema.
     job.setBoolean(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), false);
+    // Row positions are derived from the batch index, and ORC's row-level filter can drop rows and whole batches.
+    job.setBoolean(OrcConf.ALLOW_SARG_TO_FILTER.getHiveConfName(), false);
 
     // Metadata information has to be passed along in the OrcSplit. Without specifying this, the vectorized
     // reader will assume that the ORC file ends at the task's start + length, and might fail reading the tail..
@@ -230,9 +234,8 @@ public class HiveVectorizedReader {
         VectorizedReadUtils.deserializeToShadedOrcTail(serializedOrcTail).getSchema(), residual);
 
     // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
-    // TODO: add support for reading files with positional deletes with LLAP (LLAP would need to provide file row num)
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
-        LlapProxy.getIo() != null && task.deletes().isEmpty() && !InputFormatConfig.fetchVirtualColumns(job)) {
+        LlapProxy.getIo() != null) {
       recordReader = LlapProxy.getIo().orc().vectorizedReaderForPath(fileId, path, null, readColumnIds,
           job, start, length, reporter);
     }
