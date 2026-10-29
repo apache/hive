@@ -228,32 +228,30 @@ public class Log4j2ConfiguratorServlet extends HttpServlet {
   }
 
   private void configureLogger(final ConfLoggers confLoggers) {
-    if (confLoggers != null) {
-      for (ConfLogger logger : confLoggers.getLoggers()) {
-        String loggerName = logger.getLogger();
-        Level logLevel = Level.getLevel(logger.getLevel());
-        if (logLevel == null) {
-          LOG.warn("Invalid log level: {} for logger: {}. Ignoring reconfiguration.", loggerName, logger.getLevel());
-          continue;
-        }
-
-        LoggerConfig loggerConfig = conf.getLoggerConfig(loggerName);
-        // if the logger name is not found, root logger is returned. We don't want to change root logger level
-        // since user either requested a new logger or specified invalid input. In which, we will add the logger
-        // that user requested.
-        if (!loggerName.equals(LogManager.ROOT_LOGGER_NAME) &&
-          loggerConfig.getName().equals(LogManager.ROOT_LOGGER_NAME)) {
-          LOG.debug("Requested logger ({}) not found. Adding as new logger with {} level", loggerName, logLevel);
-          // requested logger not found. Add the new logger with the requested level
-          conf.addLogger(loggerName, new LoggerConfig(loggerName, logLevel, true));
-        } else {
-          LOG.debug("Updating logger ({}) to {} level", loggerName, logLevel);
-          // update the log level for the specified logger
-          loggerConfig.setLevel(logLevel);
-        }
-      }
-      context.updateLoggers(conf);
+    if (confLoggers == null) {
+      return;
     }
+    for (ConfLogger logger : confLoggers.getLoggers()) {
+      String loggerName = logger.getLogger();
+      Level logLevel = Level.getLevel(logger.getLevel());
+      if (logLevel == null) {
+        LOG.warn("Invalid log level: {} for logger: {}. Ignoring reconfiguration.", logger.getLevel(), loggerName);
+        continue;
+      }
+
+      // getLoggerConfig never returns null: for a logger that is not configured explicitly it returns the
+      // closest configured ancestor (the root logger if there is none). Only update the returned config when
+      // its name matches the request, otherwise we would change an ancestor's level instead of the requested one.
+      LoggerConfig loggerConfig = conf.getLoggerConfig(loggerName);
+      if (loggerName.equals(loggerConfig.getName())) {
+        LOG.debug("Updating logger ({}) to {} level", loggerName, logLevel);
+        loggerConfig.setLevel(logLevel);
+      } else {
+        LOG.debug("Logger ({}) not configured. Adding as new logger with {} level", loggerName, logLevel);
+        conf.addLogger(loggerName, new LoggerConfig(loggerName, logLevel, true));
+      }
+    }
+    context.updateLoggers(conf);
   }
 
   private void listLoggers(final HttpServletResponse response) throws IOException {
