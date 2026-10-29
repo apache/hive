@@ -865,10 +865,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.jayway.jsonpath</groupId>
-      <artifactId>json-path</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.codehaus.janino</groupId>
       <artifactId>commons-compiler</artifactId>
     </dependency>
@@ -1151,6 +1147,7 @@
                   <include>com.googlecode.json-simple:json-simple</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.apache.tez:tez-protobuf-history-plugin</include>
+                  <include>com.jayway.jsonpath:*</include>
                 </includes>
               </artifactSet>
               <filters>
