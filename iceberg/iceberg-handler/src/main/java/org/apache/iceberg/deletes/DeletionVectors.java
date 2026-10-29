@@ -26,7 +26,8 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 
 /**
- * Hive-side helpers for Iceberg position delete indexes.
+ * Iceberg has no public deletion vector deserializer that does not validate against a DV DeleteFile; this can go once
+ * it offers one.
  */
 public final class DeletionVectors {
   private static final int MAGIC_NUMBER = 0x6439D3D1;
@@ -35,9 +36,6 @@ public final class DeletionVectors {
   }
 
   /**
-   * Iceberg has no public deletion vector deserializer that does not validate against a DV DeleteFile; this can go
-   * once it offers one.
-   * <p>
    * Reads the {@link PositionDeleteIndex#serialize()} format into an index attributed to the given delete file.
    */
   public static PositionDeleteIndex deserialize(byte[] bytes, DeleteFile deleteFile) {

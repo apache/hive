@@ -46,7 +46,7 @@ class HiveDeleteFilter {
 
   /**
    * Adjusts the pipeline of incoming VRBs so that the deleted rows of each batch are filtered out.
-   * @param batches iterable of HiveBatchContexts i.e. VRBs and their meta information, in file order
+   * @param batches iterable of HiveBatchContexts i.e. VRBs and their meta information
    * @return the adjusted iterable of HiveBatchContexts
    */
   CloseableIterable<HiveBatchContext> filterBatch(CloseableIterable<HiveBatchContext> batches) {
@@ -62,9 +62,6 @@ class HiveDeleteFilter {
    */
   void filter(VectorizedRowBatch batch, long fileRowOffset) {
     int size = batch.size;
-    if (size == 0) {
-      return;
-    }
     if (fileRowOffset == Long.MIN_VALUE) {
       throw new UnsupportedOperationException("Can't provide row position for batch.");
     }

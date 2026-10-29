@@ -148,7 +148,8 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     for (int i = 0; i < records.size(); ++i) {
       records.get(i).setField("customer_id", (long) i);
     }
-    testTables.createTable(shell, "vectordelete", schema, PartitionSpec.unpartitioned(), fileFormat, records, 2);
+    testTables.createTable(shell, "vectordelete", schema, PartitionSpec.unpartitioned(), fileFormat, records,
+        formatVersion);
     shell.executeStatement("DELETE FROM vectordelete WHERE customer_id = 25000");
 
     shell.setHiveSessionValue("orc.sarg.to.filter", true);
