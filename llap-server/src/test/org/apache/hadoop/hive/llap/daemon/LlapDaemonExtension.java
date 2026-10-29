@@ -64,7 +64,7 @@ public class LlapDaemonExtension implements ParameterResolver, BeforeEachCallbac
     HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "llap");
     LlapDaemonInfo.initialize(appName, conf);
     daemon =
-        new LlapDaemon(conf, 1, LlapDaemon.getTotalHeapSize(), false, false, -1, new String[1], 0, false, 0, 0, 0, 0,
+        new LlapDaemon(conf, 1, LlapDaemon.getTotalHeapSize(), false, false, -1, new String[1], 0, 0, 0, 0,
             appName);
     daemon.init(conf);
     daemon.start();
