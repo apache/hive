@@ -437,7 +437,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
     List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
     Set<String> skipList =
-        Stream.of(FILE_PATH, PARTITION_SPEC_ID, PARTITION_NAME,
+        Stream.of(FILE_PATH, PARTITION_SPEC_ID, PARTITION_KEY, PARTITION_NAME,
                 ROW_LINEAGE_ID, LAST_UPDATED_SEQUENCE_NUMBER)
             .map(VirtualColumn::getName).collect(Collectors.toSet());
 

@@ -237,7 +237,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (a = 22) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: PARTITION__SPEC__ID (type: int), PARTITION__KEY (type: binary), FILE__PATH (type: string), ROW__POSITION (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col3

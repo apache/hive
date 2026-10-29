@@ -66,9 +66,9 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   }
 
   /**
-   * A delete file holds the partition of the data files it applies to, and Iceberg validates a DV's against its data
-   * file's. The partition field of a dropped source column has the unknown type, which a manifest stores as null, so
-   * a delete file cannot hold the value of the data files.
+   * A delete file holds the partition of the data files it applies to, and Iceberg validates a DV's partition against
+   * its data file's. The partition field of a dropped source column has the unknown type, which a manifest stores as
+   * null, so a delete file cannot hold the value of the data files.
    */
   private Map<ByteBuffer, StructLike> newPartitionCache(PartitionSpec spec) {
     Preconditions.checkArgument(spec.partitionType().fields().stream()

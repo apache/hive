@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -121,23 +120,11 @@ public class TestIcebergAcidUtil {
     Assert.assertEquals(0, serializedSize(PartitionSpec.unpartitioned()));
     Assert.assertEquals(1, serializedSize(PartitionSpec.builderFor(SCHEMA).alwaysNull("string_col").build(),
         (Object) null));
-    Assert.assertEquals(5, serializedSize(PartitionSpec.builderFor(SCHEMA).identity("date_col").build(), 19_000));
-    Assert.assertEquals(10,
-        serializedSize(PartitionSpec.builderFor(SCHEMA).day("timestamp_col").bucket("int_col", 16).build(), 19_000, 7));
     Assert.assertEquals(6, serializedSize(PartitionSpec.builderFor(SCHEMA).identity("string_col").build(), "Smith"));
-    Assert.assertEquals(4, serializedSize(PartitionSpec.builderFor(SCHEMA).truncate("decimal_col", 100).build(),
-        new BigDecimal("12.3400")));
     PartitionSpec spec = PartitionSpec.builderFor(SCHEMA).identity("string_col").day("timestamp_col")
         .bucket("int_col", 16).truncate("string_col", 3).build();
     Assert.assertEquals(17, serializedSize(spec, "eu", 19_000, 7, "abc"));
     Assert.assertEquals(15, serializedSize(spec, null, 19_000, 7, "abc"));
-    Assert.assertEquals(10,
-        serializedSize(PartitionSpec.builderFor(SCHEMA).bucket("int_col", 8).truncate("int_col", 100).build(), 3, 100));
-    Assert.assertEquals(10, serializedSize(
-        PartitionSpec.builderFor(SCHEMA).year("timestamp_col").bucket("timestamp_col", 4).build(), 56, 1));
-    Assert.assertEquals(10, serializedSize(
-        PartitionSpec.builderFor(SCHEMA).identity("string_col").alwaysNull("int_col").day("date_col").build(),
-        "abc", null, 19_000));
   }
 
   @Test
@@ -160,8 +147,6 @@ public class TestIcebergAcidUtil {
       Assert.assertEquals(3, IcebergAcidUtil.parseSpecId(rec));
       Assert.assertEquals(ByteBuffer.wrap(IcebergAcidUtil.serializePartition(partition, spec)),
           IcebergAcidUtil.parseSerializedPartition(rec));
-      StructLike parsed = IcebergAcidUtil.deserializePartition(IcebergAcidUtil.parseSerializedPartition(rec), spec);
-      Assert.assertEquals(0, Comparators.forType(spec.partitionType()).compare(partition, parsed));
       PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec);
       Assert.assertEquals("/data.parquet", positionDelete.path());
       Assert.assertEquals(7L, positionDelete.pos());

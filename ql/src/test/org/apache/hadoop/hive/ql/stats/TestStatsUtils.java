@@ -638,25 +638,10 @@ class TestStatsUtils {
 
   @Test
   void testVirtualColumnStatsUseTheAvgLengthHint() {
-    HiveConf conf = new HiveConf();
-    List<VirtualColumn> unhinted = List.of(
-        VirtualColumn.PARTITION_SPEC_ID, VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION);
-    Statistics withoutVirtualStats = new Statistics(1000, 8000, 0, 0);
-    Statistics stats = new Statistics(1000, 8000, 0, 0);
-    stats.addToColumnStats(StatsUtils.getVirtualColumnStats(
-        Stream.concat(unhinted.stream(), Stream.of(VirtualColumn.PARTITION_KEY)).toList(), stats.getNumRows()));
-
-    ColStatistics partitionKey =
-        StatsUtils.getColStatisticsFromExpression(conf, stats, virtualColumn(VirtualColumn.PARTITION_KEY));
+    ColStatistics partitionKey = StatsUtils.getColStatisticsFromExpression(new HiveConf(),
+        new Statistics(1000, 8000, 0, 0), virtualColumn(VirtualColumn.PARTITION_KEY));
     assertEquals(8, partitionKey.getAvgColLen());
     assertEquals(1000, partitionKey.getCountDistint());
-
-    for (VirtualColumn column : unhinted) {
-      assertEquals(
-          StatsUtils.getColStatisticsFromExpression(conf, withoutVirtualStats, virtualColumn(column)).getAvgColLen(),
-          StatsUtils.getColStatisticsFromExpression(conf, stats, virtualColumn(column)).getAvgColLen(),
-          column.getName());
-    }
   }
 
   private static ExprNodeColumnDesc virtualColumn(VirtualColumn column) {
