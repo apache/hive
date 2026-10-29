@@ -163,7 +163,7 @@ public class PlanModifierForASTConv {
         introduceDerivedTable(rel.getInput(0), rel);
       }
     } else if (rel instanceof SingleRel) {
-      if (rel instanceof HiveJdbcConverter) {
+      if (rel instanceof HiveJdbcConverter && !(parent instanceof Project)) {
         introduceDerivedTable(rel, parent);
       } else if (rel instanceof Filter) {
         if (!validFilterParent(rel, parent)) {
