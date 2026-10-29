@@ -190,7 +190,8 @@ public class IcebergAcidUtil {
       for (int pos = 0; pos < fields.size(); pos++) {
         Type type = fields.get(pos).type();
         Object value = partition.get(pos, Object.class);
-        // the source column of a field of the unknown type was dropped, the field reads as null
+        // a field whose source column was dropped has the unknown type, which holds no value: a data file written
+        // before the drop still has one
         if (value == null || type.typeId() == Type.TypeID.UNKNOWN) {
           WritableUtils.writeVInt(out, 0);
         } else {
