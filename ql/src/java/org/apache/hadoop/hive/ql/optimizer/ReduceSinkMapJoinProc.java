@@ -188,7 +188,9 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
           ExprNodeDesc realCol = parentRS.getColumnExprMap().get(prefix + "." + keyCol);
           ColStatistics cs =
               StatsUtils.getColStatisticsFromExpression(context.conf, stats, realCol);
-          if (cs == null || cs.getCountDistint() <= 0) {
+          if (cs == null || cs.getCountDistint() < 0) {
+            // missing stats or unknown NDV: the key columns cannot bound
+            // the key count, so it stays at the row count
             maxKeyCount = Long.MAX_VALUE;
             break;
           }
