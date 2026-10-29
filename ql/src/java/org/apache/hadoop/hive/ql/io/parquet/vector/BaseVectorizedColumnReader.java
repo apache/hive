@@ -170,7 +170,10 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
     if (page == null) {
       return;
     }
+    initPage(page);
+  }
 
+  protected void initPage(DataPage page) {
     page.accept(new DataPage.Visitor<Void>() {
       @Override
       public Void visit(DataPageV1 dataPageV1) {
