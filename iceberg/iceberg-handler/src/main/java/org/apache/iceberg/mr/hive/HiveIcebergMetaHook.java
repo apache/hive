@@ -429,6 +429,10 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
             "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
             newMetadataLocation, currentMetadata.metadataFileLocation());
       }
+      // Without a lock, HMS applies the alter only if no commit moved metadata_location after the refresh above
+      if (commitLock instanceof NoLock && ((BaseTable) icebergTable).operations() instanceof HiveTableOperations ops) {
+        ops.hmsEnvContext(currentMetadata.metadataFileLocation()).forEach(context::putToProperties);
+      }
     }
   }
 

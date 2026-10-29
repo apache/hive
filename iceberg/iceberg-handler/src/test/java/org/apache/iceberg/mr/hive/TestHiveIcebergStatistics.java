@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.FutureTask;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,6 +80,8 @@ import org.apache.iceberg.mr.hive.stats.IcebergPartitionStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergStoredStats;
 import org.apache.iceberg.mr.hive.test.TestTables;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.concurrent.HiveIcebergStorageHandlerAlterStub;
+import org.apache.iceberg.mr.hive.test.concurrent.WithMockedStorageHandler;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.puffin.Blob;
@@ -229,6 +232,40 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
         ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, hiveLockEnabled));
     return identifier;
+  }
+
+  @Test
+  @WithMockedStorageHandler
+  public void testStatsUpdateDoesNotRevertConcurrentInsert() throws Exception {
+    Assume.assumeTrue(testTableType == TestTableType.HIVE_CATALOG);
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
+        ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "false"),
+        "'" + HiveIcebergStorageHandlerAlterStub.class.getName() + "'");
+    shell.executeStatement("INSERT INTO customers VALUES (0, 'Alice', 'Brown')");
+
+    // Another client inserts while this session's stats update is between the meta hook and HMS
+    FutureTask<List<Object[]>> otherInsert = new FutureTask<>(() -> {
+      HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
+      try {
+        return shell.executeStatement("INSERT INTO customers VALUES (1, 'Bob', 'Green')");
+      } finally {
+        shell.closeSession();
+      }
+    });
+    HiveIcebergStorageHandlerAlterStub.afterPreAlterTable(() -> {
+      Thread.ofVirtual().start(otherInsert).join();
+      return null;
+    });
+    shell.executeStatement("INSERT INTO customers VALUES (2, 'Trudy', 'Pink')");
+    Assert.assertTrue("the other insert ran during the stats update", otherInsert.isDone());
+    otherInsert.get();
+
+    List<Object[]> rows = shell.executeStatement("SELECT customer_id FROM customers ORDER BY customer_id");
+    Assert.assertEquals(ImmutableList.of(0L, 1L, 2L), rows.stream().map(row -> row[0]).toList());
   }
 
   @Test
