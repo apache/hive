@@ -268,6 +268,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         conf.set((String) item.getKey(), (String) item.getValue());
       }
 
+      // In zookeeper discovery mode the URIs are the quorum, so read them before they are cleared below.
+      ZooKeeperHiveHelper registrationHelper = isZooKeeperDiscovery(conf) ? getRegistrationHelper(conf) : null;
+
       //for metastore process, all metastore call should be embedded metastore call.
       conf.set(ConfVars.THRIFT_URIS.getHiveName(), "");
       conf.set(ConfVars.THRIFT_URIS.getVarname(), "");
@@ -298,8 +301,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         // Remove from zookeeper if it's configured
         try {
-          if (MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE)
-              .equalsIgnoreCase("zookeeper")) {
+          if (isZooKeeperDiscovery(conf)) {
             zooKeeperHelper.removeServerInstanceFromZooKeeper();
           }
         } catch (Exception e) {
@@ -318,7 +320,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
 
-      startMetaStore(cli.getPort(), HadoopThriftAuthBridge.getBridge(), conf, true, null);
+      startMetaStore(cli.getPort(), HadoopThriftAuthBridge.getBridge(), conf, true, null, registrationHelper);
     } catch (Throwable t) {
       // Catch the exception, log it and rethrow it.
       LOG.error("Metastore Thrift Server threw an exception...", t);
@@ -686,6 +688,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       Configuration conf, boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads) throws Throwable {
+    startMetaStore(port, bridge, conf, startMetaStoreThreads, startedBackgroundThreads, null);
+  }
+
+  /**
+   * Same as {@link #startMetaStore(int, HadoopThriftAuthBridge, Configuration, boolean, AtomicBoolean)}.
+   * @param registrationHelper ZooKeeper registration helper, or null to build one from conf
+   */
+  static void startMetaStore(int port, HadoopThriftAuthBridge bridge, Configuration conf,
+      boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads,
+      ZooKeeperHiveHelper registrationHelper) throws Throwable {
     isMetaStoreRemote = true;
     if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS)) {
@@ -713,10 +725,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     // If dynamic service discovery through ZooKeeper is enabled, add this server to the ZooKeeper.
-    if (MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE)
-            .equalsIgnoreCase("zookeeper")) {
+    if (isZooKeeperDiscovery(conf)) {
       try {
-        zooKeeperHelper = MetastoreConf.getZKConfig(conf);
+        zooKeeperHelper = registrationHelper != null ? registrationHelper : getRegistrationHelper(conf);
         String serverInstanceURI = getServerInstanceURI(port);
         zooKeeperHelper.addServerInstanceToZooKeeper(serverInstanceURI, serverInstanceURI, null,
             new ZKDeRegisterWatcher(zooKeeperHelper));
@@ -751,6 +762,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     thriftServer.start();
   }
   
+  private static boolean isZooKeeperDiscovery(Configuration conf) {
+    return MetastoreConf.getVar(conf, ConfVars.THRIFT_SERVICE_DISCOVERY_MODE).equalsIgnoreCase("zookeeper");
+  }
+
+  static ZooKeeperHiveHelper getRegistrationHelper(Configuration conf) {
+    // an empty quorum would silently become localhost
+    if (MetastoreConf.isEmbeddedMetaStore(MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS))) {
+      throw new IllegalArgumentException(ConfVars.THRIFT_URIS.getVarname() + " must be set to the ZooKeeper "
+          + "quorum when " + ConfVars.THRIFT_SERVICE_DISCOVERY_MODE.getVarname() + " is zookeeper");
+    }
+    return MetastoreConf.getZKConfig(conf);
+  }
+
   /**
    * Creates the HMS catalog servlet descriptor.
    * @param configuration the configuration
