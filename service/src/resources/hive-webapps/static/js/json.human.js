@@ -138,7 +138,9 @@
             var boolOpt = options.bool;
             container = document.createElement('div');
 
-            if (boolOpt.showImage) {
+            if (boolOpt.showImage && boolOpt.img && boolOpt.img.true && boolOpt.img.false
+                && ('' + boolOpt.img.true).indexOf('/static/') === 0
+                && ('' + boolOpt.img.false).indexOf('/static/') === 0) {
                 var img = document.createElement('img');
                 img.setAttribute('class', BOOL_IMAGE);
 
@@ -437,7 +439,9 @@
             }
 
             if(boolOptions.showImage){
-                if(!boolOptions.img.true && !boolOptions.img.false){
+                if(!boolOptions.img || !boolOptions.img.true || !boolOptions.img.false
+                    || ('' + boolOptions.img.true).indexOf('/static/') !== 0
+                    || ('' + boolOptions.img.false).indexOf('/static/') !== 0){
                     boolOptions.showImage = false;
                 }
             }
