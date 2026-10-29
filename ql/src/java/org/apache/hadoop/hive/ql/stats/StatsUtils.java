@@ -173,25 +173,8 @@ public class StatsUtils {
     List<String> neededColumns = tableScanOperator.getNeededColumns();
     List<String> referencedColumns = tableScanOperator.getReferencedColumns();
 
-    Statistics stats = collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
+    return collectStatistics(conf, partList, table, schema, neededColumns, colStatsCache,
         referencedColumns);
-    stats.addToColumnStats(
-        getVirtualColumnStats(tableScanOperator.getConf().getVirtualCols(), stats.getNumRows()));
-    return stats;
-  }
-
-  // the statistics of the virtual columns that carry a fixed average length
-  static List<ColStatistics> getVirtualColumnStats(List<VirtualColumn> virtualColumns, long numRows) {
-    List<ColStatistics> stats = new ArrayList<>();
-    for (VirtualColumn column : virtualColumns) {
-      column.getAvgLength().ifPresent(avgColLen -> {
-        ColStatistics cs = new ColStatistics(column.getName(), column.getTypeInfo().getTypeName());
-        cs.setAvgColLen(avgColLen);
-        cs.setCountDistint(numRows);
-        stats.add(cs);
-      });
-    }
-    return stats;
   }
 
   private static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
@@ -1622,6 +1605,10 @@ public class StatsUtils {
         // virtual columns
         colType = encd.getTypeInfo().getTypeName();
         countDistincts = numRows;
+        VirtualColumn virtualColumn = VirtualColumn.VIRTUAL_COLUMN_NAME_MAP.get(colName);
+        if (virtualColumn != null) {
+          avgColSize = virtualColumn.getAvgLength().orElse(0);
+        }
       } else {
 
         // clone the column stats and return
@@ -1704,7 +1691,9 @@ public class StatsUtils {
     }
 
     colType = colType.toLowerCase();
-    avgColSize = getAvgColLenOf(conf, oi, colType);
+    if (avgColSize == 0) {
+      avgColSize = getAvgColLenOf(conf, oi, colType);
+    }
     ColStatistics colStats = new ColStatistics(colName, colType);
     colStats.setAvgColLen(avgColSize);
     colStats.setCountDistint(countDistincts);
