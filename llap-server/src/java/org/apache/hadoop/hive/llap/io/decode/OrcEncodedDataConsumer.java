@@ -70,7 +70,7 @@ public class OrcEncodedDataConsumer
   private TypeReader[] columnReaders;
   private int previousStripeIndex = -1;
   private ConsumerFileMetadata fileMetadata; // We assume one request is only for one file.
-  private long[] stripeStartRows; // file row of each stripe's first row; null without file positions
+  private long[] stripeStartRows; // row number in the file where each stripe starts; null without file positions
   private CompressionCodec codec;
   private List<ConsumerStripeMetadata> stripes;
   private SchemaEvolution evolution;
@@ -144,8 +144,13 @@ public class OrcEncodedDataConsumer
       }
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
-      long rgStartRow = stripeStartRows == null ? Long.MIN_VALUE : stripeStartRows[currentStripeIndex]
-          + (rgIdx == OrcEncodedColumnBatch.ALL_RGS ? 0 : (long) rgIdx * fileMetadata.getRowIndexStride());
+      long rgStartRow = Long.MIN_VALUE;
+      if (stripeStartRows != null) {
+        rgStartRow = stripeStartRows[currentStripeIndex];
+        if (rgIdx != OrcEncodedColumnBatch.ALL_RGS) {
+          rgStartRow += (long) rgIdx * fileMetadata.getRowIndexStride();
+        }
+      }
       TypeDescription fileSchema = fileMetadata.getSchema();
 
       if (columnReaders == null || !sameStripe || noIndex) {
@@ -164,8 +169,8 @@ public class OrcEncodedDataConsumer
 
         ColumnVectorBatch cvb = takeBatch(batchSize);
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
-        cvb.startRowInFile = stripeStartRows == null
-            ? Long.MIN_VALUE : rgStartRow + (long) i * VectorizedRowBatch.DEFAULT_SIZE;
+        cvb.setStartRowInFile(stripeStartRows == null ?
+            Long.MIN_VALUE : rgStartRow + (long) i * VectorizedRowBatch.DEFAULT_SIZE);
         for (int idx = 0; idx < columnReaders.length; ++idx) {
           /*
            * Currently, ORC's TreeReaderFactory class does this:
@@ -313,11 +318,13 @@ public class OrcEncodedDataConsumer
   private void positionInStreams(TypeReader[] columnReaders,
       OrcBatchKey batchKey, ConsumerStripeMetadata stripeMetadata) throws IOException {
     PositionProvider[] pps = createPositionProviders(columnReaders, batchKey, stripeMetadata);
-    if (pps == null) return;
-    for (int i = 0; i < columnReaders.length; i++) {
-      if (columnReaders[i] == null) continue;
+    if (pps == null) {
+      return;
+    }
+    for (TypeReader columnReader : columnReaders) {
+      if (columnReader == null) continue;
       // TODO: we could/should trace seek destinations; pps needs a "peek" method
-      columnReaders[i].seek(pps, TypeReader.ReadPhase.ALL);
+      columnReader.seek(pps, TypeReader.ReadPhase.ALL);
     }
   }
 
@@ -329,9 +336,10 @@ public class OrcEncodedDataConsumer
     if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
       LlapIoImpl.ORC_LOGGER.trace("Created pps {}", Arrays.toString(pps));
     }
-    if (pps == null) return;
-    for (int i = 0; i < columnReaders.length; i++) {
-      TypeReader reader = columnReaders[i];
+    if (pps == null) {
+      return;
+    }
+    for (TypeReader reader : columnReaders) {
       if (reader == null) continue;
       // Note: we assume this never happens for SerDe reader - the batch would never have vectors.
       // That is always true now; but it wasn't some day, the below would throw in getColumnData.
@@ -340,7 +348,7 @@ public class OrcEncodedDataConsumer
       // SettableTreeReader so that we can avoid this check.
       if (reader instanceof EncodedTreeReaderFactory.TimestampStreamReader && !sameStripe) {
         ((EncodedTreeReaderFactory.TimestampStreamReader) reader)
-                .updateTimezone(stripeMetadata.getWriterTimezone());
+            .updateTimezone(stripeMetadata.getWriterTimezone());
       }
       reader.seek(pps, TypeReader.ReadPhase.ALL);
     }
@@ -370,9 +378,7 @@ public class OrcEncodedDataConsumer
     if (!stripeMetadata.supportsRowIndexes()) {
       PositionProvider singleRgPp = new IndexlessPositionProvider();
       pps = new PositionProvider[stripeMetadata.getEncodings().size()];
-      for (int i = 0; i < pps.length; ++i) {
-        pps[i] = singleRgPp;
-      }
+      Arrays.fill(pps, singleRgPp);
     } else {
       int rowGroupIndex = batchKey.rgIx;
       if (rowGroupIndex == OrcEncodedColumnBatch.ALL_RGS) {

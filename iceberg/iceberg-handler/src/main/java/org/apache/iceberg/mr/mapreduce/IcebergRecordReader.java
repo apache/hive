@@ -263,10 +263,10 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     ORC.ReadBuilder orcReadBuilder = ORC.read(inputFile)
         .project(readSchemaWithoutConstantAndMetadataFields)
         .filter(residual)
+        // Row positions are derived from the batch index, and ORC's row-level filter can drop rows and whole batches.
+        .config(OrcConf.ALLOW_SARG_TO_FILTER.getHiveConfName(), "false")
         .caseSensitive(isCaseSensitive())
         .split(task.start(), task.length());
-    // Row positions are derived from the batch index, and ORC's row-level filter can drop rows and whole batches.
-    orcReadBuilder.config(OrcConf.ALLOW_SARG_TO_FILTER.getHiveConfName(), "false");
 
     if (getNameMapping() != null) {
       orcReadBuilder.withNameMapping(NameMappingParser.fromJson(getNameMapping()));
