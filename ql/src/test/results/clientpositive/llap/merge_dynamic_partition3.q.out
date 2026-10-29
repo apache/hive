@@ -304,8 +304,10 @@ POSTHOOK: Input: default@merge_dynamic_part_n2@ds=2008-04-09/hr=12
 2008-04-09	12	1000
 PREHOOK: query: show table extended like `merge_dynamic_part_n2`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@merge_dynamic_part_n2
 POSTHOOK: query: show table extended like `merge_dynamic_part_n2`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@merge_dynamic_part_n2
 tableName:merge_dynamic_part_n2
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
