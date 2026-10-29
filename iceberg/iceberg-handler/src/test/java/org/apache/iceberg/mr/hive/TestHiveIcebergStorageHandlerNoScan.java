@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogProperties;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
@@ -74,6 +75,7 @@ import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.InputFile;
@@ -1613,6 +1615,33 @@ public class TestHiveIcebergStorageHandlerNoScan {
       }
       return super.newInputFile(path);
     }
+  }
+
+  @Test
+  public void testMetaHookWithoutOperationTypeForCatalogImpl() throws Exception {
+    Assume.assumeTrue("Enough to check for one type only",
+        testTableType.equals(TestTableType.HIVE_CATALOG));
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    Table table = testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        SPEC, FileFormat.PARQUET, ImmutableList.of());
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(identifier);
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    // a HiveCatalog configured by its implementation class instead of its type
+    Configuration conf = new Configuration(shell.getHiveConf());
+    conf.unset(IcebergCatalogProperties.catalogPropertyConfigKey(testTables.catalogName(),
+        CatalogUtil.ICEBERG_CATALOG_TYPE));
+    conf.set(
+        IcebergCatalogProperties.catalogPropertyConfigKey(testTables.catalogName(), CatalogProperties.CATALOG_IMPL),
+        HiveCatalog.class.getName());
+    HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(conf);
+    EnvironmentContext environmentContext = new EnvironmentContext(Maps.newHashMap());
+    metaHook.preAlterTable(hmsTable, environmentContext);
+    metaHook.commitAlterTable(hmsTable, environmentContext);
+
+    Assert.assertEquals(TableUtil.metadataFileLocation(testTables.loadTable(identifier)),
+        hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
   }
 
   @Test

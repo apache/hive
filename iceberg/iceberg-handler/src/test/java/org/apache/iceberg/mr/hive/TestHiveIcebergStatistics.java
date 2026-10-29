@@ -238,7 +238,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   @Test
   @WithMockedStorageHandler
   public void testStatsUpdateDoesNotRevertConcurrentInsert() throws Exception {
-    Assume.assumeTrue(testTableType == TestTableType.HIVE_CATALOG);
+    assumeParquetHiveCatalog();
     insertDuringStatsUpdate(false);
   }
 
@@ -246,7 +246,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   @WithMockedStorageHandler
   public void testColumnStatsUpdateDoesNotFailOnConcurrentInsert() throws Exception {
     // the column statistics state is updated through the meta hook only when Iceberg stores the statistics
-    Assume.assumeTrue(testTableType == TestTableType.HIVE_CATALOG && statsSource.equals("iceberg"));
+    assumeParquetHiveCatalogIceberg();
     insertDuringStatsUpdate(true);
   }
 
@@ -280,7 +280,11 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
       HiveIcebergStorageHandlerAlterStub.afterPreAlterTable(runOtherInsert);
       return null;
     } : runOtherInsert);
-    shell.executeStatement("INSERT INTO customers VALUES (2, 'Trudy', 'Pink')");
+    try {
+      shell.executeStatement("INSERT INTO customers VALUES (2, 'Trudy', 'Pink')");
+    } finally {
+      HiveIcebergStorageHandlerAlterStub.afterPreAlterTable(null);
+    }
     Assert.assertTrue("the other insert ran during the stats update", otherInsert.isDone());
     otherInsert.get();
 

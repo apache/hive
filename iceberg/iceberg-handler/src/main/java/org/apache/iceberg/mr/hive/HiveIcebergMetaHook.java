@@ -323,13 +323,13 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
   private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws TException, InterruptedException {
-    if (currentAlterTableOp == null) {
+    Optional<HiveTableOperations> hiveOps =
+        currentAlterTableOp == null ? Catalogs.hiveTableOps(conf, tableProperties) : Optional.empty();
+    if (hiveOps.isPresent()) {
       // nothing to commit to Iceberg: read the current metadata_location from HMS, as HiveTableOperations does
-      if (Catalogs.hiveCatalog(conf, tableProperties)) {
-        HiveTableOperations ops = Catalogs.hiveTableOps(conf, tableProperties);
-        keepCurrentMetadataLocation(hmsTable.getParameters(), ops,
-            ops.loadHmsTable().getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP), context);
-      }
+      HiveTableOperations ops = hiveOps.get();
+      keepCurrentMetadataLocation(hmsTable.getParameters(), ops,
+          ops.loadHmsTable().getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP), context);
       return;
     }
     try {

@@ -221,11 +221,13 @@ public final class Catalogs {
    * Returns the operations of a HiveCatalog table without loading its metadata.
    * @param conf a Hadoop conf
    * @param props the controlling properties
-   * @return the table operations
+   * @return the table operations, or empty if the table is not in a HiveCatalog
    */
-  public static HiveTableOperations hiveTableOps(Configuration conf, Properties props) {
-    HiveCatalog catalog = (HiveCatalog) loadCatalog(conf, props.getProperty(InputFormatConfig.CATALOG_NAME)).get();
-    return (HiveTableOperations) catalog.newTableOps(TableIdentifier.parse(props.getProperty(NAME)));
+  public static Optional<HiveTableOperations> hiveTableOps(Configuration conf, Properties props) {
+    return loadCatalog(conf, props.getProperty(InputFormatConfig.CATALOG_NAME))
+        .filter(HiveCatalog.class::isInstance)
+        .map(catalog -> (HiveTableOperations) ((HiveCatalog) catalog).newTableOps(
+            TableIdentifier.parse(props.getProperty(NAME))));
   }
 
   public static void renameTable(Configuration conf, Properties props, TableIdentifier to) {

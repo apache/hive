@@ -321,7 +321,7 @@ public class ColStatsProcessor implements IStatsProcessor {
     try {
       db.alterTable(tbl.getFullyQualifiedName(), tbl, environmentContext, false);
     } catch (HiveException e) {
-      // the rows are committed already: a lost update costs the statistics state, not the statement
+      // the statistics are stored already: a lost update costs their state flag, not the statement
       if (isStatsReliable) {
         throw e;
       }
