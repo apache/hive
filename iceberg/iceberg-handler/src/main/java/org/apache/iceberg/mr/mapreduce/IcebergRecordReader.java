@@ -150,7 +150,7 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
 
     // TODO: We have to take care of the EncryptionManager when LLAP and vectorization is used
     CloseableIterable<T> iterator = (CloseableIterable<T>) HiveVectorizedReader.reader(table, path, task,
-        idToConstant, getContext(), residual, readSchema, metadataCache, cacheConf);
+        idToConstant, getContext(), residual, metadataCache, cacheConf);
 
     return applyResidualFiltering(iterator, residual, readSchema);
   }
