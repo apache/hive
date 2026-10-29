@@ -112,14 +112,12 @@ import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.expressions.UnboundTerm;
-import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveLock;
 import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.IcebergTableProperties;
 import org.apache.iceberg.hive.IcebergViewSupport;
-import org.apache.iceberg.hive.MetastoreLock;
 import org.apache.iceberg.hive.NoLock;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
@@ -312,13 +310,10 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     // CAS protects it without a lock
     if (!HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf) || currentAlterTableOp == null) {
       return new NoLock();
-    } else {
-      return new MetastoreLock(
-          conf,
-          new CachedClientPool(conf, Maps.fromProperties(tableProperties)),
-          tableProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(),
-          hmsTable.getTableName());
     }
+    // the lock Hive's commits of the table take
+    return Catalogs.hiveTableOps(conf, tableProperties).<HiveLock>map(HiveTableOperations::metastoreLock)
+        .orElseGet(NoLock::new);
   }
 
   private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)

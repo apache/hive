@@ -604,9 +604,16 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
   HiveLock lockObject(TableMetadata metadata) {
     if (hiveLockEnabled(metadata, conf)) {
-      return new MetastoreLock(conf, metaClients, catalogName, database, tableName);
+      return metastoreLock();
     } else {
       return new NoLock();
     }
+  }
+
+  /**
+   * Returns the HMS lock the commits of this table take when Hive locking is enabled.
+   */
+  public HiveLock metastoreLock() {
+    return new MetastoreLock(conf, metaClients, catalogName, database, tableName);
   }
 }

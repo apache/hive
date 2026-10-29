@@ -75,9 +75,11 @@ import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.MetastoreLock;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -1642,6 +1644,33 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     Assert.assertEquals(TableUtil.metadataFileLocation(testTables.loadTable(identifier)),
         hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
+  }
+
+  @Test
+  public void testMetaHookLockExcludesCommitsThroughOtherCatalogs() throws Exception {
+    Assume.assumeTrue("Enough to check for one type only",
+        testTableType.equals(TestTableType.HIVE_CATALOG));
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        SPEC, FileFormat.PARQUET, ImmutableList.of(), 2, ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "true"));
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(identifier);
+
+    // an alter that commits to Iceberg, e.g. setting a table property, holds the HMS lock of the table
+    HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(shell.getHiveConf());
+    EnvironmentContext environmentContext = new EnvironmentContext(Maps.newHashMap(
+        ImmutableMap.of(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, AlterTableType.ADDPROPS.name())));
+    metaHook.preAlterTable(hmsTable, environmentContext);
+    try {
+      // a commit of the same table through another Iceberg catalog, e.g. of another engine
+      Configuration conf = new Configuration(shell.getHiveConf());
+      conf.setLong("iceberg.hive.lock-timeout-ms", 1000);
+      MetastoreLock commitLock = new MetastoreLock(conf, new CachedClientPool(conf, ImmutableMap.of()),
+          "spark_catalog", identifier.namespace().level(0), identifier.name());
+      RuntimeException timedOut = Assert.assertThrows(RuntimeException.class, commitLock::lock);
+      Assert.assertTrue(timedOut.getMessage(), timedOut.getMessage().contains("lock on"));
+    } finally {
+      metaHook.rollbackAlterTable(hmsTable, environmentContext);
+    }
   }
 
   @Test
