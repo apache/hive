@@ -89,13 +89,12 @@ public class HiveVectorizedReader {
   }
 
   public static CloseableIterable<HiveBatchContext> reader(Table table, Path path, FileScanTask task,
-      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual, Schema readSchema,
-      FileMetadataCache metadataCache, Configuration cacheConf) {
+      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual, FileMetadataCache metadataCache,
+      Configuration cacheConf) {
 
     HiveDeleteFilter deleteFilter = null;
 
     if (!task.deletes().isEmpty()) {
-      // TODO: support equality deletes
       if (task.deletes().stream().anyMatch(d -> d.content() == FileContent.EQUALITY_DELETES)) {
         throw new UnsupportedOperationException("Vectorized reading with equality deletes is not supported yet.");
       }
