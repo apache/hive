@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,6 +129,22 @@ public class HMSHandler extends PrivilegeHandler {
       return getThreadLocalIpAddress();
     }
     return null;
+  }
+
+  /**
+   * @return true if the current call has been authenticated with SASL PLAIN (LDAP, PAM, custom...). Such calls
+   * are processed without impersonation, so the current UGI is the HMS service user, not the caller.
+   */
+  public static boolean isSaslPlainCall() {
+    return HiveMetaStore.saslServer != null
+        && AuthMethod.PLAIN.getMechanismName().equalsIgnoreCase(HiveMetaStore.saslServer.getUserAuthMechanism());
+  }
+
+  /**
+   * @return the user authenticated by the transport for the current SASL call, null if unknown.
+   */
+  public static String getSaslRemoteUser() {
+    return HiveMetaStore.saslServer == null ? null : HiveMetaStore.saslServer.getRemoteUser();
   }
 
   public HMSHandler(String name, Configuration conf) {

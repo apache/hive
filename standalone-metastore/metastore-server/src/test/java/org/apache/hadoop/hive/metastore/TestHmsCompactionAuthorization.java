@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -266,5 +268,71 @@ public class TestHmsCompactionAuthorization {
     MetaException ex = assertThrows(MetaException.class,
         () -> client.submitForCleanup(compactionRequest(catalogDb, TAB), 1L, 1L));
     assertTrue(ex.getMessage(), ex.getMessage().contains("default catalog"));
+  }
+
+  @Test
+  public void testTransactionalTableIsAuthorizedWithItsOldState() throws Exception {
+    // The ACID input/output formats are not available here, so the table is stored directly. If the old and the
+    // new table of the pre-event were the same object, the transactional validation would take the table for one
+    // that is being converted to ACID and reject it as it is not stored in an ACID format.
+    String location = client.getDatabase(DB).getLocationUri() + "/acid_tab";
+    Table acid = new TableBuilder().setDbName(DB).setTableName("acid_tab").addCol("id", "int")
+        .setLocation(location)
+        .addTableParam("transactional", "true")
+        .addTableParam("transactional_properties", "default")
+        .build(conf);
+    ObjectStore store = new ObjectStore();
+    store.setConf(conf);
+    store.createTable(acid);
+    Path path = new Path(location);
+    path.getFileSystem(conf).mkdirs(path);
+
+    client.compact2(compactionRequest(DB, "acid_tab"));
+    assertEquals(1, compactions().size());
+  }
+
+  @Test
+  public void testPartitionNameIsCanonicalized() throws Exception {
+    Table partitioned = new TableBuilder().setDbName(DB).setTableName("part_tab").addCol("id", "int")
+        .addPartCol("p", "string").create(client, conf);
+    new PartitionBuilder().inTable(partitioned).addValue("a").addToTable(client, conf);
+
+    // the extra key is ignored when the partition is looked up, it must not reach the queue
+    CompactionRequest compaction = compactionRequest(DB, "part_tab");
+    compaction.setPartitionname("p=a/extra=b");
+    client.compact2(compaction);
+    CompactionRequest cleanup = compactionRequest(DB, "part_tab");
+    cleanup.setPartitionname("p=a/extra=b");
+    assertTrue(client.submitForCleanup(cleanup, 1L, 1L));
+
+    List<ShowCompactResponseElement> compactions = compactions();
+    assertEquals(2, compactions.size());
+    for (ShowCompactResponseElement compaction1 : compactions) {
+      assertEquals("p=a", compaction1.getPartitionname());
+    }
+  }
+
+  @Test
+  public void testPartitionOfNonNativeTableIsAuthorizedAgainstTheTable() throws Exception {
+    // the partitions of storage handler tables (e.g. Iceberg) do not exist in HMS
+    new TableBuilder().setDbName(DB).setTableName("handler_tab").addCol("id", "int")
+        .addTableParam("storage_handler", "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler")
+        .create(client, conf);
+    CompactionRequest request = compactionRequest(DB, "handler_tab");
+    request.setPartitionname("p=1");
+    client.compact2(request);
+
+    List<ShowCompactResponseElement> compactions = compactions();
+    assertEquals(1, compactions.size());
+    assertEquals("p=1", compactions.get(0).getPartitionname());
+
+    DenyingAuthorizationListener.deny = true;
+    try {
+      CompactionRequest denied = compactionRequest(DB, "handler_tab");
+      denied.setPartitionname("p=1");
+      assertThrows(TException.class, () -> client.compact2(denied));
+    } finally {
+      DenyingAuthorizationListener.deny = false;
+    }
   }
 }

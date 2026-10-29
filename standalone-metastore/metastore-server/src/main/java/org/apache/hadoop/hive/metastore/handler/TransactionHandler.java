@@ -106,9 +106,9 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 
-import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
@@ -504,11 +504,7 @@ public abstract class TransactionHandler extends DeprecatedHandler {
     // compact2 is a maintenance API: trusted callers (HiveServer2, the compactor) have already been authorized
     // for the operation, everybody else is authorized against the requested table.
     if (!hasProxyPrivilege()) {
-      try {
-        authorizeAndPrepareCompactionRequest(rqst);
-      } catch (Exception e) {
-        rethrowException(e);
-      }
+      authorizeAndPrepareCompactionRequest(rqst);
     }
     return getTxnHandler().compact(rqst);
   }
@@ -532,8 +528,6 @@ public abstract class TransactionHandler extends DeprecatedHandler {
         LOG.info("Ignoring the cleanup request of {}.{}: {}", rqst.getDbname(), rqst.getTablename(),
             e.getMessage());
         return false;
-      } catch (Exception e) {
-        rethrowException(e);
       }
     }
     return getTxnHandler().submitForCleanup(rqst, highestWriteId, txnId);
@@ -563,17 +557,22 @@ public abstract class TransactionHandler extends DeprecatedHandler {
     GetTableRequest getTableRequest = new GetTableRequest(dbName, rqst.getTablename());
     getTableRequest.setCatName(catName);
     Table table = get_table_core(getTableRequest);
-    firePreEvent(new PreAlterTableEvent(table, table, this));
+    // the listeners (e.g. the transactional validation) may modify the new table, so the old state must be kept
+    firePreEvent(new PreAlterTableEvent(table, table.deepCopy(), this));
 
     // queue the request for the table that has been authorized
     rqst.setDbname(table.getDbName());
     rqst.setTablename(table.getTableName());
 
     String location = table.getSd() == null ? null : table.getSd().getLocation();
-    if (rqst.isSetPartitionname() && rqst.getPartitionname() != null) {
+    // The partitions of non-native tables (e.g. Iceberg) are not stored in HMS: they are resolved by the storage
+    // handler, so such requests are authorized and validated against the table.
+    if (rqst.isSetPartitionname() && rqst.getPartitionname() != null && !MetaStoreUtils.isNonNativeTable(table)) {
       List<String> partVals = getPartValsFromName(table, rqst.getPartitionname());
       Partition partition = getMS().getPartition(catName, table.getDbName(), table.getTableName(), partVals);
-      location = partition.getSd() == null ? null : partition.getSd().getLocation();
+      // queue the canonical partition name, the Cleaner looks the partition up by it
+      rqst.setPartitionname(Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()));
+      location = partition.getSd().getLocation();
     }
     if (location == null) {
       throw new MetaException("Cannot determine storage location of " + table.getDbName() + "."

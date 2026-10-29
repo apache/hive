@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.FileMetadataManager;
 import org.apache.hadoop.hive.metastore.HMSHandlerContext;
 import org.apache.hadoop.hive.metastore.HMSMetricsListener;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.IMetaStoreMetadataTransformer;
@@ -860,40 +861,48 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
         conf.getBoolean(HIVE_IN_TEST.getVarname(), false)) {
       return;
     }
-    String user = null;
-    try {
-      user = SecurityUtils.getUGI().getShortUserName();
-    } catch (Exception ex) {
-      LOG.error("Cannot obtain username", ex);
-      throw new TException(ex);
-    }
+    String user = getCallerUserName();
     if (!MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf, getIPAddress())) {
-      LOG.error("Not authorized to make the get_notification_events_count call. You can try to disable " +
-          MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.toString());
+      LOG.error("User {} is not authorized to make this API call. You can try to disable {}", user,
+          MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH);
       throw new TException("User " + user + " is not allowed to perform this API call");
     }
   }
 
   /**
-   * Tells whether the caller may be treated as a trusted proxy/operator (e.g. HiveServer2 or the compactor),
-   * using the same rules as {@link #authorizeProxyPrivilege()} but without failing the call: the caller is
-   * trusted in embedded mode, when the proxy check is disabled, in test mode, or when the user has host-proxy
-   * privileges.
+   * @return the user that has been authenticated for the current call. SASL PLAIN calls are processed without
+   * impersonation, so for them the current UGI is the HMS service user and the transport's remote user is used.
    */
-  protected boolean hasProxyPrivilege() throws TException {
-    if (!HiveMetaStore.isMetaStoreRemote() ||
-        !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH) ||
-        conf.getBoolean(HIVE_IN_TEST.getVarname(), false)) {
-      return true;
-    }
-    String user;
+  private String getCallerUserName() throws TException {
     try {
-      user = SecurityUtils.getUGI().getShortUserName();
+      if (HMSHandler.isSaslPlainCall()) {
+        String remoteUser = HMSHandler.getSaslRemoteUser();
+        if (remoteUser == null || remoteUser.isEmpty()) {
+          throw new TException("Cannot obtain the authenticated user of the SASL PLAIN call");
+        }
+        return UserGroupInformation.createRemoteUser(remoteUser).getShortUserName();
+      }
+      return SecurityUtils.getUGI().getShortUserName();
+    } catch (TException e) {
+      throw e;
     } catch (Exception ex) {
       LOG.error("Cannot obtain username", ex);
       throw new TException(ex);
     }
-    return MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf, getIPAddress());
+  }
+
+  /**
+   * Tells whether the caller is a trusted proxy/operator (e.g. HiveServer2 or the compactor): the caller passes
+   * {@link #authorizeProxyPrivilege()}. A failure of the check, including not being able to determine the caller,
+   * means the caller is not trusted.
+   */
+  protected boolean hasProxyPrivilege() {
+    try {
+      authorizeProxyPrivilege();
+      return true;
+    } catch (TException e) {
+      return false;
+    }
   }
 
   @Override
