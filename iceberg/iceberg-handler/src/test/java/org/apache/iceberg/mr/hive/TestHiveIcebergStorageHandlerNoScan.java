@@ -1649,8 +1649,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertFalse(hmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
     Assert.assertFalse(environmentContext.getProperties().containsKey(hive_metastoreConstants.EXPECTED_PARAMETER_KEY));
 
-    Assert.assertEquals(LockState.ACQUIRED,
-        otherWriterLockStateDuringAlter(shell.getHiveConf(), hmsTable, alterContext(AlterTableType.ADDPROPS)));
+    Assert.assertEquals(LockState.ACQUIRED, otherWriterLockStateDuringAlter(hmsTable, AlterTableType.ADDPROPS));
   }
 
   @Test
@@ -1660,26 +1659,9 @@ public class TestHiveIcebergStorageHandlerNoScan {
     org.apache.hadoop.hive.metastore.api.Table hmsTable = lockingCustomers();
 
     // no Iceberg commit; no HMS write (SKIP_METASTORE_ALTER); an HMS write that commits to Iceberg
-    Assert.assertEquals(LockState.ACQUIRED,
-        otherWriterLockStateDuringAlter(shell.getHiveConf(), hmsTable, alterContext(null)));
-    Assert.assertEquals(LockState.ACQUIRED,
-        otherWriterLockStateDuringAlter(shell.getHiveConf(), hmsTable, alterContext(AlterTableType.DROPPROPS)));
-    Assert.assertEquals(LockState.WAITING,
-        otherWriterLockStateDuringAlter(shell.getHiveConf(), hmsTable, alterContext(AlterTableType.ADDPROPS)));
-  }
-
-  @Test
-  public void testMetaHookTakesNoLockUnderExternalLocking() throws Exception {
-    Assume.assumeTrue("Enough to check for one type only",
-        testTableType.equals(TestTableType.HIVE_CATALOG));
-    org.apache.hadoop.hive.metastore.api.Table hmsTable = lockingCustomers();
-
-    // the statement already holds its Hive lock of the table
-    Configuration conf = new Configuration(shell.getHiveConf());
-    conf.setBoolean(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED.varname, true);
-    EnvironmentContext environmentContext = alterContext(AlterTableType.ADDPROPS);
-    Assert.assertEquals(LockState.ACQUIRED, otherWriterLockStateDuringAlter(conf, hmsTable, environmentContext));
-    Assert.assertTrue(environmentContext.getProperties().containsKey(hive_metastoreConstants.EXPECTED_PARAMETER_KEY));
+    Assert.assertEquals(LockState.ACQUIRED, otherWriterLockStateDuringAlter(hmsTable, null));
+    Assert.assertEquals(LockState.ACQUIRED, otherWriterLockStateDuringAlter(hmsTable, AlterTableType.DROPPROPS));
+    Assert.assertEquals(LockState.WAITING, otherWriterLockStateDuringAlter(hmsTable, AlterTableType.ADDPROPS));
   }
 
   @Test
@@ -1733,9 +1715,10 @@ public class TestHiveIcebergStorageHandlerNoScan {
   /**
    * Requests, while the meta hook is in the alter, the table lock another writer of the table's catalog takes.
    */
-  private LockState otherWriterLockStateDuringAlter(Configuration conf,
-      org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext environmentContext) throws Exception {
-    HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(conf);
+  private LockState otherWriterLockStateDuringAlter(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      AlterTableType alterTableType) throws Exception {
+    EnvironmentContext environmentContext = alterContext(alterTableType);
+    HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(shell.getHiveConf());
     metaHook.preAlterTable(hmsTable, environmentContext);
     try {
       LockComponent component = new LockComponent(LockType.EXCLUSIVE, LockLevel.TABLE, hmsTable.getDbName());

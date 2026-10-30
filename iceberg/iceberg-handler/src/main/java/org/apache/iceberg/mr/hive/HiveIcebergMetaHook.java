@@ -37,7 +37,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -308,17 +307,14 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
   /**
    * The HMS lock Hive's Iceberg commits take, for an alter that commits to Iceberg and writes the metadata_location to
-   * HMS. The metadata_location CAS protects an alter without an operation type, which commits nothing to Iceberg, and
-   * an alter under external locking, whose statement already holds its Hive lock of the table.
+   * HMS. An alter without an operation type commits nothing to Iceberg: the metadata_location CAS protects it instead.
    */
   private HiveLock lockObject(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context) {
     Map<String, String> params = hmsTable.getParameters();
     boolean writesMetadataLocation = currentAlterTableOp != null &&
         !Boolean.parseBoolean(context.getProperties().get(SKIP_METASTORE_ALTER)) &&
         params.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-    boolean excludesWriters = HiveTableOperations.hiveLockEnabled(params, conf) &&
-        !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED);
-    if (!writesMetadataLocation || !excludesWriters) {
+    if (!writesMetadataLocation || !HiveTableOperations.hiveLockEnabled(params, conf)) {
       return new NoLock();
     }
     return new MetastoreLock(
