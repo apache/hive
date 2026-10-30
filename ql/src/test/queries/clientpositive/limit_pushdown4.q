@@ -14,7 +14,7 @@ set hive.optimize.limit=true;
 select 'positive LOJ';
 explain
 SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) LIMIT 5;
-SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) LIMIT 5;
+SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key, src2.value LIMIT 5;
 
 select 'negative - order';
 explain
@@ -30,4 +30,4 @@ select 'negative - disabled';
 
 explain
 SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) LIMIT 5;
-SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) LIMIT 5;
+SELECT src1.key, src2.value FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key, src2.value LIMIT 5;

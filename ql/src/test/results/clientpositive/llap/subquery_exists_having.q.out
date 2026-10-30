@@ -143,11 +143,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 90	3
+97	2
+98	2
 92	1
 95	2
 96	1
-97	2
-98	2
 PREHOOK: query: explain
 select b.key, count(*)
 from src b
@@ -293,11 +293,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 90	3
+97	2
+98	2
 92	1
 95	2
 96	1
-97	2
-98	2
 PREHOOK: query: create view cv1_n6 as 
 select b.key, count(*) as c
 from src b
@@ -337,11 +337,11 @@ POSTHOOK: Input: default@cv1_n6
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 90	3
+97	2
+98	2
 92	1
 95	2
 96	1
-97	2
-98	2
 PREHOOK: query: select *
 from (select b.key, count(*) 
   from src b 
@@ -369,11 +369,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 90	3
+97	2
+98	2
 92	1
 95	2
 96	1
-97	2
-98	2
 PREHOOK: query: select b.key, min(b.value)
 from src b
 group by b.key
@@ -396,7 +396,7 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 90	val_90
 92	val_92
-95	val_95
 96	val_96
+95	val_95
 97	val_97
 98	val_98

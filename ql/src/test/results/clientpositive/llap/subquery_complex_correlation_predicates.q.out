@@ -184,8 +184,8 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 Les Miserables
-The Count of Monte Cristo
 Odyssey
+The Count of Monte Cristo
 PREHOOK: query: explain cbo
 select b.b_title
 from book b

@@ -373,7 +373,6 @@ public class GenTezWork implements SemanticNodeProcessor {
     if (context.leafOperatorToFollowingWork.containsKey(operator)) {
 
       BaseWork followingWork = context.leafOperatorToFollowingWork.get(operator);
-      long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER);
 
       LOG.debug("Second pass. Leaf operator: "+operator
         +" has common downstream work: "+followingWork);
@@ -457,17 +456,7 @@ public class GenTezWork implements SemanticNodeProcessor {
 
         if (!context.connectedReduceSinks.contains(rs)) {
           // add dependency between the two work items
-          TezEdgeProperty edgeProp;
-          EdgeType edgeType = GenTezUtils.determineEdgeType(work, followingWork, rs);
-          if (rWork.isAutoReduceParallelism()) {
-            edgeProp =
-                new TezEdgeProperty(context.conf, edgeType, true, rWork.isSlowStart(),
-                    rWork.getMinReduceTasks(), rWork.getMaxReduceTasks(), bytesPerReducer,
-                    rWork.getMinSrcFraction(), rWork.getMaxSrcFraction());
-          } else {
-            edgeProp = new TezEdgeProperty(edgeType);
-            edgeProp.setSlowStart(rWork.isSlowStart());
-          }
+          TezEdgeProperty edgeProp = new TezEdgeProperty(GenTezUtils.determineEdgeType(work, followingWork, rs));
           tezWork.connect(work, followingWork, edgeProp);
           context.connectedReduceSinks.add(rs);
         }

@@ -1156,11 +1156,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_mv_3
 POSTHOOK: Input: default@partition_mv_3@key=238
 #### A masked pattern was here ####
+val_238	238
+val_238	238
+val_238	238
+val_238	238
 val_238_n	238
-val_238	238
-val_238	238
-val_238	238
-val_238	238
 val_238_n	238
 val_238_n2	238
 val_238_n2	238

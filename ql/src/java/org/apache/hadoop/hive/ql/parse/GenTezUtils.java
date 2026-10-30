@@ -96,7 +96,6 @@ public class GenTezUtils {
     float maxPartitionFactor =
         context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MAX_PARTITION_FACTOR);
     float minPartitionFactor = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR);
-    long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER);
     int defaultTinyBufferSize = context.conf.getIntVar(HiveConf.ConfVars.TEZ_SIMPLE_CUSTOM_EDGE_TINY_BUFFER_SIZE_MB);
 
     ReduceWork reduceWork = new ReduceWork(Utilities.REDUCENAME + context.nextSequenceNumber());
@@ -166,19 +165,8 @@ public class GenTezUtils {
 
     tezWork.add(reduceWork);
 
-    TezEdgeProperty edgeProp;
-    EdgeType edgeType = determineEdgeType(context.preceedingWork, reduceWork, reduceSink);
-    if (reduceWork.isAutoReduceParallelism()) {
-      edgeProp =
-          new TezEdgeProperty(context.conf, edgeType, true, reduceWork.isSlowStart(),
-              reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer,
-              reduceWork.getMinSrcFraction(), reduceWork.getMaxSrcFraction());
-    } else {
-      edgeProp = new TezEdgeProperty(edgeType);
-      edgeProp.setSlowStart(reduceWork.isSlowStart());
-    }
+    TezEdgeProperty edgeProp = new TezEdgeProperty(determineEdgeType(context.preceedingWork, reduceWork, reduceSink));
     edgeProp.setBufferSize(obtainBufferSize(root, reduceSink, defaultTinyBufferSize));
-    reduceWork.setEdgePropRef(edgeProp);
 
     tezWork.connect(
         context.preceedingWork,

@@ -34,8 +34,8 @@ POSTHOOK: query: select datediff(dt1.dt, '2021-07-01') from test_dt dt1 left joi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_dt
 #### A masked pattern was here ####
-5
 6
+5
 PREHOOK: query: select datediff('2021-07-01', dt1.dt) from test_dt dt1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_dt
@@ -54,8 +54,8 @@ POSTHOOK: query: select datediff('2021-07-01', dt1.dt) from test_dt dt1 left joi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_dt
 #### A masked pattern was here ####
--5
 -6
+-5
 PREHOOK: query: select datediff(dt1.dt, dt1.dt) from test_dt dt1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_dt

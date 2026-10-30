@@ -456,9 +456,9 @@ select * from q1 a, q1 b where a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+4	4
 0	0
 2	2
-4	4
 5	5
 8	8
 9	9
@@ -496,9 +496,9 @@ q2 as ( select key, value from src where key < 10 )
 select * from q1 a, q1 b where a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+4	4
 0	0
 2	2
-4	4
 5	5
 8	8
 9	9

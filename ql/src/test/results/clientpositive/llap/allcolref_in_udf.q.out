@@ -157,26 +157,26 @@ STAGE PLANS:
 
 PREHOOK: query: select stack(2, *) as (e1,e2,e3) from (
   select concat(*), concat(a.*), concat(b.*), concat(a.*, b.key), concat(a.key, b.*)
-  from src a join src b on a.key+1=b.key where a.key < 100) x limit 10
+  from src a join src b on a.key+1=b.key where a.key < 100) x order by e1, e2, e3 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select stack(2, *) as (e1,e2,e3) from (
   select concat(*), concat(a.*), concat(b.*), concat(a.*, b.key), concat(a.key, b.*)
-  from src a join src b on a.key+1=b.key where a.key < 100) x limit 10
+  from src a join src b on a.key+1=b.key where a.key < 100) x order by e1, e2, e3 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-4val_45val_5	4val_4	5val_5
-4val_45	45val_5	NULL
-4val_45val_5	4val_4	5val_5
-4val_45	45val_5	NULL
-4val_45val_5	4val_4	5val_5
-4val_45	45val_5	NULL
-8val_89val_9	8val_8	9val_9
-8val_89	89val_9	NULL
-9val_910val_10	9val_9	10val_10
-9val_910	910val_10	NULL
+10val_1011	1011val_11	NULL
+10val_1011val_11	10val_10	11val_11
+11val_1112	1112val_12	NULL
+11val_1112	1112val_12	NULL
+11val_1112val_12	11val_11	12val_12
+11val_1112val_12	11val_11	12val_12
+17val_1718	1718val_18	NULL
+17val_1718	1718val_18	NULL
+17val_1718val_18	17val_17	18val_18
+17val_1718val_18	17val_17	18val_18
 PREHOOK: query: create table allcolref as select array(key, value) from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
