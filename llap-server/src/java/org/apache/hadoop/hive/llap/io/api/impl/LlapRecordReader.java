@@ -315,10 +315,9 @@ final class LlapRecordReader implements RecordReader<NullWritable, VectorizedRow
             break;
           case DECIMAL:
             boolean useDecimal64 = false;
-            if (ti instanceof DecimalTypeInfo dti) {
-              if (dti.getPrecision() <= TypeDescription.MAX_DECIMAL64_PRECISION && decimal64Support) {
-                useDecimal64 = true;
-              }
+            if (ti instanceof DecimalTypeInfo dti &&
+                dti.getPrecision() <= TypeDescription.MAX_DECIMAL64_PRECISION && decimal64Support) {
+              useDecimal64 = true;
             }
             // decimal_64 column vectors gets the same weight as long column vectors
             if (useDecimal64) {

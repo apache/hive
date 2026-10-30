@@ -322,7 +322,9 @@ public class OrcEncodedDataConsumer
       return;
     }
     for (TypeReader columnReader : columnReaders) {
-      if (columnReader == null) continue;
+      if (columnReader == null) {
+        continue;
+      }
       // TODO: we could/should trace seek destinations; pps needs a "peek" method
       columnReader.seek(pps, TypeReader.ReadPhase.ALL);
     }
