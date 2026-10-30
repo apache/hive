@@ -230,7 +230,7 @@
           },
           {
             "name": "s_store_name",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "s_store_id",
@@ -268,11 +268,11 @@
           },
           {
             "name": "s_hours",
-            "ndv": 4
+            "ndv": 3
           },
           {
             "name": "s_manager",
-            "ndv": 1245
+            "ndv": 1243
           },
           {
             "name": "s_market_id",
@@ -282,7 +282,7 @@
           },
           {
             "name": "s_geography_class",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_market_desc",
@@ -300,7 +300,7 @@
           },
           {
             "name": "s_division_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_company_id",
@@ -310,7 +310,7 @@
           },
           {
             "name": "s_company_name",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_street_number",
@@ -322,23 +322,23 @@
           },
           {
             "name": "s_street_type",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "s_suite_number",
-            "ndv": 76
+            "ndv": 75
           },
           {
             "name": "s_city",
-            "ndv": 267
+            "ndv": 266
           },
           {
             "name": "s_county",
-            "ndv": 128
+            "ndv": 127
           },
           {
             "name": "s_state",
-            "ndv": 44
+            "ndv": 43
           },
           {
             "name": "s_zip",
@@ -346,7 +346,7 @@
           },
           {
             "name": "s_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "s_gmt_offset",
@@ -2001,7 +2001,7 @@
           },
           {
             "name": "i_class",
-            "ndv": 99
+            "ndv": 97
           },
           {
             "name": "i_category_id",
@@ -2011,7 +2011,7 @@
           },
           {
             "name": "i_category",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "i_manufact_id",
@@ -2025,7 +2025,7 @@
           },
           {
             "name": "i_size",
-            "ndv": 8
+            "ndv": 7
           },
           {
             "name": "i_formulation",
@@ -2033,15 +2033,15 @@
           },
           {
             "name": "i_color",
-            "ndv": 95
+            "ndv": 94
           },
           {
             "name": "i_units",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "i_container",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "i_manager_id",
