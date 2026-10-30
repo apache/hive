@@ -146,17 +146,17 @@ public class TestMRCompactorJobQueueConfiguration {
   }
 
 
-    private static JobConf createBaseJobConf(Map<String, String> tableProperties,
-    Map<String, String> compactionProperties, Map<String, String> confProperties) {
+  private static JobConf createBaseJobConf(Map<String, String> tableProperties,
+        Map<String, String> compactionProperties, Map<String, String> confProperties) {
       Table tbl = createPersonTable();
       tbl.setParameters(new HashMap<>(tableProperties));
-      MRCompactor compactor = new MRCompactor(null);
-      CompactionInfo ci = new CompactionInfo(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MAJOR);
-      ci.properties = new StringableMap(new HashMap<>(compactionProperties)).toString();
-      HiveConf conf = new HiveConf();
-      confProperties.forEach(conf::set);
-      return compactor.createBaseJobConf(conf, "test-job", tbl, tbl.getSd(), new ValidReaderWriteIdList(), ci);
-    }
+    MRCompactor compactor = new MRCompactor(null);
+    CompactionInfo ci = new CompactionInfo(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MAJOR);
+    ci.properties = new StringableMap(new HashMap<>(compactionProperties)).toString();
+    HiveConf conf = new HiveConf();
+    confProperties.forEach(conf::set);
+    return compactor.createBaseJobConf(conf, "test-job", tbl, tbl.getSd(), new ValidReaderWriteIdList(), ci);
+  }
 
   private static Stream<ConfSetup> generateBaseJobConfSetup() {
     List<ConfSetup> inputs = new ArrayList<>();

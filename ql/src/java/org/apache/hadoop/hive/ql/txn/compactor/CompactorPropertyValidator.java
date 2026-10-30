@@ -127,14 +127,14 @@ final class CompactorPropertyValidator {
   }
 
   private static Pattern getPattern(String regexConfig, Pattern fallbackRegex, String configName,
-      Map<String, Pattern> PATTERN_CACHE) {
+      Map<String, Pattern> patternCache) {
 
     String regex = StringUtils.trimToEmpty(regexConfig);
 
     if (regex.isEmpty()) {
       return null;
     }
-    return PATTERN_CACHE.computeIfAbsent(regex, r -> {
+    return patternCache.computeIfAbsent(regex, r -> {
       try {
         return Pattern.compile(r, Pattern.CASE_INSENSITIVE);
       } catch (PatternSyntaxException e) {
