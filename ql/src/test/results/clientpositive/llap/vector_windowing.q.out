@@ -3246,16 +3246,28 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                notVectorizedReason: PTF operator: stddev_pop not in supported functions [avg, count, cume_dist, dense_rank, first_value, lag, last_value, lead, max, min, ntile, percent_rank, rank, row_number, sum]
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, double, bigint, bigint, double, double, bigint, bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
                 Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
@@ -3335,16 +3347,41 @@ STAGE PLANS:
                               name: last_value
                               window function: GenericUDAFLastValueEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorCumeDist, VectorPTFEvaluatorPercentRank, VectorPTFEvaluatorNTile, VectorPTFEvaluatorCount, VectorPTFEvaluatorLongAvg, VectorPTFEvaluatorVariance, VectorPTFEvaluatorLongFirstValue, VectorPTFEvaluatorLongLastValue]
+                      functionInputExpressions: [col 1:string, col 1:string, col 1:string, col 1:string, ConstantVectorExpression(val 3) -> 13:int, col 2:int, col 2:int, col 2:int, LongColModuloLongScalar(col 2:int, val 5) -> 14:int, col 2:int]
+                      functionNames: [rank, dense_rank, cume_dist, percent_rank, ntile, count, avg, stddev_pop, first_value, last_value]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 0, 2]
+                      outputTypes: [int, int, double, double, int, bigint, double, double, int, int, string, string, int]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [3, 4, 5, 6, 7, 11]
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: rank_window_0 (type: int), dense_rank_window_1 (type: int), cume_dist_window_2 (type: double), percent_rank_window_3 (type: double), ntile_window_4 (type: int), count_window_5 (type: bigint), avg_window_6 (type: double), stddev_pop_window_7 (type: double), first_value_window_8 (type: int), last_value_window_9 (type: int), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: rank_window_0, dense_rank_window_1, cume_dist_window_2, percent_rank_window_3, ntile_window_4, count_window_5, avg_window_6, stddev_pop_window_7, first_value_window_8, last_value_window_9, _col1, _col2, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 0, 2]
                     Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkObjectHashOperator
+                          keyColumns: 0:string, 1:string
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          partitionColumns: 0:string
+                          valueColumns: 3:int, 4:int, 5:double, 6:double, 7:int, 8:bigint, 9:double, 10:double, 11:int, 12:int, 2:int
                       Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: rank_window_0 (type: int), dense_rank_window_1 (type: int), cume_dist_window_2 (type: double), percent_rank_window_3 (type: double), ntile_window_4 (type: int), count_window_5 (type: bigint), avg_window_6 (type: double), stddev_pop_window_7 (type: double), first_value_window_8 (type: int), last_value_window_9 (type: int), _col5 (type: int)
         Reducer 3 
