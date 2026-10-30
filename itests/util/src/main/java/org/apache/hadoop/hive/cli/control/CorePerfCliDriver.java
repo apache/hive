@@ -55,6 +55,7 @@ public class CorePerfCliDriver extends CliAdapter {
         .withLogDir(cliConfig.getLogDir()).withClusterType(miniMR).withConfDir(hiveConfDir).withInitScript(initScript)
         .withCleanupScript(cleanupScript).withLlapIo(false)
         .withCustomConfigValueMap(cliConfig.getCustomConfigValueMap())
+        .withS3Bucket(cliConfig.getS3BucketSpec())
         .build());
   }
 
