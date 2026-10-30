@@ -307,9 +307,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         VirtualColumn.ROWID, 
         VirtualColumn.ROWISDELETED,
         VirtualColumn.PARTITION_SPEC_ID, 
-        VirtualColumn.PARTITION_HASH, 
         VirtualColumn.FILE_PATH, 
         VirtualColumn.ROW_POSITION,
+        VirtualColumn.PARTITION_KEY,
         VirtualColumn.PARTITION_NAME,
         VirtualColumn.ROW_LINEAGE_ID,
         VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);

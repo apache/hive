@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -674,10 +675,10 @@ public class MapOperator extends AbstractMapOperator {
             vcValues[i] = new IntWritable(ctx.getIoCxt().getPositionDeleteInfo().getSpecId());
           }
           break;
-        case PARTITION_HASH:
+        case PARTITION_KEY:
           vcValues[i] = null;
-          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
-            vcValues[i] = new LongWritable(ctx.getIoCxt().getPositionDeleteInfo().getPartitionHash());
+          if (ctx.getIoCxt().getPartitionKey() != null) {
+            vcValues[i] = new BytesWritable(ctx.getIoCxt().getPartitionKey());
           }
           break;
         case PARTITION_NAME:

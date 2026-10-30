@@ -206,6 +206,16 @@ public interface HiveStorageHandler extends Configurable {
   void configureJobConf(TableDesc tableDesc, JobConf jobConf);
 
   /**
+   * Called while the job is built, for every file sink of the job.
+   *
+   * @param sinkDesc descriptor of the file sink
+   * @param jobConf jobConf shared by all vertices of the job
+   */
+  default void configureJobConf(FileSinkDesc sinkDesc, JobConf jobConf) {
+    configureJobConf(sinkDesc.getTableInfo(), jobConf);
+  }
+
+  /**
    * Used to fetch runtime information about storage handler during DESCRIBE EXTENDED statement
    *
    * @param table table definition
@@ -555,7 +565,8 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * Specifies which additional virtual columns should be added to the virtual column registry during compilation
-   * for tables that support ACID operations.
+   * for tables that support ACID operations. The records a merge-on-read DELETE/UPDATE/MERGE statement deletes
+   * carry exactly these columns.
    *
    * Should only return a non-empty list if
    * {@link HiveStorageHandler#supportsAcidOperations()} returns something
@@ -610,6 +621,20 @@ public interface HiveStorageHandler extends Configurable {
    * @return the list of columns that should be used as sort columns in the rewritten ACID query
    */
   default List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    return Collections.emptyList();
+  }
+
+  /**
+   * {@link org.apache.hadoop.hive.ql.metadata.HiveStorageHandler} method to get the columns the deleted records of a
+   * DELETE/UPDATE/MERGE statement are distributed by in the rewritten query. {@link #acidSortColumns} orders them
+   * within a writer.
+   *
+   * @param table the table which is being deleted/updated/merged into
+   * @param operation the operation type we are executing
+   * @return the list of columns that should be used as distribute columns in the rewritten ACID query
+   */
+  default List<FieldSchema> acidDistributeColumns(org.apache.hadoop.hive.ql.metadata.Table table,
+      Operation operation) {
     return Collections.emptyList();
   }
 

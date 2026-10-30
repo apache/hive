@@ -72,7 +72,7 @@ public class HiveIcebergWriterTestBase {
       .build();
 
   private final HadoopTables tables = new HadoopTables(new HiveConf());
-  private TestHelper helper;
+  protected TestHelper helper;
   protected Table table;
   protected WriterBuilder writerBuilder;
 

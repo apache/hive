@@ -8619,7 +8619,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Some non-native tables might be partitioned without partition spec information being present in the Table object
       HiveStorageHandler storageHandler = dest_tab.getStorageHandler();
-      if (dest_tab.hasNonNativePartitionSupport()) {
+      // the records a merge-on-read statement deletes carry no data columns for the partition transforms
+      if (dest_tab.hasNonNativePartitionSupport() && !isMergeOnReadDelete(dest, dest_tab)) {
         DynamicPartitionCtx nonNativeDpCtx = storageHandler.createDPContext(conf, dest_tab, writeOperation);
         if (dpCtx == null && nonNativeDpCtx != null) {
           dpCtx = nonNativeDpCtx;
@@ -8667,9 +8668,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (writeOperation != Context.Operation.OTHER
         && dest_tab != null
         && dest_tab.getStorageHandler() != null) {
-      boolean copyOnWrite =
-          dest_tab.getStorageHandler().shouldOverwrite(dest_tab, ctx.getOperation());
-      fileSinkDesc.setCopyOnWrite(copyOnWrite);
+      fileSinkDesc.setCopyOnWrite(isCopyOnWrite(dest_tab));
     }
 
     fileSinkDesc.setTemporary(destTableIsTemporary);
@@ -15159,6 +15158,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return destination.startsWith(Context.DestClausePrefix.DELETE.toString());
   }
   
+  private boolean isCopyOnWrite(Table table) {
+    return table.getStorageHandler().shouldOverwrite(table, ctx.getOperation());
+  }
+
+  // the destination of the records a merge-on-read DML deletes
+  private boolean isMergeOnReadDelete(String destination, Table table) {
+    return deleting(destination) && !isCopyOnWrite(table);
+  }
+
   private boolean merging(String destination) {
     return destination.startsWith(Context.DestClausePrefix.MERGE.toString());
   }
