@@ -140,6 +140,33 @@ public final class LdapUtils {
   }
 
   /**
+   * Escapes a value for safe use inside an LDAP search filter, as defined in RFC 4515.
+   * <br>
+   * The characters {@code \}, {@code *}, {@code (}, {@code )} and NUL are replaced
+   * by their {@code \XX} hex escape sequences.
+   * @param value value to be escaped
+   * @return escaped value, or null if {@code value} is null
+   */
+  public static String escapeFilterValue(String value) {
+    if (value == null) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder(value.length() * 2);
+    for (int i = 0; i < value.length(); i++) {
+      char c = value.charAt(i);
+      switch (c) {
+        case '\\': sb.append("\\5c"); break;
+        case '*': sb.append("\\2a"); break;
+        case '(': sb.append("\\28"); break;
+        case ')': sb.append("\\29"); break;
+        case '\0': sb.append("\\00"); break;
+        default: sb.append(c);
+      }
+    }
+    return sb.toString();
+  }
+
+  /**
    * Reads and parses DN patterns from Hive configuration.
    * <br>
    * If no patterns are provided in the configuration, then the base DN will be used.
