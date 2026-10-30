@@ -23,12 +23,6 @@ RUN wget -O /tmp/metastore_db.zstd https://nightlies.apache.org/hive/datasets/tp
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod u+x /usr/local/bin/entrypoint.sh
-COPY postgresql.conf /etc/postgresql/postgresql.conf
-RUN chown postgres:postgres /etc/postgresql/postgresql.conf
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-# The testcontainers framework will overwrite the command,
-# so this is only used when creating a container manually.
-CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
 
