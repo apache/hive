@@ -36,7 +36,7 @@ import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addRowLineageCo
 public class SplitMergeRewriter extends MergeRewriter {
 
   // The update clause whose deletes go through the branch of the delete clause
-  private MergeStatement.UpdateClause singleDeleteBranchUpdate;
+  private MergeStatement.UpdateClause updateInDeleteBranch;
 
   public SplitMergeRewriter(Hive db, HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     super(db, conf, sqlGeneratorFactory);
@@ -45,49 +45,50 @@ public class SplitMergeRewriter extends MergeRewriter {
   @Override
   protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
       MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
-    // all deletes of a data file must reach one writer, so a distributed MERGE has a single delete branch
+    // a target that needs all the deletes of a data file in one writer (DVs) gets a single delete branch
     boolean distributed = !sqlGenerator.getDistributeKeys(Context.Operation.DELETE).isEmpty();
     boolean hasDelete = mergeStatement.getWhenClauses().stream()
         .anyMatch(MergeStatement.DeleteClause.class::isInstance);
-    singleDeleteBranchUpdate = !distributed || !hasDelete ? null : mergeStatement.getWhenClauses().stream()
+    updateInDeleteBranch = !distributed || !hasDelete ? null : mergeStatement.getWhenClauses().stream()
         .filter(MergeStatement.UpdateClause.class::isInstance)
         .map(MergeStatement.UpdateClause.class::cast)
         .findFirst().orElse(null);
     return new SplitMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement, isRowLineageSupported,
         mergeStatement.getTargetTable().hasNonNativePartitionSupport() ?
-            new PartitionSetValuesClause(conf) : new SetValuesClause(conf), singleDeleteBranchUpdate);
+            new PartitionSetValuesClause(conf) : new SetValuesClause(conf), updateInDeleteBranch);
   }
 
   static class SplitMergeWhenClauseSqlGenerator extends MergeWhenClauseSqlGenerator {
     private final boolean isRowLineageSupported;
-    private final MergeStatement.UpdateClause singleDeleteBranchUpdate;
+    private final MergeStatement.UpdateClause updateInDeleteBranch;
 
     SplitMergeWhenClauseSqlGenerator(
         HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement,
         boolean isRowLineageSupported, SetValuesClauseBase setValuesClause,
-        MergeStatement.UpdateClause singleDeleteBranchUpdate) {
+        MergeStatement.UpdateClause updateInDeleteBranch) {
       super(conf, sqlGenerator, mergeStatement, isRowLineageSupported, setValuesClause);
       this.isRowLineageSupported = isRowLineageSupported;
-      this.singleDeleteBranchUpdate = singleDeleteBranchUpdate;
+      this.updateInDeleteBranch = updateInDeleteBranch;
     }
 
     @Override
     public void appendWhenMatchedDeleteClause(MergeStatement.DeleteClause deleteClause) {
-      if (singleDeleteBranchUpdate == null) {
+      if (updateInDeleteBranch == null) {
         super.appendWhenMatchedDeleteClause(deleteClause);
         return;
       }
       sqlGenerator.append("    -- update clause (delete part) and delete clause\n");
-      String matched = "((" + matched(singleDeleteBranchUpdate.getExtraPredicate(),
-          singleDeleteBranchUpdate.getDeleteExtraPredicate()) + ") OR (" +
-          matched(deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate()) + "))";
-      handleWhenMatchedDelete(mergeStatement.getOnClauseAsText(), matched, null, hintStr, sqlGenerator);
+      String deletePredicate = "((" + clausePredicate(updateInDeleteBranch.getExtraPredicate(),
+          updateInDeleteBranch.getDeleteExtraPredicate()) + ") OR (" +
+          clausePredicate(deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate()) + "))";
+      handleWhenMatchedDelete(mergeStatement.getOnClauseAsText(), deletePredicate, null, hintStr, sqlGenerator);
       hintStr = null;
     }
 
-    private static String matched(String extraPredicate, String otherExtraPredicate) {
+    // the matched rows a WHEN MATCHED clause handles: its own predicate, minus the rows of the clause before it
+    private static String clausePredicate(String extraPredicate, String precedingClausePredicate) {
       String predicate = extraPredicate == null ? "true" : extraPredicate;
-      return otherExtraPredicate == null ? predicate : predicate + " AND NOT(" + otherExtraPredicate + ")";
+      return precedingClausePredicate == null ? predicate : predicate + " AND NOT(" + precedingClausePredicate + ")";
     }
 
     @Override
@@ -108,7 +109,7 @@ public class SplitMergeRewriter extends MergeRewriter {
 
       sqlGenerator.append("\n");
 
-      if (singleDeleteBranchUpdate != null) {
+      if (updateInDeleteBranch != null) {
         return;
       }
       sqlGenerator.append("    -- update clause (delete part)\n");
@@ -124,7 +125,7 @@ public class SplitMergeRewriter extends MergeRewriter {
 
   @Override
   public int addDestNamePrefixOfUpdate(int pos, Context context) {
-    if (singleDeleteBranchUpdate != null) {
+    if (updateInDeleteBranch != null) {
       // the single delete branch counts the updated rows, so the insert branch of the update does not
       context.addDeleteOfUpdateDestNamePrefix(pos, Context.DestClausePrefix.INSERT);
       return 1;
