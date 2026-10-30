@@ -8,6 +8,11 @@ SET "TYPE_NAME" = 'char(16)'
 WHERE "COLUMN_NAME" in ('c_customer_id', 'ca_address_id')
 AND EXISTS (SELECT * FROM "SDS" s WHERE s."CD_ID" = c."CD_ID");
 
+UPDATE "TAB_COL_STATS" tcs
+SET "COLUMN_TYPE" = 'char(16)'
+WHERE "COLUMN_NAME" in ('c_customer_id', 'ca_address_id');
+
+
 -- HIVE-20793
 ALTER TABLE "WM_RESOURCEPLAN" ADD "NS" character varying(128);
 UPDATE "WM_RESOURCEPLAN" SET "NS" = 'default' WHERE "NS" IS NULL;
