@@ -5516,6 +5516,39 @@ public class HiveConf extends Configuration {
     HIVE_MM_AVOID_GLOBSTATUS_ON_S3("hive.mm.avoid.s3.globstatus", true,
         "Whether to use listFiles (optimized on S3) instead of globStatus when on S3."),
 
+    HIVE_COMPACTOR_CONF_ALLOWLIST("hive.compactor.conf.allowlist",
+          "^mapreduce\\.(map|reduce|task\\.io)\\." +
+          "|^mapreduce\\.job\\.heap\\.memory-mb\\.ratio$" +
+          "|^yarn\\.app\\.mapreduce\\.am\\.resource\\." +
+          "|^hive\\.(compactor|mr\\.compactor)\\." +
+          "|^hive\\.(compute|exec|merge|mm|optimize|orc|stats|tez|vectorized)\\." +
+          "|^orc\\." +
+          "|^tez\\.(am\\.counters|am\\.resource|counters|grouping|task|runtime)\\." +
+          "|^(mapreduce\\.job\\.queuename|mapred\\.job\\.queue\\.name|tez\\.queue\\.name)$",
+          "A Java regex to define the configuration parameters which can be overridden " +
+          "by table properties on a compaction job. A configuration parameter can only be overridden " +
+          "if the parameter name matches this regex. To allow additional parameters, please use the " +
+          "hive.compactor.conf.allowlist.append config, which takes exact parameter names."),
+
+    HIVE_COMPACTOR_CONF_ALLOWLIST_APPEND("hive.compactor.conf.allowlist.append", "",
+          "Comma separated list of individual configuration parameters to add to " +
+          "hive.compactor.conf.allowlist, matched by exact name. " +
+          "These parameters are also checked against the hive.compactor.conf.denylist."),
+
+    HIVE_COMPACTOR_CONF_DENYLIST("hive.compactor.conf.denylist",
+          "^(fs|hive\\.security|hadoop\\.security)\\.|^tmp(jars|files|archives)$" +
+          "|(^|\\.)([^.]*opts|env|classloader|classpath|jars?|files|archives|hooks?|class(es)?|[^.]*class" +
+          "|impl|factory|keytab|principal|credentials[^.]*|log4j[^.]*|provider|encrypt|mask|plugin" +
+          "|whitelist|logger|listeners?|scratchdir|stagingdir|tmp\\.dir|temp\\.dir|input\\.dir|plan|trust" +
+          "|params|codecs?|submitviachild|via\\.child|user\\.access|wrapper|script|ssl|tls" +
+          "|kryo|publisher|aggregator|table\\.props|is\\.compressed)(\\.|$)",
+          "A Java regex, matched case insensitively against the parameters that " +
+          "hive.compactor.conf.allowlist admits. Some config parameters may hold security risk, therefore " +
+          "restricting the list of parameters is necessary. " +
+          "Denied properties are skipped with a warning and do not fail the compaction." +
+          "If this is set to an empty value, only hive.conf.restricted.list, hive.conf.hidden.list and " +
+          "hive.conf.locked.list are checked on top of the allow list."),
+
     // If a parameter is added to the restricted list, add a test in TestRestrictedList.Java
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +
