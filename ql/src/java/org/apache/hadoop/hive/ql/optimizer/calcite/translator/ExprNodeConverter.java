@@ -217,11 +217,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             call.operands.get(0).getType())) {
       return args.get(0);
     } else if (call.isA(SqlKind.AND)) {
-      // Make sure AND is flattened (we may have nested ANDs due to SearchTransformer conversion above)
-      return ExprNodeDescUtils.and(args);
+      // Make sure AND is flattened (we may have nested ANDs due to SearchTransformer conversion above).
+      // Flattening/deduplication may collapse the operand list;
+      // AND require at least two operands (GenericUDFOPAnd#initialize enforces this), so unwrap trivial cases.
+      return unwrapSingleOperand(ExprNodeDescUtils.and(args));
     }  else if (call.isA(SqlKind.OR)) {
-      // Make sure OR is flattened (we may have nested ORs due to SearchTransformer conversion above)
-      return ExprNodeDescUtils.or(args);
+      // Make sure OR is flattened (we may have nested ORs due to SearchTransformer conversion above).
+      // Flattening/deduplication may collapse the operand list;
+      // OR require at least two operands (GenericUDFOPOr#initialize enforces this), so unwrap trivial cases.
+      return unwrapSingleOperand(ExprNodeDescUtils.or(args));
     } else {
       GenericUDF hiveUdf = SqlFunctionConverter.getHiveUDF(call.getOperator(), call.getType(),
           args.size());
@@ -246,6 +250,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     }
 
     return gfDesc;
+  }
+
+  /**
+   * Flattening may de-duplicate operands (e.g. AND(=(1,1), =(1,1))) and collapse the operand list leaving a single one,
+   * but AND/OR require at least 2 arguments(GenericUDFOPAnd/Or#initialize enforces this),
+   * in that case the operand itself is the equivalent expression.
+   */
+  private static ExprNodeDesc unwrapSingleOperand(ExprNodeGenericFuncDesc andOr) {
+    return andOr.getChildren().size() == 1 ? andOr.getChildren().get(0) : andOr;
   }
 
   @Override
