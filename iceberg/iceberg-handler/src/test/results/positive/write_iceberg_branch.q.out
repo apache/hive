@@ -497,7 +497,7 @@ STAGE PLANS:
                             serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                             name: default.ice01
                   Filter Operator
-                    predicate: ((_col9 = _col1) and (_col9 <= 100)) (type: boolean)
+                    predicate: ((_col9 = _col1) and (_col9 > 100) is not true) (type: boolean)
                     Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col6 (type: int), _col5 (type: bigint), _col2 (type: string), _col4 (type: bigint), _col9 (type: int), _col8 (type: string), _col7 (type: int)
@@ -512,7 +512,7 @@ STAGE PLANS:
                             serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                             name: default.ice01
                   Filter Operator
-                    predicate: ((_col9 = _col1) and (_col9 <= 100)) (type: boolean)
+                    predicate: ((_col9 = _col1) and (_col9 > 100) is not true) (type: boolean)
                     Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col9 (type: int), 'Merged' (type: string), (_col7 + 10) (type: int)

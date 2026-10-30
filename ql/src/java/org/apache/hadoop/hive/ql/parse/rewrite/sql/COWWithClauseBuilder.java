@@ -33,6 +33,7 @@ import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addSourceColumn
 public class COWWithClauseBuilder {
 
   private static final String MARKER_CTE_BASE_NAME = "hive_cow_markers";
+  private static final String MATCHED_CTE_BASE_NAME = "hive_cow_matched";
   private static final String ROW_NUMBER_BASE_NAME = "hive_cow_row_number";
   private static final String FILE_PATH_BASE_NAME = "hive_cow_file_path";
   private static final String MATCHED_ROW_COUNT_BASE_NAME = "hive_cow_matched_row_count";
@@ -52,12 +53,24 @@ public class COWWithClauseBuilder {
       String whereClause, boolean skipPrefix, boolean isRowLineageSupported, String rowLineagePrefix) {
     sqlGenerator.newCteExpr();
 
-    markerCteName = uniqueCteName(sqlGenerator, sourceName, whereClause);
+    markerCteName = uniqueCteName(MARKER_CTE_BASE_NAME, sqlGenerator, sourceName, whereClause);
+    String matchedCteName = uniqueCteName(MATCHED_CTE_BASE_NAME, sqlGenerator, sourceName, whereClause);
     Set<String> reservedAliases = getReservedAliases(sqlGenerator);
     String rowNumberCol = quote(uniqueAlias(ROW_NUMBER_BASE_NAME, reservedAliases), sqlGenerator);
     String filePathAlias = quote(uniqueAlias(FILE_PATH_BASE_NAME, reservedAliases), sqlGenerator);
     String matchedRowCountCol = quote(uniqueAlias(MATCHED_ROW_COUNT_BASE_NAME, reservedAliases), sqlGenerator);
     String source = sourceName == null ? sqlGenerator.getTargetTableFullName() : sourceName;
+
+    sqlGenerator.append(matchedCteName).append(" AS (");
+    sqlGenerator.append("\n").indent();
+    sqlGenerator.append("select ");
+    sqlGenerator.appendAcidSelectColumnsForDeletedRecords(Context.Operation.DELETE, skipPrefix);
+    sqlGenerator.removeLastChar();
+    addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, rowLineagePrefix, sqlGenerator.conf);
+    sqlGenerator.append(" from ").append(source);
+    sqlGenerator.append("\n").indent();
+    sqlGenerator.append("where (").append(whereClause).append(") AND ")
+        .append(filePathCol).append(" IS NOT NULL\n),\n");
 
     sqlGenerator.append(markerCteName).append(" AS (");
     sqlGenerator.append("\n").indent();
@@ -75,10 +88,7 @@ public class COWWithClauseBuilder {
     addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, rowLineagePrefix, sqlGenerator.conf);
     sqlGenerator.append(", row_number() OVER (partition by ").append(filePathCol).append(") AS ")
         .append(rowNumberCol);
-    sqlGenerator.append(" from ").append(source);
-    sqlGenerator.append("\n").indent().indent();
-    sqlGenerator.append("where (").append(whereClause).append(") AND ")
-        .append(filePathCol).append(" IS NOT NULL");
+    sqlGenerator.append(" from ").append(matchedCteName);
     sqlGenerator.append("\n").indent();
     sqlGenerator.append(") q");
     sqlGenerator.append("\n").indent();
@@ -86,10 +96,7 @@ public class COWWithClauseBuilder {
     sqlGenerator.append("\n").indent().indent();
     sqlGenerator.append("select ").append(filePathCol).append(" AS ").append(filePathAlias);
     sqlGenerator.append(", count(*) AS ").append(matchedRowCountCol);
-    sqlGenerator.append(" from ").append(source);
-    sqlGenerator.append("\n").indent().indent();
-    sqlGenerator.append("where (").append(whereClause).append(") AND ")
-        .append(filePathCol).append(" IS NOT NULL");
+    sqlGenerator.append(" from ").append(matchedCteName);
     sqlGenerator.append("\n").indent().indent();
     sqlGenerator.append("group by ").append(filePathCol);
     sqlGenerator.append("\n").indent();
@@ -108,11 +115,12 @@ public class COWWithClauseBuilder {
     return HiveUtils.unparseIdentifier(name, sqlGenerator.conf);
   }
 
-  private static String uniqueCteName(MultiInsertSqlGenerator sqlGenerator, String sourceName, String whereClause) {
+  private static String uniqueCteName(String baseName, MultiInsertSqlGenerator sqlGenerator, String sourceName,
+      String whereClause) {
     int suffix = 0;
     String candidate;
     do {
-      candidate = MARKER_CTE_BASE_NAME + (suffix == 0 ? "" : "_" + suffix);
+      candidate = baseName + (suffix == 0 ? "" : "_" + suffix);
       suffix++;
     } while (sameRelationName(candidate, sqlGenerator.getTargetTableFullName())
         || sameRelationName(candidate, sourceName)

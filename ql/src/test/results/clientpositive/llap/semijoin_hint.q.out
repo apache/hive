@@ -3446,7 +3446,7 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col3 <= 8) and (_col1 = _col3)) (type: boolean)
+                  predicate: ((_col3 > 8) is not true and (_col1 = _col3)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -3459,7 +3459,7 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col3 <= 8) and (_col1 = _col3)) (type: boolean)
+                  predicate: ((_col3 > 8) is not true and (_col1 = _col3)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: int)
@@ -3789,7 +3789,7 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col3 <= 8) and (_col1 = _col3)) (type: boolean)
+                  predicate: ((_col3 > 8) is not true and (_col1 = _col3)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -3802,7 +3802,7 @@ STAGE PLANS:
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col3 <= 8) and (_col1 = _col3)) (type: boolean)
+                  predicate: ((_col3 > 8) is not true and (_col1 = _col3)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: int)
