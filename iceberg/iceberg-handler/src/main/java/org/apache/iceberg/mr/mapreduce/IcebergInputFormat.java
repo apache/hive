@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
@@ -71,6 +72,18 @@ import org.apache.iceberg.util.ThreadPools;
  * @param <T> T is the in memory data model which can either be Pig tuples, Hive rows. Default is Iceberg records
  */
 public class IcebergInputFormat<T> extends InputFormat<Void, T> {
+
+  private final FileMetadataCache metadataCache;
+  private final Configuration cacheConf;
+
+  public IcebergInputFormat() {
+    this(null, null);
+  }
+
+  public IcebergInputFormat(FileMetadataCache metadataCache, Configuration cacheConf) {
+    this.metadataCache = metadataCache;
+    this.cacheConf = cacheConf;
+  }
 
   private static TableScan createTableScan(Table table, Configuration conf) {
     TableScan scan = table.newScan();
@@ -268,6 +281,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   @Override
   public RecordReader<Void, T> createRecordReader(InputSplit split, TaskAttemptContext context) {
     return split instanceof IcebergMergeSplit ?
-        new IcebergMergeRecordReader<>() : new IcebergRecordReader<>();
+        new IcebergMergeRecordReader<>() : new IcebergRecordReader<>(metadataCache, cacheConf);
   }
 }

@@ -34,6 +34,8 @@ public class ColumnVectorBatch {
   public MutableFilterContext filterContext;
   public ColumnVector[] cols;
   public int size;
+  /** File row position of the first row; Long.MIN_VALUE when the producer does not track positions. */
+  public long startRowInFile = Long.MIN_VALUE;
 
   public ColumnVectorBatch(int columnCount) {
     this(columnCount, VectorizedRowBatch.DEFAULT_SIZE);

@@ -49,7 +49,7 @@ import org.mockito.MockedStatic;
 
 /**
  * The delete delta tail served from the LLAP metadata cache has to be the one the reader uses:
- * re-reading it from the filesystem makes hive.llap.io.cache.deletedeltas=metadata do nothing and
+ * re-reading it from the filesystem makes hive.llap.io.cache.deletes=metadata do nothing and
  * costs a footer read per split at the 'all' level.
  */
 public class TestVectorizedOrcAcidRowBatchReaderTailCache {
@@ -73,7 +73,7 @@ public class TestVectorizedOrcAcidRowBatchReaderTailCache {
       writer.addRowBatch(batch);
     }
     HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
-    HiveConf.setVar(conf, ConfVars.LLAP_IO_CACHE_DELETEDELTAS, "metadata");
+    HiveConf.setVar(conf, ConfVars.LLAP_IO_CACHE_DELETES, "metadata");
   }
 
   @Test
