@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -1883,6 +1884,42 @@ public class SharedWorkOptimizer extends Transform {
     return op1.logicalEquals(op2);
   }
 
+  /**
+   * The discardable inputs of a merge are deleted afterwards, usually as a chain ending in a
+   * ReduceSink (e.g. SEL -> RS). If such a chain holds the last sink (ReduceSink/FileSink) of the
+   * work its surviving parent belongs to, the rest of that work no longer ends in a sink - e.g.
+   * only a DPP event branch is left. GenTezWork only cuts a new vertex when it reaches a sink, so
+   * such a pipeline never gets a vertex of its own and stays attached below the ReduceSink that
+   * feeds it, inside the upstream vertex. Its reduce-side operators (e.g. a mergepartial GroupBy
+   * reading KEY._colN) are then initialised against map-side rows and fail with
+   * "cannot find field key from [0:_col0, ...]".
+   */
+  @VisibleForTesting
+  static boolean removalLeavesWorkWithoutSink(SharedWorkOptimizerCache optimizerCache,
+      Collection<Operator<?>> discardableInputOps, Collection<Operator<?>> discardableOps) {
+    for (Operator<?> op : discardableInputOps) {
+      // Check where a removed chain is cut off from what stays
+      for (Operator<?> parent : op.getParentOperators()) {
+        if (discardableInputOps.contains(parent) || discardableOps.contains(parent)) {
+          continue;
+        }
+        boolean hasSink = false;
+        for (Operator<?> workOp : findWorkOperators(optimizerCache, parent)) {
+          if (!discardableInputOps.contains(workOp) && !discardableOps.contains(workOp)
+              && (workOp instanceof ReduceSinkOperator || workOp instanceof FileSinkOperator)) {
+            hasSink = true;
+            break;
+          }
+        }
+        if (!hasSink) {
+          LOG.debug("Removing {} would leave the work of {} without a sink", op, parent);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   private static boolean validPreConditions(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
           SharedResult sr) {
 
@@ -1892,6 +1929,10 @@ public class SharedWorkOptimizer extends Transform {
     if (sr.dataSize > sr.maxDataSize) {
       // Size surpasses limit, we cannot convert
       LOG.debug("accumulated data size: {} / max size: {}", sr.dataSize, sr.maxDataSize);
+      return false;
+    }
+
+    if (removalLeavesWorkWithoutSink(optimizerCache, sr.discardableInputOps, sr.discardableOps)) {
       return false;
     }
 

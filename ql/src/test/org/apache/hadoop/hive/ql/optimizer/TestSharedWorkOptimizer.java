@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -343,6 +344,72 @@ public class TestSharedWorkOptimizer {
     assertEquals(2, descendants.size());
     assertTrue(descendants.contains(fil));
     assertTrue(descendants.contains(rs2));
+  }
+
+  @Test
+  public void testRemovalLeavesWorkWithoutSinkWhenOnlyDppEventRemains() {
+    // Map 1
+    TableScanOperator ts1 = getTsOp();
+    Operator<?> rs1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), ts1);
+
+    // Reducer 2 <- Map 1: its only sink is rs2, the rest is a DPP event branch
+    Operator<?> fil = OperatorFactory.getAndMakeChild(getFilterDesc(0), rs1);
+    Operator<?> rs2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), fil);
+    Operator<?> eventFil = OperatorFactory.getAndMakeChild(getFilterDesc(1), fil);
+    DynamicPruningEventDesc dppDesc = new DynamicPruningEventDesc();
+    dppDesc.setTableScan(getTsOp());
+    OperatorFactory.getAndMakeChild(dppDesc, eventFil);
+
+    assertTrue(SharedWorkOptimizer.removalLeavesWorkWithoutSink(
+        new SharedWorkOptimizerCache(), Set.of(rs2), Collections.emptySet()));
+  }
+
+  @Test
+  public void testRemovalLeavesWorkWithoutSinkWhenChainAboveSinkIsRemoved() {
+    // Map 1
+    TableScanOperator ts1 = getTsOp();
+    Operator<?> rs1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), ts1);
+
+    // Reducer 2 <- Map 1: fil -> sel -> rs2 is removed, the rest is a DPP event branch
+    Operator<?> fil = OperatorFactory.getAndMakeChild(getFilterDesc(0), rs1);
+    Operator<?> sel = OperatorFactory.getAndMakeChild(new SelectDesc(true), fil);
+    Operator<?> rs2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), sel);
+    Operator<?> eventFil = OperatorFactory.getAndMakeChild(getFilterDesc(1), fil);
+    DynamicPruningEventDesc dppDesc = new DynamicPruningEventDesc();
+    dppDesc.setTableScan(getTsOp());
+    OperatorFactory.getAndMakeChild(dppDesc, eventFil);
+
+    assertTrue(SharedWorkOptimizer.removalLeavesWorkWithoutSink(
+        new SharedWorkOptimizerCache(), Set.of(sel, rs2), Collections.emptySet()));
+  }
+
+  @Test
+  public void testRemovalKeepsWorkWithAnotherSink() {
+    // Map 1
+    TableScanOperator ts1 = getTsOp();
+    Operator<?> rs1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), ts1);
+
+    // Reducer 2 <- Map 1: rs3 still ends the work after rs2 is removed
+    Operator<?> fil = OperatorFactory.getAndMakeChild(getFilterDesc(0), rs1);
+    Operator<?> rs2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), fil);
+    OperatorFactory.getAndMakeChild(getReduceSinkDesc(), fil);
+
+    assertFalse(SharedWorkOptimizer.removalLeavesWorkWithoutSink(
+        new SharedWorkOptimizerCache(), Set.of(rs2), Collections.emptySet()));
+  }
+
+  @Test
+  public void testRemovalOfWholeBranchDoesNotNeedSink() {
+    // Map 1
+    TableScanOperator ts1 = getTsOp();
+    Operator<?> rs1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), ts1);
+
+    // Reducer 2 <- Map 1: the whole reducer goes away together with rs2
+    Operator<?> fil = OperatorFactory.getAndMakeChild(getFilterDesc(0), rs1);
+    Operator<?> rs2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), fil);
+
+    assertFalse(SharedWorkOptimizer.removalLeavesWorkWithoutSink(
+        new SharedWorkOptimizerCache(), Set.of(fil, rs2), Collections.emptySet()));
   }
 
   private FilterDesc getFilterDesc(int constVal) {
