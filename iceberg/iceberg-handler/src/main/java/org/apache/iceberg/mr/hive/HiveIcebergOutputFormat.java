@@ -25,7 +25,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.io.NullWritable;
@@ -36,7 +35,9 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
+import org.apache.iceberg.mr.hive.writer.RewritableDeletes;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
@@ -68,10 +69,9 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
     setWriterLevelConfiguration(jc, table);
     boolean shouldAddRowLineageColumns = jc.getBoolean(SessionStateUtil.ROW_LINEAGE, false);
 
-    String queryId = jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     return WriterBuilder.builderFor(table, jc::get)
-        .queryId(queryId)
-        .objectCache(() -> ObjectCacheFactory.getCache(jc, queryId, false, true))
+        .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
+        .rewritableDeletes(() -> RewritableDeletes.load(table, jc.get(Catalogs.SNAPSHOT_REF), jc))
         .attemptID(taskAttemptID)
         .addRowLineageColumns(shouldAddRowLineageColumns)
         .build();

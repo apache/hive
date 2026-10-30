@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -87,7 +86,6 @@ public class HiveTableUtil {
   private static final Logger LOG = LoggerFactory.getLogger(HiveTableUtil.class);
 
   static final String TABLE_EXTENSION = ".table";
-  private static final String REWRITABLE_DELETES_SUFFIX = "-rewritable-deletes";
   static final String FOR_COMMIT_EXTENSION = ".forCommit";
 
   private HiveTableUtil() {
@@ -332,29 +330,6 @@ public class HiveTableUtil {
   public static String jobLocation(String location, Configuration conf, JobID jobId) {
     String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     return location + "/temp/" + queryId + "-" + jobId;
-  }
-
-  /**
-   * Generates a new location for the rewritable deletes of a job: an execution of the query builds a new job.
-   * @param location The location of the table.
-   * @param conf The job's configuration.
-   * @return The file path for storing the rewritable deletes.
-   */
-  public static String rewritableDeletesLocation(String location, Configuration conf) {
-    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
-    return location + "/temp/" + queryId + "-" + UUID.randomUUID() + REWRITABLE_DELETES_SUFFIX;
-  }
-
-  /**
-   * Whether the path is a location {@link #rewritableDeletesLocation} generates for the table and the query.
-   * @param location The location of the table.
-   * @param conf The job's configuration.
-   * @param path The path to check.
-   */
-  public static boolean isRewritableDeletesLocation(String location, Configuration conf, String path) {
-    String prefix = location + "/temp/" + conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname) + "-";
-    return path.startsWith(prefix) && path.endsWith(REWRITABLE_DELETES_SUFFIX) &&
-        path.indexOf('/', prefix.length()) < 0;
   }
 
   /**

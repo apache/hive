@@ -188,7 +188,7 @@ import org.apache.iceberg.mr.hive.stats.IcebergColStatsWriter;
 import org.apache.iceberg.mr.hive.stats.IcebergPartitionStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergStoredStats;
 import org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder;
-import org.apache.iceberg.mr.hive.writer.WriterBuilder;
+import org.apache.iceberg.mr.hive.writer.RewritableDeletes;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
@@ -396,30 +396,17 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   /**
    * The DV writers of a merge-on-read DML merge the previous deletes of the data files they write. These are planned
-   * once per job, while the job is built, and shipped to the writers in a file.
+   * while the job is built.
    */
   @Override
   public void configureJobConf(FileSinkDesc sinkDesc, JobConf jobConf) {
     TableDesc tableDesc = sinkDesc.getTableInfo();
     configureJobConf(tableDesc, jobConf);
     Properties props = tableDesc.getProperties();
-    String key = InputFormatConfig.REWRITABLE_DELETES_PREFIX + tableDesc.getTableName();
-    String planned = jobConf.get(key);
-    boolean plan = sinkDesc.getWriteOperation() == Operation.DELETE && !sinkDesc.isCopyOnWrite() &&
-        IcebergTableUtil.formatVersion(Maps.fromProperties(props)) >= 3;
-    if (planned == null && !plan) {
-      return;
-    }
-    Table table = IcebergTableUtil.getTable(jobConf, props);
-    // the key can come from the session: keep only a location planned for this query, by another sink of the table
-    if (planned != null && !HiveTableUtil.isRewritableDeletesLocation(table.location(), jobConf, planned)) {
-      jobConf.unset(key);
-      planned = null;
-    }
-    if (plan && planned == null) {
-      String location = HiveTableUtil.rewritableDeletesLocation(table.location(), jobConf);
-      WriterBuilder.writeRewritableDeletes(table, props.getProperty(Catalogs.SNAPSHOT_REF), location);
-      jobConf.set(key, location);
+    if (sinkDesc.getWriteOperation() == Operation.DELETE && !sinkDesc.isCopyOnWrite() &&
+        IcebergTableUtil.formatVersion(Maps.fromProperties(props)) >= 3) {
+      RewritableDeletes.plan(IcebergTableUtil.getTable(jobConf, props), props.getProperty(Catalogs.SNAPSHOT_REF),
+          jobConf);
     }
   }
 
