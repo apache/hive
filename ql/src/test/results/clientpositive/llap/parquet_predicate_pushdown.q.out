@@ -343,6 +343,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: tbl_pred
+          filterExpr: ((t > -2Y) and (t < 0Y)) (type: boolean)
           Filter Operator
             predicate: ((t > -2Y) and (t < 0Y)) (type: boolean)
             Limit
@@ -444,6 +445,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: tbl_pred
+          filterExpr: ((t = -1Y) and (s like 'bob%')) (type: boolean)
           Filter Operator
             predicate: ((t = -1Y) and (s like 'bob%')) (type: boolean)
             Select Operator
@@ -559,6 +561,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_pred
+                  filterExpr: (UDFToInteger(t) BETWEEN 25 AND 30 and (s like 'bob%') and (t <> -3Y) and (t <> -2Y) and (t <> -1Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 105941 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger(t) BETWEEN 25 AND 30 and (s like 'bob%') and (t <> -3Y) and (t <> -2Y) and (t <> -1Y)) (type: boolean)
@@ -766,6 +769,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_pred
+                  filterExpr: ((t > 0Y) and (d >= 10.0D) and (d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (s like '%son') and (not (s like '%car%'))) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 118521 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t > 0Y) and (d >= 10.0D) and (d < 12.0D) and UDFToInteger(si) BETWEEN 300 AND 400 and (s like '%son') and (not (s like '%car%'))) (type: boolean)
@@ -1055,6 +1059,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_pred
+                  filterExpr: ((t > 10Y) and (t <> 101Y) and (d >= 10) and (d < 12.0D) and (s like '%son') and (not (s like '%car%')) and (t > 0Y) and si BETWEEN 300 AND 400) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 118521 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t > 10Y) and (t <> 101Y) and (d >= 10) and (d < 12.0D) and (s like '%son') and (not (s like '%car%')) and (t > 0Y) and si BETWEEN 300 AND 400) (type: boolean)

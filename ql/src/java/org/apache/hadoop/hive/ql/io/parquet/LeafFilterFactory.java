@@ -47,7 +47,7 @@ public class LeafFilterFactory {
 
   @VisibleForTesting
   public static final String FILTER_PREDICATE_CONVERSION_NOT_SUPPORTED =
-      "The conversion to Parquet FilterPredicate is not supported for %s. Please try to set the following configurations at the session level\n set hive.optimize.index.filter=false;\n"
+      "The conversion to Parquet FilterPredicate is not supported for %s. Please try to set the following configuration at the session level\n"
           + " set hive.optimize.ppd=false;\n";
 
   class IntFilterPredicateLeafBuilder extends FilterPredicateLeafBuilder {

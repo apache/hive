@@ -2,7 +2,6 @@
 set hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
-SET hive.optimize.index.filter=true;
 SET hive.cbo.enable=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.llap.io.enabled=true;

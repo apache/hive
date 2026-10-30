@@ -8,7 +8,6 @@ set hive.optimize.reducededuplication=true;
 set hive.optimize.null.scan=true;
 set hive.mapjoin.optimized.hashtable=true;
 set hive.optimize.constant.propagation=true;
-set hive.optimize.index.filter=true;
 set hive.optimize.bucketmapjoin=true;
 set hive.limit.optimize.enable=true;
 set hive.optimize.bucketmapjoin.sortedmerge=false;

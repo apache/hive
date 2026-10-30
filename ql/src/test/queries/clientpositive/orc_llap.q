@@ -7,7 +7,6 @@ SET hive.llap.io.enabled=false;
 
 SET hive.exec.orc.default.buffer.size=32768;
 SET hive.exec.orc.default.row.index.stride=1000;
-SET hive.optimize.index.filter=true;
 set hive.auto.convert.join=false;
 set hive.llap.memory.oversubscription.max.executors.per.query=3;
 

@@ -1,7 +1,6 @@
 --! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.optimize.ppd=true;
-set hive.optimize.index.filter=true;
 set hive.tez.bucket.pruning=true;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;

@@ -5,7 +5,6 @@ SET hive.auto.convert.join=true;
 set hive.fetch.task.conversion=none;
 set hive.mapred.mode=nonstrict;
 set hive.join.inner.residual=false;
-set hive.optimize.index.filter=true;
 
 -- SORT_QUERY_RESULTS
 --

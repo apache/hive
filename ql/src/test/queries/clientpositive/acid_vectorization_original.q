@@ -4,7 +4,6 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 set hive.vectorized.execution.enabled=true;
 -- enable ppd
-set hive.optimize.index.filter=true;
 
 set hive.explain.user=false;
 
