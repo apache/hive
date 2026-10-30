@@ -61,6 +61,7 @@ import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.hadoop.hive.metastore.security.TMessageSizeTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
 /**
@@ -617,6 +618,10 @@ public abstract class HadoopThriftAuthBridge {
          assert useProxy;
          trans = ugiTransport.getWrapped();
        }
+        // Unwrap TMessageSizeTransport if present (added for Thrift 0.24 compat)
+        if (trans instanceof TMessageSizeTransport) {
+          trans = ((TMessageSizeTransport) trans).getWrapped();
+        }
        if (!(trans instanceof TSaslServerTransport)) {
          throw new TException("Unexpected non-SASL transport " + trans.getClass());
        }
@@ -626,7 +631,12 @@ public abstract class HadoopThriftAuthBridge {
        LOG.debug("Sasl Server AUTH ID: {}", authId);
        String endUser = authId;
 
-       Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
+       TTransport underlying = saslTrans.getUnderlyingTransport();
+       if (underlying instanceof TMessageSizeTransport) {
+         underlying = ((TMessageSizeTransport) underlying).getWrapped();
+       }
+
+        Socket socket = ((TSocket) underlying).getSocket();
        remoteAddress.set(socket.getInetAddress());
 
        String mechanismName = saslServer.getMechanismName();
@@ -716,7 +726,7 @@ public abstract class HadoopThriftAuthBridge {
       @Override
       public TTransport getTransport(final TTransport trans) throws TTransportException {
         // We use the null return result to work around no Exception throws clause for UserGroupInformation doAs method.
-        TTransport result = ugi.doAs(new PrivilegedAction<TTransport>() {
+        TTransport saslTransport = ugi.doAs(new PrivilegedAction<TTransport>() {
           @Override
           public TTransport run() {
             try {
@@ -737,10 +747,15 @@ public abstract class HadoopThriftAuthBridge {
             }
           }
         });
-        if (result == null) {
-          throw new TTransportException(cause);
+        if (saslTransport == null) {
+          return null;
         }
-        return result;
+        try {
+          return new TMessageSizeTransport(saslTransport);
+        } catch (TTransportException ex) {
+          LOG.warn("Failed to wrap server transport with TMessageSizeTransport", ex);
+          return saslTransport;
+        }
       }
     }
   }
