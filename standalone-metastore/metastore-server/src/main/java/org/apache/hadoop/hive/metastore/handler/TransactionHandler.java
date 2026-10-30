@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
@@ -98,12 +99,21 @@ import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsDataConverter;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
+
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartValsFromName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -491,6 +501,11 @@ public abstract class TransactionHandler extends DeprecatedHandler {
   }
   @Override
   public CompactionResponse compact2(CompactionRequest rqst) throws TException {
+    // compact2 is a maintenance API: trusted callers (HiveServer2, the compactor) have already been authorized
+    // for the operation, everybody else is authorized against the requested table.
+    if (!hasProxyPrivilege()) {
+      authorizeAndPrepareCompactionRequest(rqst);
+    }
     return getTxnHandler().compact(rqst);
   }
 
@@ -505,7 +520,88 @@ public abstract class TransactionHandler extends DeprecatedHandler {
   @Override
   public boolean submit_for_cleanup(CompactionRequest rqst, long highestWriteId, long txnId)
       throws TException {
+    if (!hasProxyPrivilege()) {
+      try {
+        authorizeAndPrepareCompactionRequest(rqst);
+      } catch (NoSuchObjectException e) {
+        // The table/partition does not exist (anymore): there is nothing an untrusted caller may clean up.
+        LOG.info("Ignoring the cleanup request of {}.{}: {}", rqst.getDbname(), rqst.getTablename(),
+            e.getMessage());
+        return false;
+      }
+    }
     return getTxnHandler().submitForCleanup(rqst, highestWriteId, txnId);
+  }
+
+  /**
+   * Authorize a compaction/cleanup request of a caller that has no proxy privilege and derive the
+   * server-side request attributes: the table is authorized with a {@link PreAlterTableEvent}, the
+   * canonical db/table names are used for the queued request, the run-as user is derived from the
+   * storage location and a caller-supplied cleanup location must stay inside the table/partition location.
+   *
+   * @throws NoSuchObjectException if the table or the partition does not exist
+   */
+  private void authorizeAndPrepareCompactionRequest(CompactionRequest rqst) throws TException {
+    if (rqst.getDbname() == null || rqst.getTablename() == null) {
+      throw new MetaException("The DB and table name cannot be null.");
+    }
+    String[] parsedDbName = parseDbName(rqst.getDbname(), conf);
+    String catName = parsedDbName[CAT_NAME];
+    String dbName = parsedDbName[DB_NAME];
+    if (!getDefaultCatalog(conf).equalsIgnoreCase(catName)) {
+      // the compaction queue has no notion of catalogs, so the request would end up on the default catalog
+      throw new MetaException("Compaction and cleanup requests are only supported for the default catalog, got "
+          + catName);
+    }
+
+    GetTableRequest getTableRequest = new GetTableRequest(dbName, rqst.getTablename());
+    getTableRequest.setCatName(catName);
+    Table table = get_table_core(getTableRequest);
+    // the listeners (e.g. the transactional validation) may modify the new table, so the old state must be kept
+    firePreEvent(new PreAlterTableEvent(table, table.deepCopy(), this));
+
+    // queue the request for the table that has been authorized
+    rqst.setDbname(table.getDbName());
+    rqst.setTablename(table.getTableName());
+
+    String location = table.getSd() == null ? null : table.getSd().getLocation();
+    // The partitions of non-native tables (e.g. Iceberg) are not stored in HMS: they are resolved by the storage
+    // handler, so such requests are authorized and validated against the table.
+    if (rqst.isSetPartitionname() && rqst.getPartitionname() != null && !MetaStoreUtils.isNonNativeTable(table)) {
+      List<String> partVals = getPartValsFromName(table, rqst.getPartitionname());
+      Partition partition = getMS().getPartition(catName, table.getDbName(), table.getTableName(), partVals);
+      // queue the canonical partition name, the Cleaner looks the partition up by it
+      rqst.setPartitionname(Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()));
+      location = partition.getSd().getLocation();
+    }
+    if (location == null) {
+      throw new MetaException("Cannot determine storage location of " + table.getDbName() + "."
+          + table.getTableName() + "; compaction is not supported for this table or partition");
+    }
+
+    String requestedLocation = rqst.getProperties() == null ? null : rqst.getProperties().get(META_TABLE_LOCATION);
+    if (requestedLocation != null) {
+      // The Cleaner purges the supplied location as is, so it must not point outside the authorized table
+      Path requested = normalizePath(new Path(requestedLocation));
+      if (!FileUtils.isPathWithinSubtree(requested, normalizePath(new Path(location)))) {
+        throw new MetaException("Cleanup location " + requestedLocation + " is not inside the location of "
+            + table.getDbName() + "." + table.getTableName());
+      }
+      rqst.putToProperties(META_TABLE_LOCATION, requested.toString());
+    }
+    try {
+      rqst.setRunas(TxnUtils.findUserToRunAs(location, table, conf));
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new MetaException("Interrupted while determining the run-as user of the compaction request");
+    } catch (IOException e) {
+      throw new MetaException("Cannot determine the run-as user of the compaction request: " + e.getMessage());
+    }
+  }
+
+  private Path normalizePath(Path path) throws MetaException {
+    // resolve scheme/authority and strip any "." / ".." segments so that the containment check cannot be bypassed
+    return getWh().getDnsPath(new Path(path.toUri().normalize()));
   }
 
   @Override
