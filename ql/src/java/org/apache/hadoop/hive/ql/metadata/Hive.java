@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
@@ -210,8 +211,6 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -472,11 +471,7 @@ public class Hive implements AutoCloseable {
       if (c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname) != null) {
         String[] capabilities = c.get(HiveConf.ConfVars.METASTORE_CLIENT_CAPABILITIES.varname).split(",");
         newdb.setHMSClientCapabilities(capabilities);
-        String hostName = "unknown";
-        try {
-          hostName = InetAddress.getLocalHost().getCanonicalHostName();
-        } catch (UnknownHostException ue) {
-        }
+        String hostName = ServerUtils.canonicalHostname();
         newdb.setHMSClientIdentifier("Hiveserver2#" + HiveVersionInfo.getVersion() + "@" + hostName);
       }
     }

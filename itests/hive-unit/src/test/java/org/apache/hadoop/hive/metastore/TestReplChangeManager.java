@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
 
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
-
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -580,7 +580,7 @@ public class TestReplChangeManager {
     }
     builder.append(IPStackUtils.resolveLoopbackAddress());
     builder.append(",");
-    builder.append(InetAddress.getLocalHost().getCanonicalHostName());
+    builder.append(ServerUtils.canonicalHostname());
     conf.setStrings(DefaultImpersonationProvider.getTestProvider().getProxySuperuserIpConfKey(superUserShortName),
       builder.toString());
   }

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketAddress;
@@ -42,6 +41,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.common.IPStackUtils;
@@ -272,7 +272,7 @@ public class MetaStoreTestUtils {
     if (msHost != null && !msHost.trim().isEmpty()) {
       uri = msHost;
     } else {
-      uri = InetAddress.getLocalHost().getHostName();
+      uri = MetaStoreUtils.getHostname();
     }
     uri = IPStackUtils.concatHostPort(uri, port);
     int retries = 0;

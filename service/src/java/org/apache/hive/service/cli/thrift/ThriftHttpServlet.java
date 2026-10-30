@@ -21,7 +21,6 @@ package org.apache.hive.service.cli.thrift;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -44,6 +43,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -197,8 +197,7 @@ public class ThriftHttpServlet extends TServlet {
         // Skip authentication if the connection is from the trusted domain, if specified.
         // getRemoteHost may or may not return the FQDN of the remote host depending upon the
         // HTTP server configuration. So, force a reverse DNS lookup.
-        String remoteHostName =
-                InetAddress.getByName(clientIpAddress).getCanonicalHostName();
+        String remoteHostName = ServerUtils.canonicalHostname(clientIpAddress);
         if (!trustedDomain.isEmpty() &&
                 PlainSaslHelper.isHostFromTrustedDomain(remoteHostName, trustedDomain)) {
           LOG.info("No authentication performed because the connecting host " + remoteHostName +

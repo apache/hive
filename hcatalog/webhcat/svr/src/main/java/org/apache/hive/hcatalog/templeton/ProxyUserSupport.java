@@ -187,7 +187,7 @@ final class ProxyUserSupport {
 
   private static String normalizeHostname(String name) {
     try {
-      InetAddress address = InetAddress.getByName( 
+      InetAddress address = InetAddress.getByName(
           "localhost".equalsIgnoreCase(name) ? null : name);
       return address.getCanonicalHostName();
     }
