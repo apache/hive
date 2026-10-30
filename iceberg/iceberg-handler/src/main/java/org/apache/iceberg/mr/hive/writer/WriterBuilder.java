@@ -59,7 +59,6 @@ import org.apache.iceberg.util.ContentFileUtil;
 import org.apache.iceberg.util.DeleteFileSet;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SerializationUtil;
-import org.apache.iceberg.util.SnapshotUtil;
 
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT;
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT;
@@ -154,7 +153,8 @@ public class WriterBuilder {
   }
 
   private Map<String, DeleteFileSet> rewritableDeletes(UnaryOperator<String> ops) {
-    Snapshot snapshot = SnapshotUtil.latestSnapshot(table, ops.apply(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF));
+    // the branch the write commits to
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, ops.apply(Catalogs.SNAPSHOT_REF));
     boolean caseSensitive = ObjectUtils.defaultIfNull(
         Boolean.parseBoolean(ops.apply(InputFormatConfig.CASE_SENSITIVE)),
         InputFormatConfig.CASE_SENSITIVE_DEFAULT);
