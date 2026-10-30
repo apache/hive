@@ -27,6 +27,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.Parameter;
+import org.apache.iceberg.ParameterizedTestExtension;
+import org.apache.iceberg.Parameters;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -36,55 +39,48 @@ import org.apache.iceberg.data.DeleteReadTests;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.util.StructLikeSet;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Parameterized.class)
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ExtendWith(ParameterizedTestExtension.class)
 public class TestInputFormatReaderDeletes extends DeleteReadTests {
   private final Configuration conf = new Configuration();
   private final HadoopTables tables = new HadoopTables(conf);
   private TestHelper helper;
 
-  // parametrized variables
-  private final String inputFormat;
-  private final FileFormat fileFormat;
+  @Parameter(index = 2)
+  private String inputFormat;
 
-  @Parameterized.Parameters(name = "fileFormat = {0}, formatVersion = {1}, inputFormat={2}")
+  @Parameters(name = "fileFormat = {0}, formatVersion = {1}, inputFormat = {2}")
   public static Object[][] parameters() {
     return new Object[][] {
-        { FileFormat.PARQUET, 2, "IcebergInputFormat" },
-        { FileFormat.AVRO, 2, "IcebergInputFormat" },
-        { FileFormat.ORC, 2, "IcebergInputFormat" },
-        { FileFormat.PARQUET, 2, "MapredIcebergInputFormat" },
-        { FileFormat.AVRO, 2, "MapredIcebergInputFormat" },
-        { FileFormat.ORC, 2, "MapredIcebergInputFormat" },
-        { FileFormat.PARQUET, 3, "IcebergInputFormat" },
-        { FileFormat.PARQUET, 3, "MapredIcebergInputFormat" },
+        {FileFormat.PARQUET, 2, "IcebergInputFormat"},
+        {FileFormat.AVRO, 2, "IcebergInputFormat"},
+        {FileFormat.ORC, 2, "IcebergInputFormat"},
+        {FileFormat.PARQUET, 2, "MapredIcebergInputFormat"},
+        {FileFormat.AVRO, 2, "MapredIcebergInputFormat"},
+        {FileFormat.ORC, 2, "MapredIcebergInputFormat"},
+        {FileFormat.PARQUET, 3, "IcebergInputFormat"},
+        {FileFormat.PARQUET, 3, "MapredIcebergInputFormat"},
     };
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void writeTestDataFile() throws IOException {
     conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
     super.writeTestDataFile();
   }
 
-  public TestInputFormatReaderDeletes(FileFormat fileFormat, int formatVersion, String inputFormat) {
-    super(formatVersion);
-    this.fileFormat = fileFormat;
-    this.inputFormat = inputFormat;
-  }
-
   @Override
   protected Table createTable(String name, Schema schema, PartitionSpec spec) throws IOException {
     Table table;
 
-    File location = temp.newFolder(inputFormat, fileFormat.name());
-    Assert.assertTrue(location.delete());
-    helper = new TestHelper(conf, tables, location.toString(), schema, spec, fileFormat, temp);
+    File location = temp.resolve(inputFormat).resolve(format.name()).toFile();
+    assertThat(location.mkdirs()).isTrue();
+    helper = new TestHelper(conf, tables, location.toString(), schema, spec, format, temp);
     table = helper.createTable();
 
     TableOperations ops = ((BaseTable) table).operations();
@@ -101,17 +97,20 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
 
   @Override
   public StructLikeSet rowSet(String name, Table table, String... columns) {
-    InputFormatConfig.ConfigBuilder builder = new InputFormatConfig.ConfigBuilder(conf).readFrom(table.location());
+    InputFormatConfig.ConfigBuilder builder =
+        new InputFormatConfig.ConfigBuilder(conf).readFrom(table.location());
     Schema projected = table.schema().select(columns);
     StructLikeSet set = StructLikeSet.create(projected.asStruct());
 
-    set.addAll(TestIcebergInputFormats.TESTED_INPUT_FORMATS.stream()
-        .filter(recordFactory -> recordFactory.name().equals(inputFormat))
-        .map(recordFactory -> recordFactory.create(builder.project(projected).conf()).getRecords())
-        .flatMap(List::stream)
-        .map(record -> new InternalRecordWrapper(projected.asStruct()).wrap(record))
-        .collect(Collectors.toList())
-    );
+    set.addAll(
+        TestIcebergInputFormats.TESTED_INPUT_FORMATS.stream()
+            .filter(recordFactory -> recordFactory.name().equals(inputFormat))
+            .map(
+                recordFactory ->
+                    recordFactory.create(builder.project(projected).conf()).getRecords())
+            .flatMap(List::stream)
+            .map(record -> new InternalRecordWrapper(projected.asStruct()).wrap(record))
+            .collect(Collectors.toList()));
 
     return set;
   }
