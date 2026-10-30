@@ -148,8 +148,8 @@ public class TestMRCompactorJobQueueConfiguration {
 
   private static JobConf createBaseJobConf(Map<String, String> tableProperties,
         Map<String, String> compactionProperties, Map<String, String> confProperties) {
-      Table tbl = createPersonTable();
-      tbl.setParameters(new HashMap<>(tableProperties));
+    Table tbl = createPersonTable();
+    tbl.setParameters(new HashMap<>(tableProperties));
     MRCompactor compactor = new MRCompactor(null);
     CompactionInfo ci = new CompactionInfo(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MAJOR);
     ci.properties = new StringableMap(new HashMap<>(compactionProperties)).toString();
