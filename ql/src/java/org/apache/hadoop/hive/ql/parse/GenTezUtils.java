@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -110,6 +112,10 @@ public class GenTezUtils {
     // one parent.
     assert context.parentOfRoot instanceof ReduceSinkOperator;
     ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
+
+    // Align the reducer estimates without changing hashing or adaptive parallelism. Merge-join
+    // inputs are combined into one Tez vertex, whose parallelism is shared by all incoming edges.
+    normalizeMergeJoinReducers(reduceSink);
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
     reduceWork.setSlowStart(reduceSink.getConf().isSlowStart());
@@ -186,6 +192,128 @@ public class GenTezUtils {
     context.connectedReduceSinks.add(reduceSink);
 
     return reduceWork;
+  }
+
+  /**
+   * Aligns reducer estimates for merge-join inputs represented by separate ReduceWorks, identified
+   * by a {@link TezDummyStoreOperator} parent. These works are later combined into one Tez vertex.
+   * Leaves fixed bucket counts alone when none of the inputs has an estimated reducer count.
+   * Reducer traits must be preserved: UNIFORM selects the partition hash, and AUTOPARALLEL lets
+   * the shared vertex adjust its parallelism for all inputs together.
+   */
+  private static void normalizeMergeJoinReducers(ReduceSinkOperator reduceSink) {
+    CommonMergeJoinOperator mergeJoin = findDownstreamMergeJoin(reduceSink, 8);
+    if (mergeJoin == null || !hasDummyStoreParent(mergeJoin)) {
+      return;
+    }
+    List<ReduceSinkOperator> allRS = findUpstreamRSs(mergeJoin).orElse(Collections.emptyList());
+    if (allRS.isEmpty() || !hasEstimatedReducers(allRS)) {
+      return;
+    }
+    int maxNR = maxNumReducers(allRS);
+    if (maxNR <= 0) {
+      return;
+    }
+    for (ReduceSinkOperator rs : allRS) {
+      rs.getConf().setNumReducers(maxNR);
+    }
+  }
+
+  private static boolean hasDummyStoreParent(CommonMergeJoinOperator mergeJoin) {
+    for (Operator<?> parent : mergeJoin.getParentOperators()) {
+      if (parent instanceof TezDummyStoreOperator) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the ReduceSink feeding each parent of the merge join, or empty if the lineage of any
+   * parent cannot be resolved. Normalizing only the inputs that could be found would leave the
+   * unresolved one with a different numReducers, so the caller must leave every input untouched.
+   */
+  private static Optional<List<ReduceSinkOperator>> findUpstreamRSs(
+      CommonMergeJoinOperator mergeJoin) {
+    List<ReduceSinkOperator> allRS = new ArrayList<>();
+    for (Operator<?> parent : mergeJoin.getParentOperators()) {
+      ReduceSinkOperator rsAnc = findUpstreamRS(parent, 8);
+      if (rsAnc == null) {
+        return Optional.empty();
+      }
+      allRS.add(rsAnc);
+    }
+    return Optional.of(allRS);
+  }
+
+  private static boolean hasEstimatedReducers(List<ReduceSinkOperator> allRS) {
+    for (ReduceSinkOperator rs : allRS) {
+      if (rs.getConf().getReducerTraits().contains(AUTOPARALLEL)
+          || rs.getConf().getReducerTraits().contains(UNIFORM)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static int maxNumReducers(List<ReduceSinkOperator> allRS) {
+    int maxNR = 0;
+    for (ReduceSinkOperator rs : allRS) {
+      maxNR = Math.max(maxNR, rs.getConf().getNumReducers());
+    }
+    return maxNR;
+  }
+
+  private static CommonMergeJoinOperator findDownstreamMergeJoin(
+      ReduceSinkOperator rs, int maxDepth) {
+    Operator<?> curr = rs;
+    for (int d = 0; d < maxDepth; d++) {
+      List<Operator<?>> children = curr.getChildOperators();
+      if (children == null || children.isEmpty()) {
+        break;
+      }
+      // A branch (e.g. shared work reused across multiple consumers, as in sharedwork.q) means
+      // we can no longer be sure which downstream path is the one relevant to this RS - bail
+      // rather than guess, since guessing wrong can misidentify an unrelated merge join and
+      // normalize reducers that have nothing to do with it.
+      if (children.size() > 1) {
+        return null;
+      }
+      curr = children.get(0);
+      if (curr instanceof CommonMergeJoinOperator mergeJoin) {
+        return mergeJoin;
+      }
+      // Another ReduceSink starts a later shuffle stage. A merge join reached only past it belongs
+      // to that stage, not to this RS, so stop here instead of attributing it to this RS.
+      if (curr instanceof ReduceSinkOperator) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  private static ReduceSinkOperator findUpstreamRS(Operator<?> op, int maxDepth) {
+    if (op instanceof ReduceSinkOperator reduceSink) {
+      return reduceSink;
+    }
+    Operator<?> curr = op;
+    for (int d = 0; d < maxDepth; d++) {
+      List<Operator<?>> parents = curr.getParentOperators();
+      if (parents == null || parents.isEmpty()) {
+        break;
+      }
+      // Same reasoning as findDownstreamMergeJoin: a branch point (e.g. a join or union
+      // upstream) means we cannot reliably pick the one lineage that actually feeds this
+      // merge join, so bail instead of guessing.
+      if (parents.size() > 1) {
+        return null;
+      }
+      curr = parents.get(0);
+      if (curr instanceof ReduceSinkOperator upstreamRS) {
+        return upstreamRS;
+      }
+    }
+    return null;
   }
 
   /**
