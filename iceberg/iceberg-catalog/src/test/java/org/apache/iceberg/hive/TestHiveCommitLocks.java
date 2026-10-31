@@ -32,9 +32,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.iceberg.CatalogProperties;
@@ -371,7 +374,7 @@ public class TestHiveCommitLocks {
         .isInstanceOf(RuntimeException.class)
         .hasMessage(
             "org.apache.iceberg.hive.LockException: " +
-                "Interrupted while creating lock on table hive.hivedb.tbl");
+                "Interrupted while creating lock on table hivedb.tbl");
 
     verify(spyClient, times(1)).unlock(eq(dummyLockId));
     // Make sure that we exit the lock loop on InterruptedException
@@ -395,7 +398,7 @@ public class TestHiveCommitLocks {
         .isInstanceOf(RuntimeException.class)
         .hasMessage(
             "org.apache.iceberg.hive.LockException: " +
-                "Could not acquire the lock on hive.hivedb.tbl, lock request ended in state WAITING");
+                "Could not acquire the lock on hivedb.tbl, lock request ended in state WAITING");
 
     verify(spyClient, times(1)).unlock(eq(dummyLockId));
     // Make sure that we exit the checkLock loop on InterruptedException
@@ -454,7 +457,7 @@ public class TestHiveCommitLocks {
         .isInstanceOf(CommitFailedException.class)
         .hasMessage(
             "org.apache.iceberg.hive.LockException: " +
-                "Could not acquire the lock on hive.hivedb.tbl, lock request ended in state NOT_ACQUIRED");
+                "Could not acquire the lock on hivedb.tbl, lock request ended in state NOT_ACQUIRED");
   }
 
   @Test
@@ -472,7 +475,7 @@ public class TestHiveCommitLocks {
         .isInstanceOf(CommitFailedException.class)
         .hasMessage(
             "org.apache.iceberg.hive.LockException: " +
-                "Could not acquire the lock on hive.hivedb.tbl, lock request ended in state NOT_ACQUIRED");
+                "Could not acquire the lock on hivedb.tbl, lock request ended in state NOT_ACQUIRED");
   }
 
   @Test
@@ -484,7 +487,7 @@ public class TestHiveCommitLocks {
         .isInstanceOf(CommitFailedException.class)
         .hasMessageStartingWith("org.apache.iceberg.hive.LockException")
         .hasMessageContaining("Timed out after")
-        .hasMessageEndingWith("waiting for lock on hive.hivedb.tbl");
+        .hasMessageEndingWith("waiting for lock on hivedb.tbl");
   }
 
   @Test
@@ -509,7 +512,7 @@ public class TestHiveCommitLocks {
       assertThatThrownBy(() -> spyOps.doCommit(metadataV2, metadataV1))
           .isInstanceOf(CommitFailedException.class)
           .hasMessage(
-              "org.apache.iceberg.hive.LockException: Failed to find lock for table hive.hivedb.tbl");
+              "org.apache.iceberg.hive.LockException: Failed to find lock for table hivedb.tbl");
     }
   }
 
@@ -522,7 +525,7 @@ public class TestHiveCommitLocks {
     assertThatThrownBy(() -> spyOps.doCommit(metadataV2, metadataV1))
         .isInstanceOf(RuntimeException.class)
         .hasMessage(
-            "org.apache.iceberg.hive.LockException: Metastore operation failed for hive.hivedb.tbl");
+            "org.apache.iceberg.hive.LockException: Metastore operation failed for hivedb.tbl");
   }
 
   @Test
@@ -538,7 +541,7 @@ public class TestHiveCommitLocks {
         .isInstanceOf(CommitFailedException.class)
         .hasMessage(
             "org.apache.iceberg.hive.LockException: " +
-                "Could not acquire the lock on hive.hivedb.tbl, lock request ended in state WAITING");
+                "Could not acquire the lock on hivedb.tbl, lock request ended in state WAITING");
   }
 
   @Test
@@ -634,5 +637,27 @@ public class TestHiveCommitLocks {
     assertThat(context).hasSize(3);
     assertThat(METADATA_LOCATION_PROP).isEqualTo(context.get("expected_parameter_key"));
     assertThat(metadataV2.metadataFileLocation()).isEqualTo(context.get("expected_parameter_value"));
+  }
+
+  @Test
+  public void testLockConflictsWithOtherEnginesWhateverTheCatalogName() throws Exception {
+    // The Iceberg catalog name is not an HMS catalog; other engines lock without a catalog
+    MetastoreLock icebergLock = new MetastoreLock(overriddenHiveConf, spyCachedClientPool,
+        IcebergCatalogProperties.ICEBERG_DEFAULT_CATALOG_NAME, DB_NAME, TABLE_NAME);
+    icebergLock.lock();
+    try {
+      LockComponent otherEngineComponent = new LockComponent(LockType.EXCL_WRITE, LockLevel.TABLE, DB_NAME);
+      otherEngineComponent.setTablename(TABLE_NAME);
+      LockRequest otherEngineRequest = new LockRequest(
+          Lists.newArrayList(otherEngineComponent), "otherEngineUser", "localhost");
+      LockResponse otherEngineResponse = spyClient.lock(otherEngineRequest);
+      try {
+        assertThat(otherEngineResponse.getState()).isEqualTo(LockState.WAITING);
+      } finally {
+        spyClient.unlock(otherEngineResponse.getLockid());
+      }
+    } finally {
+      icebergLock.unlock();
+    }
   }
 }
