@@ -193,6 +193,14 @@ public class DatabaseProduct implements Configurable {
     return theDatabaseProduct;
   }
 
+  /**
+   * HMS checks how many rows its UPDATEs match, also when an UPDATE writes the value a row holds already; with
+   * useAffectedRows=true the MySQL and MariaDB drivers count such a row as unchanged.
+   */
+  public static boolean countsChangedRowsOnly(String connectionUrl) {
+    return getDbType(connectionUrl) == DbType.MYSQL && connectionUrl.toLowerCase().contains("useaffectedrows=true");
+  }
+
   private static DbType getDbType(String productName) {
     DbType dbt;
     productName = productName.replaceAll("\\s+", "").toLowerCase();

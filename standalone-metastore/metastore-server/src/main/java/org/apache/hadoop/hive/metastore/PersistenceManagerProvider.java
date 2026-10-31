@@ -275,6 +275,10 @@ public class PersistenceManagerProvider {
             if (databaseProduct == null) {
               String url = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
               databaseProduct = DatabaseProduct.determineDatabaseProduct(url, conf);
+              if (DatabaseProduct.countsChangedRowsOnly(url)) {
+                LOG.error("{} sets useAffectedRows=true, with which HMS lock waits and metadata_location " +
+                    "compare-and-swap updates fail: remove it", MetastoreConf.ConfVars.CONNECT_URL_KEY.getVarname());
+              }
             }
           }
           // downgrade by acquiring read lock before releasing write lock

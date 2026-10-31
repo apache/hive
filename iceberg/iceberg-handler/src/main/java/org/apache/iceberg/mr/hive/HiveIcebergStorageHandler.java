@@ -938,15 +938,19 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return LockType.SHARED_READ;
     }
     if (HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf)) {
-      throw new RuntimeException("Hive locking on table `" + hmsTable.getFullTableName() +
-          "`cannot be enabled when `engine.hive.lock-enabled`=`true`. " +
-          "Disable `engine.hive.lock-enabled` to use Hive locking");
+      throw new RuntimeException(hiveLockConflict(hmsTable.getFullTableName().toString()));
     }
     return switch (writeEntity.getWriteType()) {
       case INSERT_OVERWRITE -> LockType.EXCL_WRITE;
       case UPDATE, DELETE -> sharedWrite ? LockType.SHARED_WRITE : LockType.EXCL_WRITE;
       default -> LockType.SHARED_WRITE;
     };
+  }
+
+  static String hiveLockConflict(String tableName) {
+    return "Hive locking on table `" + tableName + "` cannot be used when `engine.hive.lock-enabled`=`true`. " +
+        "Set hive.txn.ext.locking.enabled=false for the session, or disable `engine.hive.lock-enabled` if no " +
+        "writer of the table relies on it";
   }
 
   @Override
