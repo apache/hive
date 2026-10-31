@@ -55,6 +55,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 
+/**
+ * Generic UDAF for the RANK window function.
+ */
 @Description(
         name = "rank",
         value = "_FUNC_(x)")

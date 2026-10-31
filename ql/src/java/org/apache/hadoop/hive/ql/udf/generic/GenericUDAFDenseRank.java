@@ -36,6 +36,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 
+/**
+ * Generic UDAF for the DENSE_RANK window function.
+ */
 @Description(
         name = "dense_rank",
         value = "_FUNC_(x) The difference between RANK and DENSE_RANK is that DENSE_RANK leaves no " +

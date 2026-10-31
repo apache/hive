@@ -33,6 +33,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.GenericUDAFLeadEval
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLead.LeadBuffer;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFLeadLag.GenericUDAFLeadLagEvaluator;
 
+/**
+ * Generic UDAF for the LAG window function.
+ */
 @Description(
         name = "lag",
         value = "_FUNC_(expr, amt, default)")

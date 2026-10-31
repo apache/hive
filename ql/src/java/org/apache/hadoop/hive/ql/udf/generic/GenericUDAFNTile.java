@@ -39,6 +39,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 
+/**
+ * Generic UDAF for the NTILE window function.
+ */
 @Description(
         name = "rank",
         value = "_FUNC_(x) NTILE allows easy calculation of tertiles, quartiles, deciles and other "
