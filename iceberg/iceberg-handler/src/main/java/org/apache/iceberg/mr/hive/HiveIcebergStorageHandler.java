@@ -279,16 +279,28 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets) {
-    if (!IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
+    Properties props = tableDesc.getProperties();
+    if (props == null) {
       return;
     }
+    boolean vendedCredentials = IcebergVendedCredentialUtil.requestsVendedCredentials(props, conf);
+    if (!vendedCredentials && !RestCatalogScanPlanningUtil.isServerSideScanPlanningEnabled(conf)) {
+      return;
+    }
+    Table table;
     try {
-      Table table =
-          IcebergVendedCredentialUtil.getTableWithVendedCredentials(tableDesc.getProperties(), conf);
-      String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
-      IcebergVendedCredentialUtil.propagateToJob(table, catalogName, null, secrets, conf);
-    } catch (NoSuchTableException ex) {
-      // Table may not exist yet for CTAS; credentials will not be available.
+      table = IcebergVendedCredentialUtil.getTableWithVendedCredentials(props, conf);
+    } catch (NoSuchTableException e) {
+      // Table may not exist yet for CTAS; there is nothing to plan or vend credentials for.
+      return;
+    }
+    String catalogName = HiveTableUtil.resolveCatalogName(conf, props.getProperty(InputFormatConfig.CATALOG_NAME));
+
+    if (RestCatalogScanPlanningUtil.shouldPlanServerSide(conf, table)) {
+      RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(catalogName, secrets, conf);
+    }
+    if (vendedCredentials) {
+      secrets.putAll(IcebergVendedCredentialUtil.toJobConf(table, catalogName, conf).secrets());
     }
   }
 
@@ -385,7 +397,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
     jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
 
-    String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
+    String catalogName = tableDesc.getProperty(InputFormatConfig.CATALOG_NAME);
     if (catalogName != null) {
       jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
     }
@@ -1738,6 +1750,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       location = table.location();
       schema = table.schema();
       spec = table.spec();
+      RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(
+          configuration, table, props.getProperty(Catalogs.NAME), map);
 
       // For intra-txn read-after-write: if the table has in-memory metadata with no metadata file
       // (i.e. uncommitted changes from a prior statement in the same txn), write the metadata to
@@ -1753,8 +1767,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
 
       if (isVendedCredentials) {
-        String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-        IcebergVendedCredentialUtil.propagateToJob(table, catalogName, map, null, configuration);
+        String catalogName =
+            HiveTableUtil.resolveCatalogName(configuration, props.getProperty(InputFormatConfig.CATALOG_NAME));
+        IcebergVendedCredentialUtil.toJobConf(table, catalogName, configuration)
+            .properties().forEach(map::putIfAbsent);
         // Serializing the table as-is would embed its FileIO, and with it the vended credentials,
         // into plain job properties: ship a copy over a secret-free FileIO instead; executors
         // restore the credentials from the Credentials channel (setCredentials).
