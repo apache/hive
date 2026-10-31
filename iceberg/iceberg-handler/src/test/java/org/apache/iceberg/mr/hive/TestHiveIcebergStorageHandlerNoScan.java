@@ -1713,7 +1713,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   /**
-   * Requests, while the meta hook is in the alter, the table lock another writer of the table's catalog takes.
+   * Requests, while the meta hook is in the alter, the table lock another engine's Iceberg commit takes: no catalog.
    */
   private LockState otherWriterLockStateDuringAlter(org.apache.hadoop.hive.metastore.api.Table hmsTable,
       AlterTableType alterTableType) throws Exception {
@@ -1722,7 +1722,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
     metaHook.preAlterTable(hmsTable, environmentContext);
     try {
       LockComponent component = new LockComponent(LockType.EXCLUSIVE, LockLevel.TABLE, hmsTable.getDbName());
-      component.setCatName(testTables.catalogName());
       component.setTablename(hmsTable.getTableName());
       LockResponse response = shell.metastore().run(client ->
           client.lock(new LockRequest(Lists.newArrayList(component), "other", "localhost")));
