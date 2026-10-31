@@ -44,6 +44,9 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.expressions.Binder;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.mapping.MappingUtil;
+import org.apache.iceberg.types.Type;
+import org.apache.iceberg.types.TypeUtil;
+import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,14 +145,14 @@ public class VectorizedReadUtils {
     PartitionSpec spec = task.spec();
     Schema currentSchema = spec.schema();
 
+    Schema readSchema = currentSchema;
     TypeDescription readOrcSchema;
     if (ORCSchemaUtil.hasIds(fileSchema)) {
       readOrcSchema = ORCSchemaUtil.buildOrcProjection(currentSchema, fileSchema);
     } else {
-      Schema readSchemaForOriginalFile = currentSchema;
       // In case of migrated, originally partitioned tables, partition values are not present in the file
       if (spec.isPartitioned()) {
-        readSchemaForOriginalFile = currentSchema.select(currentSchema.columns().stream()
+        readSchema = currentSchema.select(currentSchema.columns().stream()
             .filter(c -> !spec.identitySourceIds().contains(c.fieldId()))
             .map(c -> c.name())
             .collect(Collectors.toList()));
@@ -157,10 +160,14 @@ public class VectorizedReadUtils {
 
       TypeDescription typeWithIds =
           ORCSchemaUtil.applyNameMapping(fileSchema, MappingUtil.create(currentSchema));
-      readOrcSchema = ORCSchemaUtil.buildOrcProjection(readSchemaForOriginalFile, typeWithIds);
+      readOrcSchema = ORCSchemaUtil.buildOrcProjection(readSchema, typeWithIds);
     }
 
-    job.set(ColumnProjectionUtils.ORC_SCHEMA_STRING, readOrcSchema.toString());
+    boolean hasUnknownType = TypeUtil.indexById(readSchema.asStruct()).values().stream()
+        .anyMatch(field -> field.type().typeId() == Type.TypeID.UNKNOWN);
+    TypeDescription hiveReadOrcSchema = hasUnknownType ?
+        addUnknownTypePlaceholders(readSchema.asStruct(), readOrcSchema) : readOrcSchema;
+    job.set(ColumnProjectionUtils.ORC_SCHEMA_STRING, hiveReadOrcSchema.toString());
 
     // Predicate pushdowns needs to be adjusted too in case of column renames, we let Iceberg generate this into job
     Expression boundFilter = Binder.bind(currentSchema.asStruct(), residual, false);
@@ -174,5 +181,35 @@ public class VectorizedReadUtils {
 
       job.set(ConvertAstToSearchArg.SARG_PUSHDOWN, ConvertAstToSearchArg.sargToKryo(sarg));
     }
+  }
+
+  /**
+   * Iceberg leaves UNKNOWN fields out of the ORC projection, because they are never written to ORC files. Hive's
+   * vectorized ORC reader fills the row batch by position, so every UNKNOWN field is added back as a column that is
+   * missing from the file, which the reader returns as NULL.
+   */
+  private static TypeDescription addUnknownTypePlaceholders(Type type, TypeDescription orcType) {
+    return switch (type.typeId()) {
+      case STRUCT -> {
+        TypeDescription struct = TypeDescription.createStruct();
+        int orcIndex = 0;
+        for (Types.NestedField field : type.asStructType().fields()) {
+          if (field.type().typeId() == Type.TypeID.UNKNOWN) {
+            struct.addField(field.name() + "_r" + field.fieldId(), TypeDescription.createBoolean());
+          } else {
+            struct.addField(orcType.getFieldNames().get(orcIndex),
+                addUnknownTypePlaceholders(field.type(), orcType.getChildren().get(orcIndex)));
+            orcIndex++;
+          }
+        }
+        yield struct;
+      }
+      case LIST -> TypeDescription.createList(
+          addUnknownTypePlaceholders(type.asListType().elementType(), orcType.getChildren().get(0)));
+      case MAP -> TypeDescription.createMap(
+          addUnknownTypePlaceholders(type.asMapType().keyType(), orcType.getChildren().get(0)),
+          addUnknownTypePlaceholders(type.asMapType().valueType(), orcType.getChildren().get(1)));
+      default -> orcType.clone();
+    };
   }
 }

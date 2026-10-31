@@ -74,6 +74,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,7 +178,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
         .orElse(Collections.emptySet());
 
     Schema schema = schema(tableProperties, hmsTable, identifierFields, request.getDefaultConstraints());
+    schema.columns().forEach(column -> validateUnknownType(column.name(), column.type()));
     PartitionSpec spec = spec(conf, schema, hmsTable);
+    IcebergTableUtil.validateNoUnknownTypePartitioning(spec);
 
     // If there are partition keys specified remove them from the HMS table and add them to the column list
     if (hmsTable.isSetPartitionKeys()) {
@@ -451,6 +454,45 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
             .toList();
 
     return new Schema(cols, identifierFieldIds);
+  }
+
+  /**
+   * UNKNOWN values are omitted from data files, so Iceberg can only write them as top-level columns or as struct
+   * fields that have at least one sibling of another type. Lists, maps and all-UNKNOWN structs would have no
+   * physical representation left.
+   */
+  static void validateUnknownType(String columnPath, Type type) {
+    switch (type.typeId()) {
+      case STRUCT -> {
+        List<Types.NestedField> fields = type.asStructType().fields();
+        Preconditions.checkArgument(fields.stream().anyMatch(field -> !isUnknown(field.type())),
+            "Column '%s' of type %s is not supported: a struct must have at least one field that is not of type " +
+                "unknown", columnPath, type);
+        fields.forEach(field -> validateUnknownType(columnPath + "." + field.name(), field.type()));
+      }
+      case LIST -> {
+        Type elementType = type.asListType().elementType();
+        Preconditions.checkArgument(!isUnknown(elementType),
+            "Column '%s' of type %s is not supported: unknown cannot be used as an array element type",
+            columnPath, type);
+        validateUnknownType(columnPath, elementType);
+      }
+      case MAP -> {
+        Types.MapType mapType = type.asMapType();
+        Preconditions.checkArgument(!isUnknown(mapType.keyType()) && !isUnknown(mapType.valueType()),
+            "Column '%s' of type %s is not supported: unknown cannot be used as a map key or value type",
+            columnPath, type);
+        validateUnknownType(columnPath, mapType.keyType());
+        validateUnknownType(columnPath, mapType.valueType());
+      }
+      default -> {
+        // UNKNOWN and primitive types have no nested types to validate.
+      }
+    }
+  }
+
+  private static boolean isUnknown(Type type) {
+    return type.typeId() == Type.TypeID.UNKNOWN;
   }
 
   protected static PartitionSpec spec(Configuration configuration, Schema schema,

@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_v2 (
+  id INT,
+  placeholder UNKNOWN
+) STORED BY ICEBERG tblproperties('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_v2
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalStateException: Invalid schema for v2:
+- Invalid type for placeholder: unknown is not supported until v3
