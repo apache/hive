@@ -573,18 +573,10 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     THttpClient tHttpClient;
     try {
       if (useSSL) {
-        String trustStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH).trim();
-        if (trustStorePath.isEmpty()) {
-          throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH + " Not configured for SSL connection");
-        }
-        String trustStorePassword = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
-        String trustStoreType = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim();
-        String trustStoreAlgorithm = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
         String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
         String includeCipherSuites = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES);
-        tHttpClient =
-            SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword, trustStoreAlgorithm,
-                trustStoreType, includeProtocols, includeCipherSuites, httpClientBuilder);
+        tHttpClient = SecurityUtils.getThriftHttpsClient(httpUrl, getClientKeyStore(), getClientTrustStore(),
+            includeProtocols, includeCipherSuites, httpClientBuilder);
       } else {
         tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
       }
@@ -646,6 +638,26 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     return httpClientBuilder;
   }
 
+  private SecurityUtils.StoreConfig getClientKeyStore() throws IOException {
+    return new SecurityUtils.StoreConfig(
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_CLIENT_KEYSTORE_PATH).trim(),
+        MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_CLIENT_KEYSTORE_PASSWORD),
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_CLIENT_KEYSTORE_TYPE).trim(),
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_CLIENT_KEYMANAGERFACTORY_ALGORITHM).trim());
+  }
+
+  private SecurityUtils.StoreConfig getClientTrustStore() throws IOException {
+    String trustStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH).trim();
+    if (trustStorePath.isEmpty()) {
+      throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH
+          + " Not configured for SSL connection");
+    }
+    return new SecurityUtils.StoreConfig(trustStorePath,
+        MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD),
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim(),
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim());
+  }
+
   private TTransport createBinaryClient(URI store, boolean useSSL) throws TTransportException,
       MetaException {
     TTransport binaryTransport = null;
@@ -655,22 +667,10 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       int connectionTimeout = (int) MetastoreConf.getTimeVar(conf,
           MetastoreConf.ConfVars.CLIENT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
       if (useSSL) {
-        String trustStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH).trim();
-        if (trustStorePath.isEmpty()) {
-          throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH
-              + " Not configured for SSL connection");
-        }
-        String trustStorePassword =
-            MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
-        String trustStoreType =
-            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim();
-        String trustStoreAlgorithm =
-            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
         String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
         String includeCipherSuites = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES);
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-            connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm,
-            includeProtocols, includeCipherSuites);
+            connectionTimeout, getClientKeyStore(), getClientTrustStore(), includeProtocols, includeCipherSuites);
       } else {
         binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
             clientSocketTimeout, connectionTimeout);

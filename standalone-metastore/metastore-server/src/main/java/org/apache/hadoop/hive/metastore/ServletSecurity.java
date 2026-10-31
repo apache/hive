@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -493,17 +494,8 @@ public class ServletSecurity {
     if (!useSsl) {
       return null;
     }
-    final String keyStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH).trim();
-    if (keyStorePath.isEmpty()) {
-      throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_KEYSTORE_PATH
-          + " Not configured for SSL connection");
-    }
-    final String keyStorePassword =
-        MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
-    final String keyStoreType =
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE).trim();
-    final String keyStoreAlgorithm =
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
+    SslContextFactory.Server factory = new SslContextFactory.Server();
+    setServerKeyStore(factory, conf);
     final String[] excludedProtocols =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
     if (LOG.isInfoEnabled()) {
@@ -513,7 +505,6 @@ public class ServletSecurity {
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS));
     String[] includeCipherSuites = SecurityUtils.parseIncludeCipherSuites(
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES));
-    SslContextFactory factory = new SslContextFactory.Server();
     if (includeProtocols.length > 0) {
       factory.setIncludeProtocols(includeProtocols);
     }
@@ -522,14 +513,56 @@ public class ServletSecurity {
       LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = {}",
         Arrays.toString(factory.getExcludeProtocols()));
     }
-    factory.setKeyStorePath(keyStorePath);
-    factory.setKeyStorePassword(keyStorePassword);
-    factory.setKeyStoreType(keyStoreType.isEmpty() ? KeyStore.getDefaultType() : keyStoreType);
-    factory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm.isEmpty() ?
-        KeyManagerFactory.getDefaultAlgorithm() : keyStoreAlgorithm);
     if (includeCipherSuites.length > 0) {
       factory.setIncludeCipherSuites(includeCipherSuites);
     }
+    final SecurityUtils.ClientAuth clientAuth = SecurityUtils.getClientAuth(
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_CLIENT_AUTH));
+    if (clientAuth != SecurityUtils.ClientAuth.NONE) {
+      setServerTrustStore(factory, conf);
+      if (clientAuth == SecurityUtils.ClientAuth.NEED) {
+        factory.setNeedClientAuth(true);
+      } else {
+        factory.setWantClientAuth(true);
+      }
+    }
+    LOG.info("HTTP Server SSL: client authentication: {}", clientAuth);
     return factory;
+  }
+
+  private static void setServerKeyStore(SslContextFactory.Server factory, Configuration conf) throws IOException {
+    final String keyStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH).trim();
+    if (keyStorePath.isEmpty()) {
+      throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_KEYSTORE_PATH
+          + " Not configured for SSL connection");
+    }
+    final String keyStoreType =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE).trim();
+    final String keyStoreAlgorithm =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
+    factory.setKeyStorePath(keyStorePath);
+    factory.setKeyStorePassword(MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD));
+    factory.setKeyStoreType(keyStoreType.isEmpty() ? KeyStore.getDefaultType() : keyStoreType);
+    factory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm.isEmpty() ?
+        KeyManagerFactory.getDefaultAlgorithm() : keyStoreAlgorithm);
+  }
+
+  private static void setServerTrustStore(SslContextFactory.Server factory, Configuration conf) throws IOException {
+    final String trustStorePath =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_SERVER_TRUSTSTORE_PATH).trim();
+    if (trustStorePath.isEmpty()) {
+      throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_SERVER_TRUSTSTORE_PATH
+          + " Not configured for SSL client authentication");
+    }
+    final String trustStoreType =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_SERVER_TRUSTSTORE_TYPE).trim();
+    final String trustStoreAlgorithm =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_SERVER_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+    factory.setTrustStorePath(trustStorePath);
+    factory.setTrustStorePassword(
+        MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_SERVER_TRUSTSTORE_PASSWORD));
+    factory.setTrustStoreType(trustStoreType.isEmpty() ? KeyStore.getDefaultType() : trustStoreType);
+    factory.setTrustManagerFactoryAlgorithm(trustStoreAlgorithm.isEmpty() ?
+        TrustManagerFactory.getDefaultAlgorithm() : trustStoreAlgorithm);
   }
 }
