@@ -25,21 +25,22 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.ql.ddl.ShowUtils;
+import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.junit.Test;
 
 /**
- * Tests for the DESC CONNECTOR formatters.
+ * Tests withholding of JDBC DBCP credentials from metadata read paths.
  *
- * <p>The DBCP connection properties carried in DCPROPERTIES are the same keys that
- * {@code PlanUtils.getPropertiesForExplain} drops from explain output (HIVE-28838).
- * The formatters here render the connector parameter map, so they are expected to keep
- * these values out of it too -- by withholding the value rather than dropping the key,
- * since a description is meant to report what is configured.</p>
+ * <p>The DBCP connection properties in DCPROPERTIES or table TBLPROPERTIES are the same keys
+ * that {@code PlanUtils.getPropertiesForExplain} drops from explain output (HIVE-28838).
+ * User-facing descriptions keep the keys but replace values with {@link Constants#WITHHELD_VALUE}.</p>
  */
 public class TestDescDataConnectorFormatter {
 
@@ -97,5 +98,27 @@ public class TestDescDataConnectorFormatter {
   @Test
   public void testJsonExtendedOutputOmitsConnectionPropertyValues() throws Exception {
     assertValuesWithheld(format(new DescDataConnectorFormatter.JsonDescDataConnectorFormatter()));
+  }
+
+  @Test
+  public void testWithholdHelperKeepsKeysButMasksValues() {
+    Map<String, String> described =
+        MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(connectionParams());
+    assertTrue(described.containsKey(Constants.JDBC_USERNAME));
+    assertTrue(described.containsKey(Constants.JDBC_PASSWORD));
+    assertTrue(Constants.WITHHELD_VALUE.equals(described.get(Constants.JDBC_USERNAME)));
+    assertTrue(Constants.WITHHELD_VALUE.equals(described.get(Constants.JDBC_PASSWORD)));
+    assertTrue("MYSQL".equals(described.get(Constants.JDBC_DATABASE_TYPE)));
+  }
+
+  @Test
+  public void testShowCreatePropertiesToStringWithholdsCredentials() {
+    String rendered = ShowUtils.propertiesToString(connectionParams(), Collections.emptySet());
+    assertTrue(rendered.contains(Constants.JDBC_PASSWORD));
+    assertTrue(rendered.contains(Constants.WITHHELD_VALUE));
+    assertFalse("password value leaked in SHOW CREATE tblproperties: " + rendered,
+        rendered.contains(PASSWORD_VALUE));
+    assertFalse("username value leaked in SHOW CREATE tblproperties: " + rendered,
+        rendered.contains(USERNAME_VALUE));
   }
 }

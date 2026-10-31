@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
@@ -100,7 +101,8 @@ public final class ShowUtils {
       return "";
     }
 
-    SortedMap<String, String> sortedProperties = new TreeMap<>(properties);
+    SortedMap<String, String> sortedProperties =
+        new TreeMap<>(MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(properties));
     List<String> realProps = new ArrayList<>();
     for (Map.Entry<String, String> e : sortedProperties.entrySet()) {
       if (e.getValue() != null && !exclude.contains(e.getKey())) {

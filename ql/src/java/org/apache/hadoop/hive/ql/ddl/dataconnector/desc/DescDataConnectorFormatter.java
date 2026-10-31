@@ -20,7 +20,6 @@
 package org.apache.hadoop.hive.ql.ddl.dataconnector.desc;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
@@ -34,7 +33,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Formats DESC CONNECTOR results.
@@ -56,13 +54,7 @@ abstract class DescDataConnectorFormatter {
    * parameter is left untouched.
    */
   private static Map<String, String> describableParams(Map<String, String> params) {
-    if (MapUtils.isEmpty(params)) {
-      return params;
-    }
-    Map<String, String> described = new TreeMap<>(params);
-    described.replaceAll((key, value) ->
-        Constants.JDBC_CONNECTION_CREDENTIALS.contains(key) ? Constants.WITHHELD_VALUE : value);
-    return described;
+    return MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(params);
   }
 
   abstract void showDataConnectorDescription(DataOutputStream out, String connector, String type, String url,
