@@ -336,13 +336,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws TException, InterruptedException {
     if (currentAlterTableOp == null) {
-      // nothing to commit to Iceberg: read the current metadata_location from HMS, as HiveTableOperations does
-      if (hmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
-        String currentMetadataLocation = new CachedClientPool(conf, Maps.fromProperties(tableProperties))
-            .run(client -> client.getTable(hmsTable.getDbName(), hmsTable.getTableName()))
-            .getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-        keepCurrentMetadataLocation(hmsTable.getParameters(), currentMetadataLocation, context);
-      }
+      keepCurrentMetadataFromHms(hmsTable, context);
       return;
     }
     try {
@@ -444,6 +438,27 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       } else {
         keepCurrentMetadataLocation(tblParams, currentMetadata.metadataFileLocation(), context);
       }
+    }
+  }
+
+  /**
+   * An alter without an operation type commits nothing to Iceberg: it carries the current metadata location, read from
+   * HMS as HiveTableOperations does, with the metadata hash that belongs to it.
+   */
+  private void keepCurrentMetadataFromHms(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      EnvironmentContext context) throws TException, InterruptedException {
+    Map<String, String> params = hmsTable.getParameters();
+    if (!params.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+      return;
+    }
+    Map<String, String> currentParams = new CachedClientPool(conf, Maps.fromProperties(tableProperties))
+        .run(client -> client.getTable(hmsTable.getDbName(), hmsTable.getTableName()))
+        .getParameters();
+    keepCurrentMetadataLocation(
+        params, currentParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP), context);
+    String metadataHash = currentParams.get(BaseMetastoreTableOperations.METADATA_HASH_PROP);
+    if (metadataHash != null) {
+      params.put(BaseMetastoreTableOperations.METADATA_HASH_PROP, metadataHash);
     }
   }
 
