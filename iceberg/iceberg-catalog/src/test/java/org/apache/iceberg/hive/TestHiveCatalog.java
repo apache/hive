@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -73,6 +74,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.MockedStatic;
 
 import static org.apache.iceberg.NullOrder.NULLS_FIRST;
 import static org.apache.iceberg.SortDirection.ASC;
@@ -88,7 +90,12 @@ import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 /**
@@ -190,6 +197,27 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     assertThatThrownBy(() -> catalog.renameTable(validFrom, invalidTo))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Invalid identifier: " + invalidTo);
+  }
+
+  @Test
+  public void testRenameDoesNotRevertConcurrentCommit() {
+    TableIdentifier from = TableIdentifier.of(DB_NAME, "rename_from");
+    catalog.buildTable(from, getTestSchema()).create();
+
+    AtomicBoolean committed = new AtomicBoolean();
+    try (MockedStatic<MetastoreUtil> metastoreUtil = mockStatic(MetastoreUtil.class, CALLS_REAL_METHODS)) {
+      // another writer commits after the rename read the table, before the rename writes it back
+      metastoreUtil.when(() -> MetastoreUtil.alterTable(any(), eq(DB_NAME), eq(from.name()), any(), anyMap()))
+          .thenAnswer(invocation -> {
+            if (committed.compareAndSet(false, true)) {
+              catalog.loadTable(from).updateProperties().set("concurrent", "true").commit();
+            }
+            return invocation.callRealMethod();
+          });
+      assertThatThrownBy(() -> catalog.renameTable(from, TableIdentifier.of(DB_NAME, "rename_to")))
+          .hasMessageContaining("Failed to rename");
+    }
+    assertThat(catalog.loadTable(from).properties()).containsEntry("concurrent", "true");
   }
 
   @Test

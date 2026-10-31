@@ -427,8 +427,13 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
       table.setDbName(toDatabase);
       table.setTableName(to.name());
 
+      // the rename writes back what it read: HMS applies it only if no commit moved the metadata location since
+      Map<String, String> expectedMetadataLocation = ImmutableMap.of(
+          HiveOperationsBase.NO_LOCK_EXPECTED_KEY, BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
+          HiveOperationsBase.NO_LOCK_EXPECTED_VALUE,
+          table.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
       clients.run(client -> {
-        MetastoreUtil.alterTable(client, fromDatabase, fromName, table);
+        MetastoreUtil.alterTable(client, fromDatabase, fromName, table, expectedMetadataLocation);
         return null;
       });
 
