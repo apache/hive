@@ -216,6 +216,32 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   }
 
   /**
+   * ORC can filter rows by the pushed down predicate; in row mode, row positions and deletes must still apply to
+   * the right rows.
+   */
+  @Test
+  public void testPositionDeleteWithOrcRowFiltering() {
+    Assume.assumeTrue(fileFormat == FileFormat.ORC && formatVersion >= 2 && !isVectorized);
+
+    Schema schema = new Schema(optional(1, "customer_id", Types.LongType.get()));
+    List<Record> records = TestHelper.generateRandomRecords(schema, 30000, 0L);
+    for (int i = 0; i < records.size(); ++i) {
+      records.get(i).setField("customer_id", (long) i);
+    }
+    testTables.createTable(shell, "customers", schema, PartitionSpec.unpartitioned(), fileFormat, records,
+        formatVersion);
+    shell.executeStatement("DELETE FROM customers WHERE customer_id = 25000");
+
+    shell.setHiveSessionValue("orc.sarg.to.filter", true);
+    shell.setHiveSessionValue("orc.filter.use.selected", true);
+    List<Object[]> result = shell.executeStatement(
+        "SELECT customer_id, ROW__POSITION FROM customers WHERE customer_id IN (25000, 25001)");
+
+    Assert.assertEquals(1, result.size());
+    Assert.assertArrayEquals(new Object[] {25001L, 25001L}, result.get(0));
+  }
+
+  /**
    * Tests reading/consuming legacy Iceberg V2 tables containing position delete files with embedded
    * row data. Iceberg 1.12.0 removed writer support for row data in position deletes, but Hive
    * readers must remain backward compatible and safely ignore the embedded row field when
