@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -1208,6 +1209,40 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
             originalTable, context);
+  }
+
+  @Test
+  public void testAlterTableExpectedPropertyNeedsDirectSql() throws Exception {
+    Assume.assumeFalse(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Table originalTable = testTables[0];
+
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "transient_lastDdlTime");
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE,
+        originalTable.getParameters().get("transient_lastDdlTime"));
+    try {
+      client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
+          originalTable, context);
+      Assert.fail("Expected a MetaException");
+    } catch (MetaException e) {
+      Assert.assertTrue(e.getMessage(), e.getMessage().contains(ConfVars.TRY_DIRECT_SQL.getVarname()));
+    }
+  }
+
+  @Test
+  public void testUpdateTableParamsNeedsDirectSql() throws Exception {
+    Assume.assumeFalse(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Table table = testTables[0];
+
+    TableParamsUpdate update = new TableParamsUpdate(
+        new org.apache.hadoop.hive.metastore.api.TableName(table.getDbName(), table.getTableName()),
+        Collections.singletonMap("test_key", "test_value"));
+    try {
+      client.updateTableParams(Collections.singletonList(update));
+      Assert.fail("Expected a MetaException");
+    } catch (MetaException e) {
+      Assert.assertTrue(e.getMessage(), e.getMessage().contains(ConfVars.TRY_DIRECT_SQL.getVarname()));
+    }
   }
 
   @Test(expected = MetaException.class)

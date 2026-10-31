@@ -119,7 +119,11 @@ public abstract class GetHelper<A, T> {
       // Note that this will be invoked in 2 cases:
       //    1) DirectSQL was disabled to start with;
       //    2) DirectSQL threw and was disabled in handleDirectSqlError.
-      if (!doUseDirectSql && canUseJdoQuery()) {
+      if (!doUseDirectSql) {
+        if (!canUseJdoQuery()) {
+          throw new MetaException("This operation needs direct SQL: set " +
+              MetastoreConf.ConfVars.TRY_DIRECT_SQL.getVarname() + "=true");
+        }
         this.results = getJdoResult();
         LOG.debug("Not using direct SQL optimization.");
       }
