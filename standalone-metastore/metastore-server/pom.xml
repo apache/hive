@@ -455,6 +455,11 @@
       <version>${pac4j-core.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-javaee</artifactId>
+      <version>${pac4j-core.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock-jre8-standalone</artifactId>
       <version>${wiremock.jre8.standalone.version}</version>

@@ -128,7 +128,7 @@
     <slf4j.version>1.7.30</slf4j.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
-    <pac4j-core.version>4.5.8</pac4j-core.version>
+    <pac4j-core.version>6.6.0</pac4j-core.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
     <jetty.version>9.4.57.v20241219</jetty.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
