@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -67,16 +68,11 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
   public RecordWriter getHiveRecordWriter(JobConf jc, Path outPath,
       Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException {
-    int rowSeparator = 0;
     String rowSeparatorString = tableProperties.getProperty(
         serdeConstants.LINE_DELIM, "\n");
-    try {
-      rowSeparator = Byte.parseByte(rowSeparatorString);
-    } catch (NumberFormatException e) {
-      rowSeparator = rowSeparatorString.charAt(0);
-    }
+    final byte[] rowSeparatorBytes =
+        rowSeparatorString.getBytes(StandardCharsets.UTF_8);
 
-    final int finalRowSeparator = rowSeparator;
     FileSystem fs = outPath.getFileSystem(jc);
     final OutputStream outStream = Utilities.createCompressedStream(jc,
     fs.create(outPath, progress), isCompressed);
@@ -86,12 +82,12 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
         if (r instanceof Text) {
           Text tr = (Text) r;
           outStream.write(tr.getBytes(), 0, tr.getLength());
-          outStream.write(finalRowSeparator);
+          outStream.write(rowSeparatorBytes);
         } else {
           // Binary SerDes always write out BytesWritable
           BytesWritable bw = (BytesWritable) r;
           outStream.write(bw.get(), 0, bw.getSize());
-          outStream.write(finalRowSeparator);
+          outStream.write(rowSeparatorBytes);
         }
       }
 
