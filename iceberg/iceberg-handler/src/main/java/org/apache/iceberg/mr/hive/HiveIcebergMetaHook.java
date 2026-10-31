@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -149,6 +150,10 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       AlterTableType.UPDATE_COLUMNS, AlterTableType.RENAME, AlterTableType.EXECUTE, AlterTableType.CREATE_BRANCH,
       AlterTableType.CREATE_TAG, AlterTableType.DROP_BRANCH, AlterTableType.RENAME_BRANCH, AlterTableType.DROPPARTITION,
       AlterTableType.DROP_TAG, AlterTableType.COMPACT, AlterTableType.REPLACE_SNAPSHOTREF);
+  // the alters committing to Iceberg that WriteEntity locks DDL_EXCLUSIVE
+  private static final EnumSet<AlterTableType> EXCLUSIVE_ALTER_OPS = EnumSet.of(
+      AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN, AlterTableType.DROP_COLUMN,
+      AlterTableType.DROPPROPS);
   private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = ImmutableList.of(
       FileFormat.PARQUET.name().toLowerCase(),
       FileFormat.ORC.name().toLowerCase(),
@@ -299,6 +304,9 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     try {
       commitLock.lock();
       doPreAlterTable(hmsTable, context);
+      if (EXCLUSIVE_ALTER_OPS.contains(currentAlterTableOp)) {
+        assertNoHiveLockConflict(hmsTable, icebergTable);
+      }
     } catch (Exception e) {
       commitLock.unlock();
       throw new MetaException(StringUtils.stringifyException(e));
@@ -466,6 +474,20 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY,
           BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
       context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, currentMetadataLocation);
+    }
+  }
+
+  /**
+   * Under external locking the statement holds an exclusive Hive lock of the table, which the lock of its Iceberg
+   * commit would wait on: rejected, as getLockType rejects DML.
+   */
+  private void assertNoHiveLockConflict(org.apache.hadoop.hive.metastore.api.Table hmsTable, Table table)
+      throws MetaException {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED) &&
+        Catalogs.hiveCatalog(conf, IcebergTableProperties.getTableProperties(hmsTable, conf)) &&
+        HiveTableOperations.hiveLockEnabled(table.properties(), conf)) {
+      throw new MetaException(HiveIcebergStorageHandler.hiveLockConflict(
+          TableName.getDbTable(hmsTable.getDbName(), hmsTable.getTableName())));
     }
   }
 
@@ -640,6 +662,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
     this.tableProperties = IcebergTableProperties.getTableProperties(table, conf);
     this.icebergTable = Catalogs.loadTable(conf, tableProperties);
+    assertNoHiveLockConflict(table, icebergTable);
 
     Expression predicate = generateExprFromPartitionNames(partNames);
 
@@ -997,6 +1020,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> partExprs)
       throws MetaException {
     Table icebergTbl = IcebergTableUtil.getTable(conf, hmsTable);
+    assertNoHiveLockConflict(hmsTable, icebergTbl);
     DeleteFiles deleteFiles = icebergTbl.newDelete();
     List<Expression> expressions = partExprs.stream().map(partExpr -> {
       ExprNodeDesc exprNodeDesc = SerializationUtilities.deserializeObjectWithTypeInformation(

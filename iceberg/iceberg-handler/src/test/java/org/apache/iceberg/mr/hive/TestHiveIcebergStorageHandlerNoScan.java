@@ -78,6 +78,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.hive.HiveCatalog;
@@ -1662,6 +1663,64 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertEquals(LockState.ACQUIRED, otherWriterLockStateDuringAlter(hmsTable, null));
     Assert.assertEquals(LockState.ACQUIRED, otherWriterLockStateDuringAlter(hmsTable, AlterTableType.DROPPROPS));
     Assert.assertEquals(LockState.WAITING, otherWriterLockStateDuringAlter(hmsTable, AlterTableType.ADDPROPS));
+  }
+
+  @Test
+  public void testExclusiveDdlRejectedUnderExternalLocking() throws IOException {
+    Assume.assumeTrue("Enough to check for one type only",
+        testTableType.equals(TestTableType.HIVE_CATALOG));
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").build();
+    // a missing check lets each commit wait on its own statement's Hive lock: keep that wait short
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
+        FileFormat.PARQUET, ImmutableList.of(), 2,
+        ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "true", TableProperties.COMMIT_NUM_RETRIES, "0"));
+    PartitionData partitionData = new PartitionData(spec.partitionType());
+    partitionData.set(0, "Johnson");
+    testTables.appendIcebergTable(shell.getHiveConf(), testTables.loadTable(identifier), FileFormat.PARQUET,
+        partitionData, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    org.apache.iceberg.Table table = testTables.loadTable(identifier);
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED.varname, true);
+    shell.setHiveSessionValue("iceberg.hive.lock-timeout-ms", "1000");
+    // the table's own property decides, also for the alter that unsets it
+    shell.setHiveSessionValue(ConfigProperties.LOCK_HIVE_ENABLED, false);
+    String[] exclusiveDdl = {
+        "ALTER TABLE customers ADD COLUMNS (newcol string)",
+        "ALTER TABLE customers UNSET TBLPROPERTIES ('" + TableProperties.HIVE_LOCK_ENABLED + "')",
+        "TRUNCATE TABLE customers",
+        "ALTER TABLE customers DROP PARTITION (last_name='Johnson')"
+    };
+    for (String ddl : exclusiveDdl) {
+      Assertions.assertThatThrownBy(() -> shell.executeStatement(ddl))
+          .hasStackTraceContaining(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED.varname);
+    }
+    org.apache.iceberg.Table unchanged = testTables.loadTable(identifier);
+    Assert.assertEquals(table.currentSnapshot().snapshotId(), unchanged.currentSnapshot().snapshotId());
+    Assert.assertEquals(table.schema().asStruct(), unchanged.schema().asStruct());
+
+    // statements without an Iceberg commit under an exclusive Hive lock run, the remedy included
+    shell.executeStatement("ALTER TABLE customers RENAME TO customers_renamed");
+    shell.executeStatement("ALTER TABLE customers_renamed SET TBLPROPERTIES ('" +
+        TableProperties.HIVE_LOCK_ENABLED + "'='false')");
+    shell.executeStatement("ALTER TABLE customers_renamed ADD COLUMNS (newcol string)");
+    Assert.assertNotNull(testTables.loadTable(TableIdentifier.of("default", "customers_renamed"))
+        .schema().findField("newcol"));
+  }
+
+  @Test
+  public void testExclusiveDdlRunsUnderExternalLockingOutsideHiveCatalog() {
+    Assume.assumeTrue("Enough to check for one type only",
+        testTableType.equals(TestTableType.HADOOP_CATALOG));
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
+
+    // its commits take no Hive commit lock
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED.varname, true);
+    shell.executeStatement("ALTER TABLE customers ADD COLUMNS (newcol string)");
+    Assert.assertNotNull(testTables.loadTable(identifier).schema().findField("newcol"));
   }
 
   @Test
