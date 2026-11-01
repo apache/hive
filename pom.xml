@@ -202,7 +202,7 @@
     <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.137.Final</netty.version>
-    <pac4j-saml.version>4.5.8</pac4j-saml.version>
+    <pac4j-saml.version>6.6.0</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.18.1</parquet.version>
     <pig.version>0.16.0</pig.version>
@@ -225,7 +225,7 @@
     <jaxb-runtime.version>4.0.0-M2</jaxb-runtime.version>
     <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.2</xerces.version>
-    <xmlsec.version>2.3.4</xmlsec.version>
+    <xmlsec.version>4.0.4</xmlsec.version>
     <zookeeper.version>3.9.6</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
@@ -874,7 +874,18 @@
       </dependency>
       <dependency>
         <groupId>org.pac4j</groupId>
-        <artifactId>pac4j-saml-opensamlv3</artifactId>
+        <artifactId>pac4j-javaee</artifactId>
+        <version>${pac4j-saml.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>*</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-saml</artifactId>
         <version>${pac4j-saml.version}</version>
         <exclusions>
           <exclusion>

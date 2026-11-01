@@ -28,6 +28,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.pac4j.core.context.CallContext;
 import org.pac4j.core.context.WebContext;
 import org.pac4j.core.util.generator.ValueGenerator;
 import org.slf4j.Logger;
@@ -68,7 +69,8 @@ public class HiveSamlRelayStateStore implements ValueGenerator {
    * in the SAML authentication request redirect URL.
    */
   @Override
-  public String generateValue(WebContext webContext) {
+  public String generateValue(CallContext callContext) {
+    WebContext webContext = callContext.webContext();
     Optional<String> portNumber = webContext
         .getRequestHeader(HiveSamlUtils.SSO_TOKEN_RESPONSE_PORT);
     if (!portNumber.isPresent()) {

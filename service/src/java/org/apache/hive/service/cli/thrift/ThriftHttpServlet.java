@@ -82,9 +82,12 @@ import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
-import org.pac4j.core.context.JEEContext;
+import org.pac4j.core.context.CallContext;
+import org.pac4j.core.credentials.Credentials;
 import org.pac4j.core.credentials.TokenCredentials;
 import org.pac4j.core.credentials.extractor.BearerAuthExtractor;
+import org.pac4j.jee.context.JEEContext;
+import org.pac4j.jee.context.session.JEESessionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -402,9 +405,10 @@ public class ThriftHttpServlet extends TServlet {
   private String extractBearerToken(HttpServletRequest request,
       HttpServletResponse response) {
     BearerAuthExtractor extractor = new BearerAuthExtractor();
-    Optional<TokenCredentials> tokenCredentials = extractor.extract(new JEEContext(
-        request, response));
-    return tokenCredentials.map(TokenCredentials::getToken).orElse(null);
+    Optional<Credentials> credentials = extractor.extract(
+        new CallContext(new JEEContext(request, response), new JEESessionStore()));
+    return credentials.map(TokenCredentials.class::cast).map(TokenCredentials::getToken)
+        .orElse(null);
   }
 
   /**
