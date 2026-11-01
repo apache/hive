@@ -117,8 +117,10 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
@@ -5010,7 +5012,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       boolean[] evaluatorsAreDistinct,
       boolean[] evaluatorsRespectNulls,
       WindowFrameDef[] evaluatorWindowFrameDefs,
-      List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists) {
+      List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists) throws HiveException {
     final int functionCount = windowsFunctions.size();
     for (int i = 0; i < functionCount; i++) {
       WindowFunctionDef winFunc = windowsFunctions.get(i);
@@ -5025,6 +5027,40 @@ public class Vectorizer implements PhysicalPlanResolver {
         List<ExprNodeDesc> exprNodeDescList = new ArrayList<ExprNodeDesc>();
         for (PTFExpressionDef arg : args) {
           exprNodeDescList.add(arg.getExprNode());
+        }
+
+        // lead/lag(value, amount, default): the default value argument isn't coerced to
+        // the value argument's type by the parser/planner -- GenericUDFLeadLag only converts
+        // it at row-evaluation time via an ObjectInspectorConverters.Converter. Vectorization
+        // has no equivalent runtime conversion step, so do the coercion here, once, by casting
+        // the default-value ExprNodeDesc and immediately evaluating that cast via
+        // ConstantPropagateProcFactory.foldExpr -- VectorizationContext does NOT generically
+        // fold a top-level cast-of-constant on its own; left un-folded, it would vectorize the
+        // cast itself and (lacking a specialized scalar-input cast expression) fall back to a
+        // VectorUDFAdaptor, which VectorPTFEvaluatorAbstractLeadLag correctly rejects.
+        // Identify lead/lag via the same canonical name->type lookup VectorPTFDesc itself uses
+        // to dispatch evaluators, rather than matching the name string here too -- that keeps
+        // this scoped exactly to the functions whose vector evaluator relies on arg[0]/arg[2]
+        // sharing a type, instead of any unrelated 3-argument window function.
+        SupportedFunctionType functionType =
+            VectorPTFDesc.supportedFunctionsMap.get(winFunc.getName().toLowerCase());
+        if (exprNodeDescList.size() == 3 &&
+            (functionType == SupportedFunctionType.LEAD || functionType == SupportedFunctionType.LAG)) {
+          TypeInfo valueTypeInfo = exprNodeDescList.get(0).getTypeInfo();
+          ExprNodeDesc defaultValueExpr = exprNodeDescList.get(2);
+          if (valueTypeInfo instanceof PrimitiveTypeInfo &&
+              !valueTypeInfo.equals(defaultValueExpr.getTypeInfo())) {
+            ExprNodeDesc castExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+                .createConversionCast(defaultValueExpr, (PrimitiveTypeInfo) valueTypeInfo);
+            if (castExpr instanceof ExprNodeGenericFuncDesc) {
+              ExprNodeDesc foldedExpr =
+                  ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc) castExpr);
+              if (foldedExpr instanceof ExprNodeConstantDesc) {
+                castExpr = foldedExpr;
+              }
+            }
+            exprNodeDescList.set(2, castExpr);
+          }
         }
 
         evaluatorInputExprNodeDescLists[i] = exprNodeDescList;
