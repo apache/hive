@@ -150,7 +150,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
    * plans from the serialized table snapshot and never sends {@code POST /plan}.
    */
   @Test
-  void executorJobConfWithoutPropagationUsesSerializedTable() throws IOException {
+  void executorJobConfWithoutPropagationUsesSerializedTable() {
     Table table = createTableWithData();
     Configuration jobConf = executorJobConf(table);
     jobConf.set(InputFormatConfig.TABLE_LOCATION, table.location());
@@ -377,7 +377,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
     return propagatedJobConf(sessionConf(), table);
   }
 
-  private Configuration propagatedJobConf(Configuration sessionConf, Table table) throws IOException {
+  private Configuration propagatedJobConf(Configuration sessionConf, Table table) {
     Configuration jobConf = executorJobConf(table);
     jobConf.set(InputFormatConfig.TABLE_LOCATION, table.location());
     propagateFromHs2(sessionConf, table, jobConf);
