@@ -126,25 +126,28 @@ RUN set -eux; \
     rm -rf /opt/tez-snapshot-download
 
 # Hadoop 3.4.3 puts hadoop-aws on the default classpath but no longer ships the AWS SDK v2 bundle it links against,
-# so s3a:// needs it from here. An empty AWS_SDK_VERSION leaves it out. So does a Hadoop release that ships its own
-# bundle (up to 3.4.2): a second one would end up on the LLAP daemon classpath, which reads share/hadoop/tools/lib.
-# build.sh stages a cached copy under aws-jars/ in the build context; otherwise the bundle is downloaded.
+# so s3a:// needs it from here. It goes next to hadoop-aws in share/hadoop/common/lib, which every process reads
+# through the Hadoop classpath, the hadoop CLI included. An empty AWS_SDK_VERSION leaves it out. So does a Hadoop
+# release that ships its own bundle (up to 3.4.2): a second one would end up on the LLAP daemon classpath, which reads
+# share/hadoop/tools/lib. build.sh stages a cached copy under aws-jars/ in the build context; otherwise the bundle is
+# downloaded.
 ARG AWS_SDK_VERSION=
 ARG AWS_SDK_REPO_URL=https://repo1.maven.org/maven2
 RUN --mount=type=bind,target=/build-context \
     set -eux; \
     bundle="bundle-${AWS_SDK_VERSION}.jar"; \
+    lib_dir="${HADOOP_HOME}/share/hadoop/common/lib"; \
     if [[ -z "${AWS_SDK_VERSION}" ]]; then \
       echo "AWS_SDK_VERSION not set. Skipping the AWS SDK v2 bundle; s3a:// will not work."; \
     elif ls "${HADOOP_HOME}"/share/hadoop/*/lib/bundle-*.jar > /dev/null 2>&1; then \
       echo "Hadoop ${HADOOP_VERSION} ships its own AWS SDK v2 bundle. Not adding another."; \
     else \
       if [[ -f "/build-context/aws-jars/${bundle}" ]]; then \
-        cp "/build-context/aws-jars/${bundle}" "${HIVE_HOME}/lib/"; \
+        cp "/build-context/aws-jars/${bundle}" "${lib_dir}/"; \
       else \
-        wget -q "${AWS_SDK_REPO_URL}/software/amazon/awssdk/bundle/${AWS_SDK_VERSION}/${bundle}" -O "${HIVE_HOME}/lib/${bundle}"; \
+        wget -q "${AWS_SDK_REPO_URL}/software/amazon/awssdk/bundle/${AWS_SDK_VERSION}/${bundle}" -O "${lib_dir}/${bundle}"; \
       fi; \
-      chown hive "${HIVE_HOME}/lib/${bundle}"; \
+      chown hive "${lib_dir}/${bundle}"; \
     fi
 
 COPY --chown=hive entrypoint.sh /

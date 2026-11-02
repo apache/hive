@@ -90,7 +90,9 @@ After building successfully, you get a Docker image named `apache/hive` by defau
 ##### AWS SDK bundle (s3a:// support)
 Since Hadoop 3.4.3, `hadoop-aws` sits on the default classpath but the AWS SDK v2 it links against is no longer
 part of the Hadoop distribution, so the image supplies it. The Dockerfile bakes `software.amazon.awssdk:bundle`
-into `/opt/hive/lib`; `build.sh` keeps a copy in `packaging/cache` so it is not downloaded on every build.
+into `/opt/hadoop/share/hadoop/common/lib`, next to `hadoop-aws`, so every process that reads the Hadoop classpath
+gets it, the `hadoop` CLI included; `build.sh` keeps a copy in `packaging/cache` so it is not downloaded on every
+build.
 Without it, touching an `s3a://` path fails with
 `NoClassDefFoundError: software/amazon/awssdk/core/exception/SdkException`.
 
@@ -118,8 +120,9 @@ Hadoop releases that ship their own bundle (up to 3.4.2) keep it, and no second 
 Images built straight from the Dockerfile take the version as the `AWS_SDK_VERSION` build argument; leaving it
 empty is the same as `none`.
 
-A jar mounted at `/tmp/ext-jars` is copied into `/opt/hive/lib` at startup, so a different SDK version can be
-supplied at run time without rebuilding.
+A jar mounted at `/tmp/ext-jars` is copied into `/opt/hive/lib` at startup, so an image built with `-aws-sdk none`
+can take its SDK bundle at run time without rebuilding. In an image that already has one, that would put a second
+bundle on the classpath.
 
 #### Run services
 
