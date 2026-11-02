@@ -272,9 +272,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         updateHiveTable = true;
         LOG.debug("Committing existing table: {}", fullName);
       } else {
-        tbl = newHmsTable(
-            metadata.property(HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser())
-        );
+        tbl = newHmsTable(HiveHadoopUtil.resolveTableOwner(conf, metadata.properties()));
         LOG.debug("Committing new table: {}", fullName);
       }
 

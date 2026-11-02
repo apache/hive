@@ -44,6 +44,11 @@ public class MetadataLocator {
       new GetTableProjectionsSpecBuilder()
           .includeParameters() // only fetches table.parameters
           .build();
+  private static final GetProjectionsSpec OWNER_AND_PARAM_SPEC =
+      new GetTableProjectionsSpecBuilder()
+          .includeOwner()
+          .includeParameters()
+          .build();
   private final HiveCatalog catalog;
 
   /**
@@ -110,6 +115,36 @@ public class MetadataLocator {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException("Interrupted while fetching table parameters for " + baseTableIdentifier, e);
+    }
+  }
+
+  /**
+   * Returns the owner and parameters HMS records for a view or table, the state HMS keeps outside the Iceberg
+   * metadata. Like {@link #getLocation(TableIdentifier)}, this fetches only those fields rather than the
+   * entire object; the parameters include the metadata location the state belongs to.
+   * @param identifier the view or table identifier
+   * @return an HMS table holding only the owner and parameters, or null if the object (or its database/catalog)
+   *         does not exist
+   * @throws RuntimeException if the HMS lookup fails for any reason other than the object not existing
+   */
+  public Table getOwnerAndParameters(TableIdentifier identifier) {
+    final ClientPool<IMetaStoreClient, TException> clients = catalog.clientPool();
+    final String catName = catalog.name();
+    String database = identifier.namespace().level(0);
+    String tableName = identifier.name();
+    try {
+      List<Table> tables = clients.run(client ->
+          client.getTables(catName, database, Collections.singletonList(tableName), OWNER_AND_PARAM_SPEC));
+      return tables == null || tables.isEmpty() ? null : tables.getFirst();
+    } catch (NoSuchObjectException e) {
+      LOGGER.debug("Object {} not found: {}", identifier, e.getMessage());
+      return null;
+    } catch (TException e) {
+      LOGGER.warn("Object {} owner and parameters fetch failed: {}", identifier, e.getMessage());
+      throw new RuntimeException("Failed to fetch owner and parameters for " + identifier, e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException("Interrupted while fetching owner and parameters for " + identifier, e);
     }
   }
 

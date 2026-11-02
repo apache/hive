@@ -21,7 +21,6 @@ package org.apache.iceberg.rest;
 
 import static org.apache.iceberg.hive.HiveCatalog.HMS_DB_OWNER;
 import static org.apache.iceberg.hive.HiveCatalog.HMS_DB_OWNER_TYPE;
-import static org.apache.iceberg.hive.HiveCatalog.HMS_TABLE_OWNER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,8 +77,12 @@ class IcebergAuthorizer {
 
   @VisibleForTesting
   final Supplier<HiveAuthorizer> authorizerSupplier;
+  // Resolves table owners the same way as the REST server's catalog
+  // (see HMSCatalogFactory#isClientSuppliedOwnerEnabled)
+  private final Configuration ownerConf;
 
   IcebergAuthorizer(Configuration conf) {
+    this.ownerConf = ownerConf(HMSCatalogFactory.isClientSuppliedOwnerEnabled(conf));
     final var classes = MetastoreConf.getTrimmedStringsVar(conf, MetastoreConf.ConfVars.PRE_EVENT_LISTENERS);
     if (classes.length == 0) {
       LOG.info("No pre-event listeners configured, skipping authorization checks");
@@ -157,7 +160,19 @@ class IcebergAuthorizer {
 
   @VisibleForTesting
   IcebergAuthorizer(Supplier<HiveAuthorizer> authorizerSupplier) {
+    this(authorizerSupplier, false);
+  }
+
+  @VisibleForTesting
+  IcebergAuthorizer(Supplier<HiveAuthorizer> authorizerSupplier, boolean clientSuppliedOwnerEnabled) {
     this.authorizerSupplier = authorizerSupplier;
+    this.ownerConf = ownerConf(clientSuppliedOwnerEnabled);
+  }
+
+  private static Configuration ownerConf(boolean clientSuppliedOwnerEnabled) {
+    Configuration conf = new Configuration(false);
+    conf.setBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED, clientSuppliedOwnerEnabled);
+    return conf;
   }
 
   /**
@@ -198,7 +213,8 @@ class IcebergAuthorizer {
       var rawOwnerType = namespaceMetadata.get(HMS_DB_OWNER_TYPE);
       databaseOwnerType = rawOwnerType == null ? null : PrincipalType.valueOf(rawOwnerType);
     }
-    final String tableOwnerName = request.properties().getOrDefault(HMS_TABLE_OWNER, currentUser);
+    // The owner HMS will record, so that owner-based policies are evaluated against the actual owner
+    final String tableOwnerName = HiveHadoopUtil.resolveTableOwner(ownerConf, request.properties());
     List<HivePrivilegeObject> outputs = List.of(
         new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, catalogName, databaseName, null,
             null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,

@@ -1991,6 +1991,12 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.vended-credentials.enabled", false,
         "Boolean flag to enable credential vending on Iceberg REST Catalog"
     ),
+    ICEBERG_CATALOG_CLIENT_SUPPLIED_OWNER_ENABLED("metastore.iceberg.catalog.client-supplied-owner.enabled",
+        "hive.metastore.iceberg.catalog.client-supplied-owner.enabled", false,
+        "Whether the HMS Iceberg REST catalog records the owner a client requests through the " +
+            "'hive.metastore.table.owner' property when creating a table or view. When false (the default), the " +
+            "authenticated caller is recorded as owner."
+    ),
     ICEBERG_CATALOG_METRICS_REPORTERS("metastore.iceberg.catalog.metrics.reporters",
         "hive.metastore.iceberg.catalog.metrics.reporters", "org.apache.iceberg.rest.metrics.LoggingMetricsReporter",
         "A comma separated list of custom Iceberg Metrics Reporting plugins."

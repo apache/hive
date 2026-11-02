@@ -93,6 +93,47 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
   public static final String EXTERNAL_WAREHOUSE_LOCATION = "external-warehouse";
 
   public static final String HMS_TABLE_OWNER = "hive.metastore.table.owner";
+
+  /**
+   * HMS view parameter that HiveMetaStoreAuthorizer sets to {@code false} on views created or altered by a
+   * non-superuser, making them deferred-authorization views: HiveServer2 checks the reader's privileges on the
+   * tables such a view references.
+   * <p>The marker is sticky through this catalog: an update keeps the parameters HMS recorded, and a superuser's
+   * update does not clear the marker. Once a non-superuser has written a view's SQL, readers keep being
+   * authorized on the underlying tables; only dropping and re-creating the view as a superuser lifts it.</p>
+   */
+  public static final String HMS_VIEW_AUTHORIZED = "Authorized";
+
+  /**
+   * View property through which the HMS REST catalog reports {@link #HMS_VIEW_AUTHORIZED} to its clients,
+   * as {@code true} or {@code false}. The server drops it from requests and sets it in its responses from the
+   * value recorded in HMS; neither this property nor {@link #HMS_VIEW_AUTHORIZED} is copied from view properties
+   * into HMS.
+   * <p>The value is meaningful only in HMS REST catalog responses; a value stored in the Iceberg view metadata
+   * file, or returned by another catalog, is not used.</p>
+   */
+  public static final String VIEW_AUTHORIZED_PROPERTY = "hive.metastore.view.authorized";
+
+  /**
+   * Whether a view property names state HMS owns rather than the client: the recorded owner and the
+   * authorization marker. Such properties are never copied from view properties into HMS.
+   *
+   * @param key the view property name
+   * @return true for {@link #HMS_TABLE_OWNER}, {@link #HMS_VIEW_AUTHORIZED} and {@link #VIEW_AUTHORIZED_PROPERTY}
+   */
+  public static boolean isHmsOwnedViewProperty(String key) {
+    return HMS_TABLE_OWNER.equalsIgnoreCase(key) || isViewAuthorizationProperty(key);
+  }
+
+  /**
+   * Whether a view property names the authorization marker, under its HMS name or its REST catalog name.
+   *
+   * @param key the view property name
+   * @return true for {@link #HMS_VIEW_AUTHORIZED} and {@link #VIEW_AUTHORIZED_PROPERTY}
+   */
+  public static boolean isViewAuthorizationProperty(String key) {
+    return HMS_VIEW_AUTHORIZED.equalsIgnoreCase(key) || VIEW_AUTHORIZED_PROPERTY.equalsIgnoreCase(key);
+  }
   public static final String HMS_DB_OWNER = "hive.metastore.database.owner";
   public static final String HMS_DB_OWNER_TYPE = "hive.metastore.database.owner-type";
 
@@ -526,6 +567,18 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
       throw new RuntimeException(
               "Interrupted in call to check view existence of " + viewIdentifier, e);
     }
+  }
+
+  /**
+   * Whether HMS records the view as authorized when it was written, that is, not marked
+   * {@link #HMS_VIEW_AUTHORIZED}{@code =false}.
+   *
+   * @param hmsView the HMS view
+   * @return false when HiveServer2 must authorize the reader on the tables the view references
+   */
+  public static boolean isViewAuthorized(Table hmsView) {
+    Map<String, String> parameters = hmsView.getParameters();
+    return parameters == null || !"false".equalsIgnoreCase(parameters.get(HMS_VIEW_AUTHORIZED));
   }
 
   @Override

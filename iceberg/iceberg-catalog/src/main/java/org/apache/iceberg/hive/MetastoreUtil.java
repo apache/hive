@@ -216,9 +216,13 @@ public class MetastoreUtil {
 
     hmsTable.setCreateTime((int) (metadata.version(1).timestampMillis() / 1000));
     hmsTable.setLastAccessTime((int) (metadata.currentVersion().timestampMillis() / 1000));
-    hmsTable.setOwner(
-        PropertyUtil.propertyAsString(
-            metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()));
+    // Keep the owner HMS recorded. Only a view built without HMS (REST catalog client) takes it from the property,
+    // which the HMS REST catalog sets to the recorded owner.
+    if (StringUtils.isEmpty(hmsTable.getOwner())) {
+      hmsTable.setOwner(
+          PropertyUtil.propertyAsString(
+              metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()));
+    }
 
     String catalogType = IcebergCatalogProperties.getCatalogType(conf);
     if (!StringUtils.isEmpty(catalogType) && !IcebergCatalogProperties.NO_CATALOG_TYPE.equals(catalogType)) {

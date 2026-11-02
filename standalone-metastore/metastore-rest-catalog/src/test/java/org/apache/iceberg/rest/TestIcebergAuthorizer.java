@@ -64,6 +64,7 @@ import org.apache.iceberg.rest.extension.MockHiveAuthorizerFactory;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
 import org.apache.iceberg.rest.requests.ImmutableRegisterTableRequest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -171,7 +172,7 @@ class TestIcebergAuthorizer {
   @SuppressWarnings("unchecked")
   void testValidateStageCreateWithLocationAndNamespaceOwner() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
-    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer, true);
     var databaseOwner = "database_owner";
     var namespaceMetadata = Map.of(
         HMS_DB_OWNER, databaseOwner,
@@ -255,6 +256,23 @@ class TestIcebergAuthorizer {
     Assertions.assertEquals(HivePrivObjectActionType.OTHER, output2.getActionType());
 
     Assertions.assertEquals("create table " + TABLE_NAME, context.getValue().getCommandString());
+  }
+
+  @DisplayName("Stage-create authorizes the caller as table owner, not the requested owner")
+  @Test
+  @SuppressWarnings("unchecked")
+  void testValidateStageCreateIgnoresClientSuppliedTableOwner() throws Exception {
+    var hiveAuthorizer = mock(HiveAuthorizer.class);
+    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
+
+    icebergAuthorizer.validateStageCreateTable(
+        CATALOG_NAME, NAMESPACE, Map.of(), stageCreateRequest(LOCATION, "table_owner"));
+
+    var outputs = ArgumentCaptor.forClass(List.class);
+    verify(hiveAuthorizer).checkPrivileges(any(), anyList(), outputs.capture(), any());
+    var table = (HivePrivilegeObject) outputs.getValue().getLast();
+    Assertions.assertEquals(HivePrivilegeObjectType.TABLE_OR_VIEW, table.getType());
+    Assertions.assertEquals(UserGroupInformation.getCurrentUser().getShortUserName(), table.getOwnerName());
   }
 
   @Test

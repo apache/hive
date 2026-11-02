@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -158,14 +159,17 @@ public class HMSTablePropertyHelper {
     Map<String, String> parameters =
         Optional.ofNullable(tbl.getParameters()).orElseGet(Maps::newHashMap);
 
-    // push all Iceberg view properties into HMS
+    // push all Iceberg view properties into HMS, except those HMS manages itself (owner, Authorized marker)
     metadata.properties().entrySet().stream()
-        .filter(entry -> !entry.getKey().equalsIgnoreCase(HiveCatalog.HMS_TABLE_OWNER))
+        .filter(entry -> !HiveCatalog.isHmsOwnedViewProperty(entry.getKey()))
         .forEach(entry -> parameters.put(entry.getKey(), entry.getValue()));
+    Set<String> removedProps = obsoleteProps == null ? null : obsoleteProps.stream()
+        .filter(key -> !HiveCatalog.isHmsOwnedViewProperty(key))
+        .collect(Collectors.toSet());
     setCommonParameters(
         newMetadataLocation,
         metadata.uuid(),
-        obsoleteProps,
+        removedProps,
         currentLocation,
         parameters,
         HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase(Locale.ROOT),

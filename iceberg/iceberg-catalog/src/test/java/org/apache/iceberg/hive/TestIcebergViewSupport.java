@@ -36,6 +36,7 @@ import org.apache.iceberg.view.View;
 import org.apache.iceberg.view.ViewMetadata;
 import org.apache.thrift.TException;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -141,5 +142,32 @@ class TestIcebergViewSupport {
 
     ViewMetadata metadata = ((BaseView) loadCatalog().loadView(TableIdentifier.of(DB, VIEW))).operations().current();
     assertThat(hmsTable.getCreateTime()).isEqualTo((int) (metadata.version(1).timestampMillis() / 1000));
+  }
+
+  @DisplayName("Enriching an HMS view keeps its Authorized parameter, not taken from view properties")
+  @Test
+  void testEnrichHmsTableFromIcebergViewKeepsDeferredAuthorization() throws TException {
+    HiveConf conf = nativeViewConf();
+    List<FieldSchema> cols = Collections.singletonList(new FieldSchema("id", "int", null));
+    // Stored in the Iceberg metadata only; HMS manages these parameters itself
+    Map<String, String> props = ImmutableMap.of(
+        HiveCatalog.HMS_VIEW_AUTHORIZED, "true",
+        HiveCatalog.VIEW_AUTHORIZED_PROPERTY, "true");
+
+    IcebergViewSupport.createOrReplaceView(conf, DB, VIEW, cols, "select 1 as id", props, null);
+
+    org.apache.hadoop.hive.metastore.api.Table hmsTable =
+        HIVE_METASTORE_EXTENSION.metastoreClient().getTable(DB, VIEW);
+    assertThat(hmsTable.getParameters())
+        .doesNotContainKey(HiveCatalog.HMS_VIEW_AUTHORIZED)
+        .doesNotContainKey(HiveCatalog.VIEW_AUTHORIZED_PROPERTY);
+
+    // As stamped by HiveMetaStoreAuthorizer for a view written by a non-superuser
+    hmsTable.getParameters().put(HiveCatalog.HMS_VIEW_AUTHORIZED, "false");
+    IcebergViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
+
+    assertThat(hmsTable.getParameters())
+        .containsEntry(HiveCatalog.HMS_VIEW_AUTHORIZED, "false")
+        .doesNotContainKey(HiveCatalog.VIEW_AUTHORIZED_PROPERTY);
   }
 }
