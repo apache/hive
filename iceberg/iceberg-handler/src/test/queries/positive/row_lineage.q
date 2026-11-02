@@ -5,6 +5,7 @@ select id, name, balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from
 update ice_t set balance = 500 where id = 2;
 
 select id, name, balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t order by id;
+select ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t order by ROW__LINEAGE__ID;
 
 -- Test filtering with row lineage columns
 select id, name, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t where ROW__LINEAGE__ID = 1;

@@ -18,7 +18,6 @@
  */
 package org.apache.hadoop.hive.llap.io.encoded;
 
-import io.jsonwebtoken.lang.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -35,6 +34,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -89,7 +89,7 @@ public class TestLlapOrcCacheLoader {
       loader.loadFileFooter();
     }
     MetadataCache.LlapBufferOrBuffers metadata = metaCache.getFileMetadata(key);
-    Assert.notNull(metadata);
+    Assert.assertNotNull(metadata);
   }
 
 
@@ -108,7 +108,7 @@ public class TestLlapOrcCacheLoader {
       cache.getFileData(key, range, 0,
           mockDiskRangeListFactory, null, gotAllData);
 
-      Assert.isTrue(gotAllData.value);
+      Assert.assertTrue(gotAllData.value);
     }
   }
 
@@ -126,7 +126,7 @@ public class TestLlapOrcCacheLoader {
     cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
 
-    Assert.isTrue(gotAllData.value);
+    Assert.assertTrue(gotAllData.value);
   }
 
   @Test
@@ -143,7 +143,7 @@ public class TestLlapOrcCacheLoader {
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
     cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
-    Assert.isTrue(gotAllData.value);
+    Assert.assertTrue(gotAllData.value);
 
     DiskRangeList range2 = new DiskRangeList(ORC_PADDING,14);
     try(LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, mockDataCache, metaCache,
@@ -154,7 +154,7 @@ public class TestLlapOrcCacheLoader {
     gotAllData.value = false;
     cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
-    Assert.isTrue(gotAllData.value);
+    Assert.assertTrue(gotAllData.value);
   }
 
   @Test
@@ -171,7 +171,7 @@ public class TestLlapOrcCacheLoader {
     cache.getFileData(key, range, 0,
         mockDiskRangeListFactory, null, gotAllData);
 
-    Assert.isTrue(!gotAllData.value);
+    Assert.assertFalse(gotAllData.value);
 
   }
 

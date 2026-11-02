@@ -77,6 +77,9 @@ public class TestDataSourceProviderFactory {
     Assert.assertEquals(1800000L, hds.getMaxLifetime());
     Assert.assertEquals(0L, hds.getLeakDetectionThreshold());
     Assert.assertEquals(1L, hds.getInitializationFailTimeout());
+    // HikariCP >= 6.2.1 enables a 2 minute keepalive by default; idle connections are validated
+    // periodically without resetting their idle time, so idleTimeout based retirement still applies
+    Assert.assertEquals(120000L, hds.getKeepaliveTime());
   }
 
   @Test
@@ -169,6 +172,54 @@ public class TestDataSourceProviderFactory {
     DataSource ds = dsp.create(conf);
     Assert.assertTrue(ds instanceof HikariDataSource);
     Assert.assertEquals(false, ((HikariDataSource)ds).isAllowPoolSuspension());
+  }
+
+  @Test
+  public void testHikariCpDefaultTransactionIsolation() throws SQLException {
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
+
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    // Every metastore consumer of the pool runs at READ COMMITTED, so the pool defaults to it
+    Assert.assertEquals(HikariCPDataSourceProvider.TRANSACTION_READ_COMMITTED,
+        ((HikariDataSource) ds).getTransactionIsolation());
+  }
+
+  @Test
+  public void testSetHikariCpTransactionIsolation() throws SQLException {
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".transactionIsolation", "TRANSACTION_SERIALIZABLE");
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
+
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    // An explicit hikaricp.transactionIsolation overrides the READ COMMITTED default
+    Assert.assertEquals("TRANSACTION_SERIALIZABLE", ((HikariDataSource) ds).getTransactionIsolation());
+  }
+
+  @Test
+  public void testSetHikariCpDurationProperty() throws SQLException {
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    // HikariCP accepts duration strings (ms, s, m, h, d) for time based properties
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".idleTimeout", "1m");
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".maxLifetime", "45m");
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
+
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    HikariDataSource hds = (HikariDataSource) ds;
+    Assert.assertEquals(60000L, hds.getIdleTimeout());
+    Assert.assertEquals(2700000L, hds.getMaxLifetime());
   }
 
   @Test
