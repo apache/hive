@@ -20,7 +20,6 @@
 package org.apache.hadoop.hive.metastore.handler;
 
 import com.codahale.metrics.Counter;
-import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -38,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
 
@@ -127,7 +127,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 /**
  * This class serves as the super class for all handlers that implement the IHMSHandler
  */
-public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
+public abstract class BaseHandler implements IHMSHandler {
   private static final Logger LOG = LoggerFactory.getLogger(BaseHandler.class);
   private static String currentUrl;
   private static volatile Striped<Lock> tablelocks;
@@ -153,8 +153,16 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
   protected MetaStoreFilterHook filterHook;
   protected boolean isServerFilterEnabled = false;
 
+  // ======================== FaceBookBase ===================================
+  private String name_;
+  private long alive_;
+  private final ConcurrentHashMap<String, Long> counters_ = new ConcurrentHashMap();
+  private final ConcurrentHashMap<String, String> options_ = new ConcurrentHashMap();
+  // ===================================== ===================================
+
   protected BaseHandler(String name, Configuration conf) {
-    super(name);
+    this.name_ = name;
+    this.alive_ = System.currentTimeMillis() / 1000L;
     this.conf = conf;
   }
 
@@ -351,7 +359,7 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public AbstractMap<String, Long> getCounters() {
-    AbstractMap<String, Long> counters = super.getCounters();
+    AbstractMap<String, Long> counters = counters_;
 
     // Allow endFunctionListeners to add any counters they have collected
     if (endFunctionListeners != null) {
@@ -971,4 +979,58 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     }
     firePreEvent(supplier.get());
   }
+
+  // ======================== FaceBookBase ===================================
+  @Override
+  public String getName() {
+    return this.name_;
+  }
+
+  @Override
+  public String getStatusDetails() {
+    return "";
+  }
+
+  public long incrementCounter(String key) {
+    long val = this.getCounter(key) + 1L;
+    this.counters_.put(key, val);
+    return val;
+  }
+
+  public long incrementCounter(String key, long increment) {
+    long val = this.getCounter(key) + increment;
+    this.counters_.put(key, val);
+    return val;
+  }
+
+  @Override
+  public long getCounter(String key) {
+    Long val = (Long)this.counters_.get(key);
+    return val == null ? 0L : val;
+  }
+
+  @Override
+  public void setOption(String key, String value) {
+    this.options_.put(key, value);
+  }
+
+  @Override
+  public String getOption(String key) {
+    return (String)this.options_.get(key);
+  }
+
+  @Override
+  public AbstractMap<String, String> getOptions() {
+    return this.options_;
+  }
+
+  @Override
+  public long aliveSince() {
+    return this.alive_;
+  }
+
+  @Override
+  public void reinitialize() {
+  }
+  // ===================================== ===================================
 }

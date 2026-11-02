@@ -291,14 +291,6 @@
       <version>${log4j2.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libfb303</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libthrift</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-api-jdo</artifactId>
       <version>${datanucleus-api-jdo.version}</version>
