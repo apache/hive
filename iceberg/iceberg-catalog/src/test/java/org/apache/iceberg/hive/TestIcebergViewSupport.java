@@ -170,4 +170,24 @@ class TestIcebergViewSupport {
         .containsEntry(HiveCatalog.HMS_VIEW_AUTHORIZED, "false")
         .doesNotContainKey(HiveCatalog.VIEW_AUTHORIZED_PROPERTY);
   }
+
+  @DisplayName("Enriching an HMS view marks it Authorized=false when its view version reports so")
+  @Test
+  void testEnrichHmsTableFromIcebergViewMarksReportedDeferredAuthorization() throws TException {
+    HiveConf conf = nativeViewConf();
+    List<FieldSchema> cols = Collections.singletonList(new FieldSchema("id", "int", null));
+    Map<String, String> props = ImmutableMap.of(HiveCatalog.VIEW_AUTHORIZED_PROPERTY, "false");
+
+    IcebergViewSupport.createOrReplaceView(conf, DB, VIEW, cols, "select 1 as id", props, null);
+
+    org.apache.hadoop.hive.metastore.api.Table hmsTable =
+        HIVE_METASTORE_EXTENSION.metastoreClient().getTable(DB, VIEW);
+    assertThat(hmsTable.getParameters()).doesNotContainKey(HiveCatalog.HMS_VIEW_AUTHORIZED);
+
+    IcebergViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
+
+    assertThat(hmsTable.getParameters())
+        .containsEntry(HiveCatalog.HMS_VIEW_AUTHORIZED, "false")
+        .doesNotContainKey(HiveCatalog.VIEW_AUTHORIZED_PROPERTY);
+  }
 }

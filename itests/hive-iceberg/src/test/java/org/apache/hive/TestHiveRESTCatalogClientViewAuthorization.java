@@ -37,6 +37,8 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.IcebergViewSupport;
+import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.rest.RESTCatalog;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
 import org.apache.iceberg.types.Types;
@@ -156,6 +158,50 @@ public class TestHiveRESTCatalogClientViewAuthorization {
   @DisplayName("View created by HiveServer2 stays authorized")
   @Test
   void viewCreatedByHiveServer2StaysAuthorized() throws Exception {
+    try {
+      createViewAsHiveServer2();
+
+      assertNull(hmsClient.getTable(DB_NAME, HS2_VIEW_NAME).getParameters().get(AUTHORIZED),
+          "HMS must not mark a view written by the HiveServer2 service user as deferred");
+      Table loaded = hive.getTable(DB_NAME, HS2_VIEW_NAME);
+      assertNull(loaded.getParameters().get(AUTHORIZED),
+          "HiveServer2 must see its own view as authorized when reading it back");
+    } finally {
+      userCatalog.dropView(TableIdentifier.of(DB_NAME, HS2_VIEW_NAME));
+    }
+  }
+
+  /**
+   * The view is read through HiveRESTCatalogClient while authorized, then replaced by a non-superuser before the
+   * storage handler hook loads its SQL: the hook must take the Authorized state of the version it loads.
+   */
+  @DisplayName("Enriched view carries the Authorized state of the version its SQL comes from")
+  @Test
+  void enrichedViewUsesAuthorizedStateOfLoadedVersion() throws Exception {
+    try {
+      createViewAsHiveServer2();
+      // As returned by HiveRESTCatalogClient.getTable for the authorized view
+      org.apache.hadoop.hive.metastore.api.Table loaded =
+          MetastoreUtil.buildMinimalHMSView(CATALOG_NAME, DB_NAME, HS2_VIEW_NAME);
+      assertNull(loaded.getParameters().get(AUTHORIZED));
+
+      userCatalog.buildView(TableIdentifier.of(DB_NAME, HS2_VIEW_NAME))
+          .withQuery("hive", VIEW_SQL)
+          .withSchema(new Schema(Types.NestedField.optional(1, "salary", Types.IntegerType.get())))
+          .withDefaultNamespace(Namespace.of(DB_NAME))
+          .replace();
+      assertEquals("false", hmsClient.getTable(DB_NAME, HS2_VIEW_NAME).getParameters().get(AUTHORIZED));
+
+      IcebergViewSupport.enrichHmsTableFromIcebergView(loaded, hive.getConf());
+
+      assertEquals(VIEW_SQL, loaded.getViewExpandedText());
+      assertEquals("false", loaded.getParameters().get(AUTHORIZED));
+    } finally {
+      userCatalog.dropView(TableIdentifier.of(DB_NAME, HS2_VIEW_NAME));
+    }
+  }
+
+  private void createViewAsHiveServer2() throws Exception {
     org.apache.hadoop.hive.metastore.api.Table view = new org.apache.hadoop.hive.metastore.api.Table();
     view.setCatName(CATALOG_NAME);
     view.setDbName(DB_NAME);
@@ -171,16 +217,6 @@ public class TestHiveRESTCatalogClientViewAuthorization {
     view.setParameters(new HashMap<>());
     view.getParameters().put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
     view.getParameters().put("view-format", "iceberg");
-    try {
-      hive.getMSC().createTable(view);
-
-      assertNull(hmsClient.getTable(DB_NAME, HS2_VIEW_NAME).getParameters().get(AUTHORIZED),
-          "HMS must not mark a view written by the HiveServer2 service user as deferred");
-      Table loaded = hive.getTable(DB_NAME, HS2_VIEW_NAME);
-      assertNull(loaded.getParameters().get(AUTHORIZED),
-          "HiveServer2 must see its own view as authorized when reading it back");
-    } finally {
-      userCatalog.dropView(TableIdentifier.of(DB_NAME, HS2_VIEW_NAME));
-    }
+    hive.getMSC().createTable(view);
   }
 }

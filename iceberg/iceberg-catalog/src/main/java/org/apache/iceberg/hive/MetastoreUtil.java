@@ -213,6 +213,12 @@ public class MetastoreUtil {
         maxHiveTablePropertySize,
         null,
         sqlText);
+    // Take the Authorized state reported with this view version, the one the SQL above comes from. A reported
+    // state only ever marks the view; it never clears an Authorized=false parameter already set.
+    String authorized = view.properties().get(HiveCatalog.VIEW_AUTHORIZED_PROPERTY);
+    if (authorized != null && !"true".equalsIgnoreCase(authorized)) {
+      hmsTable.getParameters().put(HiveCatalog.HMS_VIEW_AUTHORIZED, "false");
+    }
 
     hmsTable.setCreateTime((int) (metadata.version(1).timestampMillis() / 1000));
     hmsTable.setLastAccessTime((int) (metadata.currentVersion().timestampMillis() / 1000));

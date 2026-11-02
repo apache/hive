@@ -109,8 +109,8 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
    * as {@code true} or {@code false}. The server drops it from requests and sets it in its responses from the
    * value recorded in HMS; neither this property nor {@link #HMS_VIEW_AUTHORIZED} is copied from view properties
    * into HMS.
-   * <p>The value is meaningful only in HMS REST catalog responses; a value stored in the Iceberg view metadata
-   * file, or returned by another catalog, is not used.</p>
+   * <p>Clients use it only to mark a view {@link #HMS_VIEW_AUTHORIZED}{@code =false}: any value other than
+   * {@code true} marks the view, and {@code true} never clears a marker already set.</p>
    */
   public static final String VIEW_AUTHORIZED_PROPERTY = "hive.metastore.view.authorized";
 
