@@ -1,8 +1,6 @@
 --! qt:dataset:alltypesorc
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
-set hive.vectorized.execution.enabled=true;
-set hive.vectorized.execution.reduce.enabled=true;
 -- Several batches per partition, so the evaluators work across batch boundaries.
 set hive.vectorized.testing.reducer.batch.size=3;
 -- SORT_QUERY_RESULTS
@@ -139,6 +137,14 @@ stddev_pop(bi) over w as bi, var_samp(f) over w as f, stddev(d) over w as d,
 var_samp(dec_s) over w as dec_s, stddev_samp(dec_l) over w as dec_l
 from vector_ptf_variance_t
 window w as (partition by p order by k, id rows between unbounded preceding and current row);
+
+explain vectorization expression
+select id, p, k, i,
+var_samp(i) over (partition by p order by k, id rows between 2 preceding and current row) as r2p,
+stddev_pop(i) over (partition by p order by k, id rows between 1 preceding and unbounded following) as r1p,
+var_pop(i) over (partition by p order by k range between 2 preceding and current row) as rg2p,
+stddev_samp(i) over (partition by p order by k, id rows between current row and unbounded following) as rcf
+from vector_ptf_variance_t;
 
 select id, p, k, i,
 var_samp(i) over (partition by p order by k, id rows between 2 preceding and current row) as r2p,
