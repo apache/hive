@@ -33,6 +33,7 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.HiveHadoopUtil;
+import org.apache.iceberg.hive.MetadataLocator;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
 import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.AfterAll;
@@ -343,5 +344,15 @@ class TestRESTViewDeferredAuthorization {
     try (HiveCatalog hiveCatalog = HMSCatalogFactory.createHiveCatalog(conf)) {
       assertThat(hiveCatalog.getConf().getBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED, false)).isTrue();
     }
+  }
+
+  @DisplayName("HMS lookups report a missing database as not found")
+  @Test
+  void lookupsInMissingDatabaseReturnNull() {
+    MetadataLocator locator = new MetadataLocator(serverCatalog);
+    TableIdentifier id = TableIdentifier.of("no_such_db", "v1");
+
+    assertThat(locator.getOwnerAndParameters(id)).isNull();
+    assertThat(locator.getLocation(id)).isNull();
   }
 }

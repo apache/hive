@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.client.builder.GetTableProjectionsSpecBuilder;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
@@ -103,10 +104,10 @@ public class MetadataLocator {
         }
       }
       return null;
-    } catch (NoSuchObjectException e) {
-      // NoSuchObjectException is a TException subclass HMS raises for an unknown database or catalog.
-      // Like an empty getTables result, it means the object does not exist, so we return null and let
-      // callers treat null uniformly as not-found (matching the missing-table case above).
+    } catch (NoSuchObjectException | UnknownDBException e) {
+      // HMS raises these for an unknown catalog or database. Like an empty getTables result, they mean the
+      // object does not exist, so we return null and let callers treat null uniformly as not-found (matching
+      // the missing-table case above).
       LOGGER.debug("Table {} not found: {}", baseTableIdentifier, e.getMessage());
       return null;
     } catch (TException e) {
@@ -136,7 +137,7 @@ public class MetadataLocator {
       List<Table> tables = clients.run(client ->
           client.getTables(catName, database, Collections.singletonList(tableName), OWNER_AND_PARAM_SPEC));
       return tables == null || tables.isEmpty() ? null : tables.getFirst();
-    } catch (NoSuchObjectException e) {
+    } catch (NoSuchObjectException | UnknownDBException e) {
       LOGGER.debug("Object {} not found: {}", identifier, e.getMessage());
       return null;
     } catch (TException e) {
