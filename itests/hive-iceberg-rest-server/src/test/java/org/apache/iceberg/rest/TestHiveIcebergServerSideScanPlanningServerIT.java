@@ -206,7 +206,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
 
   /** With the Hive kill switch off, a table the server plans is still planned locally by Hive. */
   @Test
-  void hiveSwitchOffKeepsLocalPlanningForServerPlannedTable() throws IOException {
+  void hiveSwitchOffKeepsLocalPlanningForServerPlannedTable() {
     Table table = createTableWithData();
     Configuration sessionConf = sessionConf();
     HiveConf.setBoolVar(sessionConf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED, false);
@@ -250,7 +250,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
    * generation, server-side planning must still plan the serialized snapshot, not {@code HEAD}.
    */
   @Test
-  void serverSidePlanningPinsSerializedSnapshotAfterCatalogAdvances() throws IOException {
+  void serverSidePlanningPinsSerializedSnapshotAfterCatalogAdvances() {
     Table table = createTableWithData();
     long pinnedSnapshotId = table.currentSnapshot().snapshotId();
 
@@ -274,7 +274,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
 
   /** Time travel by snapshot id is sent to the REST server as the plan request snapshot. */
   @Test
-  void serverSidePlanningUsesExplicitSnapshotId() throws IOException {
+  void serverSidePlanningUsesExplicitSnapshotId() {
     Table table = createTableWithData();
     long firstSnapshotId = table.currentSnapshot().snapshotId();
     appendFileB();
@@ -293,7 +293,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
    * the catalog after compilation does not change what is planned.
    */
   @Test
-  void serverSidePlanningResolvesRefAgainstSerializedTable() throws IOException {
+  void serverSidePlanningResolvesRefAgainstSerializedTable() {
     Table table = createTableWithData();
     long taggedSnapshotId = table.currentSnapshot().snapshotId();
     table.manageSnapshots().createTag("v1", taggedSnapshotId).commit();
@@ -317,7 +317,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
    * head the reloaded REST table sees.
    */
   @Test
-  void serverSidePlanningPinsBranchToSerializedTable() throws IOException {
+  void serverSidePlanningPinsBranchToSerializedTable() {
     Table table = createTableWithData();
     long branchHeadId = table.currentSnapshot().snapshotId();
     table.manageSnapshots().createBranch("b1", branchHeadId).commit();
@@ -341,7 +341,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
    * the older snapshot schema without {@code new_col}.
    */
   @Test
-  void serverSidePlanningKeepsTableSchemaForBranchWithOlderSchema() throws IOException {
+  void serverSidePlanningKeepsTableSchemaForBranchWithOlderSchema() {
     Table table = createTableWithData();
     long branchHeadId = table.currentSnapshot().snapshotId();
     table.manageSnapshots().createBranch("b1", branchHeadId).commit();
@@ -358,7 +358,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
 
   /** Incremental append scans are planned locally from the serialized table, without POST /plan. */
   @Test
-  void incrementalAppendScanDoesNotUseServerSidePlanning() throws IOException {
+  void incrementalAppendScanDoesNotUseServerSidePlanning() {
     Table table = createTableWithData();
     long firstSnapshotId = table.currentSnapshot().snapshotId();
     appendFileB();
@@ -373,7 +373,7 @@ class TestHiveIcebergServerSideScanPlanningServerIT extends TestBaseWithRESTServ
     return (RESTCatalog) Catalogs.loadCatalog(conf, CATALOG_NAME).orElseThrow();
   }
 
-  private Configuration propagatedJobConf(Table table) throws IOException {
+  private Configuration propagatedJobConf(Table table) {
     return propagatedJobConf(sessionConf(), table);
   }
 
