@@ -38,8 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -153,16 +155,16 @@ public abstract class BaseHandler implements IHMSHandler {
   protected MetaStoreFilterHook filterHook;
   protected boolean isServerFilterEnabled = false;
 
-  // ======================== FaceBookBase ===================================
-  private String name_;
-  private long alive_;
-  private final ConcurrentHashMap<String, Long> counters_ = new ConcurrentHashMap();
-  private final ConcurrentHashMap<String, String> options_ = new ConcurrentHashMap();
+  // ======================== FacebookBase ===================================
+  private final String name;
+  private final long alive;
+  private final ConcurrentHashMap<String, LongAdder> counters = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, String> options = new ConcurrentHashMap<>();
   // ===================================== ===================================
 
   protected BaseHandler(String name, Configuration conf) {
-    this.name_ = name;
-    this.alive_ = System.currentTimeMillis() / 1000L;
+    this.name = name;
+    this.alive = System.currentTimeMillis() / 1000L;
     this.conf = conf;
   }
 
@@ -359,16 +361,18 @@ public abstract class BaseHandler implements IHMSHandler {
 
   @Override
   public AbstractMap<String, Long> getCounters() {
-    AbstractMap<String, Long> counters = counters_;
+    AbstractMap<String, Long> countersCopy =
+        (AbstractMap<String, Long>) this.counters.entrySet()
+            .stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().longValue()));
 
     // Allow endFunctionListeners to add any counters they have collected
     if (endFunctionListeners != null) {
       for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
-        listener.exportCounters(counters);
+        listener.exportCounters(countersCopy);
       }
     }
-
-    return counters;
+    return countersCopy;
   }
 
   @Override
@@ -980,10 +984,10 @@ public abstract class BaseHandler implements IHMSHandler {
     firePreEvent(supplier.get());
   }
 
-  // ======================== FaceBookBase ===================================
+  // ======================== FacebookBase ===================================
   @Override
   public String getName() {
-    return this.name_;
+    return this.name;
   }
 
   @Override
@@ -992,41 +996,39 @@ public abstract class BaseHandler implements IHMSHandler {
   }
 
   public long incrementCounter(String key) {
-    long val = this.getCounter(key) + 1L;
-    this.counters_.put(key, val);
-    return val;
+    return incrementCounter(key, 1);
   }
 
   public long incrementCounter(String key, long increment) {
-    long val = this.getCounter(key) + increment;
-    this.counters_.put(key, val);
-    return val;
+    LongAdder counter = this.counters.computeIfAbsent(key, ignored -> new LongAdder());
+    counter.add(increment);
+    return counter.longValue();
   }
 
   @Override
   public long getCounter(String key) {
-    Long val = (Long)this.counters_.get(key);
-    return val == null ? 0L : val;
+    LongAdder val = this.counters.get(key);
+    return val == null ? 0L : val.longValue();
   }
 
   @Override
   public void setOption(String key, String value) {
-    this.options_.put(key, value);
+    this.options.put(key, value);
   }
 
   @Override
   public String getOption(String key) {
-    return (String)this.options_.get(key);
+    return this.options.get(key);
   }
 
   @Override
   public AbstractMap<String, String> getOptions() {
-    return this.options_;
+    return this.options;
   }
 
   @Override
   public long aliveSince() {
-    return this.alive_;
+    return this.alive;
   }
 
   @Override
