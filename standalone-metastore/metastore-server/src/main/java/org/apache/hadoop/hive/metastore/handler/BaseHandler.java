@@ -873,7 +873,7 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
    * @return the user that has been authenticated for the current call. SASL PLAIN calls are processed without
    * impersonation, so for them the current UGI is the HMS service user and the transport's remote user is used.
    */
-  private String getCallerUserName() throws TException {
+  protected String getCallerUserName() throws TException {
     try {
       if (HMSHandler.isSaslPlainCall()) {
         String remoteUser = HMSHandler.getSaslRemoteUser();

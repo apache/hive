@@ -212,10 +212,86 @@ public class TestHmsCompactionAuthorization {
   }
 
   @Test
-  public void testSubmitForCleanupMissingTableIsIgnored() throws Exception {
-    CompactionRequest request = compactionRequest(DB, "ctas_rolled_back");
-    request.putToProperties(hive_metastoreConstants.META_TABLE_LOCATION, tableLocation() + "_ctas");
-    assertFalse(client.submitForCleanup(request, 1L, 1L));
+  public void testSubmitForCleanupMissingTableWithoutLocationIsIgnored() throws Exception {
+    assertFalse(client.submitForCleanup(compactionRequest(DB, "ctas_rolled_back"), 1L, 1L));
+    assertEquals(0, compactions().size());
+  }
+
+  /** The directory that a CTAS of the (not existing) table leaves behind. */
+  private String ctasDir(String relativePath) throws Exception {
+    Path dir = new Path(managedDbLocation(), relativePath);
+    dir.getFileSystem(conf).mkdirs(dir);
+    return dir.toString();
+  }
+
+  /** The managed location of the database: the tables of a CTAS are created there. */
+  private Path managedDbLocation() throws Exception {
+    return new Warehouse(conf).getDatabaseManagedPath(client.getDatabase(DB));
+  }
+
+  private CompactionRequest cleanupRequest(String tableName, String location) {
+    CompactionRequest request = compactionRequest(DB, tableName);
+    request.putToProperties(hive_metastoreConstants.META_TABLE_LOCATION, location);
+    return request;
+  }
+
+  @Test
+  public void testSubmitForCleanupMissingTableInsideManagedLocation() throws Exception {
+    String[] accepted = {
+        ctasDir("ctas_rolled_back"),                    // the default managed location
+        ctasDir("ctas_rolled_back/delta_0000001_0000001"),
+        ctasDir("ctas_rolled_back.v0000005"),           // the table directory of a lockless reads CTAS
+        ctasDir("ctas_rolled_back.v0000005/base_1"),
+    };
+    int queued = 0;
+    for (String location : accepted) {
+      assertTrue(location, client.submitForCleanup(cleanupRequest("ctas_rolled_back", location), 1L, 1L));
+      assertEquals(++queued, compactions().size());
+    }
+    // the names are canonical
+    CompactionRequest request = cleanupRequest("CTAS_Rolled_Back", accepted[0]);
+    request.setDbname(DB.toUpperCase());
+    assertTrue(client.submitForCleanup(request, 1L, 1L));
+    ShowCompactResponseElement element = compactions().get(queued);
+    assertEquals(DB, element.getDbname());
+    assertEquals("ctas_rolled_back", element.getTablename());
+  }
+
+  @Test
+  public void testSubmitForCleanupMissingTableOutsideManagedLocationIsIgnored() throws Exception {
+    String dbDir = managedDbLocation().toString();
+    ctasDir("ctas_rolled_back");
+    ctasDir("ctas_rolled_back1");
+    ctasDir("ctas_rolled_back.vabc");
+    String[] ignored = {
+        tableLocation(),                                // the directory of another table
+        dbDir,                                          // the whole database
+        dbDir + "/ctas_rolled_back/../" + TAB,          // escapes the managed location
+        ctasDir("ctas_rolled_back1"),                   // a custom location, shares only a string prefix
+        ctasDir("ctas_rolled_back.vabc"),               // not a soft-delete suffix
+        ctasDir("ctas_rolled_back_other/ctas_rolled_back"),
+        "/tmp/some_other_dir",
+    };
+    for (String location : ignored) {
+      assertFalse(location, client.submitForCleanup(cleanupRequest("ctas_rolled_back", location), 1L, 1L));
+    }
+    // a table name cannot be used to point to the directory of another table
+    assertFalse(client.submitForCleanup(cleanupRequest("../" + TAB, tableLocation()), 1L, 1L));
+    assertEquals(0, compactions().size());
+  }
+
+  @Test
+  public void testSubmitForCleanupMissingTableIsAuthorized() throws Exception {
+    String location = ctasDir("ctas_rolled_back");
+    assertAuthorizationFailure(() -> client.submitForCleanup(cleanupRequest("ctas_rolled_back", location), 1L, 1L));
+    assertEquals(0, compactions().size());
+  }
+
+  @Test
+  public void testSubmitForCleanupMissingTableAndLocationIsIgnored() throws Exception {
+    Path missing = new Path(managedDbLocation(), "ctas_not_written");
+    assertFalse(client.submitForCleanup(cleanupRequest("ctas_not_written", missing.toString()), 1L, 1L));
+    assertFalse(client.submitForCleanup(compactionRequest("no_such_db", "ctas_rolled_back"), 1L, 1L));
     assertEquals(0, compactions().size());
   }
 
