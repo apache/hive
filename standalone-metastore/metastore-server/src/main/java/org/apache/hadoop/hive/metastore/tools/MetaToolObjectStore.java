@@ -1029,7 +1029,7 @@ public class MetaToolObjectStore extends ObjectStore {
       this.exception = exception;
     }
 
-    public Throwable getException() {
+    public Exception getException() {
       return exception;
     }
   }

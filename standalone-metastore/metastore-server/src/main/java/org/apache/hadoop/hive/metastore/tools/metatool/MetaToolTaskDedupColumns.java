@@ -42,6 +42,7 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
     
     Thread daemon = null;
     MetaToolObjectStore.DedupColumnsResult result = null;
+    Exception failure = null;
     AtomicReference<String> progress = new AtomicReference<>();
     AtomicBoolean stopped = new AtomicBoolean(false);
     long timeoutMs = getCl().getDedupColumnsTimeoutSeconds() != null ?
@@ -72,8 +73,9 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
       }
       result = getObjectStore().dedupColumns(catalogFilter, dbFilter, tableFilter, progress, isDryRun, isVerbose,
           getCl().isClearMarker());
-    } catch (Throwable ex) {
-      ex.printStackTrace(System.err);
+    } catch (Exception ex) {
+      // Remember the failure and rethrow it once the clean-up is done, so that the tool exits with a failure status
+      failure = ex;
     } finally {
       if (daemon != null) {
         stopped.set(true);
@@ -85,6 +87,10 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
         } catch (MetaException ignored) {
         }
       }
+    }
+
+    if (failure != null) {
+      throw new IllegalStateException("HiveMetaTool: failed to run -dedupColumns", failure);
     }
 
     if (result != null) {

@@ -93,7 +93,12 @@ public final class ColumnDeduplicator {
         // This target table might be dropped or deduplicated, ignore
         // If this is the stage to clean up the marker, ignore
         if (table != null) {
-          validation = deduplicateTable(table, result);
+          validation = deduplicateCols(table, result);
+          if (validation == null) {
+            // Nothing has been changed that requires a post-commit validation, mark the table right away.
+            // Otherwise the marker is added once the validation succeeds.
+            markProcessed(tableId);
+          }
         }
         committed = store.commitTransaction();
       } catch (Exception ex) {
@@ -102,21 +107,26 @@ public final class ColumnDeduplicator {
       } finally {
         if (!committed) {
           store.rollbackTransaction();
-          if (result.getException() == null) {
-            result.catchException(
-                new MetaException("Failed to apply column de-duplication updates for table: "
-                    + (table == null ? tableId : table)));
-          }
         }
       }
 
+      boolean success = false;
+      store.openTransaction();
       try {
         if (committed && validation != null) {
           validateTableAfterDedup(table, validation.schemaSnapshots());
           result.incrementTablesValidated();
+          // Only a table that passed the validation can be skipped by later runs
+          markProcessed(tableId);
         }
+        success = store.commitTransaction();
       } catch (Exception e) {
-        result.catchException(new IllegalStateException("Failed to validate the column deduplication for this table: " + table, e));
+        result.catchException(new IllegalStateException(
+            "Failed to validate the column deduplication or mark this table: " + table, e));
+      } finally {
+        if (!success) {
+          store.rollbackTransaction();
+        }
       }
 
       if (progress != null) {
@@ -143,21 +153,18 @@ public final class ColumnDeduplicator {
     Map<String, String> params = table.getParameters() == null ?
         new HashMap<>() : table.getParameters();
     if (clearMarker) {
-      if (!params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
-        return null;
+      // Clean-up only mode: never add the marker or deduplicate anything, and don't touch anything in a dry run
+      if (!isDryRun && params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
+        params.remove(COLUMN_DEDUPLICATOR_MARKER);
+        table.setParameters(params);
       }
-      params.remove(COLUMN_DEDUPLICATOR_MARKER);
-      table.setParameters(params);
       return null;
     }
     if (params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
+      // This table has been processed before
       return null;
     }
 
-    if (!isDryRun) {
-      params.put(COLUMN_DEDUPLICATOR_MARKER, "" + System.currentTimeMillis() / 1000);
-      table.setParameters(params);
-    }
     pm.retrieve(table);
     pm.retrieve(table.getSd().getCD());
     pm.retrieve(table.getDatabase());
@@ -165,7 +172,26 @@ public final class ColumnDeduplicator {
         new TableName(table.getDatabase().getCatalogName(), table.getDatabase().getName(), table.getTableName()));
   }
 
-  private PostCommitValidation deduplicateTable(TableInfo table, MetaToolObjectStore.DedupColumnsResult result)
+  /**
+   * Marks the table as processed, so later runs skip it until the marker is cleared. Must be called within a
+   * transaction. It is a no-op in a dry run.
+   */
+  private void markProcessed(long tableId) {
+    if (isDryRun || clearMarker) {
+      return;
+    }
+    try {
+      MTable table = pm.getObjectById(MTable.class, new MTable.PK(tableId));
+      Map<String, String> params = table.getParameters() == null ?
+          new HashMap<>() : table.getParameters();
+      params.put(COLUMN_DEDUPLICATOR_MARKER, String.valueOf(System.currentTimeMillis() / 1000));
+      table.setParameters(params);
+    } catch (JDOObjectNotFoundException e) {
+      // This table might have been dropped in the meantime, nothing to mark
+    }
+  }
+
+  private PostCommitValidation deduplicateCols(TableInfo table, MetaToolObjectStore.DedupColumnsResult result)
       throws MetaException {
     List<PartitionSdInfo> partitionSds = loadPartitionStorageDescriptors(table.tableId);
     if (partitionSds.isEmpty()) {

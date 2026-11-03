@@ -93,8 +93,10 @@ class HiveMetaToolCommandLine {
       .hasOptionalArgs(3)
       .withDescription("De-duplicate column descriptors for partitioned tables to reduce metadata bloat. "
           + "Optional catalog, database, and table filters support * wildcards. Use -dryRun to preview changes, "
-          + "-verbose to print per-partition details, -clearMarker to drop the marker that has been added in previous runs, "
-          + "and -timeout to set a timeout in seconds. "
+          + "-verbose to print per-partition details, -clearMarker to drop the marker that has been added in previous "
+          + "runs (cannot be combined with -dryRun), and -timeout to set a timeout in seconds. "
+          + "Live runs mark each successfully processed table with the table property "
+          + "__metatool_column_deduplication__, and marked tables are skipped on re-run until -clearMarker is used. "
           + "Live runs validate committed state (partition column schemas unchanged, canonical CD IDs applied) "
           + "and print a post-commit validation summary.")
       .create("dedupColumns");
@@ -104,8 +106,8 @@ class HiveMetaToolCommandLine {
       .create("verbose");
 
   private static final Option CLEAR_MARKER = OptionBuilder
-      .withDescription("Clear the column de-duplication table marker made by previous runs. "
-          + "Valid only with -dedupColumns.")
+      .withDescription("Clear the column de-duplication table marker made by previous runs, no de-duplication "
+          + "is performed. Valid only with -dedupColumns, and not with -dryRun.")
       .create("clearMarker");
 
   @SuppressWarnings("static-access")
@@ -271,6 +273,10 @@ class HiveMetaToolCommandLine {
 
     if (clearMarker && !isDedupColumns()) {
       throw new IllegalArgumentException("-clearMarker may be used only for the -dedupColumns command");
+    }
+
+    if (clearMarker && dryRun) {
+      throw new IllegalArgumentException("-clearMarker cannot be used together with -dryRun");
     }
 
     if (metadataSummaryParams != null && metadataSummaryParams.length < 1) {

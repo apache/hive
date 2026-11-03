@@ -102,6 +102,14 @@ public class TestHMSColumnDescriptorReuse {
 
   @After
   public void tearDown() {
+    if (objectStore != null) {
+      objectStore.shutdown();
+    }
+    // The PersistenceManagerFactory and its connection pools are static and survive across tests,
+    // as the JDBC url is the same. Close them before dropping the in-memory Derby database, otherwise
+    // the pool silently re-creates an empty database (create=true) that races with the next schema init.
+    PersistenceManagerProvider.closePmfIfNeeded(false, true);
+    PersistenceManagerProvider.closePmfIfNeeded(true, true);
     db.after();
   }
 
@@ -276,25 +284,49 @@ public class TestHMSColumnDescriptorReuse {
     ColumnDeduplicator.TableInfo tableInfo = getTableInTrx(metaToolStore, deduplicator, tableId);
     assertNotNull(tableInfo);
     assertEquals("person", tableInfo.tableName().getTable());
+    // Looking up the table doesn't mark it, the marker is only added once the table has been processed
     tbl = objectStore.getTable("hive", "default", "person");
-    assertTrue(tbl.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
+    assertFalse(tbl.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
 
     Table newTable = newTable(Arrays.asList(id, fname), Collections.singletonList(country));
     newTable.setTableName("person1");
     objectStore.createTable(newTable);
     long person1TableId = objectStore.getTable("hive", "default", "person1").getId();
 
+    // Process the table "person", it has no duplicates but should be marked, and be skipped afterwards
+    objectStore.addPartition(newPart(tbl, "US"));
+    Deadline.registerIfNot(30 * 1000);
+    Deadline.startTimer("testColDupGetTable");
+    try {
+      MetaToolObjectStore.DedupColumnsResult result =
+          metaToolStore.dedupColumns(null, "default", "person", new AtomicReference<>(), false, false, false);
+      assertNull(result.getException());
+      assertEquals(1, result.getTablesScanned());
+    } finally {
+      Deadline.stopTimer();
+    }
+    tbl = objectStore.getTable("hive", "default", "person");
+    assertTrue(tbl.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
+    assertNull(getTableInTrx(metaToolStore, deduplicator, tableId));
+
+    // A dry run of the clean-up shouldn't remove the marker
+    ColumnDeduplicator dryRunCleaner =
+        new ColumnDeduplicator(metaToolStore.createRawStoreBundle(), null, true, false, true);
+    assertNull(getTableInTrx(metaToolStore, dryRunCleaner, tableId));
+    tbl = objectStore.getTable("hive", "default", "person");
+    assertTrue(tbl.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
+
     // Marker should be cleared
     deduplicator =
         new ColumnDeduplicator(metaToolStore.createRawStoreBundle(), null, false, false, true);
-    getTableInTrx(metaToolStore, deduplicator, tableId);
+    assertNull(getTableInTrx(metaToolStore, deduplicator, tableId));
     tbl = objectStore.getTable("hive", "default", "person");
     assertFalse(tbl.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
 
     // A table without the deduplication marker shouldn't be affected
     newTable = objectStore.getTable("hive", "default", "person1");
     assertFalse(newTable.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
-    getTableInTrx(metaToolStore, deduplicator, person1TableId);
+    assertNull(getTableInTrx(metaToolStore, deduplicator, person1TableId));
     newTable = objectStore.getTable("hive", "default", "person1");
     assertFalse(newTable.getParameters().containsKey(ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER));
   }

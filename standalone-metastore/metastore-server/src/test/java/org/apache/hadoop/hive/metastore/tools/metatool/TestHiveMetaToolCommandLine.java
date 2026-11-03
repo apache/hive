@@ -157,6 +157,18 @@ public class TestHiveMetaToolCommandLine {
 
     cl = new HiveMetaToolCommandLine(new String[] {"-dedupColumns", "hive", "default", "person", "-clearMarker"});
     assertTrue(cl.isClearMarker());
+
+    cl = new HiveMetaToolCommandLine(new String[] {"-dedupColumns", "-clearMarker"});
+    assertTrue(cl.isClearMarker());
+    assertEquals(0, cl.getDedupColumnsParams().length);
+  }
+
+  @Test
+  public void testClearMarkerWithDryRunNotAllowed() throws ParseException {
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("-clearMarker cannot be used together with -dryRun");
+
+    new HiveMetaToolCommandLine(new String[] {"-dedupColumns", "-clearMarker", "-dryRun"});
   }
 
   @Test
