@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import java.util.ArrayList;
@@ -56,54 +58,75 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.isEmpty;
  * the same CD, reducing metadata bloat that can accumulate during replication.
  */
 public final class ColumnDeduplicator {
+  public static final String COLUMN_DEDUPLICATOR_MARKER = "__metatool_column_deduplication__";
   private final RawStore store;
   private final PersistenceManager pm;
   private final AtomicReference<String> progress;
   private final boolean isDryRun;
   private final boolean isVerbose;
+  private final boolean clearMarker;
 
   public ColumnDeduplicator(RawStoreBundle bundle, AtomicReference<String> progress,
-      boolean isDryRun, boolean isVerbose) {
+      boolean isDryRun, boolean isVerbose, boolean clearMarker) {
     this.store = bundle.getBaseStore();
     this.pm = bundle.getPersistentManager();
     this.progress = progress;
     this.isDryRun = isDryRun;
     this.isVerbose = isVerbose;
+    this.clearMarker = clearMarker;
   }
 
   MetaToolObjectStore.DedupColumnsResult run(String catalogFilter, String dbFilter, String tableFilter) {
-    List<TableInfo> tables = findPartitionedTables(catalogFilter, dbFilter, tableFilter);
+    List<Long> tables = findPartitionedTables(catalogFilter, dbFilter, tableFilter);
     MetaToolObjectStore.DedupColumnsResult result = new MetaToolObjectStore.DedupColumnsResult(tables.size());
 
     long start = System.currentTimeMillis();
     for (int i = 0; i < tables.size() && result.getException() == null; i++) {
       boolean committed = false;
-      TableInfo table = tables.get(i);
+      long tableId = tables.get(i);
       PostCommitValidation validation = null;
+      TableInfo table = null;
       store.openTransaction();
       try {
         Deadline.checkTimeout();
-        validation = deduplicateTable(table, result);
+        table = getTable(tableId);
+        // This target table might be dropped or deduplicated, ignore
+        // If this is the stage to clean up the marker, ignore
+        if (table != null) {
+          validation = deduplicateCols(table, result);
+          if (validation == null) {
+            // Nothing has been changed that requires a post-commit validation, mark the table right away.
+            // Otherwise the marker is added once the validation succeeds.
+            markProcessed(tableId);
+          }
+        }
         committed = store.commitTransaction();
       } catch (Exception ex) {
+        System.err.println("Failed to deduplicate the column in this table: " + (table == null ? tableId : table));
         result.catchException(ex);
       } finally {
         if (!committed) {
           store.rollbackTransaction();
-          if (result.getException() == null) {
-            result.catchException(
-                new MetaException("Failed to apply column descriptor de-duplication updates for table " + table));
-          }
         }
       }
 
+      boolean success = false;
+      store.openTransaction();
       try {
         if (committed && validation != null) {
           validateTableAfterDedup(table, validation.schemaSnapshots());
           result.incrementTablesValidated();
+          // Only a table that passed the validation can be skipped by later runs
+          markProcessed(tableId);
         }
+        success = store.commitTransaction();
       } catch (Exception e) {
-        result.catchException(new IllegalStateException("Failed to validate the column deduplication for this table: " + table, e));
+        result.catchException(new IllegalStateException(
+            "Failed to validate the column deduplication or mark this table: " + table, e));
+      } finally {
+        if (!success) {
+          store.rollbackTransaction();
+        }
       }
 
       if (progress != null) {
@@ -119,7 +142,56 @@ public final class ColumnDeduplicator {
     return result;
   }
 
-  private PostCommitValidation deduplicateTable(TableInfo table, MetaToolObjectStore.DedupColumnsResult result)
+  public TableInfo getTable(long tableId) {
+    final MTable table;
+    try {
+      table = pm.getObjectById(MTable.class, new MTable.PK(tableId));
+    } catch (JDOObjectNotFoundException e) {
+      // This table might have been dropped since the beginning
+      return null;
+    }
+    Map<String, String> params = table.getParameters() == null ?
+        new HashMap<>() : table.getParameters();
+    if (clearMarker) {
+      // Clean-up only mode: never add the marker or deduplicate anything, and don't touch anything in a dry run
+      if (!isDryRun && params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
+        params.remove(COLUMN_DEDUPLICATOR_MARKER);
+        table.setParameters(params);
+      }
+      return null;
+    }
+    if (params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
+      // This table has been processed before
+      return null;
+    }
+
+    pm.retrieve(table);
+    pm.retrieve(table.getSd().getCD());
+    pm.retrieve(table.getDatabase());
+    return new TableInfo(tableId, table.getSd().getCD().getId(),
+        new TableName(table.getDatabase().getCatalogName(), table.getDatabase().getName(), table.getTableName()));
+  }
+
+  /**
+   * Marks the table as processed, so later runs skip it until the marker is cleared. Must be called within a
+   * transaction. It is a no-op in a dry run.
+   */
+  private void markProcessed(long tableId) {
+    if (isDryRun || clearMarker) {
+      return;
+    }
+    try {
+      MTable table = pm.getObjectById(MTable.class, new MTable.PK(tableId));
+      Map<String, String> params = table.getParameters() == null ?
+          new HashMap<>() : table.getParameters();
+      params.put(COLUMN_DEDUPLICATOR_MARKER, String.valueOf(System.currentTimeMillis() / 1000));
+      table.setParameters(params);
+    } catch (JDOObjectNotFoundException e) {
+      // This table might have been dropped in the meantime, nothing to mark
+    }
+  }
+
+  private PostCommitValidation deduplicateCols(TableInfo table, MetaToolObjectStore.DedupColumnsResult result)
       throws MetaException {
     List<PartitionSdInfo> partitionSds = loadPartitionStorageDescriptors(table.tableId);
     if (partitionSds.isEmpty()) {
@@ -153,8 +225,8 @@ public final class ColumnDeduplicator {
       if (isVerbose) {
         PartitionSdInfo partSd = update.getKey();
         long newCdId = update.getValue();
-        result.addDetail(String.format("table %s.%s.%s: partition %d CD %d -> %d",
-            table.catalogName, table.dbName, table.tableName, partSd.partId, partSd.cdId, newCdId));
+        result.addDetail(String.format("table %s: partition %d CD %d -> %d",
+           table.tableName, partSd.partId, partSd.cdId, newCdId));
       }
     }
     if (isDryRun) {
@@ -213,7 +285,7 @@ public final class ColumnDeduplicator {
         .orElse(group.iterator().next());
   }
 
-  private List<TableInfo> findPartitionedTables(String catalogFilter, String dbFilter, String tableFilter) {
+  private List<Long> findPartitionedTables(String catalogFilter, String dbFilter, String tableFilter) {
     StringBuilder filter = new StringBuilder();
     List<String> parameterVals = new ArrayList<>();
     if (!isEmpty(catalogFilter)) {
@@ -229,24 +301,12 @@ public final class ColumnDeduplicator {
     Query query = !filter.isEmpty() ?
         pm.newQuery(MPartition.class, filter.toString()) :
         pm.newQuery(MPartition.class);
-    query.setResult("DISTINCT this.table");
+    query.setResult("DISTINCT this.table.id");
     boolean success = false;
-    List<TableInfo> tables = new ArrayList<>();
+    List<Long> tables = new ArrayList<>();
     store.openTransaction();
     try {
-      List<MTable> mTables = (List<MTable>) query.executeWithArray(parameterVals.toArray(new String[0]));
-      pm.retrieveAll(mTables);
-      for (MTable mTable : mTables) {
-        pm.retrieve(mTable.getDatabase());
-        pm.retrieve(mTable.getSd());
-        pm.retrieve(mTable.getSd().getCD());
-        tables.add(new TableInfo(
-            mTable.getId(),
-            mTable.getSd().getCD().getId(),
-            mTable.getDatabase().getCatalogName(),
-            mTable.getDatabase().getName(),
-            mTable.getTableName()));
-      }
+      tables.addAll((List<Long>) query.executeWithArray(parameterVals.toArray(new String[0])));
       success = store.commitTransaction();
     } finally {
       query.closeAll();
@@ -273,7 +333,7 @@ public final class ColumnDeduplicator {
         if (sd == null) {
           continue;
         }
-        pm.retrieve(sd);
+        pm.retrieve(sd.getCD());
         partitionSds.add(new PartitionSdInfo(partId, sd, sd.getCD().getId()));
       }
     } finally {
@@ -418,11 +478,11 @@ public final class ColumnDeduplicator {
     }
   }
 
-  public record TableInfo(long tableId, long tableCdId, String catalogName, String dbName, String tableName) {
+  public record TableInfo(long tableId, long tableCdId, TableName tableName) {
     @Override
     public String toString() {
-        return catalogName + "." + dbName + "." + tableName;
-      }
+      return tableName.toString();
+    }
   }
 
   private record PartitionSdInfo(long partId, MStorageDescriptor sd, long cdId) {
