@@ -15,6 +15,7 @@ DESCRIBE FORMATTED test_tbl_with_default_orc;
 
 -- Default storage handler is set, but overridden explicitly in the create table command
 SET hive.default.storage.handler.class=org.apache.hadoop.hive.ql.log.syslog.SyslogStorageHandler;
+SET hive.storage.jdbc.allow.metastore.database.type=true;
 
 CREATE EXTERNAL TABLE test_tbl_overridden(DB_ID bigint, NAME STRING)
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
