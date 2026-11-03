@@ -213,12 +213,8 @@ public class MetastoreUtil {
         maxHiveTablePropertySize,
         null,
         sqlText);
-    // Take the Authorized state reported with this view version, the one the SQL above comes from. A reported
-    // state only ever marks the view; it never clears an Authorized=false parameter already set.
-    String authorized = view.properties().get(HiveCatalog.VIEW_AUTHORIZED_PROPERTY);
-    if (authorized != null && !"true".equalsIgnoreCase(authorized)) {
-      hmsTable.getParameters().put(HiveCatalog.HMS_VIEW_AUTHORIZED, "false");
-    }
+    // Take the Authorized state reported with this view version, the one the SQL above comes from
+    applyReportedViewAuthorization(view, hmsTable, false);
 
     hmsTable.setCreateTime((int) (metadata.version(1).timestampMillis() / 1000));
     hmsTable.setLastAccessTime((int) (metadata.currentVersion().timestampMillis() / 1000));
@@ -233,6 +229,23 @@ public class MetastoreUtil {
     String catalogType = IcebergCatalogProperties.getCatalogType(conf);
     if (!StringUtils.isEmpty(catalogType) && !IcebergCatalogProperties.NO_CATALOG_TYPE.equals(catalogType)) {
       hmsTable.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, IcebergCatalogProperties.getCatalogType(conf));
+    }
+  }
+
+  /**
+   * Marks an HMS view {@link HiveCatalog#HMS_VIEW_AUTHORIZED}{@code =false} from the
+   * {@link HiveCatalog#VIEW_AUTHORIZED_PROPERTY} reported with an Iceberg view version: any value other than
+   * {@code true} marks it. A reported state never clears a marker already set.
+   *
+   * @param view the Iceberg view version
+   * @param hmsView the HMS view to mark
+   * @param markWhenUnreported whether to also mark the view when the version reports no state, for a view
+   *     whose properties come from the HMS REST catalog, which always reports it
+   */
+  public static void applyReportedViewAuthorization(View view, Table hmsView, boolean markWhenUnreported) {
+    String authorized = view.properties().get(HiveCatalog.VIEW_AUTHORIZED_PROPERTY);
+    if ((authorized != null || markWhenUnreported) && !"true".equalsIgnoreCase(authorized)) {
+      hmsView.getParameters().put(HiveCatalog.HMS_VIEW_AUTHORIZED, "false");
     }
   }
 

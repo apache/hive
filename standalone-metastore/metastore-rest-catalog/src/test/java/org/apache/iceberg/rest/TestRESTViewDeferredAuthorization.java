@@ -312,19 +312,19 @@ class TestRESTViewDeferredAuthorization {
   @DisplayName("View state: authorized only when HMS matches the returned metadata version")
   @Test
   void viewStateReportsAuthorizedOnlyForTheReturnedVersion() {
-    assertThat(HMSCatalogAdapter.viewState(hmsView(SUPERUSER, "v1.json", null), "v1.json"))
+    assertThat(HMSViewProperties.viewState(hmsView(SUPERUSER, "v1.json", null), "v1.json"))
         .containsEntry(HiveCatalog.VIEW_AUTHORIZED_PROPERTY, "true")
         .containsEntry(HiveCatalog.HMS_TABLE_OWNER, SUPERUSER);
-    assertThat(HMSCatalogAdapter.viewState(hmsView(USER, "v1.json", "false"), "v1.json"))
+    assertThat(HMSViewProperties.viewState(hmsView(USER, "v1.json", "false"), "v1.json"))
         .containsEntry(HiveCatalog.VIEW_AUTHORIZED_PROPERTY, "false")
         .containsEntry(HiveCatalog.HMS_TABLE_OWNER, USER);
     // HMS records another metadata version than the one returned
-    assertThat(HMSCatalogAdapter.viewState(hmsView(SUPERUSER, "v2.json", null), "v1.json"))
+    assertThat(HMSViewProperties.viewState(hmsView(SUPERUSER, "v2.json", null), "v1.json"))
         .containsEntry(HiveCatalog.VIEW_AUTHORIZED_PROPERTY, "false");
-    assertThat(HMSCatalogAdapter.viewState(hmsView(SUPERUSER, "v1.json", null), null))
+    assertThat(HMSViewProperties.viewState(hmsView(SUPERUSER, "v1.json", null), null))
         .containsEntry(HiveCatalog.VIEW_AUTHORIZED_PROPERTY, "false");
     // No HMS object
-    assertThat(HMSCatalogAdapter.viewState(null, "v1.json"))
+    assertThat(HMSViewProperties.viewState(null, "v1.json"))
         .containsEntry(HiveCatalog.VIEW_AUTHORIZED_PROPERTY, "false")
         .doesNotContainKey(HiveCatalog.HMS_TABLE_OWNER);
   }

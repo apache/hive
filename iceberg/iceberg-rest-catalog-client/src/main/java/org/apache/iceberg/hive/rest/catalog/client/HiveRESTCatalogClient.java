@@ -51,7 +51,6 @@ import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
-import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
@@ -220,9 +219,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
             tableRequest.getCatName(), tableRequest.getDbName(), tableRequest.getTblName());
         // Carry the server-reported Authorized state as the HMS view parameter; when the server reports none, the
         // view is treated as a deferred-authorization view.
-        if (!"true".equalsIgnoreCase(view.properties().get(HiveCatalog.VIEW_AUTHORIZED_PROPERTY))) {
-          hmsView.getParameters().put(HiveCatalog.HMS_VIEW_AUTHORIZED, "false");
-        }
+        MetastoreUtil.applyReportedViewAuthorization(view, hmsView, true);
         return hmsView;
       }
       throw new NoSuchObjectException();
