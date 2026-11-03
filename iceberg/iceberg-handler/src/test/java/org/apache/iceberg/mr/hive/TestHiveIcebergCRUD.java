@@ -28,7 +28,9 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
@@ -38,6 +40,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.io.DeleteSchemaUtil;
 import org.apache.iceberg.io.OutputFile;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
@@ -59,10 +62,26 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  */
 public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase {
 
+  private void createCopyOnWriteTable(TableIdentifier identifier, String modeProperty) {
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (a int, b string) " +
+        "STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(new Schema(
+            optional(1, "a", Types.IntegerType.get()),
+            optional(2, "b", Types.StringType.get()))) + "', " +
+        "'" + InputFormatConfig.PARTITION_SPEC + "'='" +
+        PartitionSpecParser.toJson(PartitionSpec.unpartitioned()) + "', " +
+        "'" + TableProperties.DEFAULT_FILE_FORMAT + "'='" + fileFormat + "', " +
+        "'" + TableProperties.FORMAT_VERSION + "'='" + formatVersion + "', " +
+        "'" + modeProperty + "'='copy-on-write', " +
+        "'" + InputFormatConfig.EXTERNAL_TABLE_PURGE + "'='TRUE', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+  }
+
   @Test
   public void testReadAndWriteFormatV2UnpartitionedWithEqDelete() throws IOException {
-    Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +
-        "non-vectorized mode", !isVectorized && formatVersion == 2);
+    Assume.assumeTrue(formatVersion == 2);
 
     Table tbl = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, formatVersion);
@@ -84,8 +103,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testReadAndWriteFormatV2Partitioned_EqDelete_AllColumnsSupplied() throws IOException {
-    Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +
-        "non-vectorized mode", !isVectorized && formatVersion == 2);
+    Assume.assumeTrue(formatVersion == 2);
 
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id").build();
@@ -111,8 +129,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
 
   @Test
   public void testReadAndWriteFormatV2Partitioned_EqDelete_OnlyEqColumnsSupplied() throws IOException {
-    Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +
-        "non-vectorized mode", !isVectorized && formatVersion == 2);
+    Assume.assumeTrue(formatVersion == 2);
 
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("customer_id").build();
@@ -196,6 +213,32 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
     Assert.assertArrayEquals(new Object[] {0L, "John", "Green"}, objects.get(1));
     Assert.assertArrayEquals(new Object[] {1L, "Bob", "Green"}, objects.get(2));
     Assert.assertArrayEquals(new Object[] {2L, "Trudy", "Pink"}, objects.get(3));
+  }
+
+  /**
+   * ORC can filter rows by the pushed down predicate; in row mode, row positions and deletes must still apply to
+   * the right rows.
+   */
+  @Test
+  public void testPositionDeleteWithOrcRowFiltering() {
+    Assume.assumeTrue(fileFormat == FileFormat.ORC && formatVersion >= 2 && !isVectorized);
+
+    Schema schema = new Schema(optional(1, "customer_id", Types.LongType.get()));
+    List<Record> records = TestHelper.generateRandomRecords(schema, 30000, 0L);
+    for (int i = 0; i < records.size(); ++i) {
+      records.get(i).setField("customer_id", (long) i);
+    }
+    testTables.createTable(shell, "customers", schema, PartitionSpec.unpartitioned(), fileFormat, records,
+        formatVersion);
+    shell.executeStatement("DELETE FROM customers WHERE customer_id = 25000");
+
+    shell.setHiveSessionValue("orc.sarg.to.filter", true);
+    shell.setHiveSessionValue("orc.filter.use.selected", true);
+    List<Object[]> result = shell.executeStatement(
+        "SELECT customer_id, ROW__POSITION FROM customers WHERE customer_id IN (25000, 25001)");
+
+    Assert.assertEquals(1, result.size());
+    Assert.assertArrayEquals(new Object[] {25001L, 25001L}, result.get(0));
   }
 
   /**
@@ -292,6 +335,40 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
         .build();
     HiveIcebergTestUtils.validateData(expected,
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testCopyOnWriteDeleteReportsMatchedRowCount() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_delete_count");
+    createCopyOnWriteTable(identifier, TableProperties.DELETE_MODE);
+
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'one'), (2, 'two'), (3, 'three')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (4, 'four'), (5, 'five')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "DELETE FROM " + identifier + " WHERE a IN (2, 4)");
+
+    Assert.assertEquals(2, numModifiedRows);
+  }
+
+  @Test
+  public void testCopyOnWriteDeleteReportsZeroWhenNothingMatches() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_delete_no_match");
+    createCopyOnWriteTable(identifier, TableProperties.DELETE_MODE);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'one'), (2, 'two')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "DELETE FROM " + identifier + " WHERE a = 99");
+
+    Assert.assertEquals(0, numModifiedRows);
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier + " ORDER BY a");
+    Assert.assertEquals(2, rows.size());
+    Assert.assertArrayEquals(new Object[] {1, "one"}, rows.get(0));
+    Assert.assertArrayEquals(new Object[] {2, "two"}, rows.get(1));
   }
 
   @Test
@@ -466,6 +543,102 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
         .build();
     HiveIcebergTestUtils.validateData(expected,
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testCopyOnWriteUpdateReportsOnlyMatchedRowCount() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_update_count");
+    createCopyOnWriteTable(identifier, TableProperties.UPDATE_MODE);
+
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'one'), (2, 'two'), (3, 'three')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (4, 'four'), (5, 'five')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "UPDATE " + identifier + " SET b = 'changed' WHERE a IN (2, 4)");
+
+    Assert.assertEquals(2, numModifiedRows);
+  }
+
+  @Test
+  public void testCopyOnWriteUpdateWithoutPredicateReportsMatchedRowCount() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_update_all_count");
+    createCopyOnWriteTable(identifier, TableProperties.UPDATE_MODE);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'one'), (2, 'two'), (3, 'three')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "UPDATE " + identifier + " SET b = 'changed'");
+
+    Assert.assertEquals(3, numModifiedRows);
+  }
+
+  @Test
+  public void testCopyOnWriteMergeReportsMatchedRowCount() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_count");
+    createCopyOnWriteTable(identifier, TableProperties.MERGE_MODE);
+
+    shell.executeStatement("CREATE TABLE cow_merge_count_source (a int, b string)");
+
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'a')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (2, 'b'), (111, 'del')");
+    shell.executeStatement("INSERT INTO cow_merge_count_source " +
+        "VALUES (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (111, 'del')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " AS t USING cow_merge_count_source src ON t.a = src.a " +
+            "WHEN MATCHED AND t.a = 111 THEN DELETE " +
+            "WHEN MATCHED THEN UPDATE SET b = 'merged' " +
+            "WHEN NOT MATCHED THEN INSERT VALUES (src.a, src.b)");
+
+    Assert.assertEquals(5, numModifiedRows);
+  }
+
+  @Test
+  public void testCopyOnWriteInsertOnlyMergeReportsInsertedRows() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_insert_only");
+    createCopyOnWriteTable(identifier, TableProperties.MERGE_MODE);
+    shell.executeStatement("CREATE TABLE cow_merge_insert_only_source (a int, b string)");
+    shell.executeStatement("INSERT INTO cow_merge_insert_only_source VALUES (1, 'one'), (2, 'two')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " t USING cow_merge_insert_only_source s ON t.a = s.a " +
+            "WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b)");
+
+    Assert.assertEquals(2, numModifiedRows);
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier + " ORDER BY a");
+    Assert.assertEquals(2, rows.size());
+    Assert.assertArrayEquals(new Object[] {1, "one"}, rows.get(0));
+    Assert.assertArrayEquals(new Object[] {2, "two"}, rows.get(1));
+  }
+
+  @Test
+  public void testCopyOnWriteMergeReportsInsertsWhenUpdateDoesNotMatch() {
+    Assume.assumeTrue(formatVersion == 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "cow_merge_no_update_match");
+    createCopyOnWriteTable(identifier, TableProperties.MERGE_MODE);
+    shell.executeStatement("CREATE TABLE cow_merge_no_update_match_source (a int, b string)");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'one')");
+    shell.executeStatement("INSERT INTO cow_merge_no_update_match_source VALUES (2, 'two'), (3, 'three')");
+
+    long numModifiedRows = shell.executeStatementAndGetNumModifiedRows(
+        "MERGE INTO " + identifier + " t USING cow_merge_no_update_match_source s ON t.a = s.a " +
+            "WHEN MATCHED THEN UPDATE SET b = s.b " +
+            "WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b)");
+
+    Assert.assertEquals(2, numModifiedRows);
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier + " ORDER BY a");
+    Assert.assertEquals(3, rows.size());
+    Assert.assertArrayEquals(new Object[] {1, "one"}, rows.get(0));
+    Assert.assertArrayEquals(new Object[] {2, "two"}, rows.get(1));
+    Assert.assertArrayEquals(new Object[] {3, "three"}, rows.get(2));
   }
 
   @Test

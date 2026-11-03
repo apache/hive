@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
@@ -74,9 +75,12 @@ import org.apache.hadoop.hive.llap.cache.SimpleBufferManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
+import org.apache.hadoop.hive.llap.io.api.LlapOrcIo;
+import org.apache.hadoop.hive.llap.io.api.LlapParquetIo;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
+import org.apache.hadoop.hive.llap.io.decode.ParquetColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
@@ -87,8 +91,8 @@ import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
-import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
@@ -120,8 +124,12 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   public static final Logger LOCKING_LOGGER = LoggerFactory.getLogger("LlapIoLocking");
   private static final String MODE_CACHE = "cache";
 
-  // TODO: later, we may have a map
-  private final ColumnVectorProducer orcCvp, genericCvp;
+  private final LlapOrcIoImpl orc;
+  private final LlapParquetIoImpl parquet;
+  /** The natively served formats; see {@link #nativeProducerFor}. */
+  private final List<LlapFormatIo> formats;
+  /** Re-encodes anything with a SerDe behind it; null unless {@code llap.io.encode.enabled}. */
+  private final ColumnVectorProducer genericCvp;
   private final ExecutorService executor;
   private final ExecutorService encodeExecutor;
   private final LlapDaemonCacheMetrics cacheMetrics;
@@ -171,7 +179,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     MetadataCache metadataCache = null;
     SerDeLowLevelCacheImpl serdeCache = null; // TODO: extract interface when needed
-    BufferUsageManager bufferManagerOrc = null, bufferManagerGeneric = null;
+    BufferUsageManager bufferManagerGeneric = null;
     boolean isEncodeEnabled = useLowLevelCache
         && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED);
     if (useLowLevelCache) {
@@ -219,7 +227,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       cachePolicyWrapper.setEvictionListener(e);
 
       cacheImpl.startThreads(); // Start the cache threads.
-      bufferManager = bufferManagerOrc = cacheImpl; // Cache also serves as buffer manager.
+      // Cache also serves as buffer manager for both data and generic (encoded/serde) paths.
+      bufferManager = cacheImpl;
       bufferManagerGeneric = serdeCache;
       if (trackUsage) {
         debugDumpComponents.add(cachePolicyWrapper); // Cache contents tracker.
@@ -238,7 +247,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       this.allocator = new SimpleAllocator(conf);
       fileMetadataCache = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
-      bufferManager = bufferManagerOrc = bufferManagerGeneric = sbm;
+      bufferManager = sbm;
+      bufferManagerGeneric = sbm;
       dataCache = sbm;
       this.memoryManager = null;
       debugDumpComponents.add(new LlapIoDebugDump() {
@@ -267,9 +277,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       encodeExecutor = null;
     }
 
-    // TODO: this should depends on input format and be in a map, or something.
-    this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, dataCache, pathCache, bufferManagerOrc, conf, cacheMetrics, ioMetrics, tracePool);
+    this.orc = new LlapOrcIoImpl(new OrcColumnVectorProducer(
+        metadataCache, dataCache, pathCache, bufferManager, conf, cacheMetrics, ioMetrics, tracePool));
+    // Native Parquet IO is gated per query by the job conf at the dispatch sites, but it only has
+    // somewhere to put the column chunks in cache mode: with memory.mode=none there is no
+    // dataCache and no bufferManager, so leave the producer null and let getInputFormat decline.
+    this.parquet = new LlapParquetIoImpl(useLowLevelCache ? new ParquetColumnVectorProducer(
+        dataCache, bufferManager, conf, cacheMetrics, ioMetrics) : null);
+    this.formats = List.of(orc, parquet);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
         serdeCache, bufferManagerGeneric, conf, cacheMetrics, ioMetrics, tracePool, encodeExecutor) : null;
     LOG.info("LLAP IO initialized");
@@ -339,14 +354,41 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   @Override
   public InputFormat<NullWritable, VectorizedRowBatch> getInputFormat(
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe) {
-    ColumnVectorProducer cvp = genericCvp;
-    if (sourceInputFormat instanceof OrcInputFormat) {
-      cvp = orcCvp; // Special-case for ORC.
-    } else if (cvp == null) {
-      LOG.warn("LLAP encode is disabled; cannot use for " + sourceInputFormat.getClass());
+    // A SerDe is what HiveInputFormat's encode.formats dispatch passes, and the only thing it can
+    // mean: a format served natively arrives without one. So the SerDe decides which half of the
+    // IO this is, and the input format class then picks the native producer.
+    ColumnVectorProducer cvp =
+        sourceSerDe != null ? genericCvp : nativeProducerFor(sourceInputFormat.getClass());
+    if (cvp == null) {
+      LOG.warn("No LLAP IO producer for {} (serde-based: {})", sourceInputFormat.getClass(),
+          sourceSerDe != null);
       return null;
     }
     return new LlapInputFormat(sourceInputFormat, sourceSerDe, cvp, executor, daemonConf);
+  }
+
+  /**
+   * The producer for a natively served format, or null if this daemon serves none for it - either
+   * because nothing here understands the format, or because the one that does has no cache to put
+   * the data in.
+   */
+  private ColumnVectorProducer nativeProducerFor(Class<?> inputFormatClass) {
+    for (LlapFormatIo format : formats) {
+      if (format.inputFormatClass().isAssignableFrom(inputFormatClass)) {
+        return format.producer();
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public LlapOrcIo orc() {
+    return orc;
+  }
+
+  @Override
+  public LlapParquetIo parquet() {
+    return parquet;
   }
 
   @Override
@@ -434,85 +476,137 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     }
   }
 
-  @Override
-  public OrcTail getOrcTailFromCache(Path path, Configuration jobConf, CacheTag tag, Object fileKey)
-      throws IOException {
-    return OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, (MetadataCache) fileMetadataCache, fileKey);
+  /**
+   * One natively served format: the input format it decodes, and the producer that decodes it.
+   * Implemented alongside the format's own public interface so that both the dispatch in
+   * {@link #nativeProducerFor} and the format-specific calls reach the same object.
+   */
+  private interface LlapFormatIo {
+    Class<? extends InputFormat<?, ?>> inputFormatClass();
+
+    /** Null when this daemon cannot serve the format natively. */
+    @Nullable
+    ColumnVectorProducer producer();
   }
 
-  @Override
-  public RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path,
-      CacheTag tag, List<Integer> tableIncludedCols, JobConf conf, long offset, long length, Reporter reporter)
-      throws IOException {
+  private class LlapOrcIoImpl implements LlapOrcIo, LlapFormatIo {
+    private final ColumnVectorProducer cvp;
 
-    OrcTail tail = null;
-    if (tag != null) {
-      // Tag information is required for metadata lookup only - which itself can be done later should this info be yet
-      // to be known
-      tail = getOrcTailFromCache(path, conf, tag, fileKey);
+    LlapOrcIoImpl(ColumnVectorProducer cvp) {
+      this.cvp = cvp;
     }
-    OrcSplit split = new OrcSplit(path, fileKey, offset, length, (String[]) null, tail, false, false,
-        Lists.newArrayList(), 0, length, path.getParent(), null);
-    try {
-      LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, HiveStringUtils.getHostname(),
-          orcCvp, executor, null, null, reporter, daemonConf);
 
-      // May happen when attempting with unsupported schema evolution between reader and file schemas
-      if (rr == null) {
-        return null;
+    @Override
+    public Class<? extends InputFormat<?, ?>> inputFormatClass() {
+      return OrcInputFormat.class;
+    }
+
+    @Override
+    public ColumnVectorProducer producer() {
+      return cvp;
+    }
+
+    @Override
+    public OrcTail getTailFromCache(Path path, Configuration jobConf, CacheTag tag, Object fileKey)
+        throws IOException {
+      return OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, (MetadataCache) fileMetadataCache, fileKey);
+    }
+
+    @Override
+    public RecordReader<NullWritable, VectorizedRowBatch> vectorizedReaderForPath(Object fileKey, Path path,
+        CacheTag tag, List<Integer> tableIncludedCols, JobConf conf, long offset, long length, Reporter reporter)
+        throws IOException {
+
+      OrcTail tail = null;
+      if (tag != null) {
+        // Tag information is required for metadata lookup only - which itself can be done later should this info be yet
+        // to be known
+        tail = getTailFromCache(path, conf, tag, fileKey);
       }
+      OrcSplit split = new OrcSplit(path, fileKey, offset, length, (String[]) null, tail, false, false,
+          Lists.newArrayList(), 0, length, path.getParent(), null);
+      try {
+        LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, HiveStringUtils.getHostname(),
+            cvp, executor, null, null, reporter, daemonConf);
 
-      // This needs to be cleared as no partition values should be added to the result batches as constants.
-      rr.setPartitionValues(null);
+        // May happen when attempting with unsupported schema evolution between reader and file schemas
+        if (rr == null) {
+          return null;
+        }
 
-      // Triggers the IO thread pool to pick up this read job
-      rr.start();
-      return rr;
-    } catch (HiveException e) {
-      throw new IOException(e);
+        // This needs to be cleared as no partition values should be added to the result batches as constants.
+        rr.setPartitionValues(null);
+
+        // Triggers the IO thread pool to pick up this read job
+        rr.start();
+        return rr;
+      } catch (HiveException e) {
+        throw new IOException(e);
+      }
     }
   }
 
-  @Override
-  public MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey)
-      throws IOException {
+  private class LlapParquetIoImpl implements LlapParquetIo, LlapFormatIo {
+    private final ColumnVectorProducer cvp;
 
-    Preconditions.checkNotNull(fileMetadataCache, "Metadata cache must not be null");
-
-    boolean isReadCacheOnly = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_CACHE_ONLY);
-    CacheTag tag = VectorizedParquetRecordReader.cacheTagOfParquetFile(path, daemonConf, conf);
-
-    MemoryBufferOrBuffers footerData = (fileKey == null ) ? null
-        : fileMetadataCache.getFileMetadata(fileKey);
-    if (footerData != null) {
-      LOG.info("Found the footer in cache for " + fileKey);
-      try {
-        return footerData;
-      } finally {
-        fileMetadataCache.decRefBuffer(footerData);
-      }
-    } else {
-      throwIfCacheOnlyRead(isReadCacheOnly);
+    LlapParquetIoImpl(@Nullable ColumnVectorProducer cvp) {
+      this.cvp = cvp;
     }
 
-    final FileSystem fs = path.getFileSystem(conf);
-    final FileStatus stat = fs.getFileStatus(path);
+    @Override
+    public Class<? extends InputFormat<?, ?>> inputFormatClass() {
+      return MapredParquetInputFormat.class;
+    }
 
-    // To avoid reading the footer twice, we will cache it first and then read from cache.
-    // Parquet calls protobuf methods directly on the stream and we can't get bytes after the fact.
-    try (SeekableInputStream stream = HadoopStreams.wrap(fs.open(path))) {
-      long footerLengthIndex = stat.getLen()
-          - ParquetFooterInputFromCache.FOOTER_LENGTH_SIZE - ParquetFileWriter.MAGIC.length;
-      stream.seek(footerLengthIndex);
-      int footerLength = BytesUtils.readIntLittleEndian(stream);
-      stream.seek(footerLengthIndex - footerLength);
-      LOG.info("Caching the footer of length " + footerLength + " for " + fileKey);
-      // Note: we don't pass in isStopped here - this is not on an IO thread.
-      footerData = fileMetadataCache.putFileMetadata(fileKey, footerLength, stream, tag, null);
-      try {
-        return footerData;
-      } finally {
-        fileMetadataCache.decRefBuffer(footerData);
+    @Override
+    @Nullable
+    public ColumnVectorProducer producer() {
+      return cvp;
+    }
+
+    @Override
+    public MemoryBufferOrBuffers getFooterBuffersFromCache(Path path, JobConf conf, @Nullable CacheTag tag,
+        @Nullable Object fileKey, @Nullable BooleanRef cacheHit) throws IOException {
+
+      Preconditions.checkNotNull(fileMetadataCache, "Metadata cache must not be null");
+
+      boolean isReadCacheOnly = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_CACHE_ONLY);
+
+      MemoryBufferOrBuffers footerData = (fileKey == null ) ? null
+          : fileMetadataCache.getFileMetadata(fileKey);
+      if (cacheHit != null) {
+        cacheHit.value = footerData != null;
+      }
+      if (footerData != null) {
+        LOG.debug("Found the footer in cache for {}", fileKey);
+        try {
+          return footerData;
+        } finally {
+          fileMetadataCache.decRefBuffer(footerData);
+        }
+      } else {
+        throwIfCacheOnlyRead(isReadCacheOnly);
+      }
+
+      final FileSystem fs = path.getFileSystem(conf);
+      final FileStatus stat = fs.getFileStatus(path);
+
+      // To avoid reading the footer twice, we will cache it first and then read from cache.
+      // Parquet calls protobuf methods directly on the stream and we can't get bytes after the fact.
+      try (SeekableInputStream stream = HadoopStreams.wrap(fs.open(path))) {
+        long footerLengthIndex = stat.getLen()
+            - ParquetFooterInputFromCache.FOOTER_LENGTH_SIZE - ParquetFileWriter.MAGIC.length;
+        stream.seek(footerLengthIndex);
+        int footerLength = BytesUtils.readIntLittleEndian(stream);
+        stream.seek(footerLengthIndex - footerLength);
+        LOG.debug("Caching the footer of length {} for {}", footerLength, fileKey);
+        // Note: we don't pass in isStopped here - this is not on an IO thread.
+        footerData = fileMetadataCache.putFileMetadata(fileKey, footerLength, stream, tag, null);
+        try {
+          return footerData;
+        } finally {
+          fileMetadataCache.decRefBuffer(footerData);
+        }
       }
     }
   }

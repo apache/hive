@@ -31,6 +31,9 @@ import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.rest.HMSCachingCatalog;
+import org.apache.iceberg.rest.HMSCatalogFactory;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -128,6 +131,32 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
 
   public String getRestEndpoint() {
     return restCatalogServer.getRestEndpoint();
+  }
+
+  /**
+   * Builds a fresh {@link HiveCatalog} bound to the embedded metastore through the same production
+   * path the server uses ({@link HMSCatalogFactory#createHiveCatalog}). The Thrift URI is taken from
+   * the port the metastore actually bound to, so callers get a working client regardless of how the
+   * server's own configuration was mutated at startup.
+   *
+   * @return a newly initialized HiveCatalog
+   */
+  public HiveCatalog newServerCatalog() {
+    Configuration catalogConf = new Configuration(conf);
+    MetastoreConf.setVar(catalogConf, ConfVars.THRIFT_URIS, restCatalogServer.getThriftUri());
+    return HMSCatalogFactory.createHiveCatalog(catalogConf);
+  }
+
+  /**
+   * Wraps a fresh {@link #newServerCatalog()} in an {@link HMSCachingCatalog} with the given L2
+   * expiry, so tests can exercise the caching catalog directly without reaching into the server's
+   * own instance.
+   *
+   * @param expiryMs the L2 cache expiry in milliseconds
+   * @return a newly created caching catalog
+   */
+  public HMSCachingCatalog newCachingCatalog(long expiryMs) {
+    return new HMSCachingCatalog(newServerCatalog(), expiryMs);
   }
 
   public String getOAuth2TokenEndpoint() {

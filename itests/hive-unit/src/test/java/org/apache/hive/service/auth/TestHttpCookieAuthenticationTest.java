@@ -34,12 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.Cookie;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.TTransport;
 import org.junit.AfterClass;
@@ -80,7 +80,7 @@ public class TestHttpCookieAuthenticationTest {
     try(Connection connection = DriverManager.getConnection(miniHS2.getJdbcURL(), username, "bar")) {
       assertNotNull(connection);
 
-      CookieStore cookieStore = getCookieStoreFromConnection(connection);
+      BasicCookieStore cookieStore = getCookieStoreFromConnection(connection);
       assertNotNull(cookieStore);
 
       // Test that basic cookies worked
@@ -158,8 +158,8 @@ public class TestHttpCookieAuthenticationTest {
   }
 
   // ((InternalHttpClient) ((THttpClient) ((HiveConnection) connection).transport).client).cookieStore.getCookies()
-  private CookieStore getCookieStoreFromConnection(Connection connection) throws Exception {
-    CookieStore cookieStore = null;
+  private BasicCookieStore getCookieStoreFromConnection(Connection connection) throws Exception {
+    BasicCookieStore cookieStore = null;
     if (connection instanceof HiveConnection) {
       HiveConnection hiveConnection = (HiveConnection) connection;
 
@@ -171,11 +171,12 @@ public class TestHttpCookieAuthenticationTest {
         THttpClient httpTransport = (THttpClient) transport;
         Field clientField = httpTransport.getClass().getDeclaredField("client");
         clientField.setAccessible(true);
-        HttpClient httpClient = (HttpClient) clientField.get(httpTransport);
+
+        CloseableHttpClient httpClient = (CloseableHttpClient) clientField.get(httpTransport);
 
         Field cookieStoreField = httpClient.getClass().getDeclaredField("cookieStore");
         cookieStoreField.setAccessible(true);
-        cookieStore = (CookieStore) cookieStoreField.get(httpClient);
+        cookieStore = (BasicCookieStore) cookieStoreField.get(httpClient);
       }
     }
     return cookieStore;

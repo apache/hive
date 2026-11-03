@@ -19,16 +19,10 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.hadoop.conf.Configuration;
-
 public class RowLineageInfo {
 
   private final Long baseRowId;
   private final Long lastUpdatedSequenceNumber;
-
-  private static final String CONF_KEY_ROW_ID = "hive.io.context.row.lineage.row.id";
-  private static final String CONF_KEY_LAST_UPDATED_SEQUENCE_NUMBER =
-      "hive.io.context.row.lineage.last.updated.sequence.number";
 
   public RowLineageInfo(Long baseRowId, Long lastUpdatedSequenceNumber) {
     this.baseRowId = baseRowId;
@@ -41,24 +35,5 @@ public class RowLineageInfo {
 
   public Long getLastUpdatedSequenceNumber() {
     return lastUpdatedSequenceNumber;
-  }
-
-  public static RowLineageInfo parseFromConf(Configuration conf) {
-    Long rowId = conf.get(CONF_KEY_ROW_ID) != null ? Long.parseLong(conf.get(CONF_KEY_ROW_ID)) : null;
-
-    Long lusn = conf.get(CONF_KEY_LAST_UPDATED_SEQUENCE_NUMBER) != null ?
-        Long.parseLong(conf.get(CONF_KEY_LAST_UPDATED_SEQUENCE_NUMBER)) :
-        null;
-
-    return new RowLineageInfo(rowId, lusn);
-  }
-
-  public static void setRowLineageInfoIntoConf(Long rowId, Long lusn, Configuration conf) {
-    if (rowId != null) {
-      conf.setLong(CONF_KEY_ROW_ID, rowId);
-    }
-    if (lusn != null) {
-      conf.setLong(CONF_KEY_LAST_UPDATED_SEQUENCE_NUMBER, lusn);
-    }
   }
 }

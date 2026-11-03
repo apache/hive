@@ -56,7 +56,7 @@ import org.apache.thrift.protocol.TType;
 public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<Iface> {
 
   private final I iface;
-  private final Map<String,  org.apache.thrift.ProcessFunction<Iface, ? extends  TBase>>
+  private final Map<String,  org.apache.thrift.ProcessFunction<Iface, ? extends  TBase, ? extends  TBase>>
     functions;
   static final Logger LOG = LoggerFactory.getLogger(TUGIBasedProcessor.class);
 
@@ -74,7 +74,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
    setIpAddress(in);
 
    final TMessage msg = in.readMessageBegin();
-   final ProcessFunction<Iface, ? extends  TBase> fn = functions.get(msg.name);
+   final ProcessFunction<Iface, ? extends  TBase, ? extends  TBase> fn = functions.get(msg.name);
    if (fn == null) {
      TProtocolUtil.skip(in, TType.STRUCT);
      in.readMessageEnd();

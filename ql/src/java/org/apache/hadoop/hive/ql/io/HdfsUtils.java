@@ -42,6 +42,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -134,6 +135,19 @@ public class HdfsUtils {
   public static Path getFileIdPath(Path path, long fileId) {
     // BI/ETL split strategies set fileId correctly when HDFS is used.
     return (fileId > 0) ? new Path(HDFS_ID_PATH_PREFIX + fileId) : path;
+  }
+
+  /**
+   * The path to read a cached file through: its inode path when the cache key is an HDFS inode id
+   * and {@code hive.llap.io.use.fileid.path} is on, so a rename or a re-create cannot swap the
+   * bytes under cache entries keyed on that inode; otherwise {@code path} itself.
+   */
+  public static Path getFileIdPath(Path path, Object fileKey, Configuration daemonConf) {
+    if (fileKey instanceof Long fileId
+        && HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_USE_FILEID_PATH)) {
+      return getFileIdPath(path, fileId);
+    }
+    return path;
   }
 
   public static boolean isDefaultFs(DistributedFileSystem fs) {

@@ -125,8 +125,16 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
     }
   }
 
+  /**
+   * Points the proto-logging tables in the script at the directories Hive and Tez log to.
+   *
+   * <p>The Tez directory is read from tez-site.xml into a plain {@link Configuration}, which is all a
+   * {@code TezConfiguration} adds. Both Tez names are constant variables, so javac inlines them and the compiled
+   * class references no Tez type: tez-api is needed to compile schematool, never to run it.
+   */
   void replaceLocationForProtoLogTables(String sqlScriptFile) throws IOException {
-    TezConfiguration tezConf = new TezConfiguration(true);
+    Configuration tezConf = new Configuration();
+    tezConf.addResource(TezConfiguration.TEZ_SITE_XML);
     boolean hiveProtoLoggingEnabled = true;
     boolean tezProtoLoggingEnabled = true;
     String hiveProtoBaseDir = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH);

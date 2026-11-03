@@ -12,6 +12,11 @@ Examples:
    mask_hash(value)
  Arguments:
    value - value to mask. Supported types: STRING, VARCHAR, CHAR
+ Note:
+   The result is an unsalted, unkeyed SHA-256 digest (SHA-512 if hive.masking.algo=sha512).
+   It is deterministic, so values from small or predictable domains (e.g. phone numbers,
+   national IDs, dates) can be recovered by hashing every candidate value. For such
+   columns prefer a nullifying or redacting mask.
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMaskHash
 Function type:BUILTIN
 PREHOOK: query: explain select mask_hash('TestString-123')

@@ -75,6 +75,14 @@ public interface LeaderElection<T> extends Closeable {
     return true;
   }
 
+  /**
+   * Whether this leader can be changed during selection.
+   * @return true if the leader can be voted again, false otherwise.
+   */
+  default boolean isDynamic() {
+    return false;
+  }
+
   interface LeadershipStateListener {
 
     /**
@@ -90,5 +98,4 @@ public interface LeaderElection<T> extends Closeable {
     void lossLeadership(LeaderElection election) throws Exception;
 
   }
-
 }

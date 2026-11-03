@@ -144,8 +144,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       if (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()
           && partish.getPartition() == null) {
         this.providedBasicStats = table.getStorageHandler().computeBasicStatistics(table);
-        this.skipStatsUpdate = StatsSetupConst.STATS_REQUIRE_COMPUTE.stream()
-            .anyMatch(providedBasicStats::containsKey);
+        // the handler counts a write's rows into the parameters at commit; only an ANALYZE scan has a count to apply
+        this.skipStatsUpdate = !work.isExplicitAnalyze();
       }
     }
 

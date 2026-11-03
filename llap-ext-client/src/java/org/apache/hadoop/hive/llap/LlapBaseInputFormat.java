@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrB
 import org.apache.hadoop.hive.llap.ext.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient.LlapTaskUmbilicalExternalResponder;
-import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.io.BytesWritable;
@@ -416,8 +415,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     if (fragmentBytesSignature != null) {
       builder.setInitialEventSignature(ByteString.copyFrom(fragmentBytesSignature));
     }
-    builder.setJwt(llapInputSplit.getJwt());
-    builder.setIsExternalClientRequest(true);
     return builder.build();
   }
 

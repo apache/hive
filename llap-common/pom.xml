@@ -49,18 +49,6 @@
       <artifactId>guava</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-impl</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-jackson</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>${commons-lang3.version}</version>
@@ -121,7 +109,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
-      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -144,7 +131,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-common</artifactId>
-      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -159,7 +145,6 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-runtime-internals</artifactId>
-      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>

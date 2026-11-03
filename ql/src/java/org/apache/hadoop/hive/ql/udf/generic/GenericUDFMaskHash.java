@@ -34,7 +34,12 @@ import org.slf4j.LoggerFactory;
              extended = "Examples:\n "
                       + "  mask_hash(value)\n "
                       + "Arguments:\n "
-                      + "  value - value to mask. Supported types: STRING, VARCHAR, CHAR"
+                      + "  value - value to mask. Supported types: STRING, VARCHAR, CHAR\n "
+                      + "Note:\n "
+                      + "  The result is an unsalted, unkeyed SHA-256 digest (SHA-512 if hive.masking.algo=sha512).\n "
+                      + "  It is deterministic, so values from small or predictable domains (e.g. phone numbers,\n "
+                      + "  national IDs, dates) can be recovered by hashing every candidate value. For such\n "
+                      + "  columns prefer a nullifying or redacting mask."
             )
 public class GenericUDFMaskHash extends BaseMaskUDF {
   public static final String UDF_NAME = "mask_hash";

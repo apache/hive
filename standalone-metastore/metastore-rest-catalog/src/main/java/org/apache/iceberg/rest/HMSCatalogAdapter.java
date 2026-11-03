@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.BaseTransaction;
@@ -126,11 +127,22 @@ public class HMSCatalogAdapter implements Closeable {
   private final SupportsNamespaces asNamespaceCatalog;
   private final ViewCatalog asViewCatalog;
   private final IcebergAuthorizer icebergAuthorizer;
+  private final IcebergVendedCredentialProvider credentialProvider;
   private final List<IcebergMetricsReporter> metricsReporters;
   private final Clock clock = Clock.systemUTC();
 
+  /**
+   * Creates an adapter that dispatches Iceberg REST Catalog requests to {@code catalog}.
+   *
+   * @param catalogName the catalog name used when checking authorization
+   * @param catalog the underlying catalog, which must implement {@link SupportsNamespaces} and
+   *     {@link ViewCatalog}
+   * @param icebergAuthorizer authorizer used to filter list results and validate table
+   *     locations, or {@code null} to skip authorization
+   * @param metricsReporters reporters notified when a {@code reportMetrics} request is received
+   */
   public HMSCatalogAdapter(String catalogName, Catalog catalog, IcebergAuthorizer icebergAuthorizer,
-      List<IcebergMetricsReporter> metricsReporters) {
+      IcebergVendedCredentialProvider credentialProvider, List<IcebergMetricsReporter> metricsReporters) {
     Preconditions.checkArgument(catalog instanceof SupportsNamespaces);
     Preconditions.checkArgument(catalog instanceof ViewCatalog);
     this.catalogName = catalogName;
@@ -138,6 +150,7 @@ public class HMSCatalogAdapter implements Closeable {
     this.asNamespaceCatalog = (SupportsNamespaces) catalog;
     this.asViewCatalog = (ViewCatalog) catalog;
     this.icebergAuthorizer = icebergAuthorizer;
+    this.credentialProvider = credentialProvider;
     this.metricsReporters = metricsReporters;
   }
 
@@ -309,7 +322,15 @@ public class HMSCatalogAdapter implements Closeable {
         ? RESTUtil.namespaceFromQueryParam(vars.get(PARENT))
         : Namespace.empty();
     PageRequest page = PageRequest.from(vars);
-    return CatalogHandlers.listNamespaces(asNamespaceCatalog, parent, page.token(), page.size());
+    ListNamespacesResponse response =
+        CatalogHandlers.listNamespaces(asNamespaceCatalog, parent, page.token(), page.size());
+    if (icebergAuthorizer == null) {
+      return response;
+    }
+    return ListNamespacesResponse.builder()
+        .addAll(icebergAuthorizer.filterNamespaces(catalogName, response.namespaces()))
+        .nextPageToken(response.nextPageToken())
+        .build();
   }
 
   private CreateNamespaceResponse createNamespace(Object body) {
@@ -343,20 +364,32 @@ public class HMSCatalogAdapter implements Closeable {
   private ListTablesResponse listTables(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
     PageRequest page = PageRequest.from(vars);
-    return CatalogHandlers.listTables(catalog, namespace, page.token(), page.size());
+    ListTablesResponse response = CatalogHandlers.listTables(catalog, namespace, page.token(), page.size());
+    if (icebergAuthorizer == null) {
+      return response;
+    }
+    return ListTablesResponse.builder()
+        .addAll(icebergAuthorizer.filterTables(catalogName, response.identifiers()))
+        .nextPageToken(response.nextPageToken())
+        .build();
   }
 
-  private LoadTableResponse createTable(Map<String, String> vars, Object body) {
+  private LoadTableResponse createTable(
+      Set<AccessDelegationMode> accessDelegationModes,
+      Map<String, String> vars,
+      Object body) {
     Namespace namespace = namespaceFromPathVars(vars);
     CreateTableRequest request = castRequest(CreateTableRequest.class, body);
     request.validate();
+    LoadTableResponse response;
     if (request.stageCreate()) {
       Map<String, String> namespaceMetadata = asNamespaceCatalog.loadNamespaceMetadata(namespace);
       icebergAuthorizer.validateStageCreateTable(catalogName, namespace, namespaceMetadata, request);
-      return CatalogHandlers.stageTableCreate(catalog, namespace, request);
+      response = CatalogHandlers.stageTableCreate(catalog, namespace, request);
     } else {
-      return CatalogHandlers.createTable(catalog, namespace, request);
+      response = CatalogHandlers.createTable(catalog, namespace, request);
     }
+    return withCredentials(accessDelegationModes, TableIdentifier.of(namespace, request.name()), response);
   }
 
   private RESTResponse dropTable(Map<String, String> vars) {
@@ -377,29 +410,38 @@ public class HMSCatalogAdapter implements Closeable {
     return null;
   }
 
-  private LoadTableResponse loadTable(Map<String, String> vars) {
+  private LoadTableResponse loadTable(Set<AccessDelegationMode> delegationModes, Map<String, String> vars) {
     TableIdentifier ident = identFromPathVars(vars);
     String snapshots = vars.get(RESTCatalogProperties.SNAPSHOTS_QUERY_PARAMETER);
     RESTCatalogProperties.SnapshotMode mode = RESTCatalogProperties.SNAPSHOT_LOADING_MODE_DEFAULT;
     if (snapshots != null) {
       mode = RESTCatalogProperties.SnapshotMode.valueOf(snapshots.toUpperCase(Locale.ROOT));
     }
-    return CatalogHandlers.loadTable(catalog, ident, mode);
+    LoadTableResponse response = CatalogHandlers.loadTable(catalog, ident, mode);
+    return withCredentials(delegationModes, ident, response);
   }
 
-  private LoadTableResponse registerTable(Map<String, String> vars, Object body) {
+  private LoadTableResponse registerTable(
+      Set<AccessDelegationMode> delegationModes,
+      Map<String, String> vars,
+      Object body) {
     Namespace namespace = namespaceFromPathVars(vars);
     RegisterTableRequest request = castRequest(RegisterTableRequest.class, body);
     request.validate();
     Map<String, String> namespaceMetadata = asNamespaceCatalog.loadNamespaceMetadata(namespace);
     icebergAuthorizer.validateRegisterTable(catalogName, namespace, namespaceMetadata, request);
-    return CatalogHandlers.registerTable(catalog, namespace, request);
+    LoadTableResponse response = CatalogHandlers.registerTable(catalog, namespace, request);
+    return withCredentials(delegationModes, TableIdentifier.of(namespace, request.name()), response);
   }
 
-  private LoadTableResponse updateTable(Map<String, String> vars, Object body) {
+  private LoadTableResponse updateTable(
+      Set<AccessDelegationMode> delegationModes,
+      Map<String, String> vars,
+      Object body) {
     TableIdentifier ident = identFromPathVars(vars);
     UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
-    return CatalogHandlers.updateTable(catalog, ident, request);
+    LoadTableResponse response = CatalogHandlers.updateTable(catalog, ident, request);
+    return withCredentials(delegationModes, ident, response);
   }
 
   private RESTResponse renameTable(Object body) {
@@ -425,7 +467,14 @@ public class HMSCatalogAdapter implements Closeable {
   private ListTablesResponse listViews(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
     PageRequest page = PageRequest.from(vars);
-    return CatalogHandlers.listViews(asViewCatalog, namespace, page.token(), page.size());
+    ListTablesResponse response = CatalogHandlers.listViews(asViewCatalog, namespace, page.token(), page.size());
+    if (icebergAuthorizer == null) {
+      return response;
+    }
+    return ListTablesResponse.builder()
+        .addAll(icebergAuthorizer.filterViews(catalogName, response.identifiers()))
+        .nextPageToken(response.nextPageToken())
+        .build();
   }
 
   private LoadViewResponse createView(Map<String, String> vars, Object body) {
@@ -468,6 +517,33 @@ public class HMSCatalogAdapter implements Closeable {
     return CatalogHandlers.registerView(asViewCatalog, namespace, request);
   }
 
+  private LoadTableResponse withCredentials(
+      Set<AccessDelegationMode> accessDelegationModes,
+      TableIdentifier ident,
+      LoadTableResponse response) {
+    if (credentialProvider == null) {
+      return response;
+    }
+
+    if (accessDelegationModes.contains(AccessDelegationMode.VENDED_CREDENTIALS)) {
+      return withVendedCredentials(ident, response);
+    }
+
+    if (accessDelegationModes.contains(AccessDelegationMode.REMOTE_SIGNING)) {
+      LOG.warn("Remote signing is not supported. Ignoring...");
+    }
+
+    return response;
+  }
+
+  private LoadTableResponse withVendedCredentials(TableIdentifier ident, LoadTableResponse response) {
+    final var credentials = credentialProvider.vend(catalogName, ident, response.tableMetadata());
+    return LoadTableResponse.builder()
+        .withTableMetadata(response.tableMetadata())
+        .addAllConfig(response.config())
+        .addAllCredentials(credentials).build();
+  }
+
   /**
    * This is a very simplistic approach that only validates the requirements for each table and does
    * not do any other conflict detection. Therefore, it does not guarantee true transactional
@@ -478,10 +554,9 @@ public class HMSCatalogAdapter implements Closeable {
 
     for (UpdateTableRequest tableChange : request.tableChanges()) {
       Table table = catalog.loadTable(tableChange.identifier());
-      if (table instanceof BaseTable) {
-        Transaction transaction =
-            Transactions.newTransaction(
-                tableChange.identifier().toString(), ((BaseTable) table).operations());
+      if (table instanceof BaseTable baseTable) {
+        Transaction transaction = Transactions.newTransaction(
+                tableChange.identifier().toString(), baseTable.operations());
         transactions.add(transaction);
 
         BaseTransaction.TransactionTable txTable =
@@ -499,7 +574,10 @@ public class HMSCatalogAdapter implements Closeable {
 
   @SuppressWarnings({"unchecked"})
   private <T extends RESTResponse> T handleRequest(
-      Route route, Map<String, String> vars, Object body) {
+      Route route,
+      Set<AccessDelegationMode> accessDelegationModes,
+      Map<String, String> vars,
+      Object body) {
     return (T) switch (route) {
       case CONFIG -> config();
       case LIST_NAMESPACES -> listNamespaces(vars);
@@ -509,12 +587,12 @@ public class HMSCatalogAdapter implements Closeable {
       case DROP_NAMESPACE -> dropNamespace(vars);
       case UPDATE_NAMESPACE -> updateNamespace(vars, body);
       case LIST_TABLES -> listTables(vars);
-      case CREATE_TABLE -> createTable(vars, body);
+      case CREATE_TABLE -> createTable(accessDelegationModes, vars, body);
       case DROP_TABLE -> dropTable(vars);
       case TABLE_EXISTS -> tableExists(vars);
-      case LOAD_TABLE -> loadTable(vars);
-      case REGISTER_TABLE -> registerTable(vars, body);
-      case UPDATE_TABLE -> updateTable(vars, body);
+      case LOAD_TABLE -> loadTable(accessDelegationModes, vars);
+      case REGISTER_TABLE -> registerTable(accessDelegationModes, vars, body);
+      case UPDATE_TABLE -> updateTable(accessDelegationModes, vars, body);
       case RENAME_TABLE -> renameTable(body);
       case REPORT_METRICS -> reportMetrics(vars, body);
       case COMMIT_TRANSACTION -> commitTransaction(body);
@@ -532,6 +610,7 @@ public class HMSCatalogAdapter implements Closeable {
   <T extends RESTResponse> T execute(
       HTTPMethod method,
       String path,
+      Set<AccessDelegationMode> accessDelegationModes,
       Map<String, String> queryParams,
       Object body,
       HttpServletResponse response) throws IOException {
@@ -544,7 +623,7 @@ public class HMSCatalogAdapter implements Closeable {
           vars.putAll(queryParams);
         }
         vars.putAll(routeAndVars.second());
-        return handleRequest(routeAndVars.first(), vars.build(), body);
+        return handleRequest(routeAndVars.first(), accessDelegationModes, vars.build(), body);
       } catch (RuntimeException e) {
         configureResponseFromException(e, errorBuilder);
       }
@@ -560,9 +639,12 @@ public class HMSCatalogAdapter implements Closeable {
     return null;
   }
 
+  /**
+   * Closes the configured metrics reporters. The caller remains responsible for closing the
+   * underlying catalog backing this REST catalog.
+   */
   @Override
   public void close() {
-    // The caller is responsible for closing the underlying catalog backing this REST catalog.
     for (IcebergMetricsReporter reporter : metricsReporters) {
       try {
         reporter.close();
@@ -579,6 +661,16 @@ public class HMSCatalogAdapter implements Closeable {
     }
   }
 
+  /**
+   * Casts {@code request} to {@code requestType}, throwing a {@code 400 Bad Request} error if
+   * the request body does not match the type expected by the route.
+   *
+   * @param requestType the type expected by the route
+   * @param request the deserialized request body
+   * @param <T> the expected request type
+   * @return {@code request} cast to {@code requestType}
+   * @throws BadRequestType if {@code request} is not an instance of {@code requestType}
+   */
   public static <T> T castRequest(Class<T> requestType, Object request) {
     if (requestType.isInstance(request)) {
       return requestType.cast(request);
@@ -587,6 +679,13 @@ public class HMSCatalogAdapter implements Closeable {
   }
 
 
+  /**
+   * Populates {@code errorBuilder} with the HTTP status, error type, and message derived from
+   * {@code exc}, logging the exception at a level appropriate to its severity.
+   *
+   * @param exc the exception raised while processing the request
+   * @param errorBuilder the builder to populate with the derived error response
+   */
   public static void configureResponseFromException(
       Exception exc, ErrorResponse.Builder errorBuilder) {
     var errorCode = EXCEPTION_ERROR_CODES.getOrDefault(exc.getClass(), 500);

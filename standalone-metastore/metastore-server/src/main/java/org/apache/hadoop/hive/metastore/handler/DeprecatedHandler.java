@@ -95,6 +95,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.thrift.TException;
@@ -1017,6 +1018,10 @@ public abstract class DeprecatedHandler extends BaseHandler {
     int ret = -1;
     Exception ex = null;
     try {
+      GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], tblName);
+      getTableRequest.setCatName(parsedDbName[CAT_NAME]);
+      Table table = get_table_core(getTableRequest);
+      firePreEvent(new PreReadTableEvent(table, this));
       ret = getMS().getNumPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tblName, filter);
     } catch (Exception e) {

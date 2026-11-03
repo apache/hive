@@ -4,6 +4,8 @@ drop table if exists tbl_ice_parquet;
 create external table tbl_ice_parquet(a int, b string) stored by iceberg stored as parquet
 TBLPROPERTIES ("format-version"='1');
 insert into table tbl_ice_parquet values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five'), (111, 'one'), (22, 'two'), (11, 'one'), (44444, 'four'), (44, 'four');
+-- the storage handler provides the basic statistics, so the scan gathers none and runs vectorized
+explain vectorization only analyze table tbl_ice_parquet compute statistics for columns;
 analyze table tbl_ice_parquet compute statistics for columns;
 
 explain select b, max(a) from tbl_ice_parquet group by b;

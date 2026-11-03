@@ -28,7 +28,7 @@ Build the Hive Docker image (reused for LLAP too)
 -help                Display help
 -hadoop              Build image with the specified Hadoop version (default: from Maven pom)
 -tez                 Required. Tez release tarball version (apache-tez-\$TEZ_VERSION-bin.tar.gz from archive)
--tez-snapshot <ver>  Optional. When a snapshot version is given, fetch Tez Maven snapshot jars into the image. With no version, snapshot prefetch is skipped.
+-tez-snapshot <ver>  Optional. When a snapshot version is given, the Tez Maven snapshot replaces the Tez release in the image. With no version, the release is used.
 -hive                Build image with the specified Hive version
 -repo                Docker repository
 EOF

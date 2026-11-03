@@ -39,7 +39,7 @@
             <useTransitiveDependencies>true</useTransitiveDependencies>
             <includes>
                 <include>org.apache.hadoop:hadoop-common:jar</include>
-                <include>org.apache.hive:hive-beeline:jar</include>
+                <include>org.apache.hive:hive-beeline:jar:standalone</include>
                 <include>org.apache.hive:hive-common:jar</include>
                 <include>org.apache.hive:hive-exec:jar</include>
                 <include>org.apache.hive:hive-jdbc</include>

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.VectorizedParquetInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -59,7 +61,6 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
@@ -218,6 +219,8 @@ public class HiveVectorizedReader {
     // Need to turn positional schema evolution off since we use column name based schema evolution for projection
     // and Iceberg will make a mapping between the file schema and the current reading schema.
     job.setBoolean(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), false);
+    // Row positions are derived from the batch index, and ORC's row-level filter can drop rows and whole batches.
+    job.setBoolean(OrcConf.ALLOW_SARG_TO_FILTER.getHiveConfName(), false);
 
     // Metadata information has to be passed along in the OrcSplit. Without specifying this, the vectorized
     // reader will assume that the ORC file ends at the task's start + length, and might fail reading the tail..
@@ -228,10 +231,9 @@ public class HiveVectorizedReader {
         VectorizedReadUtils.deserializeToShadedOrcTail(serializedOrcTail).getSchema(), residual);
 
     // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
-    // TODO: add support for reading files with positional deletes with LLAP (LLAP would need to provide file row num)
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
-        LlapProxy.getIo() != null && task.deletes().isEmpty() && !InputFormatConfig.fetchVirtualColumns(job)) {
-      recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, path, null, readColumnIds,
+        LlapProxy.getIo() != null) {
+      recordReader = LlapProxy.getIo().orc().vectorizedReaderForPath(fileId, path, null, readColumnIds,
           job, start, length, reporter);
     }
 
@@ -254,7 +256,12 @@ public class HiveVectorizedReader {
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null && LlapProxy.getIo().usingLowLevelCache()) {
       LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
-      footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId);
+      // No per-fragment counters on the Iceberg vectorized path yet; footer lookups are
+      // recorded as cache traffic but not as META hits/misses in the LLAP IO summary.
+      // Tagged as VectorizedParquetRecordReader tags the data it caches for this file, so purging the
+      // table's entries covers the footer too.
+      CacheTag cacheTag = VectorizedParquetRecordReader.cacheTagOfParquetFile(path, job, job);
+      footerData = LlapProxy.getIo().parquet().getFooterBuffersFromCache(path, job, cacheTag, fileId, null);
     }
 
     ParquetMetadata parquetMetadata = HiveParquetUtil.readFooter(task.file(), io, job, footerData);

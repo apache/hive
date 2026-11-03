@@ -24,9 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.io.IOContextMap;
+import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.io.RowLineageInfo;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -181,10 +182,6 @@ public class IcebergAcidUtil {
     return rec.get(DELETE_FILE_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
   }
 
-  public static long getFilePosition(Record rec) {
-    return rec.get(FILE_READ_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
-  }
-
   public static long getDeleteFilePosition(Record rec) {
     return rec.get(DELETE_FILE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
   }
@@ -240,27 +237,29 @@ public class IcebergAcidUtil {
 
   public static class VirtualColumnAwareIterator<T> implements CloseableIterator<T> {
 
+    private static final int ROW_POSITION_INDEX = FILE_READ_META_COLS.get(MetadataColumns.ROW_POSITION);
+
     private final CloseableIterator<T> currentIterator;
     private final GenericRecord current;
-    private final Configuration conf;
+    // the reader's IOContext, read per row: the reader opens its first file before the wrapper hands it over
+    private final Supplier<IOContext> ioContext;
 
     private final int specId;
     private final long partitionHash;
     private final String filePath;
+    private final String partitionName;
 
     public VirtualColumnAwareIterator(CloseableIterator<T> currentIterator, List<Types.NestedField> columns,
-        Configuration conf, FileScanTask task) {
+        FileScanTask task, Supplier<IOContext> ioContext) {
       this.currentIterator = currentIterator;
       this.current = GenericRecord.create(
           new Schema(columns.subList(FILE_READ_META_COLS.size(), columns.size())));
-      this.conf = conf;
+      this.ioContext = ioContext;
 
       this.specId = task.file().specId();
       this.partitionHash = computeHash(task.file().partition());
       this.filePath = task.file().location();
-
-      IOContextMap.get(conf).setPartitionName(
-          IcebergTableUtil.toPartitionName(task.spec(), task.file().partition()));
+      this.partitionName = IcebergTableUtil.toPartitionName(task.spec(), task.file().partition());
     }
 
     @Override
@@ -278,13 +277,12 @@ public class IcebergAcidUtil {
       T next = currentIterator.next();
       GenericRecord rec = (GenericRecord) next;
       IcebergAcidUtil.copyFields(rec, FILE_READ_META_COLS.size(), current.size(), current);
-      PositionDeleteInfo.setIntoConf(conf,
-          specId,
-          partitionHash,
-          filePath,
-          IcebergAcidUtil.getFilePosition(rec));
-      RowLineageInfo.setRowLineageInfoIntoConf(RowLineageReader.readRowId(rec),
-          RowLineageReader.readLastUpdatedSequenceNumber(rec), conf);
+      IOContext ioCxt = ioContext.get();
+      ioCxt.setPartitionName(partitionName);
+      ioCxt.setPositionDeleteInfo(new PositionDeleteInfo(
+          specId, partitionHash, filePath, rec.get(ROW_POSITION_INDEX, Long.class)));
+      ioCxt.setRowLineageInfo(new RowLineageInfo(
+          RowLineageReader.readRowId(rec), RowLineageReader.readLastUpdatedSequenceNumber(rec)));
       return (T) current;
     }
   }

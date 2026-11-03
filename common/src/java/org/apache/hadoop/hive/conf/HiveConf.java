@@ -262,6 +262,13 @@ public class HiveConf extends Configuration {
       "hive.server2.authentication.ldap.userMembershipKey";
 
   /**
+   * Token that {@link ConfVars#HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED} must contain for
+   * decimal_64 vectorization to be enabled. Extracted here so call sites can reference the same
+   * constant instead of repeating the literal.
+   */
+  public static final String HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64 = "decimal_64";
+
+  /**
    * dbVars are the parameters can be set per database. If these
    * parameters are set as a database property, when switching to that
    * database, the HiveConf variable will be changed. The change of these
@@ -4644,7 +4651,7 @@ public class HiveConf extends Configuration {
         "evaluate call and turn them into NULLs. Assume, by default, this is not needed"),
     HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED(
         "hive.vectorized.input.format.supports.enabled",
-        "decimal_64",
+        HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64,
         "Which vectorized input format support features are enabled for vectorization.\n" +
         "That is, if a VectorizedInputFormat input format does support \"decimal_64\" for example\n" +
         "this variable must enable that to be used in vectorization"),
@@ -4979,6 +4986,16 @@ public class HiveConf extends Configuration {
     LLAP_IO_ENCODE_ENABLED("hive.llap.io.encode.enabled", true,
         "Whether LLAP should try to re-encode and cache data for non-ORC formats. This is used\n" +
         "on LLAP Server side to determine if the infrastructure for that is initialized."),
+    LLAP_IO_PARQUET_NATIVE_ENABLED("hive.llap.io.parquet.native.enabled", false,
+        "Whether LLAP IO caches Parquet column chunks and decodes them from the cache, as it does\n" +
+        "for ORC. Read per query from the session configuration, so it can be turned on for one\n" +
+        "query, and only has an effect with hive.llap.io.memory.mode=cache - there is nowhere to\n" +
+        "put the column chunks otherwise, and the daemon declines the split. When it applies it\n" +
+        "takes precedence over hive.llap.io.encode.formats, which is not consulted for a format\n" +
+        "LLAP IO reads natively. A query whose projection reaches into a nested type, or projects\n" +
+        "the row-lineage virtual columns, falls back to the vectorized Parquet reader for that\n" +
+        "split; the fallback still caches, but loses the vectored reads, the row-group lookahead\n" +
+        "and the LLAP IO counters."),
     LLAP_IO_ENCODE_FORMATS("hive.llap.io.encode.formats",
         "org.apache.hadoop.mapred.TextInputFormat,",
         "The table input formats for which LLAP IO should re-encode and cache data.\n" +
@@ -5418,34 +5435,6 @@ public class HiveConf extends Configuration {
     LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT("hive.llap.external.splits.temp.table.storage.format",
         "orc", new StringSet("default", "text", "orc"),
         "Storage format for temp tables created using LLAP external client"),
-    LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR("hive.llap.external.client.use.hybrid.calendar",
-        false,
-        "Whether to use hybrid calendar for parsing of data/timestamps."),
-
-    // ====== confs for llap-external-client cloud deployment ======
-    LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED(
-        "hive.llap.external.client.cloud.deployment.setup.enabled", false,
-        "Tells whether to enable additional RPC port, auth mechanism for llap external clients. This is meant"
-            + "for cloud based deployments. When true, it has following effects - \n"
-            + "1. Enables an extra RPC port on LLAP daemon to accept fragments from external clients. See"
-            + "hive.llap.external.client.cloud.rpc.port\n"
-            + "2. Uses external hostnames of LLAP in splits, so that clients can submit from outside of cloud. "
-            + "Env variable PUBLIC_HOSTNAME should be available on LLAP machines.\n"
-            + "3. Uses JWT based authentication for splits to be validated at LLAP. See "
-            + "hive.llap.external.client.cloud.jwt.shared.secret.provider"),
-    LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT("hive.llap.external.client.cloud.rpc.port", 30004,
-        "The LLAP daemon RPC port for external clients when llap is running in cloud environment."),
-    LLAP_EXTERNAL_CLIENT_CLOUD_OUTPUT_SERVICE_PORT("hive.llap.external.client.cloud.output.service.port", 30005,
-                "LLAP output service port when llap is running in cloud environment"),
-    LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET_PROVIDER(
-        "hive.llap.external.client.cloud.jwt.shared.secret.provider",
-        "org.apache.hadoop.hive.llap.security.DefaultJwtSharedSecretProvider",
-        "Shared secret provider to be used to sign JWT"),
-    LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET("hive.llap.external.client.cloud.jwt.shared.secret",
-        "",
-        "The LLAP daemon RPC port for external clients when llap is running in cloud environment. "
-            + "Length of the secret should be >= 32 bytes"),
-    // ====== confs for llap-external-client cloud deployment ======
 
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
         "Override if grace join should be allowed to run in llap."),
@@ -6383,6 +6372,17 @@ public class HiveConf extends Configuration {
 
   public static String getVar(Configuration conf, ConfVars var, EncoderDecoder<String, String> encoderDecoder) {
     return encoderDecoder.decode(getVar(conf, var));
+  }
+
+  /**
+   * Whether {@link ConfVars#HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED} names the
+   * {@link #HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64} token, i.e. whether a reader or writer
+   * should build DECIMAL_64 column vectors. A null conf counts as not enabled - ORC readers and
+   * writers can be constructed outside Hive, and that is how those call sites already read it.
+   */
+  public static boolean isDecimal64VectorizationEnabled(Configuration conf) {
+    return conf != null && getVar(conf, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+        .equalsIgnoreCase(HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_DECIMAL_64);
   }
 
   public String getLogIdVar(String defaultValue) {

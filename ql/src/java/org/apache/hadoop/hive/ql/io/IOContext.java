@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.io;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.JobConf;
 
 /**
  * IOContext basically contains the position information of the current
@@ -194,8 +193,8 @@ public class IOContext {
     }
   }
 
-  public void parsePositionDeleteInfo(Configuration configuration) {
-    this.pdi = PositionDeleteInfo.parseFromConf(configuration);
+  public void setPositionDeleteInfo(PositionDeleteInfo pdi) {
+    this.pdi = pdi;
   }
 
   public PositionDeleteInfo getPositionDeleteInfo() {
@@ -210,8 +209,8 @@ public class IOContext {
     return partitionName;
   }
 
-  public void parseRowLineageInfo(JobConf cconfiguration) {
-    this.rowLineageInfo = RowLineageInfo.parseFromConf(cconfiguration);
+  public void setRowLineageInfo(RowLineageInfo rowLineageInfo) {
+    this.rowLineageInfo = rowLineageInfo;
   }
 
   public RowLineageInfo getRowLineageInfo() {
