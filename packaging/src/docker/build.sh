@@ -35,7 +35,8 @@ Build the Hive Docker image (reused for LLAP too)
                        auto      (default) aws-java-sdk.version from the Maven pom
                        none      no bundle in the image, keeping it ~650MB smaller. s3a:// paths then fail at runtime.
                        <version> an explicit software.amazon.awssdk:bundle version
-                     Hadoop releases that ship their own bundle (up to 3.4.2) keep it and get no other.
+                     Hadoop releases that ship their own bundle (up to 3.4.2) keep it and get no other; it moves to
+                     share/hadoop/common/lib with hadoop-aws, as in 3.4.3.
 -repo                Docker repository
 EOF
 }

@@ -48,8 +48,6 @@ spec:
       - name: hive-metastore
         image: hive:standalone-metastore-test
         env:
-        - name: HADOOP_OPTIONAL_TOOLS
-          value: hadoop-aws
         - name: HIVE_CUSTOM_CONF_DIR
           value: /etc/hive/conf
         readinessProbe:
