@@ -7103,29 +7103,8 @@ public class HiveConf extends Configuration {
    * including HIVE_CONF_RESTRICTED_LIST itself
    */
   private void setupRestrictList() {
-    String restrictListStr = this.getVar(ConfVars.HIVE_CONF_RESTRICTED_LIST);
     restrictList.clear();
-    if (restrictListStr != null) {
-      for (String entry : restrictListStr.split(",")) {
-        restrictList.add(entry.trim());
-      }
-    }
-
-    String internalVariableListStr = this.getVar(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST);
-    if (internalVariableListStr != null) {
-      for (String entry : internalVariableListStr.split(",")) {
-        restrictList.add(entry.trim());
-      }
-    }
-
-    restrictList.add(ConfVars.HIVE_IN_TEST.varname);
-    restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
-    restrictList.add(ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
-    restrictList.add(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST.varname);
-    restrictList.add(ConfVars.HIVE_CONF_LOCKED_LIST.varname);
-    restrictList.add(ConfVars.HIVE_COMPACTOR_CONF_ALLOWLIST.varname);
-    restrictList.add(ConfVars.HIVE_COMPACTOR_CONF_ALLOWLIST_APPEND.varname);
-    restrictList.add(ConfVars.HIVE_COMPACTOR_CONF_DENYLIST.varname);
+    restrictList.addAll(HiveConfUtil.getRestrictedSet(this));
   }
 
   /**

@@ -223,6 +223,26 @@ public class TestCompactorPropertyValidator {
 
   @ParameterizedTest
   @ValueSource(strings = {
+      "hive.security.authenticator.manager",
+      "hadoop.security.authenticator",
+      "hive.iceberg.allow.datafiles.in.table.location.only",
+      "hive.zookeeper.ssl.keystore.location",
+      "adls.sas-token.key",
+      "dfs.adls.oauth2.credential"})
+  void testParametersRejectedRestrictedAndHiddenList(String key) {
+    HiveConf conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.HIVE_COMPACTOR_CONF_ALLOWLIST, ".*");
+    conf.setVar(HiveConf.ConfVars.HIVE_COMPACTOR_CONF_DENYLIST, "(?!)");
+    conf.setVar(HiveConf.ConfVars.HIVE_CONF_RESTRICTED_LIST, "hive.security.authenticator.manager,hadoop.security.");
+    conf.setVar(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST, "adls.sas-token.,dfs.adls.oauth2.credential");
+    conf.setVar(HiveConf.ConfVars.HIVE_CONF_LOCKED_LIST,
+        "hive.iceberg.allow.datafiles.in.table.location.only,hive.zookeeper.");
+    assertFalse(allowed(conf, key), key +
+        " has to be rejected by hive.conf.restricted.list and hive.conf.hidden.list");
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
       "mapreduce.map.memory.mb   ",
       "   mapreduce.reduce.memory.mb",
       "\tmapreduce.map.cpu.vcores",
