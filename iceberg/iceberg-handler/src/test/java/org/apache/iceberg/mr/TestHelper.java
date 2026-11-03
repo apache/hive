@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.junit.rules.TemporaryFolder;
 
+
 public class TestHelper {
   private final Configuration conf;
   private final Tables tables;
@@ -53,19 +55,32 @@ public class TestHelper {
   private final Schema schema;
   private final PartitionSpec spec;
   private final FileFormat fileFormat;
-  private final TemporaryFolder tmp;
+  private final Path temp;
   private final Map<String, String> tblProps;
   private SortOrder order;
 
   private Table table;
 
-  public TestHelper(Configuration conf, Tables tables, String tableIdentifier, Schema schema, PartitionSpec spec,
-                    FileFormat fileFormat, TemporaryFolder tmp) {
-    this(conf, tables, tableIdentifier, schema, spec, fileFormat, ImmutableMap.of(), tmp);
+  public TestHelper(
+      Configuration conf,
+      Tables tables,
+      String tableIdentifier,
+      Schema schema,
+      PartitionSpec spec,
+      FileFormat fileFormat,
+      Path temp) {
+    this(conf, tables, tableIdentifier, schema, spec, fileFormat, ImmutableMap.of(), temp);
   }
 
-  public TestHelper(Configuration conf, Tables tables, String tableIdentifier, Schema schema, PartitionSpec spec,
-      FileFormat fileFormat, Map<String, String> tblProps, TemporaryFolder tmp) {
+  public TestHelper(
+      Configuration conf,
+      Tables tables,
+      String tableIdentifier,
+      Schema schema,
+      PartitionSpec spec,
+      FileFormat fileFormat,
+      Map<String, String> tblProps,
+      Path temp) {
     this.conf = conf;
     this.tables = tables;
     this.tableIdentifier = tableIdentifier;
@@ -73,7 +88,11 @@ public class TestHelper {
     this.spec = spec;
     this.fileFormat = fileFormat;
     this.tblProps = tblProps;
-    this.tmp = tmp;
+    this.temp = temp;
+  }
+
+  public static Path toPath(TemporaryFolder folder) {
+    return folder != null ? folder.getRoot().toPath() : null;
   }
 
   public void setTable(Table table) {
@@ -167,31 +186,8 @@ public class TestHelper {
     return appender().writeFile(partition, records);
   }
 
-  public Map<DataFile, List<Record>> writeFiles(List<Record> rowSet) throws IOException {
-    // The rows collected by partitions
-    Map<PartitionKey, List<Record>> rows = Maps.newHashMap();
-    PartitionKey partitionKey = new PartitionKey(table.spec(), table.schema());
-    for (Record record : rowSet) {
-      partitionKey.partition(record);
-      List<Record> partitionRows = rows.get(partitionKey);
-      if (partitionRows == null) {
-        partitionRows = rows.put(partitionKey.copy(), Lists.newArrayList());
-      }
-
-      partitionRows.add(record);
-    }
-
-    // Write out the partitions one-by-one
-    Map<DataFile, List<Record>> dataFiles = Maps.newHashMapWithExpectedSize(rows.size());
-    for (PartitionKey partition : rows.keySet()) {
-      dataFiles.put(writeFile(partition, rows.get(partition)), rows.get(partition));
-    }
-
-    return dataFiles;
-  }
-
   private GenericAppenderHelper appender() {
-    return new GenericAppenderHelper(table, fileFormat, tmp, conf);
+    return new GenericAppenderHelper(table, fileFormat, temp, conf);
   }
 
   public static class RecordsBuilder {

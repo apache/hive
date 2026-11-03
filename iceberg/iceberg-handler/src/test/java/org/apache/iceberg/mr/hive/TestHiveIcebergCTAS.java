@@ -165,7 +165,9 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
         ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString()))));
 
     // check table can be read back correctly
-    records.sort(Comparator.comparingLong(record -> (Long) record.get(0)));
+    records.sort(
+        Comparator.comparing(
+            record -> (Long) record.get(0), Comparator.nullsLast(Comparator.naturalOrder())));
     HiveIcebergTestUtils.validateDataWithSQL(shell, "default.target", records, "id");
 
     // check HMS table has been created correctly (no partition cols, props pushed down)

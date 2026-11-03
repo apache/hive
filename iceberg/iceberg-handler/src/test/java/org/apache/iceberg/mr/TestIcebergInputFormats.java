@@ -23,14 +23,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -47,17 +49,27 @@ import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.Files;
+import org.apache.iceberg.Parameter;
+import org.apache.iceberg.ParameterizedTestExtension;
+import org.apache.iceberg.Parameters;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TestHelpers.Row;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.data.FileHelpers;
+import org.apache.iceberg.data.GenericFileWriterFactory;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.io.DataWriter;
+import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
@@ -70,67 +82,70 @@ import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ThreadPools;
-import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestTemplate;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@RunWith(Parameterized.class)
+@ExtendWith(ParameterizedTestExtension.class)
 public class TestIcebergInputFormats {
 
-  public static final List<TestInputFormat.Factory<Record>> TESTED_INPUT_FORMATS = ImmutableList.of(
+  public static final List<TestInputFormat.Factory<Record>> TESTED_INPUT_FORMATS =
+      ImmutableList.of(
           TestInputFormat.newFactory("IcebergInputFormat", TestIcebergInputFormat::create),
-          TestInputFormat.newFactory("MapredIcebergInputFormat", TestMapredIcebergInputFormat::create));
+          TestInputFormat.newFactory(
+              "MapredIcebergInputFormat", TestMapredIcebergInputFormat::create));
 
-  private static final List<String> TESTED_FILE_FORMATS = ImmutableList.of("avro", "orc", "parquet");
+  private static final List<String> TESTED_FILE_FORMATS =
+      ImmutableList.of("avro", "orc", "parquet");
 
-  private static final Schema SCHEMA = new Schema(
+  private static final Schema SCHEMA =
+      new Schema(
           required(1, "data", Types.StringType.get()),
           required(2, "id", Types.LongType.get()),
           required(3, "date", Types.StringType.get()));
 
-  private static final PartitionSpec SPEC = PartitionSpec.builderFor(SCHEMA)
-          .identity("date")
-          .bucket("id", 1)
-          .build();
+  private static final PartitionSpec SPEC =
+      PartitionSpec.builderFor(SCHEMA).identity("date").bucket("id", 1).build();
 
-  @Rule
-  public TemporaryFolder temp = new TemporaryFolder();
+  @TempDir
+  private Path temp;
 
   // before variables
   private Configuration conf;
   private TestHelper helper;
   private InputFormatConfig.ConfigBuilder builder;
 
-  // parametrized variables
-  private final TestInputFormat.Factory<Record> testInputFormat;
-  private final FileFormat fileFormat;
+  // parameterized variables
+  @Parameter(index = 0)
+  private TestInputFormat.Factory<Record> testInputFormat;
 
-  @Before
+  @Parameter(index = 1)
+  private FileFormat fileFormat;
+
+  @BeforeEach
   public void before() throws IOException {
     conf = new JobConf();
     conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
     HadoopTables tables = new HadoopTables(conf);
 
-    File location = temp.newFolder(testInputFormat.name(), fileFormat.name());
-    Assert.assertTrue(location.delete());
+    if (testInputFormat != null && fileFormat != null) {
+      File location = temp.resolve(Paths.get(testInputFormat.name(), fileFormat.name())).toFile();
+      assertThat(location).doesNotExist();
 
-    helper = new TestHelper(conf, tables, location.toString(), SCHEMA, SPEC, fileFormat, temp);
-    builder = new InputFormatConfig.ConfigBuilder(conf).readFrom(location.toString());
+      helper = new TestHelper(conf, tables, location.toString(), SCHEMA, SPEC, fileFormat, temp);
+      builder = new InputFormatConfig.ConfigBuilder(conf).readFrom(location.toString());
+    }
   }
 
-  @Parameterized.Parameters(name = "testInputFormat = {0}, fileFormat = {1}")
+  @Parameters(name = "testInputFormat = {0}, fileFormat = {1}")
   public static Object[][] parameters() {
     Object[][] parameters = new Object[TESTED_INPUT_FORMATS.size() * TESTED_FILE_FORMATS.size()][2];
 
@@ -138,19 +153,14 @@ public class TestIcebergInputFormats {
 
     for (TestInputFormat.Factory<Record> inputFormat : TESTED_INPUT_FORMATS) {
       for (String fileFormat : TESTED_FILE_FORMATS) {
-        parameters[idx++] = new Object[] {inputFormat, fileFormat};
+        parameters[idx++] = new Object[] {inputFormat, FileFormat.fromString(fileFormat)};
       }
     }
 
     return parameters;
   }
 
-  public TestIcebergInputFormats(TestInputFormat.Factory<Record> testInputFormat, String fileFormat) {
-    this.testInputFormat = testInputFormat;
-    this.fileFormat = FileFormat.fromString(fileFormat);
-  }
-
-  @Test
+  @TestTemplate
   public void testUnpartitionedTable() throws Exception {
     helper.createUnpartitionedTable();
     List<Record> expectedRecords = helper.generateRandomRecords(1, 0L);
@@ -159,7 +169,7 @@ public class TestIcebergInputFormats {
     testInputFormat.create(builder.conf()).validate(expectedRecords);
   }
 
-  @Test
+  @TestTemplate
   public void testPartitionedTable() throws Exception {
     helper.createTable();
     List<Record> expectedRecords = helper.generateRandomRecords(1, 0L);
@@ -169,7 +179,7 @@ public class TestIcebergInputFormats {
     testInputFormat.create(builder.conf()).validate(expectedRecords);
   }
 
-  @Test
+  @TestTemplate
   public void testFilterExp() throws Exception {
     helper.createTable();
 
@@ -178,14 +188,15 @@ public class TestIcebergInputFormats {
     expectedRecords.get(1).set(2, "2020-03-20");
 
     DataFile dataFile1 = helper.writeFile(Row.of("2020-03-20", 0), expectedRecords);
-    DataFile dataFile2 = helper.writeFile(Row.of("2020-03-21", 0), helper.generateRandomRecords(2, 0L));
+    DataFile dataFile2 =
+        helper.writeFile(Row.of("2020-03-21", 0), helper.generateRandomRecords(2, 0L));
     helper.appendToTable(dataFile1, dataFile2);
 
     builder.filter(Expressions.equal("date", "2020-03-20"));
     testInputFormat.create(builder.conf()).validate(expectedRecords);
   }
 
-  @Test
+  @TestTemplate
   public void testResiduals() throws Exception {
     helper.createTable();
 
@@ -199,12 +210,12 @@ public class TestIcebergInputFormats {
     expectedRecords.add(writeRecords.get(0));
 
     DataFile dataFile1 = helper.writeFile(Row.of("2020-03-20", 0), writeRecords);
-    DataFile dataFile2 = helper.writeFile(Row.of("2020-03-21", 0), helper.generateRandomRecords(2, 0L));
+    DataFile dataFile2 =
+        helper.writeFile(Row.of("2020-03-21", 0), helper.generateRandomRecords(2, 0L));
     helper.appendToTable(dataFile1, dataFile2);
 
-    builder.filter(Expressions.and(
-            Expressions.equal("date", "2020-03-20"),
-            Expressions.equal("id", 123)));
+    builder.filter(
+        Expressions.and(Expressions.equal("date", "2020-03-20"), Expressions.equal("id", 123)));
     testInputFormat.create(builder.conf()).validate(expectedRecords);
 
     // skip residual filtering
@@ -212,13 +223,13 @@ public class TestIcebergInputFormats {
     testInputFormat.create(builder.conf()).validate(writeRecords);
   }
 
-  @Test
-  @Ignore
-  // This test is ignored because for ARVO, the vectorized IcebergInputFormat.IcebergRecordReader doesn't support AVRO
-  // and for ORC and PARQUET, IcebergInputFormat class ignores residuals
-  // '... scan.filter(filter).ignoreResiduals()' and it is not compatible with this test
+  @TestTemplate
+  @Disabled(
+      "This test is ignored because for AVRO, the vectorized IcebergInputFormat.IcebergRecordReader doesn't support " +
+          "AVRO and for ORC and PARQUET, IcebergInputFormat class ignores residuals " +
+          "'... scan.filter(filter).ignoreResiduals()' and it is not compatible with this test")
   public void testFailedResidualFiltering() throws Exception {
-    Assume.assumeTrue("Vectorization is not yet supported for AVRO", this.fileFormat != FileFormat.AVRO);
+    Assumptions.assumeTrue(this.fileFormat != FileFormat.AVRO, "Vectorization is not yet supported for AVRO");
 
     helper.createTable();
 
@@ -233,20 +244,20 @@ public class TestIcebergInputFormats {
         .filter(
             Expressions.and(Expressions.equal("date", "2020-03-20"), Expressions.equal("id", 0)));
 
-    Assertions.assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
+    assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
         .isInstanceOf(UnsupportedOperationException.class)
         .hasMessage(
             "Filter expression ref(name=\"id\") == 0 is not completely satisfied. Additional rows can be returned " +
-                    "not satisfied by the filter expression");
+                "not satisfied by the filter expression");
 
-    Assertions.assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
+    assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
         .isInstanceOf(UnsupportedOperationException.class)
         .hasMessage(
             "Filter expression ref(name=\"id\") == 0 is not completely satisfied. Additional rows can be returned " +
-                    "not satisfied by the filter expression");
+                "not satisfied by the filter expression");
   }
 
-  @Test
+  @TestTemplate
   public void testProjection() throws Exception {
     helper.createTable();
     List<Record> inputRecords = helper.generateRandomRecords(1, 0L);
@@ -257,21 +268,21 @@ public class TestIcebergInputFormats {
 
     List<Record> outputRecords = testInputFormat.create(builder.conf()).getRecords();
 
-    Assert.assertEquals(inputRecords.size(), outputRecords.size());
-    Assert.assertEquals(projection.asStruct(), outputRecords.get(0).struct());
+    assertThat(outputRecords).hasSameSizeAs(inputRecords);
+    assertThat(outputRecords.get(0).struct()).isEqualTo(projection.asStruct());
   }
 
-  private static final Schema LOG_SCHEMA = new Schema(
+  private static final Schema LOG_SCHEMA =
+      new Schema(
           Types.NestedField.optional(1, "id", Types.IntegerType.get()),
           Types.NestedField.optional(2, "date", Types.StringType.get()),
           Types.NestedField.optional(3, "level", Types.StringType.get()),
-          Types.NestedField.optional(4, "message", Types.StringType.get())
-  );
+          Types.NestedField.optional(4, "message", Types.StringType.get()));
 
   private static final PartitionSpec IDENTITY_PARTITION_SPEC =
-          PartitionSpec.builderFor(LOG_SCHEMA).identity("date").identity("level").build();
+      PartitionSpec.builderFor(LOG_SCHEMA).identity("date").identity("level").build();
 
-  @Test
+  @TestTemplate
   public void testIdentityPartitionProjections() throws Exception {
     helper.createTable(LOG_SCHEMA, IDENTITY_PARTITION_SPEC);
     List<Record> inputRecords = helper.generateRandomRecords(10, 0L);
@@ -281,7 +292,8 @@ public class TestIcebergInputFormats {
     for (Record record : inputRecords) {
       record.set(1, "2020-03-2" + idx);
       record.set(2, idx.toString());
-      append.appendFile(helper.writeFile(Row.of("2020-03-2" + idx, idx.toString()), ImmutableList.of(record)));
+      append.appendFile(
+          helper.writeFile(Row.of("2020-03-2" + idx, idx.toString()), ImmutableList.of(record)));
       idx += 1;
     }
     append.commit();
@@ -319,7 +331,8 @@ public class TestIcebergInputFormats {
     return TypeUtil.select(LOG_SCHEMA, projectedIds);
   }
 
-  private void validateIdentityPartitionProjections(Schema projectedSchema, List<Record> inputRecords) {
+  private void validateIdentityPartitionProjections(
+      Schema projectedSchema, List<Record> inputRecords) {
     builder.project(projectedSchema);
     List<Record> actualRecords = testInputFormat.create(builder.conf()).getRecords();
 
@@ -328,16 +341,19 @@ public class TestIcebergInputFormats {
     for (int pos = 0; pos < inputRecords.size(); pos++) {
       Record inputRecord = inputRecords.get(pos);
       Record actualRecord = actualRecords.get(pos);
-      Assert.assertEquals("Projected schema should match", projectedSchema.asStruct(), actualRecord.struct());
+      assertThat(actualRecord.struct())
+          .as("Projected schema should match")
+          .isEqualTo(projectedSchema.asStruct());
 
       for (String name : fieldNames) {
-        Assert.assertEquals(
-                "Projected field " + name + " should match", inputRecord.getField(name), actualRecord.getField(name));
+        assertThat(actualRecord.getField(name))
+            .as("Projected field " + name + " should match")
+            .isEqualTo(inputRecord.getField(name));
       }
     }
   }
 
-  @Test
+  @TestTemplate
   public void testSnapshotReads() throws Exception {
     helper.createUnpartitionedTable();
 
@@ -351,32 +367,36 @@ public class TestIcebergInputFormats {
     testInputFormat.create(builder.conf()).validate(expectedRecords);
   }
 
-  @Test
+  @TestTemplate
   public void testLocality() throws Exception {
     helper.createUnpartitionedTable();
     List<Record> expectedRecords = helper.generateRandomRecords(1, 0L);
     helper.appendToTable(null, expectedRecords);
 
     for (InputSplit split : testInputFormat.create(builder.conf()).getSplits()) {
-      Assert.assertArrayEquals(IcebergSplit.ANYWHERE, split.getLocations());
+      assertThat(split.getLocations()).containsExactly("*");
     }
 
     builder.preferLocality();
 
     for (InputSplit split : testInputFormat.create(builder.conf()).getSplits()) {
-      Assert.assertArrayEquals(new String[]{"localhost"}, split.getLocations());
+      assertThat(split.getLocations()).containsExactly("localhost");
     }
   }
 
-  @Test
+  @TestTemplate
   public void testCustomCatalog() throws IOException {
-    String warehouseLocation = temp.newFolder("hadoop_catalog").getAbsolutePath();
+    String warehouseLocation = temp.resolve("hadoop_catalog").toAbsolutePath().toString();
     conf.set("warehouse.location", warehouseLocation);
     conf.set(InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
-    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(Catalogs.ICEBERG_DEFAULT_CATALOG_NAME,
-        CatalogUtil.ICEBERG_CATALOG_TYPE), CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP);
-    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(Catalogs.ICEBERG_DEFAULT_CATALOG_NAME,
-        CatalogProperties.WAREHOUSE_LOCATION), warehouseLocation);
+    conf.set(
+        IcebergCatalogProperties.catalogPropertyConfigKey(
+            Catalogs.ICEBERG_DEFAULT_CATALOG_NAME, CatalogUtil.ICEBERG_CATALOG_TYPE),
+        CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP);
+    conf.set(
+        IcebergCatalogProperties.catalogPropertyConfigKey(
+            Catalogs.ICEBERG_DEFAULT_CATALOG_NAME, CatalogProperties.WAREHOUSE_LOCATION),
+        warehouseLocation);
 
     Catalog catalog = new HadoopCatalog(conf, conf.get("warehouse.location"));
     TableIdentifier identifier = TableIdentifier.of("db", "t");
@@ -392,12 +412,13 @@ public class TestIcebergInputFormats {
     testInputFormat.create(builder.conf()).validate(expectedRecords);
   }
 
+  // Hive-specific custom test
   @Test
   public void testDeriveLlapSetsCacheAffinityForIcebergInputFormat() {
     MapWork mapWork = new MapWork();
     PartitionDesc partitionDesc = new PartitionDesc();
     partitionDesc.setInputFileFormatClass(HiveIcebergInputFormat.class);
-    mapWork.addPathToPartitionInfo(new Path("/tmp"), partitionDesc);
+    mapWork.addPathToPartitionInfo(new org.apache.hadoop.fs.Path("/tmp"), partitionDesc);
     Configuration job = new Configuration(false);
     HiveConf.setVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, "true");
     HiveConf.setBoolVar(job, HiveConf.ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED, true);
@@ -405,25 +426,29 @@ public class TestIcebergInputFormats {
     mapWork.setVectorMode(true);
     mapWork.deriveLlap(job, false);
 
-    assertTrue("Cache affinity should be set for HiveIcebergInputFormat when LLAP and vectorization is enabled",
-        mapWork.getCacheAffinity());
+    assertThat(mapWork.getCacheAffinity())
+        .as("Cache affinity should be set for HiveIcebergInputFormat when LLAP and vectorization is enabled")
+        .isTrue();
 
     mapWork.setVectorMode(false);
     mapWork.deriveLlap(job, false);
 
-    assertFalse("Cache affinity should be disabled for HiveIcebergInputFormat when LLAP is on, but vectorization not",
-        mapWork.getCacheAffinity());
+    assertThat(mapWork.getCacheAffinity())
+        .as("Cache affinity should be disabled for HiveIcebergInputFormat when LLAP is on, but vectorization not")
+        .isFalse();
   }
 
-  @Test
+  @TestTemplate
   public void testWorkerPool() throws Exception {
     Table table = helper.createUnpartitionedTable();
     UserGroupInformation user1 =
-            UserGroupInformation.createUserForTesting("user1", new String[] {});
+        UserGroupInformation.createUserForTesting("user1", new String[] {});
     UserGroupInformation user2 =
-            UserGroupInformation.createUserForTesting("user2", new String[] {});
-    final ExecutorService workerPool1 = ThreadPools.newFixedThreadPool("iceberg-plan-worker-pool", 1);
-    final ExecutorService workerPool2 = ThreadPools.newFixedThreadPool("iceberg-plan-worker-pool", 1);
+        UserGroupInformation.createUserForTesting("user2", new String[] {});
+    final ExecutorService workerPool1 =
+        ThreadPools.newFixedThreadPool("iceberg-plan-worker-pool", 1);
+    final ExecutorService workerPool2 =
+        ThreadPools.newFixedThreadPool("iceberg-plan-worker-pool", 1);
     try {
       assertThat(getUserFromWorkerPool(user1, table, workerPool1)).isEqualTo("user1");
       assertThat(getUserFromWorkerPool(user2, table, workerPool1)).isEqualTo("user1");
@@ -435,26 +460,70 @@ public class TestIcebergInputFormats {
   }
 
   private String getUserFromWorkerPool(
-          UserGroupInformation user, Table table, ExecutorService workerpool) throws Exception {
+      UserGroupInformation user, Table table, ExecutorService workerpool) throws Exception {
     Method method =
-            IcebergInputFormat.class.getDeclaredMethod(
-                    "planInputSplits", Table.class, Configuration.class, ExecutorService.class);
+        IcebergInputFormat.class.getDeclaredMethod(
+            "planInputSplits", Table.class, Configuration.class, ExecutorService.class);
     method.setAccessible(true);
     return user.doAs(
-            (PrivilegedAction<String>)
-                    () -> {
-                      try {
-                        method.invoke(new IcebergInputFormat<>(), table, conf, workerpool);
-                        return workerpool
-                                .submit(() -> UserGroupInformation.getCurrentUser().getUserName())
-                                .get();
-                      } catch (Exception e) {
-                        throw new RuntimeException("Failed to get user from worker pool", e);
-                      }
-                    });
+        (PrivilegedAction<String>)
+            () -> {
+              try {
+                method.invoke(new IcebergInputFormat<>(), table, conf, workerpool);
+                return workerpool
+                    .submit(() -> UserGroupInformation.getCurrentUser().getUserName())
+                    .get();
+              } catch (Exception e) {
+                throw new RuntimeException("Failed to get user from worker pool", e);
+              }
+            });
   }
 
-  // TODO - Capture template type T in toString method: https://github.com/apache/iceberg/issues/1542
+  @TestTemplate
+  void identityPartitionValuesMissingFromDataFile() throws Exception {
+    Table table = helper.createTable(LOG_SCHEMA, IDENTITY_PARTITION_SPEC);
+
+    // Tables imported with add_files/migrate have data files that do not physically store the
+    // identity partition columns; their values only exist in the manifest entry. See
+    // TableMigrationUtil#listPartition, which reads the partition values from Hive metadata.
+    Schema fileSchema = withColumns("id", "message");
+    Record record = GenericRecord.create(fileSchema);
+    record.setField("id", 1);
+    record.setField("message", "hello");
+
+    DataFile dataFile =
+        writeFileWithSchema(table, fileSchema, Row.of("2020-03-20", "info"), record);
+    table.newAppend().appendFile(dataFile).commit();
+
+    builder.project(LOG_SCHEMA);
+    List<Record> records = testInputFormat.create(builder.conf()).getRecords();
+
+    assertThat(records).hasSize(1);
+    assertThat(records.get(0).getField("date")).isEqualTo("2020-03-20");
+    assertThat(records.get(0).getField("level")).isEqualTo("info");
+    assertThat(records.get(0).getField("id")).isEqualTo(1);
+    assertThat(records.get(0).getField("message")).isEqualTo("hello");
+  }
+
+  private DataFile writeFileWithSchema(
+      Table table, Schema fileSchema, StructLike partition, Record record) throws IOException {
+    OutputFile outputFile =
+        Files.localOutput(temp.resolve("partial-schema-" + UUID.randomUUID()).toFile());
+    DataWriter<Record> writer =
+        new GenericFileWriterFactory.Builder(table)
+            .dataFileFormat(fileFormat)
+            .dataSchema(fileSchema)
+            .build()
+            .newDataWriter(FileHelpers.encrypt(outputFile), table.spec(), partition);
+    try (writer) {
+      writer.write(record);
+    }
+
+    return writer.toDataFile();
+  }
+
+  // TODO - Capture template type T in toString method:
+  // https://github.com/apache/iceberg/issues/1542
   public abstract static class TestInputFormat<T> {
 
     private final List<IcebergSplit> splits;
@@ -474,15 +543,17 @@ public class TestIcebergInputFormats {
     }
 
     public void validate(List<T> expected) {
-      Assert.assertEquals(expected, records);
+      assertThat(records).isEqualTo(expected);
     }
 
     public interface Factory<T> {
       String name();
+
       TestInputFormat<T> create(Configuration conf);
     }
 
-    public static <T> Factory<T> newFactory(String name, Function<Configuration, TestInputFormat<T>> function) {
+    public static <T> Factory<T> newFactory(
+        String name, Function<Configuration, TestInputFormat<T>> function) {
       return new Factory<T>() {
         @Override
         public String name() {
@@ -520,8 +591,8 @@ public class TestIcebergInputFormats {
 
         for (org.apache.hadoop.mapred.InputSplit split : splits) {
           iceSplits.add((IcebergSplit) split);
-          org.apache.hadoop.mapred.RecordReader<Void, Container<T>>
-                  reader = inputFormat.getRecordReader(split, job, Reporter.NULL);
+          org.apache.hadoop.mapred.RecordReader<Void, Container<T>> reader =
+              inputFormat.getRecordReader(split, job, Reporter.NULL);
 
           try {
             Container<T> container = reader.createValue();

@@ -93,6 +93,20 @@
       </dependency>
       <dependency>
         <groupId>org.apache.iceberg</groupId>
+        <artifactId>iceberg-data</artifactId>
+        <version>${iceberg.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.iceberg</groupId>
+        <artifactId>iceberg-api</artifactId>
+        <version>${iceberg.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.iceberg</groupId>
         <artifactId>iceberg-parquet</artifactId>
         <version>${iceberg.version}</version>
       </dependency>
