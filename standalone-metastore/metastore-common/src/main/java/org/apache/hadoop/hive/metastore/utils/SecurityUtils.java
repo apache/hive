@@ -322,21 +322,6 @@ public class SecurityUtils {
   }
 
   /**
-   * Parses a TLS client authentication mode, ignoring case and surrounding whitespace.
-   * @param clientAuth the client authentication mode, one of NONE, WANT or NEED
-   * @return the client authentication mode
-   * @throws IllegalArgumentException if the mode is not one of NONE, WANT or NEED
-   */
-  public static ClientAuth getClientAuth(String clientAuth) {
-    try {
-      return ClientAuth.valueOf(clientAuth.trim().toUpperCase());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid TLS client authentication mode '" + clientAuth
-          + "', expected one of " + Arrays.toString(ClientAuth.values()), e);
-    }
-  }
-
-  /**
    * Location and access settings of a keystore or truststore. An empty path means none is configured, and an
    * empty type or algorithm means the JVM default.
    */
@@ -460,8 +445,8 @@ public class SecurityUtils {
     }
 
     SSLContextBuilder sslContextBuilder =
-        SSLContexts.custom().setTrustManagerFactoryAlgorithm(trustStore.trustManagerAlgorithmOrDefault()).
-            loadTrustMaterial(sslTrustStore, null);
+        SSLContexts.custom().setTrustManagerFactoryAlgorithm(trustStore.trustManagerAlgorithmOrDefault())
+            .loadTrustMaterial(sslTrustStore, null);
     if (keyStore.isConfigured()) {
       KeyStore sslKeyStore = KeyStore.getInstance(keyStore.typeOrDefault());
       try (FileInputStream fis = new FileInputStream(keyStore.path())) {

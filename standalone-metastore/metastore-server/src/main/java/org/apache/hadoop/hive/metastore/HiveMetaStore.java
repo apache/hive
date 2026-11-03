@@ -383,7 +383,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
-    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
+    final SslContextFactory sslContextFactory =
+        ServletSecurity.createSslContextFactory(conf, MetastoreConf.getSslClientAuth(conf));
     if (sslContextFactory != null) {
       connector = new ServerConnector(server, sslContextFactory, http);
     } else {
@@ -541,7 +542,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     if (!useSSL) {
       serverSocket = SecurityUtils.getServerSocket(msHost, port);
     } else {
-      SecurityUtils.StoreConfig keyStore = getServerKeyStore(conf);
+      SecurityUtils.StoreConfig keyStore = MetastoreConf.getSslServerKeyStore(conf);
       // enable SSL support for HMS
       List<String> sslVersionBlacklist = new ArrayList<>();
       for (String sslVersion : MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",")) {
@@ -549,10 +550,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
       String includeCipherSuites = MetastoreConf.getVar(conf, ConfVars.SSL_INCLUDE_CIPHERSUITES);
-      SecurityUtils.ClientAuth clientAuth =
-          SecurityUtils.getClientAuth(MetastoreConf.getVar(conf, ConfVars.SSL_CLIENT_AUTH));
-      SecurityUtils.StoreConfig trustStore =
-          clientAuth == SecurityUtils.ClientAuth.NONE ? SecurityUtils.StoreConfig.NONE : getServerTrustStore(conf);
+      SecurityUtils.ClientAuth clientAuth = MetastoreConf.getSslClientAuth(conf);
+      SecurityUtils.StoreConfig trustStore = clientAuth == SecurityUtils.ClientAuth.NONE
+          ? SecurityUtils.StoreConfig.NONE : MetastoreConf.getSslServerTrustStore(conf);
 
       serverSocket = SecurityUtils.getServerSSLSocket(msHost, port, keyStore, clientAuth, trustStore,
           sslVersionBlacklist, includeProtocols, includeCipherSuites);
@@ -648,29 +648,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return handler;
       }
     };
-  }
-
-  private static SecurityUtils.StoreConfig getServerKeyStore(Configuration conf) throws IOException {
-    String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
-    if (keyStorePath.isEmpty()) {
-      throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH + " Not configured for SSL connection");
-    }
-    return new SecurityUtils.StoreConfig(keyStorePath,
-        MetastoreConf.getPassword(conf, ConfVars.SSL_KEYSTORE_PASSWORD),
-        MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_TYPE).trim(),
-        MetastoreConf.getVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim());
-  }
-
-  private static SecurityUtils.StoreConfig getServerTrustStore(Configuration conf) throws IOException {
-    String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_SERVER_TRUSTSTORE_PATH).trim();
-    if (trustStorePath.isEmpty()) {
-      throw new IllegalArgumentException(ConfVars.SSL_SERVER_TRUSTSTORE_PATH
-          + " Not configured for SSL client authentication");
-    }
-    return new SecurityUtils.StoreConfig(trustStorePath,
-        MetastoreConf.getPassword(conf, ConfVars.SSL_SERVER_TRUSTSTORE_PASSWORD),
-        MetastoreConf.getVar(conf, ConfVars.SSL_SERVER_TRUSTSTORE_TYPE).trim(),
-        MetastoreConf.getVar(conf, ConfVars.SSL_SERVER_TRUSTMANAGERFACTORY_ALGORITHM).trim());
   }
 
   private static void constraintHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {

@@ -587,8 +587,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       if (useSSL) {
         String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
         String includeCipherSuites = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES);
-        tHttpClient = SecurityUtils.getThriftHttpsClient(httpUrl, getClientKeyStore(), getClientTrustStore(),
-            includeProtocols, includeCipherSuites, httpClientBuilder);
+        tHttpClient = SecurityUtils.getThriftHttpsClient(httpUrl, MetastoreConf.getSslClientKeyStore(conf),
+            MetastoreConf.getSslClientTrustStore(conf), includeProtocols, includeCipherSuites, httpClientBuilder);
       } else {
         tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
       }
@@ -650,26 +650,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     return httpClientBuilder;
   }
 
-  private SecurityUtils.StoreConfig getClientKeyStore() throws IOException {
-    return new SecurityUtils.StoreConfig(
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_CLIENT_KEYSTORE_PATH).trim(),
-        MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_CLIENT_KEYSTORE_PASSWORD),
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_CLIENT_KEYSTORE_TYPE).trim(),
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_CLIENT_KEYMANAGERFACTORY_ALGORITHM).trim());
-  }
-
-  private SecurityUtils.StoreConfig getClientTrustStore() throws IOException {
-    String trustStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH).trim();
-    if (trustStorePath.isEmpty()) {
-      throw new IllegalArgumentException(MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH
-          + " Not configured for SSL connection");
-    }
-    return new SecurityUtils.StoreConfig(trustStorePath,
-        MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD),
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim(),
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim());
-  }
-
   private TTransport createBinaryClient(URI store, boolean useSSL) throws TTransportException,
       MetaException {
     TTransport binaryTransport = null;
@@ -682,7 +662,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
         String includeCipherSuites = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES);
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-            connectionTimeout, getClientKeyStore(), getClientTrustStore(), includeProtocols, includeCipherSuites);
+            connectionTimeout, MetastoreConf.getSslClientKeyStore(conf), MetastoreConf.getSslClientTrustStore(conf),
+            includeProtocols, includeCipherSuites);
       } else {
         binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
             clientSocketTimeout, connectionTimeout);

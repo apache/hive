@@ -1526,13 +1526,20 @@ public class MetastoreConf {
         "Colon-separated list of cipher suite names to include for the Metastore."),
     SSL_CLIENT_AUTH("metastore.ssl.client.auth", "hive.metastore.ssl.client.auth",
         SecurityUtils.ClientAuth.NONE.name(), new EnumValidator(SecurityUtils.ClientAuth.values()),
-        "TLS client authentication mode for the Metastore server endpoints (binary Thrift, Thrift over HTTP \n" +
-            "and the servlet server). NONE: client certificates are not requested. WANT: client certificates \n" +
-            "are requested and verified if presented, but clients without one are still accepted. NEED: client \n" +
-            "certificates are required and verified, and clients without one are rejected. Client certificates \n" +
-            "are verified against hive.metastore.server.truststore.path, which is required unless the mode is NONE."),
+        "TLS client authentication mode for the Metastore Thrift endpoints (binary and HTTP transport). \n" +
+            "NONE: client certificates are not requested. WANT: client certificates are requested and \n" +
+            "verified if presented, but clients without one are still accepted, so WANT alone provides no \n" +
+            "access control and is intended as a migration step toward NEED. NEED: client certificates are \n" +
+            "required and verified, and clients without one are rejected. Client certificates are verified \n" +
+            "against hive.metastore.server.truststore.path, which is required unless the mode is NONE. \n" +
+            "The client certificate is only used to accept or reject the TLS connection: its identity is not \n" +
+            "mapped to a user or used for authorization. Without Kerberos, the server still trusts the user \n" +
+            "name reported by the client. Use Kerberos to authenticate users."),
     SSL_SERVER_TRUSTSTORE_PATH("metastore.server.truststore.path", "hive.metastore.server.truststore.path", "",
-        "Metastore SSL server certificate truststore location, used to verify client certificates."),
+        "Metastore SSL server certificate truststore location, used to verify client certificates. Any client \n" +
+            "certificate issued by a CA in this truststore is accepted, so it should contain only the CA that \n" +
+            "issues the Metastore client certificates (e.g. an internal CA), not a general-purpose bundle such \n" +
+            "as the JDK cacerts."),
     SSL_SERVER_TRUSTSTORE_PASSWORD("metastore.server.truststore.password",
         "hive.metastore.server.truststore.password", "",
         "Metastore SSL server certificate truststore password."),
@@ -2877,6 +2884,94 @@ public class MetastoreConf {
         .trustStoreLocation(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
         .trustStorePassword(trustStorePassword)
         .trustStoreType(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_TYPE)).build();
+  }
+
+  /**
+   * Get the TLS client authentication mode of the metastore server endpoints, ignoring case and surrounding
+   * whitespace.
+   * @param conf configuration to read
+   * @return the client authentication mode
+   * @throws IllegalArgumentException if the configured mode is not one of NONE, WANT or NEED
+   */
+  public static SecurityUtils.ClientAuth getSslClientAuth(Configuration conf) {
+    String clientAuth = getVar(conf, ConfVars.SSL_CLIENT_AUTH);
+    try {
+      return SecurityUtils.ClientAuth.valueOf(clientAuth.trim().toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid value '" + clientAuth + "' for " + ConfVars.SSL_CLIENT_AUTH
+          + ", expected one of " + Arrays.toString(SecurityUtils.ClientAuth.values()), e);
+    }
+  }
+
+  /**
+   * Get the keystore holding the metastore server certificate.
+   * @param conf configuration to read
+   * @return the server keystore
+   * @throws IllegalArgumentException if the keystore path is not configured
+   * @throws IOException if thrown by Configuration.getPassword
+   */
+  public static SecurityUtils.StoreConfig getSslServerKeyStore(Configuration conf) throws IOException {
+    return getSslStoreConfig(conf, ConfVars.SSL_KEYSTORE_PATH, ConfVars.SSL_KEYSTORE_PASSWORD,
+        ConfVars.SSL_KEYSTORE_TYPE, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM, "SSL connection");
+  }
+
+  /**
+   * Get the truststore used by the metastore server to verify client certificates.
+   * @param conf configuration to read
+   * @return the server truststore
+   * @throws IllegalArgumentException if the truststore path is not configured
+   * @throws IOException if thrown by Configuration.getPassword
+   */
+  public static SecurityUtils.StoreConfig getSslServerTrustStore(Configuration conf) throws IOException {
+    return getSslStoreConfig(conf, ConfVars.SSL_SERVER_TRUSTSTORE_PATH, ConfVars.SSL_SERVER_TRUSTSTORE_PASSWORD,
+        ConfVars.SSL_SERVER_TRUSTSTORE_TYPE, ConfVars.SSL_SERVER_TRUSTMANAGERFACTORY_ALGORITHM,
+        "SSL client authentication");
+  }
+
+  /**
+   * Get the keystore holding the metastore client certificate. The client keystore is optional, so the returned
+   * store is not configured if its path is not set.
+   * @param conf configuration to read
+   * @return the client keystore
+   * @throws IOException if thrown by Configuration.getPassword
+   */
+  public static SecurityUtils.StoreConfig getSslClientKeyStore(Configuration conf) throws IOException {
+    return getSslStoreConfig(conf, ConfVars.SSL_CLIENT_KEYSTORE_PATH, ConfVars.SSL_CLIENT_KEYSTORE_PASSWORD,
+        ConfVars.SSL_CLIENT_KEYSTORE_TYPE, ConfVars.SSL_CLIENT_KEYMANAGERFACTORY_ALGORITHM, null);
+  }
+
+  /**
+   * Get the truststore used by the metastore client to verify the server certificate.
+   * @param conf configuration to read
+   * @return the client truststore
+   * @throws IllegalArgumentException if the truststore path is not configured
+   * @throws IOException if thrown by Configuration.getPassword
+   */
+  public static SecurityUtils.StoreConfig getSslClientTrustStore(Configuration conf) throws IOException {
+    return getSslStoreConfig(conf, ConfVars.SSL_TRUSTSTORE_PATH, ConfVars.SSL_TRUSTSTORE_PASSWORD,
+        ConfVars.SSL_TRUSTSTORE_TYPE, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM, "SSL connection");
+  }
+
+  /**
+   * Get a keystore or truststore from the given configuration variables.
+   * @param conf configuration to read
+   * @param pathVar store path variable
+   * @param passwordVar store password variable
+   * @param typeVar store type variable
+   * @param algorithmVar key or trust manager factory algorithm variable
+   * @param requiredFor if not null, the store path must be configured, and the error mentions this purpose
+   * @return the store configuration
+   * @throws IllegalArgumentException if requiredFor is not null and the store path is not configured
+   * @throws IOException if thrown by Configuration.getPassword
+   */
+  private static SecurityUtils.StoreConfig getSslStoreConfig(Configuration conf, ConfVars pathVar,
+      ConfVars passwordVar, ConfVars typeVar, ConfVars algorithmVar, String requiredFor) throws IOException {
+    String path = getVar(conf, pathVar).trim();
+    if (requiredFor != null && path.isEmpty()) {
+      throw new IllegalArgumentException(pathVar + " Not configured for " + requiredFor);
+    }
+    return new SecurityUtils.StoreConfig(path, getPassword(conf, passwordVar), getVar(conf, typeVar).trim(),
+        getVar(conf, algorithmVar).trim());
   }
 
   /**
