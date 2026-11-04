@@ -2998,7 +2998,8 @@ public class Vectorizer implements PhysicalPlanResolver {
               (supportedFunctionType == SupportedFunctionType.AVG ||
                supportedFunctionType == SupportedFunctionType.MAX ||
                supportedFunctionType == SupportedFunctionType.MIN ||
-               supportedFunctionType == SupportedFunctionType.SUM) &&
+               supportedFunctionType == SupportedFunctionType.SUM ||
+               supportedFunctionType.getVarianceKind() != null) &&
               isSingleParameter &&
               singlePrimitiveCategory != null);
           if (!isRowEndCurrent && !windowFrameDef.isEndUnbounded()) {
