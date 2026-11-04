@@ -648,7 +648,7 @@ public final class QueryResultsCache {
       }
       if (entriesToInvalidate != null) {
         for (CacheEntry entry : entriesToInvalidate) {
-          // Ignore updates that occured before this cached query was created.
+          // Ignore updates that occurred before this cached query was created.
           if (entry.getQueryInfo().getQueryTime() <= updateTime) {
             removeEntry(entry);
           }
