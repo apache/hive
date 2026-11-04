@@ -121,7 +121,12 @@ public abstract class GetHelper<A, T> {
       // Note that this will be invoked in 2 cases:
       //    1) DirectSQL was disabled to start with;
       //    2) DirectSQL threw and was disabled in handleDirectSqlError.
-      if (!doUseDirectSql && canUseJdoQuery()) {
+      if (!doUseDirectSql) {
+        if (!canUseJdoQuery()) {
+          // Neither path can run, don't silently return null
+          throw new MetaException("Cannot execute the operation (" + describeResult()
+              + "): it is only supported by direct SQL, which is not available");
+        }
         this.results = getJdoResult();
         LOG.debug("Not using direct SQL optimization.");
       }
