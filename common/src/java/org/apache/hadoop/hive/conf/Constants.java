@@ -60,9 +60,10 @@ public class Constants {
 
   /**
    * The DBCP credentials a JDBC-backed table carries in TBLPROPERTIES, or a data connector in
-   * DCPROPERTIES. Explain output drops these keys (HIVE-28838), and the connector description
-   * withholds their values, so that they round-trip only through the metastore rather than back to
-   * whoever asked. The keys that merely point at a credential -- {@link #JDBC_PASSWORD_URI},
+   * DCPROPERTIES, or table TBLPROPERTIES. Explain output drops these keys (HIVE-28838); connector
+   * and table descriptions withhold their values, so that they round-trip only through the
+   * metastore rather than back to whoever asked. The keys that merely point at a credential --
+   * {@link #JDBC_PASSWORD_URI},
    * {@link #JDBC_KEYSTORE} and {@link #JDBC_KEY} -- are deliberately not included: they exist so
    * that the password need not be stored here, and seeing where one resolves from is exactly what
    * an administrator needs.
