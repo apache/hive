@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Deadline;
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -115,6 +114,7 @@ import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
+import org.apache.hadoop.hive.metastore.metastore.DirectSqlOnlyHelper;
 import org.apache.hadoop.hive.metastore.metastore.GetHelper;
 import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
@@ -2859,7 +2859,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   @Override
   public long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
       throws MetaException, NoSuchObjectException {
-    return new GetHelper<TableName, Long>(this,
+    return new DirectSqlOnlyHelper<TableName, Long>(this,
         new TableName(table.getCatName(), table.getDbName(), table.getTableName())) {
       @Override
       protected String describeResult() {
@@ -2868,16 +2868,6 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       @Override
       protected Long getSqlResult() throws MetaException {
         return getDirectSql().updateTableParam(table, key, expectedValue, newValue);
-      }
-      @Override
-      protected Long getJdoResult()
-          throws MetaException, NoSuchObjectException, InvalidObjectException {
-        throw new UnsupportedOperationException(
-            "Cannot update parameter with JDO, make sure direct SQL is enabled");
-      }
-      @Override
-      protected boolean canUseJdoQuery() throws MetaException {
-        return false;
       }
     }.run(false);
   }
@@ -2907,19 +2897,16 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     if (updates == null || updates.isEmpty()) {
       return;
     }
-    new GetListHelper<TableName, Void>(this, null) {
+    new DirectSqlOnlyHelper<TableName, List<Void>>(this, null) {
       @Override
       protected List<Void> getSqlResult() throws MetaException {
         getDirectSql().updateTableParams(updates);
         return null;
       }
+
       @Override
-      protected boolean canUseJdoQuery() {
-        return false;
-      }
-      @Override
-      protected List<Void> getJdoResult() {
-        throw new UnsupportedOperationException("UnsupportedOperationException");
+      protected String describeResult() {
+        return updates.size() + " table(s) parameter updates";
       }
     }.run(false);
   }

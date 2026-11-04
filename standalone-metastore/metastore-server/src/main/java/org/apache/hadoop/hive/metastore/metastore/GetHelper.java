@@ -76,16 +76,18 @@ public abstract class GetHelper<A, T> {
     this.pm = rsb.getPersistentManager();
     this.allowJdo = canUseJdoQuery();
 
-    boolean isConfigEnabled = MetastoreConf.getBoolVar(baseStore.getConf(),
-        MetastoreConf.ConfVars.TRY_DIRECT_SQL);
-    if (isConfigEnabled) {
+    // metastore.try.direct.sql only chooses between direct SQL and JDO where both are available.
+    // An operation without a JDO path can only run with direct SQL, so it ignores the setting.
+    boolean tryDirectSql = !allowJdo ||
+        MetastoreConf.getBoolVar(baseStore.getConf(), MetastoreConf.ConfVars.TRY_DIRECT_SQL);
+    if (tryDirectSql) {
       directSql = new MetaStoreDirectSql(pm, baseStore.getConf(), "");
     }
 
-    if (!allowJdo && isConfigEnabled && !directSql.isCompatibleDatastore()) {
-      throw new MetaException("SQL is not operational"); // test path; SQL is enabled and broken.
+    if (!allowJdo && !directSql.isCompatibleDatastore()) {
+      throw new MetaException("This operation is only supported by direct SQL but the datastore is incompatible");
     }
-    this.doUseDirectSql = isConfigEnabled && directSql.isCompatibleDatastore();
+    this.doUseDirectSql = tryDirectSql && directSql.isCompatibleDatastore();
   }
 
   protected boolean canUseDirectSql() throws MetaException {
@@ -119,7 +121,10 @@ public abstract class GetHelper<A, T> {
       // Note that this will be invoked in 2 cases:
       //    1) DirectSQL was disabled to start with;
       //    2) DirectSQL threw and was disabled in handleDirectSqlError.
-      if (!doUseDirectSql && canUseJdoQuery()) {
+      if (!doUseDirectSql) {
+        if (!allowJdo) {
+          throw new MetaException("Cannot execute the direct SQL only operation as canUseDirectSql() got false");
+        }
         this.results = getJdoResult();
         LOG.debug("Not using direct SQL optimization.");
       }
