@@ -1189,7 +1189,7 @@ public class TestSemanticAnalyzer {
   }
 
   @Test
-  public void testInvalidPositionRecompilesWithoutCboWhenFallbackAllowsIt() throws Exception {
+  public void testInvalidPositionRecompilesWithoutCboWhenFallbackAllowsIt() {
     String outOfRange = "select key from table1 tablesample (2 rows) sort by 2";
     String notAnInteger = "select key from table1 tablesample (2 rows) order by 1.5";
     for (String fallbackStrategy : new String[] {"CONSERVATIVE", "ALWAYS"}) {
