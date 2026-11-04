@@ -1,0 +1,127 @@
+PREHOOK: query: CREATE TABLE vector_ptf_ntile_invalid_buckets(k int, ord int, nb int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vector_ptf_ntile_invalid_buckets
+POSTHOOK: query: CREATE TABLE vector_ptf_ntile_invalid_buckets(k int, ord int, nb int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vector_ptf_ntile_invalid_buckets
+PREHOOK: query: INSERT INTO vector_ptf_ntile_invalid_buckets values
+(1, 1, 0), (1, 2, 3), (1, 3, 3),
+(2, 1, NULL), (2, 2, 3), (2, 3, 3),
+(3, 1, -3), (3, 2, 3), (3, 3, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@vector_ptf_ntile_invalid_buckets
+POSTHOOK: query: INSERT INTO vector_ptf_ntile_invalid_buckets values
+(1, 1, 0), (1, 2, 3), (1, 3, 3),
+(2, 1, NULL), (2, 2, 3), (2, 3, 3),
+(3, 1, -3), (3, 2, 3), (3, 3, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@vector_ptf_ntile_invalid_buckets
+POSTHOOK: Lineage: vector_ptf_ntile_invalid_buckets.k SCRIPT []
+POSTHOOK: Lineage: vector_ptf_ntile_invalid_buckets.nb SCRIPT []
+POSTHOOK: Lineage: vector_ptf_ntile_invalid_buckets.ord SCRIPT []
+PREHOOK: query: select k, ord,
+ntile(nb) over (partition by k order by ord) as nt
+from vector_ptf_ntile_invalid_buckets where k = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_ntile_invalid_buckets
+#### A masked pattern was here ####
+Status: Failed
+Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: 0
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
+PREHOOK: query: select k, ord,
+ntile(nb) over (partition by k order by ord) as nt
+from vector_ptf_ntile_invalid_buckets where k = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_ntile_invalid_buckets
+#### A masked pattern was here ####
+Status: Failed
+Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: NULL
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
+PREHOOK: query: select k, ord,
+ntile(nb) over (partition by k order by ord) as nt
+from vector_ptf_ntile_invalid_buckets where k = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_ntile_invalid_buckets
+#### A masked pattern was here ####
+Status: Failed
+Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: NTILE requires a positive number of buckets, got: -3
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
