@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.directsql.DirectSqlAggrStats;
 import org.apache.hadoop.hive.metastore.directsql.DirectSqlDeleteStats;
 import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
+import org.apache.hadoop.hive.metastore.metastore.DirectSqlOnlyHelper;
 import org.apache.hadoop.hive.metastore.metastore.GetHelper;
 import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
@@ -125,20 +126,10 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
   
   @Override
   public List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
-    return new GetListHelper<TableName, TableName>(this, null) {
+    return new DirectSqlOnlyHelper<TableName, List<TableName>>(this, null) {
       @Override
       protected List<TableName> getSqlResult() throws MetaException {
         return getDirectSql().getTableNamesWithStats();
-      }
-
-      @Override
-      protected boolean canUseJdoQuery() throws MetaException {
-        return false;
-      }
-
-      @Override
-      protected List<TableName> getJdoResult() throws MetaException {
-        throw new UnsupportedOperationException("UnsupportedOperationException"); // TODO: implement?
       }
     }.run(false);
   }
@@ -149,7 +140,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     String catName = normalizeIdentifier(tableName.getCat());
     String dbName = normalizeIdentifier(tableName.getDb());
     String tblName = normalizeIdentifier(tableName.getTable());
-    return new GetHelper<TableName, Map<String, List<String>>>(this, null) {
+    return new DirectSqlOnlyHelper<TableName, Map<String, List<String>>>(this, null) {
       @Override
       protected Map<String, List<String>> getSqlResult() throws MetaException {
         try {
@@ -158,16 +149,6 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
           LOG.error("DirectSQL failed", ex);
           throw new MetaException(ex.getMessage());
         }
-      }
-
-      @Override
-      protected boolean canUseJdoQuery() throws MetaException {
-        return false;
-      }
-
-      @Override
-      protected Map<String, List<String>> getJdoResult() throws MetaException {
-        throw new UnsupportedOperationException("UnsupportedOperationException"); // TODO: implement?
       }
 
       @Override
@@ -447,7 +428,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
 
-    return new GetHelper<TableName, Map<String, Map<String, String>>>(this, null) {
+    return new DirectSqlOnlyHelper<TableName, Map<String, Map<String, String>>>(this, null) {
       @Override
       protected String describeResult() {
         return "Map of partition key to column stats if successful";
@@ -457,17 +438,6 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
           throws MetaException {
         return getDirectSql().updatePartitionColumnStatisticsBatch(partColStatsMap, tbl,
             listeners, validWriteIds, writeId);
-      }
-
-      @Override
-      protected boolean canUseJdoQuery() throws MetaException {
-        return false;
-      }
-
-      @Override
-      protected Map<String, Map<String, String>> getJdoResult()
-          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
-        throw new UnsupportedOperationException("Batch update of partition column statistics is only supported by direct SQL");
       }
     }.run(false);
   }
@@ -803,7 +773,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     final double ndvTuner = MetastoreConf.getDoubleVar(conf, MetastoreConf.ConfVars.STATS_NDV_TUNER);
     final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
     final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
-    return new GetHelper<TableName, AggrStats>(this, tableName) {
+    return new DirectSqlOnlyHelper<TableName, AggrStats>(this, tableName) {
       @Override
       protected AggrStats getSqlResult()
           throws MetaException {
@@ -813,24 +783,6 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
         return getDirectSql().aggrColStatsForPartitions(catName, dbName, tblName, partNames,
             colNames, engine, useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector, enableKll);
       }
-
-      @Override
-      protected boolean canUseJdoQuery() throws MetaException {
-        return false;
-      }
-
-      @Override
-      protected AggrStats getJdoResult()
-          throws MetaException, NoSuchObjectException {
-        // This is fast path for query optimizations, if we can find this info
-        // quickly using
-        // directSql, do it. No point in failing back to slow path here.
-        throw new MetaException("Jdo path is not implemented for stats aggr.");
-      }
-      @Override
-      protected String describeResult() {
-        return null;
-      }
     }.run(true);
   }
 
@@ -839,30 +791,11 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       throws MetaException, NoSuchObjectException {
     final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
     final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
-    return new GetHelper<TableName, List<MetaStoreServerUtils.ColStatsObjWithSourceInfo>>(this, null) {
+    return new DirectSqlOnlyHelper<TableName, List<MetaStoreServerUtils.ColStatsObjWithSourceInfo>>(this, null) {
       @Override
       protected List<MetaStoreServerUtils.ColStatsObjWithSourceInfo> getSqlResult() throws MetaException {
         return new DirectSqlAggrStats(pm, conf, schema)
             .getColStatsForAllTablePartitions(catName, dbName, enableBitVector, enableKll);
-      }
-
-      @Override
-      protected boolean canUseJdoQuery() throws MetaException {
-        return false;
-      }
-
-      @Override
-      protected List<MetaStoreServerUtils.ColStatsObjWithSourceInfo> getJdoResult()
-          throws MetaException, NoSuchObjectException {
-        // This is fast path for query optimizations, if we can find this info
-        // quickly using directSql, do it. No point in failing back to slow path
-        // here.
-        throw new MetaException("Jdo path is not implemented for getPartitionColStatsForDatabase.");
-      }
-
-      @Override
-      protected String describeResult() {
-        return null;
       }
     }.run(false);
   }
@@ -1186,19 +1119,9 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
   }
 
   private GetHelper<TableName, String> createSubTransactionHelper(TableName tableName) throws MetaException {
-    return new GetHelper<TableName, String>(this, tableName) {
-      @Override
-      protected String describeResult() {
-        return "A helper for managing sub-transaction";
-      }
-
+    return new DirectSqlOnlyHelper<>(this, tableName) {
       @Override
       protected String getSqlResult() {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      protected String getJdoResult() {
         throw new UnsupportedOperationException();
       }
     };
