@@ -18,7 +18,7 @@ STAGE PLANS:
                 TableScan
                   alias: i1
                   filterExpr: (i_manufact_id BETWEEN 970 AND 1010 and i_manufact is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_43_container, bigKeyColName:i_manufact, smallTablePos:1, keyRatio:0.001751082251082251
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_43_container, bigKeyColName:i_manufact, smallTablePos:1, keyRatio:0.055776892430278883
                   Statistics: Num rows: 462000 Data size: 95167396 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (i_manufact_id BETWEEN 970 AND 1010 and i_manufact is not null) (type: boolean)

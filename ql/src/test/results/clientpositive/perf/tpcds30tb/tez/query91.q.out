@@ -18,7 +18,7 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_returns
                   filterExpr: (cr_call_center_sk is not null and cr_returning_customer_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_136_container, bigKeyColName:cr_returning_customer_sk, smallTablePos:1, keyRatio:2.3142897608610348E-10
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_136_container, bigKeyColName:cr_returning_customer_sk, smallTablePos:1, keyRatio:0.004576901476249534
                   Statistics: Num rows: 4320980099 Data size: 576568330368 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cr_call_center_sk is not null and cr_returning_customer_sk is not null) (type: boolean)
@@ -115,7 +115,7 @@ STAGE PLANS:
                 TableScan
                   alias: customer
                   filterExpr: (c_current_hdemo_sk is not null and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_135_container, bigKeyColName:c_current_hdemo_sk, smallTablePos:1, keyRatio:0.00443455
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_133_container, bigKeyColName:c_current_cdemo_sk, smallTablePos:1, keyRatio:0.05506255991740616
                   Statistics: Num rows: 80000000 Data size: 2515219040 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c_current_hdemo_sk is not null and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)

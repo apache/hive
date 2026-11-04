@@ -24,7 +24,7 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_sales
                   filterExpr: cs_bill_customer_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_314_container, bigKeyColName:cs_item_sk, smallTablePos:1, keyRatio:3.0779924292960215E-5
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_317_container, bigKeyColName:cs_bill_customer_sk, smallTablePos:1, keyRatio:0.33333333757821376
                   Statistics: Num rows: 43005109025 Data size: 6007427450388 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cs_bill_customer_sk is not null (type: boolean)
@@ -200,7 +200,7 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   filterExpr: ws_bill_customer_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_315_container, bigKeyColName:ws_item_sk, smallTablePos:1, keyRatio:0.01697464775419283
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_319_container, bigKeyColName:ws_bill_customer_sk, smallTablePos:1, keyRatio:0.33333333757821376
                   Statistics: Num rows: 21594638446 Data size: 3022914194636 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ws_bill_customer_sk is not null (type: boolean)

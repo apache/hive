@@ -17,7 +17,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_92_container, bigKeyColName:c_customer_sk, smallTablePos:1, keyRatio:1.25E-8
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_92_container, bigKeyColName:c_customer_sk, smallTablePos:1, keyRatio:7.640784802835597E-8
                   Statistics: Num rows: 80000000 Data size: 28800000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: c_customer_sk (type: bigint), c_salutation (type: char(10)), c_first_name (type: char(20)), c_last_name (type: char(30)), c_preferred_cust_flag (type: char(1))
@@ -50,7 +50,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: (ss_hdemo_sk is not null and ss_customer_sk is not null and ss_store_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_91_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:1.0878322963754328E-6
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_91_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:0.12298850574712644
                   Statistics: Num rows: 82510879939 Data size: 3253774532920 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_customer_sk is not null and ss_store_sk is not null) (type: boolean)

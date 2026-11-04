@@ -21,7 +21,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_store_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:0.1919754858718087
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:1.9586206896551723
                   Statistics: Num rows: 82510879939 Data size: 10327900046896 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_store_sk is not null (type: boolean)
@@ -178,7 +178,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: ss_store_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_122_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:0.1919754858718087
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_122_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:1.9586206896551723
                   Statistics: Num rows: 82510879939 Data size: 10327900046896 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_store_sk is not null (type: boolean)

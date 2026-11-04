@@ -17,7 +17,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:cs_item_sk, smallTablePos:1, keyRatio:0.030300956805910575
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:cs_item_sk, smallTablePos:1, keyRatio:0.2727272727272727
                   Statistics: Num rows: 43005109025 Data size: 5492607208208 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: cs_item_sk (type: bigint), cs_ext_sales_price (type: decimal(7,2)), cs_sold_date_sk (type: bigint)

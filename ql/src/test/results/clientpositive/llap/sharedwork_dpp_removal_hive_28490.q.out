@@ -164,7 +164,7 @@ STAGE PLANS:
                 TableScan
                   alias: x2_catalog_returns
                   filterExpr: (cr_item_sk is not null and cr_returned_date_sk is not null and cr_returned_date_sk BETWEEN DynamicValue(RS_10_x2_date_dim_d_date_sk_min) AND DynamicValue(RS_10_x2_date_dim_d_date_sk_max) and cr_item_sk BETWEEN DynamicValue(RS_13_x2_item_i_item_sk_min) AND DynamicValue(RS_13_x2_item_i_item_sk_max) and in_bloom_filter(cr_returned_date_sk, DynamicValue(RS_10_x2_date_dim_d_date_sk_bloom_filter)) and in_bloom_filter(cr_item_sk, DynamicValue(RS_13_x2_item_i_item_sk_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_215_container, bigKeyColName:cr_returned_date_sk, smallTablePos:1, keyRatio:0.9900126360808709
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_215_container, bigKeyColName:cr_returned_date_sk, smallTablePos:1, keyRatio:0.0013365193795310032
                   Statistics: Num rows: 123456 Data size: 2345700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cr_item_sk is not null and cr_returned_date_sk is not null and cr_returned_date_sk BETWEEN DynamicValue(RS_10_x2_date_dim_d_date_sk_min) AND DynamicValue(RS_10_x2_date_dim_d_date_sk_max) and cr_item_sk BETWEEN DynamicValue(RS_13_x2_item_i_item_sk_min) AND DynamicValue(RS_13_x2_item_i_item_sk_max) and in_bloom_filter(cr_returned_date_sk, DynamicValue(RS_10_x2_date_dim_d_date_sk_bloom_filter)) and in_bloom_filter(cr_item_sk, DynamicValue(RS_13_x2_item_i_item_sk_bloom_filter))) (type: boolean)
@@ -228,7 +228,7 @@ STAGE PLANS:
                 TableScan
                   alias: x2_store_returns
                   filterExpr: (sr_item_sk is not null and sr_returned_date_sk is not null and sr_returned_date_sk BETWEEN DynamicValue(RS_48_x2_date_dim_d_date_sk_min) AND DynamicValue(RS_48_x2_date_dim_d_date_sk_max) and sr_item_sk BETWEEN DynamicValue(RS_51_x2_item_i_item_sk_min) AND DynamicValue(RS_51_x2_item_i_item_sk_max) and in_bloom_filter(sr_returned_date_sk, DynamicValue(RS_48_x2_date_dim_d_date_sk_bloom_filter)) and in_bloom_filter(sr_item_sk, DynamicValue(RS_51_x2_item_i_item_sk_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_218_container, bigKeyColName:sr_returned_date_sk, smallTablePos:1, keyRatio:0.9900126360808709
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_218_container, bigKeyColName:sr_returned_date_sk, smallTablePos:1, keyRatio:0.0013365193795310032
                   Statistics: Num rows: 123456 Data size: 2345700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (sr_item_sk is not null and sr_returned_date_sk is not null and sr_returned_date_sk BETWEEN DynamicValue(RS_48_x2_date_dim_d_date_sk_min) AND DynamicValue(RS_48_x2_date_dim_d_date_sk_max) and sr_item_sk BETWEEN DynamicValue(RS_51_x2_item_i_item_sk_min) AND DynamicValue(RS_51_x2_item_i_item_sk_max) and in_bloom_filter(sr_returned_date_sk, DynamicValue(RS_48_x2_date_dim_d_date_sk_bloom_filter)) and in_bloom_filter(sr_item_sk, DynamicValue(RS_51_x2_item_i_item_sk_bloom_filter))) (type: boolean)
@@ -366,7 +366,7 @@ STAGE PLANS:
                 TableScan
                   alias: x2_date_dim
                   filterExpr: (d_week_seq is not null and d_date is not null and d_week_seq BETWEEN DynamicValue(RS_63_x2_date_dim_d_week_seq_min) AND DynamicValue(RS_63_x2_date_dim_d_week_seq_max) and in_bloom_filter(d_week_seq, DynamicValue(RS_63_x2_date_dim_d_week_seq_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_220_container, bigKeyColName:d_week_seq, smallTablePos:1, keyRatio:1.0285714285714285
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_220_container, bigKeyColName:d_week_seq, smallTablePos:1, keyRatio:2.0
                   Statistics: Num rows: 35 Data size: 12880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d_week_seq is not null and d_date is not null and d_week_seq BETWEEN DynamicValue(RS_63_x2_date_dim_d_week_seq_min) AND DynamicValue(RS_63_x2_date_dim_d_week_seq_max) and in_bloom_filter(d_week_seq, DynamicValue(RS_63_x2_date_dim_d_week_seq_bloom_filter))) (type: boolean)
@@ -539,7 +539,7 @@ STAGE PLANS:
                 TableScan
                   alias: x2_date_dim
                   filterExpr: (d_week_seq is not null and d_date is not null and d_week_seq BETWEEN DynamicValue(RS_25_x2_date_dim_d_week_seq_min) AND DynamicValue(RS_25_x2_date_dim_d_week_seq_max) and in_bloom_filter(d_week_seq, DynamicValue(RS_25_x2_date_dim_d_week_seq_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_217_container, bigKeyColName:d_week_seq, smallTablePos:1, keyRatio:1.0285714285714285
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_217_container, bigKeyColName:d_week_seq, smallTablePos:1, keyRatio:2.0
                   Statistics: Num rows: 35 Data size: 12880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d_week_seq is not null and d_date is not null and d_week_seq BETWEEN DynamicValue(RS_25_x2_date_dim_d_week_seq_min) AND DynamicValue(RS_25_x2_date_dim_d_week_seq_max) and in_bloom_filter(d_week_seq, DynamicValue(RS_25_x2_date_dim_d_week_seq_bloom_filter))) (type: boolean)
@@ -912,7 +912,7 @@ STAGE PLANS:
                 TableScan
                   alias: x2_catalog_returns
                   filterExpr: (cr_item_sk is not null and cr_returned_date_sk is not null and cr_returned_date_sk BETWEEN DynamicValue(RS_10_x2_date_dim_d_date_sk_min) AND DynamicValue(RS_10_x2_date_dim_d_date_sk_max) and cr_item_sk BETWEEN DynamicValue(RS_13_x2_item_i_item_sk_min) AND DynamicValue(RS_13_x2_item_i_item_sk_max) and in_bloom_filter(cr_returned_date_sk, DynamicValue(RS_10_x2_date_dim_d_date_sk_bloom_filter)) and in_bloom_filter(cr_item_sk, DynamicValue(RS_13_x2_item_i_item_sk_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_215_container, bigKeyColName:cr_returned_date_sk, smallTablePos:1, keyRatio:0.9900126360808709
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_215_container, bigKeyColName:cr_returned_date_sk, smallTablePos:1, keyRatio:0.0013365193795310032
                   Statistics: Num rows: 123456 Data size: 2345700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cr_item_sk is not null and cr_returned_date_sk is not null and cr_returned_date_sk BETWEEN DynamicValue(RS_10_x2_date_dim_d_date_sk_min) AND DynamicValue(RS_10_x2_date_dim_d_date_sk_max) and cr_item_sk BETWEEN DynamicValue(RS_13_x2_item_i_item_sk_min) AND DynamicValue(RS_13_x2_item_i_item_sk_max) and in_bloom_filter(cr_returned_date_sk, DynamicValue(RS_10_x2_date_dim_d_date_sk_bloom_filter)) and in_bloom_filter(cr_item_sk, DynamicValue(RS_13_x2_item_i_item_sk_bloom_filter))) (type: boolean)
@@ -1213,7 +1213,7 @@ STAGE PLANS:
                 TableScan
                   alias: x2_store_returns
                   filterExpr: (sr_item_sk is not null and sr_returned_date_sk is not null and sr_returned_date_sk BETWEEN DynamicValue(RS_48_x2_date_dim_d_date_sk_min) AND DynamicValue(RS_48_x2_date_dim_d_date_sk_max) and sr_item_sk BETWEEN DynamicValue(RS_51_x2_item_i_item_sk_min) AND DynamicValue(RS_51_x2_item_i_item_sk_max) and in_bloom_filter(sr_returned_date_sk, DynamicValue(RS_48_x2_date_dim_d_date_sk_bloom_filter)) and in_bloom_filter(sr_item_sk, DynamicValue(RS_51_x2_item_i_item_sk_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_218_container, bigKeyColName:sr_returned_date_sk, smallTablePos:1, keyRatio:0.9900126360808709
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_218_container, bigKeyColName:sr_returned_date_sk, smallTablePos:1, keyRatio:0.0013365193795310032
                   Statistics: Num rows: 123456 Data size: 2345700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (sr_item_sk is not null and sr_returned_date_sk is not null and sr_returned_date_sk BETWEEN DynamicValue(RS_48_x2_date_dim_d_date_sk_min) AND DynamicValue(RS_48_x2_date_dim_d_date_sk_max) and sr_item_sk BETWEEN DynamicValue(RS_51_x2_item_i_item_sk_min) AND DynamicValue(RS_51_x2_item_i_item_sk_max) and in_bloom_filter(sr_returned_date_sk, DynamicValue(RS_48_x2_date_dim_d_date_sk_bloom_filter)) and in_bloom_filter(sr_item_sk, DynamicValue(RS_51_x2_item_i_item_sk_bloom_filter))) (type: boolean)

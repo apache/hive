@@ -911,7 +911,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: key is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_46_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.045454545454545456
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_46_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.1
                   Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)

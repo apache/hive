@@ -19,7 +19,7 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_sales
                   filterExpr: (cs_bill_cdemo_sk is not null and cs_bill_customer_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_134_container, bigKeyColName:cs_bill_cdemo_sk, smallTablePos:1, keyRatio:2.6028186542889482E-5
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_136_container, bigKeyColName:cs_bill_customer_sk, smallTablePos:1, keyRatio:0.06492381214290076
                   Statistics: Num rows: 43005109025 Data size: 20776312710316 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cs_bill_cdemo_sk is not null and cs_bill_customer_sk is not null) (type: boolean)
@@ -168,7 +168,7 @@ STAGE PLANS:
                 TableScan
                   alias: customer
                   filterExpr: ((c_birth_month) IN (1, 4, 5, 9, 10, 12) and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_135_container, bigKeyColName:c_current_addr_sk, smallTablePos:1, keyRatio:0.0637275625
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_135_container, bigKeyColName:c_current_addr_sk, smallTablePos:1, keyRatio:0.15618522608373178
                   Statistics: Num rows: 80000000 Data size: 2515215652 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c_birth_month) IN (1, 4, 5, 9, 10, 12) and c_current_cdemo_sk is not null and c_current_addr_sk is not null) (type: boolean)

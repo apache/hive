@@ -17,7 +17,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_51_container, bigKeyColName:inv_date_sk, smallTablePos:1, keyRatio:0.1972500588196629
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:inv_item_sk, smallTablePos:1, keyRatio:0.9939523806450363
                   Statistics: Num rows: 1627857000 Data size: 32231551088 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: inv_date_sk (type: bigint), inv_item_sk (type: bigint), inv_quantity_on_hand (type: int)

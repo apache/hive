@@ -1541,91 +1541,92 @@ public class TezCompiler extends TaskCompiler {
   private static TableScanOperator.ProbeDecodeContext selectLowestRatioProbeDecodeMapJoin(TableScanOperator tsOp,
       List<MapJoinOperator> mjOps) throws SemanticException {
     MapJoinOperator selectedMJOp = null;
+    ExprNodeColumnDesc selectedTSCol = null;
     double selectedMJOpRatio = 0;
     for (MapJoinOperator currMJOp : mjOps) {
       if (!isValidProbeDecodeMapJoin(currMJOp)) {
         continue;
       }
-      // At this point we know it is a single Key MapJoin
-      if (selectedMJOp == null) {
-        // Set the first valid MJ
+      ExprNodeColumnDesc tsCol = findProbeDecodeTSColumn(tsOp, currMJOp);
+      if (tsCol == null) {
+        continue;
+      }
+      double currMJRatio = getProbeDecodeNDVRatio(tsOp, tsCol, currMJOp);
+      LOG.debug("ProbeDecode MJ {} on TS column {} with Ratio {}", currMJOp, tsCol, currMJRatio);
+      if (selectedMJOp == null || currMJRatio < selectedMJOpRatio) {
         selectedMJOp = currMJOp;
-        selectedMJOpRatio = getProbeDecodeNDVRatio(tsOp, currMJOp);
-        LOG.debug("ProbeDecode MJ {} with Ratio {}", selectedMJOp, selectedMJOpRatio);
-      } else {
-        double currMJRatio = getProbeDecodeNDVRatio(tsOp, currMJOp);
-        if (currMJRatio < selectedMJOpRatio){
-          LOG.debug("ProbeDecode MJ {} Ratio {} is lower than existing MJ {} with Ratio {}",
-              currMJOp, currMJRatio, selectedMJOp, selectedMJOpRatio);
-          selectedMJOp = currMJOp;
-          selectedMJOpRatio = currMJRatio;
-        }
+        selectedTSCol = tsCol;
+        selectedMJOpRatio = currMJRatio;
       }
     }
-
-    TableScanOperator.ProbeDecodeContext tsProbeDecodeCtx = null;
-    // If there a valid MJ to be used for TS probeDecode make sure the MJ cache key is generated and
-    // then propagate the new ProbeDecodeContext (to be used by LLap IO when executing the TSop)
-    if (selectedMJOp != null) {
-      String mjCacheKey = selectedMJOp.getConf().getCacheKey();
-      if (mjCacheKey == null) {
-        // Generate cache key if it has not been yet generated
-        mjCacheKey = MapJoinDesc.generateCacheKey(selectedMJOp.getOperatorId());
-        // Set in the conf of the map join operator
-        selectedMJOp.getConf().setCacheKey(mjCacheKey);
-      }
-
-      byte posBigTable = (byte) selectedMJOp.getConf().getPosBigTable();
-      Byte[] order = selectedMJOp.getConf().getTagOrder();
-      Byte mjSmallTablePos = (order[0] == posBigTable ? order[1] : order[0]);
-
-      List<ExprNodeDesc> keyDesc = selectedMJOp.getConf().getKeys().get(posBigTable);
-      ExprNodeColumnDesc keyCol = (ExprNodeColumnDesc) keyDesc.get(0);
-      ExprNodeColumnDesc originTSColExpr = OperatorUtils.findTableOriginColExpr(keyCol, selectedMJOp, tsOp);
-      if (originTSColExpr == null) {
-        LOG.warn("ProbeDecode could not find origTSCol for mjCol: {} with MJ Schema: {}",
-            keyCol, selectedMJOp.getSchema());
-      } else if (!TypeInfoUtils.doPrimitiveCategoriesMatch(keyCol.getTypeInfo(), originTSColExpr.getTypeInfo())) {
-        // src Col -> HT key Col needs explicit or implicit (Casting) conversion
-        // as a result we cannot perform direct lookups on the HT
-        LOG.warn("ProbeDecode origTSCol {} type missmatch mjCol {}", originTSColExpr, keyCol);
-      } else {
-        tsProbeDecodeCtx = new TableScanOperator.ProbeDecodeContext(mjCacheKey, mjSmallTablePos,
-            originTSColExpr.getColumn(), selectedMJOpRatio);
-      }
+    if (selectedMJOp == null) {
+      return null;
     }
-    return tsProbeDecodeCtx;
+    // Make sure the MJ cache key is generated and then propagate the new ProbeDecodeContext
+    // (to be used by LLap IO when executing the TSop)
+    String mjCacheKey = selectedMJOp.getConf().getCacheKey();
+    if (mjCacheKey == null) {
+      // Generate cache key if it has not been yet generated
+      mjCacheKey = MapJoinDesc.generateCacheKey(selectedMJOp.getOperatorId());
+      // Set in the conf of the map join operator
+      selectedMJOp.getConf().setCacheKey(mjCacheKey);
+    }
+    return new TableScanOperator.ProbeDecodeContext(mjCacheKey, getSmallTablePos(selectedMJOp),
+        selectedTSCol.getColumn(), selectedMJOpRatio);
   }
 
-  // Return the ratio of: (distinct) JOIN_probe_key_column_rows / (distinct) JOIN_TS_target_column_rows
-  private static double getProbeDecodeNDVRatio(TableScanOperator tsOp, MapJoinOperator mjOp) {
-    long mjKeyCardinality = mjOp.getStatistics().getNumRows();
+  /**
+   * Returns the TS column that the big table key of the MapJoin reads, or null when the key does not pass
+   * through unchanged from a TS column (an aggregate, an expression or a type conversion): probe decode can
+   * only filter a column the reader decodes.
+   */
+  private static ExprNodeColumnDesc findProbeDecodeTSColumn(TableScanOperator tsOp, MapJoinOperator mjOp)
+      throws SemanticException {
+    byte posBigTable = (byte) mjOp.getConf().getPosBigTable();
+    ExprNodeColumnDesc keyCol = (ExprNodeColumnDesc) mjOp.getConf().getKeys().get(posBigTable).get(0);
+    ExprNodeColumnDesc originTSColExpr = OperatorUtils.findTableOriginColExpr(keyCol, mjOp, tsOp);
+    if (originTSColExpr == null) {
+      LOG.debug("ProbeDecode could not find origTSCol for mjCol: {} with MJ Schema: {}", keyCol, mjOp.getSchema());
+      return null;
+    }
+    if (!TypeInfoUtils.doPrimitiveCategoriesMatch(keyCol.getTypeInfo(), originTSColExpr.getTypeInfo())) {
+      // src Col -> HT key Col needs explicit or implicit (Casting) conversion
+      // as a result we cannot perform direct lookups on the HT
+      LOG.debug("ProbeDecode origTSCol {} type missmatch mjCol {}", originTSColExpr, keyCol);
+      return null;
+    }
+    return originTSColExpr;
+  }
+
+  // Return the ratio of: (distinct) MJ hash table keys / (distinct) values of the TS target column
+  private static double getProbeDecodeNDVRatio(TableScanOperator tsOp, ExprNodeColumnDesc tsCol,
+      MapJoinOperator mjOp) {
+    byte smallTablePos = getSmallTablePos(mjOp);
+    // The small table keys are expressions over the input of the small table ReduceSink
+    Statistics smallTableStats =
+        mjOp.getParentOperators().get(smallTablePos).getParentOperators().get(0).getStatistics();
+    long mjKeyCardinality = smallTableStats.getNumRows();
     long tsKeyCardinality = tsOp.getStatistics().getNumRows();
 
-    byte posBigTable = (byte) mjOp.getConf().getPosBigTable();
-
-    Byte[] order = mjOp.getConf().getTagOrder();
-    Byte mjSmallTablePos = (order[0] == posBigTable ? order[1] : order[0]);
-    Byte mjBigTablePos = (order[0] == posBigTable ? order[0] : order[1]);
-
     // Single Key MJ at this point
-    List<ExprNodeDesc> tsKeyDesc = mjOp.getConf().getKeys().get(mjBigTablePos);
-    List<ExprNodeDesc> mjKeyDesc = mjOp.getConf().getKeys().get(mjSmallTablePos);
-    if (mjKeyDesc.get(0) instanceof ExprNodeColumnDesc) {
-      ExprNodeColumnDesc tsKeyCol = (ExprNodeColumnDesc) tsKeyDesc.get(0);
-      ExprNodeColumnDesc mjKeyCol = (ExprNodeColumnDesc) mjKeyDesc.get(0);
-
-      ColStatistics mjStats = mjOp.getStatistics().getColumnStatisticsFromColName(mjKeyCol.getColumn());
-      ColStatistics tsStats = tsOp.getStatistics().getColumnStatisticsFromColName(tsKeyCol.getColumn());
-
+    ExprNodeDesc mjKey = mjOp.getConf().getKeys().get(smallTablePos).get(0);
+    if (mjKey instanceof ExprNodeColumnDesc mjKeyCol) {
+      ColStatistics mjStats = smallTableStats.getColumnStatisticsFromColName(mjKeyCol.getColumn());
       if (canUseNDV(mjStats)) {
         mjKeyCardinality = mjStats.getCountDistint();
       }
-      if (canUseNDV(tsStats)) {
-        tsKeyCardinality = tsStats.getCountDistint();
-      }
+    }
+    ColStatistics tsStats = tsOp.getStatistics().getColumnStatisticsFromColName(tsCol.getColumn());
+    if (canUseNDV(tsStats)) {
+      tsKeyCardinality = tsStats.getCountDistint();
     }
     return mjKeyCardinality / (double) tsKeyCardinality;
+  }
+
+  private static byte getSmallTablePos(MapJoinOperator mjOp) {
+    byte posBigTable = (byte) mjOp.getConf().getPosBigTable();
+    Byte[] order = mjOp.getConf().getTagOrder();
+    return order[0] == posBigTable ? order[1] : order[0];
   }
 
   /**

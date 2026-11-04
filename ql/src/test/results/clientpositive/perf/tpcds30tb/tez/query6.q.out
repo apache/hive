@@ -85,7 +85,7 @@ STAGE PLANS:
                 TableScan
                   alias: s
                   filterExpr: ss_customer_sk is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_171_container, bigKeyColName:ss_item_sk, smallTablePos:0, keyRatio:7.749438625217859E-6
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_171_container, bigKeyColName:ss_item_sk, smallTablePos:0, keyRatio:0.332491341991342
                   Statistics: Num rows: 82510879939 Data size: 1964702246744 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ss_customer_sk is not null (type: boolean)
@@ -122,7 +122,7 @@ STAGE PLANS:
                 TableScan
                   alias: d
                   filterExpr: (d_month_seq is not null and d_month_seq BETWEEN DynamicValue(RS_52_date_dim_d_month_seq_min) AND DynamicValue(RS_52_date_dim_d_month_seq_max) and in_bloom_filter(d_month_seq, DynamicValue(RS_52_date_dim_d_month_seq_bloom_filter))) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_172_container, bigKeyColName:d_month_seq, smallTablePos:1, keyRatio:0.011800298429821079
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_172_container, bigKeyColName:d_month_seq, smallTablePos:1, keyRatio:0.012710127101271012
                   Statistics: Num rows: 73049 Data size: 876588 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (d_month_seq is not null and d_month_seq BETWEEN DynamicValue(RS_52_date_dim_d_month_seq_min) AND DynamicValue(RS_52_date_dim_d_month_seq_max) and in_bloom_filter(d_month_seq, DynamicValue(RS_52_date_dim_d_month_seq_bloom_filter))) (type: boolean)
@@ -234,7 +234,7 @@ STAGE PLANS:
                 TableScan
                   alias: i
                   filterExpr: (i_current_price is not null and i_category is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_170_container, bigKeyColName:i_category, smallTablePos:1, keyRatio:0.997474025974026
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_170_container, bigKeyColName:i_category, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 462000 Data size: 96889408 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (i_current_price is not null and i_category is not null) (type: boolean)

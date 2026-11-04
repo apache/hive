@@ -23,7 +23,7 @@ STAGE PLANS:
                 TableScan
                   alias: cs1
                   filterExpr: (cs_ship_addr_sk is not null and cs_ship_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:cs_call_center_sk, smallTablePos:1, keyRatio:4.13026255875998E-4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:cs_ship_addr_sk, smallTablePos:1, keyRatio:0.018867924528301886
                   Statistics: Num rows: 43220864887 Data size: 11379157992136 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cs_ship_addr_sk is not null and cs_ship_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
