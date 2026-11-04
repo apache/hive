@@ -69,6 +69,16 @@ RUN tar -xzv \
       -f /opt/apache-tez-$TEZ_VERSION-bin.tar.gz \
       -C /opt;
 
+# Hadoop releases before 3.4.3 keep hadoop-aws, the AWS SDK v2 bundle it links against and its other dependencies in
+# share/hadoop/tools/lib, which only HADOOP_OPTIONAL_TOOLS=hadoop-aws puts on the classpath. Move them to
+# share/hadoop/common/lib, where 3.4.3 has hadoop-aws, so that s3a:// works without it on those releases as well.
+RUN set -eux; \
+    hadoop_lib="/opt/hadoop-$HADOOP_VERSION/share/hadoop"; \
+    find "$hadoop_lib/tools/lib" -maxdepth 1 \
+      \( -name 'hadoop-aws-*.jar' -o -name 'bundle-*.jar' -o -name 'analyticsaccelerator-s3-*.jar' \
+      -o -name 'wildfly-openssl-*.jar' \) \
+      -exec mv -v -t "$hadoop_lib/common/lib" {} +
+
 FROM eclipse-temurin:21-jdk-ubi9-minimal AS run
 
 ARG UID=1000
@@ -125,6 +135,29 @@ RUN set -eux; \
     fi; \
     rm -rf /opt/tez-snapshot-download
 
+# Hadoop 3.4.3 puts hadoop-aws on the default classpath but no longer ships the AWS SDK v2 bundle it links against,
+# so s3a:// needs it from here. It goes next to hadoop-aws in share/hadoop/common/lib, which every process reads
+# through the Hadoop classpath, the hadoop CLI included. An empty AWS_SDK_VERSION leaves it out. So does a Hadoop
+# release that ships its own bundle (up to 3.4.2), already moved to common/lib above, as a second one would sit next
+# to it. build.sh stages a cached copy under aws-jars/ in the build context; otherwise the bundle is downloaded.
+ARG AWS_SDK_VERSION=
+ARG AWS_SDK_REPO_URL=https://repo1.maven.org/maven2
+RUN --mount=type=bind,target=/build-context \
+    set -eux; \
+    bundle="bundle-${AWS_SDK_VERSION}.jar"; \
+    lib_dir="${HADOOP_HOME}/share/hadoop/common/lib"; \
+    if [[ -z "${AWS_SDK_VERSION}" ]]; then \
+      echo "AWS_SDK_VERSION not set. Skipping the AWS SDK v2 bundle; s3a:// will not work."; \
+    elif ls "${HADOOP_HOME}"/share/hadoop/*/lib/bundle-*.jar > /dev/null 2>&1; then \
+      echo "Hadoop ${HADOOP_VERSION} ships its own AWS SDK v2 bundle. Not adding another."; \
+    else \
+      if [[ -f "/build-context/aws-jars/${bundle}" ]]; then \
+        cp "/build-context/aws-jars/${bundle}" "${lib_dir}/"; \
+      else \
+        wget -q "${AWS_SDK_REPO_URL}/software/amazon/awssdk/bundle/${AWS_SDK_VERSION}/${bundle}" -O "${lib_dir}/${bundle}"; \
+      fi; \
+      chown hive "${lib_dir}/${bundle}"; \
+    fi
 
 COPY --chown=hive entrypoint.sh /
 COPY --chown=hive conf $HIVE_HOME/conf

@@ -136,12 +136,10 @@ helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive" \
   --set cluster.storage.coreSiteOverrides."fs\.s3a\.endpoint"="http://ozone-s3g-rest:9878" \
   --set-string cluster.storage.coreSiteOverrides."fs\.s3a\.path\.style\.access"=true \
-  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
-  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
-  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
-  --set 'cluster.storage.envVars[1].value=ozone' \
-  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
-  --set 'cluster.storage.envVars[2].value=ozone'
+  --set 'cluster.storage.envVars[0].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[0].value=ozone' \
+  --set 'cluster.storage.envVars[1].name=AWS_SECRET_ACCESS_KEY' \
+  --set 'cluster.storage.envVars[1].value=ozone'
 ```
 
 **Values file:**
@@ -168,8 +166,6 @@ cluster:
       fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
       fs.s3a.path.style.access: "true"
     envVars:
-      - name: HADOOP_OPTIONAL_TOOLS
-        value: "hadoop-aws"
       - name: AWS_ACCESS_KEY_ID
         value: "ozone"
       - name: AWS_SECRET_ACCESS_KEY
@@ -206,14 +202,12 @@ helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.database.driverJarUrl="https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar" \
     --set cluster.zookeeper.quorum="zookeeper:2181" \
   --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive-k8s-bucket" \
-  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
-  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
-  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[0].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[0].valueFrom.secretKeyRef.name=aws-s3-creds' \
+  --set 'cluster.storage.envVars[0].valueFrom.secretKeyRef.key=accessKey' \
+  --set 'cluster.storage.envVars[1].name=AWS_SECRET_ACCESS_KEY' \
   --set 'cluster.storage.envVars[1].valueFrom.secretKeyRef.name=aws-s3-creds' \
-  --set 'cluster.storage.envVars[1].valueFrom.secretKeyRef.key=accessKey' \
-  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
-  --set 'cluster.storage.envVars[2].valueFrom.secretKeyRef.name=aws-s3-creds' \
-  --set 'cluster.storage.envVars[2].valueFrom.secretKeyRef.key=secretKey'
+  --set 'cluster.storage.envVars[1].valueFrom.secretKeyRef.key=secretKey'
 ```
 
 **Values file:**
@@ -238,8 +232,6 @@ cluster:
     coreSiteOverrides:
       fs.defaultFS: "s3a://hive-k8s-bucket"
     envVars:
-      - name: HADOOP_OPTIONAL_TOOLS
-        value: "hadoop-aws"
       - name: AWS_ACCESS_KEY_ID
         valueFrom:
           secretKeyRef:
@@ -353,12 +345,10 @@ helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive" \
   --set cluster.storage.coreSiteOverrides."fs\.s3a\.endpoint"="http://ozone-s3g-rest:9878" \
   --set-string cluster.storage.coreSiteOverrides."fs\.s3a\.path\.style\.access"=true \
-  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
-  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
-  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[0].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[0].value=ozone' \
+  --set 'cluster.storage.envVars[1].name=AWS_SECRET_ACCESS_KEY' \
   --set 'cluster.storage.envVars[1].value=ozone' \
-  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
-  --set 'cluster.storage.envVars[2].value=ozone' \
   --set cluster.metastore.replicas=1 \
   --set cluster.hiveServer2.replicas=1 \
   --set cluster.llapClusters=[] \
@@ -389,8 +379,6 @@ cluster:
       fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
       fs.s3a.path.style.access: "true"
     envVars:
-      - name: HADOOP_OPTIONAL_TOOLS
-        value: "hadoop-aws"
       - name: AWS_ACCESS_KEY_ID
         value: "ozone"
       - name: AWS_SECRET_ACCESS_KEY
@@ -421,12 +409,10 @@ helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.metastore.enabled=false \
   --set cluster.metastore.externalUri="thrift://my-external-metastore:9083" \
   --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive" \
-  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
-  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
-  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
-  --set 'cluster.storage.envVars[1].value=ozone' \
-  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
-  --set 'cluster.storage.envVars[2].value=ozone'
+  --set 'cluster.storage.envVars[0].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[0].value=ozone' \
+  --set 'cluster.storage.envVars[1].name=AWS_SECRET_ACCESS_KEY' \
+  --set 'cluster.storage.envVars[1].value=ozone'
 ```
 
 **Values file:**
@@ -447,8 +433,6 @@ cluster:
     coreSiteOverrides:
       fs.defaultFS: "s3a://hive"
     envVars:
-      - name: HADOOP_OPTIONAL_TOOLS
-        value: "hadoop-aws"
       - name: AWS_ACCESS_KEY_ID
         value: "ozone"
       - name: AWS_SECRET_ACCESS_KEY
@@ -558,8 +542,6 @@ cluster:
       fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
       fs.s3a.path.style.access: "true"
     envVars:
-      - name: HADOOP_OPTIONAL_TOOLS
-        value: "hadoop-aws"
       - name: AWS_ACCESS_KEY_ID
         value: "ozone"
       - name: AWS_SECRET_ACCESS_KEY
@@ -1126,12 +1108,10 @@ helm install "$RELEASE" ./helm/hive-operator \
   --set cluster.storage.coreSiteOverrides."fs\.defaultFS"="s3a://hive" \
   --set cluster.storage.coreSiteOverrides."fs\.s3a\.endpoint"="http://ozone-s3g-rest:9878" \
   --set-string cluster.storage.coreSiteOverrides."fs\.s3a\.path\.style\.access"=true \
-  --set 'cluster.storage.envVars[0].name=HADOOP_OPTIONAL_TOOLS' \
-  --set 'cluster.storage.envVars[0].value=hadoop-aws' \
-  --set 'cluster.storage.envVars[1].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[0].name=AWS_ACCESS_KEY_ID' \
+  --set 'cluster.storage.envVars[0].value=ozone' \
+  --set 'cluster.storage.envVars[1].name=AWS_SECRET_ACCESS_KEY' \
   --set 'cluster.storage.envVars[1].value=ozone' \
-  --set 'cluster.storage.envVars[2].name=AWS_SECRET_ACCESS_KEY' \
-  --set 'cluster.storage.envVars[2].value=ozone' \
   --set cluster.hiveServer2.autoscaling.enabled=true \
   --set cluster.metastore.autoscaling.enabled=true \
   --set 'cluster.llapClusters[0].autoscaling.enabled=true' \
@@ -1162,8 +1142,6 @@ cluster:
       fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
       fs.s3a.path.style.access: "true"
     envVars:
-      - name: HADOOP_OPTIONAL_TOOLS
-        value: "hadoop-aws"
       - name: AWS_ACCESS_KEY_ID
         value: "ozone"
       - name: AWS_SECRET_ACCESS_KEY
@@ -1368,7 +1346,7 @@ setup is needed — simply connect to HS2 and the operator wakes LLAP/TezAM as n
 | Value | Default | Description |
 |-------|---------|-------------|
 | `cluster.storage.coreSiteOverrides` | `{}` | `core-site.xml` properties (`fs.defaultFS`, `fs.s3a.*`, etc.) |
-| `cluster.storage.envVars` | `[]` | Env vars for all pods (credentials, `HADOOP_OPTIONAL_TOOLS`) |
+| `cluster.storage.envVars` | `[]` | Env vars for all pods (credentials, etc.) |
 | `cluster.storage.externalJars` | `[]` | Connector JAR URLs downloaded at startup |
 | `cluster.storage.volumes` | `[]` | Volumes for all pods (credential files) |
 | `cluster.storage.volumeMounts` | `[]` | Volume mounts for all containers |
