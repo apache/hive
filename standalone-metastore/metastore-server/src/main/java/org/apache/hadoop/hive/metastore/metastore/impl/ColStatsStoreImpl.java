@@ -131,6 +131,11 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       protected List<TableName> getSqlResult() throws MetaException {
         return getDirectSql().getTableNamesWithStats();
       }
+
+      @Override
+      protected String describeResult() {
+        return (results != null ? results.size() : 0) + " tables with column statistics";
+      }
     }.run(false);
   }
 
@@ -783,6 +788,11 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
         return getDirectSql().aggrColStatsForPartitions(catName, dbName, tblName, partNames,
             colNames, engine, useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector, enableKll);
       }
+
+      @Override
+      protected String describeResult() {
+        return (results != null ? results.getColStatsSize() : 0) + " aggregated column statistics";
+      }
     }.run(true);
   }
 
@@ -796,6 +806,11 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       protected List<MetaStoreServerUtils.ColStatsObjWithSourceInfo> getSqlResult() throws MetaException {
         return new DirectSqlAggrStats(pm, conf, schema)
             .getColStatsForAllTablePartitions(catName, dbName, enableBitVector, enableKll);
+      }
+
+      @Override
+      protected String describeResult() {
+        return (results != null ? results.size() : 0) + " partition column statistics";
       }
     }.run(false);
   }
@@ -1119,9 +1134,17 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
   }
 
   private GetHelper<TableName, String> createSubTransactionHelper(TableName tableName) throws MetaException {
-    return new DirectSqlOnlyHelper<>(this, tableName) {
+    return new GetHelper<>(this, tableName) {
+      @Override
+      protected String describeResult() {
+        return "A helper for managing sub-transaction";
+      }
       @Override
       protected String getSqlResult() {
+        throw new UnsupportedOperationException();
+      }
+      @Override
+      protected String getJdoResult() {
         throw new UnsupportedOperationException();
       }
     };

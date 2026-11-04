@@ -19,9 +19,7 @@
 
 package org.apache.hadoop.hive.metastore.metastore;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
@@ -48,16 +46,6 @@ public abstract class DirectSqlOnlyHelper<A, T> extends GetHelper<A, T> {
   @Override
   protected final boolean canUseJdoQuery() {
     return false;
-  }
-
-  @Override
-  protected String describeResult() {
-    if (results instanceof Collection) {
-      return ((Collection<?>) results).size() + " entries";
-    } else if (results instanceof Map) {
-      return ((Map<?, ?>) results).size() + " entries";
-    }
-    return "Result";
   }
 
   @Override

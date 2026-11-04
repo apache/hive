@@ -2903,6 +2903,11 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
         getDirectSql().updateTableParams(updates);
         return null;
       }
+
+      @Override
+      protected String describeResult() {
+        return updates.size() + " table(s) parameter updates";
+      }
     }.run(false);
   }
 

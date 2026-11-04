@@ -85,7 +85,7 @@ public abstract class GetHelper<A, T> {
     }
 
     if (!allowJdo && !directSql.isCompatibleDatastore()) {
-      throw new MetaException("This operation is only supported by direct SQL, which is not available");
+      throw new MetaException("This operation is only supported by direct SQL but the datastore is incompatible");
     }
     this.doUseDirectSql = tryDirectSql && directSql.isCompatibleDatastore();
   }
@@ -122,10 +122,8 @@ public abstract class GetHelper<A, T> {
       //    1) DirectSQL was disabled to start with;
       //    2) DirectSQL threw and was disabled in handleDirectSqlError.
       if (!doUseDirectSql) {
-        if (!canUseJdoQuery()) {
-          // Neither path can run, don't silently return null
-          throw new MetaException("Cannot execute the operation (" + describeResult()
-              + "): it is only supported by direct SQL, which is not available");
+        if (!allowJdo) {
+          throw new MetaException("Cannot execute the direct SQL only operation as canUseDirectSql() got false");
         }
         this.results = getJdoResult();
         LOG.debug("Not using direct SQL optimization.");
