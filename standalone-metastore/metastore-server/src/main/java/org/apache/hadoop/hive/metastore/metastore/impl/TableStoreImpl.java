@@ -2873,7 +2873,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       protected Long getJdoResult()
           throws MetaException, NoSuchObjectException, InvalidObjectException {
         throw new UnsupportedOperationException(
-            "Cannot update parameter with JDO, make sure direct SQL is enabled");
+            "Updating a parameter with an expected value is only supported by direct SQL");
       }
       @Override
       protected boolean canUseJdoQuery() throws MetaException {
@@ -2919,7 +2919,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       }
       @Override
       protected List<Void> getJdoResult() {
-        throw new UnsupportedOperationException("UnsupportedOperationException");
+        throw new UnsupportedOperationException("Updating table parameters is only supported by direct SQL");
       }
     }.run(false);
   }

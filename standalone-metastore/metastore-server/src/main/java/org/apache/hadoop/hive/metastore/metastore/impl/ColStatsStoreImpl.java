@@ -467,7 +467,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       @Override
       protected Map<String, Map<String, String>> getJdoResult()
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
-        throw new UnsupportedOperationException("Cannot update partition column statistics with JDO, make sure direct SQL is enabled");
+        throw new UnsupportedOperationException("Batch update of partition column statistics is only supported by direct SQL");
       }
     }.run(false);
   }
