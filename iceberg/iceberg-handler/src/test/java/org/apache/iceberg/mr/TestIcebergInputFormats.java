@@ -438,13 +438,14 @@ public class TestIcebergInputFormats {
           UserGroupInformation user, Table table, ExecutorService workerpool) throws Exception {
     Method method =
             IcebergInputFormat.class.getDeclaredMethod(
-                    "planInputSplits", Table.class, Configuration.class, ExecutorService.class);
+                    "planInputSplits", Table.class, Configuration.class, ExecutorService.class, String.class,
+                    Table.class);
     method.setAccessible(true);
     return user.doAs(
             (PrivilegedAction<String>)
                     () -> {
                       try {
-                        method.invoke(new IcebergInputFormat<>(), table, conf, workerpool);
+                        method.invoke(new IcebergInputFormat<>(), table, conf, workerpool, null, null);
                         return workerpool
                                 .submit(() -> UserGroupInformation.getCurrentUser().getUserName())
                                 .get();
