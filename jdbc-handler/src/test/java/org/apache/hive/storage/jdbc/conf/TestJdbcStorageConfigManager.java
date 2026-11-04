@@ -95,8 +95,10 @@ public class TestJdbcStorageConfigManager {
     Properties props = new Properties();
     props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.METASTORE.toString());
     props.put(JdbcStorageConfig.QUERY.getPropertyName(), "SELECT 1");
+    HiveConf conf = new HiveConf();
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE, false);
     try {
-      JdbcStorageConfigManager.assertMetastoreDatabaseTypeAllowed(props, "attacker_db", new HiveConf());
+      JdbcStorageConfigManager.assertMetastoreDatabaseTypeAllowed(props, "attacker_db", conf);
       fail("Expected HiveException for METASTORE type outside SYS");
     } catch (HiveException expected) {
       assertThat(expected.getMessage(), is(equalTo(
@@ -133,8 +135,10 @@ public class TestJdbcStorageConfigManager {
     Properties props = new Properties();
     props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.METASTORE.toString());
     props.put(hive_metastoreConstants.META_TABLE_NAME, "attacker_db.exfil");
+    HiveConf conf = new HiveConf();
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE, false);
     try {
-      JdbcStorageConfigManager.assertMetastoreDatabaseTypeAllowed(props, null, new HiveConf());
+      JdbcStorageConfigManager.assertMetastoreDatabaseTypeAllowed(props, null, conf);
       fail("Expected HiveException for METASTORE table outside SYS");
     } catch (HiveException expected) {
       // expected

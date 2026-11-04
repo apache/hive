@@ -62,7 +62,6 @@ public class TestStorageSchemaReader {
   @Before public void setUp() throws Exception {
     dbName = "sampleDb";
     hiveConf = new HiveConf(this.getClass());
-    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE, true);
     // Unset the deprecated HiveConf value so MetastoreConf uses its own default
     hiveConf.unset(HiveConf.ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA.varname);
     new DatabaseBuilder().setName(dbName).create(new HiveMetaStoreClient(hiveConf), hiveConf);
@@ -158,6 +157,7 @@ public class TestStorageSchemaReader {
 
   @Test public void testJdbcTableWithSerdeSSR() throws Exception {
     MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL, "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE, true);
     String tblName = "jdbcTable";
 
     Table table = createTable(tblName, JdbcSerDe.class.getName(), null, null, jdbcTableParams, jdbcSerdeParams);

@@ -48,8 +48,6 @@ public class QTestSysDbHandler implements QTestOptionHandler {
   public void beforeTest(QTestUtil qt) throws Exception {
     if (enabled) {
       HiveConf conf = qt.getConf();
-      boolean previousAllowMetastoreJdbc = HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE);
       HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE, true);
       try {
         String schemaVersion = MetaStoreSchemaInfoFactory.get(qt.getConf()).getHiveSchemaVersion();
@@ -59,8 +57,8 @@ public class QTestSysDbHandler implements QTestOptionHandler {
         qt.getCliDriver().processLine("source " + stsdbPath);
         qt.getCliDriver().processLine("use default");
       } finally {
-        HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE,
-            previousAllowMetastoreJdbc);
+        // Do not restore a prior "true" from legacy qtests; METASTORE JDBC outside sys must stay blocked.
+        HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE, false);
       }
     }
   }
