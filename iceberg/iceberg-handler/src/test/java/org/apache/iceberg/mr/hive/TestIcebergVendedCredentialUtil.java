@@ -90,8 +90,8 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   /**
-   * Tests {@link IcebergVendedCredentialUtil#propagateToJob} when both {@code jobProperties} and
-   * {@code jobSecrets} are non-null (full compile-time path after both storage-handler hooks).
+   * Tests {@link IcebergVendedCredentialUtil#toJobConf} using both its properties and secrets
+   * (full compile-time path after both storage-handler hooks).
    *
    * <p><b>Setup:</b> vended credential with internal endpoint {@code http://minio:9000}; session
    * {@code conf} sets {@code iceberg.catalog.ice01.s3.endpoint} to {@code http://host:9000}.
@@ -106,7 +106,7 @@ public class TestIcebergVendedCredentialUtil {
    * agree on connectivity while still using vended keys.
    */
   @Test
-  public void propagateToJobMapsIcebergAndS3aProperties() {
+  public void toJobConfMapsIcebergAndS3aProperties() {
     Configuration conf = new Configuration();
     conf.set("iceberg.catalog.ice01." + S3FileIOProperties.ENDPOINT, "http://host:9000");
 
@@ -126,7 +126,9 @@ public class TestIcebergVendedCredentialUtil {
     Map<String, String> jobProps = Maps.newHashMap();
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, jobSecrets, conf);
+    IcebergVendedCredentialUtil.VendedJobConf vended = IcebergVendedCredentialUtil.toJobConf(table, "ice01", conf);
+    jobProps.putAll(vended.properties());
+    jobSecrets.putAll(vended.secrets());
 
     assertThat(jobProps)
         .containsEntry(
@@ -167,10 +169,10 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   /**
-   * Tests {@link IcebergVendedCredentialUtil#propagateToJob} with {@code jobSecrets == null}.
+   * Tests {@link IcebergVendedCredentialUtil#toJobConf} using only its properties.
    *
    * <p><b>Setup:</b> same mixed secret/non-secret credential as the full test; only
-   * {@code jobProperties} map is passed (models {@code configureInputJobProperties} /
+   * the properties are applied (models {@code configureInputJobProperties} /
    * {@code overlayTableProperties}).
    *
    * <p><b>Expects:</b> overridden endpoint in {@code jobProps}; no serialized blob and no Iceberg
@@ -200,7 +202,7 @@ public class TestIcebergVendedCredentialUtil {
         new BaseTable(new StaticTableOperations("s3://my-bucket/t", fileIO), "db.t");
     Map<String, String> jobProps = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, null, conf);
+    jobProps.putAll(IcebergVendedCredentialUtil.toJobConf(table, "ice01", conf).properties());
 
     assertThat(jobProps)
         .containsEntry(
@@ -248,10 +250,10 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   /**
-   * Tests {@link IcebergVendedCredentialUtil#propagateToJob} with {@code jobProperties == null}.
+   * Tests {@link IcebergVendedCredentialUtil#toJobConf} using only its secrets.
    *
-   * <p><b>Setup:</b> credential with access key and secret only; only {@code jobSecrets} map is
-   * passed (models {@code configureInputJobCredentials} for input and output tables).
+   * <p><b>Setup:</b> credential with access key and secret only; only the secrets are
+   * applied (models {@code configureInputJobCredentials} for input and output tables).
    *
    * <p><b>Expects:</b> serialized blob and {@code fs.s3a.bucket.*.access.key/secret.key} in
    * {@code jobSecrets}; no catalog-prefixed secret keys, no endpoint in {@code jobSecrets}.
@@ -274,7 +276,7 @@ public class TestIcebergVendedCredentialUtil {
         new BaseTable(new StaticTableOperations("s3://my-bucket/t", fileIO), "db.t");
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
+    jobSecrets.putAll(IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf()).secrets());
 
     assertThat(jobSecrets)
         .containsEntry("fs.s3a.bucket.my-bucket.access.key", "access")
@@ -299,7 +301,7 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   @Test
-  public void propagateToJobMapsGcsProperties() {
+  public void toJobConfMapsGcsProperties() {
     Configuration conf = new HiveConf();
     conf.set("iceberg.catalog.ice01.gcs.service.host", "http://host-gcs:4443");
 
@@ -318,7 +320,9 @@ public class TestIcebergVendedCredentialUtil {
     Map<String, String> jobProps = Maps.newHashMap();
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, jobSecrets, conf);
+    IcebergVendedCredentialUtil.VendedJobConf vended = IcebergVendedCredentialUtil.toJobConf(table, "ice01", conf);
+    jobProps.putAll(vended.properties());
+    jobSecrets.putAll(vended.secrets());
 
     assertThat(jobProps)
         .containsEntry("iceberg.catalog.ice01.gcs.project-id", "my-project")
@@ -344,7 +348,7 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   @Test
-  public void propagateToJobMapsAdlsSasToken() {
+  public void toJobConfMapsAdlsSasToken() {
     String prefix = "abfss://mycontainer@mystorageaccount.dfs.core.windows.net/";
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
@@ -360,8 +364,10 @@ public class TestIcebergVendedCredentialUtil {
     Map<String, String> jobProps = Maps.newHashMap();
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(
-        table, "ice01", jobProps, jobSecrets, new HiveConf());
+    IcebergVendedCredentialUtil.VendedJobConf vended =
+        IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf());
+    jobProps.putAll(vended.properties());
+    jobSecrets.putAll(vended.secrets());
 
     assertThat(jobProps)
         .containsEntry(
@@ -381,7 +387,7 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   @Test
-  public void propagateToJobMapsAdlsAccountKey() {
+  public void toJobConfMapsAdlsAccountKey() {
     String prefix = "abfss://mycontainer@mystorageaccount.dfs.core.windows.net/";
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
@@ -396,7 +402,7 @@ public class TestIcebergVendedCredentialUtil {
         new BaseTable(new StaticTableOperations(prefix + "t", fileIO), "db.t");
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
+    jobSecrets.putAll(IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf()).secrets());
 
     assertThat(jobSecrets)
         .containsEntry(
@@ -406,7 +412,7 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   @Test
-  public void propagateToJobMapsOssProperties() {
+  public void toJobConfMapsOssProperties() {
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
         List.of(
@@ -423,8 +429,10 @@ public class TestIcebergVendedCredentialUtil {
     Map<String, String> jobProps = Maps.newHashMap();
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(
-        table, "ice01", jobProps, jobSecrets, new HiveConf());
+    IcebergVendedCredentialUtil.VendedJobConf vended =
+        IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf());
+    jobProps.putAll(vended.properties());
+    jobSecrets.putAll(vended.secrets());
 
     assertThat(jobProps)
         .containsEntry("iceberg.catalog.ice01.oss.endpoint", "oss-cn-hangzhou.aliyuncs.com")
@@ -438,11 +446,11 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   /**
-   * Tests {@link IcebergVendedCredentialUtil#propagateToJob} when a REST catalog vends OSS keys
+   * Tests {@link IcebergVendedCredentialUtil#toJobConf} when a REST catalog vends OSS keys
    * using Hadoop-style aliases ({@code oss-access-key-id}, etc.) instead of Iceberg canonical names.
    */
   @Test
-  public void propagateToJobMapsOssAliasProperties() {
+  public void toJobConfMapsOssAliasProperties() {
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
         List.of(
@@ -459,8 +467,10 @@ public class TestIcebergVendedCredentialUtil {
     Map<String, String> jobProps = Maps.newHashMap();
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(
-        table, "ice01", jobProps, jobSecrets, new HiveConf());
+    IcebergVendedCredentialUtil.VendedJobConf vended =
+        IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf());
+    jobProps.putAll(vended.properties());
+    jobSecrets.putAll(vended.secrets());
 
     assertThat(jobProps)
         .containsEntry("iceberg.catalog.ice01.oss-endpoint", "oss-cn-hangzhou.aliyuncs.com")
@@ -505,7 +515,7 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   @Test
-  public void propagateToJobMapsS3SessionToken() {
+  public void toJobConfMapsS3SessionToken() {
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
         List.of(
@@ -520,7 +530,7 @@ public class TestIcebergVendedCredentialUtil {
         new BaseTable(new StaticTableOperations("s3://my-bucket/t", fileIO), "db.t");
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
+    jobSecrets.putAll(IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf()).secrets());
 
     assertThat(jobSecrets)
         .containsEntry("fs.s3a.bucket.my-bucket.session.token", "session-token");
@@ -547,7 +557,7 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   @Test
-  public void propagateToJobSerializesBlobWithoutHadoopMappingForUnknownScheme() {
+  public void toJobConfSerializesBlobWithoutHadoopMappingForUnknownScheme() {
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
         List.of(
@@ -560,8 +570,10 @@ public class TestIcebergVendedCredentialUtil {
     Map<String, String> jobProps = Maps.newHashMap();
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(
-        table, "ice01", jobProps, jobSecrets, new HiveConf());
+    IcebergVendedCredentialUtil.VendedJobConf vended =
+        IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf());
+    jobProps.putAll(vended.properties());
+    jobSecrets.putAll(vended.secrets());
 
     assertThat(jobProps)
         .containsEntry("iceberg.catalog.ice01.custom.key", "custom-value");
@@ -592,7 +604,7 @@ public class TestIcebergVendedCredentialUtil {
     tableDesc.setProperties(tableProps);
 
     Map<String, String> jobSecrets = Maps.newHashMap();
-    IcebergVendedCredentialUtil.propagateToJob(hs2Table, "ice01", null, jobSecrets, new HiveConf());
+    jobSecrets.putAll(IcebergVendedCredentialUtil.toJobConf(hs2Table, "ice01", new HiveConf()).secrets());
     tableDesc.setJobSecrets(jobSecrets);
 
     JobConf jobConf = new JobConf();
@@ -635,7 +647,7 @@ public class TestIcebergVendedCredentialUtil {
    * (here {@code gcs.*}), so GCS Hadoop keys are still emitted.
    */
   @Test
-  public void propagateToJobSelectsMapperByConfigKeyWhenSchemeUnknown() {
+  public void toJobConfSelectsMapperByConfigKeyWhenSchemeUnknown() {
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
         List.of(
@@ -648,7 +660,10 @@ public class TestIcebergVendedCredentialUtil {
     Map<String, String> jobProps = Maps.newHashMap();
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, jobSecrets, new HiveConf());
+    IcebergVendedCredentialUtil.VendedJobConf vended =
+        IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf());
+    jobProps.putAll(vended.properties());
+    jobSecrets.putAll(vended.secrets());
 
     assertThat(jobProps).containsEntry("fs.gs.project.id", "my-project");
   }
@@ -658,7 +673,7 @@ public class TestIcebergVendedCredentialUtil {
    * authority), which must still yield the correct account-scoped Hadoop account-key.
    */
   @Test
-  public void propagateToJobMapsAdlsAccountKeyForAccountOnlyPrefix() {
+  public void toJobConfMapsAdlsAccountKeyForAccountOnlyPrefix() {
     String prefix = "abfss://mystorageaccount.dfs.core.windows.net/";
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
@@ -673,14 +688,14 @@ public class TestIcebergVendedCredentialUtil {
         new BaseTable(new StaticTableOperations(prefix + "t", fileIO), "db.t");
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
+    jobSecrets.putAll(IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf()).secrets());
 
     assertThat(jobSecrets)
         .containsEntry("fs.azure.account.key.mystorageaccount.dfs.core.windows.net", "account-key");
   }
 
   @Test
-  public void propagateToJobMapsAdlsAccountKeyForWasbPrefix() {
+  public void toJobConfMapsAdlsAccountKeyForWasbPrefix() {
     String prefix = "wasb://iceberg-vend@devstoreaccount1.blob.core.windows.net/";
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
@@ -693,7 +708,7 @@ public class TestIcebergVendedCredentialUtil {
         new BaseTable(new StaticTableOperations(prefix + "t", fileIO), "db.t");
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
+    jobSecrets.putAll(IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf()).secrets());
 
     assertThat(jobSecrets)
         .containsEntry("fs.azure.account.key.devstoreaccount1.blob.core.windows.net", "account-key");
@@ -705,7 +720,7 @@ public class TestIcebergVendedCredentialUtil {
    * key nor the Hadoop key) — it belongs solely in the secrets channel.
    */
   @Test
-  public void propagateToJobKeepsOssAccessKeyIdOutOfJobProperties() {
+  public void toJobConfKeepsOssAccessKeyIdOutOfJobProperties() {
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
         List.of(
@@ -719,7 +734,7 @@ public class TestIcebergVendedCredentialUtil {
         new BaseTable(new StaticTableOperations("oss://my-bucket/t", fileIO), "db.t");
     Map<String, String> jobProps = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, null, new HiveConf());
+    jobProps.putAll(IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf()).properties());
 
     assertThat(jobProps)
         .doesNotContainKey("fs.oss.accessKeyId")
@@ -728,7 +743,7 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   @Test
-  public void propagateToJobKeepsOssAliasAccessKeyIdOutOfJobProperties() {
+  public void toJobConfKeepsOssAliasAccessKeyIdOutOfJobProperties() {
     CredentialFileIO fileIO = new CredentialFileIO();
     fileIO.setCredentials(
         List.of(
@@ -742,7 +757,7 @@ public class TestIcebergVendedCredentialUtil {
         new BaseTable(new StaticTableOperations("oss://my-bucket/t", fileIO), "db.t");
     Map<String, String> jobProps = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, null, new HiveConf());
+    jobProps.putAll(IcebergVendedCredentialUtil.toJobConf(table, "ice01", new HiveConf()).properties());
 
     assertThat(jobProps)
         .doesNotContainKey("fs.oss.accessKeyId")
@@ -822,7 +837,7 @@ public class TestIcebergVendedCredentialUtil {
   /**
    * Tests {@link IcebergVendedCredentialUtil#applyFromJobConf} on a task with an empty FileIO.
    *
-   * <p><b>Setup:</b> {@code propagateToJob} fills job maps on HS2; keys are copied into a task
+   * <p><b>Setup:</b> {@code toJobConf} fills job maps on HS2; keys are copied into a task
    * {@code Configuration} as on Tez/LLAP; executor table is deserialized with a fresh FileIO (no
    * credentials).
    *
@@ -847,8 +862,10 @@ public class TestIcebergVendedCredentialUtil {
 
     Map<String, String> jobProps = Maps.newHashMap();
     Map<String, String> jobSecrets = Maps.newHashMap();
-    IcebergVendedCredentialUtil.propagateToJob(
-        table, "ice01", jobProps, jobSecrets, new Configuration());
+    IcebergVendedCredentialUtil.VendedJobConf vended =
+        IcebergVendedCredentialUtil.toJobConf(table, "ice01", new Configuration());
+    jobProps.putAll(vended.properties());
+    jobSecrets.putAll(vended.secrets());
 
     Configuration taskConf = new Configuration();
     jobProps.forEach(taskConf::set);
@@ -869,7 +886,7 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   /**
-   * Tests the full HIVE-20651 secret round trip: {@code propagateToJob} →
+   * Tests the full HIVE-20651 secret round trip: {@code toJobConf} →
    * {@link org.apache.hadoop.hive.ql.plan.PlanUtils#configureJobConf} (secrets → Hadoop
    * {@code Credentials}, cleared from the TableDesc) → task UGI →
    * {@code Utilities#copyJobSecretToTableProperties} → {@code Utilities#copyTablePropertiesToConf}
@@ -905,7 +922,7 @@ public class TestIcebergVendedCredentialUtil {
     tableDesc.setProperties(tableProps);
 
     Map<String, String> jobSecrets = Maps.newHashMap();
-    IcebergVendedCredentialUtil.propagateToJob(hs2Table, "ice01", null, jobSecrets, new Configuration());
+    jobSecrets.putAll(IcebergVendedCredentialUtil.toJobConf(hs2Table, "ice01", new Configuration()).secrets());
     tableDesc.setJobSecrets(jobSecrets);
 
     JobConf jobConf = new JobConf();
@@ -993,7 +1010,7 @@ public class TestIcebergVendedCredentialUtil {
    * Tests per-table credential resolution when two vended tables publish into one configuration.
    *
    * <p><b>Setup:</b> REST catalogs mint credentials per table; two tables on different buckets go
-   * through the full chain — {@code propagateToJob} → {@code PlanUtils#configureJobConf} → one
+   * through the full chain — {@code toJobConf} → {@code PlanUtils#configureJobConf} → one
    * task UGI → per-table restore — and both publish into a <em>shared</em> conf the way merged
    * map-works do. {@code Utilities#copyTableJobPropertiesToConf} is skip-if-present for table
    * properties, so with a single global blob key the second table would read the first table's
@@ -1009,14 +1026,14 @@ public class TestIcebergVendedCredentialUtil {
   public void applyFromJobConfResolvesPerTableCredentialsInSharedConf() throws Exception {
     TableDesc tableDesc1 = tableDescNamed("db.t1");
     Map<String, String> secrets1 = Maps.newHashMap();
-    IcebergVendedCredentialUtil.propagateToJob(
-        tableWithCredential("s3://bucket-a/", "access-a", "db.t1"), "ice01", null, secrets1, new Configuration());
+    secrets1.putAll(IcebergVendedCredentialUtil.toJobConf(
+        tableWithCredential("s3://bucket-a/", "access-a", "db.t1"), "ice01", new Configuration()).secrets());
     tableDesc1.setJobSecrets(secrets1);
 
     TableDesc tableDesc2 = tableDescNamed("db.t2");
     Map<String, String> secrets2 = Maps.newHashMap();
-    IcebergVendedCredentialUtil.propagateToJob(
-        tableWithCredential("s3://bucket-b/", "access-b", "db.t2"), "ice01", null, secrets2, new Configuration());
+    secrets2.putAll(IcebergVendedCredentialUtil.toJobConf(
+        tableWithCredential("s3://bucket-b/", "access-b", "db.t2"), "ice01", new Configuration()).secrets());
     tableDesc2.setJobSecrets(secrets2);
 
     JobConf jobConf = new JobConf();
@@ -1085,7 +1102,7 @@ public class TestIcebergVendedCredentialUtil {
    * <p><b>Setup:</b> HS2-side table with a credentialed FileIO (secret in the credential list and
    * in the FileIO properties) over a real metadata file on local disk. {@code secretFreeCopy}
    * rebuilds the table over a fresh FileIO keeping only allowlisted non-secret properties before
-   * {@code serializeTable}; credentials travel separately via {@code propagateToJob} (modelling
+   * {@code serializeTable}; credentials travel separately via {@code toJobConf} (modelling
    * the HIVE-20651 restore); {@code HiveTableUtil#deserializeTable} restores them on the
    * deserialized FileIO.
    *
@@ -1131,7 +1148,7 @@ public class TestIcebergVendedCredentialUtil {
         .contains("http://minio:9000");
 
     Map<String, String> jobSecrets = Maps.newHashMap();
-    IcebergVendedCredentialUtil.propagateToJob(hs2Table, "ice01", null, jobSecrets, new Configuration());
+    jobSecrets.putAll(IcebergVendedCredentialUtil.toJobConf(hs2Table, "ice01", new Configuration()).secrets());
 
     JobConf taskConf = new JobConf();
     taskConf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + "db.t", serialized);
@@ -1191,7 +1208,7 @@ public class TestIcebergVendedCredentialUtil {
     assertThat(rawBytes).doesNotContain("cred-secret-3fd2").doesNotContain("prop-secret-3fd2");
 
     Map<String, String> jobSecrets = Maps.newHashMap();
-    IcebergVendedCredentialUtil.propagateToJob(filesTable, "ice01", null, jobSecrets, new Configuration());
+    jobSecrets.putAll(IcebergVendedCredentialUtil.toJobConf(filesTable, "ice01", new Configuration()).secrets());
 
     JobConf taskConf = new JobConf();
     taskConf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + "db.t.files", serialized);

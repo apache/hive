@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.DeadlineException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.tools.ColumnDeduplicator;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 
 class MetaToolTaskDedupColumns extends MetaToolTask {
@@ -41,6 +42,7 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
     
     Thread daemon = null;
     MetaToolObjectStore.DedupColumnsResult result = null;
+    Exception failure = null;
     AtomicReference<String> progress = new AtomicReference<>();
     AtomicBoolean stopped = new AtomicBoolean(false);
     long timeoutMs = getCl().getDedupColumnsTimeoutSeconds() != null ?
@@ -69,10 +71,11 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
         daemon.setDaemon(true);
         daemon.start();
       }
-      result = getObjectStore().dedupColumns(catalogFilter, dbFilter, tableFilter, progress, isDryRun, isVerbose);
-    } catch (MetaException ex) {
-      // Deadline.startTimer throws MetaException, this shouldn't happen as the Deadline has been registered.
-      System.err.println(ex.getMessage());
+      result = getObjectStore().dedupColumns(catalogFilter, dbFilter, tableFilter, progress, isDryRun, isVerbose,
+          getCl().isClearMarker());
+    } catch (Exception ex) {
+      // Remember the failure and rethrow it once the clean-up is done, so that the tool exits with a failure status
+      failure = ex;
     } finally {
       if (daemon != null) {
         stopped.set(true);
@@ -86,18 +89,38 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
       }
     }
 
+    if (failure != null) {
+      throw new IllegalStateException("HiveMetaTool: failed to run -dedupColumns", failure);
+    }
+
     if (result != null) {
       printSummary(result, isDryRun, isVerbose);
       if (result.getException() != null) {
-        if (result.getException().getCause() instanceof DeadlineException deadline) {
-          // Just print the timeout message
-          System.err.println(deadline.getMessage());
+        DeadlineException deadline = findDeadlineCause(result.getException());
+        if (deadline != null) {
+          long timeoutSeconds = Math.max(1, timeoutMs / 1000);
+          System.err.println("HiveMetaTool -dedupColumns timed out after " + timeoutSeconds
+              + " second(s). The configured limit is -timeout <seconds> or "
+              + MetastoreConf.ConfVars.DEDUP_COLUMNS_TIMEOUT.getVarname() + " (default in minutes).");
+          System.err.println("Increase the limit with -timeout <seconds> or set "
+              + MetastoreConf.ConfVars.DEDUP_COLUMNS_TIMEOUT.getVarname()
+              + " to a larger value (minutes), then re-run. Tables already processed can be skipped if marked "
+              + "with " + ColumnDeduplicator.COLUMN_DEDUPLICATOR_MARKER + ".");
           return;
         }
         throw new IllegalStateException("HiveMetaTool: failed to de-duplicate column descriptors for all tables",
             result.getException());
       }
     }
+  }
+
+  private static DeadlineException findDeadlineCause(Throwable ex) {
+    for (Throwable t = ex; t != null; t = t.getCause()) {
+      if (t instanceof DeadlineException) {
+        return (DeadlineException) t;
+      }
+    }
+    return null;
   }
 
   private void printSummary(MetaToolObjectStore.DedupColumnsResult result, boolean isDryRun, boolean isVerbose) {

@@ -39,6 +39,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   private static final Logger LOG = LoggerFactory.getLogger(HikariCPDataSourceProvider.class);
 
   static final String HIKARI = "hikaricp";
+  static final String TRANSACTION_ISOLATION = "transactionIsolation";
+  static final String TRANSACTION_READ_COMMITTED = "TRANSACTION_READ_COMMITTED";
 
   @Override
   public DataSource createPool(Configuration hdpConfig, int maxPoolSize) throws SQLException {
@@ -74,6 +76,17 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     if ("mutex".equals(poolName)) {
       int minimumIdle = Integer.parseInt(hdpConfig.get(HIKARI + ".minimumIdle", "2"));
       config.setMinimumIdle(Math.min(maxPoolSize, minimumIdle));
+    }
+
+    // Every consumer of these pools runs at READ COMMITTED: TransactionContextManager requests
+    // Isolation.READ_COMMITTED for each TxnHandler transaction and DataNucleus applies
+    // datanucleus.transactionIsolation (default read-committed) to every connection it borrows.
+    // Making it the pool default lets HikariCP set it once per physical connection, instead of
+    // Spring/DataNucleus changing and restoring it on every transaction, which costs two extra
+    // round trips per transaction on databases whose default differs (MySQL/MariaDB default to
+    // REPEATABLE READ). An explicit hikaricp.transactionIsolation still takes precedence.
+    if (!properties.containsKey(TRANSACTION_ISOLATION)) {
+      config.setTransactionIsolation(TRANSACTION_READ_COMMITTED);
     }
 
     DataSourceProvider.preparePool(hdpConfig, s -> config.setConnectionInitSql(s),

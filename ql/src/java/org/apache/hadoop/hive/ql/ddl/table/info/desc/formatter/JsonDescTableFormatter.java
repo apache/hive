@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.formatting.MapBuilder;
+import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 
 import java.io.DataOutputStream;
@@ -242,7 +243,10 @@ public class JsonDescTableFormatter extends DescTableFormatter {
     if (partition != null) {
       builder.put("partitionInfo", partition.getTPartition());
     } else {
-      builder.put("tableInfo", table.getTTable());
+      org.apache.hadoop.hive.metastore.api.Table tableInfo = table.getTTable().deepCopy();
+      tableInfo.setParameters(
+          MetaDataFormatUtils.withholdJdbcConnectionCredentialValues(tableInfo.getParameters()));
+      builder.put("tableInfo", tableInfo);
     }
     if (table.isNonNative() && table.getStorageHandler() != null &&
         table.getStorageHandler().supportsPartitionTransform()) {

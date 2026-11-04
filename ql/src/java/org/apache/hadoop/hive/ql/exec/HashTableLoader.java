@@ -18,6 +18,8 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.stream.LongStream;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
@@ -39,4 +41,13 @@ public interface HashTableLoader {
 
   void load(MapJoinTableContainer[] mapJoinTables, MapJoinTableContainerSerDe[] mapJoinTableSerdes)
       throws HiveException;
+
+  /**
+   * Returns the key count to size a map join hash table for: the smaller positive of the
+   * optimizer's estimate and the APPROXIMATE_INPUT_RECORDS counter, or -1 when neither is positive.
+   * An overestimate is allocated before the first row is read; an underestimate only costs a rehash.
+   */
+  static long keyCountForSizing(long estKeyCount, long inputRecords) {
+    return LongStream.of(estKeyCount, inputRecords).filter(count -> count > 0).min().orElse(-1);
+  }
 }

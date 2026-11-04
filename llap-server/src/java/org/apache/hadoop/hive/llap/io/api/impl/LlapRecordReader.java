@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketIdentifier;
+import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
@@ -85,7 +86,8 @@ import org.slf4j.MDC;
 
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
-class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
+final class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch>,
+    RowPositionAwareVectorizedRecordReader {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapRecordReader.class);
   private static final Object DONE_OBJECT = new Object();
@@ -96,7 +98,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final SearchArgument sarg;
   private final VectorizedRowBatchCtx rbCtx;
   private final boolean isVectorized;
-  private final boolean probeDecodeEnabled;
   private VectorizedOrcAcidRowBatchReader acidReader;
   private Object[] partitionValues;
   private VectorizedRowBatch acidInputVrb;
@@ -222,8 +223,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     this.includes = new IncludesImpl(tableIncludedCols, isAcidFormat, rbCtx,
         schema, job, isAcidScan && acidReader.includeAcidColumns());
 
-    this.probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
-    if (this.probeDecodeEnabled) {
+    boolean probeDecodeEnabled = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_OPTIMIZE_SCAN_PROBEDECODE);
+    if (probeDecodeEnabled) {
       includes.setProbeDecodeContext(mapWork.getProbeDecodeContext());
       LOG.info("LlapRecordReader ProbeDecode is enabled");
     }
@@ -301,34 +302,32 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       } else {
         PrimitiveTypeInfo pti = (PrimitiveTypeInfo) ti;
         switch (pti.getPrimitiveCategory()) {
-        case BINARY:
-        case CHAR:
-        case VARCHAR:
-        case STRING:
-          colWeight = COL_WEIGHT_STRING;
-          break;
+          case BINARY:
+          case CHAR:
+          case VARCHAR:
+          case STRING:
+            colWeight = COL_WEIGHT_STRING;
+            break;
           //Timestamp column vector uses an int and long arrays
-        case TIMESTAMP:
-        case INTERVAL_DAY_TIME:
-          colWeight = 2;
-          break;
-        case DECIMAL:
-          boolean useDecimal64 = false;
-          if (ti instanceof DecimalTypeInfo) {
-            DecimalTypeInfo dti = (DecimalTypeInfo) ti;
-            if (dti.getPrecision() <= TypeDescription.MAX_DECIMAL64_PRECISION && decimal64Support) {
+          case TIMESTAMP:
+          case INTERVAL_DAY_TIME:
+            colWeight = 2;
+            break;
+          case DECIMAL:
+            boolean useDecimal64 = false;
+            if (ti instanceof DecimalTypeInfo dti &&
+                dti.getPrecision() <= TypeDescription.MAX_DECIMAL64_PRECISION && decimal64Support) {
               useDecimal64 = true;
             }
-          }
-          // decimal_64 column vectors gets the same weight as long column vectors
-          if (useDecimal64) {
+            // decimal_64 column vectors gets the same weight as long column vectors
+            if (useDecimal64) {
+              colWeight = 1;
+            } else {
+              colWeight = COL_WEIGHT_HIVEDECIMAL;
+            }
+            break;
+          default:
             colWeight = 1;
-          } else {
-            colWeight = COL_WEIGHT_HIVEDECIMAL;
-          }
-          break;
-        default:
-          colWeight = 1;
         }
       }
       totalWeight += colWeight * 8 * scale;
@@ -500,7 +499,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
 
     @Override
-    public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {
+    public boolean next(NullWritable key, VectorizedRowBatch value) {
       return true;
     }
 
@@ -515,16 +514,16 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
 
     @Override
-    public long getPos() throws IOException {
+    public long getPos() {
       return 0;
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
     }
 
     @Override
-    public float getProgress() throws IOException {
+    public float getProgress() {
       return 0;
     }
   }
@@ -579,6 +578,12 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       LlapIoImpl.LOG.trace("Processing will receive vector {}", lastCvb);
     }
     return lastCvb;
+  }
+
+  /** Long.MIN_VALUE (unknown) when the producer does not track row positions. */
+  @Override
+  public long getRowNumber() {
+    return lastCvb.getStartRowInFile();
   }
 
   @Override
@@ -652,7 +657,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
   private void enqueueInternal(Object o) throws InterruptedException {
     // We need to loop here to handle the case where consumer goes away.
-    do {} while (!isClosed && !isInterrupted && !queue.offer(o, 100, TimeUnit.MILLISECONDS));
+    while (!isClosed && !isInterrupted) {
+      if (queue.offer(o, 100, TimeUnit.MILLISECONDS)) {
+        return;
+      }
+    }
   }
 
   @Override
@@ -663,10 +672,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
   void setPartitionValues(Object[] partitionValues) {
     this.partitionValues = partitionValues;
-  }
-
-  ReadPipeline getReadPipeline() {
-    return rp;
   }
 
   /** This class encapsulates include-related logic for LLAP readers. It is not actually specific

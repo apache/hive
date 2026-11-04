@@ -19,14 +19,20 @@
 package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import com.google.common.collect.Sets;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.parquet.hadoop.api.InitContext;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
 
 import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.testConversion;
+import static org.junit.Assert.assertEquals;
 
 public class TestDataWritableReadSupport {
   @Test
@@ -115,5 +121,26 @@ public class TestDataWritableReadSupport {
         .getProjectedSchema(originalMsg, Arrays.asList("structCol"), Arrays.asList(0),
           Sets.newHashSet("structCol.subStructCol", "structCol.subStructCol.b",
             "structCol.subStructCol.c")).toString());
+  }
+
+  @Test
+  public void testNoProjectedColumnRequestsNoColumn() {
+    MessageType fileSchema = MessageTypeParser.parseMessageType("""
+        message hive_schema {
+          optional int32 a;
+          optional binary b;
+        }
+        """);
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS, "a,b");
+    conf.set(IOConstants.COLUMNS_TYPES, "int,string");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+
+    assertEquals(0, DataWritableReadSupport.getRequestedSchema(false, Arrays.asList("a", "b"),
+        Arrays.asList(TypeInfoFactory.intTypeInfo, TypeInfoFactory.stringTypeInfo), fileSchema, conf)
+        .getFieldCount());
+    assertEquals(0, new DataWritableReadSupport()
+        .init(new InitContext(conf, Collections.emptyMap(), fileSchema))
+        .getRequestedSchema().getFieldCount());
   }
 }

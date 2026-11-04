@@ -2161,6 +2161,10 @@ public class HiveConf extends Configuration {
         "If this is set to true the URI for auth will have the default location masked with DEFAULT_TABLE_LOCATION"),
     HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY("hive.iceberg.allow.datafiles.in.table.location.only", false,
         "If this is set to true, then all the data files being read should be withing the table location"),
+    HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED(
+        "hive.iceberg.rest.server-side-scan-planning.enabled", false,
+        "Whether Hive may use server-side scan planning for Iceberg REST catalogs whose\n" +
+        "scan-planning-mode is server. When false, Hive plans scans itself."),
     HIVE_USE_EXPLICIT_RCFILE_HEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +
@@ -5432,34 +5436,6 @@ public class HiveConf extends Configuration {
     LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT("hive.llap.external.splits.temp.table.storage.format",
         "orc", new StringSet("default", "text", "orc"),
         "Storage format for temp tables created using LLAP external client"),
-    LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR("hive.llap.external.client.use.hybrid.calendar",
-        false,
-        "Whether to use hybrid calendar for parsing of data/timestamps."),
-
-    // ====== confs for llap-external-client cloud deployment ======
-    LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED(
-        "hive.llap.external.client.cloud.deployment.setup.enabled", false,
-        "Tells whether to enable additional RPC port, auth mechanism for llap external clients. This is meant"
-            + "for cloud based deployments. When true, it has following effects - \n"
-            + "1. Enables an extra RPC port on LLAP daemon to accept fragments from external clients. See"
-            + "hive.llap.external.client.cloud.rpc.port\n"
-            + "2. Uses external hostnames of LLAP in splits, so that clients can submit from outside of cloud. "
-            + "Env variable PUBLIC_HOSTNAME should be available on LLAP machines.\n"
-            + "3. Uses JWT based authentication for splits to be validated at LLAP. See "
-            + "hive.llap.external.client.cloud.jwt.shared.secret.provider"),
-    LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT("hive.llap.external.client.cloud.rpc.port", 30004,
-        "The LLAP daemon RPC port for external clients when llap is running in cloud environment."),
-    LLAP_EXTERNAL_CLIENT_CLOUD_OUTPUT_SERVICE_PORT("hive.llap.external.client.cloud.output.service.port", 30005,
-                "LLAP output service port when llap is running in cloud environment"),
-    LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET_PROVIDER(
-        "hive.llap.external.client.cloud.jwt.shared.secret.provider",
-        "org.apache.hadoop.hive.llap.security.DefaultJwtSharedSecretProvider",
-        "Shared secret provider to be used to sign JWT"),
-    LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET("hive.llap.external.client.cloud.jwt.shared.secret",
-        "",
-        "The LLAP daemon RPC port for external clients when llap is running in cloud environment. "
-            + "Length of the secret should be >= 32 bytes"),
-    // ====== confs for llap-external-client cloud deployment ======
 
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
         "Override if grace join should be allowed to run in llap."),

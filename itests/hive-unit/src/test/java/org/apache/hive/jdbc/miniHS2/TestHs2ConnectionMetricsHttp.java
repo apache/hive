@@ -25,14 +25,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TCloseSessionReq;
 import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
 import org.apache.hive.service.rpc.thrift.TOpenSessionResp;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
-import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.THttpClient;
@@ -90,14 +90,14 @@ public class TestHs2ConnectionMetricsHttp extends Hs2ConnectionMetrics {
   }
 
   private TCLIService.Client getHttpClient() throws Exception {
-    DefaultHttpClient httpClient = new DefaultHttpClient();
+    HttpClientBuilder httpClient = HttpClientBuilder.create();
 
     Map<String, String> headers = new HashMap<>();
     headers.put("Connection", "close");
-    httpClient.addRequestInterceptor(new BasicHttpRequestInterceptor(USERNAME, PASSWORD, null,
+    httpClient.addRequestInterceptorLast(new BasicHttpRequestInterceptor(USERNAME, PASSWORD, null,
             null, false, headers));
 
-    TTransport transport = new THttpClient(getHttpUrl(), httpClient);
+    TTransport transport = new THttpClient(getHttpUrl(), httpClient.build());
     TProtocol protocol = new TBinaryProtocol(transport);
     return new TCLIService.Client(protocol);
   }
