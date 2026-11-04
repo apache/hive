@@ -1,5 +1,5 @@
-Warning: Map Join MAPJOIN[294][bigTable=?] in task 'Map 21' is a cross product
-Warning: Map Join MAPJOIN[291][bigTable=?] in task 'Map 21' is a cross product
+Warning: Map Join MAPJOIN[294][bigTable=?] in task 'Map 20' is a cross product
+Warning: Map Join MAPJOIN[291][bigTable=?] in task 'Map 20' is a cross product
 Warning: Map Join MAPJOIN[292][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[286][bigTable=?] in task 'Map 1' is a cross product
 CBO PLAN:

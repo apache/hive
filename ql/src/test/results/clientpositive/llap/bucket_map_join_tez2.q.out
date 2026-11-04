@@ -1659,10 +1659,10 @@ STAGE PLANS:
                           1 _col0 (type: int), _col1 (type: string)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 242 Data size: 1936 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 58 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
-                          minReductionHashAggr: 0.99
+                          minReductionHashAggr: 0.98275864
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1776,10 +1776,10 @@ STAGE PLANS:
                           1 _col0 (type: int), _col1 (type: string)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 242 Data size: 1936 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 58 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
-                          minReductionHashAggr: 0.99
+                          minReductionHashAggr: 0.98275864
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

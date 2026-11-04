@@ -139,13 +139,9 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     int noOfPE = peLst.size();
     double ndvEstimate = 1;
     if (noOfPE > 0) {
-      boolean isCorrelatedColumns = j.getCluster().getPlanner().getContext().
-          unwrap(HiveConfPlannerContext.class).getIsCorrelatedColumns();
-      if (noOfPE > 1 && isCorrelatedColumns) {
-        ndvEstimate = maxNdvForCorrelatedColumns(peLst, colStatMap);
-      } else {
-        ndvEstimate = exponentialBackoff(peLst, colStatMap);
-      }
+      double independenceFactor = j.getCluster().getPlanner().getContext().
+          unwrap(HiveConfPlannerContext.class).getMultiKeyJoinIndependenceFactor();
+      ndvEstimate = combineNdvs(peLst, colStatMap, independenceFactor);
 
       if (j.isSemiJoin() || (j.getJoinType().equals(JoinRelType.ANTI))) {
         ndvEstimate = Math.min(mq.getRowCount(j.getLeft()),
@@ -204,23 +200,19 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     return ndvCrossProduct;
   }
 
-  // max ndv across all column references from both sides of table
-  protected double maxNdvForCorrelatedColumns(List<JoinLeafPredicateInfo> peLst,
-  ImmutableMap<Integer, Double> colStatMap) {
-    int noOfPE = peLst.size();
-    List<Double> ndvs = new ArrayList<Double>(noOfPE);
-    for (int i = 0; i < noOfPE; i++) {
-      ndvs.add(getMaxNDVForJoinSelectivity(peLst.get(i), colStatMap));
-    }
-    return Collections.max(ndvs);
-  }
-
   /*
-   * a) Order predicates based on ndv in reverse order. b) ndvCrossProduct =
-   * ndv(pe0) * ndv(pe1) ^(1/2) * ndv(pe2) ^(1/4) * ndv(pe3) ^(1/8) ...
+   * 1) Order predicates based on ndv in reverse order.
+   * 2) ndvCrossProduct = ndv(pe0) * ndv(pe1) ^f * ndv(pe2) ^(f^2) * ndv(pe3) ^(f^3) ...,
+   * with f the independence factor of the keys:
+   * - 0 for fully correlated keys (the max ndv alone),
+   * - 1 for independent ones.
+   * Where pe0...pe3 are the join predicate elements.
+   * Example:
+   *   ON a.k1 = b.k1 and a.k2 = b.k2 ...
+   *   predicate elements are: a.k1 = b.k1, a.k2 = b.k2 ...
    */
-  protected double exponentialBackoff(List<JoinLeafPredicateInfo> peLst,
-      ImmutableMap<Integer, Double> colStatMap) {
+  protected double combineNdvs(List<JoinLeafPredicateInfo> peLst,
+      ImmutableMap<Integer, Double> colStatMap, double independenceFactor) {
     int noOfPE = peLst.size();
     List<Double> ndvs = new ArrayList<Double>(noOfPE);
     for (int i = 0; i < noOfPE; i++) {
@@ -230,7 +222,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     Collections.reverse(ndvs);
     double ndvCrossProduct = 1.0;
     for (int i = 0; i < ndvs.size(); i++) {
-      double n = Math.pow(ndvs.get(i), Math.pow(1 / 2.0, i));
+      double n = Math.pow(ndvs.get(i), Math.pow(independenceFactor, i));
       ndvCrossProduct *= n;
     }
     return ndvCrossProduct;
