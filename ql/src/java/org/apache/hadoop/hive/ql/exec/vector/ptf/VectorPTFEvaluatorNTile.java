@@ -44,34 +44,41 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
  * evaluator keeps O(1) state regardless of partition size, and a batch that falls entirely within
  * one bucket is emitted as a repeating vector.
  *
- * <p>The number of buckets must be a positive integer constant (e.g. {@code ntile(4)}); the
- * Vectorizer leaves any other form to row mode.
+ * <p>The number of buckets is either a positive integer constant (e.g. {@code ntile(4)}) or any
+ * other int expression (e.g. {@code ntile(col)}), which, as in {@code GenericUDAFNTile}, is read
+ * from the first row of each partition. The Vectorizer leaves a non-positive constant to row mode.
  */
 public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
 
-  private final long numBuckets;
+  // Number of buckets of a constant argument, or 0 when it is read from the partition's first row.
+  private final long constantNumBuckets;
 
-  // Per-partition bucket layout, set up by addStreamingGroupResults.
+  // Per-partition bucket layout, set up by setUpBuckets once the first batch is replayed.
   private int bucketSize;
   private int largerBucketCount;
 
-  // Replay position within the partition.
+  // Replay position within the partition; 0 until the bucket layout is set up.
   private int currentBucket;
   private int rowsLeftInBucket;
 
   public VectorPTFEvaluatorNTile(WindowFrameDef windowFrameDef,
       VectorExpression numBucketsExpression, int outputColumnNum) {
-    super(windowFrameDef, outputColumnNum);
-    if (!(numBucketsExpression instanceof ConstantVectorExpression constantExpr)) {
-      throw new RuntimeException(
-          "NTILE expects a constant integer expression for the number of buckets, got: "
-              + (numBucketsExpression == null ? "null"
-                  : numBucketsExpression.getClass().getName()));
+    // A constant needs no input column; any other expression is evaluated before batches are
+    // buffered, and its result column is read back when the partition's first batch is replayed.
+    super(windowFrameDef,
+        numBucketsExpression instanceof ConstantVectorExpression ? null : numBucketsExpression,
+        outputColumnNum);
+    if (numBucketsExpression == null) {
+      throw new RuntimeException("NTILE expects an expression for the number of buckets");
     }
-    numBuckets = constantExpr.getLongValue();
-    if (numBuckets <= 0) {
-      throw new RuntimeException(
-          "NTILE requires a positive number of buckets, got: " + numBuckets);
+    if (numBucketsExpression instanceof ConstantVectorExpression constantExpr) {
+      constantNumBuckets = constantExpr.getLongValue();
+      if (constantNumBuckets <= 0) {
+        throw new RuntimeException(
+            "NTILE requires a positive constant number of buckets, got: " + constantNumBuckets);
+      }
+    } else {
+      constantNumBuckets = 0;
     }
     resetEvaluator();
   }
@@ -86,18 +93,56 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
     if (partitionSize <= 0) {
       throw new HiveException("Partition size must be set before computing ntile");
     }
-    // Peer groups are irrelevant: buckets depend only on row position and partition size.
-    // With more buckets than rows every row gets its own bucket, which is ntile(partitionSize);
-    // capping the bucket count keeps every bucket non-empty (and fits it in an int).
-    final int buckets = (int) Math.min(numBuckets, partitionSize);
+    // Peer groups are irrelevant: buckets depend only on row position and partition size. The
+    // layout is set up on the first replayed batch, which holds the row a non-constant number of
+    // buckets is read from.
+    currentBucket = 0;
+  }
+
+  /**
+   * Mirrors {@code GenericUDAFNTile}, which does not validate the number of buckets: wherever row
+   * mode produces a result this produces the same one, and wherever row mode fails this fails fast.
+   */
+  private void setUpBuckets(long numBuckets) throws HiveException {
+    final int buckets;
+    if (numBuckets > 0) {
+      // With more buckets than rows every row gets its own bucket, which is ntile(partitionSize);
+      // capping the bucket count keeps every bucket non-empty (and fits it in an int).
+      buckets = (int) Math.min(numBuckets, partitionSize);
+    } else if (numBuckets < -partitionSize) {
+      // Row mode's truncating division yields an empty base bucket size, so every row gets its own
+      // bucket, as for a positive count larger than the partition.
+      buckets = partitionSize;
+    } else {
+      // Row mode divides by zero, or for any other negative count loops until it runs out of
+      // memory.
+      throw new HiveException("NTILE requires a positive number of buckets, got: " + numBuckets);
+    }
     bucketSize = partitionSize / buckets;
     largerBucketCount = partitionSize % buckets;
     currentBucket = 1;
     rowsLeftInBucket = rowsInBucket(currentBucket);
   }
 
+  /**
+   * Reads the number of buckets from the first row of the partition, held by the first replayed
+   * batch. Replayed batches never use a selection vector, so that row is at index 0, which is also
+   * where a repeating vector (e.g. a partition key column) keeps its value.
+   */
+  private long readNumBuckets(VectorizedRowBatch batch) throws HiveException {
+    LongColumnVector numBucketsColVector = (LongColumnVector) batch.cols[inputColumnNum];
+    if (!numBucketsColVector.noNulls && numBucketsColVector.isNull[0]) {
+      // Row mode fails on a NULL number of buckets as well.
+      throw new HiveException("NTILE requires a positive number of buckets, got: NULL");
+    }
+    return numBucketsColVector.vector[0];
+  }
+
   @Override
   public void evaluateGroupBatch(VectorizedRowBatch batch) throws HiveException {
+    if (currentBucket == 0) {
+      setUpBuckets(constantNumBuckets > 0 ? constantNumBuckets : readNumBuckets(batch));
+    }
     final int size = batch.size;
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     outputColVector.noNulls = true;
