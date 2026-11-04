@@ -332,7 +332,9 @@ public class TestMetaStoreEventListener {
     msc.alter_table(dbName, tblName, renamedTable);
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    PreAlterTableEvent preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 2);
+    // Renaming a table no longer loads the partitions through the handler (it iterates them in batches
+    // on the RawStore), so there is no trailing PreReadTableEvent after the PreAlterTableEvent.
+    PreAlterTableEvent preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 1);
 
     renamedTable = msc.getTable(dbName, renamed);
 
