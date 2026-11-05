@@ -1298,7 +1298,7 @@ public class StatsRulesProcFactory {
           Object prevConst = null;
 
           for (ExprNodeDesc leaf : genFunc.getChildren()) {
-            if (leaf instanceof ExprNodeConstantDesc) {
+            if (leaf instanceof ExprNodeConstantDesc constLeaf) {
 
               // constant = constant expressions. We shouldn't be getting this
               // after constant folding
@@ -1306,7 +1306,7 @@ public class StatsRulesProcFactory {
 
                 // special case: if both constants are not equal then return 0
                 if (prevConst != null &&
-                    !prevConst.equals(((ExprNodeConstantDesc) leaf).getValue())) {
+                    !prevConst.equals(constLeaf.getValue())) {
                   return 0;
                 }
                 return numRows;
@@ -1315,7 +1315,7 @@ public class StatsRulesProcFactory {
               // if the first argument is const then just set the flag and continue
               if (colName == null) {
                 isConst = true;
-                prevConst = ((ExprNodeConstantDesc) leaf).getValue();
+                prevConst = constLeaf.getValue();
                 continue;
               }
 
@@ -1329,7 +1329,7 @@ public class StatsRulesProcFactory {
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
                 return rowsAfterEqualityFilter(numRows, cs.getCountDistint(),
-                    nullSafe && ((ExprNodeConstantDesc) leaf).getValue() == null);
+                    nullSafe && constLeaf.getValue() == null);
               }
             } else if (leaf instanceof ExprNodeColumnDesc) {
               ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
