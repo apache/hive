@@ -562,7 +562,8 @@ public class StatsRulesProcFactory {
         ColStatistics cs = columnStats.get(i);
         long dvs = cs == null ? -1L : cs.getCountDistint();
         if (dvs == 0) {
-          // verified zero distinct values: IN cannot match any row
+          // verified zero distinct values: no non-null value can match, so start from 0;
+          // like any column without a usable range, it is still subject to the min-ratio clamp
           factor = 0;
           break;
         }

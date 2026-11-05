@@ -134,18 +134,21 @@ class TestStatsRulesProcFactory {
 
   /**
    * HIVE-29625: IN-filter row-count estimate by NDV of the column.
-   *   unknown NDV (-1) -> factor *= 0.5 per IN value, currNumRows = round(rows * 0.5)
+   *   unknown NDV (-1) -> factor *= 0.5 for the column, currNumRows = round(rows * 0.5)
    *   verified-zero NDV (0) -> factor = 0, no rows match
+   * The column has no min/max range, so hive.stats.filter.in.min.ratio still floors the factor.
    */
   @ParameterizedTest(name = "{0}")
   @MethodSource("evaluateInExprCases")
-  void testEvaluateInExprByNDV(String name, long ndvOverride, long expectedRows)
+  void testEvaluateInExprByNDV(String name, long ndvOverride, float minRatio, long expectedRows)
       throws SemanticException {
     Statistics stats = createStatistics(VALUES, 0);
     stats.getColumnStats().get(0).setCountDistint(ndvOverride);
 
+    HiveConf conf = new HiveConf();
+    conf.setFloatVar(HiveConf.ConfVars.HIVE_STATS_IN_MIN_RATIO, minRatio);
     AnnotateStatsProcCtx ctx = spy(new AnnotateStatsProcCtx(null));
-    when(ctx.getConf()).thenReturn(new HiveConf());
+    when(ctx.getConf()).thenReturn(conf);
 
     ExprNodeDesc inExpr = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
         new GenericUDFIn(),
@@ -159,8 +162,10 @@ class TestStatsRulesProcFactory {
 
   private static Stream<Arguments> evaluateInExprCases() {
     return Stream.of(
-        Arguments.of("unknownNDVAppliesHalfFactor", -1L, Math.round(VALUES.length * 0.5)),
-        Arguments.of("verifiedZeroReturnsZero",      0L, 0L)
+        Arguments.of("unknownNDVAppliesHalfFactor", -1L, 0.0f, Math.round(VALUES.length * 0.5)),
+        Arguments.of("verifiedZeroReturnsZero", 0L, 0.0f, 0L),
+        Arguments.of("unknownNDVAboveMinRatioKeepsHalfFactor", -1L, 0.1f, Math.round(VALUES.length * 0.5)),
+        Arguments.of("verifiedZeroFlooredByMinRatio", 0L, 0.1f, Math.round(VALUES.length * 0.1))
     );
   }
 
