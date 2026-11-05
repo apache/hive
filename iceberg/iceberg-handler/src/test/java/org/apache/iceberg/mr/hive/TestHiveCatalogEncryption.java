@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ChecksumFileSystem;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseTable;
@@ -118,6 +119,20 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
     Assert.assertEquals("c", rowsAfterDelete.get(0)[1]);
     Assert.assertEquals(4L, rowsAfterDelete.get(1)[0]);
     Assert.assertEquals("d", rowsAfterDelete.get(1)[1]);
+  }
+
+  @Test
+  public void testInsertWithStatsGatheringKeepsTableReadable() {
+    // the statistics alters carry the metadata hash of the metadata file they point to
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    TableIdentifier identifier = TableIdentifier.of("default", "encrypted_stats_table");
+    shell.executeStatement(String.format(
+        "CREATE EXTERNAL TABLE %s (id bigint, data string) STORED BY iceberg %s",
+        identifier.name(), encryptionProps()));
+    shell.executeStatement(String.format("INSERT INTO %s VALUES (1, 'a'), (2, 'b')", identifier.name()));
+
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier.name() + " ORDER BY id");
+    Assert.assertEquals(2, rows.size());
   }
 
   @Test
