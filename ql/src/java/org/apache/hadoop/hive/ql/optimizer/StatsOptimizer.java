@@ -29,10 +29,13 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -81,12 +84,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,6 +170,7 @@ public class StatsOptimizer extends Transform {
     enum StatType{
       Integer,
       Double,
+      Decimal,
       String,
       Boolean,
       Binary,
@@ -205,28 +210,27 @@ public class StatsOptimizer extends Transform {
       NULL, CONSTANT, OTHER
     }
 
-    private StatType getType(String origType) {
-      if (serdeConstants.IntegralTypes.contains(origType)) {
-        return StatType.Integer;
-      } else if (origType.equals(serdeConstants.DOUBLE_TYPE_NAME) ||
-          origType.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-        return StatType.Double;
-      } else if (origType.equals(serdeConstants.BINARY_TYPE_NAME)) {
-        return StatType.Binary;
-      } else if (origType.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
-        return StatType.Boolean;
-      } else if (origType.equals(serdeConstants.STRING_TYPE_NAME)) {
-        return StatType.String;
-      } else if (origType.equals(serdeConstants.DATE_TYPE_NAME)) {
-        return StatType.Date;
+    private StatType getType(TypeInfo typeInfo) {
+      if (!(typeInfo instanceof PrimitiveTypeInfo pti)) {
+        return StatType.Unsupported;
       }
-      return StatType.Unsupported;
+      return switch (pti.getPrimitiveCategory()) {
+        case BYTE, SHORT, INT, LONG -> StatType.Integer;
+        case FLOAT, DOUBLE -> StatType.Double;
+        case DECIMAL -> StatType.Decimal;
+        case BINARY -> StatType.Binary;
+        case BOOLEAN -> StatType.Boolean;
+        case STRING -> StatType.String;
+        case DATE -> StatType.Date;
+        default -> StatType.Unsupported;
+      };
     }
 
     private Long getNullCountFor(StatType type, ColumnStatisticsData statData) {
       return switch (type) {
         case Integer -> statData.getLongStats().getNumNulls();
         case Double -> statData.getDoubleStats().getNumNulls();
+        case Decimal -> statData.getDecimalStats().getNumNulls();
         case String -> statData.getStringStats().getNumNulls();
         case Boolean -> statData.getBooleanStats().getNumNulls();
         case Binary -> statData.getBinaryStats().getNumNulls();
@@ -246,6 +250,7 @@ public class StatsOptimizer extends Transform {
       return switch (type) {
         case Integer -> ColumnStatisticsData.longStats(new LongColumnStatsData());
         case Double -> ColumnStatisticsData.doubleStats(new DoubleColumnStatsData());
+        case Decimal -> ColumnStatisticsData.decimalStats(new DecimalColumnStatsData());
         case String -> ColumnStatisticsData.stringStats(new StringColumnStatsData());
         case Boolean -> ColumnStatisticsData.booleanStats(new BooleanColumnStatsData());
         case Binary -> ColumnStatisticsData.binaryStats(new BinaryColumnStatsData());
@@ -473,7 +478,7 @@ public class StatsOptimizer extends Transform {
             ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)exprMap.get(
                 ((ExprNodeColumnDesc)aggr.getParameters().get(0)).getColumn());
             String colName = colDesc.getColumn();
-            StatType type = getType(colDesc.getTypeString());
+            StatType type = getType(colDesc.getTypeInfo());
 
             ColumnStatisticsData statData = scanColStats.statsFor(colName, type);
             if (statData == null) {
@@ -500,6 +505,12 @@ public class StatsOptimizer extends Transform {
                 boolean isSet = high ? dstats.isSetHighValue() : dstats.isSetLowValue();
                 Date bound = high ? dstats.getHighValue() : dstats.getLowValue();
                 oneRow.add(isSet ? DateSubType.DAYS.cast(bound.getDaysSinceEpoch()) : null);
+              }
+              case Decimal -> {
+                DecimalColumnStatsData dstats = statData.getDecimalStats();
+                boolean isSet = high ? dstats.isSetHighValue() : dstats.isSetLowValue();
+                Decimal bound = high ? dstats.getHighValue() : dstats.getLowValue();
+                oneRow.add(isSet ? DecimalUtils.getHiveDecimal(bound) : null);
               }
               default -> {
                 Logger.debug("Unsupported type: {} encountered in metadata optimizer for column: {}",
@@ -773,7 +784,7 @@ public class StatsOptimizer extends Transform {
       // count(col): the rows where it is set
       ExprNodeColumnDesc desc = (ExprNodeColumnDesc) param;
       String colName = desc.getColumn();
-      StatType type = getType(desc.getTypeString());
+      StatType type = getType(desc.getTypeInfo());
 
       ColumnStatisticsData statData = scanColStats.statsFor(colName, type);
       if (statData == null) {

@@ -658,4 +658,28 @@ public class FileUtils {
       nextFile = null;
     }
   }
+
+  /**
+   * Checks whether {@code path} is {@code subtree} itself or nested under it, by walking up
+   * {@code path}'s ancestors looking for a match. Depth-based rather than a string-prefix
+   * comparison, so it isn't fooled by sibling paths that merely share a prefix (e.g. {@code /a/bc}
+   * is not within {@code /a/b}).
+   *
+   * @param path the path to check
+   * @param subtree the candidate ancestor, or exact match
+   * @return true if {@code path} equals {@code subtree} or is one of its descendants
+   */
+  public static boolean isPathWithinSubtree(final Path path, final Path subtree) {
+    final int subtreeDepth = subtree.depth();
+    int pathDepth = path.depth();
+    if (pathDepth < subtreeDepth) {
+      return false;
+    }
+    Path subpath = path;
+    while (pathDepth > subtreeDepth) {
+      subpath = subpath.getParent();
+      pathDepth -= 1;
+    }
+    return subtree.equals(subpath);
+  }
 }

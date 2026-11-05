@@ -19,4 +19,7 @@ SHOW TABLE EXTENDED from default LIKE "%";
 
 SHOW TABLE EXTENDED LIKE `srcpart` PARTITION(ds='2008-04-08', hr=11);
 
+-- no PARTITION clause on a partitioned table: must list all of its partitions
+SHOW TABLE EXTENDED LIKE `srcpart`;
+
 SHOW TABLE EXTENDED from default LIKE src;

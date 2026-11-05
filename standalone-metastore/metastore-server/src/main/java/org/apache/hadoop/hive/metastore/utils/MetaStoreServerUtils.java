@@ -1066,6 +1066,12 @@ public class MetaStoreServerUtils {
       return false;
     }
 
+    // Data of a non-native table is managed by its storage handler, so filesystem based stats
+    // computed from the table location are not meaningful for it
+    if (MetaStoreUtils.isNonNativeTable(tbl)) {
+      return false;
+    }
+
     if  (oldPart == null && newPart == null) {
       return true;
     }

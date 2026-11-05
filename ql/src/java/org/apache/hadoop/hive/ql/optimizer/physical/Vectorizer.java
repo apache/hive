@@ -125,6 +125,7 @@ import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc.ExprNodeDescEqualityWrapper;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -2997,7 +2998,8 @@ public class Vectorizer implements PhysicalPlanResolver {
               (supportedFunctionType == SupportedFunctionType.AVG ||
                supportedFunctionType == SupportedFunctionType.MAX ||
                supportedFunctionType == SupportedFunctionType.MIN ||
-               supportedFunctionType == SupportedFunctionType.SUM) &&
+               supportedFunctionType == SupportedFunctionType.SUM ||
+               supportedFunctionType.getVarianceKind() != null) &&
               isSingleParameter &&
               singlePrimitiveCategory != null);
           if (!isRowEndCurrent && !windowFrameDef.isEndUnbounded()) {
@@ -3009,6 +3011,13 @@ public class Vectorizer implements PhysicalPlanResolver {
         break;
       default:
         throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
+      }
+
+      // Row mode also accepts a non-constant ntile argument (read from the first row of the partition).
+      if (supportedFunctionType == SupportedFunctionType.NTILE &&
+          !isPositiveIntConstant(singleExprNodeDesc)) {
+        setOperatorIssue(functionName + " only supports a positive integer constant number of buckets");
+        return false;
       }
 
       if (!VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType)) {
@@ -5040,6 +5049,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       exprNodeDescs[i] = orderExpressions.get(i).getExprNode();
     }
     return exprNodeDescs;
+  }
+
+  private static boolean isPositiveIntConstant(ExprNodeDesc exprNodeDesc) {
+    return exprNodeDesc instanceof ExprNodeConstantDesc constantDesc
+        && constantDesc.getValue() instanceof Integer value && value > 0;
   }
 
   // TODO: An evaluator that wants to handle an unbuffered partition-only column in its calculation could

@@ -59,6 +59,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.File;
@@ -718,6 +719,53 @@ public class TestHiveMetaStoreAuthorizer {
     }
   }
 
+  private static Map<String, String> connectorParams() {
+    Map<String, String> params = new HashMap<>();
+    params.put("hive.sql.dbcp.username", "etl_acct_9x");
+    params.put("hive.sql.dbcp.password", "Zq7vNt2xKd");
+    return params;
+  }
+
+  private void recreateDataConnector() throws Exception {
+    DropDataConnectorRequest dropDcReq = new DropDataConnectorRequest(dcName);
+    dropDcReq.setIfNotExists(true);
+    dropDcReq.setCheckReferences(false);
+    hmsHandler.drop_dataconnector_req(dropDcReq);
+
+    DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
+    connector.setParameters(connectorParams());
+    hmsHandler.create_dataconnector_req(new CreateDataConnectorRequest(connector));
+  }
+
+  @Test
+  public void testV1_GetDataConnector_unAuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    recreateDataConnector();
+
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+    try {
+      hmsHandler.get_dataconnector_req(new GetDataConnectorRequest(dcName));
+      fail("get_dataconnector_req() was served for user:" + unAuthorizedUser);
+    } catch (Exception e) {
+      assertTrue("unexpected failure for user:" + unAuthorizedUser + " - " + e.getMessage(),
+          e.getMessage() != null && e.getMessage().contains("not allowed for user:" + unAuthorizedUser));
+    }
+  }
+
+  @Test
+  public void testV2_GetDataConnector_authorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    recreateDataConnector();
+
+    try {
+      DataConnector connector = hmsHandler.get_dataconnector_req(new GetDataConnectorRequest(dcName));
+      assertTrue("unexpected connector returned: " + connector.getName(),
+          dcName.equalsIgnoreCase(connector.getName()));
+      assertEquals(connectorParams(), connector.getParameters());
+    } catch (Exception e) {
+      fail("testV2_GetDataConnector_authorizedUser() failed with " + e);
+    }
+  }
 
   /**
    * Captures and returns the privilege objects for Alter Partition

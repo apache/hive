@@ -93,12 +93,22 @@ class HiveMetaToolCommandLine {
       .hasOptionalArgs(3)
       .withDescription("De-duplicate column descriptors for partitioned tables to reduce metadata bloat. "
           + "Optional catalog, database, and table filters support * wildcards. Use -dryRun to preview changes, "
-          + "-verbose to print per-partition details, and -timeout to set a timeout in seconds.")
+          + "-verbose to print per-partition details, -clearMarker to drop the marker that has been added in previous "
+          + "runs (cannot be combined with -dryRun), and -timeout to set a timeout in seconds. "
+          + "Live runs mark each successfully processed table with the table property "
+          + "__metatool_column_deduplication__, and marked tables are skipped on re-run until -clearMarker is used. "
+          + "Live runs validate committed state (partition column schemas unchanged, canonical CD IDs applied) "
+          + "and print a post-commit validation summary.")
       .create("dedupColumns");
 
   private static final Option VERBOSE = OptionBuilder
       .withDescription("Print per-partition de-duplication details. Valid only with -dedupColumns.")
       .create("verbose");
+
+  private static final Option CLEAR_MARKER = OptionBuilder
+      .withDescription("Clear the column de-duplication table marker made by previous runs, no de-duplication "
+          + "is performed. Valid only with -dedupColumns, and not with -dryRun.")
+      .create("clearMarker");
 
   @SuppressWarnings("static-access")
   private static final Option TIMEOUT = OptionBuilder
@@ -151,6 +161,7 @@ class HiveMetaToolCommandLine {
     OPTIONS.addOption(METADATA_SUMMARY);
     OPTIONS.addOption(DEDUP_COLUMNS);
     OPTIONS.addOption(VERBOSE);
+    OPTIONS.addOption(CLEAR_MARKER);
     OPTIONS.addOption(TIMEOUT);
   }
 
@@ -161,6 +172,7 @@ class HiveMetaToolCommandLine {
   private String[] diffExtTblLocsParams;
   private boolean dryRun;
   private boolean verbose;
+  private boolean clearMarker;
   private Long dedupColumnsTimeoutSeconds;
   private String serdePropKey;
   private String tablePropKey;
@@ -202,6 +214,7 @@ class HiveMetaToolCommandLine {
     diffExtTblLocsParams = cl.getOptionValues(DIFF_EXT_TBL_LOCS.getOpt());
     dryRun = cl.hasOption(DRY_RUN.getOpt());
     verbose = cl.hasOption(VERBOSE.getOpt());
+    clearMarker = cl.hasOption(CLEAR_MARKER.getOpt());
     if (cl.hasOption(TIMEOUT.getOpt())) {
       dedupColumnsTimeoutSeconds = Long.parseLong(cl.getOptionValue(TIMEOUT.getOpt()));
       if (dedupColumnsTimeoutSeconds <= 0) {
@@ -258,6 +271,14 @@ class HiveMetaToolCommandLine {
       throw new IllegalArgumentException("-timeout may be used only for the -dedupColumns command");
     }
 
+    if (clearMarker && !isDedupColumns()) {
+      throw new IllegalArgumentException("-clearMarker may be used only for the -dedupColumns command");
+    }
+
+    if (clearMarker && dryRun) {
+      throw new IllegalArgumentException("-clearMarker cannot be used together with -dryRun");
+    }
+
     if (metadataSummaryParams != null && metadataSummaryParams.length < 1) {
       throw new IllegalArgumentException("HiveMetaTool:metadataSummary takes in 1 required arguments but was passed " +
               metadataSummaryParams.length + " arguments");
@@ -286,6 +307,7 @@ class HiveMetaToolCommandLine {
         "\tdiffExtTblLocs: " + Arrays.toString(diffExtTblLocsParams) + "\n" +
         "\tdryRun        : " + dryRun + "\n" +
         "\tverbose       : " + verbose + "\n" +
+        "\tclearMarker   : " + clearMarker + "\n" +
         "\ttimeout       : " + dedupColumnsTimeoutSeconds + "\n" +
         "\tserdePropKey  : " + serdePropKey + "\n" +
         "\ttablePropKey  : " + tablePropKey + "\n" +
@@ -335,6 +357,10 @@ class HiveMetaToolCommandLine {
 
   boolean isVerbose() {
     return verbose;
+  }
+
+  boolean isClearMarker() {
+    return clearMarker;
   }
 
   Long getDedupColumnsTimeoutSeconds() {

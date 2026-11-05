@@ -30,11 +30,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
 	EXTERNAL            	TRUE                
 	STATS_GENERATED_VIA_STATS_TASK	true                
 	bucketing_version   	2                   
 #### A masked pattern was here ####
-	numFiles            	0                   
+	numFiles            	1                   
+	numFilesErasureCoded	5                   
 	numRows             	2                   
 	rawDataSize         	4                   
 	totalSize           	#Masked#

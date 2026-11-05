@@ -37,7 +37,7 @@ PREHOOK: Input: connector:mysql_auth_dc
 POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
 POSTHOOK: type: DESCDATACONNECTOR
 POSTHOOK: Input: connector:mysql_auth_dc
-mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_admin_user	USER	test connector	{hive.sql.dbcp.password=hive1, hive.sql.dbcp.username=hive1}
+mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_admin_user	USER	test connector	{hive.sql.dbcp.password=(withheld), hive.sql.dbcp.username=(withheld)}
 PREHOOK: query: alter connector mysql_auth_dc set DCPROPERTIES("hive.sql.dbcp.username"="hive2","hive.sql.dbcp.password"="hive2")
 PREHOOK: type: ALTERDATACONNECTOR
 PREHOOK: Output: connector:mysql_auth_dc
@@ -50,7 +50,7 @@ PREHOOK: Input: connector:mysql_auth_dc
 POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
 POSTHOOK: type: DESCDATACONNECTOR
 POSTHOOK: Input: connector:mysql_auth_dc
-mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_admin_user	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
+mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_admin_user	USER	test connector	{hive.sql.dbcp.password=(withheld), hive.sql.dbcp.username=(withheld)}
 PREHOOK: query: alter connector mysql_auth_dc set OWNER USER newuser
 PREHOOK: type: ALTERDATABASE_OWNER
 PREHOOK: Output: connector:mysql_auth_dc
@@ -63,7 +63,7 @@ PREHOOK: Input: connector:mysql_auth_dc
 POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
 POSTHOOK: type: DESCDATACONNECTOR
 POSTHOOK: Input: connector:mysql_auth_dc
-mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	newuser	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
+mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	newuser	USER	test connector	{hive.sql.dbcp.password=(withheld), hive.sql.dbcp.username=(withheld)}
 PREHOOK: query: CREATE REMOTE DATABASE db_mysql_auth USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1")
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Input: connector:mysql_auth_dc

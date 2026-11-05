@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.RuntimeContextProvider;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
@@ -104,7 +105,7 @@ import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
  *
  */
 @SuppressWarnings({"serial"})
-public class TezTask extends Task<TezWork> {
+public class TezTask extends Task<TezWork> implements RuntimeContextProvider {
 
   private static final String CLASS_NAME = TezTask.class.getName();
   private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
@@ -141,6 +142,7 @@ public class TezTask extends Task<TezWork> {
     runtimeContext.setCounters(counters);
   }
 
+  @Override
   public TezRuntimeContext getRuntimeContext() {
     return runtimeContext;
   }

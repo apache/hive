@@ -22,7 +22,7 @@
 # Thrift Service that the MetaStore is built on
 #
 
-include "share/fb303/if/fb303.thrift"
+include "fb303.thrift"
 
 namespace java org.apache.hadoop.hive.metastore.api
 namespace php metastore
@@ -2351,7 +2351,7 @@ struct GetPartitionsRequest {
    5: optional string user,
    6: optional list<string> groupNames,
    7: GetProjectionsSpec projectionSpec
-   8: GetPartitionsFilterSpec filterSpec,
+   8: GetPartitionsFilterSpec filterSpec, // if unset, no filtering is applied and all partitions are returned
    9: optional list<string> processorCapabilities,
    10: optional string processorIdentifier,
    11: optional string validWriteIdList

@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -262,6 +261,8 @@ public final class Utilities {
   public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
   public static final String CREATE_TIME = "create_time";
   public static final String SNAPSHOT_REF = "snapshot_ref";
+  public static final String AS_OF_VERSION = "as_of_version";
+  public static final String AS_OF_TIMESTAMP = "as_of_timestamp";
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
@@ -770,6 +771,12 @@ public final class Utilities {
     }
     if (tbl.getSnapshotRef() != null) {
       props.put(SNAPSHOT_REF, tbl.getSnapshotRef());
+    }
+    if (tbl.getAsOfVersion() != null) {
+      props.put(AS_OF_VERSION, tbl.getAsOfVersion());
+    }
+    if (tbl.getAsOfTimestamp() != null) {
+      props.put(AS_OF_TIMESTAMP, tbl.getAsOfTimestamp());
     }
     return new TableDesc(tbl.getInputFormatClass(), tbl.getOutputFormatClass(), props, tbl.getCatName());
   }
@@ -2854,8 +2861,14 @@ public final class Utilities {
     return getTasks(tasks, new TaskFilterFunction<>(TezTask.class));
   }
 
-  public static Optional<TezTask> getFirstTezTask(List<Task<? extends Serializable>> tasks) {
-    return getTezTasks(tasks).stream().findFirst();
+  /**
+   * Returns the first task in the graph of the given type.
+   *
+   * <p>Pass an interface rather than a task class to keep a caller on the compile path from loading an
+   * execution-engine class for a query that has none.
+   */
+  public static <T> Optional<T> getFirstTask(List<Task<?>> tasks, Class<T> type) {
+    return getTasks(tasks, new TaskFilterFunction<>(type)).stream().findFirst();
   }
 
   public static List<ExecDriver> getMRTasks(List<Task<?>> tasks) {

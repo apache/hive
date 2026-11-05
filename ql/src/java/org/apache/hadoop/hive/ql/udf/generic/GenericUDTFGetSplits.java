@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.LlapInputSplit;
-import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.NotTezEventHelper;
 import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.SubmitWorkInfo;
@@ -58,7 +57,6 @@ import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.ext.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
-import org.apache.hadoop.hive.llap.security.LlapExtClientJwtHelper;
 import org.apache.hadoop.hive.llap.security.LlapSigner;
 import org.apache.hadoop.hive.llap.security.LlapSigner.Signable;
 import org.apache.hadoop.hive.llap.security.LlapSigner.SignedMessage;
@@ -422,7 +420,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     SplitResult splitResult = new SplitResult();
     splitResult.schemaSplit = new LlapInputSplit(
         0, new byte[0], new byte[0], new byte[0],
-        new SplitLocationInfo[0], new LlapDaemonInfo[0], schema, "", new byte[0], "");
+        new SplitLocationInfo[0], new LlapDaemonInfo[0], schema, "", new byte[0]);
     if (schemaSplitOnly) {
       // schema only
       return splitResult;
@@ -542,7 +540,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
           if (generateLightWeightSplits) {
             splitResult.planSplit = new LlapInputSplit(
                 0, submitWorkBytes, new byte[0], new byte[0],
-                new SplitLocationInfo[0], new LlapDaemonInfo[0], new Schema(), "", new byte[0], "");
+                new SplitLocationInfo[0], new LlapDaemonInfo[0], new Schema(), "", new byte[0]);
           }
         }
 
@@ -555,22 +553,12 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         // 5. populate info about llap daemons(to help client submit request and read data)
         LlapDaemonInfo[] llapDaemonInfos = populateLlapDaemonInfos(job, locations);
 
-        // 6. Generate JWT for external clients if it's a cloud deployment
-        // we inject extClientAppId in JWT which is same as what fragment contains.
-        // extClientAppId in JWT and in fragment are compared on LLAP when a fragment is submitted.
-        // see method ContainerRunnerImpl#verifyJwtForExternalClient
-        String jwt = "";
-        if (LlapUtil.isCloudDeployment(job)) {
-          LlapExtClientJwtHelper llapExtClientJwtHelper = new LlapExtClientJwtHelper(job);
-          jwt = llapExtClientJwtHelper.buildJwtForLlap(extClientAppId);
-        }
-
         if (generateLightWeightSplits) {
           result[i] = new LlapInputSplit(i, emptySubmitWorkBytes, eventBytes.message,
-              eventBytes.signature, locations, llapDaemonInfos, emptySchema, llapUser, tokenBytes, jwt);
+              eventBytes.signature, locations, llapDaemonInfos, emptySchema, llapUser, tokenBytes);
         } else {
           result[i] = new LlapInputSplit(i, submitWorkBytes, eventBytes.message,
-              eventBytes.signature, locations, llapDaemonInfos, schema, llapUser, tokenBytes, jwt);
+              eventBytes.signature, locations, llapDaemonInfos, schema, llapUser, tokenBytes);
         }
       }
       splitResult.actualSplits = result;
@@ -668,12 +656,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     LlapDaemonInfo[] llapDaemonInfos = new LlapDaemonInfo[llapServiceInstances.size()];
     int count = 0;
     for (LlapServiceInstance inst : llapServiceInstances) {
-      LlapDaemonInfo info;
-      if (LlapUtil.isCloudDeployment(job)) {
-        info = new LlapDaemonInfo(inst.getExternalHostname(), inst.getExternalClientsRpcPort(), inst.getOutputFormatPort());
-      } else {
-        info = new LlapDaemonInfo(inst.getHost(), inst.getRpcPort(), inst.getOutputFormatPort());
-      }
+      LlapDaemonInfo info = new LlapDaemonInfo(inst.getHost(), inst.getRpcPort(), inst.getOutputFormatPort());
       llapDaemonInfos[count++] = info;
     }
     return llapDaemonInfos;

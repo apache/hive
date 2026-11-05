@@ -37,10 +37,6 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
   private String llapUser;
   private byte[] fragmentBytesSignature;
   private byte[] tokenBytes;
-  //only needed in cloud deployments for llap server to validate request from external llap clients.
-  //HS2 generates a JWT and populates this field while get_splits() call, this jwt gets validated at LLAP server
-  //when LlapInputSplit is submitted.
-  private String jwt;
 
   public LlapInputSplit() {
   }
@@ -48,7 +44,7 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
   public LlapInputSplit(int splitNum, byte[] planBytes, byte[] fragmentBytes,
                         byte[] fragmentBytesSignature, SplitLocationInfo[] locations,
                         LlapDaemonInfo[] llapDaemonInfos, Schema schema,
-                        String llapUser, byte[] tokenBytes, String jwt) {
+                        String llapUser, byte[] tokenBytes) {
     this.planBytes = planBytes;
     this.fragmentBytes = fragmentBytes;
     this.fragmentBytesSignature = fragmentBytesSignature;
@@ -58,7 +54,6 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
     this.splitNum = splitNum;
     this.llapUser = llapUser;
     this.tokenBytes = tokenBytes;
-    this.jwt = jwt;
   }
 
   public Schema getSchema() {
@@ -107,10 +102,6 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
     this.schema = schema;
   }
 
-  public String getJwt() {
-    return jwt;
-  }
-
   @Override
   public void write(DataOutput out) throws IOException {
     out.writeInt(splitNum);
@@ -145,9 +136,8 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       out.writeInt(0);
     }
 
-    if (jwt != null) {
-      out.writeUTF(jwt);
-    }
+    // Retain the retired JWT field in the wire format for older readers.
+    out.writeUTF("");
   }
 
   @Override
@@ -187,7 +177,9 @@ public class LlapInputSplit implements InputSplitWithLocationInfo {
       tokenBytes = new byte[length];
       in.readFully(tokenBytes);
     }
-    jwt = in.readUTF();
+
+    // Discard the retired JWT field kept for wire compatibility.
+    in.readUTF();
   }
 
   @Override

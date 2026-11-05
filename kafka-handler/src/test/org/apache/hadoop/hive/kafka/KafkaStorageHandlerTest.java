@@ -29,6 +29,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.config.SslConfigs;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -142,5 +144,89 @@ public class KafkaStorageHandlerTest {
     Assert.assertEquals("all", producerProperties.get(ProducerConfig.ACKS_CONFIG));
     Assert.assertEquals(String.valueOf(Integer.MAX_VALUE), producerProperties.get(ProducerConfig.RETRIES_CONFIG));
     Assert.assertEquals("true", producerProperties.get(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG));
+  }
+
+  private static Table kafkaTable(String key, String value) {
+    Table table = new Table();
+    table.setTableType(TableType.EXTERNAL_TABLE.toString());
+    table.putToParameters(KafkaTableProperties.HIVE_KAFKA_TOPIC.getName(), TEST_TOPIC);
+    table.putToParameters(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName(), LOCALHOST_9291);
+    table.putToParameters(key, value);
+    return table;
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void preCreateTableRefusesDisallowedLoginModule()
+      throws MetaException {
+    new KafkaStorageHandler().preCreateTable(kafkaTable(
+        KafkaUtils.CONSUMER_CONFIGURATION_PREFIX + "." + SaslConfigs.SASL_JAAS_CONFIG,
+        "com.sun.security.auth.module.JndiLoginModule required user.provider.url=\"ldap://ldap.example.com:389/ou=users\";"));
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void preCreateTableRefusesCallbackHandlerClass()
+      throws MetaException {
+    new KafkaStorageHandler().preCreateTable(kafkaTable(
+        KafkaUtils.CONSUMER_CONFIGURATION_PREFIX + "." + SaslConfigs.SASL_LOGIN_CALLBACK_HANDLER_CLASS,
+        "com.example.CustomCallbackHandler"));
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void preCreateTableRefusesUnprefixedEngineFactory()
+      throws MetaException {
+    new KafkaStorageHandler().preCreateTable(
+        kafkaTable(SslConfigs.SSL_ENGINE_FACTORY_CLASS_CONFIG, "com.example.CustomEngineFactory"));
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void preAlterTableRefusesCallbackHandlerClass()
+      throws MetaException {
+    new KafkaStorageHandler().preAlterTable(kafkaTable(
+        KafkaUtils.CONSUMER_CONFIGURATION_PREFIX + "." + SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS,
+        "com.example.CustomCallbackHandler"), null);
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void preCreateTableRefusesProducerSideEngineFactory()
+      throws MetaException {
+    new KafkaStorageHandler().preCreateTable(kafkaTable(
+        KafkaUtils.PRODUCER_CONFIGURATION_PREFIX + "." + SslConfigs.SSL_ENGINE_FACTORY_CLASS_CONFIG,
+        "com.example.CustomEngineFactory"));
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void preCreateTableRefusesConfigProviderClass()
+      throws MetaException {
+    new KafkaStorageHandler().preCreateTable(kafkaTable(
+        KafkaUtils.CONSUMER_CONFIGURATION_PREFIX + "." + KafkaUtils.CONFIG_PROVIDERS_PREFIX + "custom.class",
+        "com.example.CustomConfigProvider"));
+  }
+
+  @Test public void preCreateTableAcceptsOrdinaryConsumerProperty() throws MetaException {
+    Table table = kafkaTable(KafkaUtils.CONSUMER_CONFIGURATION_PREFIX + ".max.poll.records", "5000");
+    new KafkaStorageHandler().preCreateTable(table);
+    Assert.assertEquals("5000",
+        table.getParameters().get(KafkaUtils.CONSUMER_CONFIGURATION_PREFIX + ".max.poll.records"));
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void storageHandlerInfoRefusesCallbackHandlerClass()
+      throws MetaException {
+    KafkaStorageHandler kafkaStorageHandler = new KafkaStorageHandler();
+    kafkaStorageHandler.setConf(new JobConf());
+    kafkaStorageHandler.getStorageHandlerInfo(kafkaTable(
+        KafkaUtils.CONSUMER_CONFIGURATION_PREFIX + "." + SaslConfigs.SASL_LOGIN_CALLBACK_HANDLER_CLASS,
+        "com.example.CustomCallbackHandler"));
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void storageHandlerInfoRefusesConfigProviderClass()
+      throws MetaException {
+    KafkaStorageHandler kafkaStorageHandler = new KafkaStorageHandler();
+    kafkaStorageHandler.setConf(new JobConf());
+    kafkaStorageHandler.getStorageHandlerInfo(kafkaTable(
+        KafkaUtils.CONSUMER_CONFIGURATION_PREFIX + "." + KafkaUtils.CONFIG_PROVIDERS_PREFIX + "custom.class",
+        "com.example.CustomConfigProvider"));
+  }
+
+  @Test(expected = IllegalArgumentException.class) public void storageHandlerInfoRefusesDisallowedLoginModule()
+      throws MetaException {
+    KafkaStorageHandler kafkaStorageHandler = new KafkaStorageHandler();
+    kafkaStorageHandler.setConf(new JobConf());
+    kafkaStorageHandler.getStorageHandlerInfo(kafkaTable(
+        KafkaUtils.CONSUMER_CONFIGURATION_PREFIX + "." + SaslConfigs.SASL_JAAS_CONFIG,
+        "com.sun.security.auth.module.JndiLoginModule required user.provider.url=\"ldap://ldap.example.com:389/ou=users\";"));
   }
 }

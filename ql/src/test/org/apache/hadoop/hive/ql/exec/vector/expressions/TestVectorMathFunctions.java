@@ -24,12 +24,14 @@ import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
@@ -118,6 +120,105 @@ public class TestVectorMathFunctions {
 
     // Verify result is rounded to 4 digits
     Assert.assertEquals(1.2346d, resultV.vector[7], Double.MIN_VALUE);
+  }
+
+  @Test
+  public void testTruncDecimal() throws HiveException {
+    // HIVE-26731: the values must not be scaled into a long
+    String[] input = { "123456711889.122345897", "-123456711889.122345897",
+        "12345678901234567890123456789.987654321", null };
+    verifyTruncDecimal(new TruncDecimal(0, 8, 1), input, "123456711889.12234589",
+        "-123456711889.12234589", "12345678901234567890123456789.98765432", null);
+    verifyTruncDecimal(new TruncDecimal(0, 19, 1), input, input);
+    verifyTruncDecimal(new TruncDecimal(0, -4, 1), input, "123456710000", "-123456710000",
+        "12345678901234567890123450000", null);
+    verifyTruncDecimal(new TruncDecimal(0, Integer.MIN_VALUE, 1), input, "0", "0", "0", null);
+    verifyTruncDecimal(new TruncDecimalNoScale(0, 1), input, "123456711889", "-123456711889",
+        "12345678901234567890123456789", null);
+  }
+
+  private static void verifyTruncDecimal(VectorExpression expr, String[] input,
+      String... expected) throws HiveException {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2, input.length);
+    DecimalColumnVector inV = new DecimalColumnVector(input.length, 38, 9);
+    DecimalColumnVector outV = new DecimalColumnVector(input.length, 38, 9);
+    for (int i = 0; i < input.length; i++) {
+      if (input[i] == null) {
+        inV.noNulls = false;
+        inV.isNull[i] = true;
+      } else {
+        inV.vector[i].set(HiveDecimal.create(input[i]));
+      }
+    }
+    batch.cols[0] = inV;
+    batch.cols[1] = outV;
+    batch.size = input.length;
+
+    expr.evaluate(batch);
+
+    for (int i = 0; i < input.length; i++) {
+      Assert.assertEquals(expected[i] == null, outV.isNull[i]);
+      if (expected[i] != null) {
+        Assert.assertEquals(expr + " row " + i, HiveDecimal.create(expected[i]),
+            outV.vector[i].getHiveDecimal());
+        Assert.assertEquals("input must not be modified", HiveDecimal.create(input[i]),
+            inV.vector[i].getHiveDecimal());
+      }
+    }
+  }
+
+  @Test
+  public void testTruncDouble() throws HiveException {
+    Double[] input = { 123456711889.12234, -123456711889.12234, 0.3, 1.0E300, Double.NaN, null };
+    verifyTruncDouble(new TruncFloat(0, 8, 1), input,
+        123456711889.12234, -123456711889.12234, 0.3, 1.0E300, Double.NaN, null);
+    verifyTruncDouble(new TruncFloat(0, 3, 1), input,
+        123456711889.122, -123456711889.122, 0.3, 1.0E300, Double.NaN, null);
+    verifyTruncDouble(new TruncFloat(0, -5, 1), input,
+        123456700000.0, -123456700000.0, 0.0, 1.0E300, Double.NaN, null);
+    verifyTruncDouble(new TruncFloatNoScale(0, 1), input,
+        123456711889.0, -123456711889.0, 0.0, 1.0E300, Double.NaN, null);
+  }
+
+  @Test
+  public void testTruncDoubleRepeating() throws HiveException {
+    VectorizedRowBatch batch = getVectorizedRowBatchDoubleInDoubleOut();
+    DoubleColumnVector inV = (DoubleColumnVector) batch.cols[0];
+    inV.vector[0] = 123456711889.12234;
+    inV.isRepeating = true;
+
+    new TruncFloat(0, 3, 1).evaluate(batch);
+
+    DoubleColumnVector outV = (DoubleColumnVector) batch.cols[1];
+    Assert.assertTrue(outV.isRepeating);
+    Assert.assertEquals(123456711889.122, outV.vector[0], 0.0);
+  }
+
+  private static void verifyTruncDouble(VectorExpression expr, Double[] input,
+      Double... expected) throws HiveException {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2, input.length);
+    DoubleColumnVector inV = new DoubleColumnVector(input.length);
+    DoubleColumnVector outV = new DoubleColumnVector(input.length);
+    for (int i = 0; i < input.length; i++) {
+      if (input[i] == null) {
+        inV.noNulls = false;
+        inV.isNull[i] = true;
+      } else {
+        inV.vector[i] = input[i];
+      }
+    }
+    batch.cols[0] = inV;
+    batch.cols[1] = outV;
+    batch.size = input.length;
+
+    expr.evaluate(batch);
+
+    for (int i = 0; i < input.length; i++) {
+      Assert.assertEquals(expected[i] == null, outV.isNull[i]);
+      if (expected[i] != null) {
+        Assert.assertEquals(expr + " row " + i, expected[i], outV.vector[i], 0.0);
+      }
+    }
   }
 
   private static final int DAYS_LIMIT = 365 * 9999;

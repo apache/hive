@@ -93,6 +93,28 @@ explain
 select min(i), '1' as one, max(i), min(b), max(b), min(f), max(f), 3+4.0 as three, min(d), max(d) from stats_tbl_part;
 select min(i), '1' as one, max(i), min(b), max(b), min(f), max(f), 3+4.0 as three, min(d), max(d) from stats_tbl_part;
 
+-- HIVE-30131: MIN, MAX and COUNT on decimal columns are answered from column statistics,
+-- including a column whose values are all NULL (n).
+-- The statistics keep 40.60 as 40.6, so the expected 40.60 checks that the result is padded back
+-- to the column's scale.
+create table stats_dec(d decimal(5,2), n decimal(7,3));
+insert into stats_dec values (-10.40, null), (40.60, null), (1.50, null), (null, null);
+analyze table stats_dec compute statistics for columns d,n;
+
+explain
+select min(d), max(d), count(d), min(n), max(n), count(n) from stats_dec;
+select min(d), max(d), count(d), min(n), max(n), count(n) from stats_dec;
+
+-- and over partitions, where each bound is the aggregate of the per-partition statistics
+create table stats_dec_part(d decimal(5,2)) partitioned by (p string);
+insert into stats_dec_part partition(p='a') values (-10.40), (1.50);
+insert into stats_dec_part partition(p='b') values (40.60), (null);
+analyze table stats_dec_part partition(p) compute statistics for columns d;
+
+explain
+select min(d), max(d), count(d) from stats_dec_part;
+select min(d), max(d), count(d) from stats_dec_part;
+
 explain select count(ts) from stats_tbl_part;
 
 explain select count('1') from stats_tbl group by '1';

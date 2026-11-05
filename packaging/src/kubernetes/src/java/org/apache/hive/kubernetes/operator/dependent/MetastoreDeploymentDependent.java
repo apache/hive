@@ -142,7 +142,7 @@ public class MetastoreDeploymentDependent
     AutoscalingSpec msAutoscaling = spec.metastore().autoscaling();
     int initialReplicas = msAutoscaling != null && msAutoscaling.isEnabled()
         ? Math.max(1, msAutoscaling.minReplicas()) : spec.metastore().replicas();
-    Integer replicas = resolveReplicaCount(
+    int replicas = resolveReplicaCount(
         hiveCluster, context, msAutoscaling, spec.metastore().replicas(), initialReplicas);
 
     Deployment deployment = new DeploymentBuilder()

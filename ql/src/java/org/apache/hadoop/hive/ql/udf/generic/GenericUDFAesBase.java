@@ -106,7 +106,9 @@ public abstract class GenericUDFAesBase extends GenericUDF {
     }
 
     try {
-      cipher = Cipher.getInstance("AES");
+      // Explicit form of the provider default for "AES". ECB is kept for compatibility with existing
+      // ciphertexts and MySQL-style AES_ENCRYPT; see the aes_encrypt/aes_decrypt descriptions.
+      cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
     } catch (NoSuchPaddingException | NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }

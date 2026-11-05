@@ -90,7 +90,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
-	numFiles            	3                   
+	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	10                  
 	totalSize           	#Masked#

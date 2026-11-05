@@ -80,10 +80,8 @@ cluster:
       # fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
       # fs.s3a.path.style.access: "true"
 
-    # Environment variables injected into all pods (credentials, HADOOP_OPTIONAL_TOOLS)
+    # Environment variables injected into all pods (credentials, etc.)
     envVars: []
-      # - name: HADOOP_OPTIONAL_TOOLS
-      #   value: "hadoop-aws"
       # - name: AWS_ACCESS_KEY_ID
       #   value: "ozone"
       # - name: AWS_SECRET_ACCESS_KEY

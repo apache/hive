@@ -18,10 +18,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
+import static org.apache.hadoop.hive.ql.exec.HashTableLoader.keyCountForSizing;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -150,19 +153,21 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     }
   }
 
-  private void submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
-      throws InterruptedException, IOException, SerDeException {
+  private CompletableFuture<Void> submitQueueDrainThreads(
+      VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer) {
+    CompletableFuture<?>[] loadFutures = new CompletableFuture<?>[numLoadThreads];
     for (int partitionId = 0; partitionId < numLoadThreads; partitionId++) {
       int finalPartitionId = partitionId;
-      this.loadExecService.submit(() -> {
+      loadFutures[partitionId] = CompletableFuture.runAsync(() -> {
         try {
           LOG.info("Partition id {} with Queue size {}", finalPartitionId, loadBatchQueues[finalPartitionId].size());
           drainAndLoadForPartition(finalPartitionId, vectorMapJoinFastTableContainer);
         } catch (IOException | InterruptedException | SerDeException | HiveException e) {
-          throw new RuntimeException("Failed to start HT Load threads", e);
+          throw new RuntimeException("Hash table drain thread failed for partition " + finalPartitionId, e);
         }
-      });
+      }, this.loadExecService);
     }
+    return CompletableFuture.allOf(loadFutures);
   }
 
   private void drainAndLoadForPartition(int partitionId, VectorMapJoinFastTableContainer tableContainer)
@@ -258,19 +263,20 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         } catch (Exception e) {
           LOG.debug("Failed to get value for counter APPROXIMATE_INPUT_RECORDS", e);
         }
-        long keyCount = Math.max(estKeyCount, inputRecords);
-        initHTLoadingService(keyCount);
+        long keyCount = keyCountForSizing(estKeyCount, inputRecords);
+        initHTLoadingService(Math.max(estKeyCount, inputRecords));
 
         VectorMapJoinFastTableContainer tableContainer =
             new VectorMapJoinFastTableContainer(desc, hconf, keyCount, numLoadThreads);
 
         LOG.info("Loading hash table for input: {} cacheKey: {} tableContainer: {} smallTablePos: {} " +
-                "estKeyCount : {} keyCount : {}", inputName, cacheKey,
-                tableContainer.getClass().getSimpleName(), pos, estKeyCount, keyCount);
+                "estKeyCount : {} inputRecords : {} keyCount : {}",
+                inputName, cacheKey, tableContainer.getClass().getSimpleName(), pos, estKeyCount,
+                inputRecords, keyCount);
 
         tableContainer.setSerde(null, null); // No SerDes here.
         // Submit parallel loading Threads
-        submitQueueDrainThreads(tableContainer);
+        CompletableFuture<Void> drainThreadsFuture = submitQueueDrainThreads(tableContainer);
 
         long receivedEntries = 0;
         long startTime = System.currentTimeMillis();
@@ -310,6 +316,8 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         if (!loadExecService.awaitTermination(2, TimeUnit.MINUTES)) {
           throw new HiveException("Failed to complete the hash table loader. Loading timed out.");
         }
+        // the executor terminates even when a drain thread throws; join() rethrows that failure
+        drainThreadsFuture.join();
         batchPool.clear();
         LOG.info("Total received entries: {} Threads {} HT entries: {}", receivedEntries, numLoadThreads, totalEntries.get());
 

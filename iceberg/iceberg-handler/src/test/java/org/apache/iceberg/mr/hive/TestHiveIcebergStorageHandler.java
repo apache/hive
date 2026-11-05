@@ -19,17 +19,30 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import org.apache.commons.collections4.IterableUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotSummary;
+import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Types;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -44,6 +57,9 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestHiveIcebergStorageHandler {
+
+  @Rule
+  public TemporaryFolder temp = new TemporaryFolder();
 
   @Mock
   private Snapshot anySnapshot;
@@ -67,6 +83,36 @@ public class TestHiveIcebergStorageHandler {
     summary = Maps.newHashMap();
     summary.put(SnapshotSummary.DELETED_RECORDS_PROP, "3");
     Mockito.lenient().when(deleteSnapshot.summary()).thenReturn(summary);
+  }
+
+  /**
+   * Catalog secrets follow the same decision as the server-side planning marker: a table Iceberg did
+   * not resolve to a server-planning {@code RESTTable} gets no {@code iceberg.catalog.<catalog>.*}
+   * secrets, even with the Hive kill switch on. The positive case needs a REST server and is in
+   * {@code TestHiveIcebergServerSideScanPlanningServerIT}.
+   */
+  @Test
+  public void configureInputJobCredentialsSkipsCatalogSecretsForTableNotPlannedServerSide() throws IOException {
+    String location = temp.newFolder().toURI().toString();
+    Configuration conf = new Configuration();
+    new HadoopTables(conf).create(new Schema(Types.NestedField.required(1, "id", Types.LongType.get())), location);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED, true);
+    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(Catalogs.ICEBERG_HADOOP_TABLE_NAME, "credential"),
+        "catalog-credential");
+
+    Properties props = new Properties();
+    props.setProperty(InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_HADOOP_TABLE_NAME);
+    props.setProperty(Catalogs.LOCATION, location);
+    props.setProperty(Catalogs.NAME, "default.tbl");
+    TableDesc tableDesc = new TableDesc();
+    tableDesc.setProperties(props);
+
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    storageHandler.setConf(conf);
+    Map<String, String> secrets = Maps.newHashMap();
+    storageHandler.configureInputJobCredentials(tableDesc, secrets);
+
+    assertThat(secrets.isEmpty(), is(true));
   }
 
   @Test

@@ -146,7 +146,7 @@
     <guava.version>22.0</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.2.220</h2database.version>
-    <hadoop.version>3.4.2</hadoop.version>
+    <hadoop.version>3.4.3</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.3</hamcrest.version>
     <hbase.version>2.5.6-hadoop3</hbase.version>
@@ -154,15 +154,15 @@
     <graalvm.version>25.1.3</graalvm.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
     <disruptor.version>3.3.7</disruptor.version>
-    <hikaricp.version>4.0.3</hikaricp.version>
+    <hikaricp.version>7.1.0</hikaricp.version>
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <!-- Upgrade roaringbit version whenever upgrading iceberg version -->
-    <iceberg.version>1.11.0</iceberg.version>
+    <iceberg.version>1.12.0</iceberg.version>
     <immutables.version>2.9.2</immutables.version>
-    <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
-    <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
+    <httpcomponents5.client.version>5.6.2</httpcomponents5.client.version>
+    <httpcomponents5.core.version>5.4.3</httpcomponents5.core.version>
     <ivy.version>2.5.2</ivy.version>
     <jackson.version>2.21.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
@@ -188,14 +188,14 @@
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <!-- Thrift version must be inline with one installed in the CI (Docker image referenced in the Jenkinsfile) -->
-    <libthrift.version>0.16.0</libthrift.version>
+    <libthrift.version>0.24.0</libthrift.version>
     <log4j2.version>2.26.1</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.2.0</mysql.version>
     <postgres.version>42.7.12</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
-    <opencsv.version>5.9</opencsv.version>
+    <opencsv.version>5.12.0</opencsv.version>
     <orc.version>2.3.0</orc.version>
     <otel.version>1.60.1</otel.version>
     <mockito-core.version>5.17.0</mockito-core.version>
@@ -211,7 +211,7 @@
     <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
     <protoc.path>${env.PROTOC_PATH}</protoc.path>
     <rat.version>0.16.1</rat.version>
-    <roaringbit.version>1.3.0</roaringbit.version>
+    <roaringbit.version>1.6.23</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
@@ -226,22 +226,23 @@
     <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.2</xerces.version>
     <xmlsec.version>2.3.4</xmlsec.version>
-    <zookeeper.version>3.8.4</zookeeper.version>
+    <zookeeper.version>3.9.6</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
     <curator.version>5.7.1</curator.version>
     <jsr305.version>3.0.0</jsr305.version>
     <gson.version>2.9.0</gson.version>
-    <jjwt.version>0.10.5</jjwt.version>
     <re2j.version>1.2</re2j.version>
     <rs-api.version>2.0.1</rs-api.version>
-    <json-path.version>2.9.0</json-path.version>
     <janino.version>3.1.12</janino.version>
     <jakarta.annotation.version>2.1.1</jakarta.annotation.version>
     <datasketches.version>2.0.0</datasketches.version>
     <spotbugs.version>4.8.6</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
-    <aws-java-sdk.version>2.42.25</aws-java-sdk.version>
+    <!-- Kept at the version hadoop.version is built and qualified against (HADOOP-19654 for 3.4.3): S3A's checksum
+         defaults are tuned for compatibility and performance against that SDK. Also the bundle baked into the Docker
+         image for s3a://. -->
+    <aws-java-sdk.version>2.35.4</aws-java-sdk.version>
     <aws-secretsmanager-caching.version>2.2.0</aws-secretsmanager-caching.version>
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
@@ -286,6 +287,14 @@
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>bundle</artifactId>
         <version>${aws-java-sdk.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <!-- Backs Iceberg's default "apache" http-client.type for S3FileIO. It is not part of the bundle, and its first GA
+           release is 2.41.0; the preview of aws-java-sdk.version keeps it on the same SDK as the bundle. -->
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>apache5-client</artifactId>
+        <version>${aws-java-sdk.version}-PREVIEW</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -457,21 +466,6 @@
         <version>${graalvm.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt-api</artifactId>
-        <version>${jjwt.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt-impl</artifactId>
-        <version>${jjwt.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.jsonwebtoken</groupId>
-        <artifactId>jjwt-jackson</artifactId>
-        <version>${jjwt.version}</version>
-      </dependency>
-      <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
         <version>${netty.version}</version>
@@ -626,16 +620,6 @@
         </exclusions>
       </dependency>
       <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>${httpcomponents.client.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <version>${httpcomponents.core.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.httpcomponents.client5</groupId>
         <artifactId>httpclient5</artifactId>
         <version>${httpcomponents5.client.version}</version>
@@ -741,6 +725,16 @@
         <groupId>org.apache.thrift</groupId>
         <artifactId>libthrift</artifactId>
         <version>${libthrift.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.zookeeper</groupId>
@@ -1366,12 +1360,6 @@
         <version>${re2j.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.jayway.jsonpath</groupId>
-        <artifactId>json-path</artifactId>
-        <version>${json-path.version}</version>
-        <scope>runtime</scope>
-      </dependency>
-      <dependency>
         <groupId>org.codehaus.janino</groupId>
         <artifactId>commons-compiler</artifactId>
         <version>${janino.version}</version>
@@ -1387,11 +1375,13 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-internals</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-library</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
         <exclusions>
           <exclusion>
             <groupId>io.netty</groupId>
@@ -1403,6 +1393,7 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-api</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
         <exclusions>
           <exclusion>
             <groupId>com.sun.jersey</groupId>
@@ -1418,12 +1409,13 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-dag</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-mapreduce</artifactId>
         <version>${tez.version}</version>
-        <optional>true</optional>
+        <scope>provided</scope>
         <exclusions>
           <exclusion>
             <groupId>io.netty</groupId>
@@ -1459,11 +1451,14 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-common</artifactId>
         <version>${tez.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-protobuf-history-plugin</artifactId>
         <version>${tez.version}</version>
+        <!-- compile, not provided: ql shades these classes into hive-exec, which needs them with or without Tez
+             on the classpath (HIVE-29003); ql marks the dependency optional so the jar stays out of lib/. -->
         <exclusions>
           <exclusion>
             <groupId>*</groupId>
@@ -1857,15 +1852,6 @@
                   <reason>Do not use commons-logging; use slf4j</reason>
                   <bannedImports>
                     <bannedImport>org.apache.commons.logging.**</bannedImport>
-                  </bannedImports>
-                  <includeTestCode>true</includeTestCode>
-                </restrictImports>
-                <!-- To prevent unintentional usage of HTTP Components 5, e.g., via transitive dependencies -->
-                <restrictImports implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
-                  <reason>Do not use httpcore5/httpclient5 classes until Hive is not upgraded to httpcore5/httpclient5</reason>
-                  <bannedImports>
-                    <bannedImport>org.apache.hc.client5.**</bannedImport>
-                    <bannedImport>org.apache.hc.core5.**</bannedImport>
                   </bannedImports>
                   <includeTestCode>true</includeTestCode>
                 </restrictImports>

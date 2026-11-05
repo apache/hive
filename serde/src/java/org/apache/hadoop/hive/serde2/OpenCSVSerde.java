@@ -22,9 +22,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -128,8 +128,8 @@ public final class OpenCSVSerde extends AbstractEncodingAwareSerDe {
       // can be stored in String, Text, or some other classes.
       if (fieldOI instanceof StringObjectInspector) {
         outputFields[c] = ((StringObjectInspector) fieldOI).getPrimitiveJavaObject(field);
-      } else if (fieldOI instanceof AbstractPrimitiveWritableObjectInspector) {
-        Object primitiveJavaObject = ((AbstractPrimitiveWritableObjectInspector) fieldOI).getPrimitiveJavaObject(field);
+      } else if (fieldOI instanceof PrimitiveObjectInspector objectInspector) {
+        Object primitiveJavaObject = objectInspector.getPrimitiveWritableObject(field);
         outputFields[c] = Objects.toString(primitiveJavaObject, null);
       } else {
         throw new UnsupportedOperationException(

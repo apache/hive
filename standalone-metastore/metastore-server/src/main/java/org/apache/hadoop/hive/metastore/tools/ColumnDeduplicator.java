@@ -20,18 +20,21 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
-
-import javax.jdo.JDOHelper;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import java.util.ArrayList;
@@ -41,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.ObjectStore.appendPatternCondition;
@@ -53,46 +57,78 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.isEmpty;
  * Identical column schemas within a table are merged so that partitions share
  * the same CD, reducing metadata bloat that can accumulate during replication.
  */
-final class ColumnDeduplicator {
+public final class ColumnDeduplicator {
+  public static final String COLUMN_DEDUPLICATOR_MARKER = "__metatool_column_deduplication__";
   private final RawStore store;
   private final PersistenceManager pm;
   private final AtomicReference<String> progress;
   private final boolean isDryRun;
   private final boolean isVerbose;
+  private final boolean clearMarker;
 
-  ColumnDeduplicator(RawStoreBundle bundle, AtomicReference<String> progress,
-      boolean isDryRun, boolean isVerbose) {
+  public ColumnDeduplicator(RawStoreBundle bundle, AtomicReference<String> progress,
+      boolean isDryRun, boolean isVerbose, boolean clearMarker) {
     this.store = bundle.getBaseStore();
     this.pm = bundle.getPersistentManager();
     this.progress = progress;
     this.isDryRun = isDryRun;
     this.isVerbose = isVerbose;
+    this.clearMarker = clearMarker;
   }
 
   MetaToolObjectStore.DedupColumnsResult run(String catalogFilter, String dbFilter, String tableFilter) {
-    List<TableInfo> tables = findPartitionedTables(catalogFilter, dbFilter, tableFilter);
+    List<Long> tables = findPartitionedTables(catalogFilter, dbFilter, tableFilter);
     MetaToolObjectStore.DedupColumnsResult result = new MetaToolObjectStore.DedupColumnsResult(tables.size());
 
     long start = System.currentTimeMillis();
     for (int i = 0; i < tables.size() && result.getException() == null; i++) {
       boolean committed = false;
-      TableInfo table = tables.get(i);
+      long tableId = tables.get(i);
+      PostCommitValidation validation = null;
+      TableInfo table = null;
       store.openTransaction();
       try {
         Deadline.checkTimeout();
-        deduplicateTable(table, result);
+        table = getTable(tableId);
+        // This target table might be dropped or deduplicated, ignore
+        // If this is the stage to clean up the marker, ignore
+        if (table != null) {
+          validation = deduplicateCols(table, result);
+          if (validation == null) {
+            // Nothing has been changed that requires a post-commit validation, mark the table right away.
+            // Otherwise the marker is added once the validation succeeds.
+            markProcessed(tableId);
+          }
+        }
         committed = store.commitTransaction();
       } catch (Exception ex) {
+        System.err.println("Failed to deduplicate the column in this table: " + (table == null ? tableId : table));
         result.catchException(ex);
       } finally {
         if (!committed) {
           store.rollbackTransaction();
-          if (result.getException() == null) {
-            result.catchException(
-                new MetaException("Failed to apply column descriptor de-duplication updates for table " + table));
-          }
         }
       }
+
+      boolean success = false;
+      store.openTransaction();
+      try {
+        if (committed && validation != null) {
+          validateTableAfterDedup(table, validation.schemaSnapshots());
+          result.incrementTablesValidated();
+          // Only a table that passed the validation can be skipped by later runs
+          markProcessed(tableId);
+        }
+        success = store.commitTransaction();
+      } catch (Exception e) {
+        result.catchException(new IllegalStateException(
+            "Failed to validate the column deduplication or mark this table: " + table, e));
+      } finally {
+        if (!success) {
+          store.rollbackTransaction();
+        }
+      }
+
       if (progress != null) {
         progress.set(String.format(
             "Finished %d tables in %d total tables, time taken: %d ms, columns updated: %d, removed: %d",
@@ -106,24 +142,72 @@ final class ColumnDeduplicator {
     return result;
   }
 
-  private void deduplicateTable(TableInfo table, MetaToolObjectStore.DedupColumnsResult result) {
+  public TableInfo getTable(long tableId) {
+    final MTable table;
+    try {
+      table = pm.getObjectById(MTable.class, new MTable.PK(tableId));
+    } catch (JDOObjectNotFoundException e) {
+      // This table might have been dropped since the beginning
+      return null;
+    }
+    Map<String, String> params = table.getParameters() == null ?
+        new HashMap<>() : table.getParameters();
+    if (clearMarker) {
+      // Clean-up only mode: never add the marker or deduplicate anything, and don't touch anything in a dry run
+      if (!isDryRun && params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
+        params.remove(COLUMN_DEDUPLICATOR_MARKER);
+        table.setParameters(params);
+      }
+      return null;
+    }
+    if (params.containsKey(COLUMN_DEDUPLICATOR_MARKER)) {
+      // This table has been processed before
+      return null;
+    }
+
+    pm.retrieve(table);
+    pm.retrieve(table.getSd().getCD());
+    pm.retrieve(table.getDatabase());
+    return new TableInfo(tableId, table.getSd().getCD().getId(),
+        new TableName(table.getDatabase().getCatalogName(), table.getDatabase().getName(), table.getTableName()));
+  }
+
+  /**
+   * Marks the table as processed, so later runs skip it until the marker is cleared. Must be called within a
+   * transaction. It is a no-op in a dry run.
+   */
+  private void markProcessed(long tableId) {
+    if (isDryRun || clearMarker) {
+      return;
+    }
+    try {
+      MTable table = pm.getObjectById(MTable.class, new MTable.PK(tableId));
+      Map<String, String> params = table.getParameters() == null ?
+          new HashMap<>() : table.getParameters();
+      params.put(COLUMN_DEDUPLICATOR_MARKER, String.valueOf(System.currentTimeMillis() / 1000));
+      table.setParameters(params);
+    } catch (JDOObjectNotFoundException e) {
+      // This table might have been dropped in the meantime, nothing to mark
+    }
+  }
+
+  private PostCommitValidation deduplicateCols(TableInfo table, MetaToolObjectStore.DedupColumnsResult result)
+      throws MetaException {
     List<PartitionSdInfo> partitionSds = loadPartitionStorageDescriptors(table.tableId);
     if (partitionSds.isEmpty()) {
-      return;
+      return null;
     }
 
     Set<Long> cdIds = partitionSds.stream().map(p -> p.cdId).collect(Collectors.toSet());
     cdIds.add(table.tableCdId);
-
-    Map<Long, List<FieldSchema>> cdColumns = loadColumnSchemas(cdIds);
-    Map<List<FieldSchema>, List<Long>> groups = groupByColumnSchema(cdColumns);
+    Map<List<FieldSchema>, Set<Long>> groups = groupByColumnSchema(cdIds);
 
     Map<Long, Long> cdRemap = new HashMap<>();
-    for (List<Long> group : groups.values()) {
+    for (Set<Long> group : groups.values()) {
       if (group.size() <= 1) {
         continue;
       }
-      long canonicalCdId = pickCanonicalCdId(new HashSet<>(group), table.tableCdId, partitionSds);
+      long canonicalCdId = pickCanonicalCdId(group, table.tableCdId, partitionSds);
       for (long cdId : group) {
         if (cdId != canonicalCdId) {
           cdRemap.put(cdId, canonicalCdId);
@@ -131,32 +215,29 @@ final class ColumnDeduplicator {
       }
     }
 
-    if (cdRemap.isEmpty()) {
-      return;
-    }
-
     List<Map.Entry<PartitionSdInfo, Long>> partSdUpdates = buildPartitionUpdates(partitionSds, cdRemap);
     if (partSdUpdates.isEmpty()) {
-      return;
+      return null;
     }
-
     result.incrementTablesWithDuplicates();
     for (Map.Entry<PartitionSdInfo, Long> update : partSdUpdates) {
       result.incrementStorageDescriptorsUpdated();
       if (isVerbose) {
         PartitionSdInfo partSd = update.getKey();
         long newCdId = update.getValue();
-        result.addDetail(String.format("table %s.%s.%s: SD %s CD %d -> %d",
-            table.catalogName, table.dbName, table.tableName,
-            JDOHelper.getObjectId(partSd.sd), partSd.cdId, newCdId));
+        result.addDetail(String.format("table %s: partition %d CD %d -> %d",
+           table.tableName, partSd.partId, partSd.cdId, newCdId));
       }
     }
-    if (!isDryRun) {
-      applyTableChanges(partSdUpdates, result);
+    if (isDryRun) {
+      return null;
     }
+    List<PartitionSchemaSnapshot> schemaSnapshots = capturePartitionSchemas(partSdUpdates);
+    applySchemaChanges(partSdUpdates, result);
+    return new PostCommitValidation(schemaSnapshots);
   }
 
-  private void applyTableChanges(List<Map.Entry<PartitionSdInfo, Long>> partSdUpdates,
+  private void applySchemaChanges(List<Map.Entry<PartitionSdInfo, Long>> partSdUpdates,
       MetaToolObjectStore.DedupColumnsResult result) {
     Set<Long> replacedCdIds = new HashSet<>();
     Map<Long, MColumnDescriptor> newCDs = new HashMap<>();
@@ -174,6 +255,9 @@ final class ColumnDeduplicator {
   private List<Map.Entry<PartitionSdInfo, Long>> buildPartitionUpdates(
       List<PartitionSdInfo> partitionSds, Map<Long, Long> cdRemap) {
     List<Map.Entry<PartitionSdInfo, Long>> updates = new ArrayList<>();
+    if (cdRemap.isEmpty()) {
+      return updates;
+    }
     for (PartitionSdInfo partSd : partitionSds) {
       Long newCdId = cdRemap.get(partSd.cdId);
       if (newCdId != null && !newCdId.equals(partSd.cdId)) {
@@ -201,7 +285,7 @@ final class ColumnDeduplicator {
         .orElse(group.iterator().next());
   }
 
-  private List<TableInfo> findPartitionedTables(String catalogFilter, String dbFilter, String tableFilter) {
+  private List<Long> findPartitionedTables(String catalogFilter, String dbFilter, String tableFilter) {
     StringBuilder filter = new StringBuilder();
     List<String> parameterVals = new ArrayList<>();
     if (!isEmpty(catalogFilter)) {
@@ -217,24 +301,12 @@ final class ColumnDeduplicator {
     Query query = !filter.isEmpty() ?
         pm.newQuery(MPartition.class, filter.toString()) :
         pm.newQuery(MPartition.class);
-    query.setResult("DISTINCT this.table");
+    query.setResult("DISTINCT this.table.id");
     boolean success = false;
-    List<TableInfo> tables = new ArrayList<>();
+    List<Long> tables = new ArrayList<>();
     store.openTransaction();
     try {
-      List<MTable> mTables = (List<MTable>) query.executeWithArray(parameterVals.toArray(new String[0]));
-      pm.retrieveAll(mTables);
-      for (MTable mTable : mTables) {
-        pm.retrieve(mTable.getDatabase());
-        pm.retrieve(mTable.getSd());
-        pm.retrieve(mTable.getSd().getCD());
-        tables.add(new TableInfo(
-            mTable.getId(),
-            mTable.getSd().getCD().getId(),
-            mTable.getDatabase().getCatalogName(),
-            mTable.getDatabase().getName(),
-            mTable.getTableName()));
-      }
+      tables.addAll((List<Long>) query.executeWithArray(parameterVals.toArray(new String[0])));
       success = store.commitTransaction();
     } finally {
       query.closeAll();
@@ -245,20 +317,24 @@ final class ColumnDeduplicator {
     return tables;
   }
 
-  private List<PartitionSdInfo> loadPartitionStorageDescriptors(long tableId) {
+  private List<PartitionSdInfo> loadPartitionStorageDescriptors(long tableId) throws MetaException {
     Query query = pm.newQuery(MPartition.class, "table.id == tblId");
     query.declareParameters("long tblId");
-    query.setResult("sd");
+    query.setResult("this.id, this.sd");
     List<PartitionSdInfo> partitionSds = new ArrayList<>();
     try {
-      List<MStorageDescriptor> sds = (List<MStorageDescriptor>) query.execute(tableId);
-      if (sds == null) {
+      List<Object[]> results = (List<Object[]>) query.execute(tableId);
+      if (results == null) {
         return partitionSds;
       }
-      pm.retrieveAll(sds);
-      for (MStorageDescriptor sd : sds) {
+      for (Object[] row : results) {
+        long partId = MetastoreDirectSqlUtils.extractSqlLong(row[0]);
+        MStorageDescriptor sd = (MStorageDescriptor) row[1];
+        if (sd == null) {
+          continue;
+        }
         pm.retrieve(sd.getCD());
-        partitionSds.add(new PartitionSdInfo(sd, sd.getCD().getId()));
+        partitionSds.add(new PartitionSdInfo(partId, sd, sd.getCD().getId()));
       }
     } finally {
       query.closeAll();
@@ -266,23 +342,109 @@ final class ColumnDeduplicator {
     return partitionSds;
   }
 
-  private Map<Long, List<FieldSchema>> loadColumnSchemas(Set<Long> cdIds) {
-    Map<Long, List<FieldSchema>> result = new HashMap<>();
+  private List<PartitionSchemaSnapshot> capturePartitionSchemas(List<Map.Entry<PartitionSdInfo, Long>> updates) {
+    List<PartitionSchemaSnapshot> snapshots = new ArrayList<>(updates.size());
+    for (Map.Entry<PartitionSdInfo, Long> update: updates) {
+      PartitionSdInfo psi = update.getKey();
+      snapshots.add(new PartitionSchemaSnapshot(
+          psi.partId,
+          update.getValue(),
+          convertToFieldSchemas(psi.sd.getCD().getCols())));
+    }
+    return snapshots;
+  }
+
+  public void validateTableAfterDedup(TableInfo table, List<PartitionSchemaSnapshot> before)
+      throws MetaException {
+    List<PartitionSchemaSnapshot> partitions =
+        loadPartitionCdRefs(before.stream().map(b -> b.partitionId).toList());
+    if (partitions.size() != before.size()) {
+      throw new MetaException(String.format(
+          "Post-commit validation failed for %s: expected %d partitions, found %d",
+          table, before.size(), partitions.size()));
+    }
+    Map<Long, PartitionSchemaSnapshot> beforeByPartitionId = new HashMap<>();
+    for (PartitionSchemaSnapshot snapshot : before) {
+      beforeByPartitionId.put(snapshot.partitionId(), snapshot);
+    }
+    for (PartitionSchemaSnapshot partition : partitions) {
+      PartitionSchemaSnapshot snapshot = beforeByPartitionId.get(partition.partitionId());
+      if (snapshot == null) {
+        throw new MetaException(String.format(
+            "Post-commit validation failed for %s: unexpected partition id %d",
+            table, partition.partitionId()));
+      }
+      if (partition.cdId() != snapshot.cdId()) {
+        throw new MetaException(String.format(
+            "Post-commit validation failed for %s: partition %d still references CD %d, expected canonical CD %d",
+            table, partition.partitionId(), partition.cdId(), snapshot.cdId()));
+      }
+      List<FieldSchema> expected = snapshot.columns();
+      List<FieldSchema> actual = partition.columns();
+      if (!Objects.equals(expected, actual)) {
+        throw new MetaException(String.format(
+            "Post-commit validation failed for %s: column schema changed for partition %d",
+            table, partition.partitionId()));
+      }
+    }
+  }
+
+  private List<PartitionSchemaSnapshot> loadPartitionCdRefs(List<Long> partIds) throws MetaException {
+    if (partIds.isEmpty()) {
+      return new ArrayList<>();
+    }
+    int batchSize = MetastoreConf.getIntVar(store.getConf(),
+        MetastoreConf.ConfVars.RAWSTORE_PARTITION_BATCH_SIZE);
+    Batchable<Long, PartitionSchemaSnapshot> batch = new Batchable<>() {
+      @Override
+      public List<PartitionSchemaSnapshot> run(List<Long> batchPartIds) throws Exception {
+        Query query = pm.newQuery(MPartition.class, "partIds.contains(id)");
+        query.declareParameters("java.util.Collection partIds");
+        query.setResult("this.id, this.sd");
+        addQueryAfterUse(query);
+        List<PartitionSchemaSnapshot> partitions = new ArrayList<>();
+        boolean success = false;
+        store.openTransaction();
+        try {
+          List<Object[]> results = (List<Object[]>) query.execute(batchPartIds);
+          if (results != null) {
+            for (Object[] row : results) {
+              long partId = MetastoreDirectSqlUtils.extractSqlLong(row[0]);
+              MStorageDescriptor sd = (MStorageDescriptor) row[1];
+              if (sd == null) {
+                continue;
+              }
+              pm.retrieve(sd.getCD());
+              partitions.add(new PartitionSchemaSnapshot(partId, sd.getCD().getId(),
+                  convertToFieldSchemas(sd.getCD().getCols())));
+            }
+          }
+          success = store.commitTransaction();
+        } finally {
+          if (!success) {
+            store.rollbackTransaction();
+          }
+        }
+        return partitions;
+      }
+    };
+    try {
+      return Batchable.runBatched(batchSize, partIds, batch);
+    } finally {
+      batch.closeAllQueries();
+    }
+  }
+
+  private Map<List<FieldSchema>, Set<Long>> groupByColumnSchema(Set<Long> cdIds) {
+    Map<List<FieldSchema>, Set<Long>> groups = new HashMap<>();
     for (Long cdId : cdIds) {
       MColumnDescriptor cd = pm.getObjectById(MColumnDescriptor.class, cdId);
       if (cd != null) {
         pm.retrieve(cd);
-        result.put(cdId, convertToFieldSchemas(cd.getCols()));
+        List<FieldSchema> schemas = convertToFieldSchemas(cd.getCols());
+        groups.computeIfAbsent(schemas, k -> new HashSet<>()).add(cdId);
+        schemas = null;
       }
-    }
-    return result;
-  }
-
-  private static Map<List<FieldSchema>, List<Long>> groupByColumnSchema(Map<Long, List<FieldSchema>> cdColumns) {
-    Map<List<FieldSchema>, List<Long>> groups = new HashMap<>();
-    for (Map.Entry<Long, List<FieldSchema>> entry : cdColumns.entrySet()) {
-      groups.computeIfAbsent(entry.getValue(), ignored -> new ArrayList<>())
-          .add(entry.getKey());
     }
     return groups;
   }
@@ -316,28 +478,19 @@ final class ColumnDeduplicator {
     }
   }
 
-  private static final class TableInfo {
-    private final long tableId;
-    private final long tableCdId;
-    private final String catalogName;
-    private final String dbName;
-    private final String tableName;
-
-    private TableInfo(long tableId, long tableCdId, String catalogName, String dbName, String tableName) {
-      this.tableId = tableId;
-      this.tableCdId = tableCdId;
-      this.catalogName = catalogName;
-      this.dbName = dbName;
-      this.tableName = tableName;
-    }
-
+  public record TableInfo(long tableId, long tableCdId, TableName tableName) {
     @Override
     public String toString() {
-      return catalogName + "." + dbName + "." + tableName;
+      return tableName.toString();
     }
   }
 
-  private record PartitionSdInfo(MStorageDescriptor sd, long cdId) {
+  private record PartitionSdInfo(long partId, MStorageDescriptor sd, long cdId) {
+  }
 
+  public record PartitionSchemaSnapshot(long partitionId, long cdId, List<FieldSchema> columns) {
+  }
+
+  private record PostCommitValidation(List<PartitionSchemaSnapshot> schemaSnapshots) {
   }
 }

@@ -51,8 +51,6 @@ spec:
 
   # Environment variables injected into all component pods (credentials, JVM options, etc.)
   envVars:
-    - name: HADOOP_OPTIONAL_TOOLS
-      value: "hadoop-aws"
     - name: AWS_ACCESS_KEY_ID
       value: "ozone"
     - name: AWS_SECRET_ACCESS_KEY

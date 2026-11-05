@@ -30,8 +30,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.IOContext;
+import org.apache.hadoop.hive.ql.io.IOContextAwareRecordReader;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hive.iceberg.org.apache.orc.OrcConf;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileFormat;
@@ -69,10 +72,11 @@ import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 
-public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T> {
+public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T> implements IOContextAwareRecordReader {
   private Iterator<FileScanTask> tasks;
   private CloseableIterator<T> currentIterator;
   private T current;
+  private IOContext ioContext;
 
   @Override
   public void initialize(InputSplit split, TaskAttemptContext newContext) {
@@ -83,6 +87,16 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     this.currentIterator = nextTask();
   }
 
+  /**
+   * Sets the IOContext the virtual columns of each row are written into. MapredIcebergRecordReader passes on the
+   * IOContext its wrapper hands over after initialize() opened the first file, because HiveInputFormat handles an
+   * interrupt only while it creates the reader (HIVE-25751); each file's iterator therefore reads it per row.
+   */
+  @Override
+  public void setIOContext(IOContext ioCxt) {
+    this.ioContext = ioCxt;
+  }
+
   private CloseableIterator<T> nextTask() {
     FileScanTask task = tasks.next();
     CloseableIterator<T> closeableIterator = open(task, expectedSchema).iterator();
@@ -90,7 +104,7 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
       return closeableIterator;
     }
     return new IcebergAcidUtil.VirtualColumnAwareIterator<>(closeableIterator,
-        expectedSchema.columns(), conf, task);
+        expectedSchema.columns(), task, () -> ioContext);
   }
 
   @Override
@@ -249,6 +263,8 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     ORC.ReadBuilder orcReadBuilder = ORC.read(inputFile)
         .project(readSchemaWithoutConstantAndMetadataFields)
         .filter(residual)
+        // Row positions are derived from the batch index, and ORC's row-level filter can drop rows and whole batches.
+        .config(OrcConf.ALLOW_SARG_TO_FILTER.getHiveConfName(), "false")
         .caseSensitive(isCaseSensitive())
         .split(task.start(), task.length());
 

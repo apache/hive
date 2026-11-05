@@ -84,7 +84,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
-import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
+import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetRowGroupDecoder;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
@@ -198,6 +198,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SerializationUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
@@ -278,24 +279,37 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets) {
-    if (!IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
+    Properties props = tableDesc.getProperties();
+    if (props == null) {
       return;
     }
+    boolean vendedCredentials = IcebergVendedCredentialUtil.requestsVendedCredentials(props, conf);
+    if (!vendedCredentials && !RestCatalogScanPlanningUtil.isServerSideScanPlanningEnabled(conf)) {
+      return;
+    }
+    Table table;
     try {
-      Table table =
-          IcebergVendedCredentialUtil.getTableWithVendedCredentials(tableDesc.getProperties(), conf);
-      String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
-      IcebergVendedCredentialUtil.propagateToJob(table, catalogName, null, secrets, conf);
-    } catch (NoSuchTableException ex) {
-      // Table may not exist yet for CTAS; credentials will not be available.
+      table = IcebergVendedCredentialUtil.getTableWithVendedCredentials(props, conf);
+    } catch (NoSuchTableException e) {
+      // Table may not exist yet for CTAS; there is nothing to plan or vend credentials for.
+      return;
+    }
+    String catalogName = HiveTableUtil.resolveCatalogName(conf, props.getProperty(InputFormatConfig.CATALOG_NAME));
+
+    if (RestCatalogScanPlanningUtil.shouldPlanServerSide(conf, table)) {
+      RestCatalogScanPlanningUtil.propagateCatalogSecretsToJob(catalogName, secrets, conf);
+    }
+    if (vendedCredentials) {
+      secrets.putAll(IcebergVendedCredentialUtil.toJobConf(table, catalogName, conf).secrets());
     }
   }
 
   @Override
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
-    // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
-    fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
+    if (vectorizationUnsupported(tableDesc.getProperties()) || hasEqualityDeletes(tableDesc.getProperties())) {
+      disableVectorization();
+    }
 
     boolean allowDataFilesWithinTableLocationOnly =
         conf.getBoolean(ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
@@ -308,8 +322,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
-    // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
-    fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
+    if (vectorizationUnsupported(tableDesc.getProperties())) {
+      disableVectorization();
+    }
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
@@ -382,7 +397,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
     jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
 
-    String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
+    String catalogName = tableDesc.getProperty(InputFormatConfig.CATALOG_NAME);
     if (catalogName != null) {
       jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
     }
@@ -441,6 +456,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public boolean canProvideBasicStatistics() {
     return true;
+  }
+
+  @Override
+  public boolean canProvideBasicStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    return canProvideBasicStatistics() && HiveMetaHook.ICEBERG.equals(getStatsSource());
   }
 
   @Override
@@ -1730,6 +1750,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       location = table.location();
       schema = table.schema();
       spec = table.spec();
+      RestCatalogScanPlanningUtil.propagateCatalogPropertiesToJob(
+          configuration, table, props.getProperty(Catalogs.NAME), map);
 
       // For intra-txn read-after-write: if the table has in-memory metadata with no metadata file
       // (i.e. uncommitted changes from a prior statement in the same txn), write the metadata to
@@ -1745,8 +1767,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
 
       if (isVendedCredentials) {
-        String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-        IcebergVendedCredentialUtil.propagateToJob(table, catalogName, map, null, configuration);
+        String catalogName =
+            HiveTableUtil.resolveCatalogName(configuration, props.getProperty(InputFormatConfig.CATALOG_NAME));
+        IcebergVendedCredentialUtil.toJobConf(table, catalogName, configuration)
+            .properties().forEach(map::putIfAbsent);
         // Serializing the table as-is would embed its FileIO, and with it the vended credentials,
         // into plain job properties: ship a copy over a secret-free FileIO instead; executors
         // restore the credentials from the Credentials channel (setCredentials).
@@ -1872,7 +1896,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   /**
-   * If any of the following checks is true we fall back to non vectorized mode:
+   * Whether the table cannot be read vectorized:
    * <ul>
    *   <li>fileformat is set to avro</li>
    *   <li>querying metadata tables</li>
@@ -1881,17 +1905,31 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
    * </ul>
    * @param tableProps table properties, must be not null
    */
-  private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
+  private boolean vectorizationUnsupported(Properties tableProps) {
     Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
 
-    if (FileFormat.AVRO == IcebergTableUtil.defaultFileFormat(tableProps::getProperty) ||
+    return FileFormat.AVRO == IcebergTableUtil.defaultFileFormat(tableProps::getProperty) ||
         isValidMetadataTable(tableProps.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY)) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
-        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
-      // disable vectorization
-      SessionStateUtil.getQueryState(conf).ifPresent(qs ->
-          qs.getConf().setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false));
-    }
+        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema);
+  }
+
+  /**
+   * Whether the scanned snapshot has equality deletes, which the vectorized reader cannot apply
+   * (HiveVectorizedReader): the one read as of a time or version, the head of the branch or tag, or the current one.
+   */
+  private boolean hasEqualityDeletes(Properties tableProps) {
+    Table table = IcebergTableUtil.getTable(conf, tableProps);
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, tableProps.getProperty(Utilities.AS_OF_TIMESTAMP),
+        tableProps.getProperty(Utilities.AS_OF_VERSION), tableProps.getProperty(Catalogs.SNAPSHOT_REF));
+    // a V1 snapshot may have no summary, and V1 has no delete files
+    return snapshot != null && snapshot.summary() != null &&
+        PropertyUtil.propertyAsLong(snapshot.summary(), TOTAL_EQ_DELETES_PROP, 0) > 0;
+  }
+
+  private void disableVectorization() {
+    SessionStateUtil.getQueryState(conf).ifPresent(qs ->
+        qs.getConf().setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false));
   }
 
   /**
@@ -1913,7 +1951,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   /**
    * Vectorized reads of parquet files from columns with list or map type is only supported if the nested types are of
    * primitive type category
-   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details on nested types under lists
+   * check {@link ParquetRowGroupDecoder#checkListColumnSupport} for
+   * details on nested types under lists
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
    * @return true if having nested types

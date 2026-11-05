@@ -228,7 +228,7 @@ public final class Catalogs {
     }
   }
 
-  static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
+  public static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
     String resolvedName = catalogName != null ? catalogName : configuredDefaultCatalogName(conf);
     String catalogType = IcebergCatalogProperties.getCatalogType(conf, resolvedName);
     if (NO_CATALOG_TYPE.equalsIgnoreCase(catalogType)) {

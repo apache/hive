@@ -70,9 +70,11 @@ There are some arguments to specify the component version:
 -hadoop <hadoop version>
 -tez <tez version>
 -hive <hive version> 
+-aws-sdk auto|none|<aws sdk v2 version>
 ```
 If the version is not provided, it will read the version from current `pom.xml`:
-`project.version`, `hadoop.version` and `tez.version` for Hive, Hadoop and Tez respectively. 
+`project.version`, `hadoop.version`, `tez.version` and `aws-java-sdk.version` for Hive, Hadoop, Tez and the
+AWS SDK respectively. 
 
 For example, the following command uses Hive 4.0.0, Hadoop `hadoop.version` and Tez `tez.version` to build the image,
 ```shell
@@ -84,6 +86,47 @@ together with Hadoop 3.1.0 and Tez 0.10.1 to build the image,
 ./build.sh -hadoop 3.1.0 -tez 0.10.1
 ```
 After building successfully, you get a Docker image named `apache/hive` by default, tagged by the provided Hive version.
+
+##### AWS SDK bundle (s3a:// support)
+Since Hadoop 3.4.3, `hadoop-aws` sits on the default classpath but the AWS SDK v2 it links against is no longer
+part of the Hadoop distribution, so the image supplies it. The Dockerfile bakes `software.amazon.awssdk:bundle`
+into `/opt/hadoop/share/hadoop/common/lib`, next to `hadoop-aws`, so every process that reads the Hadoop classpath
+gets it, the `hadoop` CLI included; `build.sh` keeps a copy in `packaging/cache` so it is not downloaded on every
+build.
+Without it, touching an `s3a://` path fails with
+`NoClassDefFoundError: software/amazon/awssdk/core/exception/SdkException`.
+
+The bundle version is `aws-java-sdk.version` (2.35.4), the SDK Hadoop 3.4.3 is built and qualified against
+([HADOOP-19654](https://issues.apache.org/jira/browse/HADOOP-19654)), rather than a newer release. That SDK reworked
+checksum handling, and the S3A defaults in 3.4.3 (`fs.s3a.checksum.generation=false`, `fs.s3a.checksum.validation=false`,
+`fs.s3a.request.md5.header=true`) were chosen for compatibility and performance against it, keeping per-request
+checksum work off the S3 read and write paths.
+
+`-aws-sdk` takes one of three values:
+
+| value | effect |
+|---|---|
+| `auto` (default) | `aws-java-sdk.version` from `pom.xml` |
+| `none` | no bundle, ~650MB smaller image. `s3a://` then fails at runtime. |
+| `<version>` | an explicit `software.amazon.awssdk:bundle` version |
+
+Hadoop releases that ship their own bundle (up to 3.4.2) keep it, and no second one is added. Those releases keep
+`hadoop-aws` and its bundle in `share/hadoop/tools/lib`, which only `HADOOP_OPTIONAL_TOOLS=hadoop-aws` puts on the
+classpath, so the Dockerfile moves them to `share/hadoop/common/lib` as well, and `s3a://` works the same way with
+`-hadoop 3.4.2` as with 3.4.3.
+
+```shell
+./build.sh -tez 0.10.5 -aws-sdk none
+./build.sh -tez 0.10.5 -aws-sdk 2.42.25
+```
+
+Images built straight from the Dockerfile take the version as the `AWS_SDK_VERSION` build argument; leaving it
+empty is the same as `none`.
+
+A jar mounted at `/tmp/ext-jars` (`jars/` in the compose file) is copied into `/opt/hive/lib` at startup, so an image
+built with `-aws-sdk none` can take its SDK bundle at run time without rebuilding; the `hadoop` CLI does not read
+`/opt/hive/lib` and still cannot reach `s3a://`. In an image that already has one, that would put a second bundle on
+the classpath.
 
 #### Run services
 
@@ -199,7 +242,7 @@ Use the following workflow from `packaging/src/docker`:
 docker-compose down --rmi local # cleanup previous containers and images
 
 export POSTGRES_LOCAL_PATH=... # set the path to the postgres driver jar on the host machine
-./build.sh -hive 4.2.0 -hadoop 3.4.1 -tez 0.10.5 # build image from the common Dockerfile
+./build.sh -hive 4.2.0 -tez 0.10.5 # build image from the common Dockerfile
 ./start-hive.sh --llap
 ```
 
@@ -337,13 +380,10 @@ exit
 
 #### Hive with S3-backed warehouse storage
 
-1. Download the AWS SDK bundle and place it under jars/ directory.
-
-**Disclaimer:**  
-Hadoop **3.4.1** requires **AWS SDK v2**.
-```shell
-wget https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.42.25/bundle-2.42.25.jar -P jars/
-```
+1. The image already has the AWS SDK v2 bundle that `s3a://` needs (see
+[AWS SDK bundle](#aws-sdk-bundle-s3a-support)), so there is nothing to download. Do not put another one under `jars/`:
+that directory is copied into `/opt/hive/lib`, which the Tez AM and LLAP load first, so they would run S3A on a
+different SDK than the `hadoop` CLI.
 
 2. Set the following environment variables:
 - AWS_ACCESS_KEY_ID
@@ -369,7 +409,7 @@ Use the provided startup script with the `--ozone` flag. This automatically inje
 docker compose down --rmi local # cleanup previous containers and images
 
 export POSTGRES_LOCAL_PATH=... # set the path to the postgres driver jar
-./build.sh -hive 4.2.0 -hadoop 3.4.1 -tez 0.10.5 
+./build.sh -hive 4.2.0 -tez 0.10.5 
 ./start-hive.sh --ozone
 ```
 

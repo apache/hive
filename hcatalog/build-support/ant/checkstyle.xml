@@ -52,7 +52,6 @@
           <exclude name="LICENSE.txt"/>
           <exclude name="NOTICE.txt"/>
           <exclude name="README.txt"/>
-          <exclude name="RELEASE_NOTES.txt"/>
           <exclude name="*.patch"/>
           <exclude name="tags"/>
           <exclude name="**/*.jar"/>

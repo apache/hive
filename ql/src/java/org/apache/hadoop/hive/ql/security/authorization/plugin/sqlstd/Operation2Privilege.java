@@ -475,8 +475,12 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTERDATACONNECTOR, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERDATACONNECTOR_OWNER, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERDATACONNECTOR_URL, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.DESCDATACONNECTOR, PrivRequirement.newIOPrivRequirement(null, null));
+    // A connector definition carries the DBCP credentials for the remote source, so rendering one
+    // requires the same privilege as creating, altering or dropping it. SHOW CONNECTORS registers
+    // no entity of its own, so it is gated as a whole rather than per object.
+    op2Priv.put(HiveOperationType.DESCDATACONNECTOR, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, null));
     op2Priv.put(HiveOperationType.SHOWDATACONNECTORS, PrivRequirement.newIOPrivRequirement(null, null));
+    adminPrivOps.add(HiveOperationType.SHOWDATACONNECTORS);
 
     op2Priv.put(HiveOperationType.CREATECATALOG, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.DFS_URI),

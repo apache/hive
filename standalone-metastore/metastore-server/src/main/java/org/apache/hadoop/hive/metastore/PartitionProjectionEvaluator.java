@@ -522,15 +522,13 @@ public class PartitionProjectionEvaluator {
     queryTextBuilder.append(SPACE);
     queryTextBuilder.append("from " + PARTITIONS);
     // if SD fields are selected add join clause with SDS
-    boolean foundSD = false;
     if (find(SD_PATTERN)) {
       queryTextBuilder.append(SPACE);
       queryTextBuilder.append(
           "left outer join " + SDS + " on " + PARTITIONS + ".\"SD_ID\" = " + SDS + ".\"SD_ID\"");
-      foundSD = true;
     }
     // if serde fields are selected add join clause on serdes
-    if (foundSD || find(SERDE_PATTERN)) {
+    if (find(SERDE_PATTERN)) {
       queryTextBuilder.append(SPACE);
       queryTextBuilder.append(
           "  left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = " + SERDES

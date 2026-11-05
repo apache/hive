@@ -59,7 +59,6 @@ import org.apache.iceberg.util.ContentFileUtil;
 import org.apache.iceberg.util.DeleteFileSet;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SerializationUtil;
-import org.apache.iceberg.util.SnapshotUtil;
 
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT;
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT;
@@ -79,8 +78,6 @@ public class WriterBuilder {
   private static AtomicInteger operationNum = new AtomicInteger(0);
 
   // To specify whether to write the actual row data while writing the delete files.
-  public static final String ICEBERG_DELETE_SKIPROWDATA = "iceberg.delete.skiprowdata";
-  public static final boolean ICEBERG_DELETE_SKIPROWDATA_DEFAULT = true;
   private boolean shouldAddRowLineageColumns = false;
 
   private WriterBuilder(Table table, UnaryOperator<String> ops) {
@@ -132,9 +129,6 @@ public class WriterBuilder {
         .dataFileFormat(context.dataFileFormat())
         .dataSchema(shouldAddRowLineageColumns ? MetadataColumns.schemaWithRowLineage(table.schema()) : table.schema())
         .deleteFileFormat(context.deleteFileFormat())
-        .positionDeleteRowSchema(context.skipRowData() || !context.inputOrdered() ?
-            // SortingPositionOnlyDeleteWriter doesn't support rawData in delete schema
-            null : table.schema())
         .build();
 
     HiveIcebergWriter writer;
@@ -159,7 +153,8 @@ public class WriterBuilder {
   }
 
   private Map<String, DeleteFileSet> rewritableDeletes(UnaryOperator<String> ops) {
-    Snapshot snapshot = SnapshotUtil.latestSnapshot(table, ops.apply(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF));
+    // the branch the write commits to
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, ops.apply(Catalogs.SNAPSHOT_REF));
     boolean caseSensitive = ObjectUtils.defaultIfNull(
         Boolean.parseBoolean(ops.apply(InputFormatConfig.CASE_SENSITIVE)),
         InputFormatConfig.CASE_SENSITIVE_DEFAULT);
@@ -227,18 +222,17 @@ public class WriterBuilder {
     private final boolean useFanoutWriter;
     private final boolean inputOrdered;
     private final boolean isMergeTask;
-    private final boolean skipRowData;
     private final boolean useDVs;
     private final Set<String> missingColumns;
 
     Context(Map<String, String> properties, UnaryOperator<String> ops, String tableName) {
       String dataFileFormatName =
           properties.getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT);
-      this.dataFileFormat = FileFormat.valueOf(dataFileFormatName.toUpperCase(Locale.ENGLISH));
+      this.dataFileFormat = FileFormat.valueOf(dataFileFormatName.toUpperCase(Locale.ROOT));
 
       String deleteFileFormatName =
           properties.getOrDefault(DELETE_DEFAULT_FILE_FORMAT, dataFileFormatName);
-      this.deleteFileFormat = FileFormat.valueOf(deleteFileFormatName.toUpperCase(Locale.ENGLISH));
+      this.deleteFileFormat = FileFormat.valueOf(deleteFileFormatName.toUpperCase(Locale.ROOT));
 
       this.targetDataFileSize = PropertyUtil.propertyAsLong(properties,
           TableProperties.WRITE_TARGET_FILE_SIZE_BYTES, TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
@@ -252,9 +246,6 @@ public class WriterBuilder {
       this.deleteGranularity = DeleteGranularity.PARTITION;
       this.useDVs = IcebergTableUtil.formatVersion(properties) > 2;
 
-      this.skipRowData = useDVs ||
-          PropertyUtil.propertyAsBoolean(properties,
-            ICEBERG_DELETE_SKIPROWDATA, ICEBERG_DELETE_SKIPROWDATA_DEFAULT);
 
       this.missingColumns = Optional.ofNullable(ops.apply(SessionStateUtil.MISSING_COLUMNS))
           .map(columns -> Arrays.stream(columns.split(",")).collect(Collectors.toCollection(HashSet::new)))
@@ -291,10 +282,6 @@ public class WriterBuilder {
 
     boolean isMergeTask() {
       return isMergeTask;
-    }
-
-    boolean skipRowData() {
-      return skipRowData;
     }
 
     public boolean useDVs() {

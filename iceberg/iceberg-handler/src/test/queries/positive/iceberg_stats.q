@@ -49,6 +49,34 @@ select count(*) from ice03;
 insert overwrite table ice03 select * from ice03;
 explain select count(*) from ice03;
 
+-- under the metastore source a plain ANALYZE counts the rows; the commit's row count includes the deleted rows
+set hive.iceberg.stats.source=metastore;
+
+create external table ice07 (id int, key int) Stored by Iceberg stored as ORC
+  TBLPROPERTIES('format-version'='2');
+
+insert into ice07 values (1,1),(2,1),(3,1),(4,1),(5,1);
+delete from ice07 where id in (2,4);
+analyze table ice07 compute statistics;
+show tblproperties ice07('COLUMN_STATS_ACCURATE');
+show tblproperties ice07('numRows');
+select count(*) from ice07;
+
+-- with iceberg.hive.keep.stats the delete's commit keeps that row count marked accurate; ANALYZE replaces it
+set iceberg.hive.keep.stats=true;
+
+create external table ice08 (id int, key int) Stored by Iceberg stored as ORC
+  TBLPROPERTIES('format-version'='2');
+
+insert into ice08 values (1,1),(2,1),(3,1),(4,1),(5,1);
+delete from ice08 where id in (2,4);
+analyze table ice08 compute statistics;
+show tblproperties ice08('COLUMN_STATS_ACCURATE');
+show tblproperties ice08('numRows');
+select count(*) from ice08;
+
 drop table ice01;
 drop table ice02;
 drop table ice03;
+drop table ice07;
+drop table ice08;

@@ -156,6 +156,23 @@ maxFileSize:#Masked#
 minFileSize:#Masked#
 #### A masked pattern was here ####
 
+PREHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:srcpart
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string ds, string hr}
+totalNumberFiles:4
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
+#### A masked pattern was here ####
+
 PREHOOK: query: SHOW TABLE EXTENDED from default LIKE src
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: SHOW TABLE EXTENDED from default LIKE src

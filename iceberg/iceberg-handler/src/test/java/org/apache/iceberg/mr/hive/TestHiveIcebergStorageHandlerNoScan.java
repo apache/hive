@@ -721,6 +721,51 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testCreateTableRollbackCleansUpHMSEntry() {
+    Assume.assumeTrue("Rollback cleanup is only relevant for HiveCatalog",
+        testTableType == TestTableType.HIVE_CATALOG);
+
+    // Creating with format-version=2 should fail, and the HMS entry should be cleaned up.
+    Assertions.assertThatThrownBy(
+        () -> shell.executeStatement(
+            "CREATE TABLE rollback_test (id INT, ts TIMESTAMP(9)) " +
+                "STORED BY ICEBERG STORED AS PARQUET " +
+                "TBLPROPERTIES ('format-version'='2')"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("timestamp_ns is not supported until v3");
+
+    // Without the rollback fix, this would fail with AlreadyExistsException
+    // because the HMS entry from the failed create would still exist.
+    shell.executeStatement(
+        "CREATE TABLE rollback_test (id INT, ts TIMESTAMP(9)) " +
+            "STORED BY ICEBERG STORED AS PARQUET " +
+            "TBLPROPERTIES ('format-version'='3')");
+
+    shell.executeStatement("DROP TABLE rollback_test");
+  }
+
+  @Test
+  public void testCreateTableRollbackDoesNotDropExistingTable() {
+    Assume.assumeTrue("Rollback cleanup is only relevant for HiveCatalog",
+        testTableType == TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement(
+        "CREATE TABLE existing_tbl (id INT) STORED BY ICEBERG STORED AS PARQUET");
+
+    // Attempting to create a table with the same name should fail with AlreadyExistsException.
+    // The rollback must NOT drop the existing table.
+    Assertions.assertThatThrownBy(
+        () -> shell.executeStatement(
+            "CREATE TABLE existing_tbl (id INT) STORED BY ICEBERG STORED AS PARQUET"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("already exists");
+
+    // The original table should still be intact.
+    shell.executeStatement("DESCRIBE existing_tbl");
+    shell.executeStatement("DROP TABLE existing_tbl");
+  }
+
+  @Test
   public void testCreateTableAboveExistingTable() throws IOException {
     // Create the Iceberg table
     testTables.createIcebergTable(shell.getHiveConf(), "customers", COMPLEX_SCHEMA, FileFormat.PARQUET,

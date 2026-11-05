@@ -1,0 +1,171 @@
+PREHOOK: query: SELECT trunc(123456711889.122345897, 8), trunc(-123456711889.122345897, 8),
+       trunc(123456711889.122345897, 19), trunc(123456711889.122345897),
+       trunc(123456711889.122345897, -4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT trunc(123456711889.122345897, 8), trunc(-123456711889.122345897, 8),
+       trunc(123456711889.122345897, 19), trunc(123456711889.122345897),
+       trunc(123456711889.122345897, -4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456711889.12234589	-123456711889.12234589	123456711889.1223458970000000000	123456711889	123456710000
+PREHOOK: query: CREATE TABLE trunc_large_number (d DECIMAL(38,9), c DOUBLE, b BIGINT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@trunc_large_number
+POSTHOOK: query: CREATE TABLE trunc_large_number (d DECIMAL(38,9), c DOUBLE, b BIGINT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@trunc_large_number
+PREHOOK: query: INSERT INTO trunc_large_number VALUES
+  (123456711889.122345897, 123456711889.12234, 9223372036854775807),
+  (-123456711889.122345897, -123456711889.12234, -9223372036854775807),
+  (12345678901234567890123456789.987654321, 0.3, 12345),
+  (NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@trunc_large_number
+POSTHOOK: query: INSERT INTO trunc_large_number VALUES
+  (123456711889.122345897, 123456711889.12234, 9223372036854775807),
+  (-123456711889.122345897, -123456711889.12234, -9223372036854775807),
+  (12345678901234567890123456789.987654321, 0.3, 12345),
+  (NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@trunc_large_number
+POSTHOOK: Lineage: trunc_large_number.b SCRIPT []
+POSTHOOK: Lineage: trunc_large_number.c SCRIPT []
+POSTHOOK: Lineage: trunc_large_number.d SCRIPT []
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION
+SELECT trunc(d, 8), trunc(d), trunc(c, 8), trunc(c) FROM trunc_large_number
+PREHOOK: type: QUERY
+PREHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION
+SELECT trunc(d, 8), trunc(d), trunc(c, 8), trunc(c) FROM trunc_large_number
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5, 6, 7, 8]
+                        selectExpressions: TruncDecimal(col 0, scale 8) -> 5:decimal(37,8), TruncDecimalNoScale(col 0, scale 0) -> 6:decimal(29,0), TruncFloat(col 1, scale 8) -> 7:double, TruncFloatNoScale(col 1, scale 0) -> 8:double
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT d, trunc(d, 8), trunc(d, -4), trunc(d), trunc(d, -30) FROM trunc_large_number
+PREHOOK: type: QUERY
+PREHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d, trunc(d, 8), trunc(d, -4), trunc(d), trunc(d, -30) FROM trunc_large_number
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+-123456711889.122345897	-123456711889.12234589	-123456710000	-123456711889	0
+123456711889.122345897	123456711889.12234589	123456710000	123456711889	0
+12345678901234567890123456789.987654321	12345678901234567890123456789.98765432	12345678901234567890123450000	12345678901234567890123456789	0
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT c, trunc(c, 8), trunc(c, 1), trunc(c), trunc(c, -5) FROM trunc_large_number
+PREHOOK: type: QUERY
+PREHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c, trunc(c, 8), trunc(c, 1), trunc(c), trunc(c, -5) FROM trunc_large_number
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+-1.2345671188912234E11	-1.2345671188912234E11	-1.234567118891E11	-1.23456711889E11	-1.234567E11
+0.3	0.3	0.3	0.0	0.0
+1.2345671188912234E11	1.2345671188912234E11	1.234567118891E11	1.23456711889E11	1.234567E11
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT b, trunc(b, -3), trunc(b, -19) FROM trunc_large_number
+PREHOOK: type: QUERY
+PREHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT b, trunc(b, -3), trunc(b, -19) FROM trunc_large_number
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+-9223372036854775807	-9223372036854775000	0
+12345	12000	0
+9223372036854775807	9223372036854775000	0
+NULL	NULL	NULL
+PREHOOK: query: SELECT d, trunc(d, 8), trunc(d, -4), trunc(d), trunc(d, -30) FROM trunc_large_number
+PREHOOK: type: QUERY
+PREHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d, trunc(d, 8), trunc(d, -4), trunc(d), trunc(d, -30) FROM trunc_large_number
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+-123456711889.122345897	-123456711889.12234589	-123456710000	-123456711889	0
+123456711889.122345897	123456711889.12234589	123456710000	123456711889	0
+12345678901234567890123456789.987654321	12345678901234567890123456789.98765432	12345678901234567890123450000	12345678901234567890123456789	0
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT c, trunc(c, 8), trunc(c, 1), trunc(c), trunc(c, -5) FROM trunc_large_number
+PREHOOK: type: QUERY
+PREHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c, trunc(c, 8), trunc(c, 1), trunc(c), trunc(c, -5) FROM trunc_large_number
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+-1.2345671188912234E11	-1.2345671188912234E11	-1.234567118891E11	-1.23456711889E11	-1.234567E11
+0.3	0.3	0.3	0.0	0.0
+1.2345671188912234E11	1.2345671188912234E11	1.234567118891E11	1.23456711889E11	1.234567E11
+NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT b, trunc(b, -3), trunc(b, -19) FROM trunc_large_number
+PREHOOK: type: QUERY
+PREHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT b, trunc(b, -3), trunc(b, -19) FROM trunc_large_number
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@trunc_large_number
+#### A masked pattern was here ####
+-9223372036854775807	-9223372036854775000	0
+12345	12000	0
+9223372036854775807	9223372036854775000	0
+NULL	NULL	NULL
+PREHOOK: query: DROP TABLE trunc_large_number
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@trunc_large_number
+PREHOOK: Output: database:default
+PREHOOK: Output: default@trunc_large_number
+POSTHOOK: query: DROP TABLE trunc_large_number
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@trunc_large_number
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@trunc_large_number

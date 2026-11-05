@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
@@ -813,6 +814,53 @@ public class TestObjectStore {
           new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build());
     }
     Assert.assertEquals(1, partitions.size());
+  }
+
+  /**
+   * Operations that only have a direct SQL implementation must keep working when
+   * metastore.try.direct.sql is false, as the setting only chooses between direct SQL and JDO
+   * where both exist.
+   */
+  @Test
+  public void testDirectSqlOnlyOperations() throws Exception {
+    createPartitionedTable(false, true, Collections.emptySet());
+    Table tbl;
+    try (AutoCloseable c = deadline()) {
+      tbl = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+    }
+    TableName tableName = new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+    TableStore tableStore = objectStore.unwrap(TableStore.class);
+
+    try (AutoCloseable c = deadline();
+         AutoCloseable d = new DirectSqlConfigurator(conf, false)) {
+      Assert.assertFalse(MetastoreConf.getBoolVar(objectStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+      // updateTableParams must persist the parameters
+      Map<String, String> params = new HashMap<>();
+      params.put("test_key", "v1");
+      tableStore.updateTableParams(Collections.singletonList(
+          Map.entry((new TableParamsUpdate(
+              new org.apache.hadoop.hive.metastore.api.TableName(DB1, TABLE1), params)), tbl)));
+      Assert.assertEquals("v1",
+          objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1).getParameters().get("test_key"));
+
+      // updateParameterWithExpectedValue: no NPE, and compare-and-set semantics are preserved
+      Assert.assertEquals(0, tableStore.updateParameterWithExpectedValue(tbl, "test_key", "wrong", "v2"));
+      Assert.assertEquals(1, tableStore.updateParameterWithExpectedValue(tbl, "test_key", "v1", "v2"));
+      Assert.assertEquals("v2",
+          objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1).getParameters().get("test_key"));
+
+      // the column statistics reads must not return null
+      Assert.assertNotNull(objectStore.getTableNamesWithStats());
+      Assert.assertTrue(objectStore.getTableNamesWithStats().contains(tableName));
+      Map<String, List<String>> partCols = objectStore.getPartitionColsWithStats(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+      Assert.assertNotNull(partCols);
+      Assert.assertEquals(3, partCols.size());
+      Assert.assertNotNull(objectStore.getPartitionColStatsForDatabase(DEFAULT_CATALOG_NAME, DB1));
+      AggrStats aggrStats = objectStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, DB1, TABLE1, ALL_PART_NAMES,
+          Collections.singletonList("test_part_col"), ENGINE);
+      Assert.assertNotNull(aggrStats);
+      Assert.assertEquals(1, aggrStats.getColStatsSize());
+    }
   }
 
   @Test

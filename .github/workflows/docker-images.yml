@@ -37,6 +37,11 @@ on:
         required: true
         default: '0.10.2'
 
+      awsSdkVersion:
+        description: 'AWS SDK v2 bundle version for s3a:// (empty for none)'
+        required: false
+        default: ''
+
 permissions:
   contents: read
 
@@ -79,6 +84,7 @@ jobs:
           echo "HIVE_VERSION=${{ github.event.inputs.hiveVersion }}"  >> $GITHUB_ENV
           echo "HADOOP_VERSION=${{ github.event.inputs.hadoopVersion }}" >> $GITHUB_ENV
           echo "TEZ_VERSION=${{ github.event.inputs.tezVersion }}" >> $GITHUB_ENV
+          echo "AWS_SDK_VERSION=${{ github.event.inputs.awsSdkVersion }}" >> $GITHUB_ENV
           echo "BUILD_ENV=release" >> $GITHUB_ENV
 
       - name: Prepare environment variables from repository
@@ -87,6 +93,7 @@ jobs:
           echo "HIVE_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)" >> $GITHUB_ENV
           echo "HADOOP_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=hadoop.version -DforceStdout)" >> $GITHUB_ENV
           echo "TEZ_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=tez.version -DforceStdout)" >> $GITHUB_ENV
+          echo "AWS_SDK_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=aws-java-sdk.version -DforceStdout)" >> $GITHUB_ENV
           echo "BUILD_ENV=hybrid" >> $GITHUB_ENV
 
       - name: Prepare an image tag for release
@@ -135,6 +142,7 @@ jobs:
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
             TEZ_VERSION=${{ env.TEZ_VERSION }}
+            AWS_SDK_VERSION=${{ env.AWS_SDK_VERSION }}
             BUILD_ENV=${{ env.BUILD_ENV }}
 
       - name: Build Standalone Metastore Image locally
@@ -192,6 +200,7 @@ jobs:
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
             TEZ_VERSION=${{ env.TEZ_VERSION }}
+            AWS_SDK_VERSION=${{ env.AWS_SDK_VERSION }}
             BUILD_ENV=${{ env.BUILD_ENV }}
 
       - name: Build and push Standalone Metastore Image to docker hub

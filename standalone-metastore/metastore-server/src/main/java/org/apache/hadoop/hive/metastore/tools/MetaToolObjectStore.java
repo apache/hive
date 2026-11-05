@@ -975,6 +975,7 @@ public class MetaToolObjectStore extends ObjectStore {
     private int tablesWithDuplicates;
     private int storageDescriptorsUpdated;
     private int columnDescriptorsRemoved;
+    private int tablesValidated;
     private final List<String> details = new ArrayList<>();
     private Exception exception;
     DedupColumnsResult(int tablesScanned) {
@@ -1008,6 +1009,14 @@ public class MetaToolObjectStore extends ObjectStore {
       this.columnDescriptorsRemoved += count;
     }
 
+    public int getTablesValidated() {
+      return tablesValidated;
+    }
+
+    void incrementTablesValidated() {
+      this.tablesValidated++;
+    }
+
     public List<String> getDetails() {
       return details;
     }
@@ -1026,8 +1035,8 @@ public class MetaToolObjectStore extends ObjectStore {
   }
 
   public DedupColumnsResult dedupColumns(String catalogFilter, String dbFilter, String tableFilter,
-      AtomicReference<String> progress, boolean isDryRun, boolean isVerbose) {
-    return new ColumnDeduplicator(this.createRawStoreBundle(), progress, isDryRun, isVerbose)
+      AtomicReference<String> progress, boolean isDryRun, boolean isVerbose, boolean clearMarker) {
+    return new ColumnDeduplicator(this.createRawStoreBundle(), progress, isDryRun, isVerbose, clearMarker)
         .run(catalogFilter, dbFilter, tableFilter);
   }
 }

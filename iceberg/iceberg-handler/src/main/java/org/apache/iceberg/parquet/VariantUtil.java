@@ -22,6 +22,7 @@ package org.apache.iceberg.parquet;
 import java.util.List;
 import java.util.Map;
 import org.apache.iceberg.Accessor;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.data.Record;
@@ -89,8 +90,11 @@ public class VariantUtil {
     return results;
   }
 
-  public static boolean shouldUseVariantShredding(Map<String, String> properties, Schema schema) {
-    return isVariantShreddingEnabled(properties) && hasVariantFields(schema);
+  public static boolean shouldUseVariantShredding(
+      FileFormat fileFormat, Map<String, String> properties, Schema schema) {
+    return fileFormat == FileFormat.PARQUET &&
+        isVariantShreddingEnabled(properties) &&
+        hasVariantFields(schema);
   }
 
   private static boolean hasVariantFields(Schema schema) {
