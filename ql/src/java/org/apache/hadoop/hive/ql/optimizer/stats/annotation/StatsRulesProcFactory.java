@@ -1835,24 +1835,14 @@ public class StatsRulesProcFactory {
 
         // estimate size of key from column statistics
         long avgKeySize = 0;
-        // lazily computed on first unknown NDV (null = not yet looked up)
-        Long parentNumRows = null;
         for (ColStatistics cs : colStats) {
           if (cs != null) {
-            long ndv = cs.getCountDistint();
-            if (ndv < 0) {
-              if (parentNumRows == null) {
-                // unknown NDV: fall back to parentNumRows / 2, matching the heuristic
-                // used elsewhere in this file when GROUP BY cardinality cannot be computed
-                Statistics parentStats = gop.getParentOperators().get(0).getStatistics();
-                parentNumRows = (parentStats != null) ? parentStats.getNumRows() : -1L;
-              }
-              if (parentNumRows <= 0) {
-                return false;
-              }
-              ndv = parentNumRows / 2;
+            if (cs.getCountDistint() < 0) {
+              // unknown NDV: the hash table cannot be sized. Keep the decision made when unknown
+              // was stored as 0: an empty estimated table, so only the memory budget matters.
+              return maxMemHashAgg > 0;
             }
-            numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, ndv);
+            numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, cs.getCountDistint());
             avgKeySize += Math.ceil(cs.getAvgColLen());
           }
         }

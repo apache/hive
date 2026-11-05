@@ -212,26 +212,52 @@ class TestStatsRulesProcFactory {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("groupByHashCases")
-  void testCheckMapSideAggregationHashCardinality(String name, long keyNdv, long expectedRows)
-      throws SemanticException {
-    assertGroupByHashCardinality(keyNdv, expectedRows);
+  void testCheckMapSideAggregationHashCardinality(String name, List<Long> keyNdvs, long parentRows,
+      long containerMb, long expectedRows) throws SemanticException {
+    assertGroupByHashCardinality(keyNdvs, parentRows, containerMb, expectedRows);
   }
 
+  // Hash entries are 64 bytes, so a 1 MB container holds about 7,300 entries. With hash
+  // aggregation the map-side estimate is parentRows / 2, without it parentRows.
+  // An unknown NDV must keep the pre-HIVE-29625 decision (unknown was 0, so the estimated
+  // table was empty): hash aggregation whenever there is any memory, regardless of input size.
   private static Stream<Arguments> groupByHashCases() {
     return Stream.of(
-        Arguments.of("ndvUnknownFallsBackToHalfParent",  -1L, 500L),
-        Arguments.of("ndvKnownUsesProduct",             100L, 100L)
+        Arguments.of("ndvUnknownUsesGroupByFallback", Arrays.asList(-1L), 1000L, 1024L, 500L),
+        Arguments.of("ndvKnownUsesProduct", Arrays.asList(100L), 1000L, 1024L, 100L),
+        Arguments.of("ndvUnknownKeysKeepHashAggregation", Arrays.asList(-1L, -1L), 1000L, 1L, 500L),
+        Arguments.of("ndvUnknownAndKnownKeysKeepHashAggregation", Arrays.asList(-1L, 100L), 1000L, 1L, 500L),
+        Arguments.of("ndvUnknownLargeInputKeepsHashAggregation", Arrays.asList(-1L), 100000L, 1L, 50000L),
+        Arguments.of("ndvUnknownWithoutHashMemoryDisablesHashAggregation", Arrays.asList(-1L), 1000L, 0L, 1000L),
+        Arguments.of("ndvKnownProductOverMemoryDisablesHashAggregation", Arrays.asList(100L, 100L), 1000L, 1L,
+            1000L)
     );
   }
 
-  private void assertGroupByHashCardinality(long keyNdv, long expectedRows) throws SemanticException {
-    Statistics parentStats = new Statistics(1000, 8000, 0, 0);
+  private void assertGroupByHashCardinality(List<Long> keyNdvs, long parentRows, long containerMb,
+      long expectedRows) throws SemanticException {
+    Statistics parentStats = new Statistics(parentRows, parentRows * 8, 0, 0);
     parentStats.setBasicStatsState(Statistics.State.COMPLETE);
     parentStats.setColumnStatsState(Statistics.State.COMPLETE);
-    ColStatistics keyCol = new ColStatistics("k", "int");
-    keyCol.setCountDistint(keyNdv);
-    keyCol.setNumNulls(0);
-    parentStats.setColumnStats(Collections.singletonList(keyCol));
+    List<ColStatistics> keyCols = new ArrayList<>();
+    List<ExprNodeDesc> keyExprs = new ArrayList<>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
+    List<ColumnInfo> signature = new ArrayList<>();
+    RowSchema rs = mock(RowSchema.class);
+    for (int i = 0; i < keyNdvs.size(); i++) {
+      ColStatistics keyCol = new ColStatistics("k" + i, "int");
+      keyCol.setCountDistint(keyNdvs.get(i));
+      keyCol.setNumNulls(0);
+      keyCols.add(keyCol);
+      ExprNodeColumnDesc keyExpr = new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "k" + i, "table", false);
+      keyExprs.add(keyExpr);
+      colExprMap.put("_col" + i, keyExpr);
+      ColumnInfo colInfo = new ColumnInfo("_col" + i, TypeInfoFactory.intTypeInfo, "table", false);
+      signature.add(colInfo);
+      when(rs.getColumnInfo("_col" + i)).thenReturn(colInfo);
+    }
+    when(rs.getSignature()).thenReturn(signature);
+    parentStats.setColumnStats(keyCols);
 
     @SuppressWarnings("unchecked")
     Operator<? extends OperatorDesc> parent = mock(Operator.class);
@@ -242,19 +268,12 @@ class TestStatsRulesProcFactory {
     when(gbyDesc.getMode()).thenReturn(GroupByDesc.Mode.HASH);
     when(gbyDesc.getAggregators()).thenReturn(Collections.emptyList());
     when(gbyDesc.isGroupingSetsPresent()).thenReturn(false);
-    ExprNodeColumnDesc keyExpr = new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "k", "table", false);
-    when(gbyDesc.getKeys()).thenReturn(Collections.singletonList(keyExpr));
+    when(gbyDesc.getKeys()).thenReturn(keyExprs);
 
     GroupByOperator gop = mock(GroupByOperator.class);
     when(gop.getParentOperators()).thenReturn(Collections.singletonList(parent));
     when(gop.getConf()).thenReturn(gbyDesc);
-    Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
-    colExprMap.put("_col0", keyExpr);
     when(gop.getColumnExprMap()).thenReturn(colExprMap);
-    RowSchema rs = mock(RowSchema.class);
-    ColumnInfo colInfo = new ColumnInfo("_col0", TypeInfoFactory.intTypeInfo, "table", false);
-    when(rs.getSignature()).thenReturn(Collections.singletonList(colInfo));
-    when(rs.getColumnInfo("_col0")).thenReturn(colInfo);
     when(gop.getSchema()).thenReturn(rs);
 
     Context context = mock(Context.class);
@@ -268,11 +287,10 @@ class TestStatsRulesProcFactory {
     when(ctx.getParseContext()).thenReturn(pctx);
 
     // checkMapSideAggregation calls DagUtils.getContainerResource(conf) to compute
-    // the available hash-aggregation memory. Stub it to a generous 1024 MB so the
-    // estimated hash table size stays well under the threshold and hashAgg is selected.
+    // the available hash-aggregation memory.
     try (MockedStatic<DagUtils> dagMock = mockStatic(DagUtils.class)) {
       Resource res = mock(Resource.class);
-      when(res.getMemorySize()).thenReturn(1024L);
+      when(res.getMemorySize()).thenReturn(containerMb);
       dagMock.when(() -> DagUtils.getContainerResource(any())).thenReturn(res);
 
       new StatsRulesProcFactory.GroupByStatsRule().process(gop, null, ctx, (Object[]) null);
