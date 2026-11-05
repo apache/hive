@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.mapred.JobConf;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -42,6 +43,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests for {@link MRCompactor#createBaseJobConf(HiveConf, String, Table, StorageDescriptor, ValidWriteIdList, CompactionInfo)}.
@@ -60,6 +63,99 @@ public class TestMRCompactorJobQueueConfiguration {
     input.confProperties.forEach(conf::set);
     JobConf c = compactor.createBaseJobConf(conf, "test-job", tbl, tbl.getSd(), new ValidReaderWriteIdList(), ci);
     assertEquals(input.expectedQueue, c.getQueueName(), "Test failed for the following input:" + input);
+  }
+
+  /**
+   * A table property must not be able to inject JVM arguments into the compaction map containers,
+   * since the compaction job may run as a privileged user (see metastore.compactor.run.as.user)
+   * while the property itself is settable by anyone owning the table.
+   */
+  @Test
+  void testCreateBaseJobConfIgnoresDeniedMRPropertyFromTableProperties() {
+    JobConf c = createBaseJobConf(Collections.singletonMap("compactor.mapreduce.map.java.opts",
+            "-javaagent:/tmp/evil.jar"), Collections.emptyMap(), Collections.emptyMap());
+    assertNull(c.get("mapreduce.map.java.opts"), "JVM options must not be settable via tblproperties");
+  }
+
+  /**
+   * Same as above, but through the ALTER TABLE ... COMPACT ... WITH OVERWRITE TBLPROPERTIES route,
+   * which reaches the same sink via a different argument.
+   */
+  @Test
+  void testCreateBaseJobConfIgnoresDeniedMRPropertyFromCompactionProperties() {
+    JobConf c = createBaseJobConf(Collections.emptyMap(), Collections.singletonMap("compactor.tmpjars",
+            "hdfs:///tmp/evil.jar"), Collections.emptyMap());
+    assertNull(c.get("tmpjars"), "Classpath additions must not be settable via ALTER TABLE COMPACT");
+  }
+
+  /**
+   * Keys on hive.conf.restricted.list are immutable at runtime and rejected by
+   * {@link HiveConf#verifyAndSet(String, String)}. The compactor writes through the unchecked
+   * setter, so it must apply the same policy itself.
+   */
+  @Test
+  void testCreateBaseJobConfIgnoresRestrictedListProperty() {
+    JobConf c = createBaseJobConf(
+        Collections.singletonMap("compactor.hive.security.authenticator.manager", "com.attacker.Authenticator"),
+        Collections.emptyMap(), Collections.singletonMap(HiveConf.ConfVars.HIVE_CONF_RESTRICTED_LIST.varname,
+            "hive.security.authenticator.manager"));
+    assertNotEquals("com.attacker.Authenticator", c.get("hive.security.authenticator.manager"),
+        "Restricted configs must not be overridable via tblproperties");
+  }
+
+  /** Values on hive.conf.hidden.list are credentials; they must not be redirectable either. */
+  @Test
+  void testCreateBaseJobConfIgnoresHiddenListProperty() {
+    JobConf c = createBaseJobConf(Collections.singletonMap("compactor.fs.s3a.secret.key", "attacker-key"),
+        Collections.emptyMap(), Collections.emptyMap());
+    assertNull(c.get("fs.s3a.secret.key"), "Hidden configs must not be settable via tblproperties");
+  }
+
+  /** Guards against the fix being over-broad: documented resource tuning must keep working. */
+  @Test
+  void testCreateBaseJobConfStillAppliesLegitimateOverrides() {
+    Map<String, String> tableProperties = new HashMap<>();
+    tableProperties.put("compactor.mapreduce.map.memory.mb", "2048");
+    tableProperties.put("compactor.hive.compactor.gather.stats", "false");
+    JobConf c = createBaseJobConf(tableProperties, Collections.emptyMap(), Collections.emptyMap());
+    assertEquals("2048", c.get("mapreduce.map.memory.mb"));
+    assertEquals("false", c.get("hive.compactor.gather.stats"));
+  }
+
+  /**
+   * The "tblprops." prefix of ALTER TABLE ... COMPACT does not reach the job configuration, but it
+   * does reach the table properties handed to the ORC record writers, which select a key provider,
+   * an encryption or masking policy, and a filter plugin from that map.
+   */
+  @Test
+  void testCreateBaseJobConfIgnoresDeniedTblProperty() {
+    JobConf c = createBaseJobConf(Collections.emptyMap(),
+        Collections.singletonMap("tblprops.orc.key.provider", "kms://attacker"), Collections.emptyMap());
+    Map<String, String> tableProps = new StringableMap(c.get("hive.compactor.table.props"));
+    assertNull(tableProps.get("orc.key.provider"),
+        "Encryption key provider must not be settable via ALTER TABLE COMPACT");
+  }
+
+  /** Guards against over-blocking: ordinary ORC tuning through "tblprops." must still work. */
+  @Test
+  void testCreateBaseJobConfStillAppliesLegitimateTblProperty() {
+    JobConf c = createBaseJobConf(Collections.emptyMap(), Collections.singletonMap("tblprops.orc.compress", "ZLIB"),
+        Collections.emptyMap());
+    Map<String, String> tableProps = new StringableMap(c.get("hive.compactor.table.props"));
+    assertEquals("ZLIB", tableProps.get("orc.compress"));
+  }
+
+
+  private static JobConf createBaseJobConf(Map<String, String> tableProperties,
+        Map<String, String> compactionProperties, Map<String, String> confProperties) {
+    Table tbl = createPersonTable();
+    tbl.setParameters(new HashMap<>(tableProperties));
+    MRCompactor compactor = new MRCompactor(null);
+    CompactionInfo ci = new CompactionInfo(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MAJOR);
+    ci.properties = new StringableMap(new HashMap<>(compactionProperties)).toString();
+    HiveConf conf = new HiveConf();
+    confProperties.forEach(conf::set);
+    return compactor.createBaseJobConf(conf, "test-job", tbl, tbl.getSd(), new ValidReaderWriteIdList(), ci);
   }
 
   private static Stream<ConfSetup> generateBaseJobConfSetup() {

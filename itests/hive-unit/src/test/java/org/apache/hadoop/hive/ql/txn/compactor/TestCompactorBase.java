@@ -96,6 +96,7 @@ class TestCompactorBase {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
     HiveConf.setTimeVar(hiveConf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 0, TimeUnit.SECONDS);
+    HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_COMPACTOR_CONF_DENYLIST, "(?!)");
 
     TestTxnDbUtil.setConfValues(hiveConf);
     TestTxnDbUtil.cleanDb(hiveConf);
