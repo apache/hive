@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.common.util.AnnotationUtils;
 
 /**
@@ -121,7 +122,8 @@ public class VectorExpressionDescriptor {
         return CHAR;
       } else if (VectorizationContext.varcharTypePattern.matcher(lower).matches()) {
         return VARCHAR;
-      } else if (lower.equals(serdeConstants.BINARY_TYPE_NAME)) {
+      } else if (lower.equals(serdeConstants.BINARY_TYPE_NAME)
+          || TypeInfoUtils.getBaseName(lower).equals(serdeConstants.GEOMETRY_TYPE_NAME)) {
         return BINARY;
       } else if (VectorizationContext.decimalTypePattern.matcher(lower).matches()) {
         return DECIMAL;

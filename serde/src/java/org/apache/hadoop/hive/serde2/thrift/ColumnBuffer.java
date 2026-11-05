@@ -86,7 +86,7 @@ public class ColumnBuffer extends AbstractList {
     } else if (type == Type.DOUBLE_TYPE || type == Type.FLOAT_TYPE) {
       doubleVars = (double[]) values;
       size = doubleVars.length;
-    } else if (type == Type.BINARY_TYPE) {
+    } else if (type == Type.BINARY_TYPE || type == Type.GEOMETRY_TYPE) {
       binaryVars = (List<ByteBuffer>) values;
       size = binaryVars.size();
     } else if (type == Type.STRING_TYPE) {
@@ -124,6 +124,7 @@ public class ColumnBuffer extends AbstractList {
         doubleVars = new double[DEFAULT_SIZE];
         break;
       case BINARY_TYPE:
+      case GEOMETRY_TYPE:
         binaryVars = new ArrayList<ByteBuffer>();
         break;
       default:
@@ -234,7 +235,7 @@ public class ColumnBuffer extends AbstractList {
       size = doubleVars.length;
       return subset;
     }
-    if (type == Type.BINARY_TYPE) {
+    if (type == Type.BINARY_TYPE || type == Type.GEOMETRY_TYPE) {
       ColumnBuffer subset = new ColumnBuffer(type, subNulls, binaryVars.subList(0, end));
       binaryVars = binaryVars.subList(end, binaryVars.size());
       nulls = nulls.get(end, size);
@@ -303,6 +304,7 @@ public class ColumnBuffer extends AbstractList {
       case STRING_TYPE:
         return stringVars.get(index);
       case BINARY_TYPE:
+      case GEOMETRY_TYPE:
         return binaryVars.get(index).array();
     }
     return null;
@@ -345,6 +347,7 @@ public class ColumnBuffer extends AbstractList {
       value.setStringVal(new TStringColumn(stringVars, nullMasks));
       break;
     case BINARY_TYPE:
+    case GEOMETRY_TYPE:
       value.setBinaryVal(new TBinaryColumn(binaryVars, nullMasks));
       break;
     }
@@ -389,6 +392,7 @@ public class ColumnBuffer extends AbstractList {
       doubleVars()[size] = field == null ? 0 : (Double) field;
       break;
     case BINARY_TYPE:
+    case GEOMETRY_TYPE:
       nulls.set(binaryVars.size(), field == null);
       binaryVars.add(field == null ? EMPTY_BINARY : ByteBuffer.wrap((byte[]) field));
       break;

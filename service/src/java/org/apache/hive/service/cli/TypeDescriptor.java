@@ -109,6 +109,7 @@ public class TypeDescriptor {
     switch (type) {
     case STRING_TYPE:
     case BINARY_TYPE:
+    case GEOMETRY_TYPE:
       return Integer.MAX_VALUE;
     case CHAR_TYPE:
     case VARCHAR_TYPE:

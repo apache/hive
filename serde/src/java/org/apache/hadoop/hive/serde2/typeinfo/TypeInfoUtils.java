@@ -334,7 +334,7 @@ public final class TypeInfoUtils {
             end++;
           } while (typeInfoString.charAt(end) != '\'');
         } else if (typeInfoString.charAt(begin) == '\'' &&
-            typeInfoString.charAt(begin + 1) == ')') {
+            (typeInfoString.charAt(begin + 1) == ')' || typeInfoString.charAt(begin + 1) == ',')) {
           // Ignore closing quote
           begin++;
           end++;
@@ -535,6 +535,12 @@ public final class TypeInfoUtils {
             return TypeInfoFactory.getTimestampTypeInfo(getTimestampPrecision(params));
           case TIMESTAMPLOCALTZ:
             return TypeInfoFactory.getTimestampTZTypeInfo(ZoneId.systemDefault(), getTimestampPrecision(params));
+          case GEOMETRY:
+            if (params.length > 1) {
+              throw new IllegalArgumentException("Type geometry only takes one parameter, but " +
+                  params.length + " is seen");
+            }
+            return TypeInfoFactory.getGeometryTypeInfo(params.length == 0 ? null : params[0]);
         default:
           return TypeInfoFactory.getPrimitiveTypeInfo(typeEntry.typeName);
         }
@@ -1048,6 +1054,11 @@ public final class TypeInfoUtils {
       return true;
     }
 
+    // Allow implicit WKB binary to geometry conversion
+    if (from == PrimitiveCategory.BINARY && to == PrimitiveCategory.GEOMETRY) {
+      return true;
+    }
+
     // Allow implicit String to Date conversion
     if (fromPg == PrimitiveGrouping.DATE_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
       return true;
@@ -1095,6 +1106,11 @@ public final class TypeInfoUtils {
 
     if (isVoidCompatibleTarget(from, to)) {
       return true;
+    }
+
+    // Geospatial values are never implicitly converted between coordinate reference systems
+    if (from instanceof GeospatialTypeInfo && to instanceof GeospatialTypeInfo) {
+      return ((GeospatialTypeInfo) to).isCompatibleWith(from);
     }
 
     // Reimplemented to use PrimitiveCategory rather than TypeInfo, because

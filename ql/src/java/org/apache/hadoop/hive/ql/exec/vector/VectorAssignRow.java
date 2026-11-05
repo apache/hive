@@ -451,6 +451,7 @@ public class VectorAssignRow {
           }
           break;
         case BINARY:
+        case GEOMETRY:
           {
             if (object instanceof byte[]) {
               byte[] bytes = (byte[]) object;
@@ -775,6 +776,7 @@ public class VectorAssignRow {
                   object, sourcePrimitiveOI);
           break;
         case BINARY:
+        case GEOMETRY:
           {
             final BytesWritable bytesWritable =
                 PrimitiveObjectInspectorUtils.getBinary(

@@ -88,6 +88,7 @@ public class HiveValueConverter {
           return LocalDateTime.ofInstant(((Timestamp) object).toSqlTimestamp().toInstant(), ZoneId.of("UTC"));
         }
       case BINARY:
+      case GEOMETRY:
         return ByteBuffer.wrap((byte[]) object);
       case FIXED:
         return (byte[]) object;

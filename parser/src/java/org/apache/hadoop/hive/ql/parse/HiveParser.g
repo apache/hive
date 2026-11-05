@@ -157,6 +157,7 @@ TOK_STRUCT;
 TOK_MAP;
 TOK_UNIONTYPE;
 TOK_VARIANT;
+TOK_GEOMETRY;
 TOK_COLTYPELIST;
 TOK_CREATECATALOG;
 TOK_PROPERTIES;
@@ -640,6 +641,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_ZONE", "ZONE");
     xlateMap.put("KW_STRING", "STRING");
     xlateMap.put("KW_BINARY", "BINARY");
+    xlateMap.put("KW_GEOMETRY", "GEOMETRY");
     xlateMap.put("KW_ARRAY", "ARRAY");
     xlateMap.put("KW_MAP", "MAP");
     xlateMap.put("KW_REDUCE", "REDUCE");
@@ -2451,6 +2453,7 @@ primitiveType
     //| KW_INTERVAL KW_DAY KW_TO KW_SECOND -> TOK_INTERVAL_DAY_TIME
     | KW_STRING        ->    TOK_STRING
     | KW_BINARY        ->    TOK_BINARY
+    | KW_GEOMETRY (LPAREN crs=StringLiteral RPAREN)? -> ^(TOK_GEOMETRY $crs?)
     | KW_DECIMAL (LPAREN prec=Number (COMMA scale=Number)? RPAREN)? -> ^(TOK_DECIMAL $prec? $scale?)
     | KW_VARCHAR LPAREN length=Number RPAREN      ->    ^(TOK_VARCHAR $length)
     | KW_CHAR LPAREN length=Number RPAREN      ->    ^(TOK_CHAR $length)

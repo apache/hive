@@ -265,6 +265,31 @@ public class TestFunctionRegistry {
     common(char5, varchar10, TypeInfoFactory.stringTypeInfo);
   }
 
+  @Test
+  public void testCommonClassGeometry() {
+    TypeInfo geometry = TypeInfoFactory.geometryTypeInfo;
+    TypeInfo geometry3857 = TypeInfoFactory.getGeometryTypeInfo("EPSG:3857");
+    TypeInfo geometry3857Lower = TypeInfoFactory.getGeometryTypeInfo("epsg:3857");
+
+    common(geometry3857, geometry3857Lower, geometry3857);
+    common(geometry3857Lower, geometry3857, geometry3857Lower);
+    comparison(geometry3857, geometry3857Lower, geometry3857);
+    unionAll(geometry3857Lower, geometry3857, geometry3857Lower);
+    common(TypeInfoFactory.voidTypeInfo, geometry3857, geometry3857);
+    common(geometry3857, TypeInfoFactory.voidTypeInfo, geometry3857);
+    common(TypeInfoFactory.binaryTypeInfo, geometry3857, geometry3857);
+    common(geometry3857, TypeInfoFactory.binaryTypeInfo, geometry3857);
+    common(geometry, geometry3857, null);
+    common(TypeInfoFactory.stringTypeInfo, geometry, null);
+
+    comparison(TypeInfoFactory.binaryTypeInfo, geometry3857, geometry3857);
+    comparison(TypeInfoFactory.voidTypeInfo, geometry3857, geometry3857);
+    comparison(geometry, geometry3857, null);
+
+    unionAll(TypeInfoFactory.voidTypeInfo, geometry3857, geometry3857);
+    unionAll(geometry, geometry3857, null);
+  }
+
   private void comparison(TypeInfo a, TypeInfo b, TypeInfo result) {
     assertEquals(result, FunctionRegistry.getCommonClassForComparison(a, b));
   }

@@ -1,0 +1,311 @@
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_dml (id INT, geom GEOMETRY, geom_3857 GEOMETRY('EPSG:3857'))
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_dml
+POSTHOOK: query: CREATE EXTERNAL TABLE geometry_dml (id INT, geom GEOMETRY, geom_3857 GEOMETRY('EPSG:3857'))
+STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_dml
+PREHOOK: query: INSERT INTO geometry_dml VALUES
+(1, unhex('0101000000000000000000F03F0000000000000040'), unhex('010100000000000000000008400000000000001040')),
+(2, unhex('010100000000000000000008400000000000001040'), NULL),
+(3, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@geometry_dml
+POSTHOOK: query: INSERT INTO geometry_dml VALUES
+(1, unhex('0101000000000000000000F03F0000000000000040'), unhex('010100000000000000000008400000000000001040')),
+(2, unhex('010100000000000000000008400000000000001040'), NULL),
+(3, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@geometry_dml
+PREHOOK: query: ALTER TABLE geometry_dml CREATE TAG before_dml
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@geometry_dml
+POSTHOOK: query: ALTER TABLE geometry_dml CREATE TAG before_dml
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@geometry_dml
+PREHOOK: query: UPDATE geometry_dml SET geom = unhex('010100000000000000000008400000000000001040') WHERE id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: default@geometry_dml
+PREHOOK: Output: default@geometry_dml
+POSTHOOK: query: UPDATE geometry_dml SET geom = unhex('010100000000000000000008400000000000001040') WHERE id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml
+PREHOOK: query: UPDATE geometry_dml SET geom_3857 = CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857'))
+WHERE geom_3857 IS NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: default@geometry_dml
+PREHOOK: Output: default@geometry_dml
+POSTHOOK: query: UPDATE geometry_dml SET geom_3857 = CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857'))
+WHERE geom_3857 IS NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml
+PREHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	010100000000000000000008400000000000001040	010100000000000000000008400000000000001040
+2	010100000000000000000008400000000000001040	0101000000000000000000F03F0000000000000040
+3	NULL	0101000000000000000000F03F0000000000000040
+PREHOOK: query: DELETE FROM geometry_dml WHERE geom IS NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: default@geometry_dml
+POSTHOOK: query: DELETE FROM geometry_dml WHERE geom IS NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml
+PREHOOK: query: DELETE FROM geometry_dml WHERE geom_3857 = CAST(unhex('010100000000000000000008400000000000001040') AS GEOMETRY('EPSG:3857'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: default@geometry_dml
+POSTHOOK: query: DELETE FROM geometry_dml WHERE geom_3857 = CAST(unhex('010100000000000000000008400000000000001040') AS GEOMETRY('EPSG:3857'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml
+PREHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	010100000000000000000008400000000000001040	0101000000000000000000F03F0000000000000040
+PREHOOK: query: MERGE INTO geometry_dml t
+USING (SELECT 2 AS id, CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY) AS geom
+       UNION ALL
+       SELECT 4 AS id, CAST(unhex('010100000000000000000008400000000000001040') AS GEOMETRY) AS geom) s
+ON t.id = s.id
+WHEN MATCHED THEN UPDATE SET geom = s.geom
+WHEN NOT MATCHED THEN INSERT VALUES (s.id, s.geom, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: default@geometry_dml
+PREHOOK: Output: default@geometry_dml
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: MERGE INTO geometry_dml t
+USING (SELECT 2 AS id, CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY) AS geom
+       UNION ALL
+       SELECT 4 AS id, CAST(unhex('010100000000000000000008400000000000001040') AS GEOMETRY) AS geom) s
+ON t.id = s.id
+WHEN MATCHED THEN UPDATE SET geom = s.geom
+WHEN NOT MATCHED THEN INSERT VALUES (s.id, s.geom, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(geometry_dml)geometry_dml.null, ]
+PREHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	0101000000000000000000F03F0000000000000040	0101000000000000000000F03F0000000000000040
+4	010100000000000000000008400000000000001040	NULL
+PREHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM default.geometry_dml.tag_before_dml
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml@tag_before_dml
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM default.geometry_dml.tag_before_dml
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml@tag_before_dml
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	0101000000000000000000F03F0000000000000040	010100000000000000000008400000000000001040
+2	010100000000000000000008400000000000001040	NULL
+3	NULL	NULL
+PREHOOK: query: INSERT OVERWRITE TABLE geometry_dml
+SELECT id, geom, geom_3857 FROM default.geometry_dml.tag_before_dml WHERE geom IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml@tag_before_dml
+PREHOOK: Output: default@geometry_dml
+POSTHOOK: query: INSERT OVERWRITE TABLE geometry_dml
+SELECT id, geom, geom_3857 FROM default.geometry_dml.tag_before_dml WHERE geom IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml@tag_before_dml
+POSTHOOK: Output: default@geometry_dml
+PREHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	0101000000000000000000F03F0000000000000040	010100000000000000000008400000000000001040
+2	010100000000000000000008400000000000001040	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_dml_target (id INT, geom GEOMETRY, geom_3857 GEOMETRY('EPSG:3857'))
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_dml_target
+POSTHOOK: query: CREATE EXTERNAL TABLE geometry_dml_target (id INT, geom GEOMETRY, geom_3857 GEOMETRY('EPSG:3857'))
+STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_dml_target
+PREHOOK: query: INSERT INTO geometry_dml_target SELECT * FROM geometry_dml
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: default@geometry_dml_target
+POSTHOOK: query: INSERT INTO geometry_dml_target SELECT * FROM geometry_dml
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml_target
+PREHOOK: query: INSERT INTO geometry_dml_target (id, geom_3857) SELECT id + 10, geom_3857 FROM geometry_dml
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml
+PREHOOK: Output: default@geometry_dml_target
+POSTHOOK: query: INSERT INTO geometry_dml_target (id, geom_3857) SELECT id + 10, geom_3857 FROM geometry_dml
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml
+POSTHOOK: Output: default@geometry_dml_target
+PREHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml_target
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml_target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(geom AS BINARY)), hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml_target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml_target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	0101000000000000000000F03F0000000000000040	010100000000000000000008400000000000001040
+11	NULL	010100000000000000000008400000000000001040
+12	NULL	NULL
+2	010100000000000000000008400000000000001040	NULL
+PREHOOK: query: ANALYZE TABLE geometry_dml_target COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@geometry_dml_target
+PREHOOK: Output: default@geometry_dml_target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: ANALYZE TABLE geometry_dml_target COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@geometry_dml_target
+POSTHOOK: Output: default@geometry_dml_target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: DESCRIBE FORMATTED geometry_dml_target id
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_dml_target
+POSTHOOK: query: DESCRIBE FORMATTED geometry_dml_target id
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_dml_target
+col_name            	id                  
+data_type           	int                 
+min                 	1                   
+max                 	12                  
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED geometry_dml_target geom
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_dml_target
+POSTHOOK: query: DESCRIBE FORMATTED geometry_dml_target geom
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_dml_target
+col_name            	geom                
+data_type           	geometry            
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\"}}
+PREHOOK: query: SELECT content, record_count, hex(CAST(readable_metrics.geom_3857.lower_bound AS BINARY)),
+    hex(CAST(readable_metrics.geom_3857.upper_bound AS BINARY)), readable_metrics.geom_3857.null_value_count
+FROM default.geometry_dml_target.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml_target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT content, record_count, hex(CAST(readable_metrics.geom_3857.lower_bound AS BINARY)),
+    hex(CAST(readable_metrics.geom_3857.upper_bound AS BINARY)), readable_metrics.geom_3857.null_value_count
+FROM default.geometry_dml_target.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml_target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	2	010100000000000000000008400000000000001040	010100000000000000000008400000000000001040	1
+0	2	010100000000000000000008400000000000001040	010100000000000000000008400000000000001040	1
+PREHOOK: query: SELECT ST_AsText(ST_GeomFromWKB(CAST(readable_metrics.geom.lower_bound AS BINARY))),
+    ST_AsText(ST_GeomFromWKB(CAST(readable_metrics.geom.upper_bound AS BINARY)))
+FROM default.geometry_dml_target.files WHERE readable_metrics.geom.lower_bound IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml_target
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT ST_AsText(ST_GeomFromWKB(CAST(readable_metrics.geom.lower_bound AS BINARY))),
+    ST_AsText(ST_GeomFromWKB(CAST(readable_metrics.geom.upper_bound AS BINARY)))
+FROM default.geometry_dml_target.files WHERE readable_metrics.geom.lower_bound IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml_target
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POINT (1 2)	POINT (3 4)
+PREHOOK: query: CREATE MATERIALIZED VIEW geometry_dml_mv STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT id, geom_3857 FROM geometry_dml_target WHERE geom_3857 IS NOT NULL
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@geometry_dml_target
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_dml_mv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE MATERIALIZED VIEW geometry_dml_mv STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT id, geom_3857 FROM geometry_dml_target WHERE geom_3857 IS NOT NULL
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@geometry_dml_target
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_dml_mv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: geometry_dml_mv.geom_3857 SIMPLE [(geometry_dml_target)geometry_dml_target.FieldSchema(name:geom_3857, type:geometry('EPSG:3857'), comment:null), ]
+POSTHOOK: Lineage: geometry_dml_mv.id SIMPLE [(geometry_dml_target)geometry_dml_target.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: DESCRIBE geometry_dml_mv
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_dml_mv
+POSTHOOK: query: DESCRIBE geometry_dml_mv
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_dml_mv
+id                  	int                 	                    
+geom_3857           	geometry('EPSG:3857')	                    
+PREHOOK: query: SELECT id, hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml_mv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_dml_mv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(geom_3857 AS BINARY)) FROM geometry_dml_mv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_dml_mv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	010100000000000000000008400000000000001040
+11	010100000000000000000008400000000000001040
+PREHOOK: query: DROP MATERIALIZED VIEW geometry_dml_mv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@geometry_dml_mv
+PREHOOK: Output: default@geometry_dml_mv
+POSTHOOK: query: DROP MATERIALIZED VIEW geometry_dml_mv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@geometry_dml_mv
+POSTHOOK: Output: default@geometry_dml_mv

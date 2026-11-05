@@ -99,7 +99,8 @@ enum TTypeId {
   INTERVAL_DAY_TIME_TYPE,
   TIMESTAMPLOCALTZ_TYPE,
   UNKNOWN_TYPE,
-  VARIANT_TYPE
+  VARIANT_TYPE,
+  GEOMETRY_TYPE
 }
 
 const set<TTypeId> PRIMITIVE_TYPES = [
@@ -121,7 +122,8 @@ const set<TTypeId> PRIMITIVE_TYPES = [
   TTypeId.INTERVAL_YEAR_MONTH_TYPE,
   TTypeId.INTERVAL_DAY_TIME_TYPE,
   TTypeId.TIMESTAMPLOCALTZ_TYPE,
-  TTypeId.UNKNOWN_TYPE
+  TTypeId.UNKNOWN_TYPE,
+  TTypeId.GEOMETRY_TYPE
 ]
 
 const set<TTypeId> COMPLEX_TYPES = [
@@ -163,6 +165,7 @@ const map<TTypeId,string> TYPE_NAMES = {
   TTypeId.TIMESTAMPLOCALTZ_TYPE: "TIMESTAMP WITH LOCAL TIME ZONE"
   TTypeId.UNKNOWN_TYPE: "UNKNOWN"
   TTypeId.VARIANT_TYPE: "VARIANT"
+  TTypeId.GEOMETRY_TYPE: "GEOMETRY"
 }
 
 // Thrift does not support recursively defined types or forward declarations,

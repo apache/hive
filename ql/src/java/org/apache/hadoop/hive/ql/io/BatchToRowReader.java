@@ -667,6 +667,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
         case VARCHAR:
           return nextVarchar(vector, row, ((VarcharTypeInfo)pschema).getLength(), previous);
         case BINARY:
+        case GEOMETRY:
           return nextBinary(vector, row, previous);
         case DECIMAL:
           return nextDecimal(vector, row, previous);

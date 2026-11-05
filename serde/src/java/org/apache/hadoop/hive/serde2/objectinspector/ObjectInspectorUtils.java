@@ -731,6 +731,7 @@ public final class ObjectInspectorUtils {
       case VARCHAR:
         return ((HiveVarcharObjectInspector)poi).getPrimitiveWritableObject(o).hashCode();
       case BINARY:
+      case GEOMETRY:
         return ((BinaryObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
 
       case DATE:
@@ -869,6 +870,7 @@ public final class ObjectInspectorUtils {
             return Murmur3.hash32(text.getBytes(), text.getLength());
           }
           case BINARY:
+          case GEOMETRY:
             return Murmur3.hash32(((BinaryObjectInspector) poi).getPrimitiveWritableObject(o).getBytes());
 
           case DATE:
@@ -1148,7 +1150,8 @@ public final class ObjectInspectorUtils {
         HiveVarcharWritable t2 = ((HiveVarcharObjectInspector)poi2).getPrimitiveWritableObject(o2);
         return t1.compareTo(t2);
       }
-      case BINARY: {
+      case BINARY:
+      case GEOMETRY: {
         BytesWritable bw1 = ((BinaryObjectInspector) poi1).getPrimitiveWritableObject(o1);
         BytesWritable bw2 = ((BinaryObjectInspector) poi2).getPrimitiveWritableObject(o2);
         return bw1.compareTo(bw2);
@@ -1557,6 +1560,7 @@ public final class ObjectInspectorUtils {
     case INTERVAL_DAY_TIME:
       return oi instanceof SettableHiveIntervalDayTimeObjectInspector;
     case BINARY:
+    case GEOMETRY:
       return oi instanceof SettableBinaryObjectInspector;
     case DECIMAL:
       return oi instanceof SettableHiveDecimalObjectInspector;

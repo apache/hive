@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
 
@@ -32,6 +33,13 @@ public class JavaBinaryObjectInspector extends AbstractPrimitiveJavaObjectInspec
 
   JavaBinaryObjectInspector() {
     super(TypeInfoFactory.binaryTypeInfo);
+  }
+
+  /**
+   * For binary-backed types other than binary, such as the geospatial types.
+   */
+  JavaBinaryObjectInspector(PrimitiveTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override

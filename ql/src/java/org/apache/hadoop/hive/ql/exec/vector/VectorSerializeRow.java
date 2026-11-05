@@ -135,6 +135,7 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
           field.writer = new VectorSerializeStringWriter();
           break;
         case BINARY:
+        case GEOMETRY:
           field.writer = new VectorSerializeBinaryWriter();
           break;
         case DECIMAL:

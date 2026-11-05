@@ -175,6 +175,7 @@ public class DynamicValueVectorExpression extends VectorExpression {
         setBytesValue(bytesVal);
         break;
       case BINARY:
+      case GEOMETRY:
         bytesVal = PrimitiveObjectInspectorUtils.getBinary(val, poi).copyBytes();
         setBytesValue(bytesVal);
         break;

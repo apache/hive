@@ -291,7 +291,8 @@ public final class LazyUtils {
           needsEscape);
       break;
     }
-    case BINARY: {
+    case BINARY:
+    case GEOMETRY: {
       BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
       byte[] toEncode = new byte[bw.getLength()];
       System.arraycopy(bw.getBytes(), 0,toEncode, 0, bw.getLength());
@@ -389,7 +390,8 @@ public final class LazyUtils {
         dos.writeDouble(d);
         break;
 
-      case BINARY: {
+      case BINARY:
+      case GEOMETRY: {
         BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
         out.write(bw.getBytes(), 0, bw.getLength());
         break;

@@ -109,6 +109,9 @@ public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectI
         return IcebergTimeObjectInspector.get();
       case UNKNOWN:
         return UnknownObjectInspector.get();
+      case GEOMETRY:
+        return IcebergBinaryObjectInspector.get(
+            TypeInfoFactory.getGeometryTypeInfo(((Types.GeometryType) primitiveType).crs()));
       default:
         throw new IllegalArgumentException(primitiveType.typeId() + " type is not supported");
     }

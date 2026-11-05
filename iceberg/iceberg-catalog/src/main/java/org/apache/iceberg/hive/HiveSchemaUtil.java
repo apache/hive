@@ -29,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.hive.iceberg.com.fasterxml.jackson.databind.ObjectMapper;
@@ -413,6 +414,8 @@ public final class HiveSchemaUtil {
         return "variant";
       case UNKNOWN:
         return "unknown";
+      case GEOMETRY:
+        return TypeInfoFactory.getGeometryTypeInfo(((Types.GeometryType) type).crs()).getQualifiedName();
       default:
         throw new UnsupportedOperationException(type + " is not supported");
     }
@@ -623,6 +626,8 @@ public final class HiveSchemaUtil {
     return switch (type.typeId()) {
       case DATE, TIME, TIMESTAMP, TIMESTAMP_NANO ->
           Literal.of(stripQuotes(defaultValue)).to(type);
+      case GEOMETRY -> throw new UnsupportedOperationException(
+          "Default values for type " + type + " are not supported");
       default -> Conversions.fromPartitionString(type, stripQuotes(defaultValue));
     };
   }

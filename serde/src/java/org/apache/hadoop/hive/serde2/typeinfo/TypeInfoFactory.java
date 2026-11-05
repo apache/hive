@@ -81,6 +81,11 @@ public final class TypeInfoFactory {
 
   public static final PrimitiveTypeInfo unknownTypeInfo = new PrimitiveTypeInfo("unknown");
 
+  /**
+   * A GeometryTypeInfo with the default CRS.
+   */
+  public static final GeometryTypeInfo geometryTypeInfo = new GeometryTypeInfo();
+
   // Map from type name (such as int or varchar(40) to the corresponding PrimitiveTypeInfo
   // instance.
   private static ConcurrentHashMap<String, PrimitiveTypeInfo> cachedPrimitiveTypeInfo =
@@ -107,6 +112,7 @@ public final class TypeInfoFactory {
     cachedPrimitiveTypeInfo.put("unknown", unknownTypeInfo);
     cachedPrimitiveTypeInfo.put(nanoTimestampTypeInfo.toString(), nanoTimestampTypeInfo);
     cachedPrimitiveTypeInfo.put(timestampNanoLocalTZTypeInfo.toString(), timestampNanoLocalTZTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.GEOMETRY_TYPE_NAME, geometryTypeInfo);
   }
 
   /**
@@ -197,6 +203,11 @@ public final class TypeInfoFactory {
           return null;
         }
         return new TimestampLocalTZTypeInfo(prec, tz);
+      case GEOMETRY:
+        if (parts.typeParams.length != 1) {
+          return null;
+        }
+        return new GeometryTypeInfo(parts.typeParams[0]);
       default:
         return null;
     }
@@ -226,6 +237,13 @@ public final class TypeInfoFactory {
 
   public static TimestampTypeInfo getTimestampTypeInfo(int precision) {
     return new TimestampTypeInfo(precision);
+  }
+
+  /**
+   * @param crs the coordinate reference system, or null for the default one
+   */
+  public static GeometryTypeInfo getGeometryTypeInfo(String crs) {
+    return (GeometryTypeInfo) getPrimitiveTypeInfo(new GeometryTypeInfo(crs).getQualifiedName());
   }
 
   public static TypeInfo getPrimitiveTypeInfoFromPrimitiveWritable(

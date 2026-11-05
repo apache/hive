@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 
 /**
@@ -37,6 +38,11 @@ public class WritableConstantBinaryObjectInspector extends
   
   public WritableConstantBinaryObjectInspector(BytesWritable value) {
     super();
+    this.value = value;
+  }
+
+  public WritableConstantBinaryObjectInspector(PrimitiveTypeInfo typeInfo, BytesWritable value) {
+    super(typeInfo);
     this.value = value;
   }
 

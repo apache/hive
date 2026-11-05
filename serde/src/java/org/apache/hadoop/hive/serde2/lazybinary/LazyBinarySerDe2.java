@@ -133,6 +133,7 @@ public class LazyBinarySerDe2 extends LazyBinarySerDe {
     case VARCHAR:
       return new LBHiveVarcharSerializer();
     case BINARY:
+    case GEOMETRY:
       return new LBBinarySerializer();
     case DATE:
       return new LBDateSerializer();

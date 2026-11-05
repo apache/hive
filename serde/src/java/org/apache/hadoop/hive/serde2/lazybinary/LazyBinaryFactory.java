@@ -95,6 +95,7 @@ public final class LazyBinaryFactory {
     case INTERVAL_DAY_TIME:
       return new LazyBinaryHiveIntervalDayTime((WritableHiveIntervalDayTimeObjectInspector) oi);
     case BINARY:
+    case GEOMETRY:
       return new LazyBinaryBinary((WritableBinaryObjectInspector) oi);
     case DECIMAL:
       return new LazyBinaryHiveDecimal((WritableHiveDecimalObjectInspector) oi);

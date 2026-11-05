@@ -33,7 +33,8 @@ public enum TTypeId implements org.apache.thrift.TEnum {
   INTERVAL_DAY_TIME_TYPE(21),
   TIMESTAMPLOCALTZ_TYPE(22),
   UNKNOWN_TYPE(23),
-  VARIANT_TYPE(24);
+  VARIANT_TYPE(24),
+  GEOMETRY_TYPE(25);
 
   private final int value;
 
@@ -106,6 +107,8 @@ public enum TTypeId implements org.apache.thrift.TEnum {
         return UNKNOWN_TYPE;
       case 24:
         return VARIANT_TYPE;
+      case 25:
+        return GEOMETRY_TYPE;
       default:
         return null;
     }

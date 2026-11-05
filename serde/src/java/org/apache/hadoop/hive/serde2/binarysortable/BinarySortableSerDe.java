@@ -299,7 +299,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
             return r;
       }
 
-      case BINARY: {
+      case BINARY:
+      case GEOMETRY: {
         BytesWritable bw = new BytesWritable() ;
         // Get the actual length first
         int start = buffer.tell();
@@ -720,7 +721,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
         return;
       }
 
-      case BINARY: {
+      case BINARY:
+      case GEOMETRY: {
         BinaryObjectInspector baoi = (BinaryObjectInspector) poi;
         BytesWritable ba = baoi.getPrimitiveWritableObject(o);
         byte[] toSer = new byte[ba.getLength()];

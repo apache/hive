@@ -198,6 +198,15 @@ public final class PrimitiveObjectInspectorUtils {
     }
   }
 
+  /**
+   * Registers a type whose value classes are those of another registered type, so that the
+   * class-based lookups keep resolving to that other type.
+   */
+  static void registerTypeSharingValueClasses(PrimitiveTypeEntry t) {
+    primitiveCategoryToTypeEntry.put(t.primitiveCategory, t);
+    typeNameToTypeEntry.put(t.typeName, t);
+  }
+
   public static final PrimitiveTypeEntry binaryTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.BINARY, serdeConstants.BINARY_TYPE_NAME, byte[].class,
       byte[].class, BytesWritable.class);
@@ -254,6 +263,9 @@ public final class PrimitiveObjectInspectorUtils {
   public static final PrimitiveTypeEntry charTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.CHAR, serdeConstants.CHAR_TYPE_NAME, null, HiveChar.class,
       HiveCharWritable.class);
+  public static final PrimitiveTypeEntry geometryTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.GEOMETRY, serdeConstants.GEOMETRY_TYPE_NAME, null, byte[].class,
+      BytesWritable.class);
 
   // The following is a complex type for special handling
   public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(
@@ -279,6 +291,7 @@ public final class PrimitiveObjectInspectorUtils {
     registerType(intervalDayTimeTypeEntry);
     registerType(decimalTypeEntry);
     registerType(unknownTypeEntry);
+    registerTypeSharingValueClasses(geometryTypeEntry);
   }
 
   /**
@@ -465,7 +478,8 @@ public final class PrimitiveObjectInspectorUtils {
       return ((HiveIntervalDayTimeObjectInspector) oi1).getPrimitiveWritableObject(o1)
           .equals(((HiveIntervalDayTimeObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
-    case BINARY: {
+    case BINARY:
+    case GEOMETRY: {
       return ((BinaryObjectInspector) oi1).getPrimitiveWritableObject(o1).
           equals(((BinaryObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
@@ -1051,6 +1065,7 @@ public final class PrimitiveObjectInspectorUtils {
           ((HiveVarcharObjectInspector) oi).getPrimitiveWritableObject(o).getTextValue());
 
     case BINARY:
+    case GEOMETRY:
       return ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
 
     default:

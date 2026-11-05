@@ -954,6 +954,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
           }
           return true;
         case BINARY:
+        case GEOMETRY:
           {
             ByteBuffer bb = ByteBuffer.wrap(bytes, fieldStart, fieldLength);
             // Base64 or raw value: Throws IllegalArgumentException on invalid decode

@@ -96,6 +96,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.GeospatialTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -890,7 +891,8 @@ public final class ConstantPropagateProcFactory {
         if (typeInfo.getTypeName().contains(serdeConstants.DECIMAL_TYPE_NAME)
             || typeInfo.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME)
             || typeInfo.getTypeName().contains(serdeConstants.CHAR_TYPE_NAME)
-            || typeInfo.getTypeName().contains(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
+            || typeInfo.getTypeName().contains(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)
+            || typeInfo instanceof GeospatialTypeInfo) {
           return new ExprNodeConstantDesc(typeInfo, o);
         }
       } else if (udf instanceof GenericUDFStruct

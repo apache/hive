@@ -1082,6 +1082,9 @@ public abstract class BaseSemanticAnalyzer {
       DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
       typeName = decTypeInfo.getQualifiedName();
       break;
+    case HiveParser.TOK_GEOMETRY:
+      typeName = ParseUtils.getGeometryTypeInfo(node).getQualifiedName();
+      break;
     case HiveParser.TOK_TIMESTAMP:
       int prec = 6;
       if (node.getChildCount() > 0) {

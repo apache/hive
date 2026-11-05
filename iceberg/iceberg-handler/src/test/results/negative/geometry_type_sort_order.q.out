@@ -1,0 +1,14 @@
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_sort_order (id INT, geom GEOMETRY)
+WRITE LOCALLY ORDERED BY geom
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_sort_order
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Unsupported type for identity: geometry(OGC:CRS84)
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_sort_order (id INT, geom GEOMETRY)
+WRITE LOCALLY ORDERED BY geom
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_sort_order
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Unsupported type for identity: geometry(OGC:CRS84)

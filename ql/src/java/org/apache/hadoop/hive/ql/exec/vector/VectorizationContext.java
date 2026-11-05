@@ -1417,6 +1417,9 @@ import com.google.common.annotations.VisibleForTesting;
       case BINARY:
         genericUdf = new GenericUDFToBinary();
         break;
+      case GEOMETRY:
+        genericUdf = new GenericUDFToGeometry();
+        break;
       case DECIMAL:
         genericUdf = new GenericUDFToDecimal();
         break;
@@ -2698,6 +2701,7 @@ import com.google.common.annotations.VisibleForTesting;
     case CHAR:
     case VARCHAR:
     case BINARY:
+    case GEOMETRY:
       return InConstantType.STRING_FAMILY;
 
     case DECIMAL:
@@ -4565,6 +4569,7 @@ import com.google.common.annotations.VisibleForTesting;
         case CHAR:
         case VARCHAR:
         case BINARY:
+        case GEOMETRY:
           return ColumnVector.Type.BYTES;
 
         case DECIMAL:

@@ -388,6 +388,10 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       hmsTable.getParameters().put(TableProperties.DEFAULT_NAME_MAPPING, NameMappingParser.toJson(nameMapping));
     }
 
+    if (!isTableMigration) {
+      assertFileFormatSupportsSchema(alteredFileFormat(hmsTable), () -> alteredSchema(hmsTable));
+    }
+
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
       handleAddColumns(hmsTable);
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
@@ -773,6 +777,19 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         context.getProperties().put(SKIP_METASTORE_ALTER, "true");
       }
     }
+  }
+
+  private String alteredFileFormat(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    return hmsTable.getParameters().getOrDefault(TableProperties.DEFAULT_FILE_FORMAT,
+        icebergTable.properties().get(TableProperties.DEFAULT_FILE_FORMAT));
+  }
+
+  private Schema alteredSchema(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (AlterTableType.ADDCOLS.equals(currentAlterTableOp) ||
+        AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
+      return HiveSchemaUtil.convert(hmsTable.getSd().getCols(), Collections.emptyMap(), true);
+    }
+    return icebergTable.schema();
   }
 
   private void setFileFormat(String format) {

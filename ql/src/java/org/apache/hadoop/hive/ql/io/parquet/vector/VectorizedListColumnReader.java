@@ -199,6 +199,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     case DOUBLE:
       return dataColumn.readDouble();
     case BINARY:
+    case GEOMETRY:
       return dataColumn.readBytes();
     case STRING:
     case CHAR:
@@ -235,6 +236,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     case DOUBLE:
       return dictionary.readDouble(dictionaryValue);
     case BINARY:
+    case GEOMETRY:
       return dictionary.readBytes(dictionaryValue);
     case STRING:
     case CHAR:
@@ -311,6 +313,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       }
       break;
     case BINARY:
+    case GEOMETRY:
     case STRING:
     case CHAR:
     case VARCHAR:
