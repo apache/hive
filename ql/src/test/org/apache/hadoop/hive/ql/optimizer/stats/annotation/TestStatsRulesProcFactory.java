@@ -41,8 +41,10 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
@@ -193,6 +195,41 @@ class TestStatsRulesProcFactory {
         Arguments.of("unknownNDVUsesHalfRows",      -1L, 6L),
         Arguments.of("verifiedZeroReturnsZero",      0L, 0L),
         Arguments.of("knownNDVUsesUniformDistribution", 7L, 2L)
+    );
+  }
+
+  /**
+   * HIVE-29625: a verified-zero NDV means every row is NULL, so col &lt;=&gt; NULL keeps all rows
+   * while any other equality keeps none. Unknown and known NDVs keep the existing estimates.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("evaluateEqualWithNullCases")
+  void testEvaluateEqualWithNullByNDV(String name, GenericUDF udf, Integer constValue, boolean constFirst,
+      long ndvOverride, long expectedRows) throws SemanticException {
+    Statistics stats = createStatistics(VALUES, 0);
+    stats.getColumnStats().get(0).setCountDistint(ndvOverride);
+
+    AnnotateStatsProcCtx ctx = spy(new AnnotateStatsProcCtx(null));
+    when(ctx.getConf()).thenReturn(new HiveConf());
+
+    ExprNodeDesc constExpr = new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, constValue);
+    ExprNodeDesc eqExpr = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, udf,
+        constFirst ? Arrays.asList(constExpr, COL_EXPR) : Arrays.asList(COL_EXPR, constExpr));
+
+    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, eqExpr, ctx, Arrays.asList(COL_NAME), null, VALUES.length);
+
+    assertEquals(expectedRows, numRows);
+  }
+
+  private static Stream<Arguments> evaluateEqualWithNullCases() {
+    return Stream.of(
+        Arguments.of("nullSafeNullVerifiedZeroKeepsAllRows", new GenericUDFOPEqualNS(), null, false, 0L, 13L),
+        Arguments.of("nullFirstNullSafeVerifiedZeroKeepsAllRows", new GenericUDFOPEqualNS(), null, true, 0L, 13L),
+        Arguments.of("nullSafeValueVerifiedZeroReturnsZero", new GenericUDFOPEqualNS(), 1, false, 0L, 0L),
+        Arguments.of("equalNullVerifiedZeroReturnsZero", new GenericUDFOPEqual(), null, false, 0L, 0L),
+        Arguments.of("nullSafeNullUnknownNDVUsesHalfRows", new GenericUDFOPEqualNS(), null, false, -1L, 6L),
+        Arguments.of("nullSafeNullKnownNDVUsesUniformDistribution", new GenericUDFOPEqualNS(), null, false, 7L, 2L)
     );
   }
 

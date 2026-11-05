@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
@@ -1290,6 +1291,7 @@ public class StatsRulesProcFactory {
         GenericUDF udf = genFunc.getGenericUDF();
 
         if (udf instanceof GenericUDFOPEqual) {
+          boolean nullSafe = udf instanceof GenericUDFOPEqualNS;
           String colName = null;
           boolean isConst = false;
           Object prevConst = null;
@@ -1325,7 +1327,8 @@ public class StatsRulesProcFactory {
 
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
-                return rowsAfterEqualityFilter(numRows, cs.getCountDistint());
+                return rowsAfterEqualityFilter(numRows, cs.getCountDistint(),
+                    nullSafe && ((ExprNodeConstantDesc) leaf).getValue() == null);
               }
             } else if (leaf instanceof ExprNodeColumnDesc) {
               ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
@@ -1344,7 +1347,7 @@ public class StatsRulesProcFactory {
 
                 ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
                 if (cs != null) {
-                  return rowsAfterEqualityFilter(numRows, cs.getCountDistint());
+                  return rowsAfterEqualityFilter(numRows, cs.getCountDistint(), nullSafe && prevConst == null);
                 }
               }
             }
@@ -1384,12 +1387,13 @@ public class StatsRulesProcFactory {
       return numRows / 2;
     }
 
-    private static long rowsAfterEqualityFilter(long numRows, long dvs) {
+    private static long rowsAfterEqualityFilter(long numRows, long dvs, boolean nullSafeEqualsNull) {
       if (dvs < 0) {
         return numRows / 2;
       }
       if (dvs == 0) {
-        return 0;
+        // no non-null values: only col <=> NULL can match, and then every row does
+        return nullSafeEqualsNull ? numRows : 0;
       }
       return Math.round((double) numRows / dvs);
     }
