@@ -364,8 +364,10 @@ public class StatsRulesProcFactory {
         ExprNodeGenericFuncDesc genFunc = (ExprNodeGenericFuncDesc) pred;
         GenericUDF udf = genFunc.getGenericUDF();
 
-        // for AND condition cascadingly update stats
-        if (udf instanceof GenericUDFOPAnd) {
+        if (isSyntheticJoinPredicate(genFunc)) {
+          newNumRows = currNumRows;
+        } else if (udf instanceof GenericUDFOPAnd) {
+          // for AND condition cascadingly update stats
           Set<String> affectedColumns = new HashSet<>();
           andStats = stats.clone();
           aspCtx.setAndExprStats(andStats);
@@ -1270,6 +1272,15 @@ public class StatsRulesProcFactory {
           udf instanceof GenericUDFOPEqualOrLessThan;
     }
 
+    /**
+     * Synthetic join predicates do not affect the statistics: the dynamic partition pruning replaces them with
+     * semijoin filters or removes them.
+     */
+    private static boolean isSyntheticJoinPredicate(ExprNodeGenericFuncDesc genFunc) {
+      return genFunc.getChildren() != null
+          && genFunc.getChildren().stream().anyMatch(ExprNodeDynamicListDesc.class::isInstance);
+    }
+
     private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
         Operator<?> op, long currNumRows)
@@ -1282,7 +1293,9 @@ public class StatsRulesProcFactory {
         ExprNodeGenericFuncDesc genFunc = (ExprNodeGenericFuncDesc) child;
         GenericUDF udf = genFunc.getGenericUDF();
 
-        if (udf instanceof GenericUDFOPEqual) {
+        if (isSyntheticJoinPredicate(genFunc)) {
+          return numRows;
+        } else if (udf instanceof GenericUDFOPEqual) {
           String colName = null;
           boolean isConst = false;
           Object prevConst = null;
@@ -1536,7 +1549,12 @@ public class StatsRulesProcFactory {
                 .orElse(-1);
         if (interReduction) {
 
-          if (hashAgg) {
+          if (gop.getConf().getMode() == GroupByDesc.Mode.PARTIAL_HASH) {
+            // A partial aggregate below a join aggregates per task and may pass its rows through.
+            // The estimation is pessimistic: assume no reduction, so the join above is planned (map join, build side)
+            // as without the push
+            cardinality = parentNumRows;
+          } else if (hashAgg) {
             if (containsGroupingSet) {
               // Case 4: column stats, hash aggregation, grouping sets
               cardinality = Math.min(
@@ -1807,7 +1825,7 @@ public class StatsRulesProcFactory {
       GroupByDesc desc = gop.getConf();
       GroupByDesc.Mode mode = desc.getMode();
 
-      if (mode.equals(GroupByDesc.Mode.HASH)) {
+      if (mode.isHash()) {
         float hashAggMem = conf.getFloatVar(HiveConf.ConfVars.HIVE_MAP_AGGR_HASH_MEMORY);
         float hashAggMaxThreshold = conf.getFloatVar(HiveConf.ConfVars.HIVE_MAP_AGGR_MEMORY_THRESHOLD);
 

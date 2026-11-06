@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -308,7 +307,7 @@ public final class CorrelationUtilities {
           || cursor instanceof ScriptOperator
           || (cursor instanceof GroupByOperator
               && (!preserveSortOrder
-                  || ((GroupByOperator) cursor).getConf().getMode() != Mode.HASH)) // Not order preserving
+                  || !((GroupByOperator) cursor).getConf().getMode().isHash())) // Not order preserving
           || cursor instanceof ReduceSinkOperator)) {
         return null;
       }
@@ -433,7 +432,11 @@ public final class CorrelationUtilities {
               .getConf().getKeys(), cGBYr, cRS), cRS, cGBYm));
       cGBYr.getConf().setAggregators(cGBYm.getConf().getAggregators());
       for (AggregationDesc aggr : cGBYm.getConf().getAggregators()) {
-        aggr.setMode(GenericUDAFEvaluator.Mode.COMPLETE);
+        // a map-side aggregation over the partial results of an aggregation pushed below a join
+        // (see PartialGroupByJoinTransposeOptimizer) merges them: it can only finalize them
+        boolean mergesPartials = cGBYm.getConf().getMode() == GroupByDesc.Mode.HASH
+            && aggr.getMode() == GenericUDAFEvaluator.Mode.PARTIAL2;
+        aggr.setMode(mergesPartials ? GenericUDAFEvaluator.Mode.FINAL : GenericUDAFEvaluator.Mode.COMPLETE);
       }
       cGBYr.setColumnExprMap(cGBYm.getColumnExprMap());
       cGBYr.setSchema(cGBYm.getSchema());

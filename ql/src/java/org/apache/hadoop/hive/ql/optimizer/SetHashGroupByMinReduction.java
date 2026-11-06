@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -55,7 +54,7 @@ public class SetHashGroupByMinReduction implements SemanticNodeProcessor {
     GroupByOperator groupByOperator = (GroupByOperator) nd;
     GroupByDesc desc = groupByOperator.getConf();
 
-    if (desc.getMode() != Mode.HASH || groupByOperator.getStatistics().getBasicStatsState() != State.COMPLETE
+    if (!desc.getMode().isHash() || groupByOperator.getStatistics().getBasicStatsState() != State.COMPLETE
         || groupByOperator.getStatistics().getColumnStatsState() != State.COMPLETE) {
       return null;
     }

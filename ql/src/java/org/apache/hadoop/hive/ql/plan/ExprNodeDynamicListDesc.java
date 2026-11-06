@@ -75,6 +75,10 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
     return target;
   }
 
+  public void setTarget(ExprNodeDesc target) {
+    this.target = target;
+  }
+
   @Override
   public ExprNodeDesc clone() {
     return new ExprNodeDynamicListDesc(typeInfo, source, keyIndex, target);

@@ -326,6 +326,11 @@ public class OpTraitsRulesProcFactory {
       if (parentOpTraits != null) {
         numReduceSinks = parentOpTraits.getNumReduceSinks();
       }
+      if (gbyOp.getConf().getMode() == GroupByDesc.Mode.PARTIAL_HASH) {
+        // a partial aggregate below a join keeps the distribution of its input: its keys are not bucketed
+        gbyOp.setOpTraits(new OpTraits(null, null, -1, null, numReduceSinks));
+        return null;
+      }
       listBucketCols.add(gbyKeys);
       List<CustomBucketFunction> bucketFunctions = Collections.singletonList(null);
       OpTraits opTraits = new OpTraits(listBucketCols, bucketFunctions, -1, listBucketCols,
