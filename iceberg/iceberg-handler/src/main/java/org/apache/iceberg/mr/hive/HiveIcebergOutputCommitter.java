@@ -83,7 +83,6 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.compaction.IcebergCompactionService;
 import org.apache.iceberg.mr.hive.compaction.IcebergCompactionUtil;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
-import org.apache.iceberg.mr.hive.writer.RewritableDeletes;
 import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
@@ -294,7 +293,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                 HiveTableUtil.jobLocation(table.location(), jobConf, jobContext.getJobID()))
             );
             commitTable(table.io(), fileExecutor, output, jobContexts, operation);
-            RewritableDeletes.cleanup(table, jobConf);
           });
 
       // Cleanup any merge input files.
@@ -364,8 +362,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .executeWith(tableExecutor)
           .onFailure((output, ex) -> LOG.warn("Failed cleanup table {} on abort job", output, ex))
           .run(output -> {
-            // first: listing a job location fails when no writer task committed
-            RewritableDeletes.cleanup(output.table, jobConf);
             for (JobContext jobContext : outputs.get(output)) {
               LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
               Table table = output.table;

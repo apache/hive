@@ -211,6 +211,8 @@ public class TezTask extends Task<TezWork> implements RuntimeContextProvider {
       // Setup the job specific keystore path if exists and put the password into the environment variables of tez am/tasks.
       HiveConfUtil.updateJobCredentialProviders(jobConf);
 
+      // for the files the storage handlers write while the job is built
+      jobConf.set(DagUtils.TEZ_TMP_DIR_KEY, ctx.getMRTmpPath().toUri().toString());
       // Get all user jars from work (e.g. input format stuff).
       String[] allNonConfFiles = work.configureJobConfAndExtractJars(jobConf);
       // DAG scratch dir. We get a session from the pool so it may be different from Tez one.
