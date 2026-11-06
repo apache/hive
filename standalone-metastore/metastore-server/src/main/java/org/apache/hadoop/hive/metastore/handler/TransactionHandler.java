@@ -126,6 +126,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 /**
  *  Transaction and locking methods
@@ -512,7 +513,7 @@ public abstract class TransactionHandler extends DeprecatedHandler {
     // compact2 is a maintenance API: trusted callers (HiveServer2, the compactor) have already been authorized
     // for the operation, everybody else is authorized against the requested table.
     if (!hasProxyPrivilege()) {
-      authorizeAndPrepareCompactionRequest(rqst, false);
+      authorizeCompactionRequest(rqst, false);
     }
     return getTxnHandler().compact(rqst);
   }
@@ -529,18 +530,54 @@ public abstract class TransactionHandler extends DeprecatedHandler {
   public boolean submit_for_cleanup(CompactionRequest rqst, long highestWriteId, long txnId)
       throws TException {
     if (!hasProxyPrivilege()) {
-      try {
-        if (!authorizeAndPrepareCompactionRequest(rqst, true)) {
-          return false;
-        }
-      } catch (NoSuchObjectException e) {
-        // The table/partition (or the database) does not exist: there is nothing an untrusted caller may clean up.
-        LOG.info("Ignoring the cleanup request of {}.{}: {}", rqst.getDbname(), rqst.getTablename(),
-            e.getMessage());
-        return false;
-      }
+      authorizeCompactionRequest(rqst, true);
     }
     return getTxnHandler().submitForCleanup(rqst, highestWriteId, txnId);
+  }
+
+  private Table getTable(CompactionRequest rqst, boolean cleanup) throws TException {
+    rqst.validate();
+    String[] parsedDbName = parseDbName(rqst.getDbname(), conf);
+    String catName = parsedDbName[CAT_NAME];
+    String dbName = parsedDbName[DB_NAME];
+    if (!getDefaultCatalog(conf).equalsIgnoreCase(catName)) {
+      // the compaction queue has no notion of catalogs, so the request would end up on the default catalog
+      throw new MetaException("Compaction and cleanup requests are only supported for the default catalog, got "
+          + catName);
+    }
+
+    String requestedLocation = rqst.getProperties() == null ? null : rqst.getProperties().get(META_TABLE_LOCATION);
+    boolean hasPartitionName = rqst.isSetPartitionname() && rqst.getPartitionname() != null;
+    GetTableRequest getTableRequest = new GetTableRequest(dbName, rqst.getTablename());
+    getTableRequest.setCatName(catName);
+    rqst.setDbname(dbName);
+
+    Table table;
+    try {
+      table = get_table_core(getTableRequest);
+      // the listeners (e.g. the transactional validation) may modify the new table, so the old state must be kept
+      firePreEvent(new PreAlterTableEvent(table, table.deepCopy(), this));
+      return table;
+    } catch (NoSuchObjectException e) {
+      if (!cleanup || requestedLocation == null || hasPartitionName) {
+        throw e;
+      }
+      Database db = get_database_core(catName, dbName);
+      // there is no table to authorize against
+      firePreEvent(new PreReadDatabaseEvent(db, this));
+      table = new TableBuilder()
+          .inDb(db)
+          .setTableName(normalizeIdentifier(rqst.getTablename()))
+          .setOwner(db.getOwnerName() != null ? db.getOwnerName() : "dummy")
+          .setCols(new ArrayList<>())
+          .addTableParam(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true")
+          .addTableParam(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "insert_only")
+          .build(conf);
+      CreateTableRequest createTableRequest = new CreateTableRequest(table);
+      // the capability that is needed to create an insert-only managed table
+      createTableRequest.setProcessorCapabilities(Collections.singletonList("HIVEMANAGEDINSERTWRITE"));
+      return translate_table_dryrun(createTableRequest);
+    }
   }
 
   /**
@@ -552,66 +589,22 @@ public abstract class TransactionHandler extends DeprecatedHandler {
    * <p>A cleanup request ({@code cleanup == true}) of a location may also target a table that does not exist, e.g.
    * the rollback of a failed CTAS, which leaves the data behind but never creates the table. Such a request is
    * authorized with a {@link PreReadDatabaseEvent} and is only accepted when the location is the managed location
-   * of the table, see {@link #isLocationOfMissingTable}.
+   * of the table, see {@link #validateLocation}.
    *
-   * @return {@code true} if the request is authorized and prepared, {@code false} if it has to be ignored
-   * @throws NoSuchObjectException if the table or the partition does not exist
+   * @throws NoSuchObjectException if the table or the partition does not exist and nothing to do
    */
-  private boolean authorizeAndPrepareCompactionRequest(CompactionRequest rqst, boolean cleanup)
+  private void authorizeCompactionRequest(CompactionRequest rqst, boolean cleanup)
       throws TException {
-    if (rqst.getDbname() == null || rqst.getTablename() == null) {
-      throw new MetaException("The DB and table name cannot be null.");
-    }
-    String[] parsedDbName = parseDbName(rqst.getDbname(), conf);
-    String catName = parsedDbName[CAT_NAME];
-    String dbName = parsedDbName[DB_NAME];
-    if (!getDefaultCatalog(conf).equalsIgnoreCase(catName)) {
-      // the compaction queue has no notion of catalogs, so the request would end up on the default catalog
-      throw new MetaException("Compaction and cleanup requests are only supported for the default catalog, got "
-          + catName);
-    }
     String requestedLocation = rqst.getProperties() == null ? null : rqst.getProperties().get(META_TABLE_LOCATION);
     boolean hasPartitionName = rqst.isSetPartitionname() && rqst.getPartitionname() != null;
-
-    GetTableRequest getTableRequest = new GetTableRequest(dbName, rqst.getTablename());
-    getTableRequest.setCatName(catName);
-    Table table;
-    Database missingTableDb = null;
-    try {
-      table = get_table_core(getTableRequest);
-    } catch (NoSuchObjectException e) {
-      if (!cleanup || requestedLocation == null || hasPartitionName) {
-        throw e;
-      }
-      if (!MetaStoreUtils.validateName(rqst.getTablename(), conf)) {
-        LOG.warn("Ignoring the cleanup request of {}.{}: invalid table name", rqst.getDbname(), rqst.getTablename());
-        return false;
-      }
-      missingTableDb = get_database_core(catName, dbName);
-      table = getMissingTable(missingTableDb, rqst.getTablename().toLowerCase());
-      if (table == null) {
-        return false;
-      }
-    }
-    boolean missingTable = missingTableDb != null;
-    if (missingTable) {
-      // there is no table to authorize against
-      firePreEvent(new PreReadDatabaseEvent(missingTableDb, this));
-    } else {
-      // the listeners (e.g. the transactional validation) may modify the new table, so the old state must be kept
-      firePreEvent(new PreAlterTableEvent(table, table.deepCopy(), this));
-    }
-
-    // queue the request for the table that has been authorized
-    rqst.setDbname(table.getDbName());
-    rqst.setTablename(table.getTableName());
+    Table table = getTable(rqst, cleanup);
 
     String location = table.getSd() == null ? null : table.getSd().getLocation();
     // The partitions of non-native tables (e.g. Iceberg) are not stored in HMS: they are resolved by the storage
     // handler, so such requests are authorized and validated against the table.
     if (hasPartitionName && !MetaStoreUtils.isNonNativeTable(table)) {
       List<String> partVals = getPartValsFromName(table, rqst.getPartitionname());
-      Partition partition = getMS().getPartition(catName, table.getDbName(), table.getTableName(), partVals);
+      Partition partition = getMS().getPartition(table.getCatName(), table.getDbName(), table.getTableName(), partVals);
       // queue the canonical partition name, the Cleaner looks the partition up by it
       rqst.setPartitionname(Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()));
       location = partition.getSd().getLocation();
@@ -626,19 +619,7 @@ public abstract class TransactionHandler extends DeprecatedHandler {
       // The Cleaner purges the supplied location as is, so it must not point outside the authorized table
       Path requested = normalizePath(new Path(requestedLocation));
       Path tableLocation = normalizePath(new Path(location));
-      if (missingTable) {
-        if (!isLocationOfMissingTable(requested, tableLocation)) {
-          LOG.warn("Ignoring the cleanup request of {}.{}: the location {} is not inside the managed location {} "
-              + "of the table", table.getDbName(), table.getTableName(), requested, tableLocation);
-          return false;
-        }
-        if (!getWh().isDir(requested)) {
-          LOG.info("Ignoring the cleanup request of {}.{}: the location {} does not exist", table.getDbName(),
-              table.getTableName(), requested);
-          return false;
-        }
-        runAsLocation = requested.toString();
-      } else if (!FileUtils.isPathWithinSubtree(requested, tableLocation)) {
+      if (!validateLocation(requested, tableLocation)) {
         throw new MetaException("Cleanup location " + requestedLocation + " is not inside the location of "
             + table.getDbName() + "." + table.getTableName());
       }
@@ -652,47 +633,13 @@ public abstract class TransactionHandler extends DeprecatedHandler {
     } catch (IOException e) {
       throw new MetaException("Cannot determine the run-as user of the compaction request: " + e.getMessage());
     }
-    return true;
   }
 
   /**
-   * Builds the table that the creation of the (not existing) table would result in, in order to get its managed
-   * location. The data of a CTAS rollback is only written to transactional managed tables.
-   *
-   * @return the table, or {@code null} if such a table cannot be created
-   */
-  private Table getMissingTable(Database db, String tableName) throws TException {
-    Table table = new TableBuilder()
-        .inDb(db)
-        .setTableName(tableName)
-        .setOwner(db.getOwnerName() != null ? db.getOwnerName() : getCallerUserName())
-        .setCols(new ArrayList<>())
-        .addTableParam(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true")
-        .addTableParam(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "insert_only")
-        .build(conf);
-    CreateTableRequest createTableRequest = new CreateTableRequest(table);
-    // the capability that is needed to create an insert-only managed table
-    createTableRequest.setProcessorCapabilities(Collections.singletonList("HIVEMANAGEDINSERTWRITE"));
-    Table translated;
-    try {
-      translated = translate_table_dryrun(createTableRequest);
-    } catch (TException e) {
-      LOG.warn("Ignoring the cleanup request of {}.{}: cannot determine the managed table: {}", db.getName(),
-          tableName, e.getMessage());
-      return null;
-    }
-    if (translated.getSd() == null || translated.getSd().getLocation() == null) {
-      translated.setSd(table.getSd());
-      translated.getSd().setLocation(getWh().getDefaultManagedTablePath(db, tableName).toString());
-    }
-    return translated;
-  }
-
-  /**
-   * @return true if the location is the managed location of a table that does not exist or a sub-directory of it,
+   * @return true if the location is the managed location of a table or a sub-directory of it,
    * or the same for the table location of a soft-delete table, i.e. {@code <managed location>.v<txnId>}
    */
-  private static boolean isLocationOfMissingTable(Path location, Path managedTablePath) {
+  private static boolean validateLocation(Path location, Path managedTablePath) {
     if (FileUtils.isPathWithinSubtree(location, managedTablePath)) {
       return true;
     }
@@ -700,12 +647,12 @@ public abstract class TransactionHandler extends DeprecatedHandler {
       return false;
     }
     // the table directory of a soft-delete table is a sibling of the default one
-    Path tableDir = location;
+    Path requestedLocation = location;
     for (int depth = location.depth(); depth > managedTablePath.depth(); depth--) {
-      tableDir = tableDir.getParent();
+      requestedLocation = requestedLocation.getParent();
     }
-    return managedTablePath.getParent().equals(tableDir.getParent())
-        && tableDir.getName().matches(Pattern.quote(managedTablePath.getName()) + SOFT_DELETE_TABLE_PATTERN);
+    return managedTablePath.getParent().equals(requestedLocation.getParent())
+        && requestedLocation.getName().matches(Pattern.quote(managedTablePath.getName()) + SOFT_DELETE_TABLE_PATTERN);
   }
 
   private Path normalizePath(Path path) throws MetaException {

@@ -158,6 +158,15 @@ public class TestHmsCompactionAuthorization {
     return client.showCompactions().getCompacts();
   }
 
+  /**
+   * {@link org.apache.hadoop.hive.metastore.handler.TransactionHandler#submit_for_cleanup} surfaces
+   * authorization and validation failures as Thrift exceptions; it returns false only when the txn
+   * layer does (it does not today).
+   */
+  private void assertCleanupRejected(ThrowingRunnable action) {
+    assertThrows(TException.class, action);
+  }
+
   private void assertAuthorizationFailure(ThrowingRunnable action) {
     DenyingAuthorizationListener.deny = true;
     try {
@@ -213,7 +222,7 @@ public class TestHmsCompactionAuthorization {
 
   @Test
   public void testSubmitForCleanupMissingTableWithoutLocationIsIgnored() throws Exception {
-    assertFalse(client.submitForCleanup(compactionRequest(DB, "ctas_rolled_back"), 1L, 1L));
+    assertCleanupRejected(() -> client.submitForCleanup(compactionRequest(DB, "ctas_rolled_back"), 1L, 1L));
     assertEquals(0, compactions().size());
   }
 
@@ -273,10 +282,10 @@ public class TestHmsCompactionAuthorization {
         "/tmp/some_other_dir",
     };
     for (String location : ignored) {
-      assertFalse(location, client.submitForCleanup(cleanupRequest("ctas_rolled_back", location), 1L, 1L));
+      assertCleanupRejected(() -> client.submitForCleanup(cleanupRequest("ctas_rolled_back", location), 1L, 1L));
     }
     // a table name cannot be used to point to the directory of another table
-    assertFalse(client.submitForCleanup(cleanupRequest("../" + TAB, tableLocation()), 1L, 1L));
+    assertCleanupRejected(() -> client.submitForCleanup(cleanupRequest("../" + TAB, tableLocation()), 1L, 1L));
     assertEquals(0, compactions().size());
   }
 
@@ -290,8 +299,10 @@ public class TestHmsCompactionAuthorization {
   @Test
   public void testSubmitForCleanupMissingTableAndLocationIsIgnored() throws Exception {
     Path missing = new Path(managedDbLocation(), "ctas_not_written");
-    assertFalse(client.submitForCleanup(cleanupRequest("ctas_not_written", missing.toString()), 1L, 1L));
-    assertFalse(client.submitForCleanup(compactionRequest("no_such_db", "ctas_rolled_back"), 1L, 1L));
+    assertCleanupRejected(
+        () -> client.submitForCleanup(cleanupRequest("ctas_not_written", missing.toString()), 1L, 1L));
+    assertCleanupRejected(
+        () -> client.submitForCleanup(compactionRequest("no_such_db", "ctas_rolled_back"), 1L, 1L));
     assertEquals(0, compactions().size());
   }
 
@@ -301,7 +312,7 @@ public class TestHmsCompactionAuthorization {
         .addPartCol("p", "string").create(client, conf);
     CompactionRequest request = compactionRequest(DB, partitioned.getTableName());
     request.setPartitionname("p=missing");
-    assertFalse(client.submitForCleanup(request, 1L, 1L));
+    assertCleanupRejected(() -> client.submitForCleanup(request, 1L, 1L));
     assertEquals(0, compactions().size());
   }
 
@@ -334,7 +345,8 @@ public class TestHmsCompactionAuthorization {
     List<ShowCompactResponseElement> compactions = compactions();
     assertEquals(1, compactions.size());
     assertEquals(DB, compactions.get(0).getDbname());
-    assertEquals(TAB, compactions.get(0).getTablename());
+    // db name is lower-cased from parseDbName; table name is left as the client sent it
+    assertEquals(TAB.toUpperCase(), compactions.get(0).getTablename());
   }
 
   @Test
