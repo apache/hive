@@ -16,20 +16,24 @@
 
 # Custom Hadoop image for the Tez-on-YARN Integration tests.
 #
-# The official apache/hadoop:3.4.2 image ships Java 8 for its HDFS/YARN daemons.
+# The official apache/hadoop:3.4.3 image ships Java 11 for its HDFS/YARN daemons.
 # Hive is compiled for Java 21, so Tez AM and task containers -- which load
-# hive-exec classes -- must run on Java 21.  This image adds a Java 21 JDK at
-# /opt/jdk21 using a multi-stage build from eclipse-temurin:21-jdk; the daemons
-# continue to use the default Java 8.
-FROM --platform=linux/amd64 eclipse-temurin:21-jdk AS jdk21
-FROM apache/hadoop:3.4.2
+# hive-exec classes -- must run on Java 21 or later.  This image adds a Java 25
+# JDK at /opt/jdk25 using a multi-stage build from eclipse-temurin:25-jdk; the
+# daemons continue to use the default Java 11.
+#
+# Hadoop must be 3.4.3 or later: older UserGroupInformation calls
+# Subject.getSubject, which always throws UnsupportedOperationException on
+# JDK 24+ (JEP 486), so the Tez AM would fail to start on Java 25.
+FROM --platform=linux/amd64 eclipse-temurin:25-jdk AS jdk25
+FROM apache/hadoop:3.4.3
 
 USER root
-COPY --from=jdk21 /opt/java/openjdk /opt/jdk21
+COPY --from=jdk25 /opt/java/openjdk /opt/jdk25
 # Ensure the JDK binaries are executable and verify the copy is functional.
 # Fails at image-build time if the JDK is incompatible with the base image's
 # glibc, surfacing the problem early rather than silently at YARN container
 # launch time (where YARN shows exit code 1 and empty stderr).
-RUN chmod 755 /opt/jdk21/bin/java && /opt/jdk21/bin/java -version
+RUN chmod 755 /opt/jdk25/bin/java && /opt/jdk25/bin/java -version
 
 USER hadoop
