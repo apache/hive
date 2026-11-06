@@ -358,7 +358,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     }
 
     aggregationsParametersLastInvoke = new Object[conf.getAggregators().size()][];
-    if ((conf.getMode() != GroupByDesc.Mode.HASH || conf.getBucketGroup()) &&
+    if ((!conf.getMode().isHash() || conf.getBucketGroup()) &&
       (!groupingSetsPresent)) {
       aggregations = newAggregations();
       hashAggr = false;
@@ -1123,7 +1123,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
       return true;
     }
 
-    if (desc.getMode() != Mode.HASH && desc.getMode() != Mode.COMPLETE && desc.getMode() != Mode.PARTIAL1) {
+    if (!desc.getMode().isHash() && desc.getMode() != Mode.COMPLETE && desc.getMode() != Mode.PARTIAL1) {
       return false;
     }
 

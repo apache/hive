@@ -618,7 +618,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         // during join processing, not at the time of close.
         if (parentOp instanceof GroupByOperator) {
           GroupByOperator gpbyOp = (GroupByOperator )parentOp;
-          if (gpbyOp.getConf().getMode() == GroupByDesc.Mode.HASH) {
+          if (gpbyOp.getConf().getMode().isHash()) {
             // No need to change for MERGE_PARTIAL etc.
             gpbyOp.getConf().setMode(GroupByDesc.Mode.FINAL);
           }
