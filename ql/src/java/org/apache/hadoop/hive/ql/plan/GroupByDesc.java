@@ -49,15 +49,37 @@ public class GroupByDesc extends AbstractOperatorDesc {
    * HASH: For non-distinct the same as PARTIAL1 but use hash-table-based aggregation
    * MERGEPARTIAL: FINAL for non-distinct aggregations, COMPLETE for distinct
    * aggregations.
+   * PARTIAL_HASH: the same as HASH, but not followed by its own ReduceSink and MERGEPARTIAL:
+   * its results go through a join and the aggregation above the join merges them.
    */
   private static final long serialVersionUID = 1L;
 
   /**
-   * Mode.
+   * <pre>
+   * HASH: a map-side aggregation followed by its own shuffle and merge
    *
+   *   TS - SEL - GBY(hash) - RS - GBY(mergepartial)
+   *
+   * PARTIAL_HASH: a partial aggregation pushed below a join (see PartialGroupByJoinTransposeOptimizer); the
+   * join's shuffle carries its results and the HASH aggregation above the join merges them (PARTIAL2)
+   *
+   *   TS - SEL - GBY(partialhash) - RS \
+   *                                     JOIN - GBY(hash) - RS - GBY(mergepartial)
+   *   TS - SEL -------------------- RS /
+   *
+   * PARTIAL_HASH below a map join
+   *
+   *   TS - SEL - GBY(partialhash) - MAPJOIN - GBY(hash) - RS - GBY(mergepartial)
+   *                                    |
+   *   TS - SEL ---------------- RS (broadcast)
+   * </pre>
    */
   public static enum Mode {
-    COMPLETE, PARTIAL1, PARTIAL2, PARTIALS, FINAL, HASH, MERGEPARTIAL
+    COMPLETE, PARTIAL1, PARTIAL2, PARTIALS, FINAL, HASH, MERGEPARTIAL, PARTIAL_HASH;
+
+    public boolean isHash() {
+      return this == HASH || this == PARTIAL_HASH;
+    }
   };
 
   private Mode mode;
@@ -154,6 +176,8 @@ public class GroupByDesc extends AbstractOperatorDesc {
       return "final";
     case MERGEPARTIAL:
       return "mergepartial";
+    case PARTIAL_HASH:
+      return "partialhash";
     }
 
     return "unknown";
@@ -234,7 +258,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
 
   @Explain(displayName = "minReductionHashAggr")
   public String getMinReductionHashAggrString() {
-    return mode == Mode.HASH ? Float.toString(minReductionHashAggr) : null;
+    return mode.isHash() ? Float.toString(minReductionHashAggr) : null;
   }
 
   @Explain(displayName = "aggregations", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

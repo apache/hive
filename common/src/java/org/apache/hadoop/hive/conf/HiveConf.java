@@ -1814,6 +1814,27 @@ public class HiveConf extends Configuration {
     AGGR_JOIN_TRANSPOSE("hive.transpose.aggr.join", false, "push aggregates through join"),
     AGGR_JOIN_TRANSPOSE_UNIQUE("hive.transpose.aggr.join.unique", true, "push aggregates through join(s) in "
         + "case data is regrouped on a previously unique column"),
+    PARTIAL_AGGR_JOIN_TRANSPOSE("hive.optimize.partial.aggr.join.transpose", true,
+        "Whether to push a map-side partial aggregate below an inner join, to the join input that holds all\n"
+        + "aggregate arguments. The pushed aggregate runs in the vertex of the join input, before its existing\n"
+        + "shuffle. The map-side aggregate above the join stays and merges the partial results before the shuffle\n"
+        + "of the aggregate."),
+    PARTIAL_AGGR_JOIN_TRANSPOSE_MIN_REDUCTION("hive.optimize.partial.aggr.join.transpose.min.reduction", 0.8f,
+        "Hash aggregation of a pushed partial aggregate is turned off when the ratio between hash table size and\n"
+        + "input rows is bigger than this number, and its rows then pass through as partial results."
+        + " hive.map.aggr.hash.min.reduction stays the upper bound, and with\n"
+        + "hive.map.aggr.hash.min.reduction.stats the statistics may lower it further."),
+    PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_JOIN_REDUCTION("hive.optimize.partial.aggr.join.transpose.max.join.reduction", 10f,
+        "A partial aggregate is not pushed below a join estimated to reduce the pushed input by more than this\n"
+        + "factor: a map join has no dynamic filter on its probe side, so the pushed aggregate would process every\n"
+        + "row the join discards. 0 disables the check."),
+    PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_JOIN_EXPANSION("hive.optimize.partial.aggr.join.transpose.max.join.expansion",
+        1.1f,
+        "A partial aggregate is not pushed below a join estimated to output more rows than this factor times the\n"
+        + "rows of the pushed input."),
+    PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_KEY_NDV_RATIO("hive.optimize.partial.aggr.join.transpose.max.key.ndv.ratio", 0.5f,
+        "A partial aggregate is not pushed when the estimated number of distinct values of one of its keys is more\n"
+        + "than this fraction of the pushed input rows, since it would reduce its input too little."),
     SEMIJOIN_CONVERSION("hive.optimize.semijoin.conversion", true, "convert group by followed by inner equi join into semijoin"),
     HIVE_COLUMN_ALIGNMENT("hive.order.columnalignment", true, "Flag to control whether we want to try to align" +
         "columns in operators such as Aggregate or Join so that we try to reduce the number of shuffling stages"),
@@ -6741,6 +6762,7 @@ public class HiveConf extends Configuration {
    */
   private static final String[] SQL_STD_AUTH_SAFE_VAR_NAMES = new String[] {
       ConfVars.AGGR_JOIN_TRANSPOSE.varname,
+      ConfVars.PARTIAL_AGGR_JOIN_TRANSPOSE.varname,
       ConfVars.BYTES_PER_REDUCER.varname,
       ConfVars.CLIENT_STATS_COUNTERS.varname,
       ConfVars.CREATE_TABLES_AS_ACID.varname,
