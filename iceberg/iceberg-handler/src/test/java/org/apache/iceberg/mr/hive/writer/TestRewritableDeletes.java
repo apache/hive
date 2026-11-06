@@ -22,11 +22,16 @@ package org.apache.iceberg.mr.hive.writer;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import org.apache.hadoop.conf.Configuration;
+import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
+import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.FileMetadata;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -45,6 +50,7 @@ import static org.apache.iceberg.types.Types.NestedField.optional;
 
 public class TestRewritableDeletes {
   private static final String QUERY_ID = "rewritable_deletes_query";
+  private static final String TABLE_NAME = "default.rewritable_deletes";
   private static final Schema SCHEMA = new Schema(optional(1, "id", Types.LongType.get()));
 
   @Rule
@@ -62,21 +68,37 @@ public class TestRewritableDeletes {
     Assert.assertTrue(dir.delete());
     Table table = new HadoopTables().create(SCHEMA, PartitionSpec.unpartitioned(),
         ImmutableMap.of(TableProperties.FORMAT_VERSION, "3"), dir.getAbsolutePath());
-    table.newFastAppend().appendFile(DataFiles.builder(table.spec())
+    DataFile dataFile = DataFiles.builder(table.spec())
         .withPath(dir.getAbsolutePath() + "/data/file.parquet")
         .withFileSizeInBytes(10)
-        .withRecordCount(1)
-        .build()).commit();
-    Configuration conf = new Configuration();
+        .withRecordCount(2)
+        .build();
+    table.newFastAppend().appendFile(dataFile).commit();
+    File queryTempDir = temp.newFolder();
+    JobConf conf = new JobConf();
     conf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "tez");
     conf.set(HiveConf.ConfVars.HIVE_QUERY_ID.varname, QUERY_ID);
-    RewritableDeletes.plan(table, null, conf);
+    conf.set(DagUtils.TEZ_TMP_DIR_KEY, queryTempDir.getAbsolutePath());
+
+    RewritableDeletes.addToJob(table, TABLE_NAME, null, conf);
+    Assert.assertArrayEquals("planned without previous deletes", new String[0], queryTempDir.list());
+
+    table.newRowDelta().addDeletes(FileMetadata.deleteFileBuilder(table.spec())
+        .ofPositionDeletes()
+        .withFormat(FileFormat.PUFFIN)
+        .withPath(dir.getAbsolutePath() + "/data/dv.puffin")
+        .withFileSizeInBytes(10)
+        .withRecordCount(1)
+        .withReferencedDataFile(dataFile.location())
+        .withContentOffset(4)
+        .withContentSizeInBytes(6)
+        .build()).commit();
+    RewritableDeletes.addToJob(table, TABLE_NAME, null, conf);
 
     LlapProxy.setDaemon(true);
-    Map<String, DeleteFileSet> deletes = RewritableDeletes.load(table, null, conf);
-    RewritableDeletes.cleanup(table, conf);
-    Assert.assertArrayEquals(new String[0], new File(dir, "temp").list());
+    Map<String, DeleteFileSet> deletes = RewritableDeletes.fromJob(TABLE_NAME, conf);
+    Assert.assertEquals(Set.of(dataFile.location()), deletes.keySet());
     // the second writer of the query finds the rewritable deletes in the cache of the daemon
-    Assert.assertSame(deletes, RewritableDeletes.load(table, null, conf));
+    Assert.assertSame(deletes, RewritableDeletes.fromJob(TABLE_NAME, conf));
   }
 }

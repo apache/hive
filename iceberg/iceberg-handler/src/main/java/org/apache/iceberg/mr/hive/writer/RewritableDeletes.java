@@ -20,162 +20,136 @@
 package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.iceberg.BatchScan;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileContent;
 import org.apache.iceberg.FileScanTask;
-import org.apache.iceberg.ScanTask;
-import org.apache.iceberg.SnapshotRef;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.TableUtil;
+import org.apache.iceberg.TableScan;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.DeleteFileSet;
+import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * The previous deletes that the DV writers of a merge-on-read DML merge into the DVs they write: a DV replaces every
- * position delete of its data file. They are planned while the job is built, into a temp file of the table named
- * after the query. The writers of a query load it once per LLAP daemon.
+ * position delete of its data file. They reach the writers in a temp file of the query that the job's configuration
+ * names, read once per LLAP daemon.
  */
 public final class RewritableDeletes {
   private static final Logger LOG = LoggerFactory.getLogger(RewritableDeletes.class);
 
-  private RewritableDeletes() {
+  private static final String LOCATION_PREFIX = "iceberg.mr.rewritable.deletes.";
+
+  // by data file location
+  private final Map<String, DeleteFileSet> deletes;
+
+  private RewritableDeletes(Map<String, DeleteFileSet> deletes) {
+    this.deletes = deletes;
   }
 
   /**
-   * Plans the rewritable deletes of the DV writers of a table.
+   * Adds the rewritable deletes of a table to the job, if there are any.
    * @param table The table the DML writes.
+   * @param tableName The name of the table in the job's configuration.
    * @param ref The branch the DML writes.
-   * @param conf The job's configuration.
+   * @param jobConf The job's configuration, with the temp dir of the query.
    */
-  public static void plan(Table table, String ref, Configuration conf) {
-    Long snapshotId = snapshotId(table, ref);
-    if (snapshotId == null) {
+  public static void addToJob(Table table, String tableName, String ref, JobConf jobConf) {
+    String key = LOCATION_PREFIX + tableName;
+    if (jobConf.get(key) != null) {
       return;
     }
-    BatchScan scan = table.newBatchScan().useSnapshot(snapshotId);
-    Map<String, DeleteFileSet> deletes = rewritableDeletes(scan);
-    String location = location(table, conf);
-    try (ObjectOutputStream out = new ObjectOutputStream(
-        new GZIPOutputStream(table.io().newOutputFile(location).createOrOverwrite()))) {
-      out.writeObject(deletes);
-    } catch (IOException e) {
-      throw new UncheckedIOException(String.format("Failed to write rewritable deletes to %s", location), e);
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, ref);
+    if (snapshot == null) {
+      return;
     }
-    LOG.info("Planned rewritable deletes of {} data files to {}", deletes.size(), location);
+    TableScan scan = table.newScan().useSnapshot(snapshot.snapshotId());
+    Map<String, DeleteFileSet> deletes = rewritableDeletes(scan);
+    if (deletes.isEmpty()) {
+      return;
+    }
+    Path path = new Path(jobConf.get(DagUtils.TEZ_TMP_DIR_KEY), tableName + "-rewritable-deletes");
+    try (OutputStream out = new GZIPOutputStream(path.getFileSystem(jobConf).create(path))) {
+      out.write(SerializationUtil.serializeToBytes(deletes));
+    } catch (IOException e) {
+      throw new UncheckedIOException(String.format("Failed to write rewritable deletes to %s", path), e);
+    }
+    jobConf.set(key, path.toString());
+    LOG.info("Added rewritable deletes of {} data files to the job: {}", deletes.size(), path);
   }
 
   /**
-   * Loads the rewritable deletes planned for the DV writers of a table.
-   * @param table The table the DML writes.
-   * @param ref The branch the DML writes.
+   * Returns the rewritable deletes of a table that the job carries.
+   * @param tableName The name of the table in the task's configuration.
    * @param conf The task's configuration.
    * @return The rewritable deletes by data file location.
    */
-  public static Map<String, DeleteFileSet> load(Table table, String ref, Configuration conf) {
-    Long snapshotId = snapshotId(table, ref);
-    if (snapshotId == null) {
+  public static Map<String, DeleteFileSet> fromJob(String tableName, Configuration conf) {
+    String location = conf.get(LOCATION_PREFIX + tableName);
+    if (location == null) {
       return Map.of();
     }
-    String location = location(table, conf);
-    ObjectCache cache = ObjectCacheFactory.getCache(conf, queryId(conf), false, true);
+    ObjectCache cache =
+        ObjectCacheFactory.getCache(conf, conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname), false, true);
     if (cache == null) {
-      return read(table, location);
+      return readFile(location, conf).deletes;
     }
     try {
-      // a re-execution of the query plans the location again, on the snapshot it reads
-      return cache.<Cached>retrieve(location + "@" + snapshotId, () -> new Cached(read(table, location))).deletes();
+      return cache.retrieve(location, () -> readFile(location, conf)).deletes;
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }
   }
 
-  /**
-   * Removes the rewritable deletes planned for the DV writers of a table, once the job is committed or aborted.
-   * @param table The table the DML writes.
-   * @param conf The job's configuration.
-   */
-  public static void cleanup(Table table, Configuration conf) {
-    if (TableUtil.formatVersion(table) < 3) {
-      return;
-    }
-    String location = location(table, conf);
-    try {
-      table.io().deleteFile(location);
-    } catch (RuntimeException e) {
-      LOG.warn("Failed to remove the rewritable deletes {}", location, e);
-    }
-  }
-
-  // the head of the branch, from the refs a serialized table carries without reading the table metadata
-  private static Long snapshotId(Table table, String ref) {
-    SnapshotRef snapshotRef =
-        table.refs().get(ref == null ? SnapshotRef.MAIN_BRANCH : HiveUtils.getTableSnapshotRef(ref));
-    return snapshotRef == null ? null : snapshotRef.snapshotId();
-  }
-
   // a DV replaces every position delete of its data file
-  private static Map<String, DeleteFileSet> rewritableDeletes(BatchScan scan) {
-    Map<String, DeleteFileSet> rewritableDeletes = Maps.newHashMap();
+  private static Map<String, DeleteFileSet> rewritableDeletes(TableScan scan) {
+    Map<String, DeleteFileSet> deletes = Maps.newHashMap();
 
-    try (CloseableIterable<ScanTask> tasksIterable = scan.planFiles()) {
-      tasksIterable.forEach(task -> {
-        FileScanTask fileScanTask = task.asFileScanTask();
-
-        fileScanTask.deletes().forEach(deleteFile -> {
-          if (deleteFile.content() != FileContent.EQUALITY_DELETES) {
-            rewritableDeletes
-                .computeIfAbsent(fileScanTask.file().location(), ignored -> DeleteFileSet.create())
-                .add(deleteFile);
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
+      for (FileScanTask task : tasks) {
+        for (DeleteFile delete : task.deletes()) {
+          if (delete.content() == FileContent.POSITION_DELETES) {
+            deletes.computeIfAbsent(task.file().location(), ignored -> DeleteFileSet.create()).add(delete);
           }
-        });
-      });
+        }
+      }
     } catch (IOException e) {
       throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
     }
-    return rewritableDeletes;
+    return deletes;
   }
 
-  @SuppressWarnings("unchecked")
-  private static Map<String, DeleteFileSet> read(Table table, String location) {
-    LOG.info("Loading rewritable deletes from {}", location);
-    try (ObjectInputStream in = new ObjectInputStream(
-        new GZIPInputStream(table.io().newInputFile(location).newStream()))) {
-      return (Map<String, DeleteFileSet>) in.readObject();
+  private static RewritableDeletes readFile(String location, Configuration conf) {
+    LOG.info("Reading rewritable deletes from {}", location);
+    Path path = new Path(location);
+    try (InputStream in = new GZIPInputStream(path.getFileSystem(conf).open(path))) {
+      return new RewritableDeletes(SerializationUtil.deserializeFromBytes(in.readAllBytes()));
     } catch (IOException e) {
       throw new UncheckedIOException(String.format("Failed to read rewritable deletes from %s", location), e);
-    } catch (ClassNotFoundException e) {
-      throw new IllegalStateException(String.format("Failed to read rewritable deletes from %s", location), e);
     }
   }
 
-  private static String location(Table table, Configuration conf) {
-    return table.location() + "/temp/" + queryId(conf) + "-rewritable-deletes";
-  }
-
-  private static String queryId(Configuration conf) {
-    return conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
-  }
-
-  // keeps the value the object cache logs short
-  private record Cached(Map<String, DeleteFileSet> deletes) {
-    @Override
-    public String toString() {
-      return "rewritable deletes of " + deletes.size() + " data files";
-    }
+  // the object cache of a Tez container logs the values it returns
+  @Override
+  public String toString() {
+    return "rewritable deletes of " + deletes.size() + " data files";
   }
 }

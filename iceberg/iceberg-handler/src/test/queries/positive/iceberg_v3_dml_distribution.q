@@ -24,3 +24,14 @@ when matched then delete
 when not matched then insert values (s.id, 'z');
 
 select * from ice_v3 order by id;
+
+-- a merge-on-read UPDATE of a sorted table that copies on DELETE: the deleted records are distributed by FILE__PATH only
+create external table ice_v3_sorted (id int, name string) write locally ordered by id
+stored by iceberg tblproperties ('format-version'='3', 'write.delete.mode'='copy-on-write',
+  'write.update.mode'='merge-on-read');
+insert into ice_v3_sorted values (1, 'a'), (2, 'b'), (3, 'c');
+
+explain update ice_v3_sorted set name = 'x' where id = 2;
+update ice_v3_sorted set name = 'x' where id = 2;
+
+select * from ice_v3_sorted order by id;
