@@ -69,6 +69,9 @@ public class KillMoveTriggerActionHandler implements TriggerActionHandler<WmTezS
           LOG.info("Moved session {} to pool {}", wmTezSession.getSessionId(), wmTezSession.getPoolName());
         }
       } catch (InterruptedException | ExecutionException e) {
+        if (e instanceof InterruptedException) {
+          Thread.currentThread().interrupt();
+        }
         LOG.error("Exception while moving session {}", wmTezSession.getSessionId(), e);
       }
     }
@@ -82,6 +85,9 @@ public class KillMoveTriggerActionHandler implements TriggerActionHandler<WmTezS
           LOG.info("Killed session {}", wmTezSession.getSessionId());
         }
       } catch (InterruptedException | ExecutionException e) {
+        if (e instanceof InterruptedException) {
+          Thread.currentThread().interrupt();
+        }
         LOG.error("Exception while killing session {}", wmTezSession.getSessionId(), e);
       }
     }
