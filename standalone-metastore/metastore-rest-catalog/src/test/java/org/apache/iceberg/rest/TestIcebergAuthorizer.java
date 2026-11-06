@@ -210,7 +210,8 @@ class TestIcebergAuthorizer {
     Assertions.assertEquals(CATALOG_NAME, output2.getCatName());
     Assertions.assertEquals(NAMESPACE.level(0), output2.getDbname());
     Assertions.assertEquals(TABLE_NAME, output2.getObjectName());
-    Assertions.assertEquals(tableOwner, output2.getOwnerName());
+    // The caller, not the requested owner
+    Assertions.assertEquals(UserGroupInformation.getCurrentUser().getShortUserName(), output2.getOwnerName());
     Assertions.assertEquals(PrincipalType.USER, output2.getOwnerType());
     Assertions.assertEquals(HivePrivObjectActionType.OTHER, output2.getActionType());
 
