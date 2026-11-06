@@ -206,6 +206,17 @@ public interface HiveStorageHandler extends Configurable {
   void configureJobConf(TableDesc tableDesc, JobConf jobConf);
 
   /**
+   * Called while the job is built, for every file sink of the job.
+   *
+   * @param sinkDesc descriptor of the file sink
+   * @param jobConf jobConf shared by all vertices of the job, whose
+   *     {@link org.apache.hadoop.hive.ql.exec.tez.DagUtils#TEZ_TMP_DIR_KEY} is a temp dir of the query
+   */
+  default void configureJobConf(FileSinkDesc sinkDesc, JobConf jobConf) {
+    configureJobConf(sinkDesc.getTableInfo(), jobConf);
+  }
+
+  /**
    * Used to fetch runtime information about storage handler during DESCRIBE EXTENDED statement
    *
    * @param table table definition
@@ -610,6 +621,20 @@ public interface HiveStorageHandler extends Configurable {
    * @return the list of columns that should be used as sort columns in the rewritten ACID query
    */
   default List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    return Collections.emptyList();
+  }
+
+  /**
+   * {@link org.apache.hadoop.hive.ql.metadata.HiveStorageHandler} method to get the columns the deleted records of a
+   * DELETE/UPDATE/MERGE statement are distributed by in the rewritten query. {@link #acidSortColumns} orders them
+   * within a writer.
+   *
+   * @param table the table which is being deleted/updated/merged into
+   * @param operation the operation type we are executing
+   * @return the list of columns that should be used as distribute columns in the rewritten ACID query
+   */
+  default List<FieldSchema> acidDistributeColumns(org.apache.hadoop.hive.ql.metadata.Table table,
+      Operation operation) {
     return Collections.emptyList();
   }
 

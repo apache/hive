@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.PartitionKey;
@@ -44,7 +45,7 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   private final boolean isMergeTask;
 
   HiveIcebergDeleteWriter(
-      Table table, Map<String, DeleteFileSet> rewritableDeletes,
+      Table table, Supplier<Map<String, DeleteFileSet>> rewritableDeletes,
       HiveFileWriterFactory writerFactory, OutputFileFactory deleteFileFactory,
       Context context) {
     super(table, newDeleteWriter(table, rewritableDeletes, writerFactory, deleteFileFactory, context));

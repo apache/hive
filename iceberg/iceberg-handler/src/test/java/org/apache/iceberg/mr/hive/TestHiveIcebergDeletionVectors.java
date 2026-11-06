@@ -19,16 +19,39 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import java.util.stream.StreamSupport;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.service.cli.HiveSQLException;
+import org.apache.hive.service.cli.OperationHandle;
+import org.apache.hive.service.cli.session.HiveSession;
+import org.apache.iceberg.DeleteFile;
+import org.apache.iceberg.FileContent;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.Table;
+import org.apache.iceberg.TableScan;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -45,6 +68,14 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
         p.testTableType() == TestTableType.HIVE_CATALOG && p.formatVersion() == 3);
   }
 
+  @Before
+  public void splitEveryRowGroup() {
+    // one Iceberg split per Parquet row group, and no Tez grouping of those splits back into one task
+    shell.setHiveSessionValue(InputFormatConfig.SPLIT_SIZE, "1024");
+    shell.setHiveSessionValue("tez.grouping.min-size", "1");
+    shell.setHiveSessionValue("tez.grouping.max-size", "1");
+  }
+
   private List<Record> records(long from, long to) {
     List<Record> records = TestHelper.generateRandomRecords(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         (int) (to - from), from);
@@ -52,6 +83,51 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
       records.get(i).setField("customer_id", from + i);
     }
     return records;
+  }
+
+  private Table createTable(String name, PartitionSpec spec) {
+    return testTables.createTable(shell, name, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, fileFormat,
+        records(0, ROWS), formatVersion, ImmutableMap.of("write.parquet.row-group-size-bytes", "1024"));
+  }
+
+  private Table createSingleFileTable(String name) {
+    Table table = createTable(name, PartitionSpec.unpartitioned());
+    List<FileScanTask> files = planFiles(table);
+    Assert.assertEquals("one data file", 1, files.size());
+    Assert.assertTrue("multiple row groups", files.get(0).file().splitOffsets().size() > 1);
+    return table;
+  }
+
+  private static List<FileScanTask> planFiles(Table table) {
+    return planFiles(table.newScan());
+  }
+
+  private static List<FileScanTask> planFiles(TableScan scan) {
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
+      return StreamSupport.stream(tasks.spliterator(), false).collect(Collectors.toList());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static List<DeleteFile> dvs(List<FileScanTask> tasks) {
+    return tasks.stream()
+        .flatMap(t -> t.deletes().stream())
+        .filter(d -> d.content() == FileContent.POSITION_DELETES && d.format() == FileFormat.PUFFIN)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns the data files whose DV Iceberg merged from duplicates at commit time, into a "merged-dvs-*.puffin".
+   */
+  private static Set<String> assertOneDVPerDataFile(List<FileScanTask> tasks) {
+    List<DeleteFile> dvs = dvs(tasks);
+    Assert.assertFalse("no DVs written", dvs.isEmpty());
+    tasks.forEach(t -> Assert.assertTrue("more than one DV for " + t.file().location(), dvs(List.of(t)).size() <= 1));
+    return dvs.stream()
+        .filter(dv -> dv.location().contains("merged-dvs-"))
+        .map(dv -> dv.referencedDataFile().toString())
+        .collect(Collectors.toSet());
   }
 
   private long count(String sql) {
@@ -74,5 +150,171 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
         "ON t.customer_id = s.customer_id WHEN MATCHED THEN DELETE");
     long deleted = LongStream.range(0, ROWS).filter(i -> i % 7 == 0 || i % 5 == 0).count();
     Assert.assertEquals(ROWS - deleted, count("SELECT count(*) FROM default.dv_branch.branch_b1"));
+  }
+
+
+  private static void assertOneDVPerDataFileAndNoMerge(Table table) {
+    table.refresh();
+    Assert.assertEquals("DVs merged at commit", Set.of(), assertOneDVPerDataFile(planFiles(table)));
+  }
+
+  private long rowsAffected(String sql) throws HiveSQLException {
+    HiveSession session = shell.getSession();
+    OperationHandle handle = session.executeStatement(sql, Map.of());
+    try {
+      return session.getSessionManager().getOperationManager().getOperation(handle).getNumModifiedRows();
+    } finally {
+      session.closeOperation(handle);
+    }
+  }
+
+  @Test
+  public void testDeleteOfSplitDataFile() {
+    Table table = createSingleFileTable("dv_delete");
+    shell.executeStatement("DELETE FROM dv_delete WHERE customer_id % 7 = 0");
+    Assert.assertEquals(ROWS - (ROWS + 6) / 7, count("SELECT count(*) FROM dv_delete"));
+    assertOneDVPerDataFileAndNoMerge(table);
+  }
+
+  @Test
+  public void testDeleteOfSplitDataFilesInPartitionedTable() {
+    // several writer tasks
+    shell.setHiveSessionValue("mapreduce.job.reduces", "3");
+    shell.setHiveSessionValue("hive.tez.auto.reducer.parallelism", "false");
+    Table table = createTable("dv_delete_part",
+        PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).bucket("customer_id", 3).build());
+    Assert.assertTrue("split data files", planFiles(table).stream()
+        .allMatch(t -> t.file().splitOffsets().size() > 1));
+    shell.executeStatement("DELETE FROM dv_delete_part WHERE customer_id % 7 = 0");
+    Assert.assertEquals(ROWS - (ROWS + 6) / 7, count("SELECT count(*) FROM dv_delete_part"));
+    assertOneDVPerDataFileAndNoMerge(table);
+  }
+
+  @Test
+  public void testSecondDeleteOverExistingDVs() {
+    Table table = createSingleFileTable("dv_delete2");
+    shell.executeStatement("DELETE FROM dv_delete2 WHERE customer_id % 7 = 0");
+    shell.executeStatement("DELETE FROM dv_delete2 WHERE customer_id % 5 = 0");
+    long deleted = LongStream.range(0, ROWS).filter(i -> i % 7 == 0 || i % 5 == 0).count();
+    Assert.assertEquals(ROWS - deleted, count("SELECT count(*) FROM dv_delete2"));
+    table.refresh();
+    Assert.assertEquals("one live DV holding every deleted position", deleted,
+        dvs(planFiles(table)).stream().mapToLong(DeleteFile::recordCount).sum());
+    assertOneDVPerDataFileAndNoMerge(table);
+  }
+
+  @Test
+  public void testUpdateOfSplitDataFile() {
+    Table table = createSingleFileTable("dv_update");
+    shell.executeStatement("UPDATE dv_update SET first_name = 'x' WHERE customer_id % 7 = 0");
+    Assert.assertEquals((ROWS + 6) / 7, count("SELECT count(*) FROM dv_update WHERE first_name = 'x'"));
+    assertOneDVPerDataFileAndNoMerge(table);
+  }
+
+  private void createMergeSource(String select) {
+    shell.executeStatement("CREATE TABLE dv_merge_src STORED BY ICEBERG AS " + select);
+  }
+
+  /**
+   * Both clauses hit the same data file, their deletes go through one delete branch.
+   */
+  private void assertMerge(String merge, long updated, long deleted, long inserted) throws HiveSQLException {
+    Table table = createSingleFileTable("dv_merge");
+    createMergeSource("SELECT customer_id FROM dv_merge WHERE customer_id % 7 = 0 UNION ALL " +
+        "SELECT customer_id + " + ROWS + " FROM dv_merge WHERE customer_id < " + inserted);
+    Assert.assertEquals("rows affected", updated + deleted + inserted, rowsAffected(merge));
+    Assert.assertEquals(ROWS - deleted + inserted, count("SELECT count(*) FROM dv_merge"));
+    Assert.assertEquals(updated, count("SELECT count(*) FROM dv_merge WHERE first_name = 'x'"));
+    assertOneDVPerDataFileAndNoMerge(table);
+  }
+
+  @Test
+  public void testMergeUpdateAndDeleteOfSameDataFile() throws HiveSQLException {
+    assertMerge("MERGE INTO dv_merge t USING dv_merge_src s ON t.customer_id = s.customer_id " +
+        "WHEN MATCHED AND t.customer_id % 2 = 0 THEN UPDATE SET first_name = 'x' " +
+        "WHEN MATCHED THEN DELETE",
+        LongStream.range(0, ROWS).filter(i -> i % 7 == 0 && i % 2 == 0).count(),
+        LongStream.range(0, ROWS).filter(i -> i % 7 == 0 && i % 2 != 0).count(), 0);
+  }
+
+  @Test
+  public void testMergeDeleteBeforeUpdateOfSameDataFile() throws HiveSQLException {
+    assertMerge("MERGE INTO dv_merge t USING dv_merge_src s ON t.customer_id = s.customer_id " +
+        "WHEN MATCHED AND t.customer_id % 2 = 0 THEN DELETE " +
+        "WHEN MATCHED THEN UPDATE SET first_name = 'x'",
+        LongStream.range(0, ROWS).filter(i -> i % 7 == 0 && i % 2 != 0).count(),
+        LongStream.range(0, ROWS).filter(i -> i % 7 == 0 && i % 2 == 0).count(), 0);
+  }
+
+  @Test
+  public void testMergeUpdateDeleteAndInsert() throws HiveSQLException {
+    assertMerge("MERGE INTO dv_merge t USING dv_merge_src s ON t.customer_id = s.customer_id " +
+        "WHEN MATCHED AND t.customer_id % 2 = 0 THEN UPDATE SET first_name = 'x' " +
+        "WHEN MATCHED THEN DELETE " +
+        "WHEN NOT MATCHED THEN INSERT VALUES (s.customer_id, 'y', 'z')",
+        LongStream.range(0, ROWS).filter(i -> i % 7 == 0 && i % 2 == 0).count(),
+        LongStream.range(0, ROWS).filter(i -> i % 7 == 0 && i % 2 != 0).count(), 10);
+  }
+
+  @Test
+  public void testMergeClausesOnDisjointDataFiles() {
+    // customer ids [0, ROWS) in one file and [ROWS, 2 * ROWS) in another
+    Table table = createSingleFileTable("dv_merge");
+    shell.executeStatement(testTables.getInsertQuery(records(ROWS, 2 * ROWS),
+        TableIdentifier.of("default", "dv_merge"), false));
+    createMergeSource("SELECT customer_id FROM dv_merge WHERE customer_id % 7 = 0");
+    shell.executeStatement("MERGE INTO dv_merge t USING dv_merge_src s ON t.customer_id = s.customer_id " +
+        "WHEN MATCHED AND t.customer_id < " + ROWS + " THEN UPDATE SET first_name = 'x' " +
+        "WHEN MATCHED THEN DELETE");
+    long deleted = LongStream.range(ROWS, 2 * ROWS).filter(i -> i % 7 == 0).count();
+    Assert.assertEquals(2 * ROWS - deleted, count("SELECT count(*) FROM dv_merge"));
+    table.refresh();
+    Assert.assertEquals("both data files have a DV", 2,
+        dvs(planFiles(table)).stream().map(DeleteFile::referencedDataFile).distinct().count());
+    assertOneDVPerDataFileAndNoMerge(table);
+  }
+
+  private static volatile List<String> scratchDirs;
+  private static volatile Set<String> rewritableDeletesBefore;
+  private static volatile boolean rewritableDeletesSeen;
+
+  private static Set<String> rewritableDeletes() throws IOException {
+    Set<String> files = Sets.newHashSet();
+    for (String scratchDir : scratchDirs) {
+      Path root = new Path(scratchDir);
+      RemoteIterator<LocatedFileStatus> it = root.getFileSystem(new HiveConf()).listFiles(root, true);
+      while (it.hasNext()) {
+        String file = it.next().getPath().toString();
+        if (file.endsWith("-rewritable-deletes")) {
+          files.add(file);
+        }
+      }
+    }
+    return files;
+  }
+
+  /**
+   * Called by the writing tasks through java_method: records whether the query planned rewritable deletes.
+   */
+  public static boolean probeRewritableDeletes() throws IOException {
+    rewritableDeletesSeen = !Sets.difference(rewritableDeletes(), rewritableDeletesBefore).isEmpty();
+    return true;
+  }
+
+  @Test
+  public void testRewritableDeletesPlannedForTheJob() throws IOException {
+    createSingleFileTable("dv_delete");
+    shell.executeStatement("DELETE FROM dv_delete WHERE customer_id % 7 = 0");
+    // a query in Hadoop local mode uses the local scratch dir
+    scratchDirs = List.of(HiveConf.getVar(shell.getHiveConf(), HiveConf.ConfVars.SCRATCH_DIR),
+        HiveConf.getVar(shell.getHiveConf(), HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
+    String delete = "DELETE FROM dv_delete WHERE customer_id % 5 = 0 AND " +
+        "java_method('" + TestHiveIcebergDeletionVectors.class.getName() + "', 'probeRewritableDeletes') = 'true'";
+    rewritableDeletesBefore = rewritableDeletes();
+    shell.executeStatement("EXPLAIN " + delete);
+    Assert.assertEquals("planned by EXPLAIN", rewritableDeletesBefore, rewritableDeletes());
+    rewritableDeletesSeen = false;
+    shell.executeStatement(delete);
+    Assert.assertTrue("planned in the temp dir of the query", rewritableDeletesSeen);
   }
 }
