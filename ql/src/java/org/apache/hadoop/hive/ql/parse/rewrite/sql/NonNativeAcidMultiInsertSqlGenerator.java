@@ -40,7 +40,8 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
 
   @Override
   public void appendAcidSelectColumns(Operation operation) {
-    appendAcidSelectColumns(operation, false, false, "-1");
+    appendAcidSelectColumns(
+        targetTable.getStorageHandler().acidSelectColumns(targetTable, operation), false, false, "-1");
   }
 
   @Override
@@ -51,12 +52,24 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
   @Override
   public void appendAcidSelectColumnsForDeletedRecords(
       Operation operation, boolean skipPrefix, String deletedRowIdExpr) {
-    appendAcidSelectColumns(operation, true, skipPrefix, deletedRowIdExpr);
+    appendAcidSelectColumns(
+        targetTable.getStorageHandler().acidSelectColumns(targetTable, operation), true, skipPrefix, deletedRowIdExpr);
   }
 
-  private void appendAcidSelectColumns(
-      Operation operation, boolean markRowIdAsDeleted, boolean skipPrefix, String deletedRowIdExpr) {
-    List<FieldSchema> acidSelectColumns = targetTable.getStorageHandler().acidSelectColumns(targetTable, operation);
+  @Override
+  public void appendDeletedRecordColumns() {
+    appendAcidSelectColumns(deletedRecordColumns(), false, false, "-1");
+  }
+
+  // the virtual columns of the records a merge-on-read statement deletes
+  private List<FieldSchema> deletedRecordColumns() {
+    return targetTable.getStorageHandler().acidVirtualColumns().stream()
+        .map(column -> new FieldSchema(column.getName(), column.getTypeInfo().getTypeName(), ""))
+        .toList();
+  }
+
+  private void appendAcidSelectColumns(List<FieldSchema> acidSelectColumns, boolean markRowIdAsDeleted,
+      boolean skipPrefix, String deletedRowIdExpr) {
     for (FieldSchema fieldSchema : acidSelectColumns) {
       boolean deletedRowId = markRowIdAsDeleted && fieldSchema.equals(targetTable.getStorageHandler().getRowId());
       String identifier = deletedRowId ?
@@ -89,6 +102,15 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
   @Override
   public List<String> getSortKeys(Operation operation) {
     return targetTable.getStorageHandler().acidSortColumns(targetTable, operation)
+        .stream()
+        .map(fieldSchema -> qualify(
+            HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<String> getDistributeKeys(Operation operation) {
+    return targetTable.getStorageHandler().acidDistributeColumns(targetTable, operation)
         .stream()
         .map(fieldSchema -> qualify(
             HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))

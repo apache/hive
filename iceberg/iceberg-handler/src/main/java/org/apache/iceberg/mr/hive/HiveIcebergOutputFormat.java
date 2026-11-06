@@ -36,6 +36,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
+import org.apache.iceberg.mr.hive.writer.RewritableDeletes;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
@@ -63,12 +64,14 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
   private static HiveIcebergWriter writer(JobConf jc) {
     TaskAttemptID taskAttemptID = TezUtil.taskAttemptWrapper(jc);
     // It gets the config from the FileSinkOperator which has its own config for every target table
-    Table table = HiveTableUtil.deserializeTable(jc, jc.get(hive_metastoreConstants.META_TABLE_NAME));
+    String tableName = jc.get(hive_metastoreConstants.META_TABLE_NAME);
+    Table table = HiveTableUtil.deserializeTable(jc, tableName);
     setWriterLevelConfiguration(jc, table);
     boolean shouldAddRowLineageColumns = jc.getBoolean(SessionStateUtil.ROW_LINEAGE, false);
 
     return WriterBuilder.builderFor(table, jc::get)
         .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
+        .rewritableDeletes(() -> RewritableDeletes.fromJob(tableName, jc))
         .attemptID(taskAttemptID)
         .addRowLineageColumns(shouldAddRowLineageColumns)
         .build();

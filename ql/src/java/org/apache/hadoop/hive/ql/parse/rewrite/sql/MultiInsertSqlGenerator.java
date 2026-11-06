@@ -74,7 +74,19 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public abstract List<String> getDeleteValues(Operation operation);
+
+  /**
+   * Appends the columns of the records a DELETE statement deletes.
+   */
+  public void appendDeletedRecordColumns() {
+    appendAcidSelectColumns(Operation.DELETE);
+  }
+
   public abstract List<String> getSortKeys(Operation operation);
+
+  public List<String> getDistributeKeys(Operation operation) {
+    return List.of();
+  }
 
   public String qualify(String columnName) {
     if (isBlank(subQueryAlias)) {
@@ -106,7 +118,7 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendDeleteBranch(String hintStr) {
-    List<String> deleteValues = getDeleteValues(Operation.DELETE);
+    List<String> deleteValues = getDeleteValues(Operation.MERGE);
     appendInsertBranch(hintStr, deleteValues);
   }
 
@@ -142,7 +154,17 @@ public abstract class MultiInsertSqlGenerator {
     queryStr.append("\n");
   }
 
+  private void appendDistributeBy(List<String> keys) {
+    if (keys.isEmpty()) {
+      return;
+    }
+    queryStr.append(INDENT).append("DISTRIBUTE BY ");
+    queryStr.append(StringUtils.join(keys, ","));
+    queryStr.append("\n");
+  }
+
   public void appendSortKeys() {
+    appendDistributeBy(getDistributeKeys(Operation.DELETE));
     appendSortBy(getSortKeys(Operation.DELETE));
   }
 

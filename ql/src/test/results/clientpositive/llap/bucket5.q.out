@@ -421,7 +421,6 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:string
 #### A masked pattern was here ####
-                          file.sink.merge.task.enabled.default.unbucketed_table true
                           location hdfs://### HDFS PATH ###
                           name default.unbucketed_table
                           serialization.format 1
@@ -495,7 +494,6 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:string
 #### A masked pattern was here ####
-                          file.sink.merge.task.enabled.default.unbucketed_table true
                           location hdfs://### HDFS PATH ###
                           name default.unbucketed_table
                           serialization.format 1
