@@ -75,10 +75,7 @@ public abstract class MultiInsertSqlGenerator {
 
   public abstract List<String> getDeleteValues(Operation operation);
   public abstract List<String> getSortKeys(Operation operation);
-
-  public List<String> getDistributeKeys(Operation operation) {
-    return List.of();
-  }
+  public abstract List<String> getDistributeKeys(Operation operation);
 
   public String qualify(String columnName) {
     if (isBlank(subQueryAlias)) {

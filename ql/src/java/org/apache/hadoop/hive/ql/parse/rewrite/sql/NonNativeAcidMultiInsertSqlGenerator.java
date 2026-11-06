@@ -101,6 +101,6 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
         .stream()
         .map(fieldSchema -> qualify(
             HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf)))
-        .collect(Collectors.toList());
+        .toList();
   }
 }

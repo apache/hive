@@ -39,7 +39,7 @@ public class WhereClausePatcher {
     // TOK_INSERT right after TOK_SELECT, which is where it would have landed if it had been there originally in the
     // string.  We do it this way because it's easy then turning the original AST back into a
     // string and reparsing it.
-    ASTNode select = (ASTNode) rewrittenInsert.getChildren().get(1);
+    ASTNode select = (ASTNode) rewrittenInsert.getChild(1);
     assert select.getToken().getType() == HiveParser.TOK_SELECT :
         "Expected TOK_SELECT to be second child of TOK_INSERT, but found " + select.getName();
     rewrittenInsert.insertChild(2, whereTree);

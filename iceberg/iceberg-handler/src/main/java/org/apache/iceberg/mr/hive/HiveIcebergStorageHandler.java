@@ -405,8 +405,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Properties props = tableDesc.getProperties();
     if (sinkDesc.getWriteOperation() == Operation.DELETE && !sinkDesc.isCopyOnWrite() &&
         IcebergTableUtil.formatVersion(Maps.fromProperties(props)) >= 3) {
-      RewritableDeletes.plan(IcebergTableUtil.getTable(jobConf, props), props.getProperty(Catalogs.SNAPSHOT_REF),
-          jobConf);
+      RewritableDeletes.addToJobConf(IcebergTableUtil.getTable(jobConf, props), tableDesc.getTableName(),
+          props.getProperty(Catalogs.SNAPSHOT_REF), jobConf);
     }
   }
 
@@ -1008,12 +1008,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public DynamicPartitionCtx createDPContext(
       HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation)
       throws SemanticException {
-    // delete records are already clustered by partition spec id and the hash of the partition struct
-    // there is no need to do any additional sorting based on partition columns
-    if (writeOperation == Operation.DELETE && !shouldOverwrite(hmsTable, writeOperation)) {
-      return null;
-    }
-
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 

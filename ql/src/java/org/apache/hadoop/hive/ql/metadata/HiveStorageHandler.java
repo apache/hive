@@ -209,7 +209,8 @@ public interface HiveStorageHandler extends Configurable {
    * Called while the job is built, for every file sink of the job.
    *
    * @param sinkDesc descriptor of the file sink
-   * @param jobConf jobConf shared by all vertices of the job
+   * @param jobConf jobConf shared by all vertices of the job, whose
+   *     {@link org.apache.hadoop.hive.ql.exec.tez.DagUtils#TEZ_TMP_DIR_KEY} is a temp dir of the query
    */
   default void configureJobConf(FileSinkDesc sinkDesc, JobConf jobConf) {
     configureJobConf(sinkDesc.getTableInfo(), jobConf);
