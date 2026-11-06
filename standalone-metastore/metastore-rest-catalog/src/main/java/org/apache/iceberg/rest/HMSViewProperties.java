@@ -30,7 +30,6 @@ import org.apache.iceberg.MetadataUpdate;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hive.HiveCatalog;
-import org.apache.iceberg.hive.HiveHadoopUtil;
 import org.apache.iceberg.hive.MetadataLocator;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.rest.requests.CreateViewRequest;
@@ -48,8 +47,6 @@ import org.apache.iceberg.view.ViewMetadata;
 final class HMSViewProperties {
   // The HMS behind the catalog, if any: the source of the view state reported to clients (see withViewAuthorization)
   private final MetadataLocator metadataLocator;
-  // Whether the catalog honors a client-requested owner; otherwise the owner property is stripped from requests
-  private final boolean clientSuppliedOwnerEnabled;
 
   /**
    * @param catalog the catalog served, a {@link HiveCatalog} possibly wrapped by an {@link HMSCachingCatalog};
@@ -63,18 +60,14 @@ final class HMSViewProperties {
       hiveCatalog = catalog instanceof HiveCatalog hive ? hive : null;
     }
     this.metadataLocator = hiveCatalog == null ? null : new MetadataLocator(hiveCatalog);
-    this.clientSuppliedOwnerEnabled = hiveCatalog != null && hiveCatalog.getConf() != null &&
-        hiveCatalog.getConf().getBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED,
-            HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED_DEFAULT);
   }
 
   /**
-   * Whether a view property is reserved for state HMS manages: the authorization marker, under either name, and
-   * the owner unless client-supplied owners are enabled.
+   * Whether a view property is reserved for state HMS manages: the owner and the authorization marker, under
+   * either name.
    */
   private boolean isReservedViewProperty(String key) {
-    return HiveCatalog.isViewAuthorizationProperty(key) ||
-        (!clientSuppliedOwnerEnabled && HiveCatalog.HMS_TABLE_OWNER.equalsIgnoreCase(key));
+    return HiveCatalog.isHmsOwnedViewProperty(key);
   }
 
   private Map<String, String> withoutReservedProperties(Map<String, String> properties) {

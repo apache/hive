@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.Namespace;
@@ -329,21 +328,16 @@ class TestRESTViewDeferredAuthorization {
         .doesNotContainKey(HiveCatalog.HMS_TABLE_OWNER);
   }
 
-  @DisplayName("Client-supplied owner setting: off by default, caller conf unchanged")
+  @DisplayName("REST catalog records the caller as owner; caller conf unchanged")
   @Test
-  void clientSuppliedOwnerIsOffByDefaultAndCallerConfUnchanged() throws Exception {
+  void restCatalogRecordsCallerAsOwnerAndCallerConfUnchanged() throws Exception {
     Configuration conf = new Configuration(REST_CATALOG_EXTENSION.getConf());
-    assertThat(HMSCatalogFactory.isClientSuppliedOwnerEnabled(conf)).isFalse();
+    // Even when HMS-wide configuration enables client-supplied owners for embedded catalogs
+    conf.setBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED, true);
     try (HiveCatalog hiveCatalog = HMSCatalogFactory.createHiveCatalog(conf)) {
       assertThat(hiveCatalog.getConf().getBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED, true)).isFalse();
-      assertThat(conf.get(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED)).isNull();
     }
-
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_CLIENT_SUPPLIED_OWNER_ENABLED, true);
-    assertThat(HMSCatalogFactory.isClientSuppliedOwnerEnabled(conf)).isTrue();
-    try (HiveCatalog hiveCatalog = HMSCatalogFactory.createHiveCatalog(conf)) {
-      assertThat(hiveCatalog.getConf().getBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED, false)).isTrue();
-    }
+    assertThat(conf.getBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED, false)).isTrue();
   }
 
   @DisplayName("HMS lookups report a missing database as not found")

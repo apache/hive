@@ -33,8 +33,8 @@ public class HiveHadoopUtil {
   /**
    * Whether the HMS owner of a table or view created through this catalog may be taken from the client-supplied
    * property {@link HiveCatalog#HMS_TABLE_OWNER} instead of the authenticated caller. On by default, as engines
-   * embedding the catalog (Spark, Flink, ...) rely on it. The HMS REST catalog always sets it, from
-   * {@code metastore.iceberg.catalog.client-supplied-owner.enabled} (off by default).
+   * embedding the catalog (Spark, Flink, ...) rely on it. The HMS REST catalog always sets it to {@code false},
+   * recording the authenticated caller.
    */
   public static final String CLIENT_SUPPLIED_OWNER_ENABLED = "iceberg.hive.client-supplied-owner.enabled";
   public static final boolean CLIENT_SUPPLIED_OWNER_ENABLED_DEFAULT = true;

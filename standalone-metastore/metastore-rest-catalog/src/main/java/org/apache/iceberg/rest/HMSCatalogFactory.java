@@ -91,19 +91,6 @@ public class HMSCatalogFactory {
   }
 
   /**
-   * Whether the REST catalog records the owner a client requests through {@link HiveCatalog#HMS_TABLE_OWNER}
-   * instead of the authenticated caller ({@code ICEBERG_CATALOG_CLIENT_SUPPLIED_OWNER_ENABLED}, off by default).
-   * The single source of truth for both the catalog's owner resolution and {@link IcebergAuthorizer}'s policy
-   * evaluation, so that the owner authorized is the owner recorded.
-   * @param configuration the configuration
-   * @return true when client-supplied owners are honored
-   */
-  static boolean isClientSuppliedOwnerEnabled(Configuration configuration) {
-    return MetastoreConf.getBoolVar(configuration,
-        MetastoreConf.ConfVars.ICEBERG_CATALOG_CLIENT_SUPPLIED_OWNER_ENABLED);
-  }
-
-  /**
    * Builds the underlying {@link HiveCatalog} from the given configuration.
    * <p>Exposed so tests can obtain a catalog through the exact production construction path rather
    * than duplicating it; the servlet path wraps the result in an {@link HMSCachingCatalog} when a
@@ -137,10 +124,10 @@ public class HMSCatalogFactory {
     if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION)) {
       properties.put(CatalogProperties.UNIQUE_TABLE_LOCATION, "true");
     }
-    // Record the authenticated caller as owner unless configured otherwise. Set on a copy, keeping the caller's
-    // (possibly HMS-wide) configuration unchanged.
+    // The REST catalog records the authenticated caller as owner, whatever owner a client requests. Set on a copy,
+    // keeping the caller's (possibly HMS-wide) configuration unchanged.
     final Configuration catalogConf = new Configuration(configuration);
-    catalogConf.setBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED, isClientSuppliedOwnerEnabled(configuration));
+    catalogConf.setBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED, false);
     final HiveCatalog hiveCatalog = new org.apache.iceberg.hive.HiveCatalog();
     hiveCatalog.setConf(catalogConf);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
