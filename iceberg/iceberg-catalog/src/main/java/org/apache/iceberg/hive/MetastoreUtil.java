@@ -219,7 +219,8 @@ public class MetastoreUtil {
     hmsTable.setCreateTime((int) (metadata.version(1).timestampMillis() / 1000));
     hmsTable.setLastAccessTime((int) (metadata.currentVersion().timestampMillis() / 1000));
     // Keep the owner HMS recorded. Only a view built without HMS (REST catalog client) takes it from the property,
-    // which the HMS REST catalog sets to the recorded owner.
+    // which then holds the owner the HMS REST catalog reports (the one HMS recorded), not a client-requested owner:
+    // HiveHadoopUtil.resolveTableOwner and its client-supplied-owner setting apply to creation only.
     if (StringUtils.isEmpty(hmsTable.getOwner())) {
       hmsTable.setOwner(
           PropertyUtil.propertyAsString(

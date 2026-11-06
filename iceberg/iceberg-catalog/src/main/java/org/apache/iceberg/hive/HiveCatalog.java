@@ -578,7 +578,7 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
    */
   public static boolean isViewAuthorized(Table hmsView) {
     Map<String, String> parameters = hmsView.getParameters();
-    return parameters == null || !"false".equalsIgnoreCase(parameters.get(HMS_VIEW_AUTHORIZED));
+    return parameters == null || !Boolean.FALSE.toString().equalsIgnoreCase(parameters.get(HMS_VIEW_AUTHORIZED));
   }
 
   @Override
