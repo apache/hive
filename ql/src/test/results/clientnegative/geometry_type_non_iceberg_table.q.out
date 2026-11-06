@@ -1,0 +1,5 @@
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_test_basic (id INT, geom GEOMETRY('EPSG:4326'))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_test_basic
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Column name geom cannot be of type 'geometry('EPSG:4326')' as it is not supported in non-Iceberg tables.

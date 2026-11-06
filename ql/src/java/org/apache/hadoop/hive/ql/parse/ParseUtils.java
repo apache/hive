@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.GeometryTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -192,6 +193,19 @@ public final class ParseUtils {
 
     String lengthStr = node.getChild(0).getText();
     return TypeInfoFactory.getCharTypeInfo(Integer.parseInt(lengthStr));
+  }
+
+  public static GeometryTypeInfo getGeometryTypeInfo(ASTNode node)
+      throws SemanticException {
+    if (node.getChildCount() == 0) {
+      return TypeInfoFactory.geometryTypeInfo;
+    }
+    String crs = BaseSemanticAnalyzer.unescapeSQLString(node.getChild(0).getText());
+    try {
+      return TypeInfoFactory.getGeometryTypeInfo(crs);
+    } catch (IllegalArgumentException e) {
+      throw new SemanticException("Bad params for type geometry: " + e.getMessage());
+    }
   }
 
   static int getIndex(String[] list, String elem) {

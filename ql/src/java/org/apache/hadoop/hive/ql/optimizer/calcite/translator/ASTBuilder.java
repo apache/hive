@@ -245,6 +245,7 @@ public class ASTBuilder {
 
     switch (sqlType) {
     case BINARY:
+    case GEOMETRY:
     case DATE:
     case TIME:
     case TIMESTAMP:

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.iceberg.geospatial.GeospatialBound;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -69,6 +70,31 @@ public class TestIcebergBinaryObjectInspector {
     Assertions.assertNotSame(bytes, copy);
 
     Assertions.assertFalse(oi.preferWritable());
+  }
+
+  @Test
+  public void testGeospatialBoundsAsWkbPoints() {
+    BinaryObjectInspector oi = IcebergBinaryObjectInspector.get();
+
+    Assertions.assertEquals("0101000000000000000000F03F0000000000000040",
+        hex(oi.getPrimitiveJavaObject(GeospatialBound.createXY(1, 2))));
+    Assertions.assertEquals("01E9030000000000000000F03F00000000000000400000000000000840",
+        hex(oi.getPrimitiveJavaObject(GeospatialBound.createXYZ(1, 2, 3))));
+    Assertions.assertEquals("01D1070000000000000000F03F00000000000000400000000000001040",
+        hex(oi.getPrimitiveJavaObject(GeospatialBound.createXYM(1, 2, 4))));
+    Assertions.assertEquals(
+        "01B90B0000000000000000F03F000000000000004000000000000008400000000000001040",
+        hex(oi.getPrimitiveJavaObject(GeospatialBound.createXYZM(1, 2, 3, 4))));
+    Assertions.assertEquals(new BytesWritable(oi.getPrimitiveJavaObject(GeospatialBound.createXY(1, 2))),
+        oi.getPrimitiveWritableObject(GeospatialBound.createXY(1, 2)));
+  }
+
+  private static String hex(byte[] bytes) {
+    StringBuilder sb = new StringBuilder();
+    for (byte value : bytes) {
+      sb.append(String.format("%02X", value));
+    }
+    return sb.toString();
   }
 
 }

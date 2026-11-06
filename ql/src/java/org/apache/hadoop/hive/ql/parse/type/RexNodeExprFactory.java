@@ -82,6 +82,8 @@ import org.apache.hadoop.hive.ql.parse.QBSubQueryParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToGeometry;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -651,6 +653,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     RelDataType returnType;
     if (typeInfo != null) {
       returnType = TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory());
+      validateGeometryCast(typeInfo, functionInfo, inputs);
     } else {
       returnType = functionHelper.getReturnType(functionInfo, inputs);
     }
@@ -660,6 +663,25 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     // 4) Return Calcite function
     return functionHelper.getExpression(
         funcText, functionInfo, newInputs, returnType);
+  }
+
+  /**
+   * Casts with a known target type become plain Calcite casts without initializing the Hive UDF, so the
+   * geometry cast has to be initialized here to reject unsupported arguments and CRS changes.
+   */
+  private static void validateGeometryCast(TypeInfo typeInfo, FunctionInfo functionInfo, List<RexNode> inputs)
+      throws SemanticException {
+    GenericUDF genericUDF = functionInfo == null ? null : functionInfo.getGenericUDF();
+    if (!(genericUDF instanceof GenericUDFToGeometry udf)) {
+      return;
+    }
+    udf.setTypeInfo(typeInfo);
+    ObjectInspector[] inputOIs = new ObjectInspector[inputs.size()];
+    for (int i = 0; i < inputOIs.length; i++) {
+      inputOIs[i] = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+          TypeConverter.convert(inputs.get(i).getType()));
+    }
+    udf.initialize(inputOIs);
   }
 
   /**

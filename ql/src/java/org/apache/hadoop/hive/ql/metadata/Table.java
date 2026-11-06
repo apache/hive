@@ -94,6 +94,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.serde.serdeConstants.GEOMETRY_TYPE_NAME;
 import static org.apache.hadoop.hive.serde.serdeConstants.UNKNOWN_TYPE_NAME;
 import static org.apache.hadoop.hive.serde.serdeConstants.VARIANT_TYPE_NAME;
 
@@ -290,7 +291,8 @@ public class Table implements Serializable {
       // legitimately empty when every column is a partition transform source
       throw new HiveException("at least one column must be specified for the table");
     }
-    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
+    // Views store no data, so their columns may use types that only Iceberg tables can store
+    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this) || isView());
 
     if (!isView()) {
       if (null == getDeserializer(false)) {
@@ -1252,6 +1254,10 @@ public class Table implements Serializable {
           throw new HiveException("Partition column name " + colName
               + " conflicts with table columns.");
         }
+        if (isGeospatialType(partCol.getType())) {
+          throw new HiveException(
+              "Partition column name " + colName + " cannot be of type '" + partCol.getType() + "'.");
+        }
       }
     }
   }
@@ -1490,6 +1496,19 @@ public class Table implements Serializable {
     return VARIANT_TYPE_NAME.equalsIgnoreCase(columnType) ||
         UNKNOWN_TYPE_NAME.equalsIgnoreCase(columnType) ||
         TypeInfoFactory.nanoTimestampTypeInfo.getQualifiedName().equalsIgnoreCase(columnType) ||
-        TypeInfoFactory.timestampNanoLocalTZTypeInfo.getQualifiedName().equalsIgnoreCase(columnType);
+        TypeInfoFactory.timestampNanoLocalTZTypeInfo.getQualifiedName().equalsIgnoreCase(columnType) ||
+        isGeospatialType(columnType);
+  }
+
+  private static boolean isGeospatialType(String columnType) {
+    if (columnType == null) {
+      return false;
+    }
+    String baseType = columnType.trim().toLowerCase();
+    int paramStart = baseType.indexOf('(');
+    if (paramStart >= 0) {
+      baseType = baseType.substring(0, paramStart).trim();
+    }
+    return GEOMETRY_TYPE_NAME.equals(baseType);
   }
 }

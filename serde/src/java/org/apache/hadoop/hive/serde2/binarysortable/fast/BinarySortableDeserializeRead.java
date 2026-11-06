@@ -335,6 +335,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
       }
       return true;
     case BINARY:
+    case GEOMETRY:
     case STRING:
     case CHAR:
     case VARCHAR:

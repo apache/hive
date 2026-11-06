@@ -214,6 +214,7 @@ public class ConstantVectorExpression extends VectorExpression {
           return new ConstantVectorExpression(
               outputColumnNum, ((HiveChar) constantValue), outputTypeInfo);
         case BINARY:
+        case GEOMETRY:
           return new ConstantVectorExpression(
               outputColumnNum, ((byte[]) constantValue), outputTypeInfo);
         case INTERVAL_YEAR_MONTH:

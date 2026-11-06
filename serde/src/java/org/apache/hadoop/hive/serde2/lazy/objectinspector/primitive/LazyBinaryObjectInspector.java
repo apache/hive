@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 import org.apache.hadoop.hive.serde2.lazy.LazyBinary;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
 
@@ -31,6 +32,13 @@ public class LazyBinaryObjectInspector extends
 
   public LazyBinaryObjectInspector() {
     super(TypeInfoFactory.binaryTypeInfo);
+  }
+
+  /**
+   * For binary-backed types other than binary, such as the geospatial types.
+   */
+  LazyBinaryObjectInspector(PrimitiveTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override

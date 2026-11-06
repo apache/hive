@@ -275,6 +275,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       break;
 
     case BINARY:
+    case GEOMETRY:
     case STRING:
     case CHAR:
     case VARCHAR:

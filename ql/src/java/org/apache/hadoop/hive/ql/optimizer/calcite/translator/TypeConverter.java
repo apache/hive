@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,13 +28,16 @@ import java.util.Map;
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeComparability;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.SqlCollation;
+import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.parser.SqlParserPos;
+import org.apache.calcite.sql.type.ObjectSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -49,12 +53,14 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.GeometryTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 
 import com.google.common.base.Function;
@@ -251,6 +257,12 @@ public class TypeConverter {
     case UNKNOWN:
       convertedType = dtFactory.createSqlType(SqlTypeName.OTHER);
       break;
+    case GEOMETRY:
+      // The identifier keeps the type parameters, which Calcite's GEOMETRY type cannot hold.
+      convertedType = new ObjectSqlType(SqlTypeName.GEOMETRY,
+          new SqlIdentifier(type.getQualifiedName(), SqlParserPos.ZERO), nullable,
+          Collections.emptyList(), RelDataTypeComparability.ALL);
+      break;
     }
 
     if (null == convertedType) {
@@ -292,7 +304,9 @@ public class TypeConverter {
   }
 
   public static TypeInfo convert(RelDataType rType) {
-    if (rType.isStruct()) {
+    if (rType.getSqlTypeName() == SqlTypeName.GEOMETRY) {
+      return convertPrimitiveType(rType);
+    } else if (rType.isStruct()) {
       return convertStructType(rType);
     } else if (rType.getComponentType() != null) {
       return convertListType(rType);
@@ -394,10 +408,20 @@ public class TypeConverter {
         return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
       else
         return TypeInfoFactory.getCharTypeInfo(charLength);
+    case GEOMETRY:
+      return convertGeometryType(rType);
     default:
       return TypeInfoFactory.voidTypeInfo;
     }
 
+  }
+
+  private static GeometryTypeInfo convertGeometryType(RelDataType rType) {
+    if (rType instanceof ObjectSqlType) {
+      return (GeometryTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(
+          ((ObjectSqlType) rType).getSqlIdentifier().toString());
+    }
+    return TypeInfoFactory.geometryTypeInfo;
   }
 
   /*********************** Convert Calcite Types To Hive Types ***********************/
@@ -425,6 +449,15 @@ public class TypeConverter {
       break;
     case TIMESTAMP_WITH_LOCAL_TIME_ZONE: {
       ht = new HiveToken(HiveParser.TOK_TIMESTAMPLOCALTZ, "TOK_TIMESTAMPLOCALTZ");
+    }
+      break;
+    case GEOMETRY: {
+      GeometryTypeInfo geometryTypeInfo = convertGeometryType(calciteType);
+      if (geometryTypeInfo.equals(TypeInfoFactory.geometryTypeInfo)) {
+        ht = new HiveToken(HiveParser.TOK_GEOMETRY, "TOK_GEOMETRY");
+      } else {
+        ht = new HiveToken(HiveParser.TOK_GEOMETRY, "TOK_GEOMETRY", "'" + geometryTypeInfo.getCrs() + "'");
+      }
     }
       break;
     default:

@@ -153,6 +153,18 @@ public final class ObjectInspectorConverters {
       return new PrimitiveObjectInspectorConverter.BinaryConverter(
           inputOI,
           (SettableBinaryObjectInspector)outputOI);
+    case GEOMETRY:
+      switch (inputOI.getPrimitiveCategory()) {
+      case VOID:
+      case BINARY:
+      case GEOMETRY:
+        return new PrimitiveObjectInspectorConverter.BinaryConverter(
+            inputOI,
+            (SettableBinaryObjectInspector) outputOI);
+      default:
+        break;
+      }
+      break;
     case DECIMAL:
       return new PrimitiveObjectInspectorConverter.HiveDecimalConverter(
           inputOI,
