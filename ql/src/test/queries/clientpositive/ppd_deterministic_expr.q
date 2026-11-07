@@ -1,5 +1,4 @@
 set hive.auto.convert.join=false;
-set hive.optimize.index.filter=true;
 set hive.cbo.enable=false;
 
 CREATE TABLE `testb`(

@@ -210,7 +210,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   private void testOrcPPD(boolean enablePPD) throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPT_PPD, enablePPD);//enables PPD
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER, enablePPD);//enables ORC PPD
     //create delta_0001_0001_0000 (should push predicate here)
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(new int[][]{{1, 2}, {3, 4}}));
     List<String> explain;
@@ -1712,7 +1711,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   @Test
   public void testETLSplitStrategyForACID() throws Exception {
     hiveConf.setVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY, "ETL");
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER, true);
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,2)");
     runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
     runWorker(hiveConf);

@@ -32,7 +32,6 @@ stored as ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="10
 insert overwrite table testorc select * from vectororc order by s2;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-set hive.optimize.index.filter=true;
 
 set hive.vectorized.execution.enabled=false;
 -- row group (1,4) from stripe 1 and row group (1) from stripe 2

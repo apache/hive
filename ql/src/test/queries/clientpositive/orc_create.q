@@ -99,7 +99,6 @@ STORED AS orc;
 INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
   SELECT * FROM orc_create_people_staging;
 
-SET hive.optimize.index.filter=true;
 -- test predicate push down with partition pruning
 SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca';
 

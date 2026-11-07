@@ -1,7 +1,6 @@
 -- SORT_QUERY_RESULTS;
 
 set hive.vectorized.execution.enabled=false;
-set hive.optimize.index.filter=true;
 create table test_table_n6(number int) stored as ORC;
 
 -- Two insertions will create two files, with one stripe each

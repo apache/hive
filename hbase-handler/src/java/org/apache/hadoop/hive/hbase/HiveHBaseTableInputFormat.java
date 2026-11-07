@@ -205,7 +205,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     ExprNodeDesc residualPredicate = analyzer.analyzePredicate(filterExpr, conditions);
 
     // There should be no residual since we already negotiated that earlier in
-    // HBaseStorageHandler.decomposePredicate. However, with hive.optimize.index.filter
+    // HBaseStorageHandler.decomposePredicate. However,
     // OpProcFactory#pushFilterToStorageHandler pushes the original filter back down again.
     // Since pushed-down filters are not omitted at the higher levels (and thus the
     // contract of negotiation is ignored anyway), just ignore the residuals.

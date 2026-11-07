@@ -6,7 +6,6 @@ set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=true;
 set hive.tez.dynamic.partition.pruning=true;
 set hive.optimize.metadataonly=false;
-set hive.optimize.index.filter=true;
 set hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 set hive.tez.bigtable.minsize.semijoin.reduction=1;
