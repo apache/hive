@@ -123,12 +123,6 @@ public class ReplUtils {
   // Root base directory name for ranger.
   public static final String REPL_RANGER_BASE_DIR = "ranger";
 
-  // Root base directory name for atlas.
-  public static final String REPL_ATLAS_BASE_DIR = "atlas";
-
-  // Atlas meta data export file.
-  public static final String REPL_ATLAS_EXPORT_FILE_NAME = "atlas_export.zip";
-
   // Config for hadoop default file system.
   public static final String DEFAULT_FS_CONFIG = "fs.defaultFS";
 
@@ -163,8 +157,6 @@ public class ReplUtils {
   // Service name for ranger.
   public static final String REPL_RANGER_SERVICE = "ranger";
 
-  // Service name for atlas.
-  public static final String REPL_ATLAS_SERVICE = "atlas";
   public static final String INC_EVENTS_BATCH = "events_batch_%d";
 
   /**
@@ -269,17 +261,6 @@ public class ReplUtils {
     return false;
   }
 
-  public static String getNonEmpty(String configParam, HiveConf hiveConf, String errorMsgFormat)
-          throws SemanticException {
-    String val = hiveConf.get(configParam);
-    if (StringUtils.isEmpty(val)) {
-      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format(String.format(
-        errorMsgFormat, configParam), ReplUtils.REPL_ATLAS_SERVICE));
-    }
-    return val;
-  }
-
-
   public static List<Task<?>> addChildTask(Task<?> childTask) {
     List<Task<?>> taskList = new ArrayList<>();
     taskList.add(childTask);
@@ -365,7 +346,7 @@ public class ReplUtils {
   }
 
   private static String getMetricStageName(String stageName, ReplicationMetricCollector metricCollector) {
-    if( stageName == "REPL_DUMP" || stageName == "REPL_LOAD" || stageName == "ATLAS_DUMP" || stageName == "ATLAS_LOAD"
+    if( stageName == "REPL_DUMP" || stageName == "REPL_LOAD"
             || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD" || stageName == "RANGER_DENY"){
       return stageName;
     }

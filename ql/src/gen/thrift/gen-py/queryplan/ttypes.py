@@ -175,9 +175,7 @@ class StageType(object):
     RANGER_DUMP = 19
     RANGER_LOAD = 20
     RANGER_DENY = 21
-    ATLAS_DUMP = 22
-    ATLAS_LOAD = 23
-    CLEAR_DANGLING_TXNS = 24
+    CLEAR_DANGLING_TXNS = 22
 
     _VALUES_TO_NAMES = {
         0: "CONDITIONAL",
@@ -202,9 +200,7 @@ class StageType(object):
         19: "RANGER_DUMP",
         20: "RANGER_LOAD",
         21: "RANGER_DENY",
-        22: "ATLAS_DUMP",
-        23: "ATLAS_LOAD",
-        24: "CLEAR_DANGLING_TXNS",
+        22: "CLEAR_DANGLING_TXNS",
     }
 
     _NAMES_TO_VALUES = {
@@ -230,9 +226,7 @@ class StageType(object):
         "RANGER_DUMP": 19,
         "RANGER_LOAD": 20,
         "RANGER_DENY": 21,
-        "ATLAS_DUMP": 22,
-        "ATLAS_LOAD": 23,
-        "CLEAR_DANGLING_TXNS": 24,
+        "CLEAR_DANGLING_TXNS": 22,
     }
 
 
