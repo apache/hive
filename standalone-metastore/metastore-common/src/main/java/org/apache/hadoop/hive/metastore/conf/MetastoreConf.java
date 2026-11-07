@@ -301,7 +301,13 @@ public class MetastoreConf {
       ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname,
       ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.hiveName,
       ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname,
-      ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.hiveName
+      ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.hiveName,
+      ConfVars.METASTORE_PLAIN_LDAP_BIND_PASSWORD.varname,
+      ConfVars.METASTORE_PLAIN_LDAP_BIND_PASSWORD.hiveName,
+      ConfVars.THRIFT_AUTH_CONFIG_PASSWORD.varname,
+      ConfVars.THRIFT_AUTH_CONFIG_PASSWORD.hiveName,
+      ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET.varname,
+      ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET.hiveName
   );
 
   public static ConfVars getMetaConf(String name) {
