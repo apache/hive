@@ -365,19 +365,19 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   @Override
   public GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException {
-    return jdbcResource.execute(new GetOpenTxnsListHandler(true, openTxnTimeOutMillis))
+    return jdbcResource.execute(new GetOpenTxnsListHandler(conf, true, openTxnTimeOutMillis))
         .toOpenTxnsInfoResponse();
   }
 
   @Override
   public GetOpenTxnsResponse getOpenTxns() throws MetaException {
-    return jdbcResource.execute(new GetOpenTxnsListHandler(false, openTxnTimeOutMillis))
+    return jdbcResource.execute(new GetOpenTxnsListHandler(conf, false, openTxnTimeOutMillis))
         .toOpenTxnsResponse(Collections.singletonList(TxnType.READ_ONLY));
   }
 
   @Override
   public GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException {
-    return jdbcResource.execute(new GetOpenTxnsListHandler(false, openTxnTimeOutMillis))
+    return jdbcResource.execute(new GetOpenTxnsListHandler(conf, false, openTxnTimeOutMillis))
         .toOpenTxnsResponse(excludeTxnTypes);
   }
 
