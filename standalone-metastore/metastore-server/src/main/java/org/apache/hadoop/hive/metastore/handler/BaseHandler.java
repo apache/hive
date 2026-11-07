@@ -20,7 +20,6 @@
 package org.apache.hadoop.hive.metastore.handler;
 
 import com.codahale.metrics.Counter;
-import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -38,8 +37,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -127,7 +129,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 /**
  * This class serves as the super class for all handlers that implement the IHMSHandler
  */
-public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
+public abstract class BaseHandler implements IHMSHandler {
   private static final Logger LOG = LoggerFactory.getLogger(BaseHandler.class);
   private static String currentUrl;
   private static volatile Striped<Lock> tablelocks;
@@ -153,8 +155,16 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
   protected MetaStoreFilterHook filterHook;
   protected boolean isServerFilterEnabled = false;
 
+  // ======================== FacebookBase ===================================
+  private final String name;
+  private final long alive;
+  private final ConcurrentHashMap<String, LongAdder> counters = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, String> options = new ConcurrentHashMap<>();
+  // ===================================== ===================================
+
   protected BaseHandler(String name, Configuration conf) {
-    super(name);
+    this.name = name;
+    this.alive = System.currentTimeMillis() / 1000L;
     this.conf = conf;
   }
 
@@ -351,16 +361,18 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public AbstractMap<String, Long> getCounters() {
-    AbstractMap<String, Long> counters = super.getCounters();
+    AbstractMap<String, Long> countersCopy =
+        (AbstractMap<String, Long>) this.counters.entrySet()
+            .stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().longValue()));
 
     // Allow endFunctionListeners to add any counters they have collected
     if (endFunctionListeners != null) {
       for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
-        listener.exportCounters(counters);
+        listener.exportCounters(countersCopy);
       }
     }
-
-    return counters;
+    return countersCopy;
   }
 
   @Override
@@ -971,4 +983,56 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     }
     firePreEvent(supplier.get());
   }
+
+  // ======================== FacebookBase ===================================
+  @Override
+  public String getName() {
+    return this.name;
+  }
+
+  @Override
+  public String getStatusDetails() {
+    return "";
+  }
+
+  public long incrementCounter(String key) {
+    return incrementCounter(key, 1);
+  }
+
+  public long incrementCounter(String key, long increment) {
+    LongAdder counter = this.counters.computeIfAbsent(key, ignored -> new LongAdder());
+    counter.add(increment);
+    return counter.longValue();
+  }
+
+  @Override
+  public long getCounter(String key) {
+    LongAdder val = this.counters.get(key);
+    return val == null ? 0L : val.longValue();
+  }
+
+  @Override
+  public void setOption(String key, String value) {
+    this.options.put(key, value);
+  }
+
+  @Override
+  public String getOption(String key) {
+    return this.options.get(key);
+  }
+
+  @Override
+  public AbstractMap<String, String> getOptions() {
+    return this.options;
+  }
+
+  @Override
+  public long aliveSince() {
+    return this.alive;
+  }
+
+  @Override
+  public void reinitialize() {
+  }
+  // ===================================== ===================================
 }
