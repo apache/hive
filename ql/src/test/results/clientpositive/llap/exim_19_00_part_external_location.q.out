@@ -103,8 +103,10 @@ emp_state           	string              	free text
 #### A masked pattern was here ####
 PREHOOK: query: show table extended like exim_employee_n2
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: importer@exim_employee_n2
 POSTHOOK: query: show table extended like exim_employee_n2
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: importer@exim_employee_n2
 tableName:exim_employee_n2
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -120,8 +122,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: show table extended like exim_employee_n2 partition (emp_country="in", emp_state="tn")
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: importer@exim_employee_n2
 POSTHOOK: query: show table extended like exim_employee_n2 partition (emp_country="in", emp_state="tn")
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: importer@exim_employee_n2
 tableName:exim_employee_n2
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -137,8 +141,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: show table extended like exim_employee_n2 partition (emp_country="in", emp_state="ka")
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: importer@exim_employee_n2
 POSTHOOK: query: show table extended like exim_employee_n2 partition (emp_country="in", emp_state="ka")
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: importer@exim_employee_n2
 tableName:exim_employee_n2
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

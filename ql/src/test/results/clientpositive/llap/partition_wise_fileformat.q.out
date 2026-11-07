@@ -18,8 +18,10 @@ POSTHOOK: Lineage: partition_test_partitioned_n1 PARTITION(dt=100).key SIMPLE [(
 POSTHOOK: Lineage: partition_test_partitioned_n1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show table extended like partition_test_partitioned_n1
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@partition_test_partitioned_n1
 POSTHOOK: query: show table extended like partition_test_partitioned_n1
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@partition_test_partitioned_n1
 tableName:partition_test_partitioned_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -35,8 +37,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=100)
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@partition_test_partitioned_n1
 POSTHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=100)
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@partition_test_partitioned_n1
 tableName:partition_test_partitioned_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -140,8 +144,10 @@ POSTHOOK: Lineage: partition_test_partitioned_n1 PARTITION(dt=101).key SIMPLE [(
 POSTHOOK: Lineage: partition_test_partitioned_n1 PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show table extended like partition_test_partitioned_n1
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@partition_test_partitioned_n1
 POSTHOOK: query: show table extended like partition_test_partitioned_n1
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@partition_test_partitioned_n1
 tableName:partition_test_partitioned_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -157,8 +163,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=100)
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@partition_test_partitioned_n1
 POSTHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=100)
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@partition_test_partitioned_n1
 tableName:partition_test_partitioned_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -174,8 +182,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=101)
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@partition_test_partitioned_n1
 POSTHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=101)
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@partition_test_partitioned_n1
 tableName:partition_test_partitioned_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -341,8 +351,10 @@ POSTHOOK: Lineage: partition_test_partitioned_n1 PARTITION(dt=102).key SIMPLE [(
 POSTHOOK: Lineage: partition_test_partitioned_n1 PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show table extended like partition_test_partitioned_n1
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@partition_test_partitioned_n1
 POSTHOOK: query: show table extended like partition_test_partitioned_n1
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@partition_test_partitioned_n1
 tableName:partition_test_partitioned_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -358,8 +370,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=100)
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@partition_test_partitioned_n1
 POSTHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=100)
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@partition_test_partitioned_n1
 tableName:partition_test_partitioned_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -375,8 +389,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=101)
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@partition_test_partitioned_n1
 POSTHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=101)
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@partition_test_partitioned_n1
 tableName:partition_test_partitioned_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -392,8 +408,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=102)
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@partition_test_partitioned_n1
 POSTHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=102)
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@partition_test_partitioned_n1
 tableName:partition_test_partitioned_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat

@@ -18,8 +18,10 @@ POSTHOOK: Lineage: load_overwrite_n0.key SIMPLE [(src)src.FieldSchema(name:key, 
 POSTHOOK: Lineage: load_overwrite_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: show table extended like load_overwrite_n0
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@load_overwrite_n0
 POSTHOOK: query: show table extended like load_overwrite_n0
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@load_overwrite_n0
 tableName:load_overwrite_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -52,8 +54,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite_n0
 PREHOOK: query: show table extended like load_overwrite_n0
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@load_overwrite_n0
 POSTHOOK: query: show table extended like load_overwrite_n0
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@load_overwrite_n0
 tableName:load_overwrite_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -86,8 +90,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite_n0
 PREHOOK: query: show table extended like load_overwrite_n0
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@load_overwrite_n0
 POSTHOOK: query: show table extended like load_overwrite_n0
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@load_overwrite_n0
 tableName:load_overwrite_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
