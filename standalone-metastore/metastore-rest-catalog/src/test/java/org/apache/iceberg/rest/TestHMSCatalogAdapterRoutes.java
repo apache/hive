@@ -20,10 +20,12 @@
 package org.apache.iceberg.rest;
 
 import java.util.Map;
+import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 import org.apache.iceberg.util.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 
 public class TestHMSCatalogAdapterRoutes {
 
@@ -123,5 +125,60 @@ public class TestHMSCatalogAdapterRoutes {
         route("v1/catalogs/sales/namespaces/db/tables/namespaces");
     Assertions.assertNotNull(loadTableWithPrefix, "Should match LOAD_TABLE with prefix");
     Assertions.assertEquals(HMSCatalogAdapter.Route.LOAD_TABLE, loadTableWithPrefix.first());
+  }
+
+  @Test
+  public void testTableIdentifierPreservesLiteralPlus() {
+    TableIdentifier ident =
+        HMSCatalogAdapter.identFromPathVars(
+            Map.of("namespace", "accounting", "table", "sales+taxes"));
+    Assertions.assertEquals(
+        "sales+taxes", ident.name(), "Literal '+' must be preserved in table name");
+  }
+
+  @Test
+  public void testTableIdentifierDecodesEncodedSpace() {
+    TableIdentifier ident =
+        HMSCatalogAdapter.identFromPathVars(
+            Map.of("namespace", "accounting", "table", "sales%20taxes"));
+    Assertions.assertEquals("sales taxes", ident.name(), "%20 must decode to space in table name");
+  }
+
+  @Test
+  public void testNamespacePreservesLiteralPlusWithSeparator() {
+    Namespace ns =
+        HMSCatalogAdapter.namespaceFromPathVars(
+            Map.of(
+                "namespace",
+                "corp+finance" + RESTUtil.NAMESPACE_SEPARATOR_URLENCODED_UTF_8 + "dept_01"));
+    Assertions.assertEquals(
+        Namespace.of("corp+finance", "dept_01"),
+        ns,
+        "Namespace with separator must decode per RFC 3986 without converting '+' to space");
+  }
+
+  @Test
+  public void testViewIdentifierPreservesLiteralPlus() {
+    TableIdentifier viewIdent =
+        HMSCatalogAdapter.viewIdentFromPathVars(
+            Map.of("namespace", "accounting", "view", "active+users_view"));
+    Assertions.assertEquals(
+        "active+users_view", viewIdent.name(), "Literal '+' must be preserved in view name");
+  }
+
+  @Test
+  public void testTableIdentifierDecodesEncodedSlash() {
+    TableIdentifier ident =
+        HMSCatalogAdapter.identFromPathVars(
+            Map.of("namespace", "accounting", "table", "sales%2Ftaxes"));
+    Assertions.assertEquals("sales/taxes", ident.name(), "%2F must decode to '/' in table name");
+  }
+
+  @Test
+  public void testTableIdentifierDecodesLiteralPercent() {
+    TableIdentifier ident =
+        HMSCatalogAdapter.identFromPathVars(
+            Map.of("namespace", "accounting", "table", "sales%25taxes"));
+    Assertions.assertEquals("sales%taxes", ident.name(), "%25 must decode to '%' in table name");
   }
 }
