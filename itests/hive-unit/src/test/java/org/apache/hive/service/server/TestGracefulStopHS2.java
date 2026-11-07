@@ -20,6 +20,7 @@
 package org.apache.hive.service.server;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
@@ -37,6 +38,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -100,6 +102,7 @@ public class TestGracefulStopHS2 {
     } catch (Exception e) {
       assertTrue(e instanceof HiveSQLException);
       assertTrue(e.getMessage().contains("Unable to run new queries as HiveServer2 is decommissioned or inactive"));
+      assertEquals(((HiveSQLException) e).getErrorCode(), ErrorMsg.HS2_DECOMMISSIONED_OR_INACTIVE.getErrorCode());
     }
     // Close existing connections with no errors
     stmt.close();
