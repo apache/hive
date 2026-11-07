@@ -117,8 +117,10 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
+import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
@@ -5028,8 +5030,42 @@ public class Vectorizer implements PhysicalPlanResolver {
           exprNodeDescList.add(arg.getExprNode());
         }
 
+        coerceLeadLagDefaultValue(winFunc, exprNodeDescList);
+
         evaluatorInputExprNodeDescLists[i] = exprNodeDescList;
       }
+    }
+  }
+
+  private static void coerceLeadLagDefaultValue(
+      WindowFunctionDef winFunc, List<ExprNodeDesc> exprNodeDescList) {
+    if (exprNodeDescList.size() != 3) {
+      return;
+    }
+    SupportedFunctionType functionType =
+        VectorPTFDesc.supportedFunctionsMap.get(winFunc.getName().toLowerCase());
+    if (functionType != SupportedFunctionType.LEAD && functionType != SupportedFunctionType.LAG) {
+      return;
+    }
+    if (!(exprNodeDescList.get(0).getTypeInfo() instanceof PrimitiveTypeInfo valueTypeInfo)) {
+      return;
+    }
+    ExprNodeDesc defaultValueExpr = exprNodeDescList.get(2);
+    if (!(defaultValueExpr instanceof ExprNodeConstantDesc) ||
+        valueTypeInfo.equals(defaultValueExpr.getTypeInfo())) {
+      return;
+    }
+    try {
+      ExprNodeDesc castExpr = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+          .createConversionCast(defaultValueExpr, valueTypeInfo);
+      if (castExpr instanceof ExprNodeGenericFuncDesc funcDesc) {
+        ExprNodeDesc foldedExpr = ConstantPropagateProcFactory.foldExpr(funcDesc);
+        if (foldedExpr instanceof ExprNodeConstantDesc) {
+          exprNodeDescList.set(2, foldedExpr);
+        }
+      }
+    } catch (SemanticException e) {
+      LOG.debug("Could not create/fold conversion cast for LEAD/LAG default value", e);
     }
   }
 
