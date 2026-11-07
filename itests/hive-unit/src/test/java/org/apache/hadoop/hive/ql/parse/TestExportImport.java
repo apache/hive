@@ -61,6 +61,7 @@ public class TestExportImport {
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
       put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
+      put(HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE.varname, "true");
     }};
     HashMap<String, String> overridesForHiveConfDump = new HashMap<String, String>() {{
         put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");

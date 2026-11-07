@@ -2,6 +2,8 @@
 --! qt:dataset:src
 
 set hive.strict.checks.cartesian.product= false;
+-- Legacy qtest: METASTORE JDBC tables live in default DB (not sys).
+SET hive.storage.jdbc.allow.metastore.database.type=true;
 
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';

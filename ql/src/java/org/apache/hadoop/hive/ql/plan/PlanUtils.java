@@ -352,6 +352,8 @@ public final class PlanUtils {
     if (crtTblDesc.getDbTableName() != null && crtTblDesc.getDatabaseName() != null) {
       properties.setProperty(
           hive_metastoreConstants.META_TABLE_NAME, crtTblDesc.getDbTableName());
+      properties.setProperty(
+          hive_metastoreConstants.META_TABLE_DB, crtTblDesc.getDatabaseName());
     }
     return ret;
   }
@@ -1133,7 +1135,8 @@ public final class PlanUtils {
   }
 
   private static final Set<String> FILTER_OUT_FROM_EXPLAIN =
-          Sets.union(ImmutableSet.of(TABLE_IS_CTAS), Constants.JDBC_CONNECTION_CREDENTIALS);
+          Sets.union(ImmutableSet.of(TABLE_IS_CTAS, hive_metastoreConstants.META_TABLE_DB),
+              Constants.JDBC_CONNECTION_CREDENTIALS);
 
   /**
    * Get a Map of table or partition properties to be used in explain extended output.

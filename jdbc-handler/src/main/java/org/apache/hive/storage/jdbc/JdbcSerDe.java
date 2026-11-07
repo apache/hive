@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -79,7 +80,8 @@ public class JdbcSerDe extends AbstractSerDe {
     DatabaseAccessor dbAccessor = null;
     try {
       if (properties.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
-        Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(properties);
+        Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(properties,
+            properties.getProperty(hive_metastoreConstants.META_TABLE_DB));
 
         dbAccessor = DatabaseAccessorFactory.getAccessor(tableConfig);
         // Extract column names and types from properties

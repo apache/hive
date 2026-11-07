@@ -826,6 +826,9 @@ public class MetaStoreUtils {
     schema.setProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
         databaseName + "." + tableName);
+    schema.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_DB,
+        databaseName);
 
     if (sd.getLocation() != null) {
       schema.setProperty(

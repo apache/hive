@@ -1,3 +1,6 @@
+-- Legacy qtest: METASTORE JDBC helper tables are created in default DB.
+SET hive.storage.jdbc.allow.metastore.database.type=true;
+
 CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
   `CD_ID` bigint,
   `COMMENT` string,

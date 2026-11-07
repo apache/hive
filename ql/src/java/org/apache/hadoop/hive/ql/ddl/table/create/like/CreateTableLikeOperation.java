@@ -29,9 +29,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.ddl.JdbcStorageHandlerDdlUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
@@ -169,6 +171,13 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
     if (storageHandler != null) {
       storageHandler.setTableParametersForCTLT(tbl, desc, originalProperties);
+    }
+    try {
+      JdbcStorageHandlerDdlUtils.validateMetastoreDatabaseTypeProperty(context.getConf(),
+          tbl.getProperty(hive_metastoreConstants.META_TABLE_STORAGE), tbl.getDbName(),
+          tbl.getParameters());
+    } catch (SemanticException e) {
+      throw new HiveException(e.getMessage(), e);
     }
   }
 
