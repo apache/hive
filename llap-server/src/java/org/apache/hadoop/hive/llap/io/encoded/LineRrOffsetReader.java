@@ -29,6 +29,28 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.LineRecordReader;
 
+/**
+ * {@link PassThruOffsetReader} specialization for {@link LineRecordReader}-backed
+ * text splits that can pin every row to a byte range within the file.
+ * {@link #getCurrentRowStartOffset()} returns the key of the most recent
+ * {@code next()} call (which for {@code LineRecordReader} is the file position
+ * where the line starts) and {@link #getCurrentRowEndOffset()} returns the reader's
+ * current position after the line, so {@link SerDeEncodedDataReader} can slice the
+ * split into sub-stripes and index the LLAP cache by offset rather than by whole
+ * file.
+ *
+ * <p>{@link #create(LineRecordReader, JobConf, int, int, FileSplit)} picks between
+ * this class and a plain {@link PassThruOffsetReader} based on whether byte offsets
+ * are actually meaningful for the split at hand:
+ * <ul>
+ *   <li>Compressed text files, and any split where a table-level header still needs
+ *       to be skipped before the first data row, cannot expose stable offsets and
+ *       fall back to {@code PassThruOffsetReader}.</li>
+ *   <li>Non-compressed text splits where {@code SkippingTextInputFormat} has
+ *       already peeled off header/footer rows use this offset-aware reader with
+ *       zero header/footer counts.</li>
+ * </ul>
+ */
 final class LineRrOffsetReader extends PassThruOffsetReader {
   private static final Method isCompressedMethod;
   private final LineRecordReader lrReader;
