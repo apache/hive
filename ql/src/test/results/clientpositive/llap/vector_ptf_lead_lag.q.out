@@ -676,7 +676,7 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:double, VALUE._col0:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, double, double, double, double, double, double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: [double, double, double, double, double, double, double, double, bigint, bigint, double, bigint, bigint, bigint, double, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), KEY.reducesinkkey1 (type: double)
@@ -1067,7 +1067,7 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:decimal(10,0), VALUE._col0:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: [decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), bigint, bigint, decimal(10,0), bigint, bigint, bigint, decimal(10,0), bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), KEY.reducesinkkey1 (type: decimal(10,0))

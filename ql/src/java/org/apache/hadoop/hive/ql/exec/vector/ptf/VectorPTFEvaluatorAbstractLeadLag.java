@@ -54,17 +54,32 @@ public abstract class VectorPTFEvaluatorAbstractLeadLag extends VectorPTFEvaluat
       defaultValue = null;
       return;
     } else if (defaultValueExpression instanceof ConstantVectorExpression) {
-      // FIXME: always getLongValue()? check if other type is given in 3rd argument
-      long longValue = ((ConstantVectorExpression) defaultValueExpression).getLongValue();
+      ConstantVectorExpression constExpr = (ConstantVectorExpression) defaultValueExpression;
+      Type constType;
+      try {
+        constType = constExpr.getOutputColumnVectorType();
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+      // The default value expression's own vector type must match the lead/lag column's type
+      // (e.g. both LONG, with LONG also covering DATE/TIMESTAMP-as-LONG columns). If it doesn't,
+      // the default value was never coerced to the column's type by the planner, and reading it
+      // through the wrong accessor below would silently produce a bogus value (e.g. 0) instead
+      // of failing loudly.
+      if (constType != type) {
+        throw new RuntimeException("Default value type " + constType
+            + " does not match lead/lag column type " + type
+            + " -- the default value expression was not coerced to the column's type");
+      }
       switch (type) {
       case LONG:
-        defaultValue = longValue;
+        defaultValue = constExpr.getLongValue();
         break;
       case DOUBLE:
-        defaultValue = Double.valueOf(longValue);
+        defaultValue = constExpr.getDoubleValue();
         break;
       case DECIMAL:
-        defaultValue = new HiveDecimalWritable(longValue);
+        defaultValue = new HiveDecimalWritable(constExpr.getDecimalValue());
         break;
       default:
         throw new RuntimeException("Unexpected column vector type " + type + " for lag function");

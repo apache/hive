@@ -1,0 +1,275 @@
+PREHOOK: query: CREATE TABLE vector_ptf_lead_lag_date(name string, rowindex int, mydate date) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vector_ptf_lead_lag_date
+POSTHOOK: query: CREATE TABLE vector_ptf_lead_lag_date(name string, rowindex int, mydate date) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vector_ptf_lead_lag_date
+PREHOOK: query: INSERT INTO vector_ptf_lead_lag_date values
+('first', 1, '2024-01-01'),
+('first', 2, '2024-02-01'),
+('first', 3, '2024-03-01'),
+('second', 4, '2024-01-10'),
+('second', 5, '2024-02-10'),
+(NULL, 6, '2024-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@vector_ptf_lead_lag_date
+POSTHOOK: query: INSERT INTO vector_ptf_lead_lag_date values
+('first', 1, '2024-01-01'),
+('first', 2, '2024-02-01'),
+('first', 3, '2024-03-01'),
+('second', 4, '2024-01-10'),
+('second', 5, '2024-02-10'),
+(NULL, 6, '2024-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@vector_ptf_lead_lag_date
+POSTHOOK: Lineage: vector_ptf_lead_lag_date.mydate SCRIPT []
+POSTHOOK: Lineage: vector_ptf_lead_lag_date.name SCRIPT []
+POSTHOOK: Lineage: vector_ptf_lead_lag_date.rowindex SCRIPT []
+PREHOOK: query: select "************ DATE, STRING-LITERAL DEFAULT, NON-VECTORIZED ************"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "************ DATE, STRING-LITERAL DEFAULT, NON-VECTORIZED ************"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+************ DATE, STRING-LITERAL DEFAULT, NON-VECTORIZED ************
+PREHOOK: query: select name, rowindex, mydate,
+lag(mydate, 1, '1999-01-01') over (partition by name order by mydate) as lag_default_literal,
+lead(mydate, 1, '9999-01-01') over (partition by name order by mydate) as lead_default_literal,
+lag(mydate, 1, mydate) over (partition by name order by mydate) as lag_default_col,
+lead(mydate, 1, mydate) over (partition by name order by mydate) as lead_default_col
+from vector_ptf_lead_lag_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_date
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mydate,
+lag(mydate, 1, '1999-01-01') over (partition by name order by mydate) as lag_default_literal,
+lead(mydate, 1, '9999-01-01') over (partition by name order by mydate) as lead_default_literal,
+lag(mydate, 1, mydate) over (partition by name order by mydate) as lag_default_col,
+lead(mydate, 1, mydate) over (partition by name order by mydate) as lead_default_col
+from vector_ptf_lead_lag_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_date
+#### A masked pattern was here ####
+NULL	6	2024-01-01	1999-01-01	9999-01-01	2024-01-01	2024-01-01
+first	1	2024-01-01	1999-01-01	2024-02-01	2024-01-01	2024-02-01
+first	2	2024-02-01	2024-01-01	2024-03-01	2024-01-01	2024-03-01
+first	3	2024-03-01	2024-02-01	9999-01-01	2024-02-01	2024-03-01
+second	4	2024-01-10	1999-01-01	2024-02-10	2024-01-10	2024-02-10
+second	5	2024-02-10	2024-01-10	9999-01-01	2024-01-10	2024-02-10
+PREHOOK: query: explain vectorization detail select name, rowindex, mydate,
+lag(mydate, 1, '1999-01-01') over (partition by name order by mydate) as lag_default_literal,
+lead(mydate, 1, '9999-01-01') over (partition by name order by mydate) as lead_default_literal,
+lag(mydate, 1, mydate) over (partition by name order by mydate) as lag_default_col,
+lead(mydate, 1, mydate) over (partition by name order by mydate) as lead_default_col
+from vector_ptf_lead_lag_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_date
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select name, rowindex, mydate,
+lag(mydate, 1, '1999-01-01') over (partition by name order by mydate) as lag_default_literal,
+lead(mydate, 1, '9999-01-01') over (partition by name order by mydate) as lead_default_literal,
+lag(mydate, 1, mydate) over (partition by name order by mydate) as lag_default_col,
+lead(mydate, 1, mydate) over (partition by name order by mydate) as lead_default_col
+from vector_ptf_lead_lag_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_date
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_ptf_lead_lag_date
+                  Statistics: Num rows: 6 Data size: 894 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:name:string, 1:rowindex:int, 2:mydate:date, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
+                  Reduce Output Operator
+                    key expressions: name (type: string), mydate (type: date)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: name (type: string)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkObjectHashOperator
+                        keyColumns: 0:string, 2:date
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: 0:string
+                        valueColumns: 1:int
+                    Statistics: Num rows: 6 Data size: 894 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: rowindex (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: name:string, rowindex:int, mydate:date
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:date, VALUE._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), KEY.reducesinkkey1 (type: date)
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 2, 1]
+                Statistics: Num rows: 6 Data size: 894 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: int, _col2: date
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: lag_window_0
+                              arguments: _col2, 1, '1999-01-01'
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_1
+                              arguments: _col2, 1, '9999-01-01'
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_2
+                              arguments: _col2, 1, _col2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_3
+                              arguments: _col2, 1, _col2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorLag, VectorPTFEvaluatorLead, VectorPTFEvaluatorLag, VectorPTFEvaluatorLead]
+                      functionInputExpressions: [col 1:date, col 1:date, col 1:date, col 1:date]
+                      functionNames: [lag, lead, lag, lead]
+                      keyInputColumns: [0, 1]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:date]
+                      outputColumns: [3, 4, 5, 6, 0, 2, 1]
+                      outputTypes: [date, date, date, date, string, int, date]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: []
+                  Statistics: Num rows: 6 Data size: 894 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: int), _col2 (type: date), lag_window_0 (type: date), lead_window_1 (type: date), lag_window_2 (type: date), lead_window_3 (type: date)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 1, 3, 4, 5, 6]
+                    Statistics: Num rows: 6 Data size: 2149 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 2149 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select "************ DATE, STRING-LITERAL DEFAULT, VECTORIZED ************"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "************ DATE, STRING-LITERAL DEFAULT, VECTORIZED ************"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+************ DATE, STRING-LITERAL DEFAULT, VECTORIZED ************
+PREHOOK: query: select name, rowindex, mydate,
+lag(mydate, 1, '1999-01-01') over (partition by name order by mydate) as lag_default_literal,
+lead(mydate, 1, '9999-01-01') over (partition by name order by mydate) as lead_default_literal,
+lag(mydate, 1, mydate) over (partition by name order by mydate) as lag_default_col,
+lead(mydate, 1, mydate) over (partition by name order by mydate) as lead_default_col
+from vector_ptf_lead_lag_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_date
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mydate,
+lag(mydate, 1, '1999-01-01') over (partition by name order by mydate) as lag_default_literal,
+lead(mydate, 1, '9999-01-01') over (partition by name order by mydate) as lead_default_literal,
+lag(mydate, 1, mydate) over (partition by name order by mydate) as lag_default_col,
+lead(mydate, 1, mydate) over (partition by name order by mydate) as lead_default_col
+from vector_ptf_lead_lag_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_date
+#### A masked pattern was here ####
+NULL	6	2024-01-01	1999-01-01	9999-01-01	2024-01-01	2024-01-01
+first	1	2024-01-01	1999-01-01	2024-02-01	2024-01-01	2024-02-01
+first	2	2024-02-01	2024-01-01	2024-03-01	2024-01-01	2024-03-01
+first	3	2024-03-01	2024-02-01	9999-01-01	2024-02-01	2024-03-01
+second	4	2024-01-10	1999-01-01	2024-02-10	2024-01-10	2024-02-10
+second	5	2024-02-10	2024-01-10	9999-01-01	2024-01-10	2024-02-10
