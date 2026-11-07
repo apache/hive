@@ -1,0 +1,19 @@
+PREHOOK: query: create table pacdi_s (x int, y int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacdi_s
+POSTHOOK: query: create table pacdi_s (x int, y int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacdi_s
+PREHOOK: query: create table pacdi_t (x int, y int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacdi_t
+POSTHOOK: query: create table pacdi_t (x int, y int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacdi_t
+FAILED: SemanticException [Error 10221]: Invalid position alias in Order By
+ Position alias: 2 does not exist
+The Select List is indexed from 1 to 1

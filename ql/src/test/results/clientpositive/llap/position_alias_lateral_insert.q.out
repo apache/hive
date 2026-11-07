@@ -1,0 +1,133 @@
+PREHOOK: query: create table pali_src (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pali_src
+POSTHOOK: query: create table pali_src (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pali_src
+PREHOOK: query: insert into pali_src values (1,30), (2,10), (3,20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pali_src
+POSTHOOK: query: insert into pali_src values (1,30), (2,10), (3,20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pali_src
+POSTHOOK: Lineage: pali_src.a SCRIPT []
+POSTHOOK: Lineage: pali_src.b SCRIPT []
+PREHOOK: query: create table pali_dst (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pali_dst
+POSTHOOK: query: create table pali_dst (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pali_dst
+PREHOOK: query: insert into pali_dst (b,a)
+select t.c,b from pali_src lateral view explode(array(a,-a)) t as c order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pali_src
+PREHOOK: Output: default@pali_dst
+POSTHOOK: query: insert into pali_dst (b,a)
+select t.c,b from pali_src lateral view explode(array(a,-a)) t as c order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pali_src
+POSTHOOK: Output: default@pali_dst
+POSTHOOK: Lineage: pali_dst.a SIMPLE [(pali_src)pali_src.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: pali_dst.b SCRIPT [(pali_src)pali_src.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select 'order', a,b from pali_dst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pali_dst
+#### A masked pattern was here ####
+POSTHOOK: query: select 'order', a,b from pali_dst
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pali_dst
+#### A masked pattern was here ####
+order	20	3
+PREHOOK: query: truncate table pali_dst
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pali_dst
+POSTHOOK: query: truncate table pali_dst
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pali_dst
+PREHOOK: query: insert into pali_dst (b,a)
+select t.c,b from pali_src lateral view explode(array(a,-a)) t as c distribute by 2 sort by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pali_src
+PREHOOK: Output: default@pali_dst
+POSTHOOK: query: insert into pali_dst (b,a)
+select t.c,b from pali_src lateral view explode(array(a,-a)) t as c distribute by 2 sort by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pali_src
+POSTHOOK: Output: default@pali_dst
+POSTHOOK: Lineage: pali_dst.a SIMPLE [(pali_src)pali_src.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: pali_dst.b SCRIPT [(pali_src)pali_src.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select 'distribute_sort', a,b from pali_dst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pali_dst
+#### A masked pattern was here ####
+POSTHOOK: query: select 'distribute_sort', a,b from pali_dst
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pali_dst
+#### A masked pattern was here ####
+distribute_sort	20	3
+PREHOOK: query: truncate table pali_dst
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pali_dst
+POSTHOOK: query: truncate table pali_dst
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pali_dst
+PREHOOK: query: insert into pali_dst (b,a)
+select t.c,b from pali_src lateral view explode(array(a,-a)) t as c cluster by 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pali_src
+PREHOOK: Output: default@pali_dst
+POSTHOOK: query: insert into pali_dst (b,a)
+select t.c,b from pali_src lateral view explode(array(a,-a)) t as c cluster by 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pali_src
+POSTHOOK: Output: default@pali_dst
+POSTHOOK: Lineage: pali_dst.a SIMPLE [(pali_src)pali_src.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: pali_dst.b SCRIPT [(pali_src)pali_src.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select 'cluster', a,b from pali_dst order by b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pali_dst
+#### A masked pattern was here ####
+POSTHOOK: query: select 'cluster', a,b from pali_dst order by b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pali_dst
+#### A masked pattern was here ####
+cluster	20	-3
+cluster	10	-2
+cluster	30	-1
+cluster	30	1
+cluster	10	2
+cluster	20	3
+PREHOOK: query: truncate table pali_dst
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@pali_dst
+POSTHOOK: query: truncate table pali_dst
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@pali_dst
+PREHOOK: query: insert into pali_dst (b)
+select t.c from pali_src lateral view explode(array(a,-a)) t as c order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pali_src
+PREHOOK: Output: default@pali_dst
+POSTHOOK: query: insert into pali_dst (b)
+select t.c from pali_src lateral view explode(array(a,-a)) t as c order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pali_src
+POSTHOOK: Output: default@pali_dst
+POSTHOOK: Lineage: pali_dst.a SIMPLE []
+POSTHOOK: Lineage: pali_dst.b SCRIPT [(pali_src)pali_src.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select 'missing', a,b from pali_dst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pali_dst
+#### A masked pattern was here ####
+POSTHOOK: query: select 'missing', a,b from pali_dst
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pali_dst
+#### A masked pattern was here ####
+missing	NULL	3

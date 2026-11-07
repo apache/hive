@@ -1,0 +1,95 @@
+PREHOOK: query: create table masking_test_n30037 (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_n30037
+POSTHOOK: query: create table masking_test_n30037 (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_n30037
+PREHOOK: query: insert into masking_test_n30037 values (2, 'bq'), (8, 'hr'), (4, 'ds'), (9, 'it'), (5, 'eu')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@masking_test_n30037
+POSTHOOK: query: insert into masking_test_n30037 values (2, 'bq'), (8, 'hr'), (4, 'ds'), (9, 'it'), (5, 'eu')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@masking_test_n30037
+POSTHOOK: Lineage: masking_test_n30037.key SCRIPT []
+POSTHOOK: Lineage: masking_test_n30037.value SCRIPT []
+PREHOOK: query: create table iwsm_t (a string, b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iwsm_t
+POSTHOOK: query: create table iwsm_t (a string, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iwsm_t
+PREHOOK: query: insert into iwsm_t (b, a) select cast(key as string) as k, value from masking_test_n30037 order by k desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n30037
+PREHOOK: Output: default@iwsm_t
+POSTHOOK: query: insert into iwsm_t (b, a) select cast(key as string) as k, value from masking_test_n30037 order by k desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n30037
+POSTHOOK: Output: default@iwsm_t
+POSTHOOK: Lineage: iwsm_t.a EXPRESSION [(masking_test_n30037)masking_test_n30037.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: iwsm_t.b EXPRESSION [(masking_test_n30037)masking_test_n30037.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select a, b from iwsm_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iwsm_t
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b from iwsm_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iwsm_t
+#### A masked pattern was here ####
+rh	8
+PREHOOK: query: truncate table iwsm_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@iwsm_t
+POSTHOOK: query: truncate table iwsm_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@iwsm_t
+PREHOOK: query: insert into iwsm_t (b, a) select cast(key as string), value from masking_test_n30037 tablesample (5 rows) order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n30037
+PREHOOK: Output: default@iwsm_t
+POSTHOOK: query: insert into iwsm_t (b, a) select cast(key as string), value from masking_test_n30037 tablesample (5 rows) order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n30037
+POSTHOOK: Output: default@iwsm_t
+POSTHOOK: Lineage: iwsm_t.a EXPRESSION [(masking_test_n30037)masking_test_n30037.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: iwsm_t.b EXPRESSION [(masking_test_n30037)masking_test_n30037.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select a, b from iwsm_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iwsm_t
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b from iwsm_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iwsm_t
+#### A masked pattern was here ####
+rh	8
+PREHOOK: query: truncate table iwsm_t
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@iwsm_t
+POSTHOOK: query: truncate table iwsm_t
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@iwsm_t
+PREHOOK: query: insert into iwsm_t (b, a) select cast(key as string), value from (select key, value from masking_test_n30037 sort by key limit 10) q order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n30037
+PREHOOK: Output: default@iwsm_t
+POSTHOOK: query: insert into iwsm_t (b, a) select cast(key as string), value from (select key, value from masking_test_n30037 sort by key limit 10) q order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n30037
+POSTHOOK: Output: default@iwsm_t
+POSTHOOK: Lineage: iwsm_t.a EXPRESSION [(masking_test_n30037)masking_test_n30037.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: iwsm_t.b EXPRESSION [(masking_test_n30037)masking_test_n30037.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select a, b from iwsm_t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iwsm_t
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b from iwsm_t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iwsm_t
+#### A masked pattern was here ####
+rh	8

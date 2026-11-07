@@ -1,0 +1,207 @@
+PREHOOK: query: create table paci_src (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@paci_src
+POSTHOOK: query: create table paci_src (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@paci_src
+PREHOOK: query: insert into paci_src values (2,10),(3,20),(1,30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@paci_src
+POSTHOOK: query: insert into paci_src values (2,10),(3,20),(1,30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@paci_src
+POSTHOOK: Lineage: paci_src.a SCRIPT []
+POSTHOOK: Lineage: paci_src.b SCRIPT []
+PREHOOK: query: create table paci_a (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@paci_a
+POSTHOOK: query: create table paci_a (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@paci_a
+PREHOOK: query: create table paci_b (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@paci_b
+POSTHOOK: query: create table paci_b (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@paci_b
+PREHOOK: query: from paci_src
+lateral view outer explode(if(a=1,array(cast(a as string),cast(-a as string)),if(a=2,array(),null))) t as c
+lateral view outer explode(array(b,-b)) u as n
+insert into paci_a (b,a) select t.c,u.n order by 1 desc nulls last,2 desc limit 1
+insert into paci_b (a,b) select t.c,u.n order by 1 asc nulls last,2 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_src
+PREHOOK: Output: default@paci_a
+PREHOOK: Output: default@paci_b
+POSTHOOK: query: from paci_src
+lateral view outer explode(if(a=1,array(cast(a as string),cast(-a as string)),if(a=2,array(),null))) t as c
+lateral view outer explode(array(b,-b)) u as n
+insert into paci_a (b,a) select t.c,u.n order by 1 desc nulls last,2 desc limit 1
+insert into paci_b (a,b) select t.c,u.n order by 1 asc nulls last,2 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_src
+POSTHOOK: Output: default@paci_a
+POSTHOOK: Output: default@paci_b
+POSTHOOK: Lineage: paci_a.a SCRIPT [(paci_src)paci_src.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: paci_a.b SCRIPT [(paci_src)paci_src.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: paci_b.a SCRIPT [(paci_src)paci_src.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: paci_b.b SCRIPT [(paci_src)paci_src.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select 'multi_a',a,b from paci_a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_a
+#### A masked pattern was here ####
+POSTHOOK: query: select 'multi_a',a,b from paci_a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_a
+#### A masked pattern was here ####
+multi_a	30	1
+PREHOOK: query: select 'multi_b',a,b from paci_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_b
+#### A masked pattern was here ####
+POSTHOOK: query: select 'multi_b',a,b from paci_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_b
+#### A masked pattern was here ####
+multi_b	-1	30
+PREHOOK: query: create table paci_default (a int, b int default 9)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@paci_default
+POSTHOOK: query: create table paci_default (a int, b int default 9)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@paci_default
+PREHOOK: query: insert into paci_default (a)
+select t.c from paci_src
+lateral view outer explode(if(a=1,array(cast(a as string),cast(-a as string)),if(a=2,array(),null))) t as c
+order by 1 desc nulls last limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_src
+PREHOOK: Output: default@paci_default
+POSTHOOK: query: insert into paci_default (a)
+select t.c from paci_src
+lateral view outer explode(if(a=1,array(cast(a as string),cast(-a as string)),if(a=2,array(),null))) t as c
+order by 1 desc nulls last limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_src
+POSTHOOK: Output: default@paci_default
+POSTHOOK: Lineage: paci_default.a SCRIPT [(paci_src)paci_src.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: paci_default.b SIMPLE []
+PREHOOK: query: select 'default',a,b from paci_default
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_default
+#### A masked pattern was here ####
+POSTHOOK: query: select 'default',a,b from paci_default
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_default
+#### A masked pattern was here ####
+default	1	9
+PREHOOK: query: create table paci_part (a int, b int) partitioned by (p int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@paci_part
+POSTHOOK: query: create table paci_part (a int, b int) partitioned by (p int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@paci_part
+PREHOOK: query: insert into table paci_part partition(p) (p,a)
+select t.c,b from paci_src lateral view outer explode(array(a,-a)) t as c
+order by 1 desc,2 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_src
+PREHOOK: Output: default@paci_part
+POSTHOOK: query: insert into table paci_part partition(p) (p,a)
+select t.c,b from paci_src lateral view outer explode(array(a,-a)) t as c
+order by 1 desc,2 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_src
+POSTHOOK: Output: default@paci_part
+POSTHOOK: Output: default@paci_part@p=3
+POSTHOOK: Lineage: paci_part PARTITION(p=3).a SIMPLE [(paci_src)paci_src.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: paci_part PARTITION(p=3).b SIMPLE []
+PREHOOK: query: select 'partition',a,b,p from paci_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_part
+PREHOOK: Input: default@paci_part@p=3
+#### A masked pattern was here ####
+POSTHOOK: query: select 'partition',a,b,p from paci_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_part
+POSTHOOK: Input: default@paci_part@p=3
+#### A masked pattern was here ####
+partition	20	NULL	3
+PREHOOK: query: select a,t.c from paci_src
+lateral view outer explode(if(a=1,array(cast(a as string),cast(-a as string)),if(a=2,array(),null))) t as c
+order by 1,2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_src
+#### A masked pattern was here ####
+POSTHOOK: query: select a,t.c from paci_src
+lateral view outer explode(if(a=1,array(cast(a as string),cast(-a as string)),if(a=2,array(),null))) t as c
+order by 1,2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_src
+#### A masked pattern was here ####
+1	-1
+1	1
+2	NULL
+3	NULL
+PREHOOK: query: create table paci_udtf_a (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@paci_udtf_a
+POSTHOOK: query: create table paci_udtf_a (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@paci_udtf_a
+PREHOOK: query: create table paci_udtf_b (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@paci_udtf_b
+POSTHOOK: query: create table paci_udtf_b (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@paci_udtf_b
+PREHOOK: query: from paci_src tablesample (5 rows)
+insert into paci_udtf_a (a) select explode(array(a)) order by 1 desc limit 1
+insert into paci_udtf_b (a) select explode(array(b)) order by 1 desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_src
+PREHOOK: Output: default@paci_udtf_a
+PREHOOK: Output: default@paci_udtf_b
+POSTHOOK: query: from paci_src tablesample (5 rows)
+insert into paci_udtf_a (a) select explode(array(a)) order by 1 desc limit 1
+insert into paci_udtf_b (a) select explode(array(b)) order by 1 desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_src
+POSTHOOK: Output: default@paci_udtf_a
+POSTHOOK: Output: default@paci_udtf_b
+POSTHOOK: Lineage: paci_udtf_a.a SCRIPT [(paci_src)paci_src.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: paci_udtf_b.a SCRIPT [(paci_src)paci_src.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select 'udtf_a',a from paci_udtf_a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_udtf_a
+#### A masked pattern was here ####
+POSTHOOK: query: select 'udtf_a',a from paci_udtf_a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_udtf_a
+#### A masked pattern was here ####
+udtf_a	3
+PREHOOK: query: select 'udtf_b',a from paci_udtf_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paci_udtf_b
+#### A masked pattern was here ####
+POSTHOOK: query: select 'udtf_b',a from paci_udtf_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paci_udtf_b
+#### A masked pattern was here ####
+udtf_b	30
