@@ -46,6 +46,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <!-- Evaluation-only: candidate Kryo alternative. Not used in production code. -->
+      <groupId>org.apache.fory</groupId>
+      <artifactId>fory-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-serde</artifactId>
     </dependency>
@@ -98,6 +103,20 @@
       <version>${mockito-inline.version}</version>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <!-- The root pom disables annotation processing (proc=none) by default; this module
+             needs it so the jmh-generator-annprocess processor can generate @Benchmark
+             metadata (META-INF/BenchmarkList) consumed by the JMH runner. -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <proc>full</proc>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <profiles>
     <profile>
       <id>perf</id>
