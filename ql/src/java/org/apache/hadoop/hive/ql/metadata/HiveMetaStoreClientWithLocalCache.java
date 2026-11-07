@@ -202,6 +202,11 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     }
   }
 
+  /**
+   * A table with no write-id list is not transactional, so the {@link TableWatermark} the cache keys on cannot be
+   * valid for it and the response is never cached. The table id that watermark needs is a metastore call with no
+   * other purpose, so every site below asks for the write-id list before fetching it.
+   */
   @Override
   public boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result)
       throws TException {
@@ -220,7 +225,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
 
   private PartitionsWrapper getPartitionsByExprInternal(
       PartitionsByExprRequest req, Supplier<PartitionsWrapper, TException> supplier) throws TException {
-    if (isCacheEnabledAndInitialized()) {
+    if (isCacheEnabledAndInitialized() && req.getValidWriteIdList() != null) {
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
           req.getValidWriteIdList(), getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
@@ -250,9 +255,9 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tableName, int maxParts)
       throws TException {
-    if (isCacheEnabledAndInitialized()) {
-      TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(dbName, tableName),
+    String writeIdList = isCacheEnabledAndInitialized() ? getValidWriteIdList(dbName, tableName) : null;
+    if (writeIdList != null) {
+      TableWatermark watermark = new TableWatermark(writeIdList,
           getTable(catName, dbName, tableName).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, watermark,
@@ -295,7 +300,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
 
   private PartitionSpecsWrapper getPartitionsSpecByExprInternal(
       PartitionsByExprRequest req, Supplier<PartitionSpecsWrapper, TException> supplier) throws TException {
-    if (isCacheEnabledAndInitialized()) {
+    if (isCacheEnabledAndInitialized() && req.getValidWriteIdList() != null) {
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
           req.getValidWriteIdList(), getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
@@ -325,9 +330,9 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine, String validWriteIdList) throws TException {
-    if (isCacheEnabledAndInitialized()) {
-      TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(dbName, tableName),
+    String writeIdList = isCacheEnabledAndInitialized() ? getValidWriteIdList(dbName, tableName) : null;
+    if (writeIdList != null) {
+      TableWatermark watermark = new TableWatermark(writeIdList,
           getTable(catName, dbName, tableName).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
@@ -372,7 +377,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine, String writeIdList) throws TException {
-    if (isCacheEnabledAndInitialized()) {
+    if (isCacheEnabledAndInitialized() && writeIdList != null) {
       PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
       req.setEngine(engine);
       req.setCatName(catName);
@@ -404,7 +409,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   @Override
   public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
       throws TException {
-    if (isCacheEnabledAndInitialized()) {
+    if (isCacheEnabledAndInitialized() && req.getValidWriteIdList() != null) {
       String dbName = parseDbName(req.getDb_name(), conf)[1];
       TableWatermark watermark = new TableWatermark(
           req.getValidWriteIdList(), getTable(dbName, req.getTbl_name()).getId());
