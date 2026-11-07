@@ -18,6 +18,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableBiMap;
@@ -52,6 +53,7 @@ import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.config.NullCollation;
+import org.apache.calcite.linq4j.function.Function2;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCostImpl;
 import org.apache.calcite.plan.RelOptMaterialization;
@@ -329,6 +331,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -2474,19 +2478,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private RelNode executeProgram(RelNode basePlan, HepProgram program, RelMetadataProvider mdProvider,
         RexExecutor executorProvider, List<? extends RelOptMaterialization> materializations, boolean noDag) {
-
       final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
 
-      // Create planner and copy context
-      HepPlanner planner =
-          new HepPlanner(program, basePlan.getCluster().getPlanner().getContext(), noDag, null, RelOptCostImpl.FACTORY);
-      planner.addListener(new RuleEventLogger());
-      List<RelMetadataProvider> list = Lists.newArrayList();
-      list.add(mdProvider);
-      planner.registerMetadataProviders(list);
-      RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
-      cluster.setMetadataProvider(
-          new CachingRelMetadataProvider(chainedProvider, planner));
+      HepPlanner planner = getHepPlanner(basePlan, program, mdProvider, noDag, cluster);
 
       if (executorProvider != null) {
         // basePlan.getCluster.getPlanner is the VolcanoPlanner from apply()
@@ -2510,6 +2504,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
       planner.setRoot(basePlan);
 
       return planner.findBestExp();
+    }
+
+    @VisibleForTesting
+    public static @NotNull HepPlanner getHepPlanner(RelNode basePlan, HepProgram program,
+        RelMetadataProvider mdProvider, boolean noDag, RelOptCluster cluster) {
+      // Create a planner with a copy hook so that copies of visited nodes are also considered visited
+      org.apache.calcite.plan.Context context = basePlan.getCluster().getPlanner().getContext();
+      HiveRulesRegistry registry = context.unwrap(HiveRulesRegistry.class);
+      Function2<RelNode, RelNode, Void> copyHook = registry == null ? null : (rel, newRel) -> {
+        registry.onCopy(rel, newRel);
+        return null;
+      };
+      HepPlanner planner = new HepPlanner(program, context, noDag, copyHook, RelOptCostImpl.FACTORY);
+      planner.addListener(new RuleEventLogger());
+      List<RelMetadataProvider> list = Lists.newArrayList();
+      list.add(mdProvider);
+      planner.registerMetadataProviders(list);
+      RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
+      cluster.setMetadataProvider(
+          new CachingRelMetadataProvider(chainedProvider, planner));
+      return planner;
     }
 
     @SuppressWarnings("nls")

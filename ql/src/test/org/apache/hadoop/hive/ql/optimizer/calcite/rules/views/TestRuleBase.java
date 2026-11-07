@@ -56,6 +56,9 @@ import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
+/**
+ * Inherited test classes must use the <code>@RunWith(MockitoJUnitRunner.class)</code> annotation.
+ */
 public class TestRuleBase {
   protected static RelBuilder REL_BUILDER;
   protected static final RexBuilder REX_BUILDER = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
