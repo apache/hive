@@ -38,6 +38,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.IntWritable;
 
+/**
+ * Generic UDAF for the ROW_NUMBER window function.
+ */
 @Description(
         name = "row_number",
         value = "_FUNC_() - The ROW_NUMBER function assigns a unique number (sequentially, starting "
