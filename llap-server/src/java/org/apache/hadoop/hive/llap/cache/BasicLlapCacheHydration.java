@@ -21,11 +21,11 @@ package org.apache.hadoop.hive.llap.cache;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +74,7 @@ public class BasicLlapCacheHydration implements LlapCacheHydration {
   void initSavePath() {
     if (savePath == null) {
       String dir = HiveConf.getVar(conf, ConfVars.LLAP_CACHE_HYDRATION_SAVE_DIR);
-      String name = RegistryUtilities.getCanonicalHostName();
+      String name = ServerUtils.canonicalHostname();
       if (dir != null && name != null) {
         createDirIfNotExists(dir);
         savePath = dir + Path.SEPARATOR + name.hashCode() + ".cache";

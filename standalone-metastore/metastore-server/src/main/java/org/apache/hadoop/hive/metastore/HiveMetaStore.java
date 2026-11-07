@@ -86,8 +86,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -274,7 +272,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       // Add shutdown hook.
       shutdownHookMgr.addShutdownHook(() -> {
-        String shutdownMsg = "Shutting down hive metastore at " + getHostname();
+        String shutdownMsg = "Shutting down hive metastore at " + MetaStoreUtils.getLocalHost();
         LOG.info(shutdownMsg);
         if (isCliVerbose) {
           System.err.println(shutdownMsg);
@@ -784,15 +782,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * host with the given port
    * @throws Exception
    */
-  private static String getServerInstanceURI(int port) throws Exception {
+  private static String getServerInstanceURI(int port) {
     return IPStackUtils.concatHostPort(getServerHostName(), port);
   }
 
-  static String getServerHostName() throws Exception {
+  static String getServerHostName() {
     if (msHost != null && !msHost.trim().isEmpty()) {
       return msHost.trim();
     } else {
-      return InetAddress.getLocalHost().getCanonicalHostName();
+      return MetaStoreUtils.getCanonicalHostname();
     }
   }
 
@@ -900,7 +898,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   private static void startupShutdownMessage(Class<?> clazz, String[] args,
                                              final org.slf4j.Logger LOG) {
-    final String hostname = getHostname();
+    final String hostname = MetaStoreUtils.getLocalHost();
     final String classname = clazz.getSimpleName();
     LOG.info(
         toStartupShutdownString("STARTUP_MSG: ", new String[] {
@@ -933,17 +931,5 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
     b.append("\n************************************************************/");
     return b.toString();
-  }
-
-  /**
-   * Return hostname without throwing exception.
-   * @return hostname
-   */
-  private static String getHostname() {
-    try {
-      return "" + InetAddress.getLocalHost();
-    } catch(UnknownHostException uhe) {
-      return "" + uhe;
-    }
   }
 }

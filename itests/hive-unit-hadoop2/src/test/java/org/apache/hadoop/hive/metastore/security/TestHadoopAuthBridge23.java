@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.metastore.security;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -133,7 +134,7 @@ public class TestHadoopAuthBridge23 {
     }
     builder.append(IPStackUtils.resolveLoopbackAddress());
     builder.append(",");
-    builder.append(InetAddress.getLocalHost().getCanonicalHostName());
+    builder.append(ServerUtils.canonicalHostname());
     conf.setStrings(DefaultImpersonationProvider.getTestProvider().getProxySuperuserIpConfKey(superUserShortName),
         builder.toString());
   }
@@ -329,7 +330,7 @@ public class TestHadoopAuthBridge23 {
                              .set(AuthenticationMethod.KERBEROS);
     return
         HiveMetaStore.getDelegationToken(ownerUgi.getShortUserName(),
-            realUgi.getShortUserName(), InetAddress.getLocalHost().getHostAddress());
+            realUgi.getShortUserName(), ServerUtils.getHostAddressString(ServerUtils.hostname()));
   }
 
   /**
