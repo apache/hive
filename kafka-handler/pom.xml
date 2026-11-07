@@ -227,6 +227,20 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- Avro's ClassSecurityValidator reads the trusted-classes allowlist once when it is
+               first loaded, so it must be present as a JVM system property from fork startup;
+               setting it at test runtime (e.g. in @BeforeClass) is too late. Scoped to this
+               module's own SimpleRecord test fixture (used by AvroBytesConverterTest), not a
+               repo-wide trust grant. -->
+          <systemPropertyVariables>
+            <org.apache.avro.SERIALIZABLE_CLASSES>org.apache.hadoop.hive.kafka.SimpleRecord</org.apache.avro.SERIALIZABLE_CLASSES>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
