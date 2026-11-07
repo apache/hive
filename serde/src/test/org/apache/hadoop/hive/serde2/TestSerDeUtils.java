@@ -95,6 +95,12 @@ public class TestSerDeUtils {
   }
 
   @Test
+  public void testGetJSONStringForUnknownType() {
+    assertEquals("null", SerDeUtils.getJSONString(null, oi("unknown"), "null"));
+    assertTrue(SerDeUtils.hasAnyNullObject(null, oi("unknown")));
+  }
+
+  @Test
   public void testThriftTypeForVariant() {
     assertEquals(Type.VARIANT_TYPE, Type.getType("variant"));
     assertEquals(Type.VARIANT_TYPE, Type.getType(TypeInfoUtils.getTypeInfoFromTypeString("variant")));

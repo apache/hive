@@ -212,3 +212,792 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	NULL	NULL
 2	NULL	NULL
 3	NULL	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_partial (
+    name STRING,
+    id UNKNOWN
+) STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_partial
+POSTHOOK: query: CREATE EXTERNAL TABLE unknown_test_partial (
+    name STRING,
+    id UNKNOWN
+) STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unknown_test_partial
+PREHOOK: query: INSERT INTO unknown_test_partial (name) VALUES ('aqc')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_partial
+POSTHOOK: query: INSERT INTO unknown_test_partial (name) VALUES ('aqc')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_partial
+PREHOOK: query: SELECT name, id FROM unknown_test_partial
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_partial
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT name, id FROM unknown_test_partial
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_partial
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+aqc	NULL
+PREHOOK: query: INSERT INTO unknown_test_partial (name, id) VALUES ('explicit', NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_partial
+POSTHOOK: query: INSERT INTO unknown_test_partial (name, id) VALUES ('explicit', NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_partial
+PREHOOK: query: INSERT INTO unknown_test_partial (name) VALUES ('multi1'), ('multi2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_partial
+POSTHOOK: query: INSERT INTO unknown_test_partial (name) VALUES ('multi1'), ('multi2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_partial
+PREHOOK: query: INSERT INTO unknown_test_partial (name) SELECT CAST(id AS STRING) FROM unknown_test_basic
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_basic
+PREHOOK: Output: default@unknown_test_partial
+POSTHOOK: query: INSERT INTO unknown_test_partial (name) SELECT CAST(id AS STRING) FROM unknown_test_basic
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_basic
+POSTHOOK: Output: default@unknown_test_partial
+PREHOOK: query: SELECT name, id FROM unknown_test_partial ORDER BY name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_partial
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT name, id FROM unknown_test_partial ORDER BY name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_partial
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL
+2	NULL
+3	NULL
+aqc	NULL
+explicit	NULL
+multi1	NULL
+multi2	NULL
+PREHOOK: query: INSERT OVERWRITE TABLE unknown_test_partial SELECT name, id FROM unknown_test_partial WHERE name LIKE 'multi%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_partial
+PREHOOK: Output: default@unknown_test_partial
+POSTHOOK: query: INSERT OVERWRITE TABLE unknown_test_partial SELECT name, id FROM unknown_test_partial WHERE name LIKE 'multi%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_partial
+POSTHOOK: Output: default@unknown_test_partial
+PREHOOK: query: SELECT name, id FROM unknown_test_partial ORDER BY name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_partial
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT name, id FROM unknown_test_partial ORDER BY name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_partial
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+multi1	NULL
+multi2	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_middle (
+    a INT,
+    b UNKNOWN,
+    c INT
+) STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: CREATE EXTERNAL TABLE unknown_test_middle (
+    a INT,
+    b UNKNOWN,
+    c INT
+) STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unknown_test_middle
+PREHOOK: query: INSERT INTO unknown_test_middle (a, c) VALUES (1, 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: INSERT INTO unknown_test_middle (a, c) VALUES (1, 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_middle
+PREHOOK: query: INSERT INTO unknown_test_middle (c, a) VALUES (20, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: INSERT INTO unknown_test_middle (c, a) VALUES (20, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_middle
+PREHOOK: query: INSERT INTO unknown_test_middle VALUES (3, NULL, 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: INSERT INTO unknown_test_middle VALUES (3, NULL, 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_middle
+PREHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	10
+2	NULL	20
+3	NULL	30
+PREHOOK: query: SELECT count(*) FROM unknown_test_middle WHERE b IS NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT count(*) FROM unknown_test_middle WHERE b IS NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3
+PREHOOK: query: SELECT count(*) FROM unknown_test_middle WHERE b IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT count(*) FROM unknown_test_middle WHERE b IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: SELECT count(b), count(*) FROM unknown_test_middle
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT count(b), count(*) FROM unknown_test_middle
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	3
+PREHOOK: query: SELECT b, count(*) FROM unknown_test_middle GROUP BY b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT b, count(*) FROM unknown_test_middle GROUP BY b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	3
+PREHOOK: query: SELECT DISTINCT b FROM unknown_test_middle
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT DISTINCT b FROM unknown_test_middle
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL
+PREHOOK: query: SELECT a, b, row_number() OVER (PARTITION BY b ORDER BY a) FROM unknown_test_middle
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, row_number() OVER (PARTITION BY b ORDER BY a) FROM unknown_test_middle
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	1
+2	NULL	2
+3	NULL	3
+PREHOOK: query: SELECT m.a, m.b, p.placeholder FROM unknown_test_middle m JOIN unknown_test_basic p ON m.a = p.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_basic
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT m.a, m.b, p.placeholder FROM unknown_test_middle m JOIN unknown_test_basic p ON m.a = p.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_basic
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	NULL
+2	NULL	NULL
+3	NULL	NULL
+PREHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	10
+2	NULL	20
+3	NULL	30
+PREHOOK: query: SELECT b, count(*) FROM unknown_test_middle GROUP BY b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT b, count(*) FROM unknown_test_middle GROUP BY b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	3
+PREHOOK: query: SELECT a, b, c FROM unknown_test_middle
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c FROM unknown_test_middle
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	10
+2	NULL	20
+3	NULL	30
+PREHOOK: query: CREATE VIEW unknown_test_view AS SELECT a, b FROM unknown_test_middle
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_view
+POSTHOOK: query: CREATE VIEW unknown_test_view AS SELECT a, b FROM unknown_test_middle
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unknown_test_view
+POSTHOOK: Lineage: unknown_test_view.a SIMPLE [(unknown_test_middle)unknown_test_middle.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: unknown_test_view.b SIMPLE [(unknown_test_middle)unknown_test_middle.FieldSchema(name:b, type:unknown, comment:null), ]
+PREHOOK: query: SELECT a, b FROM unknown_test_view ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Input: default@unknown_test_view
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b FROM unknown_test_view ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Input: default@unknown_test_view
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL
+2	NULL
+3	NULL
+PREHOOK: query: UPDATE unknown_test_middle SET c = 11 WHERE a = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: default@unknown_test_middle
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: UPDATE unknown_test_middle SET c = 11 WHERE a = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: default@unknown_test_middle
+POSTHOOK: Output: default@unknown_test_middle
+PREHOOK: query: UPDATE unknown_test_middle SET b = NULL WHERE a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: default@unknown_test_middle
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: UPDATE unknown_test_middle SET b = NULL WHERE a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: default@unknown_test_middle
+POSTHOOK: Output: default@unknown_test_middle
+PREHOOK: query: DELETE FROM unknown_test_middle WHERE a = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: DELETE FROM unknown_test_middle WHERE a = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: MERGE INTO unknown_test_middle t
+USING (SELECT 3 AS a, 33 AS c UNION ALL SELECT 4 AS a, 40 AS c) s
+ON t.a = s.a
+WHEN MATCHED THEN UPDATE SET c = s.c
+WHEN NOT MATCHED THEN INSERT (a, c) VALUES (s.a, s.c)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@unknown_test_middle
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: MERGE INTO unknown_test_middle t
+USING (SELECT 3 AS a, 33 AS c UNION ALL SELECT 4 AS a, 40 AS c) s
+ON t.a = s.a
+WHEN MATCHED THEN UPDATE SET c = s.c
+WHEN NOT MATCHED THEN INSERT (a, c) VALUES (s.a, s.c)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@unknown_test_middle
+POSTHOOK: Output: default@unknown_test_middle
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(unknown_test_middle)unknown_test_middle.null, ]
+PREHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	11
+3	NULL	33
+4	NULL	40
+PREHOOK: query: ANALYZE TABLE unknown_test_middle COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: ANALYZE TABLE unknown_test_middle COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	11
+3	NULL	33
+4	NULL	40
+PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_nested (
+    id INT,
+    s STRUCT<x:INT, u:UNKNOWN>
+) STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_nested
+POSTHOOK: query: CREATE EXTERNAL TABLE unknown_test_nested (
+    id INT,
+    s STRUCT<x:INT, u:UNKNOWN>
+) STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unknown_test_nested
+PREHOOK: query: INSERT INTO unknown_test_nested (id) VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_nested
+POSTHOOK: query: INSERT INTO unknown_test_nested (id) VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_nested
+PREHOOK: query: INSERT INTO unknown_test_nested SELECT 2, named_struct('x', 5, 'u', NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_nested
+POSTHOOK: query: INSERT INTO unknown_test_nested SELECT 2, named_struct('x', 5, 'u', NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_nested
+PREHOOK: query: SELECT id, s, s.u FROM unknown_test_nested ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_nested
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, s, s.u FROM unknown_test_nested ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_nested
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	NULL
+2	{"x":5,"u":null}	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_show (
+    id INT,
+    u UNKNOWN DEFAULT NULL,
+    s STRUCT<x:INT, u:UNKNOWN>
+) STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_show
+POSTHOOK: query: CREATE EXTERNAL TABLE unknown_test_show (
+    id INT,
+    u UNKNOWN DEFAULT NULL,
+    s STRUCT<x:INT, u:UNKNOWN>
+) STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unknown_test_show
+PREHOOK: query: SHOW CREATE TABLE unknown_test_show
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@unknown_test_show
+POSTHOOK: query: SHOW CREATE TABLE unknown_test_show
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@unknown_test_show
+CREATE EXTERNAL TABLE `unknown_test_show`(
+  `id` int, 
+  `u` unknown, 
+  `s` struct<`x`:int, `u`:unknown>)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"u","required":false,"type":"unknown"},{"id":3,"name":"s","required":false,"type":{"type":"struct","fields":[{"id":4,"name":"x","required":false,"type":"int"},{"id":5,"name":"u","required":false,"type":"unknown"}]}}]}', 
+  'format-version'='3', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
+  'write.update.mode'='merge-on-read')
+ALTER TABLE `unknown_test_show`.`unknown_test_show` CHANGE COLUMN `u` `u` unknown CONSTRAINT  DEFAULT NULL ENABLE NOVALIDATE RELY;
+PREHOOK: query: INSERT INTO unknown_test_show (id) VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_show
+POSTHOOK: query: INSERT INTO unknown_test_show (id) VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_show
+PREHOOK: query: SELECT id, u, s FROM unknown_test_show
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_show
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, u, s FROM unknown_test_show
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_show
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_orc (
+    a INT,
+    b UNKNOWN,
+    c INT,
+    s STRUCT<x:INT, u:UNKNOWN>
+) STORED BY ICEBERG tblproperties('format-version'='3', 'write.format.default'='orc')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_orc
+POSTHOOK: query: CREATE EXTERNAL TABLE unknown_test_orc (
+    a INT,
+    b UNKNOWN,
+    c INT,
+    s STRUCT<x:INT, u:UNKNOWN>
+) STORED BY ICEBERG tblproperties('format-version'='3', 'write.format.default'='orc')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unknown_test_orc
+PREHOOK: query: INSERT INTO unknown_test_orc (a, c) VALUES (1, 10), (2, 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_orc
+POSTHOOK: query: INSERT INTO unknown_test_orc (a, c) VALUES (1, 10), (2, 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_orc
+PREHOOK: query: INSERT INTO unknown_test_orc SELECT 3, NULL, 30, named_struct('x', 5, 'u', NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_orc
+POSTHOOK: query: INSERT INTO unknown_test_orc SELECT 3, NULL, 30, named_struct('x', 5, 'u', NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_orc
+PREHOOK: query: UPDATE unknown_test_orc SET c = 11 WHERE a = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_orc
+PREHOOK: Output: default@unknown_test_orc
+PREHOOK: Output: default@unknown_test_orc
+POSTHOOK: query: UPDATE unknown_test_orc SET c = 11 WHERE a = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_orc
+POSTHOOK: Output: default@unknown_test_orc
+POSTHOOK: Output: default@unknown_test_orc
+PREHOOK: query: DELETE FROM unknown_test_orc WHERE a = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_orc
+PREHOOK: Output: default@unknown_test_orc
+POSTHOOK: query: DELETE FROM unknown_test_orc WHERE a = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_orc
+POSTHOOK: Output: default@unknown_test_orc
+PREHOOK: query: SELECT a, b, c, s, s.u FROM unknown_test_orc ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c, s, s.u FROM unknown_test_orc ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	11	NULL	NULL
+3	NULL	30	{"x":5,"u":null}	NULL
+PREHOOK: query: SELECT count(*) FROM unknown_test_orc WHERE b IS NULL AND c > 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT count(*) FROM unknown_test_orc WHERE b IS NULL AND c > 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2
+PREHOOK: query: SELECT a, b, c, s, s.u FROM unknown_test_orc ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c, s, s.u FROM unknown_test_orc ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	11	NULL	NULL
+3	NULL	30	{"x":5,"u":null}	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_avro (
+    a INT,
+    b UNKNOWN,
+    c INT,
+    s STRUCT<x:INT, u:UNKNOWN>
+) STORED BY ICEBERG tblproperties('format-version'='3', 'write.format.default'='avro')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_avro
+POSTHOOK: query: CREATE EXTERNAL TABLE unknown_test_avro (
+    a INT,
+    b UNKNOWN,
+    c INT,
+    s STRUCT<x:INT, u:UNKNOWN>
+) STORED BY ICEBERG tblproperties('format-version'='3', 'write.format.default'='avro')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unknown_test_avro
+PREHOOK: query: INSERT INTO unknown_test_avro (a, c) VALUES (1, 10), (2, 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_avro
+POSTHOOK: query: INSERT INTO unknown_test_avro (a, c) VALUES (1, 10), (2, 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_avro
+PREHOOK: query: INSERT INTO unknown_test_avro SELECT 3, NULL, 30, named_struct('x', 5, 'u', NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_avro
+POSTHOOK: query: INSERT INTO unknown_test_avro SELECT 3, NULL, 30, named_struct('x', 5, 'u', NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_avro
+PREHOOK: query: UPDATE unknown_test_avro SET c = 11 WHERE a = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_avro
+PREHOOK: Output: default@unknown_test_avro
+PREHOOK: Output: default@unknown_test_avro
+POSTHOOK: query: UPDATE unknown_test_avro SET c = 11 WHERE a = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_avro
+POSTHOOK: Output: default@unknown_test_avro
+POSTHOOK: Output: default@unknown_test_avro
+PREHOOK: query: DELETE FROM unknown_test_avro WHERE a = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_avro
+PREHOOK: Output: default@unknown_test_avro
+POSTHOOK: query: DELETE FROM unknown_test_avro WHERE a = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_avro
+POSTHOOK: Output: default@unknown_test_avro
+PREHOOK: query: SELECT a, b, c, s, s.u FROM unknown_test_avro ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_avro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c, s, s.u FROM unknown_test_avro ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_avro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	11	NULL	NULL
+3	NULL	30	{"x":5,"u":null}	NULL
+PREHOOK: query: SELECT count(*) FROM unknown_test_avro WHERE b IS NULL AND c > 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_avro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT count(*) FROM unknown_test_avro WHERE b IS NULL AND c > 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_avro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2
+PREHOOK: query: ALTER TABLE unknown_test_middle CREATE TAG before_promotion
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@unknown_test_middle
+POSTHOOK: query: ALTER TABLE unknown_test_middle CREATE TAG before_promotion
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@unknown_test_middle
+PREHOOK: query: ALTER TABLE unknown_test_middle CHANGE COLUMN b b INT
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: ALTER TABLE unknown_test_middle CHANGE COLUMN b b INT
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: default@unknown_test_middle
+PREHOOK: query: DESCRIBE unknown_test_middle
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@unknown_test_middle
+POSTHOOK: query: DESCRIBE unknown_test_middle
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@unknown_test_middle
+a                   	int                 	                    
+b                   	int                 	                    
+c                   	int                 	                    
+PREHOOK: query: INSERT INTO unknown_test_middle VALUES (5, 500, 50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: INSERT INTO unknown_test_middle VALUES (5, 500, 50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_middle
+PREHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	11
+3	NULL	33
+4	NULL	40
+5	500	50
+PREHOOK: query: ALTER TABLE unknown_test_middle CHANGE COLUMN b b BIGINT
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: default@unknown_test_middle
+POSTHOOK: query: ALTER TABLE unknown_test_middle CHANGE COLUMN b b BIGINT
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: default@unknown_test_middle
+PREHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c FROM unknown_test_middle ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	11
+3	NULL	33
+4	NULL	40
+5	500	50
+PREHOOK: query: SELECT a, b, c FROM unknown_test_middle FOR SYSTEM_VERSION AS OF 'before_promotion' ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT a, b, c FROM unknown_test_middle FOR SYSTEM_VERSION AS OF 'before_promotion' ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	11
+3	NULL	33
+4	NULL	40
+PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_promote (
+    id INT,
+    u1 UNKNOWN,
+    u2 UNKNOWN,
+    u3 UNKNOWN,
+    v INT
+) STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unknown_test_promote
+POSTHOOK: query: CREATE EXTERNAL TABLE unknown_test_promote (
+    id INT,
+    u1 UNKNOWN,
+    u2 UNKNOWN,
+    u3 UNKNOWN,
+    v INT
+) STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unknown_test_promote
+PREHOOK: query: INSERT INTO unknown_test_promote (id, v) VALUES (1, 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_promote
+POSTHOOK: query: INSERT INTO unknown_test_promote (id, v) VALUES (1, 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_promote
+PREHOOK: query: ALTER TABLE unknown_test_promote CHANGE COLUMN u1 renamed STRING
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@unknown_test_promote
+PREHOOK: Output: default@unknown_test_promote
+POSTHOOK: query: ALTER TABLE unknown_test_promote CHANGE COLUMN u1 renamed STRING
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@unknown_test_promote
+POSTHOOK: Output: default@unknown_test_promote
+PREHOOK: query: ALTER TABLE unknown_test_promote CHANGE COLUMN u2 u2 INT COMMENT 'promoted'
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@unknown_test_promote
+PREHOOK: Output: default@unknown_test_promote
+POSTHOOK: query: ALTER TABLE unknown_test_promote CHANGE COLUMN u2 u2 INT COMMENT 'promoted'
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@unknown_test_promote
+POSTHOOK: Output: default@unknown_test_promote
+PREHOOK: query: ALTER TABLE unknown_test_promote CHANGE COLUMN u3 u3 DOUBLE AFTER v
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@unknown_test_promote
+PREHOOK: Output: default@unknown_test_promote
+POSTHOOK: query: ALTER TABLE unknown_test_promote CHANGE COLUMN u3 u3 DOUBLE AFTER v
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@unknown_test_promote
+POSTHOOK: Output: default@unknown_test_promote
+PREHOOK: query: DESCRIBE unknown_test_promote
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@unknown_test_promote
+POSTHOOK: query: DESCRIBE unknown_test_promote
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@unknown_test_promote
+id                  	int                 	                    
+renamed             	string              	                    
+u2                  	int                 	promoted            
+v                   	int                 	                    
+u3                  	double              	                    
+PREHOOK: query: INSERT INTO unknown_test_promote VALUES (2, 'two', 20, 200, 2.5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unknown_test_promote
+POSTHOOK: query: INSERT INTO unknown_test_promote VALUES (2, 'two', 20, 200, 2.5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unknown_test_promote
+PREHOOK: query: SELECT id, renamed, u2, v, u3 FROM unknown_test_promote ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_promote
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, renamed, u2, v, u3 FROM unknown_test_promote ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_promote
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL	NULL	10	NULL
+2	two	20	200	2.5
+PREHOOK: query: ALTER TABLE unknown_test_basic REPLACE COLUMNS (id INT, placeholder UNKNOWN)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@unknown_test_basic
+PREHOOK: Output: default@unknown_test_basic
+POSTHOOK: query: ALTER TABLE unknown_test_basic REPLACE COLUMNS (id INT, placeholder UNKNOWN)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@unknown_test_basic
+POSTHOOK: Output: default@unknown_test_basic
+PREHOOK: query: DESCRIBE unknown_test_basic
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@unknown_test_basic
+POSTHOOK: query: DESCRIBE unknown_test_basic
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@unknown_test_basic
+id                  	int                 	                    
+placeholder         	unknown             	                    
+PREHOOK: query: SELECT * FROM unknown_test_basic ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_basic
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM unknown_test_basic ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_basic
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL
+2	NULL
+3	NULL

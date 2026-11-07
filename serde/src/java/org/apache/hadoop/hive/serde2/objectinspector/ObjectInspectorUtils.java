@@ -311,6 +311,10 @@ public final class ObjectInspectorUtils {
       result = ObjectInspectorFactory.getStandardUnionObjectInspector(ois);
       break;
     }
+    case UNKNOWN: {
+      result = ObjectInspectorFactory.getUnknownObjectInspector();
+      break;
+    }
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
     }
@@ -497,6 +501,9 @@ public final class ObjectInspectorUtils {
       result = new StandardUnionObjectInspector.StandardUnion(tag, object);
       break;
     }
+    case UNKNOWN: {
+      throw new IllegalArgumentException("UNKNOWN type columns only accept NULL values");
+    }
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
     }
@@ -626,6 +633,9 @@ public final class ObjectInspectorUtils {
       }
       result.append(">");
       return result.toString();
+    }
+    case UNKNOWN: {
+      return oi.getClass().getSimpleName();
     }
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
@@ -1003,6 +1013,7 @@ public final class ObjectInspectorUtils {
   public static boolean compareSupported(ObjectInspector oi) {
     switch (oi.getCategory()) {
     case PRIMITIVE:
+    case UNKNOWN:
       return true;
     case LIST:
       ListObjectInspector loi = (ListObjectInspector) oi;
@@ -1262,6 +1273,8 @@ public final class ObjectInspectorUtils {
           uoi2.getField(o2), uoi2.getObjectInspectors().get(tag2),
           mapEqualComparer, nullValueOpt);
     }
+    case UNKNOWN:
+      return 0;
     default:
       throw new RuntimeException("Compare on unknown type: "
           + oi1.getCategory());
@@ -1434,6 +1447,10 @@ public final class ObjectInspectorUtils {
       return true;
     }
 
+    if (c1.equals(Category.UNKNOWN)) {
+      return c2.equals(Category.UNKNOWN);
+    }
+
     // Unknown category
     throw new RuntimeException("Unknown category encountered: " + c1);
   }
@@ -1488,6 +1505,11 @@ public final class ObjectInspectorUtils {
             fieldNames,
             fieldObjectInspectors,
             (List<?>)writableValue);
+      case UNKNOWN:
+          if (value != null) {
+            throw new IllegalArgumentException("UNKNOWN type columns only accept NULL values");
+          }
+          return UnknownConstantObjectInspector.get();
       default:
        throw new IllegalArgumentException(
            writableOI.getCategory() + " not yet supported for constant OI");
@@ -1504,6 +1526,7 @@ public final class ObjectInspectorUtils {
       case LIST:
       case MAP:
       case STRUCT:
+      case UNKNOWN:
         return true;
       default:
         return false;

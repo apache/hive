@@ -291,6 +291,7 @@ public class IcebergTableUtil {
       LOG.warn("Iceberg partition spec is not updated due to empty partition spec definition.");
       return;
     }
+    validateNoUnknownTypePartitioning(newPartitionSpec);
 
     // delete every field from the old partition spec
     UpdatePartitionSpec updatePartitionSpec = table.updateSpec().caseSensitive(false);
@@ -307,6 +308,17 @@ public class IcebergTableUtil {
     partitionTransformSpecList.forEach(spec ->
         updatePartitionSpec.addField(SchemaUtils.toTerm(spec)));
     updatePartitionSpec.commit();
+  }
+
+  /**
+   * UNKNOWN columns are always NULL, so a partition on one would never separate any rows. Iceberg's identity
+   * transform accepts them, but Hive cannot convert their values to partition values.
+   */
+  static void validateNoUnknownTypePartitioning(PartitionSpec spec) {
+    spec.fields().forEach(field -> Preconditions.checkArgument(
+        spec.schema().findType(field.sourceId()).typeId() != Type.TypeID.UNKNOWN,
+        "Cannot partition by column '%s': partitioning by a column of type unknown is not supported",
+        spec.schema().findColumnName(field.sourceId())));
   }
 
   public static boolean isBucketed(Table table) {

@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.UnknownConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnknownObjectInspector;
 import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hadoop.io.Text;
@@ -57,6 +59,23 @@ public class TestUnknownTypeInfo {
   }
 
   @Test
+  public void testVoidIsCompatibleWithUnknownTypeInStruct() {
+    TypeInfo fromStruct = TypeInfoFactory.getStructTypeInfo(
+        List.of("x", "u"),
+        List.of(TypeInfoFactory.intTypeInfo, TypeInfoFactory.voidTypeInfo));
+    TypeInfo toStruct = TypeInfoFactory.getStructTypeInfo(
+        List.of("x", "u"),
+        List.of(TypeInfoFactory.intTypeInfo, TypeInfoFactory.getUnknownTypeInfo()));
+    Assert.assertTrue(TypeInfoUtils.isVoidCompatibleTarget(fromStruct, toStruct));
+    Assert.assertFalse(TypeInfoUtils.isVoidCompatibleTarget(toStruct, fromStruct));
+
+    TypeInfo renamedStruct = TypeInfoFactory.getStructTypeInfo(
+        List.of("x", "v"),
+        List.of(TypeInfoFactory.intTypeInfo, TypeInfoFactory.voidTypeInfo));
+    Assert.assertFalse(TypeInfoUtils.isVoidCompatibleTarget(renamedStruct, toStruct));
+  }
+
+  @Test
   public void testLazyObjectInspectorForUnknownType() throws SerDeException {
     ObjectInspector oi = LazyFactory.createLazyStructInspector(
         List.of("placeholder"),
@@ -70,6 +89,18 @@ public class TestUnknownTypeInfo {
   public void testStandardObjectInspectorFromTypeInfo() {
     ObjectInspector oi = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(UnknownTypeInfo.get());
     Assert.assertEquals(UnknownObjectInspector.get(), oi);
+  }
+
+  @Test
+  public void testObjectInspectorUtilsForUnknownType() {
+    ObjectInspector oi = UnknownObjectInspector.get();
+    Assert.assertEquals(UnknownObjectInspector.get(),
+        ObjectInspectorUtils.getStandardObjectInspector(oi));
+    Assert.assertNull(ObjectInspectorUtils.copyToStandardObject(null, oi));
+    Assert.assertEquals(UnknownConstantObjectInspector.get(),
+        ObjectInspectorUtils.getConstantObjectInspector(oi, null));
+    Assert.assertTrue(ObjectInspectorUtils.compareSupported(oi));
+    Assert.assertEquals(0, ObjectInspectorUtils.compare(null, oi, null, oi));
   }
 
   @Test
