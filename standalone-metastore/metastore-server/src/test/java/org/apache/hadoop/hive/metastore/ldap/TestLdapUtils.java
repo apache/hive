@@ -106,4 +106,14 @@ public class TestLdapUtils {
     String dn = "cn=user1";
     assertNull(LdapUtils.extractBaseDn(dn));
   }
+
+  @Test
+  public void testEscapeFilterValue() {
+    assertNull(LdapUtils.escapeFilterValue(null));
+    assertEquals("", LdapUtils.escapeFilterValue(""));
+    assertEquals("cn=user1,ou=CORP1,dc=mycompany,dc=com",
+        LdapUtils.escapeFilterValue("cn=user1,ou=CORP1,dc=mycompany,dc=com"));
+    assertEquals("a\\5cb\\2ac\\28d\\29e\\00f", LdapUtils.escapeFilterValue("a\\b*c(d)e\0f"));
+    assertEquals("\\5c2a", LdapUtils.escapeFilterValue("\\2a"));
+  }
 }
