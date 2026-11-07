@@ -19,6 +19,7 @@
 package org.apache.hive.storage.jdbc;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -41,12 +42,16 @@ import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 
 import java.io.IOException;
 import java.lang.IllegalArgumentException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import static org.apache.hadoop.hive.ql.exec.Utilities.unquoteJdbcIdentifier;
 
 public class JdbcStorageHandler implements HiveStorageHandler {
 
@@ -107,10 +112,26 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     DatabaseType dbType = DatabaseType.valueOf(
       tableProperties.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
-    String host_url = DatabaseType.METASTORE == dbType ?
+    String hostUrl = DatabaseType.METASTORE == dbType ?
       "jdbc:metastore://" : tableProperties.get(Constants.JDBC_URL);
-    String table_name = tableProperties.get(Constants.JDBC_TABLE);
-    return new URI(host_url+"/"+table_name);
+    String tableIdentifier = tableProperties.get(Constants.JDBC_TABLE);
+    if (tableIdentifier == null) {
+      throw new URISyntaxException(hostUrl, "Missing required table property: " + Constants.JDBC_TABLE);
+    }
+    // Encode only the table name to keep URI construction valid; the URI is not used in the
+    // JDBC URL, but as an identifier stored in the HMS.
+    String tableName = encodeIdentifierForAuth(tableIdentifier);
+    return buildAuthorizationUri(hostUrl, tableName);
+  }
+
+  private static String encodeIdentifierForAuth(String identifier) {
+    String physical = unquoteJdbcIdentifier(identifier);
+    return URLEncoder.encode(physical, StandardCharsets.UTF_8);
+  }
+
+  private static URI buildAuthorizationUri(String hostUrl, String tableName) throws URISyntaxException {
+    String separator = hostUrl.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR;
+    return new URI(hostUrl + separator + tableName);
   }
 
   @Override
