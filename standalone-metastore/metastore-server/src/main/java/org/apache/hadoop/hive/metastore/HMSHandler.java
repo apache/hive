@@ -1577,6 +1577,10 @@ public class HMSHandler extends PrivilegeHandler {
       getTableRequest.setCatName(catName);
       Table table = get_table_core(getTableRequest);
       firePreEvent(new PreReadTableEvent(table, this));
+      // Perform the same table-level filter hook check the regular partition listing RPCs
+      // perform in GetPartitionsHandler.authorizeTableForPartitionMetadata()
+      FilterUtils.checkDbAndTableFilters(isServerFilterEnabled, filterHook, normalizeIdentifier(catName),
+          normalizeIdentifier(parsedDbName[DB_NAME]), normalizeIdentifier(tableName));
       List<Partition> partitions = getMS()
           .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
               request.getFilterSpec());
