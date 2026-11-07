@@ -30,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -39,8 +40,8 @@ import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metastore.PartitionsIterable;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -464,30 +465,22 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     Warehouse wh = hmsHandler.getWh();
     if (isPartitionedTable(table)) {
       // Validate each partition directory
-      List<Partition> partitions = getTablePartitions(hmsHandler, table);
-      for (Partition partition : partitions) {
-        Path partPath = wh.getDnsPath(new Path(partition.getSd().getLocation()));
-        validateTableStructureForPath(hmsHandler, wh, table, partPath);
+      int batchSize = MetastoreConf.getIntVar(hmsHandler.getConf(),
+          MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+      String catName = getTableCatalog(table);
+      TableName qualifiedTable = new TableName(catName, table.getDbName(), table.getTableName());
+      PartitionsIterable partitionBatches = PartitionsIterable.create(
+          hmsHandler.getMS(), qualifiedTable, batchSize);
+      for (List<Partition> partitions : partitionBatches) {
+        for (Partition partition : partitions) {
+          Path partPath = wh.getDnsPath(new Path(partition.getSd().getLocation()));
+          validateTableStructureForPath(hmsHandler, wh, table, partPath);
+        }
       }
     } else {
       // Non-partitioned - only need to worry about the base table directory
       Path tablePath = getTablePath(hmsHandler, wh, table);
       validateTableStructureForPath(hmsHandler, wh, table, tablePath);
-    }
-  }
-
-  private List<Partition> getTablePartitions(IHMSHandler hmsHandler, Table table) throws MetaException {
-    try {
-      RawStore rawStore = hmsHandler.getMS();
-      String catName = getTableCatalog(table);
-      return rawStore.getPartitions(catName, table.getDbName(), table.getTableName(),
-          GetPartitionsArgs.getAllPartitions());
-    } catch (Exception err) {
-      String msg = "Error getting partitions for " + Warehouse.getQualifiedName(table);
-      LOG.error(msg, err);
-      MetaException e1 = new MetaException(msg);
-      e1.initCause(err);
-      throw e1;
     }
   }
 
