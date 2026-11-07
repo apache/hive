@@ -4605,7 +4605,7 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 >= 5)) (type: boolean)
+                    predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 < 5) is not true) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -4618,7 +4618,7 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 >= 5)) (type: boolean)
+                    predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 < 5) is not true) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col5 (type: int), _col2 (type: string)
@@ -4891,7 +4891,7 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 >= 5)) (type: boolean)
+                    predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 < 5) is not true) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -4904,7 +4904,7 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 >= 5)) (type: boolean)
+                    predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 < 5) is not true) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col5 (type: int), _col2 (type: string)

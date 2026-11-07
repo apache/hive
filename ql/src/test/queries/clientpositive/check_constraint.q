@@ -100,10 +100,10 @@ insert overwrite table acid_uami_n0 select cast(key as int), cast (key as decima
 
 -- insert as select cont
 explain insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
-    left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10 ;
+    left outer join src s2 on s1.key=s2.key where s1.value > 'val' order by cast(s1.key as int), s1.value limit 10 ;
 insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
-    left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10 ;
-select * from acid_uami_n0;
+    left outer join src s2 on s1.key=s2.key where s1.value > 'val' order by cast(s1.key as int), s1.value limit 10 ;
+select * from acid_uami_n0 order by i, de, vc;
 truncate table acid_uami_n0;
 
 -- insert as select group by + agg
@@ -111,7 +111,7 @@ explain insert into table acid_uami_n0 select min(cast(key as int)) as c1, max(c
     from src group by key, value order by key, value limit 10;
 insert into table acid_uami_n0 select min(cast(key as int)) as c1, max(cast (key as decimal(5,2))) as c2, value
     from src group by key, value order by key, value limit 10;
-select * from acid_uami_n0;
+select * from acid_uami_n0 order by i, de, vc;
 truncate table acid_uami_n0;
 
 -- multi insert
