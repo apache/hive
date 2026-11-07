@@ -187,13 +187,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-faith	1
 barry	3
 chelsea	5
+alex	12
+faith	1
 xavier	8
 derek	9
 ethan	11
-alex	12
 yves	21
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 RIGHT JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
@@ -205,18 +205,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+barry	3
+chelsea	5
+NULL	NULL
+alex	12
 faith	1
 NULL	NULL
-barry	3
 NULL	NULL
-chelsea	5
 NULL	NULL
 NULL	NULL
 xavier	8
 derek	9
-NULL	NULL
 ethan	11
-alex	12
 NULL	NULL
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 INNER JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
@@ -228,13 +228,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-faith	1
 barry	3
 chelsea	5
+alex	12
+faith	1
 xavier	8
 derek	9
 ethan	11
-alex	12
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 FULL JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -245,18 +245,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+barry	3
+chelsea	5
+NULL	NULL
+alex	12
 faith	1
 NULL	NULL
-barry	3
 NULL	NULL
-chelsea	5
 NULL	NULL
 NULL	NULL
 xavier	8
 derek	9
-NULL	NULL
 ethan	11
-alex	12
 yves	21
 NULL	NULL
 PREHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice
@@ -610,13 +610,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-faith	1
 barry	3
 chelsea	5
+alex	12
+faith	1
 xavier	8
 derek	9
 ethan	11
-alex	12
 yves	21
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 RIGHT JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
@@ -628,18 +628,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+barry	3
+chelsea	5
+NULL	NULL
+alex	12
 faith	1
 NULL	NULL
-barry	3
 NULL	NULL
-chelsea	5
 NULL	NULL
 NULL	NULL
 xavier	8
 derek	9
-NULL	NULL
 ethan	11
-alex	12
 NULL	NULL
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 INNER JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
@@ -651,13 +651,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-faith	1
 barry	3
 chelsea	5
+alex	12
+faith	1
 xavier	8
 derek	9
 ethan	11
-alex	12
 PREHOOK: query: SELECT header_name, header_int FROM header_footer_table_4 FULL JOIN numbrs ON numbr = header_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@header_footer_table_4
@@ -668,18 +668,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@header_footer_table_4
 POSTHOOK: Input: default@numbrs
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+barry	3
+chelsea	5
+NULL	NULL
+alex	12
 faith	1
 NULL	NULL
-barry	3
 NULL	NULL
-chelsea	5
 NULL	NULL
 NULL	NULL
 xavier	8
 derek	9
-NULL	NULL
 ethan	11
-alex	12
 yves	21
 NULL	NULL
 PREHOOK: query: SELECT header_choice, SUM(header_int) FROM header_footer_table_4 GROUP BY header_choice

@@ -102,7 +102,7 @@ insert overwrite table acid_uami_n0 select cast(key as int), cast (key as decima
 explain insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
     left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10 ;
 insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
-    left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10 ;
+    left outer join src s2 on s1.key=s2.key where s1.value > 'val' order by c1, c2, value limit 10 ;
 select * from acid_uami_n0;
 truncate table acid_uami_n0;
 

@@ -283,7 +283,7 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
       // disable auto parallelism for bucket map joins
       parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
     }
-    TezEdgeProperty edgeProp = new TezEdgeProperty(null, edgeType, numBuckets);
+    TezEdgeProperty edgeProp = new TezEdgeProperty(edgeType, numBuckets);
 
     if (mapJoinWork != null) {
       for (BaseWork myWork: mapJoinWork) {

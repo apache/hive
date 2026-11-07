@@ -207,9 +207,9 @@ PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 {"version":"1.0","engine":"tez","database":"default","hash":"723e79692e1de404c4ffb702097586da","queryText":"select * from src1 a\nwhere not exists\n  (select cint from alltypesorc b\n   where a.key = b.ctinyint + 300)\nand key > 300","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"edgeType":"PROJECTION"},{"sources":[2],"targets":[0,1],"expression":"(UDFToDouble(a.key) > 300.0D)","edgeType":"PREDICATE"},{"sources":[2,4],"targets":[0,1],"expression":"(UDFToDouble(a.key) = UDFToDouble((UDFToInteger(b.ctinyint) + 300)))","edgeType":"PREDICATE"},{"sources":[4],"targets":[0,1],"expression":"b.ctinyint is not null","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"a.key"},{"id":1,"vertexType":"COLUMN","vertexId":"a.value"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.src1.value"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.ctinyint"}]}
+406	val_406
 369	
 401	val_401
-406	val_406
 PREHOOK: query: with t_n20 as (select key x, value y from src1 where key > '2')
 select x, y from t_n20 where y > 'v' order by x, y limit 5
 PREHOOK: type: QUERY
@@ -420,6 +420,6 @@ PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 {"version":"1.0","engine":"tez","database":"default","hash":"723e79692e1de404c4ffb702097586da","queryText":"select * from src1 a\nwhere not exists\n  (select cint from alltypesorc b\n   where a.key = b.ctinyint + 300)\nand key > 300","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"edgeType":"PROJECTION"},{"sources":[2],"targets":[0,1],"expression":"(UDFToDouble(a.key) > 300.0D)","edgeType":"PREDICATE"},{"sources":[2,4],"targets":[0,1],"expression":"(UDFToDouble(a.key) = UDFToDouble((UDFToInteger(b.ctinyint) + 300)))","edgeType":"PREDICATE"},{"sources":[4],"targets":[0,1],"expression":"b.ctinyint is not null","edgeType":"PREDICATE"},{"sources":[],"targets":[0,1],"expression":"true is null","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"a.key"},{"id":1,"vertexType":"COLUMN","vertexId":"a.value"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.src1.value"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.ctinyint"}]}
+406	val_406
 369	
 401	val_401
-406	val_406
