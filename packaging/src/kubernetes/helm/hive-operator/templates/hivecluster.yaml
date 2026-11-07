@@ -94,6 +94,9 @@ spec:
       cpuScaleUpThreshold: {{ .Values.cluster.metastore.autoscaling.cpuScaleUpThreshold | default 90 }}
       cpuScaleDownThreshold: {{ .Values.cluster.metastore.autoscaling.cpuScaleDownThreshold | default 30 }}
     {{- end }}
+    {{- if .Values.cluster.metastore.updateStrategy }}
+    updateStrategy: {{ .Values.cluster.metastore.updateStrategy }}
+    {{- end }}
     {{- else }}
     {{- if .Values.cluster.metastore.externalUri }}
     externalUri: {{ .Values.cluster.metastore.externalUri | quote }}
@@ -147,6 +150,9 @@ spec:
       cpuScaleUpThreshold: {{ .Values.cluster.hiveServer2.autoscaling.cpuScaleUpThreshold | default 90 }}
       cpuScaleDownThreshold: {{ .Values.cluster.hiveServer2.autoscaling.cpuScaleDownThreshold | default 30 }}
     {{- end }}
+    {{- if .Values.cluster.hiveServer2.updateStrategy }}
+    updateStrategy: {{ .Values.cluster.hiveServer2.updateStrategy }}
+    {{- end }}
 
   {{- if .Values.cluster.llapClusterRouting }}
   llapClusterRouting: {{ .Values.cluster.llapClusterRouting | quote }}
@@ -160,6 +166,9 @@ spec:
     replicas: {{ .replicas | default 2 }}
     executors: {{ .executors | default 1 }}
     memoryMb: {{ .memoryMb | default 1024 }}
+    {{- if .updateStrategy }}
+    updateStrategy: {{ .updateStrategy }}
+    {{- end }}
     {{- if .resources }}
     resources:
       {{- toYaml .resources | nindent 6 }}
@@ -202,6 +211,9 @@ spec:
     {{- if .tezAm }}
     tezAm:
       replicas: {{ .tezAm.replicas | default 1 }}
+      {{- if .tezAm.updateStrategy }}
+      updateStrategy: {{ .tezAm.updateStrategy }}
+      {{- end }}
       {{- if .tezAm.affinity }}
       affinity:
         {{- toYaml .tezAm.affinity | nindent 8 }}
@@ -266,6 +278,9 @@ spec:
       scaleDownStabilizationSeconds: {{ .Values.cluster.tezAm.autoscaling.scaleDownStabilizationSeconds }}
       gracePeriodSeconds: {{ .Values.cluster.tezAm.autoscaling.gracePeriodSeconds }}
       metricsScrapeIntervalSeconds: {{ .Values.cluster.tezAm.autoscaling.metricsScrapeIntervalSeconds | default 10 }}
+    {{- end }}
+    {{- if .Values.cluster.tezAm.updateStrategy }}
+    updateStrategy: {{ .Values.cluster.tezAm.updateStrategy }}
     {{- end }}
     {{- end }}
 
