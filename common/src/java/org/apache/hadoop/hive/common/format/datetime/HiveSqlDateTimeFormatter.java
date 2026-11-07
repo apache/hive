@@ -1450,9 +1450,14 @@ public class HiveSqlDateTimeFormatter implements Serializable {
     if (separatorsFound.length() == 0) {
       throw new IllegalArgumentException("Missing separator at index " + index);
     }
-    if (formatExact && !token.string.equals(separatorsFound.toString())) {
+    String expectedSeparator = token.string;
+    if (expectedSeparator.length() > 1 && expectedSeparator.endsWith("-")
+        && nextTokenIs("tzh", token)) {
+      expectedSeparator = expectedSeparator.substring(0, expectedSeparator.length() - 1);
+    }
+    if (formatExact && !expectedSeparator.equals(separatorsFound.toString())) {
       throw new IllegalArgumentException("FX on and separator found: " + separatorsFound
-          + " does not match expected separator: " + token.string);
+          + " does not match expected separator: " + expectedSeparator);
     }
 
     return begin + separatorsFound.length();
