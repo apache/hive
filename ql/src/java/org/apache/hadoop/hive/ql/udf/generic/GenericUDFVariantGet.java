@@ -36,7 +36,10 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
@@ -234,6 +237,9 @@ public class GenericUDFVariantGet extends GenericUDF {
         Instant instant = Instant.EPOCH.plus(value.getLong(), ChronoUnit.MICROS);
         yield instant.toString();
       }
+      case TIMESTAMP_NANOS, TIMESTAMP_NTZ_NANOS -> Instant.EPOCH.plusNanos(value.getLong()).toString();
+      case TIME -> DateTimeFormatter.ISO_LOCAL_TIME.format(
+          LocalTime.MIDNIGHT.with(ChronoField.MICRO_OF_DAY, value.getLong()));
       case UUID -> value.getUuid().toString();
       case OBJECT, ARRAY -> value.toJson(ZoneOffset.UTC);
       default -> null;
