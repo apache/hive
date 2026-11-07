@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
+import java.nio.charset.StandardCharsets;
 import java.util.stream.IntStream;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
@@ -53,26 +55,80 @@ public abstract class VectorPTFEvaluatorAbstractLeadLag extends VectorPTFEvaluat
       defaultValue = null;
       return;
     } else if (defaultValueExpression instanceof ConstantVectorExpression) {
-      // FIXME: always getLongValue()? check if other type is given in 3rd argument
-      long longValue = ((ConstantVectorExpression) defaultValueExpression).getLongValue();
+      ConstantVectorExpression cve = (ConstantVectorExpression) defaultValueExpression;
+      if (cve.getIsNullValue()) {
+        defaultValue = null;
+        return;
+      }
+      Object val = cve.getValue();
+      if (val == null) {
+        defaultValue = null;
+        return;
+      }
       switch (type) {
       case LONG:
-        defaultValue = longValue;
+        if (val instanceof Number) {
+          defaultValue = ((Number) val).longValue();
+        } else if (val instanceof HiveDecimal) {
+          defaultValue = ((HiveDecimal) val).longValue();
+        } else if (val instanceof HiveDecimalWritable) {
+          defaultValue = ((HiveDecimalWritable) val).longValue();
+        } else if (val instanceof byte[]) {
+          defaultValue = Long.parseLong(new String((byte[]) val, StandardCharsets.UTF_8));
+        } else if (val instanceof String) {
+          defaultValue = Long.parseLong((String) val);
+        } else {
+          throw new RuntimeException("Unexpected default value " + val + " ("
+              + val.getClass().getName() + ") for column vector type " + type
+              + " in lead/lag function");
+        }
         break;
       case DOUBLE:
-        defaultValue = Double.valueOf(longValue);
+        if (val instanceof Number) {
+          defaultValue = ((Number) val).doubleValue();
+        } else if (val instanceof HiveDecimal) {
+          defaultValue = ((HiveDecimal) val).doubleValue();
+        } else if (val instanceof HiveDecimalWritable) {
+          defaultValue = ((HiveDecimalWritable) val).doubleValue();
+        } else if (val instanceof byte[]) {
+          defaultValue = Double.parseDouble(new String((byte[]) val, StandardCharsets.UTF_8));
+        } else if (val instanceof String) {
+          defaultValue = Double.parseDouble((String) val);
+        } else {
+          throw new RuntimeException("Unexpected default value " + val + " ("
+              + val.getClass().getName() + ") for column vector type " + type
+              + " in lead/lag function");
+        }
         break;
       case DECIMAL:
-        defaultValue = new HiveDecimalWritable(longValue);
+        if (val instanceof HiveDecimal) {
+          defaultValue = new HiveDecimalWritable((HiveDecimal) val);
+        } else if (val instanceof HiveDecimalWritable) {
+          defaultValue = new HiveDecimalWritable((HiveDecimalWritable) val);
+        } else if (val instanceof Double || val instanceof Float) {
+          HiveDecimalWritable dec = new HiveDecimalWritable();
+          dec.setFromDouble(((Number) val).doubleValue());
+          defaultValue = dec;
+        } else if (val instanceof Number) {
+          defaultValue = new HiveDecimalWritable(((Number) val).longValue());
+        } else if (val instanceof byte[]) {
+          defaultValue = new HiveDecimalWritable(new String((byte[]) val, StandardCharsets.UTF_8));
+        } else if (val instanceof String) {
+          defaultValue = new HiveDecimalWritable((String) val);
+        } else {
+          throw new RuntimeException("Unexpected default value " + val + " ("
+              + val.getClass().getName() + ") for column vector type " + type
+              + " in lead/lag function");
+        }
         break;
       default:
-        throw new RuntimeException("Unexpected column vector type " + type + " for lag function");
+        throw new RuntimeException("Unexpected column vector type " + type + " for lead/lag function");
       }
     } else if (defaultValueExpression instanceof IdentityExpression) {
       defaultValueColumn = ((IdentityExpression) defaultValueExpression).getOutputColumnNum();
     } else {
       throw new RuntimeException(
-          "Unexpected vector expression type for default value in lag function: "
+          "Unexpected vector expression type for default value in lead/lag function: "
               + defaultValueExpression.getClass().getName());
     }
   }
