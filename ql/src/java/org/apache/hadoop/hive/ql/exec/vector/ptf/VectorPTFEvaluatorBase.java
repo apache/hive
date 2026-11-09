@@ -66,8 +66,6 @@ public abstract class VectorPTFEvaluatorBase {
   protected final int outputColumnNum;
   private boolean nullsLast;
   private boolean respectNulls = true;
-  protected boolean usePartitionOnlyConstant;
-  protected Object partitionOnlyConstantValue;
   protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
   public VectorPTFEvaluatorBase(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
@@ -228,26 +226,6 @@ public abstract class VectorPTFEvaluatorBase {
   public void addStreamingGroupResults(List<Integer> groupRowCounts) throws HiveException {
     throw new HiveException(
         "No streaming group result precomputation for " + this.getClass().getName());
-  }
-
-  public void enablePartitionOnlyConstant() {
-    usePartitionOnlyConstant = true;
-  }
-
-  public void updatePartitionOnlyConstant(Object value) {
-    if (!usePartitionOnlyConstant) {
-      return;
-    }
-    setPartitionOnlyConstantValue(value);
-  }
-
-  protected void setPartitionOnlyConstantValue(Object value) {
-    partitionOnlyConstantValue = value;
-  }
-
-  protected void accumulatePartitionOnlyBatch(int batchSize) throws HiveException {
-    throw new HiveException(
-        "Partition-only constant accumulation is not implemented for " + getClass().getName());
   }
 
 }

@@ -41,7 +41,6 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
@@ -2933,12 +2932,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
-    if (hasUnbufferedPartitionColumnInEvaluatorArgs(vectorPTFDesc)) {
-      setOperatorIssue(
-          "Window function argument references partition-only column not buffered in vector PTF");
-      return false;
-    }
-
     // Output columns ok?
     String[] outputColumnNames = vectorPTFDesc.getOutputColumnNames();
     TypeInfo[] outputTypeInfos = vectorPTFDesc.getOutputTypeInfos();
@@ -5057,89 +5050,6 @@ public class Vectorizer implements PhysicalPlanResolver {
         && constantDesc.getValue() instanceof Integer value && value > 0;
   }
 
-  /**
-   * Validates window function arguments that reference partition-only columns (not buffered in vector PTF). 
-   * Allowed functions are listed in {@link VectorPTFDesc#PARTITION_ONLY_COL_ALLOWED_FUNCTIONS};
-   * their partition expr indices are recorded on {@link VectorPTFDesc#setEvalPartitionOnlyExprIndices(int[])}.
-   *
-   * @return true if an unsupported evaluator references a partition-only column
-   */
-  private static boolean hasUnbufferedPartitionColumnInEvaluatorArgs(
-      VectorPTFDesc vectorPTFDesc) {
-
-    String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
-    final int evaluatorCount = evaluatorFunctionNames.length;
-    int[] partitionMapIndices = new int[evaluatorCount];
-    Arrays.fill(partitionMapIndices, -1);
-    vectorPTFDesc.setEvalPartitionOnlyExprIndices(partitionMapIndices);
-
-    // PARTITION BY matches ORDER BY, so partition cols are buffered as order cols.
-    if (!vectorPTFDesc.getIsPartitionOrderBy()) {
-      return false;
-    }
-    ExprNodeDesc[] partitionExprNodeDescs = vectorPTFDesc.getPartitionExprNodeDescs();
-    List<ExprNodeDesc> partitionOnlyExprs = getPartitionOnlyExprs(partitionExprNodeDescs,
-        vectorPTFDesc.getOrderExprNodeDescs());
-    if (partitionOnlyExprs.isEmpty()) {
-      return false;
-    }
-    List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = vectorPTFDesc.getEvaluatorInputExprNodeDescLists();
-    for (int i = 0; i < evaluatorCount; i++) {
-      SupportedFunctionType supportedFunctionType = VectorPTFDesc.supportedFunctionsMap
-          .get(evaluatorFunctionNames[i].toLowerCase());
-      List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
-
-      if (supportedFunctionType == null ||
-          VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType) ||
-          exprNodeDescList == null) {
-        continue;
-      }
-      ExprNodeDesc matchedPartitionOnlyExpr = findPartitionOnlyColumnArg(exprNodeDescList, partitionOnlyExprs);
-
-      if (matchedPartitionOnlyExpr == null) {
-        continue;
-      }
-
-      if (!VectorPTFDesc.PARTITION_ONLY_COL_ALLOWED_FUNCTIONS.contains(
-          supportedFunctionType)) {
-        return true;
-      }
-      partitionMapIndices[i] = indexOfPartitionExpr(matchedPartitionOnlyExpr, partitionExprNodeDescs);
-    }
-
-    return false;
-  }
-
-  private static ExprNodeDesc findPartitionOnlyColumnArg(
-      List<ExprNodeDesc> exprNodeDescList, List<ExprNodeDesc> partitionOnlyExprs) {
-    return exprNodeDescList.stream()
-        .filter(ExprNodeColumnDesc.class::isInstance)
-        .flatMap(expr -> partitionOnlyExprs.stream()
-            .filter(expr::isSame))
-        .findFirst()
-        .orElse(null);
-  }
-
-  private static int indexOfPartitionExpr(ExprNodeDesc partitionExpr,
-      ExprNodeDesc[] partitionExprNodeDescs) {
-    return IntStream.range(0, partitionExprNodeDescs.length)
-        .filter(j -> partitionExpr.isSame(partitionExprNodeDescs[j]))
-        .findFirst()
-        .orElse(-1);
-  }
-
-  private static List<ExprNodeDesc> getPartitionOnlyExprs(
-      ExprNodeDesc[] partitionExprNodeDescs, ExprNodeDesc[] orderExprNodeDescs) {
-    List<ExprNodeDesc> partitionOnlyExprs = new ArrayList<ExprNodeDesc>();
-    for (ExprNodeDesc partitionExpr : partitionExprNodeDescs) {
-      // Collect partition expressions that are not also ORDER BY expressions.
-      if (Arrays.stream(orderExprNodeDescs).noneMatch(partitionExpr::isSame)) {
-        partitionOnlyExprs.add(partitionExpr);
-      }
-    }
-    return partitionOnlyExprs;
-  }
-
   /*
    * Update the VectorPTFDesc with data that is used during validation and that doesn't rely on
    * VectorizationContext to lookup column names, etc.
@@ -5410,9 +5320,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     vectorPTFInfo.setKeyInputColumnMap(keyInputColumnMap);
     vectorPTFInfo.setNonKeyInputColumnMap(nonKeyInputColumnMap);
-
-    vectorPTFInfo.setEvalPartitionOnlyExprIndices(
-        vectorPTFDesc.getEvalPartitionOnlyExprIndices());
 
     return vectorPTFInfo;
   }

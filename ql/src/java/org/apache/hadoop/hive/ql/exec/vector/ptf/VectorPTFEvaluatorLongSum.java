@@ -40,20 +40,6 @@ public class VectorPTFEvaluatorLongSum extends VectorPTFEvaluatorAbstractSum<Lon
   }
 
   @Override
-  protected void accumulatePartitionOnlyBatch(int batchSize) {
-    if (partitionOnlyConstantValue == null) {
-      return;
-    }
-    long increment = ((Long) partitionOnlyConstantValue) * batchSize;
-    if (isGroupResultNull) {
-      sum = increment;
-      isGroupResultNull = false;
-    } else {
-      sum += increment;
-    }
-  }
-
-  @Override
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
@@ -65,10 +51,6 @@ public class VectorPTFEvaluatorLongSum extends VectorPTFEvaluatorAbstractSum<Lon
 
     final int size = batch.size;
     if (size == 0) {
-      return;
-    }
-    if (usePartitionOnlyConstant) {
-      accumulatePartitionOnlyBatch(size);
       return;
     }
     LongColumnVector longColVector = ((LongColumnVector) batch.cols[inputColumnNum]);
