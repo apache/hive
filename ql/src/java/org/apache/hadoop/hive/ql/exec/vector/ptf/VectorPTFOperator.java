@@ -21,10 +21,12 @@ package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -141,7 +143,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private transient HiveDecimalWritable[] currentPartitionDecimals;
   private transient Timestamp[] currentPartitionTimestamps;
   private transient HiveIntervalDayTime[] currentPartitionIntervalDayTimes;
-  private transient Object[] currentPartitionValues;
 
   private transient int[] bufferedColumnMap;
   private transient TypeInfo[] bufferedTypeInfos;
@@ -316,7 +317,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     currentPartitionDecimals = new HiveDecimalWritable[partitionKeyCount];
     currentPartitionTimestamps = new Timestamp[partitionKeyCount];
     currentPartitionIntervalDayTimes = new HiveIntervalDayTime[partitionKeyCount];
-    currentPartitionValues = new Object[partitionKeyCount];
 
     /*
      * Setup the overflow batch.
@@ -325,13 +325,8 @@ public class VectorPTFOperator extends Operator<PTFDesc>
         vOutContext.getScratchColumnTypeNames(), outputProjectionColumnMap, outputTypeInfos);
 
     evaluators = VectorPTFDesc.getEvaluators(vectorDesc, vectorPTFInfo);
-    int[] evalPartitionOnlyExprIndices = vectorPTFInfo.getEvalPartitionOnlyExprIndices();
-    for (int i = 0; i < evaluators.length; i++) {
-      VectorPTFEvaluatorBase evaluator = evaluators[i];
+    for (VectorPTFEvaluatorBase evaluator : evaluators) {
       evaluator.setNullsLast(HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
-      if (evalPartitionOnlyExprIndices[i] >= 0) {
-        evaluator.enablePartitionOnlyConstant();
-      }
     }
 
     streamingEvaluatorNums = VectorPTFDesc.getStreamingEvaluatorNums(evaluators);
@@ -438,33 +433,32 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private void initBufferedColumns() {
     /*
      * If we have more than one group key batch, we will buffer their contents.
-     * We don't buffer the partitioning column since it's a constant for the whole partition.
+     * Partition columns that are also ORDER BY columns are covered by (1). A partition-only
+     * column (PARTITION BY but not ORDER BY) is constant within the partition and is normally
+     * omitted from the buffer. We add it under (5) when a window evaluator's argument column
+     * (inputColumnNum) is such a partition-only column.
      * We buffer:
      * 1. order columns
      * 2. the non-key input columns
      * 3. any streaming columns that will already have their output values
      * 4. scratch columns holding the results of evaluator input expressions
+     * 5. partition-only columns referenced by an evaluator argument
      */
     final int[] bufferedScratchIndices = getEvaluatorInputScratchIndices();
+    final int[] partitionOnlyInputColumns = getPartitionOnlyEvaluatorColumns(bufferedScratchIndices);
     int bufferedColumnCount = orderColumnMap.length + nonKeyInputColumnMap.length
-        + streamingEvaluatorNums.length + bufferedScratchIndices.length;
+        + streamingEvaluatorNums.length + bufferedScratchIndices.length
+        + partitionOnlyInputColumns.length;
     this.bufferedColumnMap = new int[bufferedColumnCount];
     this.bufferedTypeInfos = new TypeInfo[bufferedColumnCount];
 
     int orderColumnCount = orderColumnMap.length;
     int nonKeyInputColumnCount = nonKeyInputColumnMap.length;
     int streamingEvaluatorCount = streamingEvaluatorNums.length;
-    /*
-     * In scenario 4. order column is not in keyInputColumnMap and is not referred in
-     * reducerBatchTypeInfos, so we need to figure the TypeInfo out in an alternative way
-     * (columnVectorTypeToTypeInfo). This is a workaround, maybe a compile-time solution would be
-     * better.
-     */
     for (int i = 0; i < orderColumnMap.length; i++) {
       final int columnNum = orderColumnMap[i];
       bufferedColumnMap[i] = columnNum;
-      bufferedTypeInfos[i] = reducerBatchTypeInfos.length <= columnNum
-        ? columnVectorTypeToTypeInfo(orderColumnVectorTypes[i]) : reducerBatchTypeInfos[columnNum];
+      bufferedTypeInfos[i] = typeInfoForBufferedColumn(columnNum, orderColumnVectorTypes[i]);
     }
 
     for (int i = 0; i < nonKeyInputColumnMap.length; i++) {
@@ -490,6 +484,52 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       bufferedTypeInfos[bufferedMapIndex] =
           TypeInfoUtils.getTypeInfoFromTypeString(vOutContext.getScratchColumnTypeNames()[scratchIndex]);
     }
+
+    int bufferedPrefixCount = orderColumnCount + nonKeyInputColumnCount + streamingEvaluatorCount
+        + bufferedScratchIndices.length;
+    for (int i = 0; i < partitionOnlyInputColumns.length; i++) {
+      final int columnNum = partitionOnlyInputColumns[i];
+      final int bufferedMapIndex = bufferedPrefixCount + i;
+      bufferedColumnMap[bufferedMapIndex] = columnNum;
+      int partitionIndex = -1;
+      for (int p = 0; p < partitionColumnMap.length; p++) {
+        if (partitionColumnMap[p] == columnNum) {
+          partitionIndex = p;
+          break;
+        }
+      }
+      bufferedTypeInfos[bufferedMapIndex] = typeInfoForBufferedColumn(columnNum,
+          partitionColumnVectorTypes[partitionIndex]);
+    }
+  }
+
+  /**
+   * Column numbers of partition-only inputs (in {@code partitionColumnMap} but not
+   * {@code orderColumnMap}) that an evaluator reads and that are not already buffered.
+   * Appending them lets every evaluator read the column from the packed batch.
+   */
+  private int[] getPartitionOnlyEvaluatorColumns(int[] bufferedScratchIndices) {
+    Set<Integer> orderColumns = IntStream.of(orderColumnMap).boxed().collect(Collectors.toSet());
+    Set<Integer> partitionOnlyColumns = IntStream.of(partitionColumnMap).boxed()
+        .filter(columnNum -> !orderColumns.contains(columnNum))
+        .collect(Collectors.toSet());
+    if (partitionOnlyColumns.isEmpty()) {
+      return new int[0];
+    }
+
+    Set<Integer> alreadyBuffered = Stream.of(
+        orderColumns.stream(),
+        IntStream.of(nonKeyInputColumnMap).boxed(),
+        IntStream.of(streamingEvaluatorNums).mapToObj(i -> outputProjectionColumnMap[i]),
+        IntStream.of(bufferedScratchIndices).mapToObj(i -> scratchColumnPositions[i]))
+        .flatMap(s -> s)
+        .collect(Collectors.toCollection(HashSet::new));
+
+    return Arrays.stream(evaluators)
+        .mapToInt(evaluator -> evaluator.inputColumnNum)
+        .filter(partitionOnlyColumns::contains)
+        .filter(alreadyBuffered::add)
+        .toArray();
   }
 
   /**
@@ -585,6 +625,18 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     keyColumnsWithoutOrderColumns.removeAll(orderColumns);
 
     return Ints.toArray(keyColumnsWithoutOrderColumns);
+  }
+
+  /**
+   * TypeInfo workaround for scenario 4 in
+   * {@link #determineKeyColumnsWithoutOrderColumns(int[], int[])}: the column is not in
+   * keyInputColumnMap and is not referred in reducerBatchTypeInfos, so TypeInfo is taken from
+   * {@link #columnVectorTypeToTypeInfo(Type)}. A compile-time solution would be better.
+   */
+  private TypeInfo typeInfoForBufferedColumn(int columnNum, Type columnVectorType) {
+    return reducerBatchTypeInfos.length <= columnNum
+        ? columnVectorTypeToTypeInfo(columnVectorType)
+        : reducerBatchTypeInfos[columnNum];
   }
 
   private static TypeInfo columnVectorTypeToTypeInfo(Type type) {
@@ -737,18 +789,15 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       currentPartitionIsNull[i] = isNull;
 
       if (isNull) {
-        currentPartitionValues[i] = null;
         continue;
       }
 
       switch (partitionColumnVectorTypes[i]) {
       case LONG:
         currentPartitionLongs[i] = ((LongColumnVector) colVector).vector[0];
-        currentPartitionValues[i] = currentPartitionLongs[i];
         break;
       case DOUBLE:
         currentPartitionDoubles[i] = ((DoubleColumnVector) colVector).vector[0];
-        currentPartitionValues[i] = currentPartitionDoubles[i];
         break;
       case BYTES:
         {
@@ -762,7 +811,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
             System.arraycopy(bytes, start, currentPartitionByteArrays[i], 0, length);
           }
           currentPartitionByteLengths[i] = length;
-          currentPartitionValues[i] = Arrays.copyOf(currentPartitionByteArrays[i], length);
         }
         break;
       case DECIMAL:
@@ -770,37 +818,22 @@ public class VectorPTFOperator extends Operator<PTFDesc>
           currentPartitionDecimals[i] = new HiveDecimalWritable();
         }
         currentPartitionDecimals[i].set(((DecimalColumnVector) colVector).vector[0]);
-        currentPartitionValues[i] = currentPartitionDecimals[i];
         break;
       case TIMESTAMP:
         if (currentPartitionTimestamps[i] == null) {
           currentPartitionTimestamps[i] = new Timestamp(0);
         }
         ((TimestampColumnVector) colVector).timestampUpdate(currentPartitionTimestamps[i], 0);
-        currentPartitionValues[i] = currentPartitionTimestamps[i];
         break;
       case INTERVAL_DAY_TIME:
         if (currentPartitionIntervalDayTimes[i] == null) {
           currentPartitionIntervalDayTimes[i] = new HiveIntervalDayTime();
         }
         ((IntervalDayTimeColumnVector) colVector).intervalDayTimeUpdate(currentPartitionIntervalDayTimes[i], 0);
-        currentPartitionValues[i] = currentPartitionIntervalDayTimes[i];
         break;
       default:
         throw new RuntimeException("Unexpected column vector type " + partitionColumnVectorTypes[i]);
       }
-    }
-    refreshEvaluatorPartitionOnlyConstants();
-  }
-
-  private void refreshEvaluatorPartitionOnlyConstants() {
-    int[] evalPartitionOnlyExprIndices = vectorPTFInfo.getEvalPartitionOnlyExprIndices();
-    for (int i = 0; i < evaluators.length; i++) {
-      int partitionIndex = evalPartitionOnlyExprIndices[i];
-      if (partitionIndex < 0) {
-        continue;
-      }
-      evaluators[i].updatePartitionOnlyConstant(currentPartitionValues[partitionIndex]);
     }
   }
 

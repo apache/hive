@@ -57,11 +57,6 @@ public class VectorPTFInfo {
   private int[] keyInputColumnMap;
   private int[] nonKeyInputColumnMap;
 
-  /**
-   * Per evaluator index: partition expr index for a partition-only column argument, or -1.
-   */
-  private int[] evalPartitionOnlyExprIndices;
-
   public VectorPTFInfo() {
 
     outputColumnMap = null;
@@ -79,8 +74,6 @@ public class VectorPTFInfo {
 
     keyInputColumnMap = null;
     nonKeyInputColumnMap = null;
-
-    evalPartitionOnlyExprIndices = null;
   }
 
   public int[] getOutputColumnMap() {
@@ -169,14 +162,5 @@ public class VectorPTFInfo {
 
   public void setNonKeyInputColumnMap(int[] nonKeyInputColumnMap) {
     this.nonKeyInputColumnMap = nonKeyInputColumnMap;
-  }
-
-  public int[] getEvalPartitionOnlyExprIndices() {
-    return evalPartitionOnlyExprIndices;
-  }
-
-  public void setEvalPartitionOnlyExprIndices(
-      int[] evalPartitionOnlyExprIndices) {
-    this.evalPartitionOnlyExprIndices = evalPartitionOnlyExprIndices;
   }
 }
