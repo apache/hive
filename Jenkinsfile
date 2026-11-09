@@ -31,8 +31,12 @@ properties([
     parameters([
         string(name: 'SPLIT', defaultValue: '22', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
+        string(name: 'IMAGE', defaultValue: '', description: 'precommit image to use instead of the default one (e.g. a candidate built from dev-support/docker/precommit)'),
     ])
 ])
+
+// Built from dev-support/docker/precommit/Dockerfile and pushed by .github/workflows/precommit-image.yml.
+this.precommitImage = 'apache/hive:precommit'
 
 this.prHead = null;
 def checkPrHead() {
@@ -72,12 +76,17 @@ def setPrLabel(String prLabel) {
 
 setPrLabel("PENDING");
 
+// Every mvn call uses the settings and the local repository under .m2 of the workspace (set up by buildHive);
+// saveWS/loadWS hand them over to the other stages. Maven 3.9+ reads MAVEN_ARGS.
 def executorNode(run) {
   hdbPodTemplate {
     timeout(time: 12, unit: 'HOURS') {
       node(POD_LABEL) {
-        container('hdb') {
-          run()
+        def m2 = "${env.WORKSPACE}/.m2"
+        withEnv(["MAVEN_ARGS=-s ${m2}/settings.xml -Dmaven.repo.local=${m2}/repository -B -Dtest.groups= -Pitests,qsplits,dist,errorProne"]) {
+          container('hdb') {
+            run()
+          }
         }
       }
     }
@@ -89,17 +98,10 @@ def buildHive(args) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
       sh '''#!/bin/bash -e
 set -x
-. /etc/profile.d/confs.sh
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx4G"
-export -n HIVE_CONF_DIR
-sw java 21 && . /etc/profile.d/java.sh
 mkdir -p .m2/repository
 cp $SETTINGS .m2/settings.xml
-OPTS=" -s $PWD/.m2/settings.xml -B -Dtest.groups= "
-OPTS+=" -Pitests,qsplits,dist,errorProne"
-OPTS+=" -Dmaven.repo.local=$PWD/.m2/repository"
-git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
@@ -123,7 +125,6 @@ def sonarAnalysis(args) {
       // Sonar scanner runs in a separate JVM so JAVA_OPTS (notably heap size)
       // must be passed via the appropriate environment variable
       sh """#!/bin/bash -e
-      sw java 21 && . /etc/profile.d/java.sh
       export SONAR_SCANNER_JAVA_OPTS=-Xmx8g
       """+mvnCmd
   }
@@ -132,7 +133,7 @@ def sonarAnalysis(args) {
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
-    containerTemplate(name: 'hdb', image: 'ayushtkn/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
+    containerTemplate(name: 'hdb', image: params.IMAGE?.trim() ?: precommitImage, ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1800m',
         resourceLimitCpu: '8000m',
@@ -200,7 +201,6 @@ def jobWrappers(closure) {
 def checkstyle() {
   sh '''#!/bin/bash -e
 set -x
-sw java 21 && . /etc/profile.d/java.sh
 export MAVEN_OPTS="-Xmx6G"
 mvn checkstyle:checkstyle -Pitests
 '''
@@ -312,16 +312,8 @@ fi
         stage('init-metastore') {
            withEnv(["dbType=$dbType"]) {
              sh '''#!/bin/bash -e
-             sw java 21 && . /etc/profile.d/java.sh
 set -x
-echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
-. /etc/profile.d/confs.sh
-sw hive-dev $PWD
-export DOCKER_NETWORK=host
-export DBNAME=metastore
-export HADOOP_CLIENT_OPTS="--add-opens java.base/java.net=ALL-UNNAMED"
-reinit_metastore $dbType
-time docker rm -f dev_$dbType || true
+dev-support/precommit-init-metastore.sh $dbType
 '''
           }
         }
@@ -428,7 +420,6 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
       }
       stage('Generate javadoc') {
           sh """#!/bin/bash -e
-          sw java 21 && . /etc/profile.d/java.sh
 mvn install javadoc:javadoc javadoc:aggregate -DskipTests -pl '!itests/hive-jmh,!itests/util'
 """
       }
