@@ -126,16 +126,6 @@ public class PartitionsIterable implements Iterable<List<Partition>> {
     };
   }
 
-  private PartitionsIterable(TableStore tableStore,
-                             TableName tableName,
-                             int batchSize,
-                             List<String> partNames) {
-    this.tableStore = Objects.requireNonNull(tableStore);
-    this.tableName = Objects.requireNonNull(tableName);
-    this.partNames = Objects.requireNonNull(partNames);
-    this.batchSize = batchSize < 0 ? 1000 : batchSize;
-  }
-
   public static PartitionsIterable create(RawStore ms, TableName tableName, int batchSize)
       throws MetaException {
     List<String> partNames = ms.listPartitionNames(
@@ -146,5 +136,15 @@ public class PartitionsIterable implements Iterable<List<Partition>> {
   public static PartitionsIterable create(TableStore tableStore, TableName tableName,
       int batchSize, List<String> partNames) throws MetaException {
     return new PartitionsIterable(tableStore, tableName, batchSize, partNames);
+  }
+
+  private PartitionsIterable(TableStore tableStore,
+                             TableName tableName,
+                             int batchSize,
+                             List<String> partNames) {
+    this.tableStore = Objects.requireNonNull(tableStore);
+    this.tableName = Objects.requireNonNull(tableName);
+    this.partNames = Objects.requireNonNull(partNames);
+    this.batchSize = batchSize <= 0 ? 1000 : batchSize;
   }
 }
