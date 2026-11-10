@@ -77,14 +77,16 @@ public class TestJdbcStorageHandlerAuthUri {
     assertEquals("jdbc:postgresql://host:5432/db/Country", uri.toString());
   }
 
+  /**
+   * Tables defined through hive.sql.query, such as the sys tables, have no hive.sql.table and keep their old URI.
+   */
   @Test
-  public void testMissingTablePropertyFailsFast() {
-    try {
-      authUri("jdbc:postgresql://host:5432/db", null, null);
-      org.junit.Assert.fail("Expected URISyntaxException");
-    } catch (URISyntaxException e) {
-      assertEquals("Missing required table property: hive.sql.table", e.getReason());
-    }
+  public void testMetastoreQueryTableWithoutTableProperty() throws Exception {
+    Map<String, String> params = new HashMap<>();
+    params.put("hive.sql.database.type", "METASTORE");
+    params.put("hive.sql.query", "SELECT 1");
+    URI uri = new JdbcStorageHandler().getURIForAuth(tableWith(params));
+    assertEquals("jdbc:metastore:///null", uri.toString());
   }
 
   @Test

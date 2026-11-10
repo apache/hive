@@ -19,7 +19,6 @@
 package org.apache.hive.storage.jdbc;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -114,24 +113,15 @@ public class JdbcStorageHandler implements HiveStorageHandler {
       tableProperties.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
     String hostUrl = DatabaseType.METASTORE == dbType ?
       "jdbc:metastore://" : tableProperties.get(Constants.JDBC_URL);
-    String tableIdentifier = tableProperties.get(Constants.JDBC_TABLE);
-    if (tableIdentifier == null) {
-      throw new URISyntaxException(hostUrl, "Missing required table property: " + Constants.JDBC_TABLE);
+    String tableName = tableProperties.get(Constants.JDBC_TABLE);
+    // Tables defined through hive.sql.query (e.g. the sys and information_schema tables) have no
+    // hive.sql.table, so their URI stays as before.
+    if (tableName != null) {
+      // Encode only the table name to keep URI construction valid; the URI is not used in the
+      // JDBC URL, but as an identifier stored in the HMS.
+      tableName = URLEncoder.encode(unquoteJdbcIdentifier(tableName), StandardCharsets.UTF_8);
     }
-    // Encode only the table name to keep URI construction valid; the URI is not used in the
-    // JDBC URL, but as an identifier stored in the HMS.
-    String tableName = encodeIdentifierForAuth(tableIdentifier);
-    return buildAuthorizationUri(hostUrl, tableName);
-  }
-
-  private static String encodeIdentifierForAuth(String identifier) {
-    String physical = unquoteJdbcIdentifier(identifier);
-    return URLEncoder.encode(physical, StandardCharsets.UTF_8);
-  }
-
-  private static URI buildAuthorizationUri(String hostUrl, String tableName) throws URISyntaxException {
-    String separator = hostUrl.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR;
-    return new URI(hostUrl + separator + tableName);
+    return new URI(hostUrl + "/" + tableName);
   }
 
   @Override
