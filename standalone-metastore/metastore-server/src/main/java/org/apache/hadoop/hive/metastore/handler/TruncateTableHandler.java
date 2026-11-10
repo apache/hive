@@ -130,11 +130,6 @@ public class TruncateTableHandler
       needCmRecycle = ReplChangeManager.shouldEnableCm(db, table);
     }
 
-    if (skipDataDeletion && !isTxnTable) {
-      throw new MetaException("Cannot truncate the table as request configured to skip deleting data" +
-          " and the target isn't a transactional table");
-    }
-
     boolean success;
     if (isPartitioned) {
       success = truncatePartitions(isSkipTrash, needCmRecycle, skipDataDeletion);
@@ -145,24 +140,23 @@ public class TruncateTableHandler
     return new TruncateTableResult(success);
   }
 
-  private PartitionsIterable newPartitionBatches(int batchSize) throws MetaException {
-    TableName qualifiedTable = new TableName(catName, dbName, request.getTableName());
-    if (reqPartNames != null) {
-      return PartitionsIterable.create(
-          ms.unwrap(TableStore.class), qualifiedTable, batchSize, reqPartNames);
-    }
-    return PartitionsIterable.create(ms, qualifiedTable, batchSize);
-  }
-
   private boolean truncatePartitions(boolean isSkipTrash, boolean needCmRecycle, boolean skipDataDeletion)
       throws TException, IOException {
     if (reqPartNames != null && reqPartNames.isEmpty()) {
       return true;
     }
+
     int batchSize = MetastoreConf.getIntVar(handler.getConf(),
         MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-    PartitionsIterable partitionBatches = newPartitionBatches(batchSize);
-
+    TableName qualifiedTable = new TableName(catName, dbName, request.getTableName());
+    PartitionsIterable partitionBatches;
+    if (reqPartNames != null) {
+      partitionBatches = PartitionsIterable.create(
+          ms.unwrap(TableStore.class), qualifiedTable, batchSize, reqPartNames);
+    } else {
+      partitionBatches = PartitionsIterable.create(ms, qualifiedTable, batchSize);
+    }
+    
     boolean success = true;
     for (List<Partition> partitions : partitionBatches) {
       if (partitions.isEmpty()) {
