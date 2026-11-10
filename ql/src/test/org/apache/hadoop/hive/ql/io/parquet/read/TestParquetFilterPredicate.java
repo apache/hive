@@ -741,38 +741,6 @@ public class TestParquetFilterPredicate {
     assertEquals(expected, p.toString());
   }
 
-  /** A runtime value (a DynamicValue) that is not available when the reader builds its filter. */
-  private static final LiteralDelegate UNRESOLVED = new LiteralDelegate() {
-    @Override
-    public Object getLiteral() {
-      throw new NoDynamicValuesException("not available");
-    }
-
-    @Override
-    public String getId() {
-      return "unresolved";
-    }
-
-    @Override
-    public void setConf(Configuration conf) {
-    }
-
-    @Override
-    public Configuration getConf() {
-      return null;
-    }
-  };
-
-  private static FilterPredicate toFilterPredicateOverAbc(SearchArgument sarg) {
-    MessageType schema = MessageTypeParser.parseMessageType(
-        "message test { required int32 a; required int32 b; required int32 c; }");
-    Map<String, TypeInfo> columnTypes = new HashMap<>();
-    for (String column : new String[] {"a", "b", "c"}) {
-      columnTypes.put(column, TypeInfoFactory.getPrimitiveTypeInfo("int"));
-    }
-    return ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
-  }
-
   /** A single-literal leaf whose runtime value is not available is dropped; the rest of the conjunction filters. */
   @Test
   public void testUnresolvedSingleLiteralDropsOnlyItsLeaf() {
@@ -797,6 +765,32 @@ public class TestParquetFilterPredicate {
     assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
   }
 
+  /** A BETWEEN leaf with only one of its runtime bounds resolved to a value is dropped. */
+  @Test
+  public void testBetweenWithOneNullRuntimeBoundDropsOnlyItsLeaf() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
+        .between("c", PredicateLeaf.Type.LONG, resolvedTo(null), resolvedTo(10L))
+        .end()
+        .build();
+    assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
+  }
+
+  /** A negated unresolved leaf filters nothing either: the search argument pushes NOT down to the leaves. */
+  @Test
+  public void testNegatedUnresolvedLeafDropsOnlyItsLeaf() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
+        .startNot()
+        .equals("b", PredicateLeaf.Type.LONG, UNRESOLVED)
+        .end()
+        .end()
+        .build();
+    assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
+  }
+
   /** A disjunction containing an unresolved leaf filters nothing. */
   @Test
   public void testUnresolvedLeafInDisjunctionFiltersNothing() {
@@ -807,5 +801,61 @@ public class TestParquetFilterPredicate {
         .end()
         .build();
     assertNull(toFilterPredicateOverAbc(sarg));
+  }
+
+  /** A runtime value (a DynamicValue) that is not available when the reader builds its filter. */
+  private static final LiteralDelegate UNRESOLVED = new LiteralDelegate() {
+    @Override
+    public Object getLiteral() {
+      throw new NoDynamicValuesException("not available");
+    }
+
+    @Override
+    public String getId() {
+      return "unresolved";
+    }
+
+    @Override
+    public void setConf(Configuration conf) {
+    }
+
+    @Override
+    public Configuration getConf() {
+      return null;
+    }
+  };
+
+  /** A runtime value (a DynamicValue) that resolved to the given value. */
+  private static LiteralDelegate resolvedTo(Object value) {
+    return new LiteralDelegate() {
+      @Override
+      public Object getLiteral() {
+        return value;
+      }
+
+      @Override
+      public String getId() {
+        return "resolved";
+      }
+
+      @Override
+      public void setConf(Configuration conf) {
+      }
+
+      @Override
+      public Configuration getConf() {
+        return null;
+      }
+    };
+  }
+
+  private static FilterPredicate toFilterPredicateOverAbc(SearchArgument sarg) {
+    MessageType schema = MessageTypeParser.parseMessageType(
+        "message test { required int32 a; required int32 b; required int32 c; }");
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    for (String column : new String[] {"a", "b", "c"}) {
+      columnTypes.put(column, TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    }
+    return ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
   }
 }

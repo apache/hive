@@ -133,8 +133,10 @@ public class ParquetFilterPredicateConverter {
 
       if (isMultiLiteralsOperator(leaf.getOperator())) {
         List<Object> literals = leaf.getLiteralList();
-        // empty when the runtime values (DynamicValue) of the leaf are not available
-        if (literals.isEmpty()) {
+        // getLiteralList() drops null literals and returns an empty list when the runtime values (DynamicValue) of the
+        // leaf are not available; a BETWEEN without both bounds cannot filter either
+        if (literals.isEmpty() || (leaf.getOperator() == PredicateLeaf.Operator.BETWEEN && literals.size() != 2)) {
+          LOG.debug("Leaf {} has no usable literals {}, it filters nothing", leaf, literals);
           return null;
         }
         return builder.buildPredicate(leaf.getOperator(),
@@ -149,7 +151,7 @@ public class ParquetFilterPredicateConverter {
                 columnType);
       }
     } catch (NoDynamicValuesException e) {
-      // the runtime value of the leaf is not available: the leaf filters nothing
+      LOG.debug("Runtime value of leaf {} is not available, it filters nothing", leaf, e);
       return null;
     } catch (Exception e) {
       LOG.error("fail to build predicate filter leaf with errors" + e, e);
