@@ -763,37 +763,49 @@ public class TestParquetFilterPredicate {
     }
   };
 
-  /**
-   * A leaf whose runtime value is not available filters nothing: the rest of a conjunction still filters, a
-   * disjunction with it does not.
-   */
-  @Test
-  public void testUnresolvedRuntimeValueDropsOnlyItsLeaf() {
+  private static FilterPredicate toFilterPredicateOverAbc(SearchArgument sarg) {
     MessageType schema = MessageTypeParser.parseMessageType(
         "message test { required int32 a; required int32 b; required int32 c; }");
     Map<String, TypeInfo> columnTypes = new HashMap<>();
     for (String column : new String[] {"a", "b", "c"}) {
       columnTypes.put(column, TypeInfoFactory.getPrimitiveTypeInfo("int"));
     }
-    FilterPredicate onlyA = ParquetFilterPredicateConverter.toFilterPredicate(
-        SearchArgumentFactory.newBuilder().lessThan("a", PredicateLeaf.Type.LONG, 5L).build(), schema, columnTypes);
+    return ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
+  }
 
-    SearchArgument and = SearchArgumentFactory.newBuilder()
+  /** A single-literal leaf whose runtime value is not available is dropped; the rest of the conjunction filters. */
+  @Test
+  public void testUnresolvedSingleLiteralDropsOnlyItsLeaf() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
         .startAnd()
         .lessThan("a", PredicateLeaf.Type.LONG, 5L)
         .equals("b", PredicateLeaf.Type.LONG, UNRESOLVED)
+        .end()
+        .build();
+    assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
+  }
+
+  /** A BETWEEN leaf whose runtime values are not available is dropped; the rest of the conjunction filters. */
+  @Test
+  public void testUnresolvedBetweenDropsOnlyItsLeaf() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
         .between("c", PredicateLeaf.Type.LONG, UNRESOLVED, UNRESOLVED)
         .end()
         .build();
-    assertEquals(String.valueOf(onlyA),
-        String.valueOf(ParquetFilterPredicateConverter.toFilterPredicate(and, schema, columnTypes)));
+    assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
+  }
 
-    SearchArgument or = SearchArgumentFactory.newBuilder()
+  /** A disjunction containing an unresolved leaf filters nothing. */
+  @Test
+  public void testUnresolvedLeafInDisjunctionFiltersNothing() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
         .startOr()
         .lessThan("a", PredicateLeaf.Type.LONG, 5L)
         .between("c", PredicateLeaf.Type.LONG, UNRESOLVED, UNRESOLVED)
         .end()
         .build();
-    assertNull(ParquetFilterPredicateConverter.toFilterPredicate(or, schema, columnTypes));
+    assertNull(toFilterPredicateOverAbc(sarg));
   }
 }
