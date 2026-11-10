@@ -81,6 +81,7 @@ public class TruncateTableHandler
   private List<String> reqPartNames;
   private Table newTable;
   private boolean isPartitioned;
+  private boolean isTxnTable;
 
   TruncateTableHandler(IHMSHandler handler, TruncateTableRequest request) {
     super(handler, false, request);
@@ -111,6 +112,7 @@ public class TruncateTableHandler
       }
       ((HMSHandler) handler).firePreEvent(new PreAlterTableEvent(table, newTable, handler));
     }
+    isTxnTable = TxnUtils.isTransactionalTable(table);
   }
 
   @Override
@@ -122,24 +124,22 @@ public class TruncateTableHandler
         .map(Boolean::parseBoolean)
         .orElse(false);
 
+    if (!skipDataDeletion) {
+      isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
+      Database db = handler.get_database_core(catName, dbName);
+      needCmRecycle = ReplChangeManager.shouldEnableCm(db, table);
+    }
+
+    if (skipDataDeletion && !isTxnTable) {
+      throw new MetaException("Cannot truncate the table as request configured to skip deleting data" +
+          " and the target isn't a transactional table");
+    }
+
     boolean success;
     if (isPartitioned) {
-      success = truncatePartitionedTable(isSkipTrash, needCmRecycle, skipDataDeletion);
+      success = truncatePartitions(isSkipTrash, needCmRecycle, skipDataDeletion);
     } else {
-      if (TxnUtils.isTransactionalTable(table) || !skipDataDeletion) {
-        if (!skipDataDeletion) {
-          isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
-          Database db = handler.get_database_core(catName, dbName);
-          needCmRecycle = ReplChangeManager.shouldEnableCm(db, table);
-        }
-        Path location = new Path(table.getSd().getLocation());
-        if (!skipDataDeletion) {
-          truncateDataFiles(location, isSkipTrash, needCmRecycle);
-        } else {
-          addTruncateBaseFile(location, request.getWriteId(),
-              handler.getConf(), AcidMetaDataFile.DataFormat.TRUNCATED);
-        }
-      }
+      truncateLocation(new Path(table.getSd().getLocation()), isSkipTrash, needCmRecycle, skipDataDeletion);
       success = alterTableStatsForTruncate();
     }
     return new TruncateTableResult(success);
@@ -154,7 +154,7 @@ public class TruncateTableHandler
     return PartitionsIterable.create(ms, qualifiedTable, batchSize);
   }
 
-  private boolean truncatePartitionedTable(boolean isSkipTrash, boolean needCmRecycle, boolean skipDataDeletion)
+  private boolean truncatePartitions(boolean isSkipTrash, boolean needCmRecycle, boolean skipDataDeletion)
       throws TException, IOException {
     if (reqPartNames != null && reqPartNames.isEmpty()) {
       return true;
@@ -163,22 +163,16 @@ public class TruncateTableHandler
         MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     PartitionsIterable partitionBatches = newPartitionBatches(batchSize);
 
-    boolean truncatePartitionData = TxnUtils.isTransactionalTable(table) || !skipDataDeletion;
-    if (truncatePartitionData && !skipDataDeletion) {
-      isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
-      Database db = handler.get_database_core(catName, dbName);
-      needCmRecycle = ReplChangeManager.shouldEnableCm(db, table);
-    }
-
     boolean success = true;
     for (List<Partition> partitions : partitionBatches) {
       if (partitions.isEmpty()) {
         continue;
       }
       EnvironmentContext environmentContext = new EnvironmentContext();
-      List<Partition> newPartitions = buildTruncatedPartitions(partitions, environmentContext);
-      if (truncatePartitionData) {
-        truncatePartitions(partitions, isSkipTrash, needCmRecycle, skipDataDeletion);
+      List<Partition> newPartitions = buildAndCheckPartitions(partitions, environmentContext);
+      for (Partition partition : partitions) {
+        Path location = new Path(partition.getSd().getLocation());
+        truncateLocation(location, isSkipTrash, needCmRecycle, skipDataDeletion);
       }
       if (!alterPartitions(partitions, newPartitions, environmentContext)) {
         success = false;
@@ -188,20 +182,19 @@ public class TruncateTableHandler
     return success;
   }
 
-  private void truncatePartitions(List<Partition> partitions, boolean isSkipTrash,
+  private void truncateLocation(Path location, boolean isSkipTrash,
       boolean needCmRecycle, boolean skipDataDeletion) throws IOException, MetaException {
-    for (Partition partition : partitions) {
-      Path location = new Path(partition.getSd().getLocation());
-      if (!skipDataDeletion) {
-        truncateDataFiles(location, isSkipTrash, needCmRecycle);
-      } else {
-        addTruncateBaseFile(location, request.getWriteId(),
-            handler.getConf(), AcidMetaDataFile.DataFormat.TRUNCATED);
-      }
+    if (!skipDataDeletion) {
+      truncateDataFiles(location, isSkipTrash, needCmRecycle);
+    } else if (isTxnTable) {
+      // For Acid tables we don't need to delete the old files, only write an empty baseDir.
+      // Compaction and cleaner will take care of the rest
+      addTruncateBaseFile(location, request.getWriteId(),
+          handler.getConf(), AcidMetaDataFile.DataFormat.TRUNCATED);
     }
   }
 
-  private List<Partition> buildTruncatedPartitions(List<Partition> partitions,
+  private List<Partition> buildAndCheckPartitions(List<Partition> partitions,
       EnvironmentContext environmentContext) throws TException {
     List<Partition> newPartitions = new ArrayList<>(partitions.size());
     for (Partition partition : partitions) {

@@ -226,19 +226,4 @@ public class TestPartitionsIterable {
     Assert.assertEquals(2, batches.size());
     verify(rawStore).listPartitionNames("hive", "default", "t", (short) -1);
   }
-
-  @Test
-  public void skipColumnSchemaForPartitionForwarded() throws Exception {
-    TableStore store = mock(TableStore.class);
-    when(store.getPartitionsByNames(eq(TABLE), any(GetPartitionsArgs.class)))
-        .thenReturn(Collections.singletonList(mkPart("p0")));
-
-    PartitionsIterable iterable = PartitionsIterable.create(store, TABLE, 10,
-        Collections.singletonList("p0")).withSkipColumnSchemaForPartition(true);
-    toBatches(iterable);
-
-    verify(store).getPartitionsByNames(eq(TABLE), org.mockito.ArgumentMatchers.argThat(
-        args -> args.isSkipColumnSchemaForPartition() && args.getPartNames().equals(
-            Collections.singletonList("p0"))));
-  }
 }

@@ -28,12 +28,8 @@ import java.util.Objects;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.RawStore;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 
@@ -53,8 +49,6 @@ public class PartitionsIterable implements Iterable<List<Partition>> {
   private final int batchSize;
   private final TableName tableName;
   private final List<String> partNames;
-  private GetPartitionsRequest request;
-  private Boolean skipColumnSchemaForPartition;
 
   @Override
   public Iterator<List<Partition>> iterator() {
@@ -64,7 +58,6 @@ public class PartitionsIterable implements Iterable<List<Partition>> {
 
     return new Iterator<>() {
       private final Iterator<String> partitionNamesIter = partNames.iterator();
-      private Table table;
       private List<Partition> leftParts;
 
       @Override
@@ -116,24 +109,9 @@ public class PartitionsIterable implements Iterable<List<Partition>> {
 
       private List<Partition> fetchBatch(List<String> nameBatch) {
         try {
-          List<Partition> partitions;
-          if (request != null) {
-            if (table == null) {
-              table = tableStore.getTable(tableName, null, -1);
-            }
-            GetPartitionsFilterSpec filterSpec = new GetPartitionsFilterSpec();
-            filterSpec.setFilterMode(PartitionFilterMode.BY_NAMES);
-            filterSpec.setFilters(nameBatch);
-            partitions = tableStore.getPartitionSpecsByFilterAndProjection(
-                table, request.getProjectionSpec(), filterSpec);
-          } else {
-            GetPartitionsArgs.GetPartitionsArgsBuilder argsBuilder =
-                new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(nameBatch);
-            if (skipColumnSchemaForPartition != null) {
-              argsBuilder.skipColumnSchemaForPartition(skipColumnSchemaForPartition);
-            }
-            partitions = tableStore.getPartitionsByNames(tableName, argsBuilder.build());
-          }
+          GetPartitionsArgs.GetPartitionsArgsBuilder argsBuilder =
+              new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(nameBatch);
+          List<Partition> partitions = tableStore.getPartitionsByNames(tableName, argsBuilder.build());
           return partitions == null ? Collections.emptyList() : partitions;
         } catch (Exception e) {
           throw new RuntimeException(e);
@@ -156,16 +134,6 @@ public class PartitionsIterable implements Iterable<List<Partition>> {
     this.tableName = Objects.requireNonNull(tableName);
     this.partNames = Objects.requireNonNull(partNames);
     this.batchSize = batchSize < 0 ? 1000 : batchSize;
-  }
-
-  public PartitionsIterable withProjectSpec(GetPartitionsRequest request) {
-    this.request = request;
-    return this;
-  }
-
-  public PartitionsIterable withSkipColumnSchemaForPartition(boolean skipColumnSchemaForPartition) {
-    this.skipColumnSchemaForPartition = skipColumnSchemaForPartition;
-    return this;
   }
 
   public static PartitionsIterable create(RawStore ms, TableName tableName, int batchSize)
