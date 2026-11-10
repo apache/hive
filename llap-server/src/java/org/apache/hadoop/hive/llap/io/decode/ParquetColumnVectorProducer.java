@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
@@ -63,7 +66,7 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
   public ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
       Includes includes, SearchArgument sarg, QueryFragmentCounters counters,
       SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
-      Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) {
+      Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) throws IOException {
     // Before the footer read, so a decline costs no IO. This pipeline cannot fill a row-lineage
     // slot, and an unfilled one is not a visible failure: the -1 it leaves is the sentinel
     // HiveBatchIterator reads as "synthesize the id from the manifest", so the query would answer
@@ -97,6 +100,17 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
       edc.init(reader, reader);
       return edc;
     } catch (IOException e) {
+      if (isInterrupt(e)) {
+        // Not a split this pipeline cannot serve: the fragment is being killed, or the daemon shut
+        // down. Falling back would only restart the same read on the stock reader, on a thread that
+        // should be unwinding. Rethrown as is, so the interrupt stays the root cause that
+        // HiveInputFormat's limit-reached check looks for, with the interrupt flag restored in case
+        // whoever wrapped it consumed it.
+        LlapIoImpl.LOG.info("Parquet native cache: interrupted while reading the footer of {}, "
+            + "not falling back to normal reader", split.getPath());
+        Thread.currentThread().interrupt();
+        throw e;
+      }
       // WARN with the throwable, unlike the decline above: the query still answers, but reading the
       // footer failed and nobody downstream will report it, so the stack is the only record of why
       // this split lost its vectored reads and its IO counters. e.toString() dropped it.
@@ -104,6 +118,25 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
           split.getPath(), e);
       return null;
     }
+  }
+
+  /**
+   * Whether a failed footer read is the thread being interrupted rather than the file failing to
+   * read. The cause chain is walked because the footer cache and Hadoop wrap what they catch. A
+   * {@link SocketTimeoutException} is an {@link InterruptedIOException} too, but it is a timeout,
+   * so it falls back like any other IO failure.
+   */
+  private static boolean isInterrupt(IOException e) {
+    if (Thread.currentThread().isInterrupted()) {
+      return true;
+    }
+    for (Throwable t = e; t != null; t = t.getCause() == t ? null : t.getCause()) {
+      if (t instanceof InterruptedException || t instanceof ClosedByInterruptException
+          || (t instanceof InterruptedIOException && !(t instanceof SocketTimeoutException))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
