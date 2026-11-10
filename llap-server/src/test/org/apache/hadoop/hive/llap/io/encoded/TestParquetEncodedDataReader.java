@@ -24,10 +24,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,8 +57,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileRange;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.fs.StreamCapabilities;
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.Allocator.BufferObjectFactory;
@@ -1258,13 +1266,105 @@ public class TestParquetEncodedDataReader {
     assertNotNull(readPipelineFor(jobConf(COLUMNS, TYPES, 0, 3)));
   }
 
+  /**
+   * An interrupted footer read fails the split instead of falling back: the fragment is being
+   * killed, and the fallback would only restart the read on the stock reader. The caller gets the
+   * very exception that was thrown, so the interrupt is still its root cause for HiveInputFormat's
+   * limit-reached check, and the interrupt flag is set again for a wrapper that consumed it.
+   */
+  @Test
+  public void testInterruptedFooterReadIsNotAFallback() throws Exception {
+    IOException[] interrupts = {
+        new InterruptedIOException("interrupted"),
+        new ClosedByInterruptException(),
+        new IOException("wrapped", new InterruptedException("interrupted"))};
+    for (IOException interrupt : interrupts) {
+      try {
+        IOException thrown = assertThrows("expected no fallback for " + interrupt, IOException.class,
+            () -> readPipelineWithFailedFooter(interrupt));
+        assertSame(interrupt, thrown);
+        assertTrue("interrupt flag not restored for " + interrupt, Thread.currentThread().isInterrupted());
+      } finally {
+        Thread.interrupted();
+      }
+    }
+  }
+
+  /** Whatever the footer read fails with, a thread that has been interrupted does not fall back. */
+  @Test
+  public void testFailedFooterReadOnAnInterruptedThreadIsNotAFallback() throws Exception {
+    IOException failure = new IOException("failed");
+    Thread.currentThread().interrupt();
+    try {
+      assertSame(failure, assertThrows(IOException.class, () -> readPipelineWithFailedFooter(failure)));
+      assertTrue(Thread.currentThread().isInterrupted());
+    } finally {
+      Thread.interrupted();
+    }
+  }
+
+  /**
+   * Control for the two above: a footer read that fails on its own still falls back, a socket
+   * timeout included, though it is an InterruptedIOException.
+   */
+  @Test
+  public void testFailedFooterReadFallsBack() throws Exception {
+    for (IOException failure : new IOException[] {
+        new IOException("failed"), new SocketTimeoutException("timed out")}) {
+      assertNull("expected a fallback for " + failure, readPipelineWithFailedFooter(failure));
+      assertFalse(Thread.currentThread().isInterrupted());
+    }
+  }
+
+  /** Runs the producer on a split whose footer read throws {@code failure}. */
+  private ReadPipeline readPipelineWithFailedFooter(IOException failure) throws Exception {
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 3);
+    job.setClass("fs." + FailingStatusFileSystem.SCHEME + ".impl", FailingStatusFileSystem.class,
+        FileSystem.class);
+    job.setBoolean("fs." + FailingStatusFileSystem.SCHEME + ".impl.disable.cache", true);
+    FailingStatusFileSystem.failure = failure;
+    try {
+      Path failing = new Path(FailingStatusFileSystem.SCHEME, null, file.toUri().getPath());
+      return readPipelineFor(job, new FileSplit(failing, 0, fileLength, (String[]) null));
+    } finally {
+      FailingStatusFileSystem.failure = null;
+    }
+  }
+
   /** Runs the producer's split-admission decision; null means the split was declined. */
-  private ReadPipeline readPipelineFor(JobConf job) {
+  private ReadPipeline readPipelineFor(JobConf job) throws IOException {
+    return readPipelineFor(job, wholeFile());
+  }
+
+  private ReadPipeline readPipelineFor(JobConf job, FileSplit split) throws IOException {
     ParquetColumnVectorProducer producer =
         new ParquetColumnVectorProducer(ledger, ledger, daemonConf, CACHE_METRICS, IO_METRICS);
-    return producer.createReadPipeline(new CapturingConsumer(), wholeFile(),
+    return producer.createReadPipeline(new CapturingConsumer(), split,
         includes(ColumnProjectionUtils.getReadColumnIDs(job)), null,
         new QueryFragmentCounters(job, new TezCounters()), null, null, null, null, job, null);
+  }
+
+  /**
+   * A local filesystem whose getFileStatus throws {@link #failure}. The footer read starts with it,
+   * for the file key and for the length alike, so this fails the footer read before any byte is read.
+   */
+  public static final class FailingStatusFileSystem extends RawLocalFileSystem {
+    static final String SCHEME = "failingstatus";
+    static volatile IOException failure;
+
+    @Override
+    public URI getUri() {
+      return URI.create(SCHEME + ":///");
+    }
+
+    @Override
+    public FileStatus getFileStatus(Path path) throws IOException {
+      IOException toThrow = failure;
+      if (toThrow != null) {
+        throw toThrow;
+      }
+      return super.getFileStatus(path);
+    }
   }
 
   /**
