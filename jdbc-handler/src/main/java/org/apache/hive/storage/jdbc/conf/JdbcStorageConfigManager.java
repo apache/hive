@@ -72,8 +72,13 @@ public class JdbcStorageConfigManager {
 
   public static void copyConfigurationToJob(Properties props, Map<String, String> jobProps, String dbName)
     throws HiveException, IOException {
+    copyConfigurationToJob(props, jobProps, dbName, null);
+  }
+
+  public static void copyConfigurationToJob(Properties props, Map<String, String> jobProps, String dbName,
+      Configuration runtimeConf) throws HiveException, IOException {
     checkRequiredPropertiesAreDefined(props);
-    resolveMetadata(props, dbName);
+    resolveMetadata(props, dbName, runtimeConf);
     for (Entry<Object, Object> entry : props.entrySet()) {
       String key = String.valueOf(entry.getKey());
       if (!key.equals(CONFIG_PWD) &&
@@ -127,13 +132,18 @@ public class JdbcStorageConfigManager {
 
   public static void copySecretsToJob(Properties props, Map<String, String> jobSecrets)
       throws HiveException, IOException {
-    copySecretsToJob(props, jobSecrets, null);
+    copySecretsToJob(props, jobSecrets, null, null);
   }
 
   public static void copySecretsToJob(Properties props, Map<String, String> jobSecrets, String dbName)
       throws HiveException, IOException {
+    copySecretsToJob(props, jobSecrets, dbName, null);
+  }
+
+  public static void copySecretsToJob(Properties props, Map<String, String> jobSecrets, String dbName,
+      Configuration runtimeConf) throws HiveException, IOException {
     checkRequiredPropertiesAreDefined(props);
-    resolveMetadata(props, dbName);
+    resolveMetadata(props, dbName, runtimeConf);
     String passwd = getPasswordFromProperties(props, Function.identity());
     if (passwd != null) {
       jobSecrets.put(CONFIG_PWD, passwd);
@@ -147,8 +157,13 @@ public class JdbcStorageConfigManager {
 
   public static Configuration convertPropertiesToConfiguration(Properties props, String dbName)
     throws HiveException, IOException {
+    return convertPropertiesToConfiguration(props, dbName, null);
+  }
+
+  public static Configuration convertPropertiesToConfiguration(Properties props, String dbName,
+      Configuration runtimeConf) throws HiveException, IOException {
     checkRequiredPropertiesAreDefined(props);
-    resolveMetadata(props, dbName);
+    resolveMetadata(props, dbName, runtimeConf);
     Configuration conf = new Configuration();
 
     for (Entry<Object, Object> entry : props.entrySet()) {
@@ -189,14 +204,15 @@ public class JdbcStorageConfigManager {
     return ((value == null) || (value.trim().isEmpty()));
   }
 
-  private static void resolveMetadata(Properties props, String dbName) throws HiveException, IOException {
+  private static void resolveMetadata(Properties props, String dbName, Configuration runtimeConf)
+      throws HiveException, IOException {
     DatabaseType dbType = DatabaseType.valueOf(
       props.getProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
 
     LOGGER.debug("Resolving db type: {}", dbType.toString());
 
     if (dbType == DatabaseType.METASTORE) {
-      HiveConf hconf = Hive.get().getConf();
+      HiveConf hconf = toHiveConf(runtimeConf);
       assertMetastoreDatabaseTypeAllowed(props, dbName, hconf);
       props.setProperty(JdbcStorageConfig.JDBC_URL.getPropertyName(),
           getMetastoreConnectionURL(hconf));
@@ -218,7 +234,21 @@ public class JdbcStorageConfigManager {
   }
 
   static void assertMetastoreDatabaseTypeAllowed(Properties props, String dbName) throws HiveException {
-    assertMetastoreDatabaseTypeAllowed(props, dbName, Hive.get().getConf());
+    assertMetastoreDatabaseTypeAllowed(props, dbName, toHiveConf(null));
+  }
+
+  private static HiveConf toHiveConf(Configuration runtimeConf) throws HiveException {
+    if (runtimeConf instanceof HiveConf) {
+      return (HiveConf) runtimeConf;
+    }
+    if (runtimeConf != null) {
+      HiveConf conf = new HiveConf(JdbcStorageConfigManager.class);
+      for (java.util.Map.Entry<String, String> entry : runtimeConf) {
+        conf.set(entry.getKey(), entry.getValue());
+      }
+      return conf;
+    }
+    return Hive.get().getConf();
   }
 
   static void assertMetastoreDatabaseTypeAllowed(Properties props, String dbName, HiveConf hconf)

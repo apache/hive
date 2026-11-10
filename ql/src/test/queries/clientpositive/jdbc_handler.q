@@ -169,3 +169,5 @@ INSERT INTO insert_to_ext_derby_table VALUES(false, 10, 100, 2.63, 999.9999, '20
 
 INSERT INTO insert_to_ext_derby_table select * from test_insert_tbl;
 select * from insert_to_ext_derby_table;
+
+SET hive.storage.jdbc.allow.metastore.database.type=false;

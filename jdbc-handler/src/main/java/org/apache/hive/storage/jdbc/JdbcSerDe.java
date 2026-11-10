@@ -81,7 +81,7 @@ public class JdbcSerDe extends AbstractSerDe {
     try {
       if (properties.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
         Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(properties,
-            properties.getProperty(hive_metastoreConstants.META_TABLE_DB));
+            properties.getProperty(hive_metastoreConstants.META_TABLE_DB), configuration);
 
         dbAccessor = DatabaseAccessorFactory.getAccessor(tableConfig);
         // Extract column names and types from properties
