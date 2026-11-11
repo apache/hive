@@ -36,7 +36,6 @@ RUN rm -rf /opt/java/openjdk/jmods \
 
 FROM debian:${DEBIAN_VERSION}-slim AS downloads
 ARG MAVEN_VERSION=3.9.16
-ARG HADOOP_VERSION=3.4.3
 ARG APACHE_ARCHIVE=https://archive.apache.org/dist
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl \
@@ -57,31 +56,11 @@ RUN fetch "${APACHE_ARCHIVE}/maven/maven-3/${MAVEN_VERSION}/binaries/apache-mave
     && tar -xzf apache-maven-${MAVEN_VERSION}-bin.tar.gz -C /opt/maven --strip-components=1 \
     && rm apache-maven-${MAVEN_VERSION}-bin.tar.gz
 
-# Hadoop is only needed by bin/schematool of the Hive binary distribution in the init@<db>
-# stages, so keep just the client side of hadoop-common/hdfs/mapreduce/yarn and the launcher scripts.
-RUN fetch "${APACHE_ARCHIVE}/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz" \
-    && mkdir /opt/hadoop \
-    && tar -xzf hadoop-${HADOOP_VERSION}.tar.gz -C /opt/hadoop --strip-components=1 --wildcards \
-         "hadoop-${HADOOP_VERSION}/LICENSE*" \
-         "hadoop-${HADOOP_VERSION}/NOTICE*" \
-         "hadoop-${HADOOP_VERSION}/licenses-binary" \
-         "hadoop-${HADOOP_VERSION}/bin/hadoop" \
-         "hadoop-${HADOOP_VERSION}/libexec/*.sh" \
-         "hadoop-${HADOOP_VERSION}/etc/hadoop/core-site.xml" \
-         "hadoop-${HADOOP_VERSION}/etc/hadoop/hadoop-env.sh" \
-         "hadoop-${HADOOP_VERSION}/etc/hadoop/log4j.properties" \
-         "hadoop-${HADOOP_VERSION}/share/hadoop/common/hadoop-common-${HADOOP_VERSION}.jar" \
-         "hadoop-${HADOOP_VERSION}/share/hadoop/common/lib" \
-         "hadoop-${HADOOP_VERSION}/share/hadoop/hdfs/hadoop-hdfs-${HADOOP_VERSION}.jar" \
-         "hadoop-${HADOOP_VERSION}/share/hadoop/hdfs/hadoop-hdfs-client-${HADOOP_VERSION}.jar" \
-         "hadoop-${HADOOP_VERSION}/share/hadoop/mapreduce/hadoop-mapreduce-client-core-${HADOOP_VERSION}.jar" \
-         "hadoop-${HADOOP_VERSION}/share/hadoop/yarn/hadoop-yarn-api-${HADOOP_VERSION}.jar" \
-         "hadoop-${HADOOP_VERSION}/share/hadoop/yarn/hadoop-yarn-client-${HADOOP_VERSION}.jar" \
-         "hadoop-${HADOOP_VERSION}/share/hadoop/yarn/hadoop-yarn-common-${HADOOP_VERSION}.jar" \
-    && rm hadoop-${HADOOP_VERSION}.tar.gz
-
 FROM debian:${DEBIAN_VERSION}-slim
 
+# The image is published as apache/hive-ci-runner:<version>, and a published version is never
+# overwritten: bump the version with every change of the image (see README.md).
+LABEL org.opencontainers.image.version="1"
 LABEL org.opencontainers.image.title="Apache Hive precommit" \
       org.opencontainers.image.description="Build and test environment of the Apache Hive precommit job" \
       org.opencontainers.image.source="https://github.com/apache/hive" \
@@ -90,7 +69,7 @@ LABEL org.opencontainers.image.title="Apache Hive precommit" \
 # The base image already has the GNU bash, coreutils, diffutils, findutils, grep, sed and tar
 # that scripts and tests expect (e.g. qtest result diffing, Hadoop's Shell/Stat/DF/DU helpers).
 # ca-certificates, git: Jenkins checkout.
-# docker-cli: tests and the init@postgres stage start databases in the dind sidecar.
+# docker-cli: tests start databases in the dind sidecar.
 # libcom-err2, libk5crypto3, libkeyutils1, libkrb5support0: needed by the Kudu mini cluster
 #   binaries (kudu-binary) that the kudu-handler tests start.
 # openssl: tests generate self-signed certificates with it (e.g. GcsOAuthTokenMock).
@@ -118,7 +97,6 @@ RUN apt-get update \
 
 COPY --from=jdk /opt/java/openjdk /opt/java/openjdk
 COPY --from=downloads /opt/maven /opt/maven
-COPY --from=downloads /opt/hadoop /opt/hadoop
 
 ENV JAVA_HOME=/opt/java/openjdk \
     MAVEN_HOME=/opt/maven \

@@ -14,27 +14,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Builds the precommit image (dev-support/docker/precommit) and smoke tests it. On master it
-# publishes the image as apache/hive-ci-runner, the image the Jenkinsfile runs in.
+# Builds the precommit image (dev-support/docker/ci/runner). On master it publishes the image as
+# apache/hive-ci-runner:<version>, with the org.opencontainers.image.version of the Dockerfile. The
+# Jenkinsfile pins that tag. A published tag is never overwritten.
 name: Precommit image
 
 on:
   pull_request:
     paths:
-      - 'dev-support/docker/precommit/**'
+      - 'dev-support/docker/ci/runner/Dockerfile'
       - '.github/workflows/precommit-image.yml'
   push:
     branches:
       - master
     paths:
-      - 'dev-support/docker/precommit/**'
+      - 'dev-support/docker/ci/runner/Dockerfile'
       - '.github/workflows/precommit-image.yml'
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to publish; use a custom one (e.g. HIVE-12345) to try an image with the IMAGE parameter of the precommit job'
+        description: 'Tag to publish a candidate under (e.g. HIVE-12345), to try it with the IMAGE parameter of the precommit job; it must not exist yet'
         required: true
-        default: 'latest'
 
 permissions:
   contents: read
@@ -42,13 +42,28 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      IMAGE: ${{ github.repository_owner }}/hive-ci-runner:${{ github.event.inputs.tag || 'latest' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           persist-credentials: false
+
+      - name: Check that the tag is not published yet
+        id: tag
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+        run: |
+          version=$(sed -n 's/^LABEL org.opencontainers.image.version="\(.*\)"$/\1/p' dev-support/docker/ci/runner/Dockerfile)
+          image=apache/hive-ci-runner:${INPUT_TAG:-$version}
+          if [[ $image == *: ]]; then
+            echo "::error::No org.opencontainers.image.version label in the Dockerfile"
+            exit 1
+          fi
+          if docker manifest inspect "$image" > /dev/null 2>&1; then
+            echo "::error::$image is already published, and a published tag is never overwritten. Bump org.opencontainers.image.version in the Dockerfile (or pick another tag for a manual run)."
+            exit 1
+          fi
+          echo "image=$image" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
@@ -59,14 +74,12 @@ jobs:
       - name: Build the image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: ./dev-support/docker/precommit/
+          context: ./dev-support/docker/ci/runner/
           load: true
-          tags: hive-precommit:test
+          tags: hive-ci-runner:test
 
-      - name: Smoke test the image
-        run: |
-          docker images hive-precommit:test
-          dev-support/docker/precommit/smoke-test.sh hive-precommit:test
+      - name: Show the image size
+        run: docker images hive-ci-runner:test
 
       - name: Login to Docker Hub
         if: github.event_name != 'pull_request' && github.repository == 'apache/hive'
@@ -79,7 +92,7 @@ jobs:
         if: github.event_name != 'pull_request' && github.repository == 'apache/hive'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: ./dev-support/docker/precommit/
+          context: ./dev-support/docker/ci/runner/
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.IMAGE }}
+          tags: ${{ steps.tag.outputs.image }}

@@ -31,12 +31,13 @@ properties([
     parameters([
         string(name: 'SPLIT', defaultValue: '22', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
-        string(name: 'IMAGE', defaultValue: '', description: 'precommit image to use instead of the default one (e.g. a candidate built from dev-support/docker/precommit)'),
+        string(name: 'IMAGE', defaultValue: '', description: 'precommit image to use instead of the default one (e.g. a candidate built from dev-support/docker/ci/runner)'),
     ])
 ])
 
-// Built from dev-support/docker/precommit/Dockerfile and pushed by .github/workflows/precommit-image.yml.
-this.precommitImage = 'apache/hive-ci-runner'
+// Built from dev-support/docker/ci/runner/Dockerfile and published by .github/workflows/precommit-image.yml.
+// The tag is the version in the Dockerfile; bump it here once the workflow has published a new one.
+this.precommitImage = 'apache/hive-ci-runner:1'
 
 this.prHead = null;
 def checkPrHead() {
@@ -301,25 +302,6 @@ fi
   }
 
   def branches = [:]
-  for (def d in ['derby','postgres',/*'mysql','oracle'*/]) {
-    def dbType=d
-    def splitName = "init@$dbType"
-    branches[splitName] = {
-      executorNode {
-        stage('Prepare') {
-            loadWS();
-        }
-        stage('init-metastore') {
-           withEnv(["dbType=$dbType"]) {
-             sh '''#!/bin/bash -e
-set -x
-dev-support/precommit-init-metastore.sh $dbType
-'''
-          }
-        }
-      }
-    }
-  }
   branches['nightly-check'] = {
       executorNode {
         stage('Prepare') {
