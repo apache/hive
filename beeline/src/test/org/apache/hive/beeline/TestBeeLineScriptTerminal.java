@@ -34,6 +34,7 @@ import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.impl.AbstractPosixTerminal;
 import org.jline.terminal.spi.TerminalExt;
 import org.junit.Test;
+import org.junit.jupiter.api.RepeatedTest;
 
 /**
  * Regression test for HIVE-30241.
@@ -41,6 +42,7 @@ import org.junit.Test;
  */
 public class TestBeeLineScriptTerminal {
 
+  @RepeatedTest(5)
   @Test
   public void testScriptFileReaderPreservesLines() throws Exception {
     List<String> expected = scriptLines();
@@ -78,7 +80,12 @@ public class TestBeeLineScriptTerminal {
 
   private List<String> scriptLines() {
     List<String> lines = new ArrayList<>();
+    lines.add("SELECT '" + "x".repeat(10_000) + "' AS long_literal;");
     for (int i = 0; i < 500; i++) {
+      lines.add("EXPLAIN SELECT name, count(*) AS c_5 FROM beeline_large_script_db.t_5 "
+          + "WHERE id >= 5 AND note LIKE '%--%' AND label = '中文' GROUP BY name;");
+      lines.add("EXPLAIN SELECT name, count(*) AS c_5 FROM beeline_large_script_db.t_5 "
+          + "WHERE id >= 5 AND note LIKE '%--%' AND label = '中文' GROUP BY name;");
       lines.add("EXPLAIN SELECT name, count(*) AS c_5 FROM beeline_large_script_db.t_5 "
           + "WHERE id >= 5 AND note LIKE '%--%' AND label = '中文' GROUP BY name;");
     }
