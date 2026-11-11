@@ -19,13 +19,11 @@
 package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.SocketTimeoutException;
-import java.nio.channels.ClosedByInterruptException;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -100,12 +98,12 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
       edc.init(reader, reader);
       return edc;
     } catch (IOException e) {
-      if (isInterrupt(e)) {
+      if (JavaUtils.isInterrupt(e)) {
         // Not a split this pipeline cannot serve: the fragment is being killed, or the daemon shut
         // down. Falling back would only restart the same read on the stock reader, on a thread that
-        // should be unwinding. Rethrown as is, so the interrupt stays the root cause that
-        // HiveInputFormat's limit-reached check looks for, with the interrupt flag restored in case
-        // whoever wrapped it consumed it.
+        // should be unwinding. Rethrown as is, with the interrupt flag restored in case whoever
+        // wrapped it consumed it, so HiveInputFormat's limit-reached check, which uses the same
+        // JavaUtils.isInterrupt, turns it into an empty split once the limit is reached.
         LlapIoImpl.LOG.info("Parquet native cache: interrupted while reading the footer of {}, "
             + "not falling back to normal reader", split.getPath());
         Thread.currentThread().interrupt();
@@ -118,25 +116,6 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
           split.getPath(), e);
       return null;
     }
-  }
-
-  /**
-   * Whether a failed footer read is the thread being interrupted rather than the file failing to
-   * read. The cause chain is walked because the footer cache and Hadoop wrap what they catch. A
-   * {@link SocketTimeoutException} is an {@link InterruptedIOException} too, but it is a timeout,
-   * so it falls back like any other IO failure.
-   */
-  private static boolean isInterrupt(IOException e) {
-    if (Thread.currentThread().isInterrupted()) {
-      return true;
-    }
-    for (Throwable t = e; t != null; t = t.getCause() == t ? null : t.getCause()) {
-      if (t instanceof InterruptedException || t instanceof ClosedByInterruptException
-          || (t instanceof InterruptedIOException && !(t instanceof SocketTimeoutException))) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
