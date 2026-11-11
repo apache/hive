@@ -40,9 +40,10 @@ during the build. Before adding a package, check whether Maven can provide it in
 The [precommit-image](../../../.github/workflows/precommit-image.yml) workflow builds the
 image and smoke tests it on every pull request that changes this directory. When such a
 change lands on master, the workflow publishes the image for `linux/amd64` and `linux/arm64`
-as `apache/hive:precommit`. That tag is the `precommitImage` of the Jenkinsfile, and
-the precommit job pulls it again on every run. The tag is overwritten on every publish:
-once the change is merged, every precommit run, on every branch, uses the new image.
+as `apache/hive-ci-runner` (the default `latest` tag). That is the `precommitImage` of the
+Jenkinsfile, and the precommit job pulls it again on every run. The tag is overwritten on
+every publish: once the change is merged, every precommit run, on every branch, uses the new
+image.
 
 ## Changing the image, step by step
 
@@ -158,7 +159,7 @@ When you are done, remove the docker daemon with `docker rm -f -v hive-dind`.
 
 Open the pull request as usual. The precommit-image workflow builds the image and runs the
 smoke test on it. The precommit job of the pull request itself still runs in the published
-`apache/hive:precommit`, not in your change.
+`apache/hive-ci-runner`, not in your change.
 
 ### 9. Run the precommit job with the candidate image
 
@@ -167,7 +168,7 @@ merging. This needs a committer.
 
 1. Publish the candidate under a tag of its own. Either:
    * push the change to a branch of `apache/hive` and run the precommit-image workflow on that
-     branch from the Actions tab, with `tag` set to e.g. `precommit-candidate-HIVE-12345`; or
+     branch from the Actions tab, with `tag` set to e.g. `HIVE-12345`; or
    * build it for amd64 and push it to a registry you control:
 
      ```bash
@@ -176,24 +177,24 @@ merging. This needs a committer.
      ```
 
 2. On the precommit job of the pull request in Jenkins, choose *Build with Parameters* and set
-   `IMAGE` to the candidate, e.g. `apache/hive:precommit-candidate-HIVE-12345`. The parameter
+   `IMAGE` to the candidate, e.g. `apache/hive-ci-runner:HIVE-12345`. The parameter
    is only offered after the job has run at least once with this Jenkinsfile.
 3. Link the green run in the pull request.
 
 ### 10. Merge and verify
 
 Once merged, the precommit-image workflow on master publishes
-`apache/hive:precommit`. Then:
+`apache/hive-ci-runner`. Then:
 
 1. Check that the workflow run succeeded.
 2. Check the published image:
 
    ```bash
-   docker buildx imagetools inspect apache/hive:precommit
+   docker buildx imagetools inspect apache/hive-ci-runner
    ```
 
 3. Watch the next precommit runs.
 
 To roll back, revert the commit. The workflow then publishes the previous Dockerfile as
-`precommit` again. The rebuilt image picks up the Debian packages current at that time,
+`latest` again. The rebuilt image picks up the Debian packages current at that time,
 so it is equivalent to the old one but not identical.

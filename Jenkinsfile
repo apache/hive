@@ -36,7 +36,7 @@ properties([
 ])
 
 // Built from dev-support/docker/precommit/Dockerfile and pushed by .github/workflows/precommit-image.yml.
-this.precommitImage = 'apache/hive:precommit'
+this.precommitImage = 'apache/hive-ci-runner'
 
 this.prHead = null;
 def checkPrHead() {

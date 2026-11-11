@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # Builds the precommit image (dev-support/docker/precommit) and smoke tests it. On master it
-# publishes the image as apache/hive:precommit, the image the Jenkinsfile runs in.
+# publishes the image as apache/hive-ci-runner, the image the Jenkinsfile runs in.
 name: Precommit image
 
 on:
@@ -32,9 +32,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to publish; use a custom one (e.g. precommit-candidate-HIVE-12345) to try an image with the IMAGE parameter of the precommit job'
+        description: 'Tag to publish; use a custom one (e.g. HIVE-12345) to try an image with the IMAGE parameter of the precommit job'
         required: true
-        default: 'precommit'
+        default: 'latest'
 
 permissions:
   contents: read
@@ -43,7 +43,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      IMAGE: ${{ github.repository_owner }}/hive:${{ github.event.inputs.tag || 'precommit' }}
+      IMAGE: ${{ github.repository_owner }}/hive-ci-runner:${{ github.event.inputs.tag || 'latest' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
