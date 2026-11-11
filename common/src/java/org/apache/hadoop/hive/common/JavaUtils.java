@@ -21,7 +21,10 @@ package org.apache.hadoop.hive.common;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
 import java.net.URLClassLoader;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -129,5 +132,27 @@ public final class JavaUtils {
       rootCause = rootCause.getCause();
     }
     return rootCause;
+  }
+
+  /**
+   * Whether a failure is the current thread being interrupted rather than the operation failing on
+   * its own: the thread's interrupt flag is set, or the cause chain holds an
+   * {@link InterruptedException}, a {@link ClosedByInterruptException} or an
+   * {@link InterruptedIOException}. The whole chain is walked, not just the root cause, because
+   * Hadoop's IPC and filesystem clients wrap an interrupt in an {@code InterruptedIOException} of
+   * their own. A {@link SocketTimeoutException} is an {@code InterruptedIOException} too, but it is
+   * a timeout, not an interrupt.
+   */
+  public static boolean isInterrupt(Throwable throwable) {
+    if (Thread.currentThread().isInterrupted()) {
+      return true;
+    }
+    for (Throwable t = throwable; t != null; t = t.getCause()) {
+      if (t instanceof InterruptedException || t instanceof ClosedByInterruptException
+          || (t instanceof InterruptedIOException && !(t instanceof SocketTimeoutException))) {
+        return true;
+      }
+    }
+    return false;
   }
 }

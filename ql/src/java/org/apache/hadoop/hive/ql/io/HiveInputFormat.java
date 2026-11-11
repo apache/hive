@@ -83,7 +83,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.channels.ClosedByInterruptException;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -477,10 +476,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       // Handle the special header/footer skipping cases here.
       innerReader = RecordReaderWrapper.create(inputFormat, hsplit, part.getTableDesc(), job, reporter);
     } catch (Exception e) {
-      Throwable rootCause = JavaUtils.findRootCause(e);
-      if (checkLimitReached(job)
-          && (rootCause instanceof InterruptedException || rootCause instanceof ClosedByInterruptException)) {
-        LOG.info("Ignoring exception while getting record reader as limit is reached", rootCause);
+      // Only once the limit is reached: an interrupt before that is the task being killed, and an
+      // empty split would let it finish with rows missing.
+      if (checkLimitReached(job) && JavaUtils.isInterrupt(e)) {
+        LOG.info("Ignoring exception while getting record reader as limit is reached", e);
         innerReader = new NullRowsRecordReader(job, split);
       } else {
         throw new IOException("Exception caught while creating the inner reader", e);
