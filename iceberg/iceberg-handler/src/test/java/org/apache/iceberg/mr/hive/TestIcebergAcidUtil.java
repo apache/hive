@@ -141,8 +141,7 @@ public class TestIcebergAcidUtil {
 
     // a merge task builds the record of an ordinary delete from the delete file
     try (CloseableIterator<Record> records = new IcebergAcidUtil.MergeTaskVirtualColumnAwareIterator<>(
-        CloseableIterator.withClose(List.of(delete).iterator()), IcebergAcidUtil.createSerdeSchemaForDelete(), spec,
-        deleteFile)) {
+        CloseableIterator.withClose(List.of(delete).iterator()), spec, deleteFile)) {
       Record rec = records.next();
       Assert.assertEquals(3, IcebergAcidUtil.parseSpecId(rec));
       Assert.assertEquals(ByteBuffer.wrap(IcebergAcidUtil.serializePartition(partition, spec)),

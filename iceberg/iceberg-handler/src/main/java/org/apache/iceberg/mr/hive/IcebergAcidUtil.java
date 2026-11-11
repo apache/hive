@@ -112,7 +112,7 @@ public class IcebergAcidUtil {
 
   /**
    * @param dataCols The columns of the serde projection schema
-   * @return The schema for SerDe operations, extended with metadata columns needed for deletes
+   * @return The schema of the records of a copy-on-write DML: the virtual columns, followed by the row data
    */
   public static Schema createSerdeSchemaForDelete(List<Types.NestedField> dataCols) {
     List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + SERDE_META_COLS.size());
@@ -134,7 +134,7 @@ public class IcebergAcidUtil {
   /**
    * Based on `rec` the method creates a position delete object, and also populates the data filed of `rowData` with
    * the field values from `rec`.
-   * @param rec The record read by the file scan task, which contains both the metadata fields and the row data fields
+   * @param rec The record of a copy-on-write DML: the virtual columns, followed by the row data
    * @param rowData The record object to populate with the rowData fields only
    * @return The position delete object
    */
@@ -169,7 +169,7 @@ public class IcebergAcidUtil {
   }
 
   public static int parseSpecId(Record rec) {
-    return rec.get(FILE_READ_META_COLS.get(MetadataColumns.SPEC_ID), Integer.class);
+    return rec.get(SERDE_META_COLS.get(MetadataColumns.SPEC_ID), Integer.class);
   }
 
   public static ByteBuffer parseSerializedPartition(Record rec) {
@@ -337,10 +337,10 @@ public class IcebergAcidUtil {
     private final int specId;
     private final byte[] partitionKey;
 
-    public MergeTaskVirtualColumnAwareIterator(CloseableIterator<T> currentIterator, Schema expectedSchema,
-        PartitionSpec spec, ContentFile<?> file) {
+    public MergeTaskVirtualColumnAwareIterator(CloseableIterator<T> currentIterator, PartitionSpec spec,
+        ContentFile<?> file) {
       this.currentIterator = currentIterator;
-      this.recordBuilder = new MergeTaskRecordBuilder<>(expectedSchema);
+      this.recordBuilder = new MergeTaskRecordBuilder<>(createSerdeSchemaForDelete());
 
       this.specId = spec.specId();
       this.partitionKey = serializePartition(file.partition(), spec);
