@@ -902,8 +902,10 @@ public class Commands {
           lines += "\n" + extra;
         }
       }
-      String[] cmds = lines.split(beeLine.getOpts().getDelimiter());
-      for (String c : cmds) {
+      if (lines == null || lines.isEmpty()) {
+        return true;
+      }
+      for (String c : getCmdList(lines, false)) {
         c = c.trim();
         if (!executeInternal(c, false)) {
           return false;
