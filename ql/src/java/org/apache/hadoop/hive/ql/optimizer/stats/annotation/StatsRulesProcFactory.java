@@ -1393,7 +1393,7 @@ public class StatsRulesProcFactory {
         return numRows / 2;
       }
       if (dvs == 0) {
-        // no non-null values: only col <=> NULL can match, and then every row does
+        // no non-null values: only null-safe equality with NULL (col <=> NULL) can match, and then every row does
         return nullSafeEqualsNull ? numRows : 0;
       }
       return Math.round((double) numRows / dvs);
