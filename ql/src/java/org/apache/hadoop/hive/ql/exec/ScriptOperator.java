@@ -186,7 +186,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   /**
    * Maps a relative pathname to an absolute pathname using the PATH environment.
    */
-  public class PathFinder {
+  public static class PathFinder {
     String pathenv; // a string of pathnames
     String pathSep; // the path separator
     String fileSep; // the file separator in a directory
@@ -195,8 +195,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
      * Construct a PathFinder object using the path from the specified system
      * environment variable.
      */
-    public PathFinder(String envpath) {
-      pathenv = System.getenv(envpath);
+    public PathFinder(String pathNames) {
+      pathenv = pathNames;
       pathSep = System.getProperty("path.separator");
       fileSep = System.getProperty("file.separator");
     }
@@ -225,23 +225,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         // Extract each entry from the pathenv
         //
         String entry = classvalue.substring(0, val).trim();
-        File f = new File(entry);
-
-        try {
-          if (f.isDirectory()) {
-            //
-            // this entry in the pathenv is a directory.
-            // see if the required file is in this directory
-            //
-            f = new File(entry + fileSep + filename);
-          }
-          //
-          // see if the filename matches and we can read it
-          //
-          if (f.isFile() && f.canRead()) {
-            return f;
-          }
-        } catch (Exception exp) {
+        File f = new File(entry + fileSep + filename);
+        if (f.isFile() && f.canRead()) {
+          return f;
         }
         classvalue = classvalue.substring(val + 1).trim();
       }
@@ -322,7 +308,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         File currentDir = new File(".").getAbsoluteFile();
 
         if (!new File(prog).isAbsolute()) {
-          PathFinder finder = new PathFinder("PATH");
+          PathFinder finder = new PathFinder(System.getenv("PATH"));
           finder.prependPathComponent(currentDir.toString());
           File f = finder.getAbsolutePath(prog);
           if (f != null) {
