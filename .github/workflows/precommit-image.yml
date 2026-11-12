@@ -41,6 +41,8 @@ permissions:
 
 jobs:
   build:
+    # On a fork, a push to master only syncs apache/hive: there is nothing to publish.
+    if: github.event_name != 'push' || github.repository == 'apache/hive'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
