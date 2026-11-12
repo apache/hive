@@ -49,23 +49,44 @@ jobs:
         uses: actions/checkout@v6
         with:
           persist-credentials: false
+          # On a PR, HEAD is the PR merged into its target branch, and HEAD^1 is the target branch.
+          fetch-depth: 2
 
-      - name: Check that the tag is not published yet
+      # A published tag is never overwritten. When the tag is published already, a change of the
+      # Dockerfile needs a new version; any other change (e.g. of this workflow) does not publish.
+      - name: Check the tag
         id: tag
         env:
           INPUT_TAG: ${{ github.event.inputs.tag }}
+          BEFORE: ${{ github.event.before }}
         run: |
-          version=$(sed -n 's/^LABEL org.opencontainers.image.version="\(.*\)"$/\1/p' dev-support/docker/ci/runner/Dockerfile)
+          dockerfile=dev-support/docker/ci/runner/Dockerfile
+          version=$(sed -n 's/^LABEL org.opencontainers.image.version="\(.*\)"$/\1/p' "$dockerfile")
           image=apache/hive-ci-runner:${INPUT_TAG:-$version}
           if [[ $image == *: ]]; then
             echo "::error::No org.opencontainers.image.version label in the Dockerfile"
             exit 1
           fi
+          publish=true
           if docker manifest inspect "$image" > /dev/null 2>&1; then
-            echo "::error::$image is already published, and a published tag is never overwritten. Bump org.opencontainers.image.version in the Dockerfile (or pick another tag for a manual run)."
-            exit 1
+            base=
+            if [[ -z $INPUT_TAG ]]; then
+              case $GITHUB_EVENT_NAME in
+                pull_request) base=HEAD^1 ;;
+                push) [[ $BEFORE =~ ^0+$ ]] || base=$BEFORE ;;
+              esac
+            fi
+            if [[ -z $base ]] \
+                || ! { git cat-file -e "$base^{commit}" 2> /dev/null || git fetch -q --depth=1 origin "$base"; } \
+                || ! git diff --quiet "$base" HEAD -- "$dockerfile"; then
+              echo "::error::$image is already published, and a published tag is never overwritten. Bump org.opencontainers.image.version in the Dockerfile (or pick another tag for a manual run)."
+              exit 1
+            fi
+            echo "::notice::$image is already published and the Dockerfile did not change: not publishing it again."
+            publish=false
           fi
           echo "image=$image" >> "$GITHUB_OUTPUT"
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
@@ -84,14 +105,14 @@ jobs:
         run: docker images hive-ci-runner:test
 
       - name: Login to Docker Hub
-        if: github.event_name != 'pull_request' && github.repository == 'apache/hive'
+        if: steps.tag.outputs.publish == 'true' && github.event_name != 'pull_request' && github.repository == 'apache/hive'
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Publish the image
-        if: github.event_name != 'pull_request' && github.repository == 'apache/hive'
+        if: steps.tag.outputs.publish == 'true' && github.event_name != 'pull_request' && github.repository == 'apache/hive'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ./dev-support/docker/ci/runner/

@@ -41,7 +41,9 @@ the workflow publishes the image for `linux/amd64` and `linux/arm64` as
 `apache/hive-ci-runner:<version>`, where `<version>` is the `org.opencontainers.image.version`
 label of the Dockerfile.
 
-A published tag is never overwritten: the workflow fails if the tag already exists. The
+A published tag is never overwritten: the workflow fails if the Dockerfile changed but its
+version is a tag that already exists. A change that does not touch the Dockerfile (e.g. of the
+workflow) needs no new version: the workflow builds the image but does not publish it. The
 Jenkinsfile pins the tag in `precommitImage`, so a new image is only used once a commit bumps
 that pin.
 
