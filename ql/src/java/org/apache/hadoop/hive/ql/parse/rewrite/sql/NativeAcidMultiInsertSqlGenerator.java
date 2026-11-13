@@ -65,4 +65,9 @@ public class NativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
   public List<String> getSortKeys(Operation operation) {
     return singletonList(qualify("ROW__ID"));
   }
+
+  @Override
+  public List<String> getDistributeKeys(Operation operation) {
+    return List.of();
+  }
 }

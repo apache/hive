@@ -57,6 +57,7 @@ public class IOContext {
 
   // the partition of the rows the reader currently serves
   private String partitionName;
+  private byte[] partitionKey;
 
   public enum Comparison {
     GREATER,
@@ -207,6 +208,14 @@ public class IOContext {
 
   public String getPartitionName() {
     return partitionName;
+  }
+
+  public void setPartitionKey(byte[] partitionKey) {
+    this.partitionKey = partitionKey;
+  }
+
+  public byte[] getPartitionKey() {
+    return partitionKey;
   }
 
   public void setRowLineageInfo(RowLineageInfo rowLineageInfo) {

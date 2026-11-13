@@ -62,6 +62,11 @@ public class TestMultiInsertSqlGenerator {
       public List<String> getSortKeys(Operation operation) {
         return Collections.emptyList();
       }
+
+      @Override
+      public List<String> getDistributeKeys(Operation operation) {
+        return Collections.emptyList();
+      }
     };
   }
 
