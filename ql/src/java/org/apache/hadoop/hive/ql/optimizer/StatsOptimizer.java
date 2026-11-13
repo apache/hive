@@ -730,8 +730,8 @@ public class StatsOptimizer extends Transform {
        * set within its variance, which estimates a plan fine but must not answer a query.
        */
       private AggrStats exactAggrColStats(List<String> partNames) throws HiveException, MetaException {
-        Map<String, List<ColumnStatisticsObj>> statsByPart = hive.getPartitionColumnStatistics(
-            tbl.getDbName(), tbl.getTableName(), partNames, colNames, true);
+        Map<String, List<ColumnStatisticsObj>> statsByPart =
+            hive.getPartitionColumnStatistics(tbl, partNames, colNames, true);
         List<ColumnStatistics> partStats = new ArrayList<>();
         statsByPart.forEach((partitionName, statsObjs) -> {
           // a partition counts as found only when it holds every column asked about

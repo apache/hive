@@ -438,7 +438,8 @@ public final class HiveMaterializedViewsRegistry {
     // Build Hive Table Scan Rel.
     // We can pass null for Hive object because it is only used to retrieve tables
     // if constraints on a table object are existing, but constraints cannot be defined
-    // for materialized views.
+    // for materialized views. Mark them fetched, so that RelOptHiveTable does not go to the metastore for them.
+    viewTable.setTableConstraintsInfo(new TableConstraintsInfo());
     RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
         rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
         conf, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());

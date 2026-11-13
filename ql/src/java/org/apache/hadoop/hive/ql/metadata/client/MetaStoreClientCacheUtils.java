@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.ql.metadata.client;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -37,8 +38,14 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
@@ -80,6 +87,11 @@ public class MetaStoreClientCacheUtils {
     DATABASE(Database.class, String.class, String.class),
     // Table <-- getTableInternal(GetTableRequest req)
     TABLE(Table.class, GetTableRequest.class),
+    // Table <-- any getTable(GetTableRequest req) answered at compile time, by String catName, dbName, tblName.
+    // Used by HiveMetaStoreClientWithLocalCache for the table id and the transactional check.
+    TABLE_BY_NAME(Table.class, String.class),
+    // NoSuchObjectException message <-- getTable(GetTableRequest req), by String catName, dbName, tblName
+    TABLE_NOT_FOUND(String.class, String.class),
     // PrimaryKeysResponse <-- getPrimaryKeysInternal(PrimaryKeysRequest req)
     PRIMARY_KEYS(PrimaryKeysResponse.class, PrimaryKeysRequest.class),
     // ForeignKeysResponse <-- getForeignKeysInternal(ForeignKeysRequest req)
@@ -88,6 +100,12 @@ public class MetaStoreClientCacheUtils {
     UNIQUE_CONSTRAINTS(UniqueConstraintsResponse.class, UniqueConstraintsRequest.class),
     // NotNullConstraintsResponse <-- getNotNullConstraintsInternal(NotNullConstraintsRequest req)
     NOT_NULL_CONSTRAINTS(NotNullConstraintsResponse.class, NotNullConstraintsRequest.class),
+    // AllTableConstraintsResponse <-- getAllTableConstraints(AllTableConstraintsRequest req)
+    // CheckConstraintsResponse <-- getCheckConstraints(CheckConstraintsRequest req)
+    CHECK_CONSTRAINTS(CheckConstraintsResponse.class, CheckConstraintsRequest.class),
+    // DefaultConstraintsResponse <-- getDefaultConstraints(DefaultConstraintsRequest req)
+    DEFAULT_CONSTRAINTS(DefaultConstraintsResponse.class, DefaultConstraintsRequest.class),
+    ALL_TABLE_CONSTRAINTS(AllTableConstraintsResponse.class, AllTableConstraintsRequest.class),
     // TableStatsResult <-- getTableColumnStatisticsInternal(TableStatsRequest rqst)
     // Stored individually as:
     // ColumnStatisticsObj <-- String dbName, String tblName, List<string> colNames,
@@ -113,6 +131,9 @@ public class MetaStoreClientCacheUtils {
     // List<Partition> <- listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
     //      List<String> partialPvals, int maxParts, String userName, List<String> groupNames)
     LIST_PARTITIONS_AUTH_INFO(org.apache.hadoop.hive.metastore.api.Partition.class, String.class, int.class),
+    // Partition <-- getPartitionWithAuthInfo(String catName, String dbName, String tableName,
+    //      List<String> pvals, String userName, List<String> groupNames)
+    PARTITION_WITH_AUTH_INFO(org.apache.hadoop.hive.metastore.api.Partition.class, String.class),
     // GetPartitionsPsWithAuthResponse <- listPartitionsWithAuthInfoRequestInternal(GetPartitionsPsWithAuthRequest req)
     LIST_PARTITIONS_AUTH_INFO_REQ(GetPartitionsPsWithAuthResponse.class, GetPartitionsPsWithAuthRequest.class),
     // GetPartitionsByNamesResult <-- getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
@@ -184,6 +205,10 @@ public class MetaStoreClientCacheUtils {
       LOG.debug("Cache entry weight - key: {}, value: {}, total: {}", keySize, valSize, keySize + valSize);
     }
     return keySize + valSize;
+  }
+
+  public static CacheKey tableByNameKey(String catName, String dbName, String tblName) {
+    return new CacheKey(KeyType.TABLE_BY_NAME, catName, StringUtils.lowerCase(dbName), StringUtils.lowerCase(tblName));
   }
 
   public static String getQueryId() {
