@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -70,6 +71,12 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
@@ -112,10 +119,10 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.CacheKey;
-import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.CacheI;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.KeyType;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.PartitionSpecsWrapper;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.PartitionsWrapper;
+import org.apache.hadoop.hive.ql.metadata.client.HMSQueryCache;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -161,6 +168,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isExternalTa
  */
 public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   private static final Logger LOG = LoggerFactory.getLogger(SessionHiveMetaStoreClient.class);
+  // partition, table, database, the rest of the condition
+  private static final String PARTITION_NOT_FOUND = "Partition with %s for table %s in database %s%s is not found.";
+  private static final String PARTITION_VALUES = "partition values ";
 
   private volatile Warehouse wh = null;
 
@@ -211,29 +221,9 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
     }
     req.setProcessorIdentifier(ThriftHiveMetaStoreClient.getProcessorIdentifier());
 
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      CacheKey cacheKeyTableId =
-          new CacheKey(KeyType.TABLE_ID, req.getCatName(), req.getDbName(), req.getTblName());
-      long tableId = -1;
-
-      if (queryCache.containsKey(cacheKeyTableId)) {
-        tableId = (long) queryCache.get(cacheKeyTableId);
-      }
-
-      req.setId(tableId);
-      CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
-      Table table = (Table) queryCache.get(cacheKey);
-      if (table == null) {
-        table = delegate.getTable(req);
-        if (tableId == -1) {
-          queryCache.put(cacheKeyTableId, table.getId());
-          req.setId(table.getId());
-          cacheKey = new CacheKey(KeyType.TABLE, req);
-        }
-        queryCache.put(cacheKey, table);
-      }
-      return table;
+      return queryCache.getTable(req, normalizeCatalog(req.getCatName()), () -> delegate.getTable(req));
     }
     return delegate.getTable(req);
   }
@@ -361,12 +351,11 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       return getTempTableColumnStats(dbName, tableName, colNames);
     }
 
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      MapWrapper cache = new MapWrapper(queryCache);
       // 1) Retrieve from the cache those ids present, gather the rest
       Pair<List<ColumnStatisticsObj>, List<String>> p =
-          MetaStoreClientCacheUtils.getTableColumnStatisticsCache(cache, catName, dbName, tableName,
+          MetaStoreClientCacheUtils.getTableColumnStatisticsCache(queryCache, catName, dbName, tableName,
               colNames, engine, validWriteIdList, null);
       List<String> colStatsMissing = p.getRight();
       List<ColumnStatisticsObj> colStats = p.getLeft();
@@ -379,7 +368,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
           delegate.getTableColumnStatistics(catName, dbName, tableName, colStatsMissing,
               engine, validWriteIdList);
       // 4) Populate the cache
-      MetaStoreClientCacheUtils.loadTableColumnStatisticsCache(cache, newColStats, catName, dbName,
+      MetaStoreClientCacheUtils.loadTableColumnStatisticsCache(queryCache, newColStats, catName, dbName,
           tableName, engine, validWriteIdList, null);
       // 5) Sort result (in case there is any assumption) and return
       List<ColumnStatisticsObj> result =
@@ -406,21 +395,13 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
     }
 
     // TODO should we add capabilities here as well as it returns Partition objects
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO,
-          catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
-      List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals, maxParts,
-            userName, groupNames);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionsWithAuthInfoInternal, dbName={}, tblName={}, partVals={}",
-            dbName, tableName, partialPvals);
-      }
-      return v;
+      return queryCache.getOrLoad("listPartitionsWithAuthInfo",
+          new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO, catName, dbName, tableName, partialPvals, maxParts,
+              userName, groupNames),
+          () -> delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals, maxParts,
+              userName, groupNames));
     }
     return delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals, maxParts,
         userName, groupNames);
@@ -440,21 +421,12 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
     }
 
     // TODO should we add capabilities here as well as it returns Partition objects
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_ALL,
-          catName, dbName, tableName, maxParts, userName, groupNames);
-      List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, maxParts, userName, groupNames);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionsWithAuthInfoInternalAll, dbName={}, tblName={}",
-            dbName, tableName);
-      }
-      return v;
+      return queryCache.getOrLoad("listPartitionsWithAuthInfo",
+          new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_ALL, catName, dbName, tableName, maxParts, userName,
+              groupNames),
+          () -> delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, maxParts, userName, groupNames));
     }
     return delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, maxParts, userName, groupNames);
   }
@@ -479,19 +451,11 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
 
     req.setMaxParts(HiveMetaStoreClientUtils.shrinkMaxtoShort(req.getMaxParts()));
 
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_REQ, req);
-      GetPartitionsPsWithAuthResponse v = (GetPartitionsPsWithAuthResponse) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.listPartitionsWithAuthInfoRequest(req);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionsWithAuthInfoRequestInternal, dbName={}, tblName={}, partVals={}",
-            req.getDbName(), req.getTblName(), req.getPartVals());
-      }
-      return v;
+      return queryCache.getOrLoad("listPartitionsWithAuthInfoRequest",
+          new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_REQ, req),
+          () -> delegate.listPartitionsWithAuthInfoRequest(req));
     }
     return delegate.listPartitionsWithAuthInfoRequest(req);
   }
@@ -514,20 +478,11 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       }
     }
 
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, catName, dbName, tableName, maxParts);
-      List<String> v = (List<String>) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.listPartitionNames(catName, dbName, tableName, maxParts);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionNamesInternalAll, dbName={}, tableName={}",
-            dbName, tableName);
-      }
-      return v;
+      return queryCache.getOrLoad("listPartitionNames",
+          new CacheKey(KeyType.LIST_PARTITIONS_ALL, catName, dbName, tableName, maxParts),
+          () -> delegate.listPartitionNames(catName, dbName, tableName, maxParts));
     }
     return delegate.listPartitionNames(catName, dbName, tableName, maxParts);
   }
@@ -558,20 +513,10 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
 
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_REQ, req);
-      GetPartitionNamesPsResponse v = (GetPartitionNamesPsResponse) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.listPartitionNamesRequest(req);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionNamesRequestInternal, dbName={}, tblName={}, partValues={}",
-            req.getDbName(), req.getTblName(), req.getPartValues());
-      }
-      return v;
+      return queryCache.getOrLoad("listPartitionNamesRequest", new CacheKey(KeyType.LIST_PARTITIONS_REQ, req),
+          () -> delegate.listPartitionNamesRequest(req));
     }
     return delegate.listPartitionNamesRequest(req);
   }
@@ -592,21 +537,14 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
 
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
-      PartitionsWrapper v = (PartitionsWrapper) queryCache.get(cacheKey);
-      if (v == null) {
-        List<Partition> parts = new ArrayList<>();
-        boolean hasUnknownPart = delegate.listPartitionsByExpr(req, parts);
-        v = new MetaStoreClientCacheUtils.PartitionsWrapper(parts, hasUnknownPart);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getPartitionsByExprInternal, dbName={}, tblName={}",
-            req.getDbName(), req.getTblName());
-      }
-
+      PartitionsWrapper v = queryCache.getOrLoad("listPartitionsByExpr",
+          new CacheKey(KeyType.PARTITIONS_BY_EXPR, req), () -> {
+            List<Partition> parts = new ArrayList<>();
+            boolean hasUnknownPart = delegate.listPartitionsByExpr(req, parts);
+            return new PartitionsWrapper(parts, hasUnknownPart);
+          });
       result.addAll(v.partitions);
       return v.hasUnknownPartition;
     }
@@ -633,21 +571,14 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
 
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
-      PartitionSpecsWrapper v = (PartitionSpecsWrapper) queryCache.get(cacheKey);
-      if (v == null) {
-        List<PartitionSpec> parts = new ArrayList<>();
-        boolean hasUnknownPart = delegate.listPartitionsSpecByExpr(req, parts);
-        v = new PartitionSpecsWrapper(parts, hasUnknownPart);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getPartitionsSpecByExprInternal, dbName={}, tblName={}",
-            req.getDbName(), req.getTblName());
-      }
+      PartitionSpecsWrapper v = queryCache.getOrLoad("listPartitionsSpecByExpr",
+          new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req), () -> {
+            List<PartitionSpec> parts = new ArrayList<>();
+            boolean hasUnknownPart = delegate.listPartitionsSpecByExpr(req, parts);
+            return new PartitionSpecsWrapper(parts, hasUnknownPart);
+          });
       result.addAll(v.partitionSpecs);
       return v.hasUnknownPartition;
     }
@@ -670,12 +601,11 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       }
     }
 
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      MapWrapper cache = new MapWrapper(queryCache);
       // 1) Retrieve from the cache those ids present, gather the rest
       Pair<List<Partition>, List<String>> p =
-          MetaStoreClientCacheUtils.getPartitionsByNamesCache(cache, req, null);
+          MetaStoreClientCacheUtils.getPartitionsByNamesCache(queryCache, req, null);
       List<String> partitionsMissing = p.getRight();
       List<Partition> partitions = p.getLeft();
       // 2) If they were all present in the cache, return
@@ -688,7 +618,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       GetPartitionsByNamesResult r = delegate.getPartitionsByNames(newRqst);
       // 4) Populate the cache
       List<Partition> newPartitions =
-          MetaStoreClientCacheUtils.loadPartitionsByNamesCache(cache, r, req, null);
+          MetaStoreClientCacheUtils.loadPartitionsByNamesCache(queryCache, r, req, null);
       // 5) Sort result (in case there is any assumption) and return
       return MetaStoreClientCacheUtils.computePartitionsByNamesFinal(req, partitions, newPartitions);
     }
@@ -706,6 +636,14 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
     } else {
       delegate.createTable(request);
     }
+    HMSQueryCache queryCache = getQueryCache();
+    if (queryCache != null) {
+      queryCache.invalidateTableNotFound(normalizeCatalog(tbl.getCatName()), tbl.getDbName(), tbl.getTableName());
+    }
+  }
+
+  private String normalizeCatalog(String catName) {
+    return isDefaultCatalog(catName) ? getDefaultCatalog(conf) : catName;
   }
 
   @Override
@@ -1349,8 +1287,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         TempTable tt = getPartitionedTempTable(table);
         Partition partition = tt.getPartition(name);
         if (partition == null) {
-          throw new NoSuchObjectException("Partition with name " + name + " for table " + tblName +
-              " in database " + dbName + " is not found.");
+          throw new NoSuchObjectException(partitionNotFoundMessage(dbName, tblName, name));
         }
 
         return HiveMetaStoreClientUtils.deepCopy(partition);
@@ -1368,9 +1305,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         TempTable tt = getPartitionedTempTable(table);
         Partition partition = tt.getPartition(partVals);
         if (partition == null) {
-          throw new NoSuchObjectException("Partition with partition values " +
-              (partVals != null ? Arrays.toString(partVals.toArray()) : "null")+
-              " for table " + tblName + " in database " + dbName + " is not found.");
+          throw new NoSuchObjectException(partitionNotFoundMessage(dbName, tblName, partVals));
         }
         return HiveMetaStoreClientUtils.deepCopy(partition);
       }
@@ -1509,16 +1444,41 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         TempTable tt = getPartitionedTempTable(table);
         Partition partition = tt.getPartitionWithAuthInfo(pvals, userName, groupNames);
         if (partition == null) {
-          throw new NoSuchObjectException("Partition with partition values " +
-              (pvals != null ? Arrays.toString(pvals.toArray()) : "null") +
-              " for table " + tableName + " in database " + dbName + " and for user " +
-              userName + " and group names " + (groupNames != null ? Arrays.toString(groupNames.toArray()) : "null") +
-              " is not found.");
+          throw new NoSuchObjectException(partitionNotFoundMessage(dbName, tableName, pvals, userName, groupNames));
         }
         return HiveMetaStoreClientUtils.deepCopy(partition);
       }
     }
+    HMSQueryCache queryCache = getQueryCache();
+    if (queryCache != null) {
+      // a missing partition (NoSuchObjectException) is not cached
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITION_WITH_AUTH_INFO, catName, dbName, tableName,
+          copyOf(pvals), userName, copyOf(groupNames));
+      Partition v = queryCache.getOrLoad("getPartitionWithAuthInfo", cacheKey,
+          () -> delegate.getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames));
+      // a copy: the ql Partition built from it changes the object it gets
+      return new Partition(v);
+    }
     return delegate.getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames);
+  }
+
+  private static String partitionNotFoundMessage(String dbName, String tableName, String partName) {
+    return String.format(PARTITION_NOT_FOUND, "name " + partName, tableName, dbName, "");
+  }
+
+  // a List prints as Arrays.toString of its elements, or "null"
+  private static String partitionNotFoundMessage(String dbName, String tableName, List<String> pvals) {
+    return String.format(PARTITION_NOT_FOUND, PARTITION_VALUES + pvals, tableName, dbName, "");
+  }
+
+  private static String partitionNotFoundMessage(String dbName, String tableName, List<String> pvals,
+      String userName, List<String> groupNames) {
+    return String.format(PARTITION_NOT_FOUND, PARTITION_VALUES + pvals, tableName, dbName,
+        " and for user " + userName + " and group names " + groupNames);
+  }
+
+  private static List<String> copyOf(List<String> list) {
+    return list != null ? new ArrayList<>(list) : null;
   }
 
   @Override
@@ -2248,59 +2208,31 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
 
   @Override
   public String getConfigValue(String name, String defaultValue) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.CONFIG_VALUE, name, defaultValue);
-      String v = (String) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.getConfigValue(name, defaultValue);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getConfigValueInternal, name={}",
-            name);
-      }
-      return v;
+      return queryCache.getOrLoad("getConfigValue", new CacheKey(KeyType.CONFIG_VALUE, name, defaultValue),
+          () -> delegate.getConfigValue(name, defaultValue));
     }
     return delegate.getConfigValue(name, defaultValue);
   }
 
   @Override
   public Database getDatabase(String catalogName, String databaseName) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.DATABASE, catalogName, databaseName);
-      Database v = (Database) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.getDatabase(catalogName, databaseName);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getDatabaseInternal, name={}",
-            databaseName);
-      }
-      return v;
+      return queryCache.getOrLoad("getDatabase", new CacheKey(KeyType.DATABASE, catalogName, databaseName),
+          () -> delegate.getDatabase(catalogName, databaseName));
     }
     return delegate.getDatabase(catalogName, databaseName);
   }
 
   @Override
   public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest req) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.ALL_TABLE_CONSTRAINTS, req);
-      AllTableConstraintsResponse v = (AllTableConstraintsResponse) queryCache.get(cacheKey);
-      if (v == null) {
-        v = new AllTableConstraintsResponse(delegate.getAllTableConstraints(req));
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getAllTableConstraints, dbName={}, tblName={}",
-            req.getDbName(), req.getTblName());
-      }
+      AllTableConstraintsResponse v = queryCache.getOrLoad("getAllTableConstraints",
+          new CacheKey(KeyType.ALL_TABLE_CONSTRAINTS, req),
+          () -> new AllTableConstraintsResponse(delegate.getAllTableConstraints(req)));
       // a copy: Hive.getTableConstraints keeps only the RELY constraints in the object it gets
       return new SQLAllTableConstraints(v.getAllTableConstraints());
     }
@@ -2309,19 +2241,10 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
 
   @Override
   public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest req) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.PRIMARY_KEYS, req);
-      PrimaryKeysResponse v = (PrimaryKeysResponse) queryCache.get(cacheKey);
-      if (v == null) {
-        v = new PrimaryKeysResponse(delegate.getPrimaryKeys(req));
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getPrimaryKeysInternal, dbName={}, tblName={}",
-            req.getDb_name(), req.getTbl_name());
-      }
+      PrimaryKeysResponse v = queryCache.getOrLoad("getPrimaryKeys", new CacheKey(KeyType.PRIMARY_KEYS, req),
+          () -> new PrimaryKeysResponse(delegate.getPrimaryKeys(req)));
       return v.getPrimaryKeys();
     }
     return delegate.getPrimaryKeys(req);
@@ -2329,19 +2252,10 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
 
   @Override
   public List<SQLForeignKey> getForeignKeys(ForeignKeysRequest req) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.FOREIGN_KEYS, req);
-      ForeignKeysResponse v = (ForeignKeysResponse) queryCache.get(cacheKey);
-      if (v == null) {
-        v = new ForeignKeysResponse(delegate.getForeignKeys(req));
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getForeignKeysInternal, dbName={}, tblName={}",
-            req.getForeign_db_name(), req.getForeign_tbl_name());
-      }
+      ForeignKeysResponse v = queryCache.getOrLoad("getForeignKeys", new CacheKey(KeyType.FOREIGN_KEYS, req),
+          () -> new ForeignKeysResponse(delegate.getForeignKeys(req)));
       return v.getForeignKeys();
     }
     return delegate.getForeignKeys(req);
@@ -2349,19 +2263,11 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
 
   @Override
   public List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest req) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.UNIQUE_CONSTRAINTS, req);
-      UniqueConstraintsResponse v = (UniqueConstraintsResponse) queryCache.get(cacheKey);
-      if (v == null) {
-        v = new UniqueConstraintsResponse(delegate.getUniqueConstraints(req));
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getUniqueConstraintsInternal, dbName={}, tblName={}",
-            req.getDb_name(), req.getTbl_name());
-      }
+      UniqueConstraintsResponse v = queryCache.getOrLoad("getUniqueConstraints",
+          new CacheKey(KeyType.UNIQUE_CONSTRAINTS, req),
+          () -> new UniqueConstraintsResponse(delegate.getUniqueConstraints(req)));
       return v.getUniqueConstraints();
     }
     return delegate.getUniqueConstraints(req);
@@ -2369,22 +2275,38 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
 
   @Override
   public List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest req) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.NOT_NULL_CONSTRAINTS, req);
-      NotNullConstraintsResponse v = (NotNullConstraintsResponse) queryCache.get(cacheKey);
-      if (v == null) {
-        v = new NotNullConstraintsResponse(delegate.getNotNullConstraints(req));
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getNotNullConstraintsInternal, dbName={}, tblName={}",
-            req.getDb_name(), req.getTbl_name());
-      }
+      NotNullConstraintsResponse v = queryCache.getOrLoad("getNotNullConstraints",
+          new CacheKey(KeyType.NOT_NULL_CONSTRAINTS, req),
+          () -> new NotNullConstraintsResponse(delegate.getNotNullConstraints(req)));
       return v.getNotNullConstraints();
     }
     return delegate.getNotNullConstraints(req);
+  }
+
+  @Override
+  public List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest req) throws TException {
+    HMSQueryCache queryCache = getQueryCache();
+    if (queryCache != null) {
+      CheckConstraintsResponse v = queryCache.getOrLoad("getCheckConstraints",
+          new CacheKey(KeyType.CHECK_CONSTRAINTS, req),
+          () -> new CheckConstraintsResponse(delegate.getCheckConstraints(req)));
+      return v.getCheckConstraints();
+    }
+    return delegate.getCheckConstraints(req);
+  }
+
+  @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest req) throws TException {
+    HMSQueryCache queryCache = getQueryCache();
+    if (queryCache != null) {
+      DefaultConstraintsResponse v = queryCache.getOrLoad("getDefaultConstraints",
+          new CacheKey(KeyType.DEFAULT_CONSTRAINTS, req),
+          () -> new DefaultConstraintsResponse(delegate.getDefaultConstraints(req)));
+      return v.getDefaultConstraints();
+    }
+    return delegate.getDefaultConstraints(req);
   }
 
   @Override
@@ -2397,23 +2319,14 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine, String writeIdList) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
       PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
       req.setEngine(engine);
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
-      CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, req);
-      AggrStats v = (AggrStats) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
-        queryCache.put(cacheKey, v);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getAggrStatsForInternal, dbName={}, tblName={}, partNames={}",
-            req.getDbName(), req.getTblName(), req.getPartNames());
-      }
-      return v;
+      return queryCache.getOrLoad("getAggrColStatsFor", new CacheKey(KeyType.AGGR_COL_STATS, req),
+          () -> delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList));
     }
 
     return delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
@@ -2421,30 +2334,20 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
 
   @Override
   public ValidWriteIdList getValidWriteIds(String fullTableName) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_ID, fullTableName);
-      ValidWriteIdList v = (ValidWriteIdList) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.getValidWriteIds(fullTableName);
-        queryCache.put(cacheKey, v);
-      }
-      return v;
+      return queryCache.getOrLoad("getValidWriteIds", new CacheKey(KeyType.VALID_WRITE_ID, fullTableName),
+          () -> delegate.getValidWriteIds(fullTableName));
     }
     return delegate.getValidWriteIds(fullTableName);
   }
 
   @Override
   public ValidWriteIdList getValidWriteIds(String fullTableName, Long writeId) throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
-      CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_ID, fullTableName, writeId);
-      ValidWriteIdList v = (ValidWriteIdList) queryCache.get(cacheKey);
-      if (v == null) {
-        v = delegate.getValidWriteIds(fullTableName, writeId);
-        queryCache.put(cacheKey, v);
-      }
-      return v;
+      return queryCache.getOrLoad("getValidWriteIds", new CacheKey(KeyType.VALID_WRITE_ID, fullTableName, writeId),
+          () -> delegate.getValidWriteIds(fullTableName, writeId));
     }
     return delegate.getValidWriteIds(fullTableName, writeId);
   }
@@ -2452,113 +2355,16 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   @Override
   public List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
       throws TException {
-    Map<Object, Object> queryCache = getQueryCache();
+    HMSQueryCache queryCache = getQueryCache();
     if (queryCache != null) {
       GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tablesList);
       rqst.setValidTxnList(validTxnList);
-
-      MapWrapper cache = new MapWrapper(queryCache);
-      // 1) Retrieve from the cache those ids present, gather the rest
-      Pair<List<TableValidWriteIds>, List<String>> p = getValidWriteIdsCache(cache, rqst);
-      List<String> fullTableNamesMissing = p.getRight();
-      List<TableValidWriteIds> tblValidWriteIds = p.getLeft();
-      // 2) If they were all present in the cache, return
-      if (fullTableNamesMissing.isEmpty()) {
-        return tblValidWriteIds;
-      }
-      // 3) If they were not, gather the remaining
-      List<TableValidWriteIds> r = delegate.getValidWriteIds(fullTableNamesMissing, validTxnList);
-      // 4) Populate the cache
-      List<TableValidWriteIds> newTblValidWriteIds = loadValidWriteIdsCache(cache, r, rqst);
-      // 5) Sort result (in case there is any assumption) and return
-      return computeValidWriteIdsFinal(rqst, tblValidWriteIds, newTblValidWriteIds);
+      return queryCache.getValidWriteIds(rqst, missing -> delegate.getValidWriteIds(missing, validTxnList));
     }
     return delegate.getValidWriteIds(tablesList, validTxnList);
   }
 
-  private Pair<List<TableValidWriteIds>, List<String>> getValidWriteIdsCache(CacheI cache,
-      GetValidWriteIdsRequest rqst) {
-    List<String> fullTableNamesMissing = new ArrayList<>();
-    List<TableValidWriteIds> tblValidWriteIds = new ArrayList<>();
-    for (String fullTableName : rqst.getFullTableNames()) {
-      CacheKey cacheKey =
-          new CacheKey(KeyType.VALID_WRITE_IDS, fullTableName, rqst.getValidTxnList(), rqst.getWriteId());
-      TableValidWriteIds v = (TableValidWriteIds) cache.get(cacheKey);
-      if (v == null) {
-        fullTableNamesMissing.add(fullTableName);
-      } else {
-        LOG.debug(
-            "Query level HMS cache: method=getValidWriteIdsInternal, fullTableName={}",
-            fullTableName);
-        tblValidWriteIds.add(v);
-      }
-    }
-    return Pair.of(tblValidWriteIds, fullTableNamesMissing);
-  }
-
-  private List<TableValidWriteIds> loadValidWriteIdsCache(CacheI cache, List<TableValidWriteIds> r,
-      GetValidWriteIdsRequest rqst) {
-    List<TableValidWriteIds> newTblValidWriteIds = new ArrayList<>();
-    for (TableValidWriteIds tableValidWriteIds : r) {
-      newTblValidWriteIds.add(tableValidWriteIds);
-      // Add to the cache
-      CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_IDS,
-          tableValidWriteIds.getFullTableName(), rqst.getValidTxnList(), rqst.getWriteId());
-      cache.put(cacheKey, tableValidWriteIds);
-    }
-    return newTblValidWriteIds;
-  }
-
-  private List<TableValidWriteIds> computeValidWriteIdsFinal(GetValidWriteIdsRequest rqst,
-      List<TableValidWriteIds> tblValidWriteIds, List<TableValidWriteIds> newTblValidWriteIds) {
-    List<TableValidWriteIds> result = new ArrayList<>();
-    int i = 0, j = 0;
-    for (String fullTableName : rqst.getFullTableNames()) {
-      if (i >= tblValidWriteIds.size() || j >= newTblValidWriteIds.size()) {
-        break;
-      }
-      if (tblValidWriteIds.get(i).getFullTableName().equals(fullTableName)) {
-        result.add(tblValidWriteIds.get(i));
-        i++;
-      } else if (newTblValidWriteIds.get(j).getFullTableName().equals(fullTableName)) {
-        result.add(newTblValidWriteIds.get(j));
-        j++;
-      }
-    }
-    while (i < tblValidWriteIds.size()) {
-      result.add(tblValidWriteIds.get(i));
-      i++;
-    }
-    while (j < newTblValidWriteIds.size()) {
-      result.add(newTblValidWriteIds.get(j));
-      j++;
-    }
-    return result;
-  }
-
-  /**
-   * Wrapper to create a cache around a Map.
-   */
-  private static class MapWrapper implements CacheI {
-
-    final Map<Object, Object> m;
-
-    protected MapWrapper(Map<Object, Object> m) {
-      this.m = m;
-    }
-
-    @Override
-    public void put(Object k, Object v) {
-      m.put(k, v);
-    }
-
-    @Override
-    public Object get(Object k) {
-      return m.get(k);
-    }
-  }
-
-  private Map<Object, Object> getQueryCache() {
+  private HMSQueryCache getQueryCache() {
     String queryId = MetaStoreClientCacheUtils.getQueryId();
     if (queryId != null) {
       SessionState ss = SessionState.get();
@@ -2580,7 +2386,12 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       if (validTxnsList == null) {
         return HiveMetaStoreClientUtils.getValidWriteIdList(dbName, tblName, conf);
       }
-      if (!AcidUtils.isTransactionalTable(getTable(dbName, tblName))) {
+      // the same request Hive.getTable sends, so that both share one query-level cache entry
+      GetTableRequest tableRequest = new GetTableRequest(dbName, tblName);
+      tableRequest.setCatName(getDefaultCatalog(conf));
+      tableRequest.setGetColumnStats(false);
+      tableRequest.setEngine(Constants.HIVE_ENGINE);
+      if (!AcidUtils.isTransactionalTable(getTable(tableRequest))) {
         return null;
       }
       final String validWriteIds = Hive.get().getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);

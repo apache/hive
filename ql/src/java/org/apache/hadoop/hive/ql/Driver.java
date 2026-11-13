@@ -23,7 +23,6 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -45,6 +44,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.client.HMSQueryCache;
 import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
@@ -823,7 +823,7 @@ public class Driver implements IDriver {
       if (SessionState.get() != null) {
         QueryState queryState = getQueryState();
         // If the driver object is reused for several queries, make sure we empty the HMS query cache
-        Map<Object, Object> queryCache = SessionState.get().getQueryCache(queryState.getQueryId());
+        HMSQueryCache queryCache = SessionState.get().getQueryCache(queryState.getQueryId());
         if (queryCache != null) {
           queryCache.clear();
         }
