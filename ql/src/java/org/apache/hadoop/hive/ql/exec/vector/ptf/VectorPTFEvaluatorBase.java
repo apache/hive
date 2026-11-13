@@ -66,7 +66,6 @@ public abstract class VectorPTFEvaluatorBase {
   protected final int outputColumnNum;
   private boolean nullsLast;
   private boolean respectNulls = true;
-
   protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
   public VectorPTFEvaluatorBase(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
@@ -228,4 +227,5 @@ public abstract class VectorPTFEvaluatorBase {
     throw new HiveException(
         "No streaming group result precomputation for " + this.getClass().getName());
   }
+
 }
