@@ -96,7 +96,7 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     try {
       LOGGER.debug("Adding properties to input job conf");
       Properties properties = tableDesc.getProperties();
-      JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties);
+      JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties, tableDesc.getDbName());
     } catch (Exception e) {
       throw new IllegalArgumentException(e);
     }
@@ -118,7 +118,7 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     try {
       LOGGER.debug("Adding secrets to input job conf");
       Properties properties = tableDesc.getProperties();
-      JdbcStorageConfigManager.copySecretsToJob(properties, jobSecrets);
+      JdbcStorageConfigManager.copySecretsToJob(properties, jobSecrets, tableDesc.getDbName());
     } catch (Exception e) {
       throw new IllegalArgumentException(e);
     }
@@ -129,7 +129,7 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     try {
       LOGGER.debug("Adding properties to input job conf");
       Properties properties = tableDesc.getProperties();
-      JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties);
+      JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties, tableDesc.getDbName());
     } catch (Exception e) {
       throw new IllegalArgumentException(e);
     }
