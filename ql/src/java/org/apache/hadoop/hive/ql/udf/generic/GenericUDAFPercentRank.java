@@ -34,6 +34,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 
+/**
+ * Generic UDAF for the PERCENT_RANK window function.
+ */
 @Description(
         name = "percent_rank",
         value = "_FUNC_(x) PERCENT_RANK is similar to CUME_DIST, but it uses rank values rather " +
