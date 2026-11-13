@@ -244,10 +244,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           // Initialize repl dump metric collector for all replication stage (Bootstrap, incremental, pre-optimised and optimised bootstrap)
           ReplicationMetricCollector dumpMetricCollector = initReplicationDumpMetricCollector(hiveDumpRoot, work.isBootstrap(), createEventMarker /*isPreOptimisedBootstrap*/, isFailoverTarget);
           work.setMetricCollector(dumpMetricCollector);
-          if (shouldDumpAtlasMetadata()) {
-            addAtlasDumpTask(work.isBootstrap(), previousValidHiveDumpPath);
-            LOG.info("Added task to dump atlas metadata.");
-          }
           if (shouldDumpAuthorizationMetadata()) {
             initiateAuthorizationDumpTask();
           }
@@ -439,10 +435,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
   }
 
-  private boolean shouldDumpAtlasMetadata() {
-    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA);
-  }
-
   private Path getCurrentDumpPath(Path dumpRoot, boolean isBootstrap) throws IOException {
     Path lastDumpPath = ReplUtils.getLatestDumpPath(dumpRoot, conf);
     if (lastDumpPath != null && shouldResumePreviousDump(lastDumpPath, isBootstrap)) {
@@ -486,23 +478,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(TaskFactory.get(work, conf)));
     }
   }
-
-  private void addAtlasDumpTask(boolean bootstrap, Path prevHiveDumpDir) {
-    Path atlasDumpDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_ATLAS_BASE_DIR);
-    Path prevAtlasDumpDir = prevHiveDumpDir == null ? null
-                            : new Path(prevHiveDumpDir.getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
-    Path tableListLoc = null;
-    if (!work.replScope.includeAllTables()) {
-      Path tableListDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + "/" + ReplUtils.REPL_TABLE_LIST_DIR_NAME);
-      tableListLoc = new Path(tableListDir, work.dbNameOrPattern.toLowerCase());
-    }
-    AtlasDumpWork atlasDumpWork = new AtlasDumpWork(work.dbNameOrPattern, atlasDumpDir, bootstrap, prevAtlasDumpDir,
-           tableListLoc, work.getMetricCollector());
-    Task<?> atlasDumpTask = TaskFactory.get(atlasDumpWork, conf);
-    childTasks = new ArrayList<>();
-    childTasks.add(atlasDumpTask);
-  }
-
 
   private void finishRemainingTasks() throws HiveException {
     Database database = getHive().getDatabase(work.dbNameOrPattern);
