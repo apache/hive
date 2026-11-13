@@ -31,9 +31,19 @@ import java.sql.SQLException;
 
 public class GetHighWaterMarkHandler implements QueryHandler<Long> {
   
+  /**
+   * Highest txn id known to have been allocated/committed, even if the corresponding row was
+   * already removed from {@code TXNS} by empty-txn cleanup (OCR-2541 / HIVE-23048 HWM regression).
+   */
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return "SELECT MAX(\"TXN_ID\") FROM \"TXNS\"";
+    // The explicit derived column list (AS t(m)) is required by Derby: it does not infer the
+    // column name of a UNION ALL derived table from an inner alias.
+    return "SELECT MAX(t.m) FROM ("
+        + "SELECT MAX(\"TXN_ID\") AS m FROM \"TXNS\" "
+        + "UNION ALL SELECT MAX(\"T2W_TXNID\") AS m FROM \"TXN_TO_WRITE_ID\" "
+        + "UNION ALL SELECT MAX(\"CTC_TXNID\") AS m FROM \"COMPLETED_TXN_COMPONENTS\""
+        + ") AS t(m)";
   }
 
   @Override

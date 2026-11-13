@@ -83,9 +83,13 @@ INSERT INTO TXNS (TXN_ID, TXN_STATE, TXN_STARTED, TXN_LAST_HEARTBEAT, TXN_USER, 
 -- DECLARE max_txn NUMBER;
 -- BEGIN
 --    SELECT MAX(TXN_ID) + 1 INTO max_txn FROM TXNS;
---    EXECUTE IMMEDIATE 'CREATE SEQUENCE TXNS_TXN_ID_SEQ INCREMENT BY 1 START WITH ' || max_txn || ' CACHE 20';
+--    EXECUTE IMMEDIATE 'CREATE SEQUENCE TXNS_TXN_ID_SEQ INCREMENT BY 1 START WITH ' || max_txn || ' CACHE 20 ORDER';
 -- END;
-CREATE SEQUENCE TXNS_TXN_ID_SEQ INCREMENT BY 1 START WITH 1000000001 CACHE 20;
+-- ORDER is required. Oracle defaults to NOORDER, so on RAC each instance caches its own
+-- block and TXN_IDs stop increasing with time. The metastore relies on that ordering: a
+-- reader excludes every id above its own, so an out-of-order id leaves an already committed
+-- writer above a later reader's high water mark and its table reads empty. OCR-2541.
+CREATE SEQUENCE TXNS_TXN_ID_SEQ INCREMENT BY 1 START WITH 1000000001 CACHE 20 ORDER;
 ALTER TABLE TXNS MODIFY TXN_ID default TXNS_TXN_ID_SEQ.nextval;
 
 RENAME NEXT_TXN_ID TO TXN_LOCK_TBL;
