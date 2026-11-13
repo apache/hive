@@ -159,7 +159,6 @@ set hive.explain.user=false;
 set hive.auto.convert.join=true;
 set hive.vectorized.execution.enabled=true;
 set hive.auto.convert.join.noconditionaltask.size=200000000;
-set hive.optimize.index.filter=true;
 
 -- fixed bucket pruning off
 set hive.tez.bucket.pruning=false;

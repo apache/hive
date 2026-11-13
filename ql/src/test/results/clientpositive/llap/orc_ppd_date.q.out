@@ -420,6 +420,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: test_lrl
+          filterExpr: (c = DATE'1900-01-01') (type: boolean)
           Filter Operator
             predicate: (c = DATE'1900-01-01') (type: boolean)
             Select Operator
@@ -469,6 +470,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_lrl
+                  filterExpr: (c like '1900-01-01%') (type: boolean)
                   Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c like '1900-01-01%') (type: boolean)

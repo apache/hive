@@ -5,7 +5,6 @@ set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=true;
 set hive.tez.dynamic.partition.pruning=true;
 set hive.optimize.metadataonly=false;
-set hive.optimize.index.filter=true;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask = true;
 set hive.auto.convert.join.noconditionaltask.size = 10000000;
