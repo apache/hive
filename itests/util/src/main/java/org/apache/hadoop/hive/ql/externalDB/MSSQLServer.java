@@ -42,7 +42,7 @@ public class MSSQLServer extends DockerizedDatabase {
 
   @Override
   public String getDockerImageName() {
-    return "mcr.microsoft.com/mssql/server:2019-latest";
+    return "mcr.microsoft.com/mssql/server:2019-CU32-ubuntu-20.04";
   }
 
   @Override

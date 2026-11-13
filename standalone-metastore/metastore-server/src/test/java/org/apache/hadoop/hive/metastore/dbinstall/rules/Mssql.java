@@ -27,7 +27,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class Mssql extends DatabaseRule {
   private final JdbcDatabaseContainer<?> container =
-      new MSSQLServerContainer<>(DockerImageName.parse("mcr.microsoft.com/mssql/server:2019-latest")).acceptLicense();
+      new MSSQLServerContainer<>(DockerImageName.parse("mcr.microsoft.com/mssql/server:2019-CU32-ubuntu-20.04")).acceptLicense();
 
   @Override
   public void before() {
