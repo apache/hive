@@ -133,7 +133,7 @@ public class SQLOperation extends ExecuteStatementOperation {
 
     setupSessionIO(parentSession.getSessionState());
 
-    queryInfo = new QueryInfo(getState().toString(), getParentSession().getUserName(),
+    queryInfo = new QueryInfo(getState().toTOperationState(), getParentSession().getUserName(),
         getExecutionEngine(), getParentSession().getSessionHandle().getHandleIdentifier().toString(),
         getHandle().getHandleIdentifier().toString());
 
@@ -631,7 +631,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       if (metrics.isPresent() && submittedQryScp.isPresent()) {
         metrics.get().endScope(submittedQryScp.get());
       }
-      queryInfo.updateState(state.toString());
+      queryInfo.updateState(state.toTOperationState());
       break;
     case CLOSED:
       queryInfo.setEndTime();
@@ -642,7 +642,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         metrics.get().endScope(submittedQryScp.get());
       }
       markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_FAILED_QUERIES);
-      queryInfo.updateState(state.toString());
+      queryInfo.updateState(state.toTOperationState());
       break;
     case FINISHED:
       queryInfo.setRuntime(getOperationComplete() - getOperationStart());
@@ -650,7 +650,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         metrics.get().endScope(submittedQryScp.get());
       }
       markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_SUCCEEDED_QUERIES);
-      queryInfo.updateState(state.toString());
+      queryInfo.updateState(state.toTOperationState());
       HiveSessionImpl impl = PersistableSessionUtils.unwrapSession(parentSession);
       if (impl != null) {
         impl.onOperationFinished(statement);
@@ -667,7 +667,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     case UNKNOWN:
       /* fall through */
     default:
-      queryInfo.updateState(state.toString());
+      queryInfo.updateState(state.toTOperationState());
       break;
     }
   }
