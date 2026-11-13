@@ -1,0 +1,4 @@
+CREATE EXTERNAL TABLE geometry_default_value (
+  id INT,
+  geom GEOMETRY DEFAULT CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY)
+) STORED BY ICEBERG tblproperties('format-version'='3');

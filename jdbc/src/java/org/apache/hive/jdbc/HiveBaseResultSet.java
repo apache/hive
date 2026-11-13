@@ -549,6 +549,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
     }
     switch (type) {
     case BINARY_TYPE:
+    case GEOMETRY_TYPE:
       if (value instanceof String) {
         return ((String) value).getBytes(StandardCharsets.UTF_8);
       }

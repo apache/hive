@@ -175,6 +175,9 @@ public final class LazyPrimitiveObjectInspectorFactory {
     case DECIMAL:
       poi = new LazyHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
       break;
+    case GEOMETRY:
+      poi = new LazyBinaryObjectInspector(typeInfo);
+      break;
     default:
       throw new RuntimeException(
           "Primitive type " + typeInfo.getPrimitiveCategory() + " should not take parameters");

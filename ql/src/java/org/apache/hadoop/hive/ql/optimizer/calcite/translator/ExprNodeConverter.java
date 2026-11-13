@@ -289,6 +289,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()), null);
       case BINARY:
         return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, null);
+      case GEOMETRY:
+        return new ExprNodeConstantDesc(TypeConverter.convert(lType), null);
       case DECIMAL:
         return new ExprNodeConstantDesc(
             TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(), lType.getScale()), null);

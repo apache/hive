@@ -692,6 +692,7 @@ public final class VectorExpressionWriterFactory {
               return genVectorExpressionWritableVoid(
                   (VoidObjectInspector) fieldObjInspector);
           case BINARY:
+          case GEOMETRY:
             return genVectorExpressionWritableBinary(
                 (SettableBinaryObjectInspector) fieldObjInspector);
           case STRING:

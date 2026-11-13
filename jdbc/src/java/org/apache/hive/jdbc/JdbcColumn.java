@@ -157,6 +157,8 @@ public class JdbcColumn {
       return Type.DECIMAL_TYPE;
     case "binary":
       return Type.BINARY_TYPE;
+    case serdeConstants.GEOMETRY_TYPE_NAME:
+      return Type.GEOMETRY_TYPE;
     case "map":
       return Type.MAP_TYPE;
     case "array":
@@ -225,6 +227,8 @@ public class JdbcColumn {
         return serdeConstants.DECIMAL_TYPE_NAME;
       case "binary":
         return serdeConstants.BINARY_TYPE_NAME;
+      case serdeConstants.GEOMETRY_TYPE_NAME:
+        return serdeConstants.GEOMETRY_TYPE_NAME;
       case "void":
         /* fall through */
       case "null":

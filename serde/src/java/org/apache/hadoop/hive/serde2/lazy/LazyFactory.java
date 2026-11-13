@@ -139,6 +139,7 @@ public final class LazyFactory {
     case INTERVAL_DAY_TIME:
       return new LazyHiveIntervalDayTime((LazyHiveIntervalDayTimeObjectInspector) oi);
     case BINARY:
+    case GEOMETRY:
       return new LazyBinary((LazyBinaryObjectInspector) oi);
     case DECIMAL:
       return new LazyHiveDecimal((LazyHiveDecimalObjectInspector) oi);
@@ -170,6 +171,7 @@ public final class LazyFactory {
     case DOUBLE:
       return new LazyDioDouble((LazyDoubleObjectInspector) poi);
     case BINARY:
+    case GEOMETRY:
       return new LazyDioBinary((LazyBinaryObjectInspector) poi);
     case DECIMAL:
       return new LazyDioHiveDecimal((LazyHiveDecimalObjectInspector) poi);

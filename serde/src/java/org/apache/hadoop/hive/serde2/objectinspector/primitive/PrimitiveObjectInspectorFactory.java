@@ -102,6 +102,8 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableHiveIntervalDayTimeObjectInspector();
   public static final WritableBinaryObjectInspector writableBinaryObjectInspector =
       new WritableBinaryObjectInspector();
+  public static final WritableBinaryObjectInspector writableGeometryObjectInspector =
+      new WritableBinaryObjectInspector(TypeInfoFactory.geometryTypeInfo);
   public static final WritableHiveDecimalObjectInspector writableHiveDecimalObjectInspector =
       new WritableHiveDecimalObjectInspector(TypeInfoFactory.decimalTypeInfo);
 
@@ -144,6 +146,7 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         writableBinaryObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.decimalTypeInfo, writableHiveDecimalObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.geometryTypeInfo, writableGeometryObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.nanoTimestampTypeInfo,
         writableNanoTimestampObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.timestampNanoLocalTZTypeInfo,
@@ -174,6 +177,7 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToWritableOI.put(PrimitiveCategory.INTERVAL_DAY_TIME, writableHiveIntervalDayTimeObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.BINARY, writableBinaryObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DECIMAL, writableHiveDecimalObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.GEOMETRY, writableGeometryObjectInspector);
   }
 
   public static final JavaBooleanObjectInspector javaBooleanObjectInspector =
@@ -214,6 +218,8 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaHiveIntervalDayTimeObjectInspector();
   public static final JavaBinaryObjectInspector javaByteArrayObjectInspector =
       new JavaBinaryObjectInspector();
+  public static final JavaBinaryObjectInspector javaGeometryObjectInspector =
+      new JavaBinaryObjectInspector(TypeInfoFactory.geometryTypeInfo);
   public static final JavaHiveDecimalObjectInspector javaHiveDecimalObjectInspector =
       new JavaHiveDecimalObjectInspector(TypeInfoFactory.decimalTypeInfo);
 
@@ -256,6 +262,7 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         javaByteArrayObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.decimalTypeInfo, javaHiveDecimalObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.geometryTypeInfo, javaGeometryObjectInspector);
   }
 
   private static Map<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> primitiveCategoryToJavaOI =
@@ -279,6 +286,7 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToJavaOI.put(PrimitiveCategory.INTERVAL_DAY_TIME, javaHiveIntervalDayTimeObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.BINARY, javaByteArrayObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.DECIMAL, javaHiveDecimalObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.GEOMETRY, javaGeometryObjectInspector);
   }
 
   /**
@@ -322,6 +330,9 @@ public final class PrimitiveObjectInspectorFactory {
       break;
     case DECIMAL:
       result = new WritableHiveDecimalObjectInspector((DecimalTypeInfo) typeInfo);
+      break;
+    case GEOMETRY:
+      result = new WritableBinaryObjectInspector(typeInfo);
       break;
     default:
       throw new RuntimeException("Failed to create object inspector for " + typeInfo);
@@ -381,6 +392,8 @@ public final class PrimitiveObjectInspectorFactory {
       return new WritableConstantHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo, (HiveDecimalWritable)value);
     case BINARY:
       return new WritableConstantBinaryObjectInspector((BytesWritable)value);
+    case GEOMETRY:
+      return new WritableConstantBinaryObjectInspector(typeInfo, (BytesWritable) value);
     case VOID:
       return new WritableVoidObjectInspector();
     default:
@@ -430,6 +443,9 @@ public final class PrimitiveObjectInspectorFactory {
       break;
     case DECIMAL:
       result = new JavaHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
+      break;
+    case GEOMETRY:
+      result = new JavaBinaryObjectInspector(typeInfo);
       break;
     default:
       throw new RuntimeException("Failed to create Java ObjectInspector for " + typeInfo);

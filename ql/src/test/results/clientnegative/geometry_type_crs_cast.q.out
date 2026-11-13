@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10014]: Line 1:107 Wrong arguments ''0101000000000000000000F03F0000000000000040'': Cannot cast geometry('EPSG:4326') to geometry('EPSG:3857'): the coordinate reference systems differ. Casting does not transform coordinates; to relabel the CRS use CAST(CAST(value AS BINARY) AS geometry('EPSG:3857'))

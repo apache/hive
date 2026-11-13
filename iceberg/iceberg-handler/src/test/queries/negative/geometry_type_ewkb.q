@@ -1,0 +1,4 @@
+CREATE EXTERNAL TABLE geometry_ewkb (id INT, geom GEOMETRY) STORED BY ICEBERG tblproperties('format-version'='3');
+
+-- EWKB point with SRID 4326
+INSERT INTO geometry_ewkb SELECT 1, unhex('0101000020E6100000000000000000F03F0000000000000040');

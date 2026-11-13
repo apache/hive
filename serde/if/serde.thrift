@@ -65,6 +65,7 @@ const string BINARY_TYPE_NAME    = "binary";
 const string INTERVAL_YEAR_MONTH_TYPE_NAME = "interval_year_month";
 const string INTERVAL_DAY_TIME_TYPE_NAME   = "interval_day_time";
 const string TIMESTAMPLOCALTZ_TYPE_NAME = "timestamp with local time zone";
+const string GEOMETRY_TYPE_NAME  = "geometry";
 
 const string LIST_TYPE_NAME = "array";
 const string MAP_TYPE_NAME  = "map";
@@ -103,6 +104,7 @@ const set<string> PrimitiveTypes  = [
   DECIMAL_TYPE_NAME
   BINARY_TYPE_NAME
   TIMESTAMPLOCALTZ_TYPE_NAME
+  GEOMETRY_TYPE_NAME
 ],
 
 const set<string> CollectionTypes = [ LIST_TYPE_NAME MAP_TYPE_NAME ],

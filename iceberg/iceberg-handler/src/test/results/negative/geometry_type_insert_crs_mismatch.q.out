@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_insert_crs_mismatch (id INT, geom GEOMETRY('EPSG:3857')) STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_insert_crs_mismatch
+POSTHOOK: query: CREATE EXTERNAL TABLE geometry_insert_crs_mismatch (id INT, geom GEOMETRY('EPSG:3857')) STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_insert_crs_mismatch
+FAILED: UDFArgumentException Cannot cast geometry('EPSG:4326') to geometry('EPSG:3857'): the coordinate reference systems differ. Casting does not transform coordinates; to relabel the CRS use CAST(CAST(value AS BINARY) AS geometry('EPSG:3857'))

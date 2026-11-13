@@ -1,0 +1,5 @@
+PREHOOK: query: CREATE TABLE geometry_test_partitioned (id INT) PARTITIONED BY (geom GEOMETRY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_test_partitioned
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Partition column name geom cannot be of type 'geometry'.

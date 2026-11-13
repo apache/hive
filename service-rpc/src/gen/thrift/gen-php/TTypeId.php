@@ -71,6 +71,8 @@ final class TTypeId
 
     public const VARIANT_TYPE = 24;
 
+    public const GEOMETRY_TYPE = 25;
+
     public static $names = [
         0 => 'BOOLEAN_TYPE',
         1 => 'TINYINT_TYPE',
@@ -97,5 +99,6 @@ final class TTypeId
         22 => 'TIMESTAMPLOCALTZ_TYPE',
         23 => 'UNKNOWN_TYPE',
         24 => 'VARIANT_TYPE',
+        25 => 'GEOMETRY_TYPE',
     ];
 }

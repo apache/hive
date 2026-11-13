@@ -177,8 +177,10 @@ public final class SerDeUtils {
       Object obj = ObjectInspectorUtils.copyToStandardObject(val, valOI,
           ObjectInspectorUtils.ObjectInspectorCopyOption.JAVA);
       // uses string type for binary before HIVE_CLI_SERVICE_PROTOCOL_V6
-      if (version < 5 && ((PrimitiveObjectInspector)valOI).getPrimitiveCategory() ==
-          PrimitiveObjectInspector.PrimitiveCategory.BINARY) {
+      PrimitiveObjectInspector.PrimitiveCategory category =
+          ((PrimitiveObjectInspector) valOI).getPrimitiveCategory();
+      if (version < 5 && (category == PrimitiveObjectInspector.PrimitiveCategory.BINARY ||
+          category == PrimitiveObjectInspector.PrimitiveCategory.GEOMETRY)) {
         // todo HIVE-5269
         return new String((byte[])obj);
       }
@@ -297,7 +299,8 @@ public final class SerDeUtils {
           sb.append('"');
           break;
         }
-        case BINARY: {
+        case BINARY:
+        case GEOMETRY: {
           BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
           Text txt = new Text();
           txt.set(bw.getBytes(), 0, bw.getLength());

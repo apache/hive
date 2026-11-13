@@ -30,6 +30,7 @@ package org.apache.hive.service.rpc.thrift;
     PRIMITIVE_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_DAY_TIME_TYPE);
     PRIMITIVE_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.TIMESTAMPLOCALTZ_TYPE);
     PRIMITIVE_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.UNKNOWN_TYPE);
+    PRIMITIVE_TYPES.add(org.apache.hive.service.rpc.thrift.TTypeId.GEOMETRY_TYPE);
   }
 
   public static final java.util.Set<TTypeId> COMPLEX_TYPES = java.util.EnumSet.noneOf(TTypeId.class);
@@ -59,6 +60,7 @@ package org.apache.hive.service.rpc.thrift;
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.DECIMAL_TYPE, "DECIMAL");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.DOUBLE_TYPE, "DOUBLE");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.FLOAT_TYPE, "FLOAT");
+    TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.GEOMETRY_TYPE, "GEOMETRY");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_DAY_TIME_TYPE, "INTERVAL_DAY_TIME");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.INTERVAL_YEAR_MONTH_TYPE, "INTERVAL_YEAR_MONTH");
     TYPE_NAMES.put(org.apache.hive.service.rpc.thrift.TTypeId.INT_TYPE, "INT");
