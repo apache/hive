@@ -349,6 +349,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
           try {
             Thread.sleep(5000); // 5 seconds
           } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
             LOGGER
             .error("InterruptedException received for ExpiredTokenRemover thread "
                 + ie);
@@ -361,6 +362,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
           try {
             Thread.sleep(5000); // 5 seconds
           } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
             LOGGER.error("InterruptedException received for ExpiredTokenRemover thread during " +
                 "wait in exception sleep " + ie);
           }

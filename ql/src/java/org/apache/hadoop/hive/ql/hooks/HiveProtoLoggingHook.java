@@ -351,6 +351,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
             // 0 seconds, for first retry assuming fs object was closed and open will fix it.
             Thread.sleep(1000 * retryCount * retryCount);
           } catch (InterruptedException e1) {
+            Thread.currentThread().interrupt();
             LOG.warn("Got interrupted in retry sleep.", e1);
           }
         }

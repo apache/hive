@@ -239,6 +239,9 @@ public class MetaStoreServerUtils {
             aggrColStatObjs.add(future.get());
           }
         } catch (InterruptedException | ExecutionException e) {
+          if (e instanceof InterruptedException) {
+            Thread.currentThread().interrupt();
+          }
           LOG.debug(e.getMessage());
           pool.shutdownNow();
           throw new MetaException(e.toString());

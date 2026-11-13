@@ -204,6 +204,9 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
           future.get();
       }
     } catch (ExecutionException | InterruptedException e) {
+      if (e instanceof InterruptedException) {
+        Thread.currentThread().interrupt();
+      }
       for (Future<?> f : lookupFutures) {
         f.cancel(true);
       }
