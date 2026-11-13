@@ -23,10 +23,12 @@ import com.google.common.collect.Lists;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -49,7 +51,9 @@ import org.apache.hadoop.hive.metastore.api.CompactionMetricsDataRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionMetricsDataStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
 import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
@@ -70,6 +74,7 @@ import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
@@ -91,6 +96,7 @@ import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchResponse;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogResponse;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
@@ -98,16 +104,29 @@ import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
+import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsDataConverter;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
+
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartValsFromName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 /**
  *  Transaction and locking methods
@@ -491,6 +510,11 @@ public abstract class TransactionHandler extends DeprecatedHandler {
   }
   @Override
   public CompactionResponse compact2(CompactionRequest rqst) throws TException {
+    // compact2 is a maintenance API: trusted callers (HiveServer2, the compactor) have already been authorized
+    // for the operation, everybody else is authorized against the requested table.
+    if (!hasProxyPrivilege()) {
+      authorizeCompactionRequest(rqst, false);
+    }
     return getTxnHandler().compact(rqst);
   }
 
@@ -505,7 +529,135 @@ public abstract class TransactionHandler extends DeprecatedHandler {
   @Override
   public boolean submit_for_cleanup(CompactionRequest rqst, long highestWriteId, long txnId)
       throws TException {
+    if (!hasProxyPrivilege()) {
+      authorizeCompactionRequest(rqst, true);
+    }
     return getTxnHandler().submitForCleanup(rqst, highestWriteId, txnId);
+  }
+
+  private Table getTable(CompactionRequest rqst, boolean cleanup) throws TException {
+    rqst.validate();
+    String[] parsedDbName = parseDbName(rqst.getDbname(), conf);
+    String catName = parsedDbName[CAT_NAME];
+    String dbName = parsedDbName[DB_NAME];
+    if (!getDefaultCatalog(conf).equalsIgnoreCase(catName)) {
+      // the compaction queue has no notion of catalogs, so the request would end up on the default catalog
+      throw new MetaException("Compaction and cleanup requests are only supported for the default catalog, got "
+          + catName);
+    }
+
+    String requestedLocation = rqst.getProperties() == null ? null : rqst.getProperties().get(META_TABLE_LOCATION);
+    boolean hasPartitionName = rqst.isSetPartitionname() && rqst.getPartitionname() != null;
+    GetTableRequest getTableRequest = new GetTableRequest(dbName, rqst.getTablename());
+    getTableRequest.setCatName(catName);
+    rqst.setDbname(dbName);
+
+    Table table;
+    try {
+      table = get_table_core(getTableRequest);
+      // the listeners (e.g. the transactional validation) may modify the new table, so the old state must be kept
+      firePreEvent(new PreAlterTableEvent(table, table.deepCopy(), this));
+      return table;
+    } catch (NoSuchObjectException e) {
+      if (!cleanup || requestedLocation == null || hasPartitionName) {
+        throw e;
+      }
+      Database db = get_database_core(catName, dbName);
+      // there is no table to authorize against
+      firePreEvent(new PreReadDatabaseEvent(db, this));
+      table = new TableBuilder()
+          .inDb(db)
+          .setTableName(normalizeIdentifier(rqst.getTablename()))
+          .setOwner(db.getOwnerName() != null ? db.getOwnerName() : "dummy")
+          .setCols(new ArrayList<>())
+          .addTableParam(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true")
+          .addTableParam(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "insert_only")
+          .build(conf);
+      CreateTableRequest createTableRequest = new CreateTableRequest(table);
+      // the capability that is needed to create an insert-only managed table
+      createTableRequest.setProcessorCapabilities(Collections.singletonList("HIVEMANAGEDINSERTWRITE"));
+      return translate_table_dryrun(createTableRequest);
+    }
+  }
+
+  /**
+   * Authorize a compaction/cleanup request of a caller that has no proxy privilege and derive the
+   * server-side request attributes: the table is authorized with a {@link PreAlterTableEvent}, the
+   * canonical db/table names are used for the queued request, the run-as user is derived from the
+   * storage location and a caller-supplied cleanup location must stay inside the table/partition location.
+   *
+   * <p>A cleanup request ({@code cleanup == true}) of a location may also target a table that does not exist, e.g.
+   * the rollback of a failed CTAS, which leaves the data behind but never creates the table. Such a request is
+   * authorized with a {@link PreReadDatabaseEvent} and is only accepted when the location is the managed location
+   * of the table, see {@link #validateLocation}.
+   *
+   * @throws NoSuchObjectException if the table or the partition does not exist and nothing to do
+   */
+  private void authorizeCompactionRequest(CompactionRequest rqst, boolean cleanup)
+      throws TException {
+    String requestedLocation = rqst.getProperties() == null ? null : rqst.getProperties().get(META_TABLE_LOCATION);
+    boolean hasPartitionName = rqst.isSetPartitionname() && rqst.getPartitionname() != null;
+    Table table = getTable(rqst, cleanup);
+
+    String location = table.getSd() == null ? null : table.getSd().getLocation();
+    // The partitions of non-native tables (e.g. Iceberg) are not stored in HMS: they are resolved by the storage
+    // handler, so such requests are authorized and validated against the table.
+    if (hasPartitionName && !MetaStoreUtils.isNonNativeTable(table)) {
+      List<String> partVals = getPartValsFromName(table, rqst.getPartitionname());
+      Partition partition = getMS().getPartition(table.getCatName(), table.getDbName(), table.getTableName(), partVals);
+      // queue the canonical partition name, the Cleaner looks the partition up by it
+      rqst.setPartitionname(Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()));
+      location = partition.getSd().getLocation();
+    }
+    if (location == null) {
+      throw new MetaException("Cannot determine storage location of " + table.getDbName() + "."
+          + table.getTableName() + "; compaction is not supported for this table or partition");
+    }
+
+    String runAsLocation = location;
+    if (requestedLocation != null) {
+      // The Cleaner purges the supplied location as is, so it must not point outside the authorized table
+      Path requested = normalizePath(new Path(requestedLocation));
+      Path tableLocation = normalizePath(new Path(location));
+      if (!validateLocation(requested, tableLocation)) {
+        throw new MetaException("Cleanup location " + requestedLocation + " is not inside the location of "
+            + table.getDbName() + "." + table.getTableName());
+      }
+      rqst.putToProperties(META_TABLE_LOCATION, requested.toString());
+    }
+    try {
+      rqst.setRunas(TxnUtils.findUserToRunAs(runAsLocation, table, conf));
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new MetaException("Interrupted while determining the run-as user of the compaction request");
+    } catch (IOException e) {
+      throw new MetaException("Cannot determine the run-as user of the compaction request: " + e.getMessage());
+    }
+  }
+
+  /**
+   * @return true if the location is the managed location of a table or a sub-directory of it,
+   * or the same for the table location of a soft-delete table, i.e. {@code <managed location>.v<txnId>}
+   */
+  private static boolean validateLocation(Path location, Path managedTablePath) {
+    if (FileUtils.isPathWithinSubtree(location, managedTablePath)) {
+      return true;
+    }
+    if (location.depth() < managedTablePath.depth() || managedTablePath.getParent() == null) {
+      return false;
+    }
+    // the table directory of a soft-delete table is a sibling of the default one
+    Path requestedLocation = location;
+    for (int depth = location.depth(); depth > managedTablePath.depth(); depth--) {
+      requestedLocation = requestedLocation.getParent();
+    }
+    return managedTablePath.getParent().equals(requestedLocation.getParent())
+        && requestedLocation.getName().matches(Pattern.quote(managedTablePath.getName()) + SOFT_DELETE_TABLE_PATTERN);
+  }
+
+  private Path normalizePath(Path path) throws MetaException {
+    // resolve scheme/authority and strip any "." / ".." segments so that the containment check cannot be bypassed
+    return getWh().getDnsPath(new Path(path.toUri().normalize()));
   }
 
   @Override
