@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
  * Custom health indicator for HMS connectivity.
  * Verifies that HMS is reachable via Thrift, not just that configuration is present.
  * Used by Kubernetes readiness probes to determine if the server is ready to accept traffic.
+ * Only the status is reported; failure causes are logged.
  */
 @Component
 public class HMSReadinessHealthIndicator implements HealthIndicator {
@@ -52,24 +53,18 @@ public class HMSReadinessHealthIndicator implements HealthIndicator {
   public Health health() {
     String hmsThriftUris = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS);
     if (hmsThriftUris == null || hmsThriftUris.isEmpty()) {
-      return Health.down()
-          .withDetail("reason", "HMS Thrift URIs not configured")
-          .build();
+      LOG.warn("HMS connectivity check failed: HMS Thrift URIs not configured");
+      return Health.down().build();
     }
 
     try (HiveMetaStoreClient client = new HiveMetaStoreClient(conf)) {
       // Lightweight call to verify HMS is reachable
       client.getAllDatabases();
-      return Health.up()
-          .withDetail("hmsThriftUris", hmsThriftUris)
-          .withDetail("warehouse", MetastoreConf.getVar(conf, ConfVars.WAREHOUSE))
-          .build();
+      return Health.up().build();
     } catch (Exception e) {
       LOG.warn("HMS connectivity check failed: {}", e.getMessage());
-      return Health.down()
-          .withDetail("hmsThriftUris", hmsThriftUris)
-          .withDetail("error", e.getMessage())
-          .build();
+      LOG.debug("HMS connectivity check failure", e);
+      return Health.down().build();
     }
   }
 }
