@@ -253,16 +253,20 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator, UnaryOperator<String> columnRefsFunc) {
-      StringBuilder whereClause = new StringBuilder(onClauseAsString);
+      StringBuilder whereClause = new StringBuilder(parenthesizePredicate(onClauseAsString));
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-        whereClause.append(" AND ").append(extraPredicate);
+        whereClause.append(" AND ").append(parenthesizePredicate(extraPredicate));
       }
       if (deleteExtraPredicate != null) {
-        whereClause.append(" AND NOT(").append(deleteExtraPredicate).append(")");
+        whereClause.append(" AND ").append(parenthesizePredicate(deleteExtraPredicate)).append(" IS NOT TRUE");
       }
       sqlGenerator.indent().append("WHERE ");
       sqlGenerator.append(columnRefsFunc.apply(whereClause.toString()));
+    }
+
+    protected static String parenthesizePredicate(String predicate) {
+      return "(\n" + predicate + "\n)";
     }
 
     @Override
@@ -276,13 +280,13 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
                                          String hintStr, MultiInsertSqlGenerator sqlGenerator) {
       sqlGenerator.appendDeleteBranch(hintStr);
 
-      sqlGenerator.indent().append("WHERE ").append(onClauseAsString);
+      sqlGenerator.indent().append("WHERE ").append(parenthesizePredicate(onClauseAsString));
       if (extraPredicate != null) {
         //we have WHEN MATCHED AND <boolean expr> THEN DELETE
-        sqlGenerator.append(" AND ").append(extraPredicate);
+        sqlGenerator.append(" AND ").append(parenthesizePredicate(extraPredicate));
       }
       if (updateExtraPredicate != null) {
-        sqlGenerator.append(" AND NOT(").append(updateExtraPredicate).append(")");
+        sqlGenerator.append(" AND ").append(parenthesizePredicate(updateExtraPredicate)).append(" IS NOT TRUE");
       }
       sqlGenerator.append("\n").indent();
       sqlGenerator.appendSortKeys();
