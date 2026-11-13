@@ -791,22 +791,18 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
         success = true;
         return defaultValue;
       }
-      // Allow only keys that start with hive.*, hdfs.*, mapred.* for security
-      // i.e. don't allow access to db password
-      if (!Pattern.matches("(hive|hdfs|mapred|metastore).*", name)) {
+      // Keys must use hive/hdfs/mapred/metastore namespaces so clients can read
+      // cross-component settings while javax.jdo.* and other internal entries stay hidden.
+      // MetastoreConf.isPrintable() additionally blocks known secrets under those prefixes.
+      if (!Pattern.matches("(hive|hdfs|mapred|metastore).*", name)
+          || !MetastoreConf.isPrintable(name)) {
         throw new ConfigValSecurityException("For security reasons, the "
             + "config key " + name + " cannot be accessed");
       }
 
-      String toReturn = defaultValue;
-      try {
-        toReturn = MetastoreConf.get(conf, name);
-        if (toReturn == null) {
-          toReturn = defaultValue;
-        }
-      } catch (RuntimeException e) {
-        LOG.error("RuntimeException thrown in get_config_value - msg: {} cause: {}",
-            e.getMessage(), e.getCause());
+      String toReturn = MetastoreConf.get(conf, name);
+      if (toReturn == null) {
+        toReturn = defaultValue;
       }
       success = true;
       return toReturn;
