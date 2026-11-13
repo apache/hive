@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive.writer;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
@@ -121,23 +122,22 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
   // use a fanout writer if the input is unordered no matter whether fanout writers are enabled
   // clustered writers assume that the position deletes are already ordered by file and position
   static PartitioningWriter<PositionDelete<Record>, DeleteWriteResult> newDeleteWriter(
-      Table table, Map<String, DeleteFileSet> rewritableDeletes, HiveFileWriterFactory writers,
+      Table table, Supplier<Map<String, DeleteFileSet>> rewritableDeletes, HiveFileWriterFactory writers,
       OutputFileFactory files, Context context) {
 
-    Function<CharSequence, PositionDeleteIndex> previousDeleteLoader =
-        PreviousDeleteLoader.create(table, rewritableDeletes);
     FileIO io = table.io();
     boolean inputOrdered = context.inputOrdered();
     long targetFileSize = context.targetDeleteFileSize();
     DeleteGranularity deleteGranularity = context.deleteGranularity();
 
     if (context.useDVs()) {
-      return new PartitioningDVWriter<>(files, previousDeleteLoader);
-    } else if (inputOrdered && rewritableDeletes == null) {
+      return new PartitioningDVWriter<>(files, new PreviousDeleteLoader(table, rewritableDeletes.get()));
+    }
+    // a writer of partition-scoped position deletes rewrites none
+    if (inputOrdered) {
       return new ClusteredPositionDeleteWriter<>(writers, files, io, targetFileSize, deleteGranularity);
     } else {
-      return new FanoutPositionOnlyDeleteWriter<>(
-          writers, files, io, targetFileSize, deleteGranularity, previousDeleteLoader);
+      return new FanoutPositionOnlyDeleteWriter<>(writers, files, io, targetFileSize, deleteGranularity);
     }
   }
 
@@ -158,14 +158,6 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
         return null;
       }
       return deleteLoader.loadPositionDeletes(deleteFileSet, path);
-    }
-
-    public static Function<CharSequence, PositionDeleteIndex> create(
-        Table table, Map<String, DeleteFileSet> deleteFiles) {
-      if (deleteFiles == null) {
-        return path -> null;
-      }
-      return new PreviousDeleteLoader(table, deleteFiles);
     }
   }
 

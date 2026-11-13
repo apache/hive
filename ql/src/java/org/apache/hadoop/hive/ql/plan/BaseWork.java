@@ -517,7 +517,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     OperatorUtils.findOperators(getAllRootOperators(), FileSinkOperator.class).forEach(fs -> {
       LOG.debug("Configuring JobConf for table {}.{}", fs.getConf().getTableInfo().getDbName(),
           fs.getConf().getTableInfo().getTableName());
-      PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
+      PlanUtils.configureJobConf(fs.getConf(), job);
     });
   }
 
