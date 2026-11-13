@@ -568,6 +568,14 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       }
 
       @Override
+      protected boolean canUseDirectSql() throws MetaException {
+        if (colNames != null && !colNames.isEmpty()) {
+          validateTableCols(getTable(), colNames);
+        }
+        return true;
+      }
+
+      @Override
       protected ColumnStatistics getSqlResult() throws MetaException {
         String catName = normalizeIdentifier(tableName.getCat());
         String dbName = normalizeIdentifier(tableName.getDb());
