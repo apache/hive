@@ -16,7 +16,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: (ss_store_sk is not null and ss_hdemo_sk is not null and ss_sold_time_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_72_container, bigKeyColName:ss_hdemo_sk, smallTablePos:1, keyRatio:2.9979791175219683E-4
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_72_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:3.288106095294814E-4
                   Statistics: Num rows: 86404891377 Data size: 1980339026496 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ss_store_sk is not null and ss_hdemo_sk is not null and ss_sold_time_sk is not null) (type: boolean)
@@ -39,21 +39,21 @@ STAGE PLANS:
                           condition map:
                                Inner Join 0 to 1
                           keys:
-                            0 _col2 (type: bigint)
+                            0 _col1 (type: bigint)
                             1 _col0 (type: bigint)
-                          outputColumnNames: _col1
+                          outputColumnNames: _col2
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 259040049 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 284442504 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col1 (type: bigint)
+                              0 _col2 (type: bigint)
                               1 _col0 (type: bigint)
                             input vertices:
                               1 Map 5
-                            Statistics: Num rows: 25904006 Data size: 207232048 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 28410845 Data size: 227286760 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -91,27 +91,6 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: store
-                  filterExpr: (s_store_name = 'ese') (type: boolean)
-                  Statistics: Num rows: 1704 Data size: 163584 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (s_store_name = 'ese') (type: boolean)
-                    Statistics: Num rows: 155 Data size: 14880 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: s_store_sk (type: bigint)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Map 5 
-            Map Operator Tree:
-                TableScan
                   alias: household_demographics
                   filterExpr: (hd_dep_count = 5) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 86400 Basic stats: COMPLETE Column stats: COMPLETE
@@ -128,6 +107,27 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 720 Data size: 5760 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  filterExpr: (s_store_name = 'ese') (type: boolean)
+                  Statistics: Num rows: 1704 Data size: 162704 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (s_store_name = 'ese') (type: boolean)
+                    Statistics: Num rows: 170 Data size: 16320 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: s_store_sk (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 

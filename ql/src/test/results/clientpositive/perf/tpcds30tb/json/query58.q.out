@@ -2181,7 +2181,7 @@ Warning: Map Join MAPJOIN[380][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "i_class",
-            "ndv": 99
+            "ndv": 97
           },
           {
             "name": "i_category_id",
@@ -2191,7 +2191,7 @@ Warning: Map Join MAPJOIN[380][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "i_category",
-            "ndv": 11
+            "ndv": 10
           },
           {
             "name": "i_manufact_id",
@@ -2205,7 +2205,7 @@ Warning: Map Join MAPJOIN[380][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "i_size",
-            "ndv": 8
+            "ndv": 7
           },
           {
             "name": "i_formulation",
@@ -2213,15 +2213,15 @@ Warning: Map Join MAPJOIN[380][bigTable=?] in task 'Reducer 6' is a cross produc
           },
           {
             "name": "i_color",
-            "ndv": 95
+            "ndv": 94
           },
           {
             "name": "i_units",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "i_container",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "i_manager_id",

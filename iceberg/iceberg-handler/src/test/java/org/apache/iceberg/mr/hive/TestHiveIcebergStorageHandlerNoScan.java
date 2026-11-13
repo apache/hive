@@ -39,11 +39,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
@@ -1520,23 +1522,58 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   /**
-   * Checks that HiveIcebergMetaHook doesn't run into failures with undefined alter operation type (e.g. stat updates)
+   * Checks that an alter with undefined alter operation type (e.g. stat updates) takes no lock, and that an alter
+   * without the lock carries the current metadata_location, guarded by the CAS.
    * @throws Exception - any test failure
    */
   @Test
   public void testMetaHookWithUndefinedAlterOperationType() throws Exception {
     Assume.assumeTrue("Enough to check for one type only",
         testTableType.equals(TestTableType.HIVE_CATALOG));
+    assertUnlockedAlterKeepsCurrentMetadataLocation("customers", "true", ImmutableMap.of());
+    assertUnlockedAlterKeepsCurrentMetadataLocation("unlocked_customers", "false",
+        ImmutableMap.of(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, AlterTableType.ADDPROPS.name()));
+  }
+
+  @Test
+  public void testHadoopCatalogStatsAlterSkipsCas() throws Exception {
+    Assume.assumeTrue("Enough to check for one type only",
+        testTableType.equals(TestTableType.HADOOP_CATALOG));
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
         FileFormat.PARQUET, ImmutableList.of());
-    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
+    // HMS doesn't track the table's metadata location
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(identifier);
 
     HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(shell.getHiveConf());
     EnvironmentContext environmentContext = new EnvironmentContext(Maps.newHashMap());
-
     metaHook.preAlterTable(hmsTable, environmentContext);
-    metaHook.commitAlterTable(hmsTable, environmentContext);
+    metaHook.rollbackAlterTable(hmsTable, environmentContext);
+
+    Assert.assertFalse(hmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
+    Assert.assertFalse(environmentContext.getProperties().containsKey(hive_metastoreConstants.EXPECTED_PARAMETER_KEY));
+  }
+
+  private void assertUnlockedAlterKeepsCurrentMetadataLocation(String tableName, String hiveLockEnabled,
+      Map<String, String> contextProperties) throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", tableName);
+    Table table = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of(), 2, ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, hiveLockEnabled));
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(identifier);
+    // a commit after the caller read the table
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    String currentMetadataLocation = TableUtil.metadataFileLocation(testTables.loadTable(identifier));
+
+    HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(shell.getHiveConf());
+    EnvironmentContext environmentContext = new EnvironmentContext(Maps.newHashMap(contextProperties));
+    metaHook.preAlterTable(hmsTable, environmentContext);
+    metaHook.rollbackAlterTable(hmsTable, environmentContext);
+
+    Assert.assertEquals(currentMetadataLocation,
+        hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP));
+    Assert.assertEquals(currentMetadataLocation,
+        environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE));
   }
 
   @Test

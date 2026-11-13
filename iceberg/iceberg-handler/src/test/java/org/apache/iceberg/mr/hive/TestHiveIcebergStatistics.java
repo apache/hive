@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,6 +81,8 @@ import org.apache.iceberg.mr.hive.stats.IcebergPartitionStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergStoredStats;
 import org.apache.iceberg.mr.hive.test.TestTables;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.concurrent.HiveIcebergStorageHandlerStub;
+import org.apache.iceberg.mr.hive.test.concurrent.WithMockedStorageHandler;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.puffin.Blob;
@@ -229,6 +233,47 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
         ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, hiveLockEnabled));
     return identifier;
+  }
+
+  /**
+   * Another client inserts a row between the meta hook and the HMS call of this insert's column statistics state
+   * update: both rows survive, and the insert does not fail.
+   */
+  @Test
+  @WithMockedStorageHandler
+  public void testStatsUpdateDoesNotRevertConcurrentInsert() {
+    // the column statistics state is updated through the meta hook only when Iceberg stores the statistics
+    assumeParquetHiveCatalogIceberg();
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
+        ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, "false"),
+        "'" + HiveIcebergStorageHandlerStub.class.getName() + "'");
+    shell.executeStatement("INSERT INTO customers VALUES (0, 'Alice', 'Brown')");
+
+    // the column statistics state update is the insert's second alter, after the basic statistics one
+    HiveIcebergStorageHandlerStub.setPreAlterTablePostAction(() -> {
+      HiveIcebergStorageHandlerStub.setPreAlterTablePostAction(
+          () -> executeInOtherSession("INSERT INTO customers VALUES (1, 'Bob', 'Green')"));
+      return null;
+    });
+    shell.executeStatement("INSERT INTO customers VALUES (2, 'Trudy', 'Pink')");
+
+    List<Object[]> rows = shell.executeStatement("SELECT customer_id FROM customers ORDER BY customer_id");
+    Assert.assertEquals(ImmutableList.of(0L, 1L, 2L), rows.stream().map(row -> row[0]).toList());
+  }
+
+  private List<Object[]> executeInOtherSession(String statement) throws Exception {
+    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      return executor.submit(() -> {
+        HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
+        try {
+          return shell.executeStatement(statement);
+        } finally {
+          shell.closeSession();
+        }
+      }).get();
+    }
   }
 
   @Test

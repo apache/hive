@@ -712,7 +712,7 @@ Warning: Map Join MAPJOIN[149][bigTable=?] in task 'Reducer 2' is a cross produc
           },
           {
             "name": "wp_autogen_flag",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "wp_customer_sk",
@@ -722,11 +722,11 @@ Warning: Map Join MAPJOIN[149][bigTable=?] in task 'Reducer 2' is a cross produc
           },
           {
             "name": "wp_url",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "wp_type",
-            "ndv": 8
+            "ndv": 7
           },
           {
             "name": "wp_link_count",
@@ -987,7 +987,7 @@ Warning: Map Join MAPJOIN[149][bigTable=?] in task 'Reducer 2' is a cross produc
           },
           {
             "name": "t_meal_time",
-            "ndv": 4
+            "ndv": 3
           }
         ]
       },

@@ -209,8 +209,10 @@ public class MRCompactor implements Compactor {
     // mingle existing tblproperties with those specified on the ALTER TABLE command
     for (String key : stringableMap.keySet()) {
       if (key.startsWith(TBLPROPS_PREFIX)) {
-        String propKey = key.substring(9);  // 9 is the length of "tblprops.". We only keep the rest
-        tblproperties.put(propKey, stringableMap.get(key));
+        String propKey = key.substring(TBLPROPS_PREFIX.length());
+        if (CompactorPropertyValidator.isParameterAllowed(job, propKey)) {
+          tblproperties.put(propKey, stringableMap.get(key));
+        }
       }
     }
     // re-set TABLE_PROPS with reloaded tblproperties
@@ -226,8 +228,10 @@ public class MRCompactor implements Compactor {
   private void overrideMRProps(JobConf job, Map<String, String> properties) {
     for (String key : properties.keySet()) {
       if (key.startsWith(COMPACTOR_PREFIX)) {
-        String mrKey = key.substring(10); // 10 is the length of "compactor." We only keep the rest.
-        job.set(mrKey, properties.get(key));
+        String mrKey = key.substring(COMPACTOR_PREFIX.length());
+        if (CompactorPropertyValidator.isParameterAllowed(job, mrKey)) {
+          job.set(mrKey, properties.get(key));
+        }
       }
     }
   }
