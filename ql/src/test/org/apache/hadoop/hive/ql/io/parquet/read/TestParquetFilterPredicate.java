@@ -20,10 +20,14 @@
 package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
+import org.apache.hadoop.hive.ql.io.sarg.LiteralDelegate;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -43,6 +47,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class TestParquetFilterPredicate {
 
@@ -735,5 +740,121 @@ public class TestParquetFilterPredicate {
         + "eq(b, Binary{\"orange\"})), "
         + "or(eq(c, Binary{\"banana\"}), lt(d, Binary{\"cherry\"})))";
     assertEquals(expected, p.toString());
+  }
+
+  /** A single-literal leaf whose runtime value is not available is dropped; the rest of the conjunction filters. */
+  @Test
+  public void testUnresolvedSingleLiteralDropsOnlyItsLeaf() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
+        .equals("b", PredicateLeaf.Type.LONG, unresolved())
+        .end()
+        .build();
+    assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
+  }
+
+  /** A BETWEEN leaf whose runtime values are not available is dropped; the rest of the conjunction filters. */
+  @Test
+  public void testUnresolvedBetweenDropsOnlyItsLeaf() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
+        .between("c", PredicateLeaf.Type.LONG, unresolved(), unresolved())
+        .end()
+        .build();
+    assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
+  }
+
+  /** A BETWEEN leaf with only one of its runtime bounds resolved to a value is dropped. */
+  @Test
+  public void testBetweenWithOneNullRuntimeBoundDropsOnlyItsLeaf() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
+        .between("c", PredicateLeaf.Type.LONG, resolvedTo(null), resolvedTo(10L))
+        .end()
+        .build();
+    assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
+  }
+
+  /** A negated unresolved leaf filters nothing either: the search argument pushes NOT down to the leaves. */
+  @Test
+  public void testNegatedUnresolvedLeafDropsOnlyItsLeaf() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startAnd()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
+        .startNot()
+        .equals("b", PredicateLeaf.Type.LONG, unresolved())
+        .end()
+        .end()
+        .build();
+    assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
+  }
+
+  /** A disjunction containing an unresolved leaf filters nothing. */
+  @Test
+  public void testUnresolvedLeafInDisjunctionFiltersNothing() {
+    SearchArgument sarg = SearchArgumentFactory.newBuilder()
+        .startOr()
+        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
+        .between("c", PredicateLeaf.Type.LONG, unresolved(), unresolved())
+        .end()
+        .build();
+    assertNull(toFilterPredicateOverAbc(sarg));
+  }
+
+  /** A runtime value (a DynamicValue) that is not available when the reader builds its filter. */
+  private static LiteralDelegate unresolved() {
+    return new RuntimeValue("unresolved", () -> {
+      throw new NoDynamicValuesException("not available");
+    });
+  }
+
+  /** A runtime value (a DynamicValue) that resolved to the given value. */
+  private static LiteralDelegate resolvedTo(Object value) {
+    return new RuntimeValue("resolved", () -> value);
+  }
+
+  /** A runtime value that keeps its configuration, like a DynamicValue. */
+  private static final class RuntimeValue implements LiteralDelegate {
+    private final String id;
+    private final Supplier<Object> value;
+    private Configuration conf;
+
+    RuntimeValue(String id, Supplier<Object> value) {
+      this.id = id;
+      this.value = value;
+    }
+
+    @Override
+    public Object getLiteral() {
+      return value.get();
+    }
+
+    @Override
+    public String getId() {
+      return id;
+    }
+
+    @Override
+    public void setConf(Configuration conf) {
+      this.conf = conf;
+    }
+
+    @Override
+    public Configuration getConf() {
+      return conf;
+    }
+  }
+
+  private static FilterPredicate toFilterPredicateOverAbc(SearchArgument sarg) {
+    MessageType schema = MessageTypeParser.parseMessageType(
+        "message test { required int32 a; required int32 b; required int32 c; }");
+    Map<String, TypeInfo> columnTypes = new HashMap<>();
+    for (String column : new String[] {"a", "b", "c"}) {
+      columnTypes.put(column, TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    }
+    return ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columnTypes);
   }
 }

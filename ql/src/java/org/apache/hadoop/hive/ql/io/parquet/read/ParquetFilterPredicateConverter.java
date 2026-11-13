@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.ql.io.parquet.FilterPredicateLeafBuilder;
 import org.apache.hadoop.hive.ql.io.parquet.LeafFilterFactory;
 import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree;
@@ -131,8 +132,15 @@ public class ParquetFilterPredicateConverter {
           .getLeafFilterBuilderByType(leaf.getType(), parquetType);
 
       if (isMultiLiteralsOperator(leaf.getOperator())) {
+        List<Object> literals = leaf.getLiteralList();
+        // getLiteralList() drops null literals and returns an empty list when the runtime values (DynamicValue) of the
+        // leaf are not available; a BETWEEN without both bounds cannot filter either
+        if (literals.isEmpty() || (leaf.getOperator() == PredicateLeaf.Operator.BETWEEN && literals.size() != 2)) {
+          LOG.debug("Leaf {} has no usable literals {}, it filters nothing", leaf, literals);
+          return null;
+        }
         return builder.buildPredicate(leaf.getOperator(),
-            leaf.getLiteralList(),
+            literals,
             leaf.getColumnName(),
             columnType);
       } else {
@@ -142,6 +150,9 @@ public class ParquetFilterPredicateConverter {
                 leaf.getColumnName(),
                 columnType);
       }
+    } catch (NoDynamicValuesException e) {
+      LOG.debug("Runtime value of leaf {} is not available, it filters nothing", leaf, e);
+      return null;
     } catch (Exception e) {
       LOG.error("fail to build predicate filter leaf with errors" + e, e);
       throw e;
