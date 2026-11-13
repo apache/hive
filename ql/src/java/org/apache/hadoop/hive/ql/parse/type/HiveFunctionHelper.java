@@ -22,10 +22,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
@@ -84,6 +86,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
@@ -140,15 +143,25 @@ public class HiveFunctionHelper implements FunctionHelper {
     }
     // 2) Initialize and obtain return type
     GenericUDF genericUDF = fi.getGenericUDF();
-    ObjectInspector oi = genericUDF != null ?
-        genericUDF.initializeAndFoldConstants(inputsOIs) :
-        fi.getGenericUDTF().initialize(inputsOIs);
+    ObjectInspector oi = genericUDF != null
+        ? genericUDF.initializeAndFoldConstants(inputsOIs)
+        : initializeUDTF(fi.getGenericUDTF(), inputsOIs);
     // 3) Convert to RelDataType
     return TypeConverter.convert(
         TypeInfoUtils.getTypeInfoFromObjectInspector(oi),
         FunctionRegistry.isNullable(genericUDF),
         rexBuilder.getTypeFactory()
     );
+  }
+
+  private StructObjectInspector initializeUDTF(GenericUDTF genericUDTF, ObjectInspector[] inputsOIs)
+      throws SemanticException {
+    List<String> fieldNames = IntStream.range(0, inputsOIs.length)
+        .mapToObj(i -> "col_" + i)
+        .toList();
+    StructObjectInspector structOI = ObjectInspectorFactory.getStandardStructObjectInspector(
+        fieldNames, Arrays.asList(inputsOIs));
+    return genericUDTF.initialize(structOI);
   }
 
   /**
