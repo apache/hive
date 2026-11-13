@@ -1,0 +1,28 @@
+PREHOOK: query: create table mytable(id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mytable
+POSTHOOK: query: create table mytable(id int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mytable
+PREHOOK: query: explain cbo select t1.id, t2.name, (case when (t1.id = 1 and t2.id = 1) then 'One' else null end) mycase
+from mytable t1 join mytable t2 on t1.name = t2.name where t1.id =1 and t2.id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mytable
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select t1.id, t2.name, (case when (t1.id = 1 and t2.id = 1) then 'One' else null end) mycase
+from mytable t1 join mytable t2 on t1.name = t2.name where t1.id =1 and t2.id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mytable
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(t1.id=[CAST(1):INTEGER], t2.name=[$1], mycase=[CAST('One':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(name=[$1])
+      HiveFilter(condition=[AND(=($0, 1), IS NOT NULL($1))])
+        HiveTableScan(table=[[default, mytable]], table:alias=[t1])
+    HiveProject(name=[$1])
+      HiveFilter(condition=[AND(=($0, 1), IS NOT NULL($1))])
+        HiveTableScan(table=[[default, mytable]], table:alias=[t2])
+
