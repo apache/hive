@@ -6,8 +6,10 @@ Policy: RS-LEGACY-6-3-1024k DISABLED
 Policy: XOR-2-1-1024k DISABLED
 PREHOOK: query: show table extended like srcpart
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: show table extended like srcpart
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@srcpart
 tableName:srcpart
 #### A masked pattern was here ####
 location:hdfs://### HDFS PATH ###
@@ -289,8 +291,10 @@ STAGE PLANS:
 
 PREHOOK: query: show table extended like src
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src
 POSTHOOK: query: show table extended like src
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src
 tableName:src
 #### A masked pattern was here ####
 location:hdfs://### HDFS PATH ###

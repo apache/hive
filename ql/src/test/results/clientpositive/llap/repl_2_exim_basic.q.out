@@ -163,8 +163,10 @@ emp_state           	string
 #### A masked pattern was here ####
 PREHOOK: query: show table extended like managed_t_imported
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@managed_t_imported
 POSTHOOK: query: show table extended like managed_t_imported
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@managed_t_imported
 tableName:managed_t_imported
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -243,8 +245,10 @@ emp_state           	string
 #### A masked pattern was here ####
 PREHOOK: query: show table extended like managed_t_r_imported
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@managed_t_r_imported
 POSTHOOK: query: show table extended like managed_t_r_imported
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@managed_t_r_imported
 tableName:managed_t_r_imported
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -325,8 +329,10 @@ emp_state           	string
 #### A masked pattern was here ####
 PREHOOK: query: show table extended like ext_t_imported
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@ext_t_imported
 POSTHOOK: query: show table extended like ext_t_imported
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@ext_t_imported
 tableName:ext_t_imported
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -405,8 +411,10 @@ emp_state           	string
 #### A masked pattern was here ####
 PREHOOK: query: show table extended like ext_t_r_imported
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@ext_t_r_imported
 POSTHOOK: query: show table extended like ext_t_r_imported
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@ext_t_r_imported
 tableName:ext_t_r_imported
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

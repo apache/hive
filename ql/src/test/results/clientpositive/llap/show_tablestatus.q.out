@@ -1,9 +1,11 @@
 PREHOOK: query: EXPLAIN 
 SHOW TABLE EXTENDED IN default LIKE `src`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src
 POSTHOOK: query: EXPLAIN 
 SHOW TABLE EXTENDED IN default LIKE `src`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -22,8 +24,10 @@ STAGE PLANS:
 
 PREHOOK: query: SHOW TABLE EXTENDED IN default LIKE `src`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src
 POSTHOOK: query: SHOW TABLE EXTENDED IN default LIKE `src`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src
 tableName:src
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -39,8 +43,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: SHOW TABLE EXTENDED from default LIKE `src`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src
 POSTHOOK: query: SHOW TABLE EXTENDED from default LIKE `src`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src
 tableName:src
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -56,8 +62,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: SHOW TABLE EXTENDED LIKE `src`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE `src`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src
 tableName:src
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -81,8 +89,12 @@ POSTHOOK: query: SHOW TABLE EXTENDED from default LIKE `src_`
 POSTHOOK: type: SHOW_TABLESTATUS
 PREHOOK: query: SHOW TABLE EXTENDED LIKE "%"
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE "%"
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
 tableName:src
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -111,8 +123,12 @@ minFileSize:#Masked#
 
 PREHOOK: query: SHOW TABLE EXTENDED from default LIKE "%"
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: SHOW TABLE EXTENDED from default LIKE "%"
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
 tableName:src
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -141,8 +157,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart` PARTITION(ds='2008-04-08', hr=11)
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart` PARTITION(ds='2008-04-08', hr=11)
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@srcpart
 tableName:srcpart
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -158,8 +176,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@srcpart
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@srcpart
 tableName:srcpart
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -175,8 +195,10 @@ minFileSize:#Masked#
 
 PREHOOK: query: SHOW TABLE EXTENDED from default LIKE src
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@src
 POSTHOOK: query: SHOW TABLE EXTENDED from default LIKE src
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@src
 tableName:src
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

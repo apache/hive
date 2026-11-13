@@ -70,8 +70,10 @@ emp_state           	string              	free text
 #### A masked pattern was here ####
 PREHOOK: query: show table extended like exim_employee_n9
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: importer@exim_employee_n9
 POSTHOOK: query: show table extended like exim_employee_n9
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: importer@exim_employee_n9
 tableName:exim_employee_n9
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
