@@ -1076,12 +1076,38 @@ public final class TypeInfoUtils {
 
   /**
    * Returns whether a NULL literal (void) can be assigned to the target type.
-   * Iceberg unknown columns only accept NULL values.
+   * Iceberg unknown columns only accept NULL values. For structs, every field must either match
+   * or be a NULL literal assigned to an unknown field.
    */
   public static boolean isVoidCompatibleTarget(TypeInfo from, TypeInfo to) {
-    return from.getCategory() == Category.PRIMITIVE
-        && ((PrimitiveTypeInfo) from).getPrimitiveCategory() == PrimitiveCategory.VOID
-        && to.getCategory() == Category.UNKNOWN;
+    if (from.getCategory() == Category.PRIMITIVE) {
+      return ((PrimitiveTypeInfo) from).getPrimitiveCategory() == PrimitiveCategory.VOID
+          && to.getCategory() == Category.UNKNOWN;
+    }
+    if (from.getCategory() != Category.STRUCT || to.getCategory() != Category.STRUCT) {
+      return false;
+    }
+    List<String> fromNames = ((StructTypeInfo) from).getAllStructFieldNames();
+    List<String> toNames = ((StructTypeInfo) to).getAllStructFieldNames();
+    if (fromNames.size() != toNames.size()) {
+      return false;
+    }
+    List<TypeInfo> fromTypes = ((StructTypeInfo) from).getAllStructFieldTypeInfos();
+    List<TypeInfo> toTypes = ((StructTypeInfo) to).getAllStructFieldTypeInfos();
+    boolean hasVoidField = false;
+    for (int i = 0; i < fromNames.size(); i++) {
+      if (!fromNames.get(i).equalsIgnoreCase(toNames.get(i))) {
+        return false;
+      }
+      if (fromTypes.get(i).equals(toTypes.get(i))) {
+        continue;
+      }
+      if (!isVoidCompatibleTarget(fromTypes.get(i), toTypes.get(i))) {
+        return false;
+      }
+      hasVoidField = true;
+    }
+    return hasVoidField;
   }
 
   /**
@@ -1093,7 +1119,7 @@ public final class TypeInfoUtils {
       return true;
     }
 
-    if (isVoidCompatibleTarget(from, to)) {
+    if (from.getCategory() == Category.PRIMITIVE && isVoidCompatibleTarget(from, to)) {
       return true;
     }
 
