@@ -1,0 +1,9 @@
+PREHOOK: query: create table pacdfs_t (d int, s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pacdfs_t
+POSTHOOK: query: create table pacdfs_t (d int, s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pacdfs_t
+FAILED: SemanticException [Error 10219]: Position in ORDER BY is not supported when using SELECT *
