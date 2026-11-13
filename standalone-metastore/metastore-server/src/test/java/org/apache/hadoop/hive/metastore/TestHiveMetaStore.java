@@ -3806,7 +3806,7 @@ public abstract class TestHiveMetaStore {
     silentDropDatabase(dbName);
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterTableCascadeExceedsPartitionLimits() throws Throwable {
     String dbName = "alterTblDb";
     String tblName = "altertbl";
@@ -3826,7 +3826,8 @@ public abstract class TestHiveMetaStore {
     List<FieldSchema> cols = tbl.getSd().getCols();
     cols.add(new FieldSchema("new_col", ColumnType.STRING_TYPE_NAME, ""));
     tbl.getSd().setCols(cols);
-    //add new column with cascade option
+    // With PartitionsIterable, alter_table doesn't load all partitions into
+    // memory, it will change the partition's schema in bulk.
     client.alter_table(dbName, tblName, tbl, true);
   }
 
