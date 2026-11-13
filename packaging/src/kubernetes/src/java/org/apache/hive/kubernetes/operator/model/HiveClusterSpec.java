@@ -25,11 +25,12 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
+import io.fabric8.generator.annotation.Default;
 import io.fabric8.generator.annotation.Required;
 import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import org.apache.hive.kubernetes.operator.model.spec.AutoSuspendSpec;
+import org.apache.hive.kubernetes.operator.model.spec.RestrictedVolume;
 import org.apache.hive.kubernetes.operator.model.spec.HadoopSpec;
 import org.apache.hive.kubernetes.operator.model.spec.HiveServer2Spec;
 import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
@@ -75,17 +76,23 @@ public record HiveClusterSpec(
     List<String> externalJars,
     @JsonPropertyDescription(
         "Volumes added to all component pods "
-        + "(e.g., Secrets containing keytabs or service account keys)")
-    @SchemaFrom(type = Object[].class) @PreserveUnknownFields
-    List<Volume> volumes,
+        + "(e.g., Secrets containing keytabs or service account keys). "
+        + "Allowed types: configMap, secret, emptyDir, persistentVolumeClaim.")
+    List<RestrictedVolume> volumes,
     @JsonPropertyDescription(
         "Volume mounts added to all component containers "
         + "(e.g., mounting a GCS key file at /etc/gcs/key.json)")
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
     List<VolumeMount> volumeMounts,
     @JsonPropertyDescription("Kubernetes ServiceAccount name for all component pods. "
-        + "If not specified, pods use the namespace default service account.")
+        + "If not specified, pods use the namespace default service account, which must "
+        + "have label hive.apache.org/service-account-approved=true.")
     String serviceAccountName,
+    @Required
+    @Default("1000")
+    @JsonPropertyDescription("Numeric UID for all component pods. Required "
+        + "because the operator enforces runAsNonRoot. Defaults to 1000.")
+    Long runAsUser,
     @JsonPropertyDescription("Auto-suspend configuration. When enabled and all components "
         + "are idle for the configured timeout, the cluster scales to 0 replicas.")
     AutoSuspendSpec autoSuspend,
@@ -109,6 +116,7 @@ public record HiveClusterSpec(
     volumeMounts = volumeMounts != null ? volumeMounts : List.of();
     autoSuspend = autoSuspend != null ? autoSuspend : new AutoSuspendSpec(false, 15, true);
     suspend = suspend != null && suspend;
+    runAsUser = runAsUser != null ? runAsUser : 1000L;
   }
 
 }

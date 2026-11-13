@@ -180,11 +180,84 @@ spec:
                     x-kubernetes-preserve-unknown-fields: true
                   extraVolumes:
                     description: "Additional volumes to attach to the pod (e.g., for\
-                      \ keytabs or truststores)"
+                      \ keytabs or truststores). Allowed types: configMap, secret,\
+                      \ emptyDir, persistentVolumeClaim."
                     items:
+                      properties:
+                        configMap:
+                          description: ConfigMap volume source
+                          properties:
+                            defaultMode:
+                              type: integer
+                            items:
+                              items:
+                                properties:
+                                  key:
+                                    type: string
+                                  mode:
+                                    type: integer
+                                  path:
+                                    type: string
+                                type: object
+                              type: array
+                            name:
+                              type: string
+                            optional:
+                              type: boolean
+                          type: object
+                        emptyDir:
+                          description: EmptyDir volume source
+                          properties:
+                            medium:
+                              type: string
+                            sizeLimit:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              x-kubernetes-int-or-string: true
+                          type: object
+                        name:
+                          description: "Volume name, referenced by volumeMounts"
+                          type: string
+                        persistentVolumeClaim:
+                          description: PersistentVolumeClaim volume source
+                          properties:
+                            claimName:
+                              type: string
+                            readOnly:
+                              type: boolean
+                          type: object
+                        secret:
+                          description: Secret volume source
+                          properties:
+                            defaultMode:
+                              type: integer
+                            items:
+                              items:
+                                properties:
+                                  key:
+                                    type: string
+                                  mode:
+                                    type: integer
+                                  path:
+                                    type: string
+                                type: object
+                              type: array
+                            optional:
+                              type: boolean
+                            secretName:
+                              type: string
+                          type: object
+                      required:
+                      - name
                       type: object
+                      x-kubernetes-validations:
+                      - message: "must specify exactly one of configMap, secret, emptyDir,\
+                          \ persistentVolumeClaim"
+                        rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret) ?\
+                          \ 1 : 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                          \ ? 1 : 0) == 1"
                     type: array
-                    x-kubernetes-preserve-unknown-fields: true
                   livenessProbe:
                     description: Liveness probe configuration
                     properties:
@@ -380,11 +453,84 @@ spec:
                       x-kubernetes-preserve-unknown-fields: true
                     extraVolumes:
                       description: "Additional volumes to attach to the pod (e.g.,\
-                        \ for keytabs or truststores)"
+                        \ for keytabs or truststores). Allowed types: configMap, secret,\
+                        \ emptyDir, persistentVolumeClaim."
                       items:
+                        properties:
+                          configMap:
+                            description: ConfigMap volume source
+                            properties:
+                              defaultMode:
+                                type: integer
+                              items:
+                                items:
+                                  properties:
+                                    key:
+                                      type: string
+                                    mode:
+                                      type: integer
+                                    path:
+                                      type: string
+                                  type: object
+                                type: array
+                              name:
+                                type: string
+                              optional:
+                                type: boolean
+                            type: object
+                          emptyDir:
+                            description: EmptyDir volume source
+                            properties:
+                              medium:
+                                type: string
+                              sizeLimit:
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                x-kubernetes-int-or-string: true
+                            type: object
+                          name:
+                            description: "Volume name, referenced by volumeMounts"
+                            type: string
+                          persistentVolumeClaim:
+                            description: PersistentVolumeClaim volume source
+                            properties:
+                              claimName:
+                                type: string
+                              readOnly:
+                                type: boolean
+                            type: object
+                          secret:
+                            description: Secret volume source
+                            properties:
+                              defaultMode:
+                                type: integer
+                              items:
+                                items:
+                                  properties:
+                                    key:
+                                      type: string
+                                    mode:
+                                      type: integer
+                                    path:
+                                      type: string
+                                  type: object
+                                type: array
+                              optional:
+                                type: boolean
+                              secretName:
+                                type: string
+                            type: object
+                        required:
+                        - name
                         type: object
+                        x-kubernetes-validations:
+                        - message: "must specify exactly one of configMap, secret,\
+                            \ emptyDir, persistentVolumeClaim"
+                          rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret)\
+                            \ ? 1 : 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                            \ ? 1 : 0) == 1"
                       type: array
-                      x-kubernetes-preserve-unknown-fields: true
                     memoryMb:
                       default: 1024
                       description: Memory in MB per LLAP daemon instance
@@ -680,11 +826,84 @@ spec:
                     x-kubernetes-preserve-unknown-fields: true
                   extraVolumes:
                     description: "Additional volumes to attach to the pod (e.g., for\
-                      \ keytabs or truststores)"
+                      \ keytabs or truststores). Allowed types: configMap, secret,\
+                      \ emptyDir, persistentVolumeClaim."
                     items:
+                      properties:
+                        configMap:
+                          description: ConfigMap volume source
+                          properties:
+                            defaultMode:
+                              type: integer
+                            items:
+                              items:
+                                properties:
+                                  key:
+                                    type: string
+                                  mode:
+                                    type: integer
+                                  path:
+                                    type: string
+                                type: object
+                              type: array
+                            name:
+                              type: string
+                            optional:
+                              type: boolean
+                          type: object
+                        emptyDir:
+                          description: EmptyDir volume source
+                          properties:
+                            medium:
+                              type: string
+                            sizeLimit:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              x-kubernetes-int-or-string: true
+                          type: object
+                        name:
+                          description: "Volume name, referenced by volumeMounts"
+                          type: string
+                        persistentVolumeClaim:
+                          description: PersistentVolumeClaim volume source
+                          properties:
+                            claimName:
+                              type: string
+                            readOnly:
+                              type: boolean
+                          type: object
+                        secret:
+                          description: Secret volume source
+                          properties:
+                            defaultMode:
+                              type: integer
+                            items:
+                              items:
+                                properties:
+                                  key:
+                                    type: string
+                                  mode:
+                                    type: integer
+                                  path:
+                                    type: string
+                                type: object
+                              type: array
+                            optional:
+                              type: boolean
+                            secretName:
+                              type: string
+                          type: object
+                      required:
+                      - name
                       type: object
+                      x-kubernetes-validations:
+                      - message: "must specify exactly one of configMap, secret, emptyDir,\
+                          \ persistentVolumeClaim"
+                        rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret) ?\
+                          \ 1 : 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                          \ ? 1 : 0) == 1"
                     type: array
-                    x-kubernetes-preserve-unknown-fields: true
                   livenessProbe:
                     description: Liveness probe configuration
                     properties:
@@ -755,9 +974,15 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              runAsUser:
+                default: 1000
+                description: Numeric UID for all component pods. Required because
+                  the operator enforces runAsNonRoot. Defaults to 1000.
+                type: integer
               serviceAccountName:
                 description: "Kubernetes ServiceAccount name for all component pods.\
-                  \ If not specified, pods use the namespace default service account."
+                  \ If not specified, pods use the namespace default service account,\
+                  \ which must have label hive.apache.org/service-account-approved=true."
                 type: string
               suspend:
                 description: "When true, the cluster is immediately suspended (all\
@@ -865,11 +1090,84 @@ spec:
                     x-kubernetes-preserve-unknown-fields: true
                   extraVolumes:
                     description: "Additional volumes to attach to the pod (e.g., for\
-                      \ keytabs or truststores)"
+                      \ keytabs or truststores). Allowed types: configMap, secret,\
+                      \ emptyDir, persistentVolumeClaim."
                     items:
+                      properties:
+                        configMap:
+                          description: ConfigMap volume source
+                          properties:
+                            defaultMode:
+                              type: integer
+                            items:
+                              items:
+                                properties:
+                                  key:
+                                    type: string
+                                  mode:
+                                    type: integer
+                                  path:
+                                    type: string
+                                type: object
+                              type: array
+                            name:
+                              type: string
+                            optional:
+                              type: boolean
+                          type: object
+                        emptyDir:
+                          description: EmptyDir volume source
+                          properties:
+                            medium:
+                              type: string
+                            sizeLimit:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              x-kubernetes-int-or-string: true
+                          type: object
+                        name:
+                          description: "Volume name, referenced by volumeMounts"
+                          type: string
+                        persistentVolumeClaim:
+                          description: PersistentVolumeClaim volume source
+                          properties:
+                            claimName:
+                              type: string
+                            readOnly:
+                              type: boolean
+                          type: object
+                        secret:
+                          description: Secret volume source
+                          properties:
+                            defaultMode:
+                              type: integer
+                            items:
+                              items:
+                                properties:
+                                  key:
+                                    type: string
+                                  mode:
+                                    type: integer
+                                  path:
+                                    type: string
+                                type: object
+                              type: array
+                            optional:
+                              type: boolean
+                            secretName:
+                              type: string
+                          type: object
+                      required:
+                      - name
                       type: object
+                      x-kubernetes-validations:
+                      - message: "must specify exactly one of configMap, secret, emptyDir,\
+                          \ persistentVolumeClaim"
+                        rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret) ?\
+                          \ 1 : 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                          \ ? 1 : 0) == 1"
                     type: array
-                    x-kubernetes-preserve-unknown-fields: true
                   replicas:
                     default: 1
                     description: Number of replicas
@@ -908,11 +1206,84 @@ spec:
                 x-kubernetes-preserve-unknown-fields: true
               volumes:
                 description: "Volumes added to all component pods (e.g., Secrets containing\
-                  \ keytabs or service account keys)"
+                  \ keytabs or service account keys). Allowed types: configMap, secret,\
+                  \ emptyDir, persistentVolumeClaim."
                 items:
+                  properties:
+                    configMap:
+                      description: ConfigMap volume source
+                      properties:
+                        defaultMode:
+                          type: integer
+                        items:
+                          items:
+                            properties:
+                              key:
+                                type: string
+                              mode:
+                                type: integer
+                              path:
+                                type: string
+                            type: object
+                          type: array
+                        name:
+                          type: string
+                        optional:
+                          type: boolean
+                      type: object
+                    emptyDir:
+                      description: EmptyDir volume source
+                      properties:
+                        medium:
+                          type: string
+                        sizeLimit:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                      type: object
+                    name:
+                      description: "Volume name, referenced by volumeMounts"
+                      type: string
+                    persistentVolumeClaim:
+                      description: PersistentVolumeClaim volume source
+                      properties:
+                        claimName:
+                          type: string
+                        readOnly:
+                          type: boolean
+                      type: object
+                    secret:
+                      description: Secret volume source
+                      properties:
+                        defaultMode:
+                          type: integer
+                        items:
+                          items:
+                            properties:
+                              key:
+                                type: string
+                              mode:
+                                type: integer
+                              path:
+                                type: string
+                            type: object
+                          type: array
+                        optional:
+                          type: boolean
+                        secretName:
+                          type: string
+                      type: object
+                  required:
+                  - name
                   type: object
+                  x-kubernetes-validations:
+                  - message: "must specify exactly one of configMap, secret, emptyDir,\
+                      \ persistentVolumeClaim"
+                    rule: "(has(self.configMap) ? 1 : 0) + (has(self.secret) ? 1 :\
+                      \ 0) + (has(self.emptyDir) ? 1 : 0) + (has(self.persistentVolumeClaim)\
+                      \ ? 1 : 0) == 1"
                 type: array
-                x-kubernetes-preserve-unknown-fields: true
               zookeeper:
                 description: External ZooKeeper connection details (not managed by
                   this operator)
@@ -925,6 +1296,7 @@ spec:
                 - quorum
                 type: object
             required:
+            - runAsUser
             - zookeeper
             type: object
             x-kubernetes-preserve-unknown-fields: true
