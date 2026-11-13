@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.ql.io.parquet;
 
+import org.apache.parquet.column.ParquetProperties.WriterVersion;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,11 +34,14 @@ public class TestVectorizedDictionaryEncodingColumnReader extends VectorizedColu
   public static void setup() throws IOException {
     removeFile();
     writeData(initWriterFromFile(), isDictionaryEncoding);
+    writeFlatFile(WriterVersion.PARQUET_1_0, isDictionaryEncoding);
+    writeFlatFile(WriterVersion.PARQUET_2_0, isDictionaryEncoding);
   }
 
   @AfterClass
   public static void cleanup() throws IOException {
     removeFile();
+    deleteFlatFiles(isDictionaryEncoding);
   }
 
   @Test
@@ -90,6 +95,77 @@ public class TestVectorizedDictionaryEncodingColumnReader extends VectorizedColu
   @Test
   public void structReadSomeNull() throws Exception {
     structReadSomeNull(isDictionaryEncoding);
+  }
+
+  @Test
+  public void testFlatColumnsPageV1() throws Exception {
+    flatColumnsRead(WriterVersion.PARQUET_1_0, isDictionaryEncoding);
+  }
+
+  @Test
+  public void testFlatColumnsPageV2() throws Exception {
+    flatColumnsRead(WriterVersion.PARQUET_2_0, isDictionaryEncoding);
+  }
+
+  @Test
+  public void testFlatDecimalPrecisionNarrowing() throws Exception {
+    flatDecimalNarrowingRead(WriterVersion.PARQUET_1_0, isDictionaryEncoding);
+    flatDecimalNarrowingRead(WriterVersion.PARQUET_2_0, isDictionaryEncoding);
+  }
+
+  @Test
+  public void testDateRead() throws Exception {
+    flatDateRead(WriterVersion.PARQUET_1_0, isDictionaryEncoding);
+    flatDateRead(WriterVersion.PARQUET_2_0, isDictionaryEncoding);
+  }
+
+  @Test
+  public void testStringAndBinaryRead() throws Exception {
+    flatStringRead(WriterVersion.PARQUET_1_0, isDictionaryEncoding);
+    flatStringRead(WriterVersion.PARQUET_2_0, isDictionaryEncoding);
+  }
+
+  @Test
+  public void testFlatBooleanRead() throws Exception {
+    flatBooleanRead(WriterVersion.PARQUET_1_0, isDictionaryEncoding);
+    flatBooleanRead(WriterVersion.PARQUET_2_0, isDictionaryEncoding);
+  }
+
+  @Test
+  public void testEmptyBatch() throws Exception {
+    emptyBatchRead(WriterVersion.PARQUET_1_0, isDictionaryEncoding);
+    emptyBatchRead(WriterVersion.PARQUET_2_0, isDictionaryEncoding);
+  }
+
+  @Test
+  public void testRangeNulls() throws Exception {
+    rangeNullsRead(isDictionaryEncoding);
+  }
+
+  @Test
+  public void testInt96WriterZone() throws Exception {
+    int96WriterZoneRead(isDictionaryEncoding);
+  }
+
+  @Test
+  public void testRejectedTimestamp() throws Exception {
+    rejectedTimestampRead(isDictionaryEncoding);
+  }
+
+  @Test
+  public void testStructFieldNotRepeating() throws Exception {
+    structFieldNotRepeating(isDictionaryEncoding);
+  }
+
+  @Test
+  public void testDictionaryFallbackToPlain() throws Exception {
+    dictionaryFallbackToPlainRead(WriterVersion.PARQUET_1_0);
+    dictionaryFallbackToPlainRead(WriterVersion.PARQUET_2_0);
+  }
+
+  @Test
+  public void testStructFieldNullsAtEveryLevel() throws Exception {
+    structFieldNullsAtEveryLevel(isDictionaryEncoding);
   }
 
   @Test

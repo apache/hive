@@ -182,7 +182,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     }
   }
 
-  // Need to be in consistent with that VectorizedPrimitiveColumnReader#readBatchHelper
+  // Need to be in consistent with that PerValueUpdater#readBatchHelper
   // TODO Reduce the duplicated code
   private Object readPrimitiveTypedRow(PrimitiveObjectInspector.PrimitiveCategory category) {
     switch (category) {
