@@ -18,6 +18,8 @@
  */
 package org.apache.hive.benchmark.ql.exec;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,11 +58,14 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.io.ByteStreams;
 
 @State(Scope.Benchmark)
 public class KryoBench {
+  private static final Logger LOG = LoggerFactory.getLogger(KryoBench.class);
 
   @BenchmarkMode(Mode.AverageTime)
   @Fork(1)
@@ -69,10 +74,16 @@ public class KryoBench {
   public static class BaseBench {
 
     private MapWork mapWork;
+    private byte[] serialized;
 
     @Setup
     public void setup() throws Exception {
       mapWork = KryoBench.mockMapWork("my_table", 1000, new BigRowInspector());
+
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      SerializationUtilities.serializePlan(mapWork, baos);
+      serialized = baos.toByteArray();
+      LOG.info("Kryo-serialized MapWork payload size: {} bytes", serialized.length);
     }
 
     @Benchmark
@@ -80,6 +91,14 @@ public class KryoBench {
     @Measurement(iterations = 20, time = 2, timeUnit = TimeUnit.SECONDS)
     public void testSerializeMapWork() {
       SerializationUtilities.serializePlan(mapWork, ByteStreams.nullOutputStream());
+    }
+
+    @Benchmark
+    @Warmup(iterations = 2, time = 2, timeUnit = TimeUnit.SECONDS)
+    @Measurement(iterations = 20, time = 2, timeUnit = TimeUnit.SECONDS)
+    public MapWork testDeserializeMapWork() {
+      return SerializationUtilities.deserializePlan(
+          new ByteArrayInputStream(serialized), MapWork.class);
     }
   }
 
