@@ -27,10 +27,12 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Base64;
@@ -353,6 +355,18 @@ public final class Variant {
       case TIMESTAMP_NTZ:
         appendQuoted(sb, TIMESTAMP_NTZ_FORMATTER.format(
             microsToInstant(VariantUtil.getLong(value, pos)).atZone(ZoneOffset.UTC)));
+        break;
+      case TIME:
+        appendQuoted(sb, DateTimeFormatter.ISO_LOCAL_TIME.format(
+            LocalTime.MIDNIGHT.with(ChronoField.MICRO_OF_DAY, VariantUtil.getLong(value, pos))));
+        break;
+      case TIMESTAMP_NANOS:
+        appendQuoted(sb, TIMESTAMP_FORMATTER.format(
+            Instant.EPOCH.plusNanos(VariantUtil.getLong(value, pos)).atZone(zoneId)));
+        break;
+      case TIMESTAMP_NTZ_NANOS:
+        appendQuoted(sb, TIMESTAMP_NTZ_FORMATTER.format(
+            Instant.EPOCH.plusNanos(VariantUtil.getLong(value, pos)).atZone(ZoneOffset.UTC)));
         break;
       case FLOAT: {
         float f = VariantUtil.getFloat(value, pos);
