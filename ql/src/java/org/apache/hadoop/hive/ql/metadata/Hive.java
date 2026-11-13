@@ -6338,10 +6338,26 @@ private void constructOneLBLocationMap(FileStatus fSta,
       String dbName, String tableName, List<String> partNames, List<String> colNames,
       boolean checkTransactional)
       throws HiveException {
+    Table tbl = checkTransactional ? getTable(dbName, tableName) : null;
+    return getPartitionColumnStatistics(dbName, tableName, tbl, partNames, colNames);
+  }
+
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
+      Table tbl, List<String> partNames, List<String> colNames, boolean checkTransactional)
+      throws HiveException {
+    return getPartitionColumnStatistics(tbl.getDbName(), tbl.getTableName(), checkTransactional ? tbl : null,
+        partNames, colNames);
+  }
+
+  /**
+   * @param tbl the table to take the write id list from, or null if the statistics need not be transactional
+   */
+  private Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
+      String dbName, String tableName, Table tbl, List<String> partNames, List<String> colNames)
+      throws HiveException {
     String writeIdList = null;
     try {
-      if (checkTransactional) {
-        Table tbl = getTable(dbName, tableName);
+      if (tbl != null) {
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
       }

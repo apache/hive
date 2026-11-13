@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -70,6 +72,12 @@ import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
@@ -221,17 +229,34 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         tableId = (long) queryCache.get(cacheKeyTableId);
       }
 
+      // a table missing from the metastore stays missing for the rest of the compilation
+      CacheKey cacheKeyNotFound = tableNotFoundKey(req.getCatName(), req.getDbName(), req.getTblName());
+      String notFound = (String) queryCache.get(cacheKeyNotFound);
+      if (notFound != null) {
+        LOG.debug("Query level HMS cache: method=getTable, table not found, dbName={}, tblName={}",
+            req.getDbName(), req.getTblName());
+        throw new NoSuchObjectException(notFound);
+      }
+
       req.setId(tableId);
       CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
       Table table = (Table) queryCache.get(cacheKey);
       if (table == null) {
-        table = delegate.getTable(req);
+        try {
+          table = delegate.getTable(req);
+        } catch (NoSuchObjectException e) {
+          queryCache.put(cacheKeyNotFound, String.valueOf(e.getMessage()));
+          throw e;
+        }
         if (tableId == -1) {
           queryCache.put(cacheKeyTableId, table.getId());
           req.setId(table.getId());
-          cacheKey = new CacheKey(KeyType.TABLE, req);
         }
-        queryCache.put(cacheKey, table);
+        // key on a copy: the caller owns req and may change it after this call
+        queryCache.put(new CacheKey(KeyType.TABLE, new GetTableRequest(req)), table);
+        queryCache.putIfAbsent(MetaStoreClientCacheUtils.tableByNameKey(
+            isDefaultCatalog(req.getCatName()) ? getDefaultCatalog(conf) : req.getCatName(),
+            req.getDbName(), req.getTblName()), table);
       }
       return table;
     }
@@ -706,6 +731,15 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
     } else {
       delegate.createTable(request);
     }
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      queryCache.remove(tableNotFoundKey(tbl.getCatName(), tbl.getDbName(), tbl.getTableName()));
+    }
+  }
+
+  private CacheKey tableNotFoundKey(String catName, String dbName, String tblName) {
+    return new CacheKey(KeyType.TABLE_NOT_FOUND, isDefaultCatalog(catName) ? getDefaultCatalog(conf) : catName,
+        StringUtils.lowerCase(dbName), StringUtils.lowerCase(tblName));
   }
 
   @Override
@@ -1517,6 +1551,24 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         }
         return HiveMetaStoreClientUtils.deepCopy(partition);
       }
+    }
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache; a missing partition (NoSuchObjectException) is not cached
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITION_WITH_AUTH_INFO, catName, dbName, tableName,
+          pvals != null ? new ArrayList<>(pvals) : null, userName,
+          groupNames != null ? new ArrayList<>(groupNames) : null);
+      Partition v = (Partition) queryCache.get(cacheKey);
+      if (v == null) {
+        v = delegate.getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getPartitionWithAuthInfo, dbName={}, tblName={}, pvals={}",
+            dbName, tableName, pvals);
+      }
+      // a copy: the ql Partition built from it changes the object it gets
+      return new Partition(v);
     }
     return delegate.getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames);
   }
@@ -2388,6 +2440,46 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   }
 
   @Override
+  public List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.CHECK_CONSTRAINTS, req);
+      CheckConstraintsResponse v = (CheckConstraintsResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = new CheckConstraintsResponse(delegate.getCheckConstraints(req));
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getCheckConstraints, dbName={}, tblName={}",
+            req.getDb_name(), req.getTbl_name());
+      }
+      return v.getCheckConstraints();
+    }
+    return delegate.getCheckConstraints(req);
+  }
+
+  @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.DEFAULT_CONSTRAINTS, req);
+      DefaultConstraintsResponse v = (DefaultConstraintsResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = new DefaultConstraintsResponse(delegate.getDefaultConstraints(req));
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug(
+            "Query level HMS cache: method=getDefaultConstraints, dbName={}, tblName={}",
+            req.getDb_name(), req.getTbl_name());
+      }
+      return v.getDefaultConstraints();
+    }
+    return delegate.getDefaultConstraints(req);
+  }
+
+  @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine) throws TException {
     return getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine,
@@ -2580,7 +2672,12 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       if (validTxnsList == null) {
         return HiveMetaStoreClientUtils.getValidWriteIdList(dbName, tblName, conf);
       }
-      if (!AcidUtils.isTransactionalTable(getTable(dbName, tblName))) {
+      // the same request Hive.getTable sends, so that both share one query-level cache entry
+      GetTableRequest tableRequest = new GetTableRequest(dbName, tblName);
+      tableRequest.setCatName(getDefaultCatalog(conf));
+      tableRequest.setGetColumnStats(false);
+      tableRequest.setEngine(Constants.HIVE_ENGINE);
+      if (!AcidUtils.isTransactionalTable(getTable(tableRequest))) {
         return null;
       }
       final String validWriteIds = Hive.get().getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
