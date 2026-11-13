@@ -79,7 +79,7 @@ RUN set -eux; \
       -o -name 'wildfly-openssl-*.jar' \) \
       -exec mv -v -t "$hadoop_lib/common/lib" {} +
 
-FROM eclipse-temurin:21-jdk-ubi9-minimal AS run
+FROM eclipse-temurin:25-jdk-ubi10-minimal AS run
 
 ARG UID=1000
 ARG HADOOP_VERSION
