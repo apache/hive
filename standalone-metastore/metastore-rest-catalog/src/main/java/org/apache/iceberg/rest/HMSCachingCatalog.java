@@ -38,7 +38,6 @@ import javax.management.ObjectName;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Ticker;
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.BaseMetadataTable;
 import org.apache.iceberg.HasTableOperations;
@@ -98,10 +97,10 @@ public final class HMSCachingCatalog
 
   /**
    * Returns the underlying {@link HiveCatalog} that this caching catalog wraps.
-   * This is intended for testing purposes only; production code should not rely on the underlying catalog.
+   * <p>Production code loads tables through this caching catalog, not the underlying one;
+   * {@link HMSCatalogAdapter} only uses it to read view state from HMS, which is not cached.</p>
    * @return the underlying HiveCatalog
    */
-  @VisibleForTesting
   public HiveCatalog getCatalog() {
     return hiveCatalog;
   }

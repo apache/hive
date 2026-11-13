@@ -44,7 +44,6 @@ import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.view.BaseViewOperations;
 import org.apache.iceberg.view.SQLViewRepresentation;
 import org.apache.iceberg.view.ViewMetadata;
@@ -290,9 +289,7 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
   private Table newHMSView(ViewMetadata metadata) {
     // epoch seconds; HMS Thrift stores these as i32
     final int currentTimeSeconds = (int) (System.currentTimeMillis() / 1000L);
-    String hmsTableOwner =
-        PropertyUtil.propertyAsString(
-            metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser());
+    String hmsTableOwner = HiveHadoopUtil.resolveTableOwner(conf, metadata.properties());
     String sqlQuery = sqlFor(metadata);
 
     return new Table(
