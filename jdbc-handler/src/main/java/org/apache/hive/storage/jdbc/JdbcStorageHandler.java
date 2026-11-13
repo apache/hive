@@ -41,12 +41,16 @@ import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 
 import java.io.IOException;
 import java.lang.IllegalArgumentException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import static org.apache.hadoop.hive.ql.exec.Utilities.unquoteJdbcIdentifier;
 
 public class JdbcStorageHandler implements HiveStorageHandler {
 
@@ -107,10 +111,17 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     DatabaseType dbType = DatabaseType.valueOf(
       tableProperties.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
-    String host_url = DatabaseType.METASTORE == dbType ?
+    String hostUrl = DatabaseType.METASTORE == dbType ?
       "jdbc:metastore://" : tableProperties.get(Constants.JDBC_URL);
-    String table_name = tableProperties.get(Constants.JDBC_TABLE);
-    return new URI(host_url+"/"+table_name);
+    String tableName = tableProperties.get(Constants.JDBC_TABLE);
+    // Tables defined through hive.sql.query (e.g. the sys and information_schema tables) have no
+    // hive.sql.table, so their URI stays as before.
+    if (tableName != null) {
+      // Encode only the table name to keep URI construction valid; the URI is not used in the
+      // JDBC URL, but as an identifier stored in the HMS.
+      tableName = URLEncoder.encode(unquoteJdbcIdentifier(tableName), StandardCharsets.UTF_8);
+    }
+    return new URI(hostUrl + "/" + tableName);
   }
 
   @Override
