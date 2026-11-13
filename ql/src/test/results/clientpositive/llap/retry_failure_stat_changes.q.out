@@ -74,7 +74,7 @@ Stage-0
           Output:["_col0"],aggregations:["sum(VALUE._col0)"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
           PARTITION_ONLY_SHUFFLE [RS_12]
-            Group By Operator [GBY_11] (runtime: rows=1 width=8)
+            Group By Operator [GBY_11] (runtime: rows=2 width=8)
               Output:["_col0"],aggregations:["sum(_col0)"]
               Select Operator [SEL_9] (runtime: rows=3 width=8)
                 Output:["_col0"]
@@ -137,7 +137,7 @@ Stage-0
           Output:["_col0"],aggregations:["sum(VALUE._col0)"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
           PARTITION_ONLY_SHUFFLE [RS_12]
-            Group By Operator [GBY_11] (rows=1/1 width=8)
+            Group By Operator [GBY_11] (rows=1/2 width=8)
               Output:["_col0"],aggregations:["sum(_col0)"]
               Select Operator [SEL_9] (rows=1/3 width=8)
                 Output:["_col0"]

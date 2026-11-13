@@ -1695,12 +1695,12 @@ STAGE PLANS:
           Write Type: INSERT
 
 PREHOOK: query: insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
-    left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10
+    left outer join src s2 on s1.key=s2.key where s1.value > 'val' order by c1, c2, value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@acid_uami_n0
 POSTHOOK: query: insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
-    left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10
+    left outer join src s2 on s1.key=s2.key where s1.value > 'val' order by c1, c2, value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@acid_uami_n0
@@ -1725,16 +1725,16 @@ POSTHOOK: Input: default@acid_uami_n0
 5	5.00	val_5
 8	8.00	val_8
 9	9.00	val_9
-27	27.00	val_27
-165	165.00	val_165
-165	165.00	val_165
-238	238.00	val_238
-238	238.00	val_238
-255	255.00	val_255
-255	255.00	val_255
-311	311.00	val_311
-278	278.00	val_278
-278	278.00	val_278
+2	2.00	val_2
+0	0.00	val_0
+0	0.00	val_0
+0	0.00	val_0
+0	0.00	val_0
+0	0.00	val_0
+0	0.00	val_0
+0	0.00	val_0
+0	0.00	val_0
+0	0.00	val_0
 PREHOOK: query: truncate table acid_uami_n0
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@acid_uami_n0

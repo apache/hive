@@ -372,6 +372,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesagg
 POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
-2	4
 3	5
 10	10
+2	4
