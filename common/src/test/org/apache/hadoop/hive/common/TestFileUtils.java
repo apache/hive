@@ -344,7 +344,7 @@ public class TestFileUtils {
   public void testResolveSymlinks() throws IOException {
     HiveConf conf = new HiveConf();
 
-    java.nio.file.Path original = java.nio.file.Files.createTempFile("", "");
+    java.nio.file.Path original = java.nio.file.Files.createTempFile("", "").toRealPath();
     java.nio.file.Path symlinkPath = java.nio.file.Paths.get(original.toString() + ".symlink");
     java.nio.file.Path symlinkOfSymlinkPath = java.nio.file.Paths.get(original.toString() + ".symlink.symlink");
 

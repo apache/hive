@@ -76,9 +76,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -171,11 +169,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     if ((MetastoreConf.get(conf, "hive.metastore.client.capabilities")) != null) {
       String[] capabilities = MetastoreConf.get(conf, "hive.metastore.client.capabilities").split(",");
       setProcessorCapabilities(capabilities);
-      String hostName = "unknown";
-      try {
-        hostName = InetAddress.getLocalHost().getCanonicalHostName();
-      } catch (UnknownHostException ue) {
-      }
+      String hostName = MetaStoreUtils.getCanonicalHostname();
       setProcessorIdentifier("HMSClient-" + "@" + hostName);
     }
 
@@ -3060,13 +3054,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   private OpenTxnsResponse openTxnsIntr(String user, int numTxns, String replPolicy,
       List<Long> srcTxnIds, TxnType txnType) throws TException {
-    String hostname;
-    try {
-      hostname = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
-    }
+    String hostname = MetaStoreUtils.getHostname();
     OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
     if (replPolicy != null) {
       rqst.setReplPolicy(replPolicy);
@@ -3141,13 +3129,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       throw new RuntimeException(e);
     }
 
-    String hostName;
-    try {
-      hostName = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
-    }
+    String hostName = MetaStoreUtils.getHostname();
 
     ReplTblWriteIdStateRequest rqst
         = new ReplTblWriteIdStateRequest(validWriteIdList, user, hostName, dbName, tableName);
