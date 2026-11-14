@@ -1,0 +1,130 @@
+PREHOOK: query: create external table ice_vc (a int) stored by iceberg stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_vc
+POSTHOOK: query: create external table ice_vc (a int) stored by iceberg stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_vc
+PREHOOK: query: insert into ice_vc values (1), (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_vc
+POSTHOOK: query: insert into ice_vc values (1), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_vc
+PREHOOK: query: insert into ice_vc values (10), (11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_vc
+POSTHOOK: query: insert into ice_vc values (10), (11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_vc
+PREHOOK: query: insert into ice_vc values (20), (21)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_vc
+POSTHOOK: query: insert into ice_vc values (20), (21)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_vc
+PREHOOK: query: explain cbo select a from ice_vc where a = 1 or file__path is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select a from ice_vc where a = 1 or file__path is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_vc
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0])
+  HiveFilter(condition=[OR(=($0, 1), IS NOT NULL($3))])
+    HiveTableScan(table=[[default, ice_vc]], table:alias=[ice_vc])
+
+PREHOOK: query: select a from ice_vc where a = 1 or file__path is not null order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc
+#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 6
+   RECORDS_OUT_0: 6
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_7: 6
+   RECORDS_OUT_OPERATOR_FS_11: 6
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_9: 6
+   RECORDS_OUT_OPERATOR_SEL_10: 6
+   RECORDS_OUT_OPERATOR_SEL_8: 6
+   RECORDS_OUT_OPERATOR_TS_0: 6
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 3
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 3
+1
+2
+10
+11
+20
+21
+PREHOOK: query: select a from ice_vc where a = 1 or partition__spec__id = 0 order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc
+#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 6
+   RECORDS_OUT_0: 6
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_7: 6
+   RECORDS_OUT_OPERATOR_FS_11: 6
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_9: 6
+   RECORDS_OUT_OPERATOR_SEL_10: 6
+   RECORDS_OUT_OPERATOR_SEL_8: 6
+   RECORDS_OUT_OPERATOR_TS_0: 6
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 3
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 3
+1
+2
+10
+11
+20
+21
+PREHOOK: query: select a from ice_vc where a = 1 and file__path is not null order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc
+#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_OPERATOR_FIL_5: 1
+   RECORDS_OUT_OPERATOR_FS_7: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_SEL_6: 1
+   RECORDS_OUT_OPERATOR_TS_0: 2
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+1

@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -436,8 +437,14 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
                 ROW_LINEAGE_ID, LAST_UPDATED_SEQUENCE_NUMBER)
             .map(VirtualColumn::getName).collect(Collectors.toSet());
 
-    if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&
-          nodeDesc.getCols().stream().anyMatch(skipList::contains))) {
+    Predicate<ExprNodeDesc> readsSkipped =
+        nodeDesc -> nodeDesc.getCols() != null && nodeDesc.getCols().stream().anyMatch(skipList::contains);
+    if (!FunctionRegistry.isOpAnd(pushedPredicate)) {
+      // Only a conjunct can be left out: without a disjunct or an operand the predicate holds for fewer rows.
+      if (readsSkipped.test(pushedPredicate)) {
+        pushedPredicate = null;
+      }
+    } else if (subExprNodes.removeIf(readsSkipped)) {
       if (subExprNodes.size() == 1) {
         pushedPredicate = (subExprNodes.getFirst() instanceof ExprNodeGenericFuncDesc) ?
             subExprNodes.getFirst() : null;
