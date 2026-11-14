@@ -696,7 +696,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   protected void handleUpdateResult(TaskInfo ti, boolean isOk) {
     // The update options for outside the lock - see below the synchronized block.
     Boolean newStateSameTask = null, newStateAnyTask = null;
-    WM_LOG.info("Received response for " + ti.attemptId + ", " + isOk);
+    WM_LOG.debug("Received response for {}, {}", ti.attemptId, isOk);
     synchronized (ti) {
       assert ti.isPendingUpdate;
       if (ti.isGuaranteed == null) {
@@ -1165,7 +1165,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     TezTaskAttemptID id = getTaskAttemptId(task);
     TaskInfo taskInfo = new TaskInfo(localityDelayConf, clock, task, clientCookie, priority,
         capability, hosts, racks, clock.getTime(), id);
-    LOG.info("Received allocateRequest. task={}, priority={}, capability={}",
+    LOG.debug("Received allocateRequest. task={}, priority={}, capability={}",
             task, priority, capability);
     if (!dagRunning) {
       if (metrics != null && id != null) {
@@ -1189,7 +1189,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     TezTaskAttemptID id = getTaskAttemptId(task);
     TaskInfo taskInfo = new TaskInfo(localityDelayConf, clock, task, clientCookie, priority,
         capability, null, null, clock.getTime(), id);
-    LOG.info("Received allocateRequest. task={}, priority={}, capability={}, containerId={}",
+    LOG.debug("Received allocateRequest. task={}, priority={}, capability={}, containerId={}",
         task, priority, capability, containerId);
     if (!dagRunning) {
       if (metrics != null && id != null) {
@@ -1273,7 +1273,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       assert nodeInfo != null;
 
       //  endReason shows up as OTHER for CONTAINER_TIME_OUT
-      LOG.info("Processing de-allocate request for task={}, state={}, endReason={}", taskInfo.task,
+      LOG.debug("Processing de-allocate request for task={}, state={}, endReason={}", taskInfo.task,
           taskInfo.getState(), endReason);
       // Re-enable the node if preempted
       if (taskInfo.getState() == TaskInfo.State.PREEMPTED) {
@@ -1445,8 +1445,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             if (!instances.isEmpty()) {
               NodeInfo nodeInfo = instances.iterator().next();
               // Successfully scheduled.
-              LOG.info("Assigning {} when looking for {}." + " local=true FirstRequestedHost={}, #prefLocations={}",
-                  nodeInfo.toShortString(), host, (prefHostCount == 0), requestedHosts.length);
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Assigning {} when looking for {}. local=true FirstRequestedHost={}, #prefLocations={}",
+                    nodeInfo.toShortString(), host, (prefHostCount == 0), requestedHosts.length);
+              }
               return new SelectHostResult(nodeInfo);
             } else {
               // The node cannot accept a task at the moment. (there is host -- but no resources)
@@ -1533,9 +1535,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
         // rollover
         if (nextSlot == null) nextSlot = activeNodesWithFreeSlots.stream().findFirst().get();
-        LOG.info("Assigning {} in consistent order when looking for first requested host, from #hosts={},"
-                + " requestedHosts={}", nextSlot.toShortString(), availableHostMap.size(),
-            ((requestedHosts == null || requestedHosts.length == 0) ? "null" : requestedHostsDebugStr));
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Assigning {} in consistent order when looking for first requested host, from #hosts={},"
+                  + " requestedHosts={}", nextSlot.toShortString(), availableHostMap.size(),
+              ((requestedHosts == null || requestedHosts.length == 0) ? "null" : requestedHostsDebugStr));
+        }
         return new SelectHostResult(nextSlot);
       }
       // When all nodes are busy, reset locality delay
@@ -1554,8 +1558,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
 
     NodeInfo randomNode = nodesWithFreeSlots.get(random.nextInt(nodesWithFreeSlots.size()));
-    LOG.info("Assigning {} when looking for any host, from #hosts={}, requestedHosts=null", randomNode.toShortString(),
-        nodesWithFreeSlots.size());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Assigning {} when looking for any host, from #hosts={}, requestedHosts=null",
+          randomNode.toShortString(), nodesWithFreeSlots.size());
+    }
     return new SelectHostResult(randomNode);
   }
 
@@ -1681,7 +1687,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (metrics != null) {
         metrics.incrPendingTasksCount();
       }
-      LOG.info("PendingTasksInfo={}", constructPendingTaskCountsLogMessage());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("PendingTasksInfo={}", constructPendingTaskCountsLogMessage());
+      }
     } finally {
       writeLock.unlock();
     }
@@ -1721,7 +1729,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         isGuaranteed ? guaranteedTasks : speculativeTasks;
     writeLock.lock();
     try {
-      WM_LOG.info("Registering {}, guaranteed: {}", taskInfo.attemptId, taskInfo.isGuaranteed);
+      WM_LOG.debug("Registering {}, guaranteed: {}", taskInfo.attemptId, taskInfo.isGuaranteed);
       addToRunningTasksMap(runningTasks, taskInfo);
       if (metrics != null) {
         metrics.decrPendingTasksCount();
@@ -1744,7 +1752,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
       if (taskInfo != null) {
         tasksById.remove(taskInfo.attemptId);
-        WM_LOG.info("Unregistering " + taskInfo.attemptId + "; " + taskInfo.isGuaranteed);
+        WM_LOG.debug("Unregistering {}; {}", taskInfo.attemptId, taskInfo.isGuaranteed);
         if (taskInfo.getState() == TaskInfo.State.ASSIGNED) {
           // Remove from the running list.
           if (!removeFromRunningTaskMap(speculativeTasks, task, taskInfo)
@@ -2070,9 +2078,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     try {
       // The canAccept part of this log message does not account for this allocation.
       assignedTaskCounter.incrementAndGet();
-      LOG.info("Assigned #{}, task={} on node={}, to container={}",
-          assignedTaskCounter.get(),
-          taskInfo, nodeInfo.toShortString(), container.getId());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Assigned #{}, task={} on node={}, to container={}",
+            assignedTaskCounter.get(),
+            taskInfo, nodeInfo.toShortString(), container.getId());
+      }
       dagStats.registerTaskAllocated(taskInfo.requestedHosts, taskInfo.requestedRacks,
           nodeInfo.getHost());
       taskInfo.setAssignmentInfo(nodeInfo, container.getId(), clock.getTime());
