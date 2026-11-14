@@ -1052,6 +1052,51 @@ public class TestObjectStore {
   }
 
   @Test
+  public void testTableStatisticsMissingColumnsWithJdo() throws Exception {
+    checkTableStatisticsMissingColumns(false);
+  }
+
+  @Test
+  public void testTableStatisticsMissingColumnsWithDirectSql() throws Exception {
+    checkTableStatisticsMissingColumns(true);
+  }
+
+  private void checkTableStatisticsMissingColumns(boolean tryDirectSql) throws Exception {
+    try (AutoCloseable c = deadline(); AutoCloseable d = directsql(tryDirectSql)) {
+      objectStore.createDatabase(new DatabaseBuilder().setName(DB1).setLocation("locationurl").build(conf));
+      objectStore.createTable(new TableBuilder()
+          .setDbName(DB1)
+          .setTableName(TABLE1)
+          .addCol("with_stats", "int")
+          .addCol("without_stats", "int")
+          .build(conf));
+
+      ColumnStatisticsData data = new ColStatsBuilder<>(long.class).numNulls(0).numDVs(1)
+          .low(1L).high(1L).build();
+      ColumnStatistics stats = new ColumnStatistics(new ColumnStatisticsDesc(true, DB1, TABLE1),
+          List.of(new ColumnStatisticsObj("with_stats", "int", data)));
+      stats.setEngine(ENGINE);
+      objectStore.updateTableColumnStatistics(stats, null, 0);
+
+      Assert.assertNull(objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Collections.emptyList(), ENGINE));
+      Assert.assertNull(objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          List.of("without_stats"), ENGINE));
+      ColumnStatistics available = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          List.of("with_stats", "without_stats"), ENGINE);
+      Assert.assertEquals(1, available.getStatsObjSize());
+      Assert.assertEquals("with_stats", available.getStatsObj().getFirst().getColName());
+
+      for (List<String> columns : List.of(List.of("with_stats", "missing"), List.of("missing"))) {
+        MetaException error = Assert.assertThrows(MetaException.class,
+            () -> objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, columns, ENGINE));
+        Assert.assertEquals("Column missing doesn't exist in table " + TABLE1 + " in database " + DB1,
+            error.getMessage());
+      }
+    }
+  }
+
+  @Test
   public void testPartitionStatisticsOps() throws Exception {
     createPartitionedTable(true, true, new HashSet<>());
 
