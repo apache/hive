@@ -162,7 +162,9 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
   }
 
   @Test
-  public void testHiveDeleteFilterWithFilteredBlock() {
+  public void testHiveDeleteFilterWithFilteredParquetBlock() {
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET);
+
     Schema schema = new Schema(
         optional(1, "customer_id", Types.LongType.get()),
         optional(2, "customer_age", Types.IntegerType.get()),
