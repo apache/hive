@@ -18,6 +18,7 @@ explain merge into ice_v3 t using ice_v3_src s on t.id = s.id
 when matched and t.id = 2 then update set name = 'y'
 when matched then delete
 when not matched then insert values (s.id, 'z');
+
 merge into ice_v3 t using ice_v3_src s on t.id = s.id
 when matched and t.id = 2 then update set name = 'y'
 when matched then delete

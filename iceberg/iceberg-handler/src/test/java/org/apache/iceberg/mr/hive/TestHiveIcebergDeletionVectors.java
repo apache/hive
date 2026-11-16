@@ -203,6 +203,21 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
     assertOneDVPerDataFileAndNoMerge(table);
   }
 
+  /**
+   * A session value of the key of the rewritable deletes is dropped: the job plans them itself.
+   */
+  @Test
+  public void testRewritableDeletesKeyOfTheSessionIsIgnored() {
+    Table table = createSingleFileTable("dv_session");
+    shell.setHiveSessionValue("iceberg.mr.rewritable.deletes.default.dv_session", "file:/session-value");
+    // without previous deletes, then over the DVs of the first DELETE
+    shell.executeStatement("DELETE FROM dv_session WHERE customer_id % 7 = 0");
+    shell.executeStatement("DELETE FROM dv_session WHERE customer_id % 5 = 0");
+    long deleted = LongStream.range(0, ROWS).filter(i -> i % 7 == 0 || i % 5 == 0).count();
+    Assert.assertEquals(ROWS - deleted, count("SELECT count(*) FROM dv_session"));
+    assertOneDVPerDataFileAndNoMerge(table);
+  }
+
   @Test
   public void testUpdateOfSplitDataFile() {
     Table table = createSingleFileTable("dv_update");

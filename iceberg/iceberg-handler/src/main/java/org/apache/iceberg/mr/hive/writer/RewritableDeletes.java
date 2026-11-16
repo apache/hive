@@ -80,9 +80,13 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
    */
   public static void addToJobConf(Table table, String tableName, String ref, JobConf jobConf) {
     String key = LOCATION_PREFIX + tableName;
-    if (jobConf.get(key) != null) {
+    Path path = new Path(jobConf.get(DagUtils.TEZ_TMP_DIR_KEY), tableName + "-rewritable-deletes");
+    if (path.toString().equals(jobConf.get(key))) {
+      // planned for another sink of the table
       return;
     }
+    // any other value comes from the session
+    jobConf.unset(key);
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, ref);
     if (snapshot == null) {
       return;
@@ -92,7 +96,6 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
     if (deletes.isEmpty()) {
       return;
     }
-    Path path = new Path(jobConf.get(DagUtils.TEZ_TMP_DIR_KEY), tableName + "-rewritable-deletes");
     try (OutputStream out = new GZIPOutputStream(path.getFileSystem(jobConf).create(path))) {
       out.write(SerializationUtil.serializeToBytes(deletes));
     } catch (IOException e) {
