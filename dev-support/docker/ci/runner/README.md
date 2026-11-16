@@ -36,21 +36,17 @@ during the build. Before adding a package, check whether Maven can provide it in
 ## How the image is published
 
 The [precommit-image](../../../../.github/workflows/precommit-image.yml) workflow builds the
-image on every pull request that changes the Dockerfile. When such a change lands on master,
-the workflow publishes the image for `linux/amd64` and `linux/arm64` as
-`apache/hive-ci-runner:<version>`, where `<version>` is the `org.opencontainers.image.version`
-label of the Dockerfile.
+image on every pull request that changes the Dockerfile or the workflow. When such a change lands
+on master, the workflow publishes the image for `linux/amd64` and `linux/arm64` as
+`apache/hive-ci-runner:<UTC timestamp>-<commit>` (e.g. `20261113133625-be04f55`), and moves
+`apache/hive-ci-runner:latest` to it. The Jenkinsfile uses `latest`, so precommit runs that start
+after the workflow has finished use the new image; there is no version to bump.
 
-A published tag is never overwritten: the workflow fails if the Dockerfile changed but its
-version is a tag that already exists. A change that does not touch the Dockerfile (e.g. of the
-workflow) needs no new version: the workflow builds the image but does not publish it. The
-Jenkinsfile pins the tag in `precommitImage`, so a new image is only used once a commit bumps
-that pin.
+The workflow keeps the newest 5 `<UTC timestamp>-<commit>` tags and deletes the older ones.
 
 ## Changing the image
 
-1. Edit the [Dockerfile](Dockerfile), and bump its `org.opencontainers.image.version`. Keep the
-   image small:
+1. Edit the [Dockerfile](Dockerfile). Keep the image small:
    * Prefer letting Maven fetch a dependency over baking it into the image.
    * Pin versions through the existing build arguments (`JAVA_VERSION`, `MAVEN_VERSION`,
      `DEBIAN_VERSION`) rather than hard-coding them.
@@ -76,9 +72,9 @@ that pin.
    On the precommit job of your pull request in Jenkins, choose *Build with Parameters* and set
    `IMAGE` to `<your-namespace>/hive-ci-runner:HIVE-12345`. The parameter is only offered after
    the job has run at least once with this Jenkinsfile. Link the run in the pull request.
-4. Once the pull request is merged, the workflow publishes `apache/hive-ci-runner:<version>`.
-   Open a follow-up pull request that bumps `precommitImage` in the Jenkinsfile to the new tag.
-   Its own precommit run is the first one in the published image.
+4. Once the pull request is merged, the workflow publishes the image and moves `latest` to it.
+   A precommit run that starts while the workflow is still running uses the previous image.
 
-To roll back, revert the commit that bumped `precommitImage`. The previous tag is still
-published, unchanged.
+To roll back, revert the change of the Dockerfile: the workflow publishes the reverted image as
+the new `latest`. Until then, a precommit run can use one of the previous
+`<UTC timestamp>-<commit>` tags through `IMAGE`.

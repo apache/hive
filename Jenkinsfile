@@ -35,9 +35,10 @@ properties([
     ])
 ])
 
-// Built from dev-support/docker/ci/runner/Dockerfile and published by .github/workflows/precommit-image.yml.
-// The tag is the version in the Dockerfile; bump it here once the workflow has published a new one.
-this.precommitImage = 'apache/hive-ci-runner:1'
+// Built from dev-support/docker/ci/runner/Dockerfile and published by .github/workflows/precommit-image.yml
+// whenever a change of it reaches master. To pin a run to an image, set IMAGE to one of its
+// <UTC timestamp>-<commit> tags.
+this.precommitImage = 'apache/hive-ci-runner:latest'
 
 this.prHead = null;
 def checkPrHead() {

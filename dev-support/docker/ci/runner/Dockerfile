@@ -58,9 +58,7 @@ RUN fetch "${APACHE_ARCHIVE}/maven/maven-3/${MAVEN_VERSION}/binaries/apache-mave
 
 FROM debian:${DEBIAN_VERSION}-slim
 
-# The image is published as apache/hive-ci-runner:<version>, and a published version is never
-# overwritten: bump the version with every change of the image (see README.md).
-LABEL org.opencontainers.image.version="1"
+# The publishing workflow adds org.opencontainers.image.version and org.opencontainers.image.revision.
 LABEL org.opencontainers.image.title="Apache Hive precommit" \
       org.opencontainers.image.description="Build and test environment of the Apache Hive precommit job" \
       org.opencontainers.image.source="https://github.com/apache/hive" \
