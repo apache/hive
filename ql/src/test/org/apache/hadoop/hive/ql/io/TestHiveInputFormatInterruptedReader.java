@@ -86,6 +86,7 @@ public class TestHiveInputFormatInterruptedReader {
   @After
   public void reset() {
     FailingInputFormat.failure = null;
+    FailingInputFormat.interrupt = false;
     Thread.interrupted();
   }
 
@@ -105,7 +106,10 @@ public class TestHiveInputFormatInterruptedReader {
 
   @Test
   public void testFailureOnAnInterruptedThreadOnceLimitReachedIsAnEmptySplit() throws Exception {
-    Thread.currentThread().interrupt();
+    // Interrupted while the inner reader is created, not up front: code that runs earlier in
+    // getRecordReader can swallow an interrupt (Hadoop's Shell static init joins a thread and
+    // drops the InterruptedException), which would clear the flag before the check.
+    FailingInputFormat.interrupt = true;
     assertTrue(innerReader(getRecordReader(new IOException("closed"), true))
         instanceof NullRowsRecordReader);
   }
@@ -167,9 +171,10 @@ public class TestHiveInputFormatInterruptedReader {
     return ((HiveContextAwareRecordReader<?, ?>) reader).recordReader;
   }
 
-  /** Fails {@link #getRecordReader} with {@link #failure}. */
+  /** Fails {@link #getRecordReader} with {@link #failure}, interrupting first if {@link #interrupt}. */
   public static class FailingInputFormat implements InputFormat<Object, Object> {
     static volatile IOException failure;
+    static volatile boolean interrupt;
 
     @Override
     public InputSplit[] getSplits(JobConf job, int numSplits) {
@@ -179,6 +184,9 @@ public class TestHiveInputFormatInterruptedReader {
     @Override
     public RecordReader<Object, Object> getRecordReader(InputSplit split, JobConf job,
         Reporter reporter) throws IOException {
+      if (interrupt) {
+        Thread.currentThread().interrupt();
+      }
       throw failure;
     }
   }

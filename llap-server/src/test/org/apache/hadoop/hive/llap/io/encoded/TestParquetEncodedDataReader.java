@@ -1269,11 +1269,11 @@ public class TestParquetEncodedDataReader {
   /**
    * An interrupted footer read fails the split instead of falling back: the fragment is being
    * killed, and the fallback would only restart the read on the stock reader. The caller gets the
-   * very exception that was thrown, so the interrupt is still its root cause for HiveInputFormat's
-   * limit-reached check, and the interrupt flag is set again for a wrapper that consumed it.
+   * very exception that was thrown, with the interrupt flag set again for a wrapper that consumed
+   * it; once the limit is reached, HiveInputFormat recognizes it with the same JavaUtils.isInterrupt.
    */
   @Test
-  public void testInterruptedFooterReadIsNotAFallback() throws Exception {
+  public void testInterruptedFooterReadIsNotAFallback() {
     IOException[] interrupts = {
         new InterruptedIOException("interrupted"),
         new ClosedByInterruptException(),
@@ -1292,7 +1292,7 @@ public class TestParquetEncodedDataReader {
 
   /** Whatever the footer read fails with, a thread that has been interrupted does not fall back. */
   @Test
-  public void testFailedFooterReadOnAnInterruptedThreadIsNotAFallback() throws Exception {
+  public void testFailedFooterReadOnAnInterruptedThreadIsNotAFallback() {
     IOException failure = new IOException("failed");
     Thread.currentThread().interrupt();
     try {
