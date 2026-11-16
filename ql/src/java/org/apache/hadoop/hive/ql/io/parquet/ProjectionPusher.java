@@ -110,7 +110,7 @@ public class ProjectionPusher {
     // To support nested column pruning, we need to track the path from the top to the nested
     // fields
     Set<String> neededNestedColumnPaths = new HashSet<String>();
-    List<ExprNodeGenericFuncDesc> filterExprs = new ArrayList<ExprNodeGenericFuncDesc>();
+    List<ExprNodeDesc> filterExprs = new ArrayList<ExprNodeDesc>();
     RowSchema rowSchema = null;
 
     for(String alias : aliases) {
@@ -129,17 +129,17 @@ public class ProjectionPusher {
         }
 
         rowSchema = ts.getSchema();
-        ExprNodeGenericFuncDesc filterExpr =
+        ExprNodeDesc filterExpr =
             ts.getConf() == null ? null : ts.getConf().getFilterExpr();
         noFilters = filterExpr == null; // No filter if any TS has no filter expression
         filterExprs.add(filterExpr);
       }
     }
 
-    ExprNodeGenericFuncDesc tableFilterExpr = null;
+    ExprNodeDesc tableFilterExpr = null;
     if (!noFilters) {
       try {
-        for (ExprNodeGenericFuncDesc filterExpr : filterExprs) {
+        for (ExprNodeDesc filterExpr : filterExprs) {
           if (tableFilterExpr == null ) {
             tableFilterExpr = filterExpr;
           } else {
@@ -167,7 +167,7 @@ public class ProjectionPusher {
     pushFilters(jobConf, rowSchema, tableFilterExpr);
   }
 
-  private void pushFilters(final JobConf jobConf, RowSchema rowSchema, ExprNodeGenericFuncDesc filterExpr) {
+  private void pushFilters(final JobConf jobConf, RowSchema rowSchema, ExprNodeDesc filterExpr) {
     // construct column name list for reference by filter push down
     Utilities.setColumnNameList(jobConf, rowSchema, true);
     Utilities.setColumnTypeList(jobConf, rowSchema, true);

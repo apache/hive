@@ -143,7 +143,7 @@ public class SemiJoinReductionMerge extends Transform {
       RuntimeValuesInfo valuesInfo = createRuntimeValuesInfo(rsCompleteOp, sjBranches, parseContext);
       parseContext.getRsToRuntimeValuesInfoMap().put(rsCompleteOp, valuesInfo);
 
-      ExprNodeGenericFuncDesc sjPredicate = createSemiJoinPredicate(sjBranches, valuesInfo, parseContext);
+      ExprNodeDesc sjPredicate = createSemiJoinPredicate(sjBranches, valuesInfo, parseContext);
 
       // Update filter operators with the new semi-join predicate
       for (Operator<?> op : sjTargetTable.getChildOperators()) {
@@ -216,7 +216,7 @@ public class SemiJoinReductionMerge extends Transform {
    * </pre>
    * where the question mark (?) indicates dynamic values bound at runtime.
    */
-  private static ExprNodeGenericFuncDesc createSemiJoinPredicate(List<ReduceSinkOperator> sjBranches,
+  private static ExprNodeDesc createSemiJoinPredicate(List<ReduceSinkOperator> sjBranches,
       RuntimeValuesInfo sjValueInfo, ParseContext context) {
     // Performance note: To speed-up evaluation 'BETWEEN' predicates should come before the 'IN_BLOOM_FILTER'
     Deque<String> dynamicIds = new ArrayDeque<>(sjValueInfo.getDynamicValueIDs());

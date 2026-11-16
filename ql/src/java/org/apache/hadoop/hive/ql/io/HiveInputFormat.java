@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -953,11 +954,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     Utilities.setColumnNameList(jobConf, tableScan);
     Utilities.setColumnTypeList(jobConf, tableScan);
     // push down filters
-    ExprNodeGenericFuncDesc filterExpr = scanDesc.getFilterExpr();
+    ExprNodeDesc filterExpr = scanDesc.getFilterExpr();
     String pruningFilter = jobConf.get(TableScanDesc.PARTITION_PRUNING_FILTER);
     // If we have a pruning filter then combine it with the original
     if (pruningFilter != null) {
-      ExprNodeGenericFuncDesc pruningExpr = SerializationUtilities.deserializeExpression(pruningFilter);
+      ExprNodeDesc pruningExpr = SerializationUtilities.deserializeExpression(pruningFilter);
       if (filterExpr != null) {
         // Combine the 2 filters with AND
         filterExpr = ExprNodeDescUtils.and(filterExpr, pruningExpr);

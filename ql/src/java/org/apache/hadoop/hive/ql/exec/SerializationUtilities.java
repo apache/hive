@@ -875,14 +875,14 @@ public class SerializationUtilities {
     }
   }
 
-  public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
+  public static String serializeExpression(ExprNodeDesc expr) {
     return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
         StandardCharsets.UTF_8);
   }
 
-  public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
+  public static ExprNodeDesc deserializeExpression(String s) {
     byte[] bytes = Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8));
-    return deserializeObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
+    return deserializeObjectFromKryo(bytes, ExprNodeDesc.class);
   }
 
   public static byte[] serializeObjectToKryo(Serializable object) {

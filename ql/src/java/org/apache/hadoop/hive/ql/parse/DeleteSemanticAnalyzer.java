@@ -35,8 +35,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.DeleteStatement;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 import java.util.Collections;
 import java.util.List;
@@ -148,7 +147,7 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatem
     if (!topOps.containsKey(table.getTableName())) {
       return null;
     }
-    ExprNodeGenericFuncDesc hiveFilter = topOps.get(table.getTableName()).getConf().getFilterExpr();
+    ExprNodeDesc hiveFilter = topOps.get(table.getTableName()).getConf().getFilterExpr();
     if (hiveFilter == null) {
       return null;
     }
