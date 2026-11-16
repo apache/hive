@@ -1,5 +1,5 @@
-Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Reducer 5' is a cross product
-Warning: Map Join MAPJOIN[380][bigTable=?] in task 'Reducer 6' is a cross product
+Warning: Map Join MAPJOIN[378][bigTable=?] in task 'Reducer 5' is a cross product
+Warning: Map Join MAPJOIN[383][bigTable=?] in task 'Reducer 6' is a cross product
 {
   "CBOPlan": {
     "rels": [
