@@ -54,8 +54,10 @@ import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat.CompatibilityTaskAttemptContextImpl;
 import org.apache.iceberg.mr.mapreduce.IcebergInputFormat;
+import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Pair;
@@ -70,6 +72,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -133,19 +136,7 @@ public class TestHiveVectorizedReader {
 
   @Test
   public void testDeletionVectorIsReadThroughInjectedMetadataCache() throws Exception {
-    File location = temp.newFolder("v3");
-    Assert.assertTrue(location.delete());
-    JobConf job = prepareMockJob(SCHEMA, new Path(location.toString()));
-    job.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
-    TestHelper v3Helper = new TestHelper(job, new HadoopTables(job), location.toString(), SCHEMA, null, fileFormat,
-        ImmutableMap.of(TableProperties.FORMAT_VERSION, "3"), temp);
-    Table table = v3Helper.createUnpartitionedTable();
-    DataFile dataFile = v3Helper.writeFile(null, v3Helper.generateRandomRecords(10, 0L));
-    v3Helper.appendToTable(dataFile);
-    DeleteFile dv = FileHelpers.writeDeleteFile(table, null, null,
-        ImmutableList.of(Pair.of(dataFile.location(), 0L), Pair.of(dataFile.location(), 3L)), 3).first();
-    table.newRowDelta().addDeletes(dv).commit();
-    new InputFormatConfig.ConfigBuilder(job).readFrom(location.toString());
+    JobConf job = jobOfTableWithDV();
     job.setBoolean(HiveConf.ConfVars.LLAP_IO_ENABLED.varname, true);
 
     JobConf daemonConf = new JobConf(job);
@@ -173,6 +164,45 @@ public class TestHiveVectorizedReader {
     Mockito.clearInvocations(cache);
     Assert.assertEquals(8, readRows(inputFormat, job, Reporter.NULL));
     Mockito.verifyNoInteractions(cache);
+  }
+
+  /**
+   * The deletes load once the record reader exists, so that LLAP IO reads the data meanwhile; a failed load closes the
+   * reader.
+   */
+  @Test
+  public void testFailedDeleteLoadClosesTheRecordReader() throws Exception {
+    JobConf job = jobOfTableWithDV();
+    job.setBoolean(HiveConf.ConfVars.LLAP_IO_ENABLED.varname, true);
+    MetadataCache cache = Mockito.mock(MetadataCache.class);
+    Mockito.when(cache.getFileMetadata(any())).thenThrow(new IllegalStateException("cache failure"));
+    HiveIcebergInputFormat inputFormat = new HiveIcebergInputFormat();
+    inputFormat.injectCaches(cache, null, new JobConf(job));
+
+    try (MockedConstruction<HiveBatchIterator> iterators = Mockito.mockConstruction(HiveBatchIterator.class)) {
+      RuntimeException thrown =
+          Assert.assertThrows(RuntimeException.class, () -> readRows(inputFormat, job, Reporter.NULL));
+      Assert.assertEquals("cache failure", Throwables.getRootCause(thrown).getMessage());
+      Mockito.verify(Iterables.getOnlyElement(iterators.constructed())).close();
+    }
+  }
+
+  // A V3 table of one data file of 10 rows, 2 of them deleted by a DV
+  private JobConf jobOfTableWithDV() throws Exception {
+    File location = temp.newFolder("v3");
+    Assert.assertTrue(location.delete());
+    JobConf job = prepareMockJob(SCHEMA, new Path(location.toString()));
+    job.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
+    TestHelper v3Helper = new TestHelper(job, new HadoopTables(job), location.toString(), SCHEMA, null, fileFormat,
+        ImmutableMap.of(TableProperties.FORMAT_VERSION, "3"), temp);
+    Table table = v3Helper.createUnpartitionedTable();
+    DataFile dataFile = v3Helper.writeFile(null, v3Helper.generateRandomRecords(10, 0L));
+    v3Helper.appendToTable(dataFile);
+    DeleteFile dv = FileHelpers.writeDeleteFile(table, null, null,
+        ImmutableList.of(Pair.of(dataFile.location(), 0L), Pair.of(dataFile.location(), 3L)), 3).first();
+    table.newRowDelta().addDeletes(dv).commit();
+    new InputFormatConfig.ConfigBuilder(job).readFrom(location.toString());
+    return job;
   }
 
   private static int readRows(HiveIcebergInputFormat inputFormat, JobConf job, Reporter reporter) throws IOException {
