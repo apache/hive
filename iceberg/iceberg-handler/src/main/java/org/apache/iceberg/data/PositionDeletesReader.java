@@ -80,25 +80,10 @@ final class PositionDeletesReader {
   }
 
   private static CharSequenceMap<PositionDeleteIndex> readRecords(DeleteFile deleteFile, InputFile file) {
-    CharSequenceMap<PositionDeleteIndex> indexes = CharSequenceMap.create();
-    try (CloseableIterable<Record> deletes = FormatModelRegistry.readBuilder(deleteFile.format(), Record.class, file)
+    return Deletes.toPositionIndexes(FormatModelRegistry.readBuilder(deleteFile.format(), Record.class, file)
         .project(POS_DELETE_SCHEMA)
         .reuseContainers()
-        .build()) {
-      CharSequence lastPath = null;
-      PositionDeleteIndex index = null;
-      for (Record delete : deletes) {
-        CharSequence path = (CharSequence) delete.get(0);
-        if (!path.equals(lastPath)) {
-          lastPath = path.toString();
-          index = indexes.computeIfAbsent(lastPath, key -> newIndex(key, deleteFile));
-        }
-        index.delete((Long) delete.get(1));
-      }
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
-    }
-    return indexes;
+        .build(), deleteFile);
   }
 
   private static PositionDeleteIndex newIndex(CharSequence path, DeleteFile deleteFile) {

@@ -50,6 +50,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.IOUtil;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mr.hive.DeleteCacheCounters;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.util.CharSequenceMap;
 import org.apache.iceberg.util.ContentFileUtil;
@@ -131,6 +132,7 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
   }
 
   private PositionDeleteIndex readDV(DeleteFile dv, CharSequence filePath) {
+    validateDV(dv, filePath);
     DeletesKey key = new DeletesKey(dv.location(), filePath.toString());
     byte[] bytes = getCached(key);
     if (bytes != null) {
@@ -145,6 +147,18 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
     PositionDeleteIndex index = PositionDeleteIndex.deserialize(bytes, dv);
     putCached(key, bytes, dv);
     return index;
+  }
+
+  // The checks of BaseDeleteLoader, private there
+  private static void validateDV(DeleteFile dv, CharSequence filePath) {
+    Preconditions.checkArgument(dv.contentOffset() != null,
+        "Invalid DV, offset cannot be null: %s", ContentFileUtil.dvDesc(dv));
+    Preconditions.checkArgument(dv.contentSizeInBytes() != null,
+        "Invalid DV, length is null: %s", ContentFileUtil.dvDesc(dv));
+    Preconditions.checkArgument(dv.contentSizeInBytes() <= Integer.MAX_VALUE,
+        "Can't read DV larger than 2GB: %s", dv.contentSizeInBytes());
+    Preconditions.checkArgument(filePath.toString().equals(dv.referencedDataFile()),
+        "DV is expected to reference %s, not %s", filePath, dv.referencedDataFile());
   }
 
   /**
