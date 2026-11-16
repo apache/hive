@@ -752,17 +752,17 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 12288 Data size: 72724 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (rank_window_0 < 5) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4096 Data size: 24248 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: tinyint), _col5 (type: double), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4096 Data size: 16396 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4096 Data size: 40632 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 4096 Data size: 16396 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4096 Data size: 40632 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -958,14 +958,14 @@ STAGE PLANS:
                       outputTypes: [int, tinyint, double]
                       partitionExpressions: [col 0:tinyint]
                       streamingColumns: [2]
-                  Statistics: Num rows: 12288 Data size: 72724 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterLongColLessLongScalar(col 2:int, val 5)
                     predicate: (rank_window_0 < 5) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4096 Data size: 24248 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: tinyint), _col5 (type: double), rank_window_0 (type: int)
                       outputColumnNames: _col0, _col1, _col2
@@ -973,13 +973,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2]
-                      Statistics: Num rows: 4096 Data size: 16396 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4096 Data size: 40632 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 4096 Data size: 16396 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4096 Data size: 40632 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -992,7 +992,7 @@ STAGE PLANS:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [0, 1, 2]
-                        Statistics: Num rows: 4096 Data size: 16396 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4096 Data size: 40632 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1), min(col2), max(col2), count(col2), compute_bit_vector_hll(col2), min(col3), max(col3), count(col3), compute_bit_vector_hll(col3)
                           Group By Vectorization:

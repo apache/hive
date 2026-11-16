@@ -1,7 +1,7 @@
-Warning: Map Join MAPJOIN[289][bigTable=?] in task 'Reducer 12' is a cross product
-Warning: Map Join MAPJOIN[290][bigTable=?] in task 'Map 5' is a cross product
-Warning: Map Join MAPJOIN[284][bigTable=?] in task 'Map 5' is a cross product
-Warning: Map Join MAPJOIN[283][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[290][bigTable=?] in task 'Reducer 12' is a cross product
+Warning: Map Join MAPJOIN[291][bigTable=?] in task 'Map 5' is a cross product
+Warning: Map Join MAPJOIN[285][bigTable=?] in task 'Map 5' is a cross product
+Warning: Map Join MAPJOIN[284][bigTable=?] in task 'Map 1' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(segment=[$0], num_customers=[$1], segment_base=[*($0, 50)])

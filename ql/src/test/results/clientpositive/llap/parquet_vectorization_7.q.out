@@ -154,7 +154,7 @@ STAGE PLANS:
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 25 Data size: 3102 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 25 Data size: 4180 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -403,7 +403,7 @@ STAGE PLANS:
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 25 Data size: 3102 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 25 Data size: 4180 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
