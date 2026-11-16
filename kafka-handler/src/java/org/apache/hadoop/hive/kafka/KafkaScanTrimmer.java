@@ -84,7 +84,7 @@ class KafkaScanTrimmer {
    *
    * @return tiny house of of the full house based on filter expression
    */
-  Map<TopicPartition, KafkaInputSplit> computeOptimizedScan(ExprNodeGenericFuncDesc filterExpression) {
+  Map<TopicPartition, KafkaInputSplit> computeOptimizedScan(ExprNodeDesc filterExpression) {
     Map<TopicPartition, KafkaInputSplit> optimizedScan = parseAndOptimize(filterExpression);
 
     if (LOG.isDebugEnabled()) {

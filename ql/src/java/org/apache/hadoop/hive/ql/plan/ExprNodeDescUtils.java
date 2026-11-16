@@ -225,7 +225,7 @@ public class ExprNodeDescUtils {
    * The method is equivalent to calling: {@code and(Arrays.asList(e1, e2))}
    * </p>
    */
-  public static ExprNodeGenericFuncDesc and(ExprNodeDesc e1, ExprNodeDesc e2) {
+  public static ExprNodeDesc and(ExprNodeDesc e1, ExprNodeDesc e2) {
     return and(Arrays.asList(e1, e2));
   }
 
@@ -235,12 +235,23 @@ public class ExprNodeDescUtils {
    * Input: OR(A, B), C, AND(D, AND(E, F))
    * Output: AND(OR(A, B), C, D, E, F)
    * </pre>
+   * Flattening also removes duplicate operands; if a single operand remains it is returned as is,
+   * since AND(A) is equivalent to A and AND requires at least 2 operands (GenericUDFOPAnd#initialize).
+   * <pre>
+   * Input: A, AND(A, A)
+   * Output: A
+   * </pre>
    * TODO: Replace mergePredicates ?
    */
-  public static ExprNodeGenericFuncDesc and(List<ExprNodeDesc> exps) {
+  public static ExprNodeDesc and(List<ExprNodeDesc> exps) {
     List<ExprNodeDesc> flatExps = new ArrayList<>();
     for (ExprNodeDesc e : exps) {
       split(e, flatExps);
+    }
+    // split's flattening and deduplication may collapse the operand list; AND requires at least
+    // two operands (GenericUDFOPAnd#initialize enforces this), so unwrap trivial cases
+    if (flatExps.size() == 1) {
+      return flatExps.getFirst();
     }
     return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", flatExps);
   }
@@ -251,11 +262,22 @@ public class ExprNodeDescUtils {
    * Input: AND(A, B), C, OR(D, OR(E, F))
    * Output: OR(AND(A, B), C, D, E, F)
    * </pre>
+   * Flattening also removes duplicate operands; if a single operand remains it is returned as is,
+   * since OR(A) is equivalent to A and OR requires at least 2 operands (GenericUDFOPOr#initialize).
+   * <pre>
+   * Input: A, OR(A, A)
+   * Output: A
+   * </pre>
    */
-  public static ExprNodeGenericFuncDesc or(List<ExprNodeDesc> exps) {
+  public static ExprNodeDesc or(List<ExprNodeDesc> exps) {
     List<ExprNodeDesc> flatExps = new ArrayList<>();
     for (ExprNodeDesc e : exps) {
       split(e, flatExps, FunctionRegistry::isOpOr);
+    }
+    // split's flattening and deduplication may collapse the operand list; OR requires at least
+    // two operands (GenericUDFOPOr#initialize enforces this), so unwrap trivial cases
+    if (flatExps.size() == 1) {
+      return flatExps.getFirst();
     }
     return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPOr(), "or", flatExps);
   }
