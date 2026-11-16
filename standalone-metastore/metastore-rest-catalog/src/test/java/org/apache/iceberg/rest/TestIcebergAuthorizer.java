@@ -77,26 +77,20 @@ class TestIcebergAuthorizer {
   private static final List<String> COLUMNS = List.of("id", "name");
   private static final String LOCATION = "file:/warehouse/db/table";
   private static final List<HivePrivilegeObject> WRITABLE_PRIVILEGES = List.of(
-      new HivePrivilegeObject(
-          HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW,
-          CATALOG_NAME,
-          DATABASE_NAME,
-          TABLE_NAME,
-          null,
-          null,
-          HivePrivilegeObject.HivePrivObjectActionType.INSERT,
-          null
-      )
+      HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW)
+          .catName(CATALOG_NAME)
+          .dbName(DATABASE_NAME)
+          .objectName(TABLE_NAME)
+          .actionType(HivePrivilegeObject.HivePrivObjectActionType.INSERT)
+          .build()
   );
   private static final List<HivePrivilegeObject> READABLE_PRIVILEGES = List.of(
-      new HivePrivilegeObject(
-          HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW,
-          CATALOG_NAME,
-          DATABASE_NAME,
-          TABLE_NAME,
-          null,
-          COLUMNS
-      )
+      HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW)
+          .catName(CATALOG_NAME)
+          .dbName(DATABASE_NAME)
+          .objectName(TABLE_NAME)
+          .columns(COLUMNS)
+          .build()
   );
 
   private static CreateTableRequest stageCreateRequest(String location, String tableOwnerName) {

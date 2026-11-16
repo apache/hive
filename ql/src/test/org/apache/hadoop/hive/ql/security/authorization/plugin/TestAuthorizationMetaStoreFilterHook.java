@@ -105,8 +105,11 @@ public class TestAuthorizationMetaStoreFilterHook {
           if (dbName.equals(obj.getDbname()) && allowed.equals(obj.getObjectName())) {
             String key = (catName != null ? catName : "") + "\0" + dbName + "\0" + allowed;
             if (seen.add(key)) {
-              result.add(new HivePrivilegeObject(
-                    HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, catName, dbName, allowed));
+              result.add(HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW)
+                  .catName(catName)
+                  .dbName(dbName)
+                  .objectName(allowed)
+                  .build());
             }
             break;
           }
@@ -313,8 +316,11 @@ public class TestAuthorizationMetaStoreFilterHook {
       List<HivePrivilegeObject> objs = invocation.getArgument(0);
       return objs.stream()
           .filter(o -> Integer.parseInt(o.getObjectName().split("_")[1]) % 2 == 0)
-          .map(o -> new HivePrivilegeObject(
-             HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, "cat1", o.getDbname(), o.getObjectName()))
+          .map(o -> HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW)
+              .catName("cat1")
+              .dbName(o.getDbname())
+              .objectName(o.getObjectName())
+              .build())
           .toList();
     });
 

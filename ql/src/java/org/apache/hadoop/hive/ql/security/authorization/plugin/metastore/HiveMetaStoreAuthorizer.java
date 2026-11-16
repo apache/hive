@@ -444,7 +444,8 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
   private List<Table> getFilteredTableList(List<HivePrivilegeObject> hivePrivilegeObjects, List<Table> tableList) {
     final List<Table> ret = new ArrayList<>();
-    final TablePrivilegeLookup index = new TablePrivilegeLookup(hivePrivilegeObjects);
+    final TablePrivilegeLookup index =
+        new TablePrivilegeLookup(hivePrivilegeObjects, MetaStoreUtils.getDefaultCatalog(getConf()));
     for(Table table : tableList) {
       if (index.lookup(table.getCatName(), table.getDbName(), table.getTableName()) != null) {
         ret.add(table);
@@ -487,7 +488,8 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
   private List<String> getFilteredTableNames(List<HivePrivilegeObject> hivePrivilegeObjects, String catalogName, String databaseName, List<String> tableNames) {
     List<String> ret = new ArrayList<>();
-    final TablePrivilegeLookup index = new TablePrivilegeLookup(hivePrivilegeObjects);
+    final TablePrivilegeLookup index =
+        new TablePrivilegeLookup(hivePrivilegeObjects, MetaStoreUtils.getDefaultCatalog(getConf()));
     for(String tableName : tableNames) {
       if (index.lookup(catalogName, databaseName, tableName) != null) {
         ret.add(tableName);

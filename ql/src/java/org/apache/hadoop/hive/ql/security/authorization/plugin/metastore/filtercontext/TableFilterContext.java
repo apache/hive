@@ -92,8 +92,11 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
     } else {
       for (String tableName : tableNames) {
         HivePrivilegeObjectType type = HivePrivilegeObjectType.TABLE_OR_VIEW;
-        HivePrivilegeObject hivePrivilegeObject = new HivePrivilegeObject(
-            type, catName, dbName, tableName);
+        HivePrivilegeObject hivePrivilegeObject = HivePrivilegeObject.builder(type)
+            .catName(catName)
+            .dbName(dbName)
+            .objectName(tableName)
+            .build();
         ret.add(hivePrivilegeObject);
       }
     }

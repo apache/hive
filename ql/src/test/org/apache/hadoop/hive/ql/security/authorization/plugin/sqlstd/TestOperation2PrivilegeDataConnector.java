@@ -41,7 +41,7 @@ public class TestOperation2PrivilegeDataConnector {
   private static final String CONNECTOR_NAME = "dc1";
 
   private static HivePrivilegeObject connectorObject() {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.DATACONNECTOR, CONNECTOR_NAME);
+    return HivePrivilegeObject.builder(HivePrivilegeObjectType.DATACONNECTOR).objectName(CONNECTOR_NAME).build();
   }
 
   @Test

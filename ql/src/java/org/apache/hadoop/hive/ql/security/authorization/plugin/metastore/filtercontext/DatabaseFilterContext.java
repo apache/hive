@@ -89,7 +89,11 @@ public class DatabaseFilterContext extends HiveMetaStoreAuthorizableEvent {
       if (db != null) {
         ret.add(getHivePrivilegeObject(db));
       } else {
-        HivePrivilegeObject hivePrivilegeObject = new HivePrivilegeObject(type, dbName);
+        HivePrivilegeObject hivePrivilegeObject = HivePrivilegeObject.builder(type)
+            .catName(catName)
+            .dbName(dbName)
+            .objectName(dbName)
+            .build();
         ret.add(hivePrivilegeObject);
       }
     }

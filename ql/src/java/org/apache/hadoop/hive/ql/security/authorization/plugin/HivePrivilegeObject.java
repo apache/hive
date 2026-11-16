@@ -18,13 +18,16 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.metastore.HMSHandlerContext;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -110,12 +113,20 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   /**
-   * Try to get thread local configuration from HMSHandler, otherwise create a new one.
-   * @return configuration
+   * @return the given catalog name if not blank, otherwise the current catalog of the session in HS2,
+   * or the default catalog from the HMSHandler configuration (or a new metastore configuration).
    */
-  public static Configuration getConf() {
-    return HMSHandlerContext.getConfiguration()
-        .orElse(new Configuration());
+  private String getCatalogOrDefault(String catName) {
+    if (StringUtils.isNotBlank(catName)) {
+      return catName;
+    } else if (SessionState.get() != null) {
+      // HS2
+      return SessionState.get().getCurrentCatalog();
+    }
+    // HMS or others
+    Configuration configuration =
+        HMSHandlerContext.getConfiguration().orElse(MetastoreConf.newMetastoreConf());
+    return MetaStoreUtils.getDefaultCatalog(configuration);
   }
 
   /**
@@ -164,95 +175,54 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   // is applied to the table.
   private String rowFilterExpression;
 
+  /**
+   * Used by external authorizers (e.g. Ranger, Sentry). Use {@link #builder(HivePrivilegeObjectType)} instead.
+   */
   @Deprecated
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName) {
-    this(type, dbname, objectName, HivePrivObjectActionType.OTHER);
-  }
-
-  @Deprecated
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName
-      , HivePrivObjectActionType actionType) {
-    this(type, dbname, objectName, null, null, actionType, null, null);
-  }
-
-  @Deprecated
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-      List<String> partKeys, String column) {
-    this(type, dbname, objectName, partKeys,
-        column == null ? null : Arrays.asList(column),
-        HivePrivObjectActionType.OTHER, null, null);
-    }
-
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String objectName) {
-    this(type, null, null, objectName);
-  }
-
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName) {
-    this(type, catName, dbname, objectName, null, null);
-  }
-
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
-      List<String> partKeys, List<String> columns) {
-    this(type, catName, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, null);
-  }
-
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
-      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams) {
-    this(type, catName, dbname, objectName, partKeys, columns, actionType, commandParams, null, null, null);
+    this(type, null, dbname, objectName, null, null, null, null, null, null, null);
   }
 
   /**
-   * Create HivePrivilegeObject of type {@link HivePrivilegeObjectType#COMMAND_PARAMS}
+   * Used by external authorizers (e.g. Ranger, Sentry). Use {@link #builder(HivePrivilegeObjectType)} instead.
+   */
+  @Deprecated
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
+      HivePrivObjectActionType actionType) {
+    this(type, null, dbname, objectName, null, null, actionType, null, null, null, null);
+  }
+
+  /**
+   * Used by external authorizers (e.g. Ranger, Sentry). Use {@link #builder(HivePrivilegeObjectType)} instead.
+   */
+  @Deprecated
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
+      List<String> partKeys, String column) {
+    this(type, null, dbname, objectName, partKeys, column == null ? null : Arrays.asList(column),
+        null, null, null, null, null);
+  }
+
+  /**
+   * Create HivePrivilegeObject of type {@link HivePrivilegeObjectType#COMMAND_PARAMS}.
    * @param cmdParams
    * @return
    */
   public static HivePrivilegeObject createHivePrivilegeObject(List<String> cmdParams) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.COMMAND_PARAMS, null, null,
-        null, null, null,null, cmdParams);
+    return builder(HivePrivilegeObjectType.COMMAND_PARAMS).commandParams(cmdParams).build();
   }
 
-  @Deprecated
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-    List<String> partKeys, List<String> columns, List<String> commandParams) {
-    this(type, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams, null);
-  }
-
-  @Deprecated
-  public HivePrivilegeObject(String dbname, String objectName, List<String> columns) {
-    this(HivePrivilegeObjectType.TABLE_OR_VIEW, null, dbname, objectName, null, columns);
-  }
-
-  @Deprecated
-  public HivePrivilegeObject(String dbname, String objectName, List<String> columns,
-      String ownerName, PrincipalType ownerType) {
-    this(HivePrivilegeObjectType.TABLE_OR_VIEW, dbname, objectName, null, columns,
-        HivePrivObjectActionType.OTHER, null, null, ownerName, ownerType);
-  }
-
-  @Deprecated
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
-      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className) {
-    this(type, dbname, objectName, partKeys, columns, actionType, commandParams, className, null, null);
-  }
-
-  @Deprecated
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
-      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className,
-      String ownerName, PrincipalType ownerType) {
-    this(type, null, dbname, objectName, partKeys, columns, actionType, commandParams, className, ownerName,
-        ownerType);
-  }
-
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
+  private HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
       List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams,
       String className, String ownerName, PrincipalType ownerType) {
     this.type = type;
-    this.catName = catName == null ? MetaStoreUtils.getDefaultCatalog(getConf()) : catName;
+    this.catName = getCatalogOrDefault(catName);
     this.dbname = dbname;
     this.objectName = objectName;
     this.partKeys = partKeys;
     this.columns = columns;
-    this.actionType = actionType;
+    // Older constructors defaulted a missing action type to OTHER. Authorizers such as
+    // Ranger switch on it, so a null from any constructor is stored as OTHER.
+    this.actionType = actionType == null ? HivePrivObjectActionType.OTHER : actionType;
     this.commandParams = commandParams;
     this.className = className;
     this.ownerName = ownerName;
@@ -260,9 +230,93 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   public static HivePrivilegeObject forScheduledQuery(String owner, String clusterNamespace, String scheduleName) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.SCHEDULED_QUERY, null,
-        /*dbName*/clusterNamespace, /*objectName*/scheduleName, null, null, null, null, null,
-        /*ownerName*/owner, null);
+    return builder(HivePrivilegeObjectType.SCHEDULED_QUERY)
+        .dbName(clusterNamespace)
+        .objectName(scheduleName)
+        .ownerName(owner)
+        .build();
+  }
+
+  public static Builder builder(HivePrivilegeObjectType type) {
+    return new Builder(type);
+  }
+
+  /**
+   * Builds a {@link HivePrivilegeObject}. A catalog name left unset resolves to the session's
+   * current catalog in HS2, or the default catalog otherwise. An action type left unset is
+   * {@link HivePrivObjectActionType#OTHER}.
+   */
+  public static final class Builder {
+    private final HivePrivilegeObjectType type;
+    private String catName;
+    private String dbName;
+    private String objectName;
+    private List<String> partKeys;
+    private List<String> columns;
+    private HivePrivObjectActionType actionType = HivePrivObjectActionType.OTHER;
+    private List<String> commandParams;
+    private String className;
+    private String ownerName;
+    private PrincipalType ownerType;
+
+    private Builder(HivePrivilegeObjectType type) {
+      this.type = type;
+    }
+
+    public Builder catName(String catName) {
+      this.catName = catName;
+      return this;
+    }
+
+    public Builder dbName(String dbName) {
+      this.dbName = dbName;
+      return this;
+    }
+
+    public Builder objectName(String objectName) {
+      this.objectName = objectName;
+      return this;
+    }
+
+    public Builder partKeys(List<String> partKeys) {
+      this.partKeys = partKeys;
+      return this;
+    }
+
+    public Builder columns(List<String> columns) {
+      this.columns = columns;
+      return this;
+    }
+
+    public Builder actionType(HivePrivObjectActionType actionType) {
+      this.actionType = actionType == null ? HivePrivObjectActionType.OTHER : actionType;
+      return this;
+    }
+
+    public Builder commandParams(List<String> commandParams) {
+      this.commandParams = commandParams;
+      return this;
+    }
+
+    public Builder className(String className) {
+      this.className = className;
+      return this;
+    }
+
+    public Builder ownerName(String ownerName) {
+      this.ownerName = ownerName;
+      return this;
+    }
+
+    public Builder ownerType(PrincipalType ownerType) {
+      this.ownerType = ownerType;
+      return this;
+    }
+
+    public HivePrivilegeObject build() {
+      return new HivePrivilegeObject(type, catName, dbName, objectName, partKeys, columns, actionType,
+          commandParams, className, ownerName, ownerType);
+    }
   }
 
   public HivePrivilegeObjectType getType() {
@@ -291,7 +345,8 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   /**
-   * See javadoc of {@link HivePrivObjectActionType}
+   * See javadoc of {@link HivePrivObjectActionType}.
+   * Never null. A null passed to a constructor is stored as {@link HivePrivObjectActionType#OTHER}.
    * @return action type
    */
   public HivePrivObjectActionType getActionType() {
@@ -389,7 +444,11 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   private String getDbObjectName() {
-    return DatabaseName.getQualified(catName, dbname) + "." + objectName;
+    if (dbname == null) {
+      return objectName;
+    }
+    String qualifiedDb = catName == null ? dbname : DatabaseName.getQualified(catName, dbname);
+    return qualifiedDb + "." + objectName;
   }
 
   public List<String> getCellValueTransformers() {

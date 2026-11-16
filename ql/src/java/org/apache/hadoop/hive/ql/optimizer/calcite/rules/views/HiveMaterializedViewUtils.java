@@ -482,9 +482,12 @@ public class HiveMaterializedViewUtils {
               .map(FieldSchema::getName)
               .collect(Collectors.toList());
 
-      HivePrivilegeObject privObject = new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW,
-          cachedMVTable.getCatalogName(), cachedMVTable.getDbName(), cachedMVTable.getTableName(),
-          null, colNames);
+      HivePrivilegeObject privObject = HivePrivilegeObject.builder(HivePrivilegeObjectType.TABLE_OR_VIEW)
+          .catName(cachedMVTable.getCatalogName())
+          .dbName(cachedMVTable.getDbName())
+          .objectName(cachedMVTable.getTableName())
+          .columns(colNames)
+          .build();
       privObjects.add(privObject);
     }
 

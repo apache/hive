@@ -79,29 +79,39 @@ public abstract class HiveMetaStoreAuthorizableEvent {
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Database database) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, database.getCatalogName(), database.getName(),
-        null, null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
-        database.getOwnerName(), database.getOwnerType());
+    return HivePrivilegeObject.builder(HivePrivilegeObjectType.DATABASE)
+        .catName(database.getCatalogName())
+        .dbName(database.getName())
+        .objectName(database.getName())
+        .ownerName(database.getOwnerName())
+        .ownerType(database.getOwnerType())
+        .build();
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Table table) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, table.getCatName(), table.getDbName(),
-        table.getTableName(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
-        table.getOwner(), table.getOwnerType());
+    return HivePrivilegeObject.builder(HivePrivilegeObjectType.TABLE_OR_VIEW)
+        .catName(table.getCatName())
+        .dbName(table.getDbName())
+        .objectName(table.getTableName())
+        .ownerName(table.getOwner())
+        .ownerType(table.getOwnerType())
+        .build();
   }
 
   protected HivePrivilegeObject getHivePrivilegeObjectDfsUri(String uri) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri);
+    return HivePrivilegeObject.builder(HivePrivilegeObjectType.DFS_URI).objectName(uri).build();
   }
 
   protected HivePrivilegeObject getHivePrivilegeObjectLocalUri(String uri) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.LOCAL_URI, uri);
+    return HivePrivilegeObject.builder(HivePrivilegeObjectType.LOCAL_URI).objectName(uri).build();
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(DataConnector connector) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATACONNECTOR, null, null,
-        connector.getName(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
-        connector.getOwnerName(), connector.getOwnerType());
+    return HivePrivilegeObject.builder(HivePrivilegeObjectType.DATACONNECTOR)
+        .objectName(connector.getName())
+        .ownerName(connector.getOwnerName())
+        .ownerType(connector.getOwnerType())
+        .build();
   }
 
 }

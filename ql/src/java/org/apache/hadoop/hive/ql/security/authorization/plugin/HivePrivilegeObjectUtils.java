@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
@@ -41,7 +43,11 @@ public class HivePrivilegeObjectUtils {
   public static List<HivePrivilegeObject> getHivePrivDbObjects(String catName, List<String> dbList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for (String dbname : dbList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, catName, dbname, dbname));
+      objs.add(HivePrivilegeObject.builder(HivePrivilegeObjectType.DATABASE)
+          .catName(catName)
+          .dbName(dbname)
+          .objectName(dbname)
+          .build());
     }
     return objs;
 
@@ -55,7 +61,7 @@ public class HivePrivilegeObjectUtils {
   public static List<HivePrivilegeObject> getHivePrivDcObjects(List<String> dcList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for (String dcname : dcList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATACONNECTOR, dcname));
+      objs.add(HivePrivilegeObject.builder(HivePrivilegeObjectType.DATACONNECTOR).objectName(dcname).build());
     }
     return objs;
   }
@@ -75,6 +81,8 @@ public class HivePrivilegeObjectUtils {
   public abstract static class TableLookup<T> {
     /** The container. */
     private final T[] index;
+    /** The catalog name used in place of a null catalog name, may be null. */
+    private final String defaultCatName;
 
     /**
      * @param table the table
@@ -113,7 +121,8 @@ public class HivePrivilegeObjectUtils {
      * @return &lt; 0, 0, &gt; 0
      */
     private int compareNames(final T table, final String catName, final String dbName, final String tableName) {
-      int cmp = getCatName(table).compareTo(catName);
+      int cmp = Objects.compare(catNameOrDefault(getCatName(table)), catNameOrDefault(catName),
+          Comparator.nullsFirst(Comparator.naturalOrder()));
       if (cmp == 0 && dbName != null) {
         cmp = getDbName(table).compareTo(dbName);
       }
@@ -123,11 +132,25 @@ public class HivePrivilegeObjectUtils {
       return cmp;
     }
 
+    private String catNameOrDefault(String catName) {
+      return catName == null ? defaultCatName : catName;
+    }
+
     /**
      * Creates a ByName
      * @param tables the tables to consider as a clique
      */
     protected TableLookup(List<T> tables) {
+      this(tables, null);
+    }
+
+    /**
+     * Creates a ByName where a null catalog name, in the tables or in a lookup, matches the default catalog.
+     * @param tables the tables to consider as a clique
+     * @param defaultCatName the catalog name used in place of a null catalog name
+     */
+    protected TableLookup(List<T> tables, String defaultCatName) {
+      this.defaultCatName = defaultCatName;
       if (tables != null) {
         index = tables.toArray((T[]) new Object[0]);
         // sort them by names
@@ -178,6 +201,10 @@ public class HivePrivilegeObjectUtils {
   public static class TablePrivilegeLookup extends TableLookup<HivePrivilegeObject> {
     public TablePrivilegeLookup(List<HivePrivilegeObject> tables) {
       super(tables);
+    }
+
+    public TablePrivilegeLookup(List<HivePrivilegeObject> tables, String defaultCatName) {
+      super(tables, defaultCatName);
     }
 
     @Override protected String getCatName(HivePrivilegeObject o) {

@@ -181,8 +181,13 @@ public class AuthorizationUtils {
     if (columnName != null) {
       columns = Arrays.asList(columnName);
     }
-    return new HivePrivilegeObject(objType, privObj.getCatName(), privObj.getDbName(), privObj.getObjectName(),
-        privObj.getPartValues(), columns);
+    return HivePrivilegeObject.builder(objType)
+        .catName(privObj.getCatName())
+        .dbName(privObj.getDbName())
+        .objectName(privObj.getObjectName())
+        .partKeys(privObj.getPartValues())
+        .columns(columns)
+        .build();
   }
 
   /**
