@@ -5172,6 +5172,9 @@ public final class Utilities {
    *
    * <p>Recognises ANSI/Oracle/Postgres double quotes ({@code "id"}), MySQL/MariaDB back-ticks ({@code `id`}) and
    * SQL Server brackets ({@code [id]}). Unquoted identifiers are returned unchanged.
+   *
+   * <p>Only the outer quote pair is removed. A name that itself contains these characters has to be quoted in the
+   * table property, e.g. {@code "[id]"} gives {@code [id]}, so it is never confused with the bare name {@code id}.
    */
   public static String unquoteJdbcIdentifier(String identifier) {
     if (identifier == null || identifier.length() < 2) {

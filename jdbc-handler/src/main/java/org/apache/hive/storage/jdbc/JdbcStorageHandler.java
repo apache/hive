@@ -115,7 +115,8 @@ public class JdbcStorageHandler implements HiveStorageHandler {
       "jdbc:metastore://" : tableProperties.get(Constants.JDBC_URL);
     String tableName = tableProperties.get(Constants.JDBC_TABLE);
     // Tables defined through hive.sql.query (e.g. the sys and information_schema tables) have no
-    // hive.sql.table, so their URI stays as before.
+    // hive.sql.table. They are represented by a pseudo-URI ending in "/null", which only serves as
+    // their identifier and is not used to connect to the database.
     if (tableName != null) {
       // Encode only the table name to keep URI construction valid; the URI is not used in the
       // JDBC URL, but as an identifier stored in the HMS.

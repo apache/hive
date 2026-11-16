@@ -914,7 +914,7 @@ public class TestUtilities {
 
   @Test
   public void testUnquoteJdbcIdentifierUnquotedInputUnchanged() {
-    // Unquoted identifiers keep the current (case-insensitive) behaviour.
+    // Unquoted identifiers are handled in a case-sensitive way.
     assertEquals("Country", Utilities.unquoteJdbcIdentifier("Country"));
     assertEquals("country", Utilities.unquoteJdbcIdentifier("country"));
     assertEquals("COUNTRY", Utilities.unquoteJdbcIdentifier("COUNTRY"));
@@ -930,6 +930,8 @@ public class TestUtilities {
     assertEquals("Country", Utilities.unquoteJdbcIdentifier("[Country]"));
     // Schema-style identifiers with mixed case are preserved after unquoting.
     assertEquals("WorldData", Utilities.unquoteJdbcIdentifier("\"WorldData\""));
+    // Only the outer quote pair is removed, so a name containing brackets stays distinct from the bare name.
+    assertEquals("[Country]", Utilities.unquoteJdbcIdentifier("\"[Country]\""));
   }
 
   @Test
