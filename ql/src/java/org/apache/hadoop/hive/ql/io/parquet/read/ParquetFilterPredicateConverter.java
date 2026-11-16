@@ -133,8 +133,8 @@ public class ParquetFilterPredicateConverter {
 
       if (isMultiLiteralsOperator(leaf.getOperator())) {
         List<Object> literals = leaf.getLiteralList();
-        // getLiteralList() drops null literals and returns an empty list when the runtime values (DynamicValue) of the
-        // leaf are not available; a BETWEEN without both bounds cannot filter either
+        // getLiteralList() drops null runtime values, and returns an empty list when they are not available;
+        // a BETWEEN without both bounds cannot filter either
         if (literals.isEmpty() || (leaf.getOperator() == PredicateLeaf.Operator.BETWEEN && literals.size() != 2)) {
           LOG.debug("Leaf {} has no usable literals {}, it filters nothing", leaf, literals);
           return null;

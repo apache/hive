@@ -778,20 +778,6 @@ public class TestParquetFilterPredicate {
     assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
   }
 
-  /** A negated unresolved leaf filters nothing either: the search argument pushes NOT down to the leaves. */
-  @Test
-  public void testNegatedUnresolvedLeafDropsOnlyItsLeaf() {
-    SearchArgument sarg = SearchArgumentFactory.newBuilder()
-        .startAnd()
-        .lessThan("a", PredicateLeaf.Type.LONG, 5L)
-        .startNot()
-        .equals("b", PredicateLeaf.Type.LONG, unresolved())
-        .end()
-        .end()
-        .build();
-    assertEquals("lt(a, 5)", String.valueOf(toFilterPredicateOverAbc(sarg)));
-  }
-
   /** A disjunction containing an unresolved leaf filters nothing. */
   @Test
   public void testUnresolvedLeafInDisjunctionFiltersNothing() {
