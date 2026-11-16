@@ -1,0 +1,122 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Builds the precommit image (dev-support/docker/ci/runner). On master it publishes the image as
+# apache/hive-ci-runner:<UTC timestamp>-<commit> and moves apache/hive-ci-runner:latest, which the
+# Jenkinsfile uses, to it. Only the newest 5 <UTC timestamp>-<commit> tags are kept.
+name: Precommit image
+
+on:
+  pull_request:
+    paths:
+      - 'dev-support/docker/ci/runner/Dockerfile'
+      - '.github/workflows/precommit-image.yml'
+  push:
+    branches:
+      - master
+    paths:
+      - 'dev-support/docker/ci/runner/Dockerfile'
+      - '.github/workflows/precommit-image.yml'
+  # On a branch other than master, it publishes a candidate to try with the IMAGE parameter of the
+  # precommit job; it does not move latest.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Publishing runs one at a time, in order, so that latest ends up at the newest commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build:
+    # On a fork, a push to master only syncs apache/hive: there is nothing to publish.
+    if: github.event_name != 'push' || github.repository == 'apache/hive'
+    runs-on: ubuntu-latest
+    env:
+      REPOSITORY: apache/hive-ci-runner
+      KEEP_TAGS: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Tag the image
+        id: tag
+        run: |
+          version=$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}
+          tags=$REPOSITORY:$version
+          if [[ $GITHUB_REF == refs/heads/master ]]; then
+            tags+=",$REPOSITORY:latest"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build the image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ./dev-support/docker/ci/runner/
+          load: true
+          tags: hive-ci-runner:test
+
+      - name: Show the image size
+        run: docker images hive-ci-runner:test
+
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request' && github.repository == 'apache/hive'
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Publish the image
+        if: github.event_name != 'pull_request' && github.repository == 'apache/hive'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ./dev-support/docker/ci/runner/
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tag.outputs.tags }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.tag.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      # Deletes the <UTC timestamp>-<commit> tags but the newest KEEP_TAGS ones; latest and any other
+      # tag are kept. The image is already published, so a failure here does not fail the job.
+      - name: Delete old tags
+        if: github.event_name != 'pull_request' && github.repository == 'apache/hive'
+        continue-on-error: true
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          hub=https://hub.docker.com/v2
+          token=$(jq -n --arg user "$DOCKERHUB_USER" --arg secret "$DOCKERHUB_TOKEN" '{identifier: $user, secret: $secret}' \
+            | curl -sSf -H 'Content-Type: application/json' -d @- "$hub/auth/token" | jq -r .access_token)
+          echo "::add-mask::$token"
+          old_tags=$(curl -sSf "$hub/namespaces/${REPOSITORY%/*}/repositories/${REPOSITORY#*/}/tags?page_size=100" \
+            | jq -r '.results[].name | select(test("^[0-9]{14}-[0-9a-f]{7}$"))' | sort -r | tail -n +$((KEEP_TAGS + 1)))
+          for tag in $old_tags; do
+            echo "Deleting $REPOSITORY:$tag"
+            curl -sSf -X DELETE -H "Authorization: Bearer $token" "$hub/repositories/$REPOSITORY/tags/$tag/"
+          done
