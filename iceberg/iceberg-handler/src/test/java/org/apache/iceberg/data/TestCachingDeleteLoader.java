@@ -327,6 +327,17 @@ public class TestCachingDeleteLoader {
     Mockito.verify(cache, Mockito.never()).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
   }
 
+  @Test
+  public void testDVOfAnotherDataFileIsRejected() throws IOException {
+    DeleteFile dv = writeDVs(ImmutableMap.of(DATA_FILE_A, new long[] { 4 })).get(0);
+
+    IllegalArgumentException thrown = Assert.assertThrows(IllegalArgumentException.class,
+        () -> loader(cache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_B));
+    Assert.assertTrue(thrown.getMessage(),
+        thrown.getMessage().startsWith("DV is expected to reference " + DATA_FILE_B));
+    Mockito.verifyNoInteractions(cache);
+  }
+
   private CachingDeleteLoader loader(MetadataCache metadataCache) {
     return new CachingDeleteLoader(this::countingInputFile,
         MapredIcebergInputFormat.newTaskAttemptContext(conf, new MRReporter(counters)), metadataCache, conf);
