@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat.HiveInputSplit;
@@ -87,6 +86,7 @@ public class TestHiveInputFormatInterruptedReader {
   public void reset() {
     FailingInputFormat.failure = null;
     FailingInputFormat.interrupt = false;
+    // Clears the interrupt flag one of the tests sets, so it doesn't leak into later tests on this thread.
     Thread.interrupted();
   }
 
@@ -138,13 +138,9 @@ public class TestHiveInputFormatInterruptedReader {
     String queryId = "query-" + QUERY_IDS.incrementAndGet();
     JobConf job = new JobConf();
     HiveConf.setVar(job, ConfVars.HIVE_QUERY_ID, queryId);
-    HiveConf.setVar(job, ConfVars.HIVE_EXECUTION_ENGINE, "tez");
-    // Not setBoolVar: this var has no default, so HiveConf cannot tell it is a boolean.
-    job.setBoolean(ConfVars.LLAP_IO_ENABLED.varname, false);
     job.set(TezProcessor.HIVE_TEZ_VERTEX_NAME, VERTEX);
     // What HiveInputFormat reads the vertex name from on the input path.
     job.set("tez.mapreduce.vertex.name", VERTEX);
-    job.setBoolean(Utilities.VECTOR_MODE, false);
     if (limitReached) {
       ObjectCacheFactory.getCache(job, queryId, false, true)
           .retrieve(LimitOperator.getLimitReachedKey(job), AtomicBoolean::new).set(true);

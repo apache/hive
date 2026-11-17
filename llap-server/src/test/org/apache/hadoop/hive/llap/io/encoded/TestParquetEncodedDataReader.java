@@ -1297,7 +1297,7 @@ public class TestParquetEncodedDataReader {
     Thread.currentThread().interrupt();
     try {
       assertSame(failure, assertThrows(IOException.class, () -> readPipelineWithFailedFooter(failure)));
-      assertTrue(Thread.currentThread().isInterrupted());
+      assertTrue("interrupt flag not kept", Thread.currentThread().isInterrupted());
     } finally {
       Thread.interrupted();
     }
@@ -1312,7 +1312,7 @@ public class TestParquetEncodedDataReader {
     for (IOException failure : new IOException[] {
         new IOException("failed"), new SocketTimeoutException("timed out")}) {
       assertNull("expected a fallback for " + failure, readPipelineWithFailedFooter(failure));
-      assertFalse(Thread.currentThread().isInterrupted());
+      assertFalse("interrupt flag set for " + failure, Thread.currentThread().isInterrupted());
     }
   }
 
