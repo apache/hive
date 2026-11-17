@@ -880,9 +880,9 @@ public class SerializationUtilities {
         StandardCharsets.UTF_8);
   }
 
-  public static ExprNodeDesc deserializeExpression(String s) {
+  public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
     byte[] bytes = Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8));
-    return deserializeObjectFromKryo(bytes, ExprNodeDesc.class);
+    return deserializeObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
   }
 
   public static byte[] serializeObjectToKryo(Serializable object) {

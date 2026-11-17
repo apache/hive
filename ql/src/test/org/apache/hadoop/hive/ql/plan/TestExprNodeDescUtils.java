@@ -111,7 +111,8 @@ public class TestExprNodeDescUtils {
     ExprNodeDesc result = ExprNodeDescUtils.and(eqA, or);
 
     assertEquals(
-        "GenericUDFOPAnd(GenericUDFOPEqual(Column[a], Const int 5), GenericUDFOPOr(GenericUDFOPEqual(Column[a], Const int 5),"
+        "GenericUDFOPAnd(GenericUDFOPEqual(Column[a], Const int 5), "
+            + "GenericUDFOPOr(GenericUDFOPEqual(Column[a], Const int 5),"
             + " GenericUDFOPEqual(Column[b], Const int 6)))",
         result.toString());
   }

@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.io.LongWritable;
@@ -110,7 +109,7 @@ public class SyslogInputFormat extends TextInputFormat {
     final long timeSliceSeconds = HiveConf.getTimeVar(job, HiveConf.ConfVars.SYSLOG_INPUT_FORMAT_FILE_TIME_SLICE,
       TimeUnit.SECONDS);
     if (filePruning && filterExprSerialized != null) {
-      ExprNodeDesc filterExpr = SerializationUtilities.deserializeExpression(filterExprSerialized);
+      ExprNodeGenericFuncDesc filterExpr = SerializationUtilities.deserializeExpression(filterExprSerialized);
       // we receive the expression filters from hive and convert it to sarg keeping only timestamp (ts) column from
       // sys.logs table. The SARG on ts column is evaluated against the files that are formatted in YYYY-mm-dd-MM_* format
       this.sarg = ConvertAstToSearchArg.create(job, filterExpr);

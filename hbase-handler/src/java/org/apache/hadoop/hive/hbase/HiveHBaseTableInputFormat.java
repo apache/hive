@@ -187,7 +187,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       return scan;
     }
 
-    ExprNodeDesc filterExpr = SerializationUtilities.deserializeExpression(filterExprSerialized);
+    ExprNodeGenericFuncDesc filterExpr = SerializationUtilities.deserializeExpression(filterExprSerialized);
 
     String keyColName = jobConf.get(serdeConstants.LIST_COLUMNS).split(",")[iKey];
     ArrayList<TypeInfo> cols = TypeInfoUtils.getTypeInfosFromTypeString(jobConf.get(serdeConstants.LIST_COLUMN_TYPES));

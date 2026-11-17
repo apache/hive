@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.io.NullWritable;
@@ -155,7 +154,7 @@ import java.util.stream.Collectors;
       final String filterExprSerialized = configuration.get(TableScanDesc.FILTER_EXPR_CONF_STR);
 
       if (filterExprSerialized != null && !filterExprSerialized.isEmpty()) {
-        ExprNodeDesc filterExpr = SerializationUtilities.deserializeExpression(filterExprSerialized);
+        ExprNodeGenericFuncDesc filterExpr = SerializationUtilities.deserializeExpression(filterExprSerialized);
         LOG.info("Kafka trimmer working on Filter tree {}", filterExpr.getExprString());
         Callable<List<KafkaInputSplit>>
             trimmerWorker = () -> kafkaScanTrimmer.computeOptimizedScan(filterExpr)

@@ -958,7 +958,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     String pruningFilter = jobConf.get(TableScanDesc.PARTITION_PRUNING_FILTER);
     // If we have a pruning filter then combine it with the original
     if (pruningFilter != null) {
-      ExprNodeDesc pruningExpr = SerializationUtilities.deserializeExpression(pruningFilter);
+      ExprNodeGenericFuncDesc pruningExpr = SerializationUtilities.deserializeExpression(pruningFilter);
       if (filterExpr != null) {
         // Combine the 2 filters with AND
         filterExpr = ExprNodeDescUtils.and(filterExpr, pruningExpr);
