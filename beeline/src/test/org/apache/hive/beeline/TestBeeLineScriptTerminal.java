@@ -18,9 +18,6 @@
 
 package org.apache.hive.beeline;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -33,7 +30,7 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.impl.AbstractPosixTerminal;
 import org.jline.terminal.spi.TerminalExt;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 
 /**
@@ -42,8 +39,7 @@ import org.junit.jupiter.api.RepeatedTest;
  */
 public class TestBeeLineScriptTerminal {
 
-  @RepeatedTest(5)
-  @Test
+  @RepeatedTest(6)
   public void testScriptFileReaderPreservesLines() throws Exception {
     List<String> expected = scriptLines();
     byte[] script = scriptBytesWithoutTrailingNewline(expected);
@@ -56,10 +52,10 @@ public class TestBeeLineScriptTerminal {
 
       LineReader reader = beeLine.getFileLineReader(new ByteArrayInputStream(script));
       assertScriptTerminal(reader.getTerminal());
-      assertEquals(0, beeLine.execute(reader, false));
-      assertEquals(expected.size(), beeLine.lines.size());
+      Assertions.assertEquals(0, beeLine.execute(reader, false));
+      Assertions.assertEquals(expected.size(), beeLine.lines.size());
       for (int i = 0; i < expected.size(); i++) {
-        assertEquals("line " + i, expected.get(i), beeLine.lines.get(i));
+        Assertions.assertEquals(expected.get(i), beeLine.lines.get(i), "line " + i);
       }
     }
   }
@@ -69,13 +65,14 @@ public class TestBeeLineScriptTerminal {
    * {@code buildTerminal} goes back to {@code TerminalBuilder.builder().streams(...).build()}.
    */
   private void assertScriptTerminal(Terminal terminal) {
-    assertFalse("script input must not use a PTY terminal (HIVE-30241), got "
-        + terminal.getClass().getName(), terminal instanceof AbstractPosixTerminal);
-    assertEquals(TerminalBuilder.PROP_PROVIDER_EXEC, ((TerminalExt) terminal).getProvider().name());
-    assertEquals(Terminal.TYPE_DUMB, terminal.getType());
-    assertEquals(StandardCharsets.UTF_8, terminal.encoding());
-    assertEquals(StandardCharsets.UTF_8, terminal.inputEncoding());
-    assertEquals("beeline", terminal.getName());
+    Assertions.assertFalse(terminal instanceof AbstractPosixTerminal,
+        "script input must not use a PTY terminal (HIVE-30241), got "
+            + terminal.getClass().getName());
+    Assertions.assertEquals(TerminalBuilder.PROP_PROVIDER_EXEC, ((TerminalExt) terminal).getProvider().name());
+    Assertions.assertEquals(Terminal.TYPE_DUMB, terminal.getType());
+    Assertions.assertEquals(StandardCharsets.UTF_8, terminal.encoding());
+    Assertions.assertEquals(StandardCharsets.UTF_8, terminal.inputEncoding());
+    Assertions.assertEquals("beeline", terminal.getName());
   }
 
   private List<String> scriptLines() {
