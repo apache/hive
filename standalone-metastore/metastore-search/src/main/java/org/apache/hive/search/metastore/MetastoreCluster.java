@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.leader.LeaderException;
 import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
 
-@SuppressWarnings("rawtypes, unchecked")
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class MetastoreCluster implements Closeable {
   private static final String CLUSTER_ELECTION_METHOD = "metastore.index.election.method";
   // Single lifecycle per JVM; no reload.

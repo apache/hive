@@ -97,7 +97,7 @@ public final class InMemoryIndexStateClient implements IndexStateClient {
       indexFiles.add(new IndexManifest.IndexFile(
           entry.getKey(), bytes.length, crc32C(bytes)));
     }
-    return IndexManifest.create("test", indexFiles, "", -1);
+    return IndexManifest.create("test", indexFiles, "", -1L, -1L);
   }
 
   public static long crc32C(byte[] bytes) {

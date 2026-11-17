@@ -25,7 +25,6 @@ import java.util.Optional;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DatabaseName;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection;
@@ -48,20 +47,14 @@ public final class MetastoreIndexer implements Closeable {
   private final MetastoreEventHandler handler;
   private final IndexManager indexManager;
   private final FlushIndexListener flushIndexListener;
-  private final IMetaStoreClient client;
+  private final MetastoreClientProvider.MetastoreClientBundle clientBundle;
 
   public static MetastoreIndexer getMetastoreIndexer(Configuration configuration,
       IndexManager indexManager, Indexer indexer, MetastoreClientProvider clientProvider)
       throws Exception {
     if (clientProvider == null) {
-      IMetaStoreClient client = RetryingMetaStoreClient.getProxy(configuration, true);
-      Thread currentThread = Thread.currentThread();
-      clientProvider = conf -> {
-        if (currentThread == Thread.currentThread()) {
-          return new MetastoreClientProvider.MetastoreClientBundle(client, false);
-        }
-        return new MetastoreClientProvider.MetastoreClientBundle(RetryingMetaStoreClient.getProxy(conf, true), true);
-      };
+      clientProvider = conf -> new MetastoreClientProvider.MetastoreClientBundle(
+          RetryingMetaStoreClient.getProxy(conf, true), true);
     }
     return new MetastoreIndexer(configuration, indexManager, indexer, clientProvider);
   }
@@ -72,7 +65,7 @@ public final class MetastoreIndexer implements Closeable {
                            MetastoreClientProvider clientProvider) throws Exception {
     try {
       this.clientProvider = clientProvider;
-      this.client = clientProvider.getMetastoreClient(configuration).client();
+      this.clientBundle = clientProvider.getMetastoreClient(configuration);
       this.indexer = indexer;
       this.indexManager = indexManager;
       this.flushIndexListener = new FlushIndexListener(configuration);
@@ -110,13 +103,8 @@ public final class MetastoreIndexer implements Closeable {
     if (indexManifest == null) {
       return false;
     }
-    String current = indexManager.mapping().inference().embedderName();
-    String embedderName = indexManifest.embedder();
-    if (!current.equals(embedderName)) {
-      return false;
-    }
     long notificationId = indexManifest.lastEventId();
-    return canCatchUp(notificationId);
+    return indexManifest.isValidManifest(indexManager.mapping()) && canCatchUp(notificationId);
   }
 
   private boolean canCatchUp(long notificationId) throws Exception {
@@ -126,7 +114,7 @@ public final class MetastoreIndexer implements Closeable {
     try {
       NotificationEventRequest request = new NotificationEventRequest(notificationId);
       request.setMaxEvents(10);
-      client.getNextNotification(request, false, null);
+      clientBundle.client().getNextNotification(request, false, null);
       return true;
     } catch (IllegalStateException ignored) {
       LOG.debug("Current index lags too behind, will rebuild");
@@ -153,7 +141,7 @@ public final class MetastoreIndexer implements Closeable {
 
   private long rebuildLeaderIndex() throws Exception {
     indexManager.clearRemoteIndex();
-    long notificationId = client.getCurrentNotificationEventId().getEventId();
+    long notificationId = clientBundle.client().getCurrentNotificationEventId().getEventId();
     new BootstrapIndexer(
         indexManager,
         indexer,
@@ -174,7 +162,7 @@ public final class MetastoreIndexer implements Closeable {
   /** Package-private for integration tests. */
   void flushCheckpoint() throws IOException {
     try {
-      indexer.flush(client.getCurrentNotificationEventId().getEventId(), true);
+      indexer.flush(clientBundle.client().getCurrentNotificationEventId().getEventId(), true);
     } catch (Exception e) {
       if (e instanceof IOException ioException) {
         throw ioException;
@@ -194,16 +182,17 @@ public final class MetastoreIndexer implements Closeable {
    * @return restored notification id, or -1 if this instance became leader while waiting
    */
   private long waitForRemoteBackup() throws Exception {
-    String current = indexManager.mapping().inference().embedderName();
     for (; !cluster.isLeader(); Thread.sleep(3000)) {
       Optional<IndexManifest> indexManifest = indexManager.readRemoteManifest();
       if (indexManifest.isEmpty()) {
         continue;
       }
       IndexManifest manifest = indexManifest.get();
-      if (!current.equals(manifest.embedder())) {
-        LOG.debug("Remote index model {} does not match configured model {}, waiting",
-            manifest.embedder(), current);
+      if (!manifest.isValidManifest(indexManager.mapping())) {
+        LOG.debug("Remote index embedder {} version {} does not match configured embedder {} version {}, waiting",
+            manifest.embedder(), manifest.version(),
+            indexManager.mapping().inference().embedderName(),
+            indexManager.mapping().versionNum());
         continue;
       }
       long notificationId = manifest.lastEventId();
@@ -223,7 +212,9 @@ public final class MetastoreIndexer implements Closeable {
     try {
       IOUtils.closeQuietly(cluster, handler, flushIndexListener);
     } finally {
-      client.close();
+      if (clientBundle != null && clientBundle.releaseAfterUse()) {
+        IOUtils.closeQuietly(clientBundle);
+      }
     }
   }
 

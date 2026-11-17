@@ -97,16 +97,10 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
     EmbedderRegistry modelRegistry = new EmbedderRegistry(
         Map.of(MODEL_NAME, new StubEmbedder(MODEL_NAME)));
     Indexer indexer = new Indexer(indexManager, modelRegistry);
-    HiveMetaStoreClient sessionClient = new HiveMetaStoreClient(server.conf());
-    Thread currentThread = Thread.currentThread();
     MetastoreIndexer metastoreIndexer =
         MetastoreIndexer.getMetastoreIndexer(conf, indexManager, indexer,
-            configuration -> {
-              if (currentThread == Thread.currentThread()) {
-                return new MetastoreClientProvider.MetastoreClientBundle(sessionClient, false);
-              }
-              return new MetastoreClientProvider.MetastoreClientBundle(new HiveMetaStoreClient(server.conf()), true);
-            });
+            configuration -> new MetastoreClientProvider.MetastoreClientBundle(
+                new HiveMetaStoreClient(server.conf()), true));
     return new RealMetastoreSearchSession(
         indexManager, indexer, modelRegistry, metastoreIndexer, new SearchOptions(conf));
   }

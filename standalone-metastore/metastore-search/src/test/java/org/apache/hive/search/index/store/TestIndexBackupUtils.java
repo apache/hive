@@ -100,6 +100,7 @@ public class TestIndexBackupUtils {
         List.of(new IndexManifest.IndexFile(
             "segments_3", payload.length, crc32C(payload))),
         "bge-small",
+        1L,
         15L);
     writeManifest(local, target);
     local.writeStagingManifest(target);
@@ -118,6 +119,7 @@ public class TestIndexBackupUtils {
         "hive_tables",
         List.of(new IndexManifest.IndexFile(fileName, size, crc32C)),
         "bge-small",
+        1L,
         eventId);
   }
 

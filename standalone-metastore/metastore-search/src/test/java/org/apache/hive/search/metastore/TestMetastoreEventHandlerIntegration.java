@@ -218,6 +218,7 @@ public class TestMetastoreEventHandlerIntegration {
   private static NotificationEvent event(
       long id, String type, String message, String cat, String db, String table) {
     NotificationEvent event = new NotificationEvent(id, 0, type, message);
+    event.setMessageFormat(JSONMessageEncoder.FORMAT);
     event.setCatName(cat);
     event.setDbName(db);
     event.setTableName(table);

@@ -92,7 +92,8 @@ public final class IndexBackupUtils {
     Optional<IndexManifest> staging = local.readStagingManifest();
     if (staging.isPresent()
         && staging.get().lastEventId() == target.lastEventId()
-        && staging.get().embedder().equals(target.embedder())) {
+        && staging.get().embedder().equals(target.embedder())
+        && staging.get().version() == target.version()) {
       return;
     }
     local.clearStagingManifest();
