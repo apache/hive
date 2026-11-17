@@ -25,7 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 
 /**
- * A IMetaStoreClient provider,
+ * An IMetaStoreClient provider,
  * which can provide the shared client or a new client that should be closed via try-with-resources
  */
 public interface MetastoreClientProvider {

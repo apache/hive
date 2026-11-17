@@ -46,6 +46,15 @@ public record InferenceOptions(Configuration configuration) {
   /** ONNX graph output tensor for token embeddings */
   public static final String EMBEDDER_MODEL_OUTPUT_NAME = "metastore.inference.embedder.onnx.model-output-name";
 
+  /**
+   * Threads ONNX may use inside one embedding session. Kept small so inference does not
+   * take every core from the HMS handler threads. Zero is raised to 1 because ONNX treats 0
+   * as "all cores".
+   */
+  public static final String EMBEDDER_INTRA_OP_THREADS =
+      "metastore.inference.embedder.onnx.intra-op-threads";
+  public static final int EMBEDDER_INTRA_OP_THREADS_DEFAULT = 4;
+
   public static final String EMBEDDER_MAX_SEQUENCE = "metastore.inference.embedder.maxSequence";
 
   public static final int EMBEDDER_MAX_SEQUENCE_DEFAULT = 510;
@@ -105,5 +114,11 @@ public record InferenceOptions(Configuration configuration) {
 
   public int maxSequenceLength() {
     return configuration.getInt(EMBEDDER_MAX_SEQUENCE, EMBEDDER_MAX_SEQUENCE_DEFAULT);
+  }
+
+  public int intraOpThreads() {
+    int configured = configuration.getInt(
+        EMBEDDER_INTRA_OP_THREADS, EMBEDDER_INTRA_OP_THREADS_DEFAULT);
+    return Math.max(1, configured);
   }
 }

@@ -54,7 +54,7 @@ public final class MetastoreIndexSchema {
     }
     fields.put(MetastoreTableMapper.FIELD_TABLE_BLOB,
         new BinaryFieldSchema(MetastoreTableMapper.FIELD_TABLE_BLOB));
-    return new IndexMapping(conf, fields);
+    return new IndexMapping(conf, fields, 1L);
   }
 
   private static TextFieldSchema filterText(String name) {

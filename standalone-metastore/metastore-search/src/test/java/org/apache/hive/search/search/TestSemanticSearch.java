@@ -61,7 +61,7 @@ public class TestSemanticSearch {
         "field_b",
         new TextFieldSchema(
             "field_b", true).semanticField("model-b"));
-    IndexMapping mapping = new IndexMapping(conf, fields);
+    IndexMapping mapping = new IndexMapping(conf, fields, 1);
 
     SemanticQuery resolved = new SemanticQuery("query").resolve(mapping);
     assertEquals("query", resolved.queryText());

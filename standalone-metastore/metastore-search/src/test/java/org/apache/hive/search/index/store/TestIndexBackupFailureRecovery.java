@@ -98,6 +98,7 @@ public class TestIndexBackupFailureRecovery {
         "hive_tables",
         List.of(new IndexManifest.IndexFile(fileName, size)),
         "bge-small",
+        1L,
         eventId);
   }
 
@@ -109,6 +110,7 @@ public class TestIndexBackupFailureRecovery {
             new IndexManifest.IndexFile(fileName1, size1),
             new IndexManifest.IndexFile(fileName2, size2)),
         "bge-small",
+        1L,
         eventId);
   }
 

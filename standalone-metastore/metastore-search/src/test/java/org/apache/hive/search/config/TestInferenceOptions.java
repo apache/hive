@@ -17,6 +17,7 @@
 
 package org.apache.hive.search.config;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hive.search.inference.EmbedderSpec;
 import org.junit.Test;
@@ -35,6 +36,20 @@ public class TestInferenceOptions {
   @Test
   public void embeddingPoolingHonorsCls() {
     assertEquals(EmbedderSpec.Pooling.CLS, EmbedderSpec.Pooling.fromConfig("cls"));
+  }
+
+  @Test
+  public void intraOpThreadsDefaultsToFour() {
+    assertEquals(4, new InferenceOptions(new Configuration(false)).intraOpThreads());
+  }
+
+  @Test
+  public void intraOpThreadsHonorsConfigAndRejectsAllCoresSentinel() {
+    Configuration conf = new Configuration(false);
+    conf.setInt(InferenceOptions.EMBEDDER_INTRA_OP_THREADS, 2);
+    assertEquals(2, new InferenceOptions(conf).intraOpThreads());
+    conf.setInt(InferenceOptions.EMBEDDER_INTRA_OP_THREADS, 0);
+    assertEquals(1, new InferenceOptions(conf).intraOpThreads());
   }
 
 }

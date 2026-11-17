@@ -30,8 +30,7 @@ final class OnnxSessionOptionsFactory {
     // 1. Enable full ONNX graph optimizations (constant folding, node fusion, etc.)
     opts.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT);
     opts.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.SEQUENTIAL);
-    int effectiveIntraOpThreads = Math.max(1, Runtime.getRuntime().availableProcessors());
-    opts.setIntraOpNumThreads(effectiveIntraOpThreads);
+    opts.setIntraOpNumThreads(config.intraOpThreads());
     return opts;
   }
 }

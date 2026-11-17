@@ -28,8 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.hive.search.mapping.IndexMapping;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record IndexManifest(String indexName, List<IndexFile> files, String embedder, long lastEventId) {
+public record IndexManifest(String indexName, List<IndexFile> files,
+                            String embedder, long version, long lastEventId) {
   public static final String MANIFEST_FILE_NAME = "index.json";
   /** Local-only staging copy of the remote manifest while a restore is in progress. */
   public static final String STAGING_MANIFEST_FILE_NAME = ".index.json";
@@ -46,8 +49,8 @@ public record IndexManifest(String indexName, List<IndexFile> files, String embe
   }
 
   public static IndexManifest create(String indexName, List<IndexFile> files,
-      String embedder, long lastEventId) {
-    return new IndexManifest(indexName, List.copyOf(files), embedder, lastEventId);
+      String embedder, long version, long lastEventId) {
+    return new IndexManifest(indexName, List.copyOf(files), embedder, version, lastEventId);
   }
 
   public byte[] toJsonBytes() throws IOException {
@@ -83,6 +86,17 @@ public record IndexManifest(String indexName, List<IndexFile> files, String embe
       }
     }
     return ops;
+  }
+
+  public boolean isValidManifest(IndexMapping mapping) {
+    String embedderName = mapping.inference().embedderName();
+    if (!embedderName.equals(this.embedder)) {
+      return false;
+    }
+    if (mapping.versionNum() != version) {
+      return false;
+    }
+    return true;
   }
 
   private static boolean sameContent(IndexFile source, IndexFile dest) {

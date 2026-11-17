@@ -22,13 +22,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
@@ -56,7 +60,9 @@ public class MetastoreEventHandler implements Closeable {
   private final List<MetastoreEventListener> listeners = Collections.synchronizedList(new ArrayList<>());
   private final IndexOptions indexConfig;
   private final MetastoreClientProvider clientProvider;
-  private final MessageDeserializer deserializer;
+  private final MessageDeserializer defaultDeserializer;
+  private final Map<String, MessageDeserializer> deserializers = new HashMap<>();
+  private MetastoreClientProvider.MetastoreClientBundle clientBundle;
   private Thread eventPoller;
   private long lastEventId;
 
@@ -68,7 +74,7 @@ public class MetastoreEventHandler implements Closeable {
     Configuration conf = new Configuration(Objects.requireNonNull(configuration));
     this.indexConfig = new IndexOptions(conf);
     this.clientProvider = Objects.requireNonNull(clientProvider);
-    this.deserializer = MessageFactory.getDefaultInstance(conf).getDeserializer();
+    this.defaultDeserializer = MessageFactory.getDefaultInstance(conf).getDeserializer();
   }
 
   public MetastoreEventHandler addListeners(MetastoreEventListener... listeners) {
@@ -122,6 +128,23 @@ public class MetastoreEventHandler implements Closeable {
       }
     } catch (InterruptedException ignored) {
       // ignore
+    } finally {
+      closeClient();
+    }
+  }
+
+  /** One client for the poller lifetime, reused across notification polls. */
+  private synchronized IMetaStoreClient metastoreClient() throws Exception {
+    if (clientBundle == null) {
+      clientBundle = clientProvider.getMetastoreClient(indexConfig.configuration());
+    }
+    return clientBundle.client();
+  }
+
+  private synchronized void closeClient() {
+    if (clientBundle != null && clientBundle.releaseAfterUse()) {
+      IOUtils.closeQuietly(clientBundle);
+      clientBundle = null;
     }
   }
 
@@ -129,14 +152,11 @@ public class MetastoreEventHandler implements Closeable {
     try {
       NotificationEventRequest request = new NotificationEventRequest(lastEventId);
       request.setMaxEvents(eventCount);
-      final NotificationEventResponse resp;
-      try (MetastoreClientProvider.MetastoreClientBundle clientBundle =
-               clientProvider.getMetastoreClient(indexConfig.configuration())) {
-        resp = clientBundle.client().getNextNotification(request, true, null);
-        if (resp == null || resp.getEvents() == null || resp.getEvents().isEmpty()) {
-          LOG.debug("No event found since the last event id: {}", lastEventId);
-          return 0;
-        }
+      NotificationEventResponse resp =
+          metastoreClient().getNextNotification(request, true, null);
+      if (resp == null || resp.getEvents() == null || resp.getEvents().isEmpty()) {
+        LOG.debug("No event found since the last event id: {}", lastEventId);
+        return 0;
       }
 
       List<NotificationEvent> events = resp.getEvents();
@@ -324,6 +344,7 @@ public class MetastoreEventHandler implements Closeable {
       MetastoreEventListener.IndexTask task)
       throws Exception {
     String message = event.getMessage();
+    MessageDeserializer deserializer = deserializer(event);
     switch (event.getEventType()) {
       case MessageBuilder.CREATE_TABLE_EVENT -> {
         CreateTableMessage createTableMessage = deserializer.getCreateTableMessage(message);
@@ -371,5 +392,32 @@ public class MetastoreEventHandler implements Closeable {
       }
     }
     task.lastEventId = event.getEventId();
+  }
+
+  /**
+   * Events record the format they were written with. After a factory change, older events still
+   * parse. Events with no format fall back to the configured default.
+   */
+  private MessageDeserializer deserializer(NotificationEvent event) {
+    String format = event.getMessageFormat();
+    if (format == null || format.isEmpty()) {
+      return defaultDeserializer;
+    }
+    MessageDeserializer cached = deserializers.get(format);
+    if (cached != null) {
+      return cached;
+    }
+    MessageDeserializer created = deserializerFor(format);
+    deserializers.put(format, created);
+    return created;
+  }
+
+  private static MessageDeserializer deserializerFor(String format) {
+    try {
+      return MessageFactory.getInstance(format).getDeserializer();
+    } catch (ReflectiveOperationException | RuntimeException e) {
+      throw new IllegalStateException(
+          "could not create message factory for format " + format, e);
+    }
   }
 }

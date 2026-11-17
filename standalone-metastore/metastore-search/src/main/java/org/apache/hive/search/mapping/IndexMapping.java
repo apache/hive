@@ -35,7 +35,7 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
-public record IndexMapping(Configuration configuration, Map<String, FieldSchema> fields) {
+public record IndexMapping(Configuration configuration, Map<String, FieldSchema> fields, long versionNum) {
 
   public IndexOptions config() {
     return new IndexOptions(configuration);

@@ -51,7 +51,7 @@ public final class BootstrapIndexer {
   private final MetastoreClientProvider clientProvider;
   private Progress progress;
 
-  /** Package-private for unit tests: fetch workers reuse the injected client. */
+  /** Package-private for unit tests. Each fetch worker opens one client for all of its batches. */
   BootstrapIndexer(IndexManager indexManager,
       Indexer indexer,
       MetastoreClientProvider provider) {
@@ -82,17 +82,26 @@ public final class BootstrapIndexer {
     indexManager.setBootstrapIndexer(this);
 
     Thread indexThread = startIndexConsumer(indexQueue, failure, indexedTables);
-    try (ExecutorService tableFetcher = Executors.newFixedThreadPool(indexConfig.getBootstrapFetchThreads(),
-        r -> {
+    ExecutorService tableFetcher = null;
+    try {
+      if (!plan.batches().isEmpty()) {
+        int workers = Math.min(
+            Math.max(1, indexConfig.getBootstrapFetchThreads()), plan.batches().size());
+        tableFetcher = Executors.newFixedThreadPool(workers, r -> {
           Thread thread = new Thread(r, "Index-Bootstrap-Fetch");
           thread.setDaemon(true);
           return thread;
-    })) {
-      for (TableBatch batch : plan.batches()) {
-        tableFetcher.submit(() -> fetchBatch(batch, indexQueue, failure, fetchDone));
+        });
+        BlockingQueue<TableBatch> work = new ArrayBlockingQueue<>(plan.batches().size());
+        work.addAll(plan.batches());
+        for (int i = 0; i < workers; i++) {
+          tableFetcher.submit(() -> fetchTable(work, indexQueue, failure, fetchDone));
+        }
+        awaitFetchCompletion(fetchDone, failure);
       }
-      awaitFetchCompletion(fetchDone, failure);
-      indexQueue.put(END_OF_STREAM);
+      if (!enqueue(indexQueue, END_OF_STREAM, failure)) {
+        indexThread.interrupt();
+      }
       indexThread.join();
       rethrowFailure(failure);
       indexer.flush(notificationId, true);
@@ -104,8 +113,68 @@ public final class BootstrapIndexer {
       Thread.currentThread().interrupt();
       throw new IndexIOException("Bootstrap indexing interrupted", e);
     } finally {
+      stopFetchers(tableFetcher);
       indexThread.interrupt();
+      joinQuietly(indexThread);
+    }
+  }
+
+  private void fetchTable(BlockingQueue<TableBatch> work,
+      BlockingQueue<List<TableDocument>> indexQueue,
+      AtomicReference<Exception> failure,
+      CountDownLatch fetchDone) {
+    try (MetastoreClientProvider.MetastoreClientBundle clientBundle =
+             clientProvider.getMetastoreClient(configuration)) {
+      while (failure.get() == null) {
+        TableBatch batch = work.poll();
+        if (batch == null) {
+          return;
+        }
+        try {
+          fetchBatch(batch, indexQueue, failure, clientBundle.client());
+        } finally {
+          fetchDone.countDown();
+        }
+      }
+    } catch (Exception e) {
+      recordFailure(failure, e);
+    }
+  }
+
+  /**
+   * Offer until accepted or another worker has already failed. A blocking put here can wait
+   * forever once the index consumer has stopped and the queue is full.
+   */
+  private static boolean enqueue(BlockingQueue<List<TableDocument>> indexQueue,
+      List<TableDocument> documents,
+      AtomicReference<Exception> failure) throws InterruptedException {
+    while (failure.get() == null) {
+      if (indexQueue.offer(documents, 200, TimeUnit.MILLISECONDS)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static void stopFetchers(ExecutorService tableFetcher) {
+    if (tableFetcher == null) {
+      return;
+    }
+    tableFetcher.shutdownNow();
+    try {
+      if (!tableFetcher.awaitTermination(30, TimeUnit.SECONDS)) {
+        LOG.warn("Bootstrap fetch workers did not stop within 30s");
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  private static void joinQuietly(Thread indexThread) {
+    try {
       indexThread.join(TimeUnit.SECONDS.toMillis(30));
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -127,25 +196,6 @@ public final class BootstrapIndexer {
   private void fetchBatch(TableBatch batch,
       BlockingQueue<List<TableDocument>> indexQueue,
       AtomicReference<Exception> failure,
-      CountDownLatch fetchDone) {
-    try {
-      if (failure.get() != null) {
-        return;
-      }
-      try (MetastoreClientProvider.MetastoreClientBundle clientBundle =
-               clientProvider.getMetastoreClient(configuration)) {
-        fetchBatch(batch, indexQueue, failure, clientBundle.client());
-      }
-    } catch (Exception e) {
-      recordFailure(failure, e);
-    } finally {
-      fetchDone.countDown();
-    }
-  }
-
-  private void fetchBatch(TableBatch batch,
-      BlockingQueue<List<TableDocument>> indexQueue,
-      AtomicReference<Exception> failure,
       IMetaStoreClient client) throws Exception {
     if (failure.get() != null) {
       return;
@@ -159,7 +209,7 @@ public final class BootstrapIndexer {
     for (Table table : tables) {
       documents.add(MetastoreTableMapper.fromTable(table, indexManager.mapping()));
     }
-    indexQueue.put(documents);
+    enqueue(indexQueue, documents, failure);
   }
 
   private Thread startIndexConsumer(BlockingQueue<List<TableDocument>> indexQueue,

@@ -18,6 +18,7 @@
 package org.apache.hive.search.index.store;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hive.search.exception.IndexIOException;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
@@ -65,7 +67,9 @@ public class TestLocalStateClient {
         writer.setLiveCommitData(Map.of("nid", "20", "embedder", "model-a").entrySet());
         writer.commit();
 
+        IndexManifest pinnedManifest = client.readManifest(Optional.of(pinned)).orElseThrow();
         assertEquals(20L, client.readManifest().orElseThrow().lastEventId());
+        assertEquals(-1L, pinnedManifest.version());
         assertEquals(10L, client.readManifest(Optional.of(pinned)).orElseThrow().lastEventId());
         assertTrue(client.readManifest(Optional.of(pinned)).orElseThrow().sameFilesAs(
             client.readManifest(Optional.of(pinned)).orElseThrow()));
@@ -73,5 +77,31 @@ public class TestLocalStateClient {
         snapshots.release(pinned);
       }
     }
+  }
+
+  @Test
+  public void validateRestoredIndexRejectsMappingVersionMismatch() throws Exception {
+    ByteBuffersDirectory directory = new ByteBuffersDirectory();
+    IndexWriterConfig config =
+        new IndexWriterConfig(new StandardAnalyzer()).setCommitOnClose(false);
+    LocalStateClient client = new LocalStateClient(directory, "test_index");
+
+    try (IndexWriter writer = new IndexWriter(directory, config)) {
+      Document doc = new Document();
+      doc.add(new StringField("id", "a", Field.Store.YES));
+      writer.addDocument(doc);
+      writer.setLiveCommitData(Map.of(
+          "nid", "10", "embedder", "model-a", "version", "1").entrySet());
+      writer.commit();
+    }
+
+    IndexManifest committed = client.readManifest().orElseThrow();
+    client.validateRestoredIndex(committed);
+    IndexManifest otherVersion = IndexManifest.create(
+        committed.indexName(), committed.files(), committed.embedder(),
+        2L, committed.lastEventId());
+    IndexIOException error = assertThrows(IndexIOException.class,
+        () -> client.validateRestoredIndex(otherVersion));
+    assertTrue(error.getMessage().contains("mapping version"));
   }
 }

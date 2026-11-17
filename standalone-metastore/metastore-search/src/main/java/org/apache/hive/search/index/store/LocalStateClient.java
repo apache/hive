@@ -79,7 +79,9 @@ public record LocalStateClient(Directory directory, String indexName)
     if (StringUtils.isEmpty(embedder)) {
       return Optional.empty();
     }
-    long eventId = Long.parseLong(nid);;
+    String versionNum = userData.get("version");
+    long eventId = Long.parseLong(nid);
+    long version = StringUtils.isEmpty(versionNum) ? -1L : Long.parseLong(versionNum);
     List<IndexManifest.IndexFile> files = new ArrayList<>();
     for (String file : commitUserData.getValue()) {
       if (isStagingFile(file)) {
@@ -87,7 +89,7 @@ public record LocalStateClient(Directory directory, String indexName)
       }
       files.add(indexFile(file));
     }
-    return Optional.of(IndexManifest.create(indexName, files, embedder, eventId));
+    return Optional.of(IndexManifest.create(indexName, files, embedder, version, eventId));
   }
 
   @Override
@@ -131,7 +133,7 @@ public record LocalStateClient(Directory directory, String indexName)
       }
       files.add(indexFile(file));
     }
-    return IndexManifest.create(indexName, files, "", -1);
+    return IndexManifest.create(indexName, files, "", -1L, -1L);
   }
 
   public boolean isIndexReadable() throws IOException {
@@ -156,12 +158,7 @@ public record LocalStateClient(Directory directory, String indexName)
     if (StringUtils.isEmpty(modelName)) {
       throw new IndexIOException("Restored index is missing embedding model metadata");
     }
-    long eventId;
-    try {
-      eventId = Long.parseLong(nid);
-    } catch (NumberFormatException e) {
-      throw new IndexIOException("Restored index has invalid commit checkpoint: nid=" + nid, e);
-    }
+    long eventId = Long.parseLong(nid);
     if (eventId != expected.lastEventId()) {
       throw new IndexIOException(
           "Restored index checkpoint mismatch: expected nid=" + expected.lastEventId()
@@ -169,6 +166,13 @@ public record LocalStateClient(Directory directory, String indexName)
     }
     if (!expected.embedder().equals(modelName)) {
       throw new IndexIOException("Restored index embedding model mismatch");
+    }
+    String versionNum = userData.get("version");
+    long version = StringUtils.isEmpty(versionNum) ? -1L : Long.parseLong(versionNum);
+    if (version != expected.version()) {
+      throw new IndexIOException(
+          "Restored index mapping version mismatch: expected " + expected.version()
+              + " but found " + version);
     }
   }
 

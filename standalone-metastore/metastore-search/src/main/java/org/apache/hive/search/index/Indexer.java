@@ -40,7 +40,6 @@ import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.mapping.TextFieldSchema;
 import org.apache.hive.search.mapping.field.Field;
 import org.apache.hive.search.mapping.field.TextField;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -192,15 +191,12 @@ public final class Indexer implements Closeable {
     if (docs == null || docs.isEmpty()) {
       return;
     }
-    List<Document> luceneDocs = new ArrayList<>();
     docs = embedDocuments(docs);
-    List<String> ids = new ArrayList<>();
+    String idField = "_id" + TableDocument.FILTER_SUFFIX;
     for (TableDocument doc : docs) {
-      ids.add(doc.idField().value());
-      luceneDocs.addAll(doc.toDocuments());
+      writer.updateDocuments(
+          new Term(idField, doc.idField().value()), doc.toDocuments());
     }
-    delete(ids.toArray(new String[0]));
-    writer.addDocuments(luceneDocs);
   }
 
   public IndexWriter writer() {
@@ -220,6 +216,7 @@ public final class Indexer implements Closeable {
     Map<String, String> metadata = Map.of(
         "nid", lastEventId + "",
         "embedder", embedder,
+        "version", indexManager.mapping().versionNum() + "",
         "commit_time", String.valueOf(System.currentTimeMillis())
     );
     writer.setLiveCommitData(metadata.entrySet());
@@ -241,18 +238,14 @@ public final class Indexer implements Closeable {
         || writer.hasDeletions();
   }
 
-  public int delete(String... ids) throws IOException {
+  public void delete(String... ids) throws IOException {
     if (ids == null || ids.length == 0) {
-      return 0;
+      return;
     }
-    int before = writer.getDocStats().numDocs;
     Term[] terms = Arrays.stream(ids)
         .map(id -> new Term("_id" + TableDocument.FILTER_SUFFIX, id))
         .toArray(Term[]::new);
     writer.deleteDocuments(terms);
-    int after = writer.getDocStats().numDocs;
-    LOG.info("Deleted {} docs in response to tables drop", before - after);
-    return before - after;
   }
 
   public void deleteDatabases(DatabaseName... databases)
@@ -260,7 +253,6 @@ public final class Indexer implements Closeable {
     if (databases == null || databases.length == 0) {
       return;
     }
-    int before = writer.getDocStats().numDocs;
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
     for (DatabaseName database : databases) {
       Query query = new PrefixQuery(new Term("_id" + TableDocument.FILTER_SUFFIX,
@@ -268,8 +260,6 @@ public final class Indexer implements Closeable {
       builder.add(query, BooleanClause.Occur.SHOULD);
     }
     writer.deleteDocuments(builder.build());
-    int after = writer.getDocStats().numDocs;
-    LOG.info("Deleted {} docs in response to databases drop", before - after);
   }
 
   @Override

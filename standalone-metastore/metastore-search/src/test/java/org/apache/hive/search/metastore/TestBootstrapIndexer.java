@@ -35,6 +35,7 @@ import org.apache.hive.search.testutil.StubEmbedder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -118,6 +119,29 @@ public class TestBootstrapIndexer {
               .run(1L));
       assertTrue(error.getMessage().contains("Bootstrap indexing failed")
           || error.getMessage().contains("metastore unavailable"));
+    }
+  }
+
+  @Test(timeout = 20000)
+  public void bootstrapUnblocksFetchersWhenIndexingFails() throws Exception {
+    Configuration conf = bootstrapConf();
+    conf.setInt(IndexOptions.BOOTSTRAP_BATCH_SIZE, 1);
+    conf.setInt(IndexOptions.BOOTSTRAP_FETCH_THREADS, 2);
+    conf.setInt(IndexOptions.BOOTSTRAP_QUEUE_DEPTH, 1);
+    Table orders = InMemorySearchFixture.table("hive", "sales", "orders", "sales orders");
+    Table customers = InMemorySearchFixture.table("hive", "sales", "customers", "sales customers");
+    Table parts = InMemorySearchFixture.table("hive", "inventory", "parts", "spare parts");
+    Table returns = InMemorySearchFixture.table("hive", "sales", "returns", "customer returns");
+
+    try (BootstrapFixture fixture = BootstrapFixture.create(conf)) {
+      MetastoreBootstrapMocks.stubBootstrapCatalog(
+          fixture.client(), orders, customers, parts, returns);
+      fixture.indexer().close();
+
+      assertThrows(IOException.class,
+          () -> new BootstrapIndexer(fixture.indexManager(), fixture.indexer(),
+              configuration -> new MetastoreClientProvider.MetastoreClientBundle(fixture.client(), false))
+              .run(1L));
     }
   }
 
