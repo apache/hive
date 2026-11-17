@@ -93,10 +93,7 @@ public record IndexManifest(String indexName, List<IndexFile> files,
     if (!embedderName.equals(this.embedder)) {
       return false;
     }
-    if (mapping.versionNum() != version) {
-      return false;
-    }
-    return true;
+    return mapping.versionNum() == version;
   }
 
   private static boolean sameContent(IndexFile source, IndexFile dest) {

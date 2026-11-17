@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
@@ -61,10 +62,11 @@ public class MetastoreEventHandler implements Closeable {
   private final IndexOptions indexConfig;
   private final MetastoreClientProvider clientProvider;
   private final MessageDeserializer defaultDeserializer;
-  private final Map<String, MessageDeserializer> deserializers = new HashMap<>();
+  private final Map<String, MessageDeserializer> deserializers = new ConcurrentHashMap<>();
   private MetastoreClientProvider.Client client;
   private Thread eventPoller;
   private long lastEventId;
+  private long bootstrapEndId;
 
   /** Consecutive batch failures at {@link #failedBatchStartId}. */
   private int consecutiveBatchFailures;
@@ -86,8 +88,9 @@ public class MetastoreEventHandler implements Closeable {
     return this;
   }
 
-  public MetastoreEventHandler start(long nid) throws Exception {
+  public MetastoreEventHandler start(long nid, long bid) throws Exception {
     this.lastEventId = nid;
+    this.bootstrapEndId = bid;
     long sleepInterval = indexConfig.getPollNotificationInterval();
     int pollMax = indexConfig.getEventPollMax();
     long unhealthyBackoffMs = indexConfig.getEventUnhealthyBackoffMs();
@@ -116,6 +119,11 @@ public class MetastoreEventHandler implements Closeable {
     this.eventPoller.setName("Metastore-Event-Poller");
     this.eventPoller.start();
     return this;
+  }
+
+  /** Events at or before this id are applied one at a time so a bootstrap scan cannot hide a delete. */
+  void setBootstrapEndId(long bootstrapEndId) {
+    this.bootstrapEndId = bootstrapEndId;
   }
 
   @Override
@@ -160,7 +168,27 @@ public class MetastoreEventHandler implements Closeable {
       }
 
       List<NotificationEvent> events = resp.getEvents();
-      long batchStartId = events.get(0).getEventId();
+      long batchStartId = events.getFirst().getEventId();
+      if (batchStartId != lastEventId + 1) {
+        stopped.set(true);
+        throw new IndexNotHealthyException("A hole in notification events detected, " +
+            "try increasing metastore.event.db.listener.timetolive or speed up the inference");
+      }
+
+      if (batchStartId <= bootstrapEndId) {
+        List<NotificationEvent> bootstrapEvents =
+            events.stream().filter(e -> e.getEventId() <= bootstrapEndId).toList();
+        int appliedIndividually = applyEventsIndividually(bootstrapEvents);
+        events = events.stream().filter(e -> e.getEventId() > bootstrapEndId).toList();
+        if (events.isEmpty()) {
+          if (appliedIndividually > 0) {
+            notifyListenersStatus(true);
+            resetBatchFailureState();
+          }
+          return appliedIndividually;
+        }
+      }
+
       MetastoreEventListener.IndexTask task;
       try {
         task = buildTask(events);
@@ -211,15 +239,10 @@ public class MetastoreEventHandler implements Closeable {
     return 0;
   }
 
-  private int applyEventsIndividually(List<NotificationEvent> events)
-      throws IndexNotHealthyException {
+  private int applyEventsIndividually(List<NotificationEvent> events) throws IndexNotHealthyException {
     int applied = 0;
     for (NotificationEvent event : events) {
-      if (lastEventId >= event.getEventId()) {
-        continue;
-      }
-      MetastoreEventListener.IndexTask task =
-          new MetastoreEventListener.IndexTask();
+      MetastoreEventListener.IndexTask task = new MetastoreEventListener.IndexTask();
       task.firstEventId = event.getEventId();
       try {
         mergeEvent(event, task);
@@ -355,9 +378,7 @@ public class MetastoreEventHandler implements Closeable {
       case MessageBuilder.DROP_TABLE_EVENT -> {
         deserializer.getDropTableMessage(message);
         TableName tableName = new TableName(event.getCatName(), event.getDbName(), event.getTableName());
-        if (task.tablesToAdd.containsKey(tableName)) {
-          task.tablesToAdd.remove(tableName);
-        } else {
+        if (task.tablesToAdd.remove(tableName) == null) {
           task.tablesToDrop.add(tableName);
         }
       }
@@ -380,9 +401,7 @@ public class MetastoreEventHandler implements Closeable {
             tableBefore.getDbName(), tableBefore.getTableName());
         TableName tblNameAfter = new TableName(tableAfter.getCatName(),
             tableAfter.getDbName(), tableAfter.getTableName());
-        if (task.tablesToAdd.containsKey(tblNameBefore)) {
-          task.tablesToAdd.remove(tblNameBefore);
-        } else {
+        if (task.tablesToAdd.remove(tblNameBefore) == null) {
           task.tablesToDrop.add(tblNameBefore);
         }
         task.tablesToAdd.put(tblNameAfter, tableAfter);

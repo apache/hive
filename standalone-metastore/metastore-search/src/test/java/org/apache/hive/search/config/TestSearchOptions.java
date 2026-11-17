@@ -37,6 +37,8 @@ public class TestSearchOptions {
         config.getRefreshInterval());
     assertEquals(SearchOptions.DEFAULT_LIMIT_DEFAULT, config.getDefaultLimit());
     assertEquals(SearchOptions.HYBRID_SEMANTIC_WEIGHT_DEFAULT, config.getHybridSemanticWeight(), 0.001f);
+    assertEquals(SearchOptions.DEFAULT_LIMIT_DEFAULT * SearchOptions.SEMANTIC_K_MULTIPLIER_DEFAULT,
+        config.semanticK(SearchOptions.DEFAULT_LIMIT_DEFAULT));
   }
 
   @Test
@@ -44,8 +46,13 @@ public class TestSearchOptions {
     Configuration conf = new Configuration(false);
     conf.setInt(SearchOptions.DEFAULT_LIMIT, 50);
     conf.setFloat(SearchOptions.HYBRID_SEMANTIC_WEIGHT, 0.2f);
+    conf.setInt(SearchOptions.SEMANTIC_K_MULTIPLIER, 2);
     SearchOptions config = new SearchOptions(conf);
     assertEquals(50, config.getDefaultLimit());
     assertEquals(0.8f, config.getHybridMatchWeight(), 0.001f);
+    assertEquals(100, config.semanticK(50));
+
+    conf.setInt(SearchOptions.SEMANTIC_K_MULTIPLIER, 0);
+    assertEquals(50, new SearchOptions(conf).semanticK(50));
   }
 }
