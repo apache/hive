@@ -26,10 +26,11 @@ import org.apache.lucene.index.IndexCommit;
 
 public interface IndexStateClient {
 
-  Optional<IndexManifest> readManifest(Optional<IndexCommit> commit) throws IOException;
+  Optional<IndexManifest> readManifest() throws IOException;
 
-  default Optional<IndexManifest> readManifest() throws IOException {
-    return readManifest(Optional.empty());
+  /** Manifest for a pinned commit. Clients without commits ignore {@code commit}. */
+  default Optional<IndexManifest> readManifest(IndexCommit commit) throws IOException {
+    return readManifest();
   }
 
   InputStream read(String fileName) throws IOException;

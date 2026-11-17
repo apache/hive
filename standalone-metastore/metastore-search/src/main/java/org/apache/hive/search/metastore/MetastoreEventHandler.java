@@ -62,7 +62,7 @@ public class MetastoreEventHandler implements Closeable {
   private final MetastoreClientProvider clientProvider;
   private final MessageDeserializer defaultDeserializer;
   private final Map<String, MessageDeserializer> deserializers = new HashMap<>();
-  private MetastoreClientProvider.MetastoreClientBundle clientBundle;
+  private MetastoreClientProvider.Client client;
   private Thread eventPoller;
   private long lastEventId;
 
@@ -135,16 +135,16 @@ public class MetastoreEventHandler implements Closeable {
 
   /** One client for the poller lifetime, reused across notification polls. */
   private synchronized IMetaStoreClient metastoreClient() throws Exception {
-    if (clientBundle == null) {
-      clientBundle = clientProvider.getMetastoreClient(indexConfig.configuration());
+    if (client == null) {
+      client = clientProvider.getMetastoreClient(indexConfig.configuration());
     }
-    return clientBundle.client();
+    return client.client();
   }
 
   private synchronized void closeClient() {
-    if (clientBundle != null && clientBundle.releaseAfterUse()) {
-      IOUtils.closeQuietly(clientBundle);
-      clientBundle = null;
+    if (client != null && client.releaseAfterUse()) {
+      IOUtils.closeQuietly(client);
+      client = null;
     }
   }
 

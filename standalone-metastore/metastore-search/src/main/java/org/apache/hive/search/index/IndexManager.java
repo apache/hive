@@ -95,7 +95,7 @@ public class IndexManager implements Closeable, MetastoreEventListener {
       return false;
     }
     Optional<IndexManifest> localManifest =
-        localIndex.readManifest(Optional.of(snapshot));
+        localIndex.readManifest(snapshot);
     if (localManifest.isEmpty()) {
       return false;
     }

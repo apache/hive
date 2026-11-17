@@ -65,10 +65,10 @@ public final class BootstrapIndexer {
   void run(long notificationId) throws Exception {
     long start = System.currentTimeMillis();
     final BatchPlan plan;
-    try (MetastoreClientProvider.MetastoreClientBundle clientBundle =
+    try (MetastoreClientProvider.Client client =
              clientProvider.getMetastoreClient(configuration)) {
-      List<String> databases = clientBundle.client().getAllDatabases();
-      plan = planBatches(databases, clientBundle.client());
+      List<String> databases = client.client().getAllDatabases();
+      plan = planBatches(databases, client.client());
       LOG.info("Bootstrap indexer planned {} table(s) in {} batch(es) across {} database(s)", plan.plannedTableCount(),
           plan.batches().size(), databases.size());
     }
@@ -123,7 +123,7 @@ public final class BootstrapIndexer {
       BlockingQueue<List<TableDocument>> indexQueue,
       AtomicReference<Exception> failure,
       CountDownLatch fetchDone) {
-    try (MetastoreClientProvider.MetastoreClientBundle clientBundle =
+    try (MetastoreClientProvider.Client client =
              clientProvider.getMetastoreClient(configuration)) {
       while (failure.get() == null) {
         TableBatch batch = work.poll();
@@ -131,7 +131,7 @@ public final class BootstrapIndexer {
           return;
         }
         try {
-          fetchBatch(batch, indexQueue, failure, clientBundle.client());
+          fetchBatch(batch, indexQueue, failure, client.client());
         } finally {
           fetchDone.countDown();
         }

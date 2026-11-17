@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -67,12 +66,12 @@ public class TestLocalStateClient {
         writer.setLiveCommitData(Map.of("nid", "20", "embedder", "model-a").entrySet());
         writer.commit();
 
-        IndexManifest pinnedManifest = client.readManifest(Optional.of(pinned)).orElseThrow();
+        IndexManifest pinnedManifest = client.readManifest(pinned).orElseThrow();
         assertEquals(20L, client.readManifest().orElseThrow().lastEventId());
         assertEquals(-1L, pinnedManifest.version());
-        assertEquals(10L, client.readManifest(Optional.of(pinned)).orElseThrow().lastEventId());
-        assertTrue(client.readManifest(Optional.of(pinned)).orElseThrow().sameFilesAs(
-            client.readManifest(Optional.of(pinned)).orElseThrow()));
+        assertEquals(10L, client.readManifest(pinned).orElseThrow().lastEventId());
+        assertTrue(client.readManifest(pinned).orElseThrow().sameFilesAs(
+            client.readManifest(pinned).orElseThrow()));
       } finally {
         snapshots.release(pinned);
       }

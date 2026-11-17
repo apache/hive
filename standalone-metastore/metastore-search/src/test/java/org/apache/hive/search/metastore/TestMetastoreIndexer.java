@@ -68,7 +68,7 @@ public class TestMetastoreIndexer {
     try (IndexerFixture fixture = IndexerFixture.create(conf, null)) {
       try (MetastoreIndexer metastoreIndexer =
           MetastoreIndexer.getMetastoreIndexer(conf, fixture.indexManager, fixture.indexer,
-              configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false))) {
+              configuration -> new MetastoreClientProvider.Client(client, false))) {
         assertEquals(500L, fixture.indexManager.readLocalManifest().orElseThrow().lastEventId());
         assertEquals(2, fixture.indexer.writer().getDocStats().numDocs);
       }
@@ -93,7 +93,7 @@ public class TestMetastoreIndexer {
       fixture.indexer = new Indexer(fixture.indexManager, fixture.modelRegistry);
       try (MetastoreIndexer metastoreIndexer =
                MetastoreIndexer.getMetastoreIndexer(conf, fixture.indexManager, fixture.indexer,
-                   configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false))) {
+                   configuration -> new MetastoreClientProvider.Client(client, false))) {
         verify(client, never()).getAllDatabases();
         assertEquals(42L, fixture.indexManager.readLocalManifest().orElseThrow().lastEventId());
         assertEquals(1, fixture.indexer.writer().getDocStats().numDocs);
@@ -131,7 +131,7 @@ public class TestMetastoreIndexer {
     try (IndexerFixture fixture = IndexerFixture.create(conf, remote)) {
       try (MetastoreIndexer metastoreIndexer =
           MetastoreIndexer.getMetastoreIndexer(conf, fixture.indexManager, fixture.indexer,
-              configuration -> new MetastoreClientProvider.MetastoreClientBundle(client, false))) {
+              configuration -> new MetastoreClientProvider.Client(client, false))) {
         verify(client, never()).getAllDatabases();
         assertEquals(200L, fixture.indexManager.readLocalManifest().orElseThrow().lastEventId());
         assertEquals(2, fixture.indexer.writer().getDocStats().numDocs);

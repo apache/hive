@@ -32,20 +32,19 @@ public final class IndexBackupUtils {
 
   /** Push a pinned local manifest to the backup (remote) location. */
   public static boolean syncToBackup(IndexStateClient local, IndexStateClient remote,
-      IndexManifest localM) throws IOException {
+      IndexManifest localManifest) throws IOException {
     Optional<IndexManifest> remoteManifest = remote.readManifest();
     if (remoteManifest.isPresent()) {
-      IndexManifest remoteM = remoteManifest.get();
-      if (remoteM.lastEventId() > localM.lastEventId()) {
+      IndexManifest rm = remoteManifest.get();
+      if (rm.lastEventId() > localManifest.lastEventId()) {
         return false;
       }
-      if (remoteM.lastEventId() == localM.lastEventId()
-          && localM.sameFilesAs(remoteM)) {
+      if (rm.lastEventId() == localManifest.lastEventId() && localManifest.sameFilesAs(rm)) {
         return false;
       }
     }
-    applyDiff(local, remote, localM.diff(remoteManifest.orElse(null)));
-    return remote.writeManifest(localM);
+    applyDiff(local, remote, localManifest.diff(remoteManifest.orElse(null)));
+    return remote.writeManifest(localManifest);
   }
 
   /**

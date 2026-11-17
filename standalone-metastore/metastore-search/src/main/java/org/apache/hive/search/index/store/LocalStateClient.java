@@ -50,18 +50,23 @@ public record LocalStateClient(Directory directory, String indexName)
     return IndexManifest.STAGING_MANIFEST_FILE_NAME.equals(fileName);
   }
 
-  private Map.Entry<Map<String, String>, Collection<String>>
-      getCommitUserData(Optional<IndexCommit> commit) throws IOException {
-    if (commit.isEmpty()) {
+  private record CommitInfo(Map<String, String> userData, Collection<String> files) {}
+
+  private CommitInfo getCommitUserData(IndexCommit commit) throws IOException {
+    if (commit == null) {
       SegmentInfos segmentInfos = SegmentInfos.readLatestCommit(directory);
-      return Map.entry(segmentInfos.getUserData(), segmentInfos.files(true));
+      return new CommitInfo(segmentInfos.getUserData(), segmentInfos.files(true));
     }
-    IndexCommit snapshot = commit.get();
-    return Map.entry(snapshot.getUserData(), snapshot.getFileNames());
+    return new CommitInfo(commit.getUserData(), commit.getFileNames());
   }
 
   @Override
-  public Optional<IndexManifest> readManifest(Optional<IndexCommit> commit) throws IOException {
+  public Optional<IndexManifest> readManifest() throws IOException {
+    return readManifest((IndexCommit) null);
+  }
+
+  @Override
+  public Optional<IndexManifest> readManifest(IndexCommit commit) throws IOException {
     if (hasStagingManifest()) {
       return Optional.empty();
     }
@@ -69,8 +74,8 @@ public record LocalStateClient(Directory directory, String indexName)
       return Optional.empty();
     }
 
-    Map.Entry<Map<String, String>, Collection<String>> commitUserData = getCommitUserData(commit);
-    Map<String, String> userData = commitUserData.getKey();
+    CommitInfo commitInfo = getCommitUserData(commit);
+    Map<String, String> userData = commitInfo.userData();
     String nid = userData.get("nid");
     if (StringUtils.isEmpty(nid)) {
       return Optional.empty();
@@ -83,7 +88,7 @@ public record LocalStateClient(Directory directory, String indexName)
     long eventId = Long.parseLong(nid);
     long version = StringUtils.isEmpty(versionNum) ? -1L : Long.parseLong(versionNum);
     List<IndexManifest.IndexFile> files = new ArrayList<>();
-    for (String file : commitUserData.getValue()) {
+    for (String file : commitInfo.files()) {
       if (isStagingFile(file)) {
         continue;
       }
