@@ -857,7 +857,11 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
     return new CaseSplit(condition, value, elseBranch, conditionCols);
   }
 
-  /** True unless the expression is built only from columns, constants, +, -, * and casts, which cannot fail. */
+  /**
+   * True unless the expression is built only from columns, constants, +, -, *, / and casts, which cannot fail:
+   * / returns NULL for a zero divisor or an overflow. The operator div (integer division, UDFOPLongDivide)
+   * is not allowed: it fails on a zero divisor.
+   */
   private static boolean mayFail(ExprNodeDesc expr) {
     if (expr instanceof ExprNodeColumnDesc || expr instanceof ExprNodeConstantDesc) {
       return false;
