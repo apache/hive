@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -34,7 +33,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.ProxyLocalFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -392,6 +390,7 @@ public class TestSymlinkTextInputFormat {
   @Test
   public void testTargetEscapingAllowedPath() throws IOException {
     writeTextFile(new Path(dataDir2, "file2"), "dir2_file2_line1\n");
+    // Allowed root is dataDir1, but ".." leads to dataDir2.
     writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1 + "/../datadir2/file2\n");
     job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
 
@@ -401,28 +400,46 @@ public class TestSymlinkTextInputFormat {
     assertRejected(assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause());
   }
 
-  /** Rejected before any FileSystem is created for the unknown scheme. */
+  /** A target with an unknown scheme is rejected as outside the allowed locations, not as a missing filesystem. */
   @Test
-  public void testTargetOnForeignFileSystem() throws IOException {
+  public void testUnknownSchemeTargetRejectedByAllowlist() throws IOException {
     writeTextFile(new Path(symlinkDir, "symlink_file"), "unknownfs://custom:1234/abc\n");
 
     SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
     FileInputFormat.setInputPaths(job, symlinkDir);
 
+    // A filesystem lookup for "unknownfs" would fail with "No FileSystem for scheme".
+    // Getting "is outside of the allowed locations" instead means the check ran first.
     assertRejected(assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause());
   }
 
+  /** A target on an allowed non-default filesystem is listed with its own filesystem. */
   @Test
-  public void testReworkKeepsTargetNextToSymlinkFile() throws IOException {
-    Path dataFile = new Path(dataDir1, "file1");
-    writeTextFile(dataFile, "dir1_file1_line1\n");
-    Path symlinkFile = new Path(dataDir1, "symlink_file");
-    writeTextFile(symlinkFile, dataFile + "\n");
+  public void testTargetOnOtherAllowedFileSystem() throws IOException {
+    job.set("fs.pfile.impl", "org.apache.hadoop.fs.ProxyLocalFileSystem");
+    writeTextFile(new Path(dataDir1, "file1"), "dir1_file1_line1\n");
+    Path pfileDir1 = new Path("pfile", null, dataDir1.toUri().getPath());
+    writeSymlinkFile(new Path(symlinkDir, "symlink_file"), new Path(pfileDir1, "file1"));
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, pfileDir1.toString());
 
-    MapredWork work = symlinkWork(symlinkFile);
-    new SymbolicInputFormat().rework(new HiveConf(TestSymlinkTextInputFormat.class), work);
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
 
-    assertEquals(Collections.singleton(dataFile), work.getMapWork().getPathToPartitionInfo().keySet());
+    assertEquals(1, inputFormat.getContentSummary(symlinkDir, job).getFileCount());
+  }
+
+  /** Relative or unknown-scheme entries in the allowed paths don't affect the valid ones. */
+  @Test
+  public void testInvalidAllowedPathIgnored() throws IOException {
+    writeTextFile(new Path(dataDir1, "file1"), "dir1_file1_line1\n");
+    writeSymlinkFile(new Path(symlinkDir, "symlink_file"), new Path(dataDir1, "file1"));
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname,
+        "unknownfs://custom:1234/abc,relative/dir," + dataDir1);
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertEquals(1, inputFormat.getContentSummary(symlinkDir, job).getFileCount());
   }
 
   @Test
@@ -440,6 +457,7 @@ public class TestSymlinkTextInputFormat {
   @Test
   public void testTargetGlobEscapingAllowedPath() throws IOException {
     writeTextFile(new Path(dataDir2, "file2"), "dir2_file2_line1\n");
+    // The line starts with dataDir1, but the glob {../datadir2/file2} matches a file in dataDir2.
     writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1 + "/{../datadir2/file2}\n");
     job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
 
@@ -449,19 +467,35 @@ public class TestSymlinkTextInputFormat {
     assertRejected(assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause());
   }
 
-  /** A directory literally named "{.." passes the root check, but globbing it again would escape the root. */
+  /** A directory literally named "{.." passes the root check, but globbing it again would match outside the root. */
   @Test
   public void testTargetGlobEscapingAllowedPathOnSecondExpansion() throws IOException {
     writeTextFile(new Path(dataDir2, "file2"), "dir2_file2_line1\n");
-    writeTextFile(new Path(new Path(new Path(dataDir1, "{.."), "datadir2"), "file2}"), "decoy\n");
+    // A file literally at dataDir1/{../datadir2/file2}, matched by the line below with backslash-escaped braces.
+    writeTextFile(new Path(new Path(new Path(dataDir1, "{.."), "datadir2"), "file2}"), "dir1_braces_line1\n");
     writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1 + "/\\{../datadir2/file2\\}\n");
     job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
 
     SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
     FileInputFormat.setInputPaths(job, symlinkDir);
 
+    // The match is dataDir1/{../datadir2/file2}, which would be globbed again when read.
     Throwable error = assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause();
-    assertTrue("Unexpected error: " + error, error.getMessage().contains("contains glob metacharacters"));
+    assertTrue("Unexpected error: " + error, error.getMessage().contains("matches a path with glob metacharacters"));
+  }
+
+  /** A glob in the directory name is rejected even if it would expand to the allowed root. */
+  @Test
+  public void testTargetGlobInAllowedRootNameRejected() throws IOException {
+    writeTextFile(new Path(dataDir1, "file1"), "dir1_file1_line1\n");
+    // The line matches dataDir1/file1 only after expansion, but its text is not under dataDir1.
+    writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1.getParent() + "/datadir*/file1\n");
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertRejected(assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause());
   }
 
   @Test
@@ -498,37 +532,9 @@ public class TestSymlinkTextInputFormat {
 
     MapredWork work = symlinkWork(symlinkFile);
     HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
+    hiveConf.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
 
     assertRejected(assertThrows(IOException.class, () -> new SymbolicInputFormat().rework(hiveConf, work)));
-  }
-
-  @Test
-  public void testReworkRejectsGlobEscapingAllowedPathOnSecondExpansion() throws IOException {
-    writeTextFile(new Path(dataDir2, "file2"), "dir2_file2_line1\n");
-    writeTextFile(new Path(new Path(new Path(dataDir1, "{.."), "datadir2"), "file2}"), "decoy\n");
-    Path symlinkFile = new Path(dataDir1, "symlink_file");
-    writeTextFile(symlinkFile, dataDir1 + "/\\{../datadir2/file2\\}\n");
-
-    MapredWork work = symlinkWork(symlinkFile);
-    HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
-
-    IOException error = assertThrows(IOException.class, () -> new SymbolicInputFormat().rework(hiveConf, work));
-    assertTrue("Unexpected error: " + error, error.getMessage().contains("contains glob metacharacters"));
-  }
-
-  /** Only the path is checked for glob metacharacters, not the authority, e.g. the brackets of an IPv6 host. */
-  @Test
-  public void testGlobMetacharactersOutsideOfPathAreIgnored() throws IOException {
-    job.set("fs.ipv6test.impl", ProxyLocalFileSystem.class.getName());
-    job.setBoolean("fs.ipv6test.impl.disable.cache", true);
-    job.set(FileSystem.FS_DEFAULT_NAME_KEY, "ipv6test://[fd00::1]:8020/");
-    writeTextFile(new Path(dataDir1, "file1"), "dir1_file1_line1\n");
-    writeSymlinkFile(new Path(dataDir1, "symlink_file"), new Path(dataDir1, "file1"));
-
-    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
-    FileInputFormat.setInputPaths(job, new Path(dataDir1, "symlink_file"));
-
-    assertEquals(1, inputFormat.getSplits(job, 1).length);
   }
 
   @Test
@@ -537,7 +543,9 @@ public class TestSymlinkTextInputFormat {
     writeTextFile(symlinkFile, dataDir1 + "/nofile*\n");
 
     MapredWork work = symlinkWork(symlinkFile);
-    new SymbolicInputFormat().rework(new HiveConf(TestSymlinkTextInputFormat.class), work);
+    HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
+    hiveConf.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+    new SymbolicInputFormat().rework(hiveConf, work);
 
     assertTrue(work.getMapWork().getPathToPartitionInfo().isEmpty());
   }

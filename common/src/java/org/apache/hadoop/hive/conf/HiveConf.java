@@ -3612,8 +3612,8 @@ public class HiveConf extends Configuration {
         "should rework the mapred work or not.\n" +
         "This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time."),
     HIVE_SYMLINK_ALLOWED_TARGET_PATHS("hive.symlink.allowed.target.paths", "",
-        "Comma separated list of directories SymlinkTextInputFormat is allowed to read target files from,\n" +
-        "in addition to the location holding the symlink files themselves."),
+        "Comma separated list of directories SymlinkTextInputFormat is allowed to read target files from.\n" +
+        "Directories without a scheme are on the default filesystem. If empty, no target is allowed."),
 
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
