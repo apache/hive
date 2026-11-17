@@ -140,8 +140,8 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   @Override
   public final Database filterDatabase(Database database) throws MetaException, NoSuchObjectException {
     if (database != null) {
-      List<Database> databases = filterDatabaseObjects(Collections.singletonList(database));
-      if (databases.isEmpty()) {
+      List<Database> filteredDatabases = filterDatabaseObjects(Collections.singletonList(database));
+      if (filteredDatabases.isEmpty()) {
         throw new NoSuchObjectException(String.format("Database %s does not exist", database.getName()));
       }
     }

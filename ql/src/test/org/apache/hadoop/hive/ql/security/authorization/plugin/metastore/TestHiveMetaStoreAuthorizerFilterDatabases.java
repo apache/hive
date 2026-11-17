@@ -20,15 +20,26 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.fallback.FallbackHiveAuthorizerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
@@ -70,5 +81,45 @@ public class TestHiveMetaStoreAuthorizerFilterDatabases {
       assertNotNull("getAllDatabases returned null DB name", dbName);
     }
     assertTrue("default database not present in DB list", databases.contains("default"));
+  }
+
+  public static class MockRangerAuthorizerFactory implements HiveAuthorizerFactory {
+    @Override
+    public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory,
+        HiveConf conf, HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) {
+      HiveAuthorizer authorizer = Mockito.mock(HiveAuthorizer.class);
+      try {
+        Mockito.when(authorizer.filterListCmdObjects(Mockito.anyList(), Mockito.any()))
+            .thenAnswer(invocation -> {
+              List<HivePrivilegeObject> databases = invocation.getArgument(0);
+              for (HivePrivilegeObject database : databases) {
+                // Simulating Ranger resolving each database's owner when not already supplied which 
+                // causes a StackOverflowError due to re-entering the filter hook through filterDatabase.
+                if (database.getOwnerName() == null) {
+                  Database fetchedDB = new Database(database.getDbname(), null, null, null);
+                  fetchedDB.setOwnerName("test_user");
+                  fetchedDB.setOwnerType(PrincipalType.ROLE);
+                  // Simulating filterDatabase call by the client side filter on the fetched DB from the metastore
+                  new HiveMetaStoreAuthorizer(conf).filterDatabase(fetchedDB);
+                }
+              }
+              return databases;
+            });
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to set up Mock Ranger Authorizer", e);
+      }
+      return authorizer;
+    }
+  }
+
+  @Test(timeout = 60000)
+  public void testFilterDatabasesDoesNotStackOverflowWithRanger() throws Exception {
+    Configuration authzConf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(authzConf, ConfVars.HIVE_AUTHORIZATION_MANAGER, MockRangerAuthorizerFactory.class.getName());
+    
+    HiveMetaStoreAuthorizer authorizer = new HiveMetaStoreAuthorizer(authzConf);
+    List<String> result = authorizer.filterDatabases("hive", Collections.singletonList("test_db"));
+    assertNotNull("filterDatabases returned null", result);
+    assertTrue("expected test_db in filtered databases", result.contains("test_db"));
   }
 }
