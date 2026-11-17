@@ -26,4 +26,10 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 
 public interface EventConsumer extends Configurable, Consumer<NotificationEvent> {
 
+  /**
+   * Called when events could not be read (removed from the notification log before the poll got to them);
+   * polling goes on from the latest event.
+   */
+  default void onEventsMissed() {
+  }
 }

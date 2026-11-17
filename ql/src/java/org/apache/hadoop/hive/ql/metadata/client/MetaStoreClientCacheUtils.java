@@ -87,6 +87,12 @@ public class MetaStoreClientCacheUtils {
     DATABASE(Database.class, String.class, String.class),
     // Table <-- getTableInternal(GetTableRequest req)
     TABLE(Table.class, GetTableRequest.class),
+    // Table <-- getTable(GetTableRequest req), across queries, by the request without the table id and the
+    // TableVersionRegistry version (HiveMetaStoreClientWithLocalCache)
+    TABLE_BY_VERSION(Table.class, GetTableRequest.class, Long.class),
+    // AllTableConstraintsResponse <-- getAllTableConstraints(AllTableConstraintsRequest req), across queries,
+    // by the request and the TableVersionRegistry version (HiveMetaStoreClientWithLocalCache)
+    ALL_TABLE_CONSTRAINTS_BY_VERSION(AllTableConstraintsResponse.class, AllTableConstraintsRequest.class, Long.class),
     // Table <-- any getTable(GetTableRequest req) answered at compile time, by String catName, dbName, tblName.
     // Used by HiveMetaStoreClientWithLocalCache for the table id and the transactional check.
     TABLE_BY_NAME(Table.class, String.class),
@@ -285,14 +291,21 @@ public class MetaStoreClientCacheUtils {
   public static class TableWatermark {
     final String validWriteIdList;
     final long tableId;
+    // the TableVersionRegistry version, for a table with no write ids
+    final Long version;
 
     public TableWatermark(String validWriteIdList, long tableId) {
+      this(validWriteIdList, tableId, null);
+    }
+
+    public TableWatermark(String validWriteIdList, long tableId, Long version) {
       this.validWriteIdList = validWriteIdList;
       this.tableId = tableId;
+      this.version = validWriteIdList != null ? null : version;
     }
 
     public boolean isValid() {
-      return validWriteIdList != null && tableId != -1;
+      return (validWriteIdList != null || version != null) && tableId != -1;
     }
 
     @Override
@@ -305,17 +318,19 @@ public class MetaStoreClientCacheUtils {
       }
       TableWatermark that = (TableWatermark) o;
       return tableId == that.tableId &&
-          Objects.equals(validWriteIdList, that.validWriteIdList);
+          Objects.equals(validWriteIdList, that.validWriteIdList) &&
+          Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(validWriteIdList, tableId);
+      return Objects.hash(validWriteIdList, tableId, version);
     }
 
     @Override
     public String toString() {
-      return "TableWatermark {" + tableId + " @@ " + (validWriteIdList != null ? validWriteIdList : "null") + "}";
+      return "TableWatermark {" + tableId + " @@ " + (validWriteIdList != null ? validWriteIdList : "v" + version) +
+          "}";
     }
   }
 

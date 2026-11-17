@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.events.TableVersionRegistry;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -118,6 +119,10 @@ public class Executor {
     } finally {
       cleanUp(noName, hookContext, executionError);
       driverContext.getQueryState().enableHMSCache();
+      // the session sees its own changes before their events arrive, even if it failed half way
+      if (driverContext.getPlan() != null) {
+        TableVersionRegistry.get().invalidate(driverContext.getPlan().getOutputs());
+      }
     }
   }
 
