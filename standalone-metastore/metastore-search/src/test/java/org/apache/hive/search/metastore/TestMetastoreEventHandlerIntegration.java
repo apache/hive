@@ -31,6 +31,7 @@ import org.apache.hive.search.config.IndexOptions;
 import org.apache.hive.search.search.InMemorySearchFixture;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,6 +44,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Category(MetastoreUnitTest.class)
@@ -213,6 +216,41 @@ public class TestMetastoreEventHandlerIntegration {
       assertEquals(2, handler.getNextMetastoreEvents(10));
       assertTrue(fixture.searchMatch("sales", 5).isEmpty());
     }
+  }
+
+  @Test
+  public void bootstrapWindowDoesNotRewindCursorWhenTailIsEmpty() throws Exception {
+    Configuration conf = new Configuration(false);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,
+        JSONMessageEncoder.class.getName());
+    NotificationEvent first = event(1L, "IGNORED_EVENT", "", "hive", "sales", "orders");
+    NotificationEvent second = event(2L, "IGNORED_EVENT", "", "hive", "sales", "orders");
+
+    IMetaStoreClient client = mock(IMetaStoreClient.class);
+    when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
+        .thenReturn(response(first, second))
+        .thenReturn(emptyResponse());
+
+    List<Long> applied = new ArrayList<>();
+    MetastoreEventHandler handler = new MetastoreEventHandler(conf,
+        configuration -> new MetastoreClientProvider.Client(client, false));
+    handler.setBootstrapEndId(2L);
+    handler.addListeners(new MetastoreEventListener() {
+      @Override
+      public void notifyIndexTask(IndexTask task) {
+        applied.add(task.lastEventId);
+      }
+    });
+
+    assertEquals(2, handler.getNextMetastoreEvents(10));
+    assertEquals(List.of(1L, 2L), applied);
+    assertEquals(0, handler.getNextMetastoreEvents(10));
+
+    ArgumentCaptor<NotificationEventRequest> requests =
+        ArgumentCaptor.forClass(NotificationEventRequest.class);
+    verify(client, times(2)).getNextNotification(requests.capture(), eq(true), eq(null));
+    assertEquals(0L, requests.getAllValues().get(0).getLastEvent());
+    assertEquals(2L, requests.getAllValues().get(1).getLastEvent());
   }
 
   private static NotificationEvent event(

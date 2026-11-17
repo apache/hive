@@ -151,7 +151,7 @@ public final class MetastoreIndexer implements Closeable {
 
   public void start() throws Exception {
     flushIndexListener.start(lastEventId);
-    handler.start(lastEventId);
+    handler.start(lastEventId, client.client().getCurrentNotificationEventId().getEventId());
   }
 
   /** Package-private for integration tests. */

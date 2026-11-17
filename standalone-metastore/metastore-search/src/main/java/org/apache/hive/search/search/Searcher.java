@@ -94,7 +94,8 @@ public final class Searcher implements AutoCloseable {
         switch (request.body()) {
           case MatchQuery match -> compileMatchQuery(match.resolve(mapping), filter);
           case SemanticQuery semantic -> compileSemanticQuery(semantic.resolve(mapping), size, filter);
-          case HybridQuery hybrid -> compileFusionQuery(hybrid.resolve(mapping), size, filter);
+          case HybridQuery hybrid ->
+              compileFusionQuery(hybrid.resolve(mapping), searchConfig.semanticK(size), filter);
         };
     TopDocs topDocs = indexSearcher.search(query, size);
     List<TableSearchHit> hits = new ArrayList<>();
