@@ -58,6 +58,7 @@ import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.BytesRef;
 
 public final class Searcher implements AutoCloseable {
   private final EmbedderRegistry embedderRegistry;
@@ -278,8 +279,9 @@ public final class Searcher implements AutoCloseable {
     TableName tableName = TableName.fromString(idField.stringValue(), "", "default");
     Table table = null;
     IndexableField blobField = stored.getField(MetastoreTableMapper.FIELD_TABLE_BLOB);
-    if (blobField != null && blobField.binaryValue() != null) {
-      table = TableBlobCodec.decode(blobField.binaryValue().bytes);
+    BytesRef blob = blobField == null ? null : blobField.binaryValue();
+    if (blob != null) {
+      table = TableBlobCodec.decode(BytesRef.deepCopyOf(blob).bytes);
     }
     return new TableSearchHit(tableName, table, scoreDoc.score);
   }

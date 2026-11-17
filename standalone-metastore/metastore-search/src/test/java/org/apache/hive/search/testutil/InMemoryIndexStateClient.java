@@ -38,12 +38,17 @@ public final class InMemoryIndexStateClient implements IndexStateClient {
   private byte[] stagingManifest;
 
   @Override
-  public Optional<IndexManifest> readManifest(Optional<IndexCommit> commit) throws IOException {
-    if (commit.isPresent()) {
-      throw new IndexIOException("in-memory index state does not support pinned commits");
-    }
+  public Optional<IndexManifest> readManifest() throws IOException {
     byte[] bytes = files.get(IndexManifest.MANIFEST_FILE_NAME);
     return bytes == null ? Optional.empty() : Optional.of(IndexManifest.fromJson(bytes));
+  }
+
+  @Override
+  public Optional<IndexManifest> readManifest(IndexCommit commit) throws IOException {
+    if (commit != null) {
+      throw new IndexIOException("in-memory index state does not support pinned commits");
+    }
+    return readManifest();
   }
 
   @Override

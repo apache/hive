@@ -47,13 +47,13 @@ public final class MetastoreIndexer implements Closeable {
   private final MetastoreEventHandler handler;
   private final IndexManager indexManager;
   private final FlushIndexListener flushIndexListener;
-  private final MetastoreClientProvider.MetastoreClientBundle clientBundle;
+  private final MetastoreClientProvider.Client client;
 
   public static MetastoreIndexer getMetastoreIndexer(Configuration configuration,
       IndexManager indexManager, Indexer indexer, MetastoreClientProvider clientProvider)
       throws Exception {
     if (clientProvider == null) {
-      clientProvider = conf -> new MetastoreClientProvider.MetastoreClientBundle(
+      clientProvider = conf -> new MetastoreClientProvider.Client(
           RetryingMetaStoreClient.getProxy(conf, true), true);
     }
     return new MetastoreIndexer(configuration, indexManager, indexer, clientProvider);
@@ -65,7 +65,7 @@ public final class MetastoreIndexer implements Closeable {
                            MetastoreClientProvider clientProvider) throws Exception {
     try {
       this.clientProvider = clientProvider;
-      this.clientBundle = clientProvider.getMetastoreClient(configuration);
+      this.client = clientProvider.getMetastoreClient(configuration);
       this.indexer = indexer;
       this.indexManager = indexManager;
       this.flushIndexListener = new FlushIndexListener(configuration);
@@ -114,7 +114,7 @@ public final class MetastoreIndexer implements Closeable {
     try {
       NotificationEventRequest request = new NotificationEventRequest(notificationId);
       request.setMaxEvents(10);
-      clientBundle.client().getNextNotification(request, false, null);
+      client.client().getNextNotification(request, false, null);
       return true;
     } catch (IllegalStateException ignored) {
       LOG.debug("Current index lags too behind, will rebuild");
@@ -141,7 +141,7 @@ public final class MetastoreIndexer implements Closeable {
 
   private long rebuildLeaderIndex() throws Exception {
     indexManager.clearRemoteIndex();
-    long notificationId = clientBundle.client().getCurrentNotificationEventId().getEventId();
+    long notificationId = client.client().getCurrentNotificationEventId().getEventId();
     new BootstrapIndexer(
         indexManager,
         indexer,
@@ -162,7 +162,7 @@ public final class MetastoreIndexer implements Closeable {
   /** Package-private for integration tests. */
   void flushCheckpoint() throws IOException {
     try {
-      indexer.flush(clientBundle.client().getCurrentNotificationEventId().getEventId(), true);
+      indexer.flush(client.client().getCurrentNotificationEventId().getEventId(), true);
     } catch (Exception e) {
       if (e instanceof IOException ioException) {
         throw ioException;
@@ -210,10 +210,12 @@ public final class MetastoreIndexer implements Closeable {
   @Override
   public void close() throws IOException {
     try {
-      IOUtils.closeQuietly(cluster, handler, flushIndexListener);
+      IOUtils.closeQuietly(cluster, e -> LOG.warn("Failed to close leader election", e));
+      IOUtils.closeQuietly(handler, e -> LOG.warn("Failed to close event handler", e));
+      IOUtils.closeQuietly(flushIndexListener, e -> LOG.warn("Failed to close index flusher", e));
     } finally {
-      if (clientBundle != null && clientBundle.releaseAfterUse()) {
-        IOUtils.closeQuietly(clientBundle);
+      if (client != null && client.releaseAfterUse()) {
+        IOUtils.closeQuietly(client);
       }
     }
   }

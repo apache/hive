@@ -25,15 +25,18 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 
 /**
- * An IMetaStoreClient provider,
- * which can provide the shared client or a new client that should be closed via try-with-resources
+ * An IMetaStoreClient provider.
  */
 public interface MetastoreClientProvider {
-  MetastoreClientBundle getMetastoreClient(Configuration conf) throws Exception;
+  Client getMetastoreClient(Configuration conf) throws Exception;
 
-  record MetastoreClientBundle(IMetaStoreClient client, boolean releaseAfterUse)
+  /**
+   * A leased {@link IMetaStoreClient}. Close it when finished; the client is closed only when
+   * {@code releaseAfterUse} is true.
+   */
+  record Client(IMetaStoreClient client, boolean releaseAfterUse)
       implements Closeable {
-    public MetastoreClientBundle {
+    public Client {
       Objects.requireNonNull(client);
     }
     @Override

@@ -46,7 +46,6 @@ import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.ByteBuffersDirectory;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -99,7 +98,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
     Indexer indexer = new Indexer(indexManager, modelRegistry);
     MetastoreIndexer metastoreIndexer =
         MetastoreIndexer.getMetastoreIndexer(conf, indexManager, indexer,
-            configuration -> new MetastoreClientProvider.MetastoreClientBundle(
+            configuration -> new MetastoreClientProvider.Client(
                 new HiveMetaStoreClient(server.conf()), true));
     return new RealMetastoreSearchSession(
         indexManager, indexer, modelRegistry, metastoreIndexer, new SearchOptions(conf));

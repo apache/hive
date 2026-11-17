@@ -76,7 +76,7 @@ public class TestBootstrapIndexer {
       MetastoreBootstrapMocks.stubBootstrapCatalog(fixture.client(), orders, customers, parts);
 
       new BootstrapIndexer(fixture.indexManager(), fixture.indexer(),
-          configuration -> new MetastoreClientProvider.MetastoreClientBundle(fixture.client(), false))
+          configuration -> new MetastoreClientProvider.Client(fixture.client(), false))
           .run(500L);
 
       assertEquals(500L, fixture.indexManager().readLocalManifest().orElseThrow().lastEventId());
@@ -96,7 +96,7 @@ public class TestBootstrapIndexer {
       MetastoreBootstrapMocks.stubBootstrapCatalog(fixture.client(), orders, customers);
 
       new BootstrapIndexer(fixture.indexManager(), fixture.indexer(),
-          configuration -> new MetastoreClientProvider.MetastoreClientBundle(fixture.client(), false))
+          configuration -> new MetastoreClientProvider.Client(fixture.client(), false))
           .run(10L);
 
       assertEquals(2, fixture.indexer().writer().getDocStats().numDocs);
@@ -115,7 +115,7 @@ public class TestBootstrapIndexer {
 
       IndexIOException error = assertThrows(IndexIOException.class,
           () -> new BootstrapIndexer(fixture.indexManager(), fixture.indexer(),
-              configuration -> new MetastoreClientProvider.MetastoreClientBundle(fixture.client(), false))
+              configuration -> new MetastoreClientProvider.Client(fixture.client(), false))
               .run(1L));
       assertTrue(error.getMessage().contains("Bootstrap indexing failed")
           || error.getMessage().contains("metastore unavailable"));
@@ -140,7 +140,7 @@ public class TestBootstrapIndexer {
 
       assertThrows(IOException.class,
           () -> new BootstrapIndexer(fixture.indexManager(), fixture.indexer(),
-              configuration -> new MetastoreClientProvider.MetastoreClientBundle(fixture.client(), false))
+              configuration -> new MetastoreClientProvider.Client(fixture.client(), false))
               .run(1L));
     }
   }
