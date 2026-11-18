@@ -45,11 +45,12 @@ public class SplitMergeRewriter extends MergeRewriter {
   @Override
   protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
       MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
-    // a target that needs all the deletes of a data file in one writer (DVs) gets a single delete branch
-    boolean hasDistributeKeys = !sqlGenerator.getDistributeKeys(Context.Operation.DELETE).isEmpty();
+    // The update and delete clauses never match the same row, so a single delete branch deletes the same rows, into
+    // one delete delta or set of delete files. A target that needs all the deletes of a data file in one writer (DVs)
+    // requires it.
     boolean hasDelete = mergeStatement.getWhenClauses().stream()
         .anyMatch(MergeStatement.DeleteClause.class::isInstance);
-    updateInDeleteBranch = !hasDistributeKeys || !hasDelete ? null : mergeStatement.getWhenClauses().stream()
+    updateInDeleteBranch = !hasDelete ? null : mergeStatement.getWhenClauses().stream()
         .filter(MergeStatement.UpdateClause.class::isInstance)
         .map(MergeStatement.UpdateClause.class::cast)
         .findFirst().orElse(null);
