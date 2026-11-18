@@ -125,7 +125,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     }
     // HMS or others
     Configuration configuration =
-        HMSHandlerContext.getConfiguration().orElse(MetastoreConf.newMetastoreConf());
+        HMSHandlerContext.getConfiguration().orElseGet(MetastoreConf::newMetastoreConf);
     return MetaStoreUtils.getDefaultCatalog(configuration);
   }
 
@@ -217,7 +217,11 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     this.type = type;
     this.catName = getCatalogOrDefault(catName);
     this.dbname = dbname;
-    this.objectName = objectName;
+    if (type == HivePrivilegeObjectType.DATABASE && objectName == null) {
+      this.objectName = dbname;
+    } else {
+      this.objectName = objectName;
+    }
     this.partKeys = partKeys;
     this.columns = columns;
     // Older constructors defaulted a missing action type to OTHER. Authorizers such as

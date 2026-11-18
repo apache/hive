@@ -31,8 +31,8 @@ POSTHOOK: Output: test_auth_obj_db@test_privs2
 PREHOOK: query: SHOW DATABASES LIKE 'test_auth_obj_db'
 PREHOOK: type: SHOWDATABASES
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: default type: DATABASE actionType: OTHER dbName: default}
-HIVE PRIVILEGE OBJECT { objectName: test_auth_obj_db type: DATABASE actionType: OTHER dbName: test_auth_obj_db}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db}
 POSTHOOK: query: SHOW DATABASES LIKE 'test_auth_obj_db'
 POSTHOOK: type: SHOWDATABASES
 test_auth_obj_db

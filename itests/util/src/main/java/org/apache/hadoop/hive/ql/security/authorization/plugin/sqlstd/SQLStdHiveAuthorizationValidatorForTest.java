@@ -77,7 +77,9 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
 
   private String privilegeObjectToStringForTest(HivePrivilegeObject privObj) {
     StringBuilder sb = new StringBuilder("HIVE PRIVILEGE OBJECT {");
-    addIfNotNull(sb, "objectName:", privObj.getObjectName());
+    if (privObj.getType() != HivePrivilegeObject.HivePrivilegeObjectType.DATABASE) {
+      addIfNotNull(sb, "objectName:", privObj.getObjectName());
+    }
     addIfNotNull(sb, "type:", privObj.getType());
     addIfNotNull(sb, "actionType:", privObj.getActionType());
     addIfNotNull(sb, "dbName:", privObj.getDbname());

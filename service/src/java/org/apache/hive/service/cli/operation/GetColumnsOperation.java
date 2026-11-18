@@ -233,11 +233,10 @@ public class GetColumnsOperation extends MetadataOperation {
 
   private List<HivePrivilegeObject> getPrivObjs(Map<String, List<String>> db2Tabs) {
     List<HivePrivilegeObject> privObjs = new ArrayList<>();
-    String catName = catalogName != null ? catalogName : SessionState.get().getCurrentCatalog();
     for (Entry<String, List<String>> dbTabs : db2Tabs.entrySet()) {
       for (String tabName : dbTabs.getValue()) {
         privObjs.add(HivePrivilegeObject.builder(HivePrivilegeObjectType.TABLE_OR_VIEW)
-            .catName(catName)
+            .catName(catalogName)
             .dbName(dbTabs.getKey())
             .objectName(tabName)
             .build());
