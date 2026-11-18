@@ -39,6 +39,7 @@ import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1543,7 +1544,17 @@ public class BeeLine implements Closeable {
   protected Terminal buildTerminal(InputStream inputStream) throws IOException {
     Terminal terminal;
     if (inputStream != null) { // typically when there is a file script to read from
-      terminal = TerminalBuilder.builder().streams(inputStream, getErrorStream()).build();
+      // Do not use TerminalBuilder.builder().streams(...).build() with the default provider order: native
+      // providers (ffm/jni/jna) implement newTerminal() by opening a PTY and return PosixPtyTerminal, which
+      // corrupts or drops lines from large -f scripts. Force the exec provider so JLine uses a non-PTY
+      // stream terminal with TYPE_DUMB (ExecTerminalProvider.newTerminal); UTF-8 matches getCommands(File).
+      terminal = TerminalBuilder.builder()
+          .name("beeline")
+          .provider(TerminalBuilder.PROP_PROVIDER_EXEC)
+          .type(Terminal.TYPE_DUMB)
+          .streams(inputStream, getErrorStream())
+          .encoding(StandardCharsets.UTF_8)
+          .build();
     } else { // no input stream, normal operation: proper behavior needs a system terminal (which needs system streams)
       terminal = TerminalBuilder.builder().system(true).dumb(false).streams(System.in, System.err).build();
     }
