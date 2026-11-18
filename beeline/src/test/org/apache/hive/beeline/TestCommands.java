@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -385,10 +386,6 @@ public class TestCommands {
 
   @Test
   public void testSourceFileDelimiterInQuery() throws Exception {
-    BeeLine beeline = new BeeLine();
-    Commands commands = new Commands(beeline);
-    List<String> batch = new ArrayList<>();
-    beeline.setBatch(batch);
     List<String> statements = Arrays.asList(
         "select 'foo;bar' as s",
         "select current_database() as db",
@@ -396,15 +393,34 @@ public class TestCommands {
         "select 2 as also_ok",
         "select 1 as a",
         "select /* part; two */ 2 as b");
+    assertEquals(statements, sourceScript(toScript(statements)));
+
+    assertEquals(Collections.emptyList(), sourceScript(""));
+    assertEquals(Collections.emptyList(),
+        sourceScript("-- only a comment; with semicolon\n# shell; comment\n"));
+
+    assertEquals(Arrays.asList("select 1"),
+        sourceScript("select 1; -- note; more\nselect 2;\n"));
+  }
+
+  private static String toScript(List<String> statements) {
+    StringBuilder scriptText = new StringBuilder();
+    for (String statement : statements) {
+      scriptText.append(statement).append(";\n");
+    }
+    return scriptText.toString();
+  }
+
+  private static List<String> sourceScript(String scriptText) throws Exception {
+    BeeLine beeline = new BeeLine();
+    Commands commands = new Commands(beeline);
+    List<String> batch = new ArrayList<>();
+    beeline.setBatch(batch);
     File script = File.createTempFile("hive-30257", ".sql");
     try {
-      StringBuilder scriptText = new StringBuilder();
-      for (String statement : statements) {
-        scriptText.append(statement).append(";\n");
-      }
-      Files.write(script.toPath(), scriptText.toString().getBytes(StandardCharsets.UTF_8));
+      Files.write(script.toPath(), scriptText.getBytes(StandardCharsets.UTF_8));
       assertTrue(commands.sql("source " + script.getAbsolutePath() + ";", false));
-      assertEquals(statements, batch);
+      return batch;
     } finally {
       beeline.setBatch(null);
       beeline.close();
