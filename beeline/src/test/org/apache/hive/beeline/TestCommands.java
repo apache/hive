@@ -21,9 +21,15 @@ package org.apache.hive.beeline;
 
 import static org.apache.hive.common.util.HiveStringUtils.removeComments;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -374,6 +380,37 @@ public class TestCommands {
       );
     } finally {
       beeline.close();
+    }
+  }
+
+  @Test
+  public void testSourceFileDelimiterInQuery() throws Exception {
+    BeeLine beeline = new BeeLine();
+    Commands commands = new Commands(beeline);
+    List<String> batch = new ArrayList<>();
+    beeline.setBatch(batch);
+    List<String> statements = Arrays.asList(
+        "select 'foo;bar' as s",
+        "select current_database() as db",
+        "select 1 as ok",
+        "select 2 as also_ok",
+        "select 1 as a",
+        "select /* part; two */ 2 as b");
+    File script = File.createTempFile("hive-30257", ".sql");
+    try {
+      StringBuilder scriptText = new StringBuilder();
+      for (String statement : statements) {
+        scriptText.append(statement).append(";\n");
+      }
+      Files.write(script.toPath(), scriptText.toString().getBytes(StandardCharsets.UTF_8));
+      assertTrue(commands.sql("source " + script.getAbsolutePath() + ";", false));
+      assertEquals(statements, batch);
+    } finally {
+      beeline.setBatch(null);
+      beeline.close();
+      if (!script.delete()) {
+        script.deleteOnExit();
+      }
     }
   }
 }
