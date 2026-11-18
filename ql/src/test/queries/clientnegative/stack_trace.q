@@ -1,4 +1,7 @@
 --! qt:dataset:src
+-- Recent JDKs report a failed exec as "Exec failed, error: 2 (No such file or directory) ",
+-- older ones as "error=2, No such file or directory"; the expected output uses the older form.
+--! qt:replace:/Exec failed, error: (\d+) \(([^)]*)\) ?/error=$1, $2/
 
 set hive.vectorized.execution.enabled=false;
 set hive.exec.mode.local.auto=false;
