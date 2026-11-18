@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -184,54 +185,48 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   /**
-   * Maps a relative pathname to an absolute pathname using the PATH environment.
+   * Maps a relative pathname to an absolute pathname using the specified pathnames. The primary
+   * intent is to resolve pathnames using the PATH environment variable.
    */
   public static class PathFinder {
     String pathenv; // a string of pathnames
-    String pathSep; // the path separator
-    String fileSep; // the file separator in a directory
 
     /**
-     * Construct a PathFinder object using the path from the specified system
-     * environment variable.
+     * Construct a PathFinder object using the specified pathnames.
      */
     public PathFinder(String pathNames) {
-      pathenv = pathNames;
-      pathSep = System.getProperty("path.separator");
-      fileSep = System.getProperty("file.separator");
+      pathenv = pathNames == null ? "" : pathNames;
     }
 
     /**
-     * Appends the specified component to the path list.
+     * Prepends the specified component to the path list.
      */
     public void prependPathComponent(String str) {
-      pathenv = str + pathSep + pathenv;
+      if (pathenv.isEmpty()) {
+        pathenv = str;
+      } else {
+        pathenv = str + File.pathSeparator + pathenv;
+      }
     }
 
     /**
      * Returns the full path name of this file if it is listed in the path.
      */
     public File getAbsolutePath(String filename) {
-      if (pathenv == null || pathSep == null || fileSep == null) {
-        return null;
-      }
+      return entries().map(dir -> new File(dir, filename))
+          .filter(File::isFile)
+          .filter(File::canRead)
+          .findFirst()
+          .orElse(null);
+    }
 
-      int val = -1;
-      String classvalue = pathenv + pathSep;
-
-      while (((val = classvalue.indexOf(pathSep)) >= 0)
-          && classvalue.length() > 0) {
-        //
-        // Extract each entry from the pathenv
-        //
-        String entry = classvalue.substring(0, val).trim();
-        File f = new File(entry + fileSep + filename);
-        if (f.isFile() && f.canRead()) {
-          return f;
-        }
-        classvalue = classvalue.substring(val + 1).trim();
-      }
-      return null;
+    /**
+     * Returns all non-empty path entries.
+     */
+    Stream<String> entries() {
+      return Arrays.stream(pathenv.split(File.pathSeparator))
+          .map(String::trim)
+          .filter(p -> !p.isEmpty());
     }
   }
 
