@@ -118,7 +118,8 @@ public class NotificationEventPoll {
       return;
     }
 
-    evFetcher = fetcher != null ? fetcher : NotificationEventPoll::newFetcher;
+    HiveConf hiveConf = conf instanceof HiveConf ? (HiveConf) conf : new HiveConf(conf, NotificationEventPoll.class);
+    evFetcher = fetcher != null ? fetcher : () -> newFetcher(hiveConf);
     lastCheckedEventId = evFetcher.get().getCurrentNotificationEventId();
     LOG.info("Initializing lastCheckedEventId to {}", lastCheckedEventId);
     if (metadataCacheEnabled) {
@@ -239,9 +240,10 @@ public class NotificationEventPoll {
     return eventsProcessed;
   }
 
-  private static EventUtils.NotificationFetcher newFetcher() {
+  private static EventUtils.NotificationFetcher newFetcher(HiveConf conf) {
     try {
-      return new EventUtils.MSClientNotificationFetcher(Hive.get());
+      // the configuration of the poll, not a default one: the metastore may be set in it only
+      return new EventUtils.MSClientNotificationFetcher(Hive.get(conf));
     } catch (Exception e) {
       throw new IllegalStateException("Could not get the metastore client", e);
     }
