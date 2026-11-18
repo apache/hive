@@ -153,6 +153,9 @@ public class HiveAlterHandler implements AlterHandler {
     boolean success = false;
     boolean dataWasMoved = false;
     boolean isPartitionedTable = false;
+    // Location of the new table as passed in by the caller, kept so it can be put back on failure.
+    String originalNewLocation = null;
+    boolean locationRewritten = false;
 
     Database olddb = null;
     Table oldt = null;
@@ -303,12 +306,16 @@ public class HiveAlterHandler implements AlterHandler {
               } else {
                 Path databasePath = constructRenamedPath(wh.getDatabaseExternalPath(db), srcPath);
                 destPath = new Path(databasePath, newTblName);
+                originalNewLocation = newt.getSd().getLocation();
                 newt.getSd().setLocation(destPath.toString());
+                locationRewritten = true;
               }
             } else {
               Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
               destPath = new Path(databasePath, newTblName);
+              originalNewLocation = newt.getSd().getLocation();
               newt.getSd().setLocation(destPath.toString());
+              locationRewritten = true;
             }
 
             destFs = wh.getFs(destPath);
@@ -521,6 +528,13 @@ public class HiveAlterHandler implements AlterHandler {
         }
       } else {
         LOG.error("Failed to alter table " + TableName.getQualified(catalogName, databaseName, tableName));
+        // RetryingHMSHandler re-invokes with the same newt. Put the caller's location back,
+        // otherwise the retry sees the renamed path, skips the rename flow above, and commits
+        // the new name/location without moving the data or updating the partition locations.
+        // Done before the rollback, which may itself throw.
+        if (locationRewritten) {
+          newt.getSd().setLocation(originalNewLocation);
+        }
         msdb.rollbackTransaction();
         if (!replDataLocationChanged && dataWasMoved) {
           try {
