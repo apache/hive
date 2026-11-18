@@ -187,7 +187,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.metadata.events.TableVersionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.QueryPlanPostProcessor;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
@@ -15638,7 +15637,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   public void startAnalysis() {
     if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
       queryState.createHMSCache();
-      TableVersionRegistry.startQuery(conf, queryState.getHMSCache());
     }
   }
 

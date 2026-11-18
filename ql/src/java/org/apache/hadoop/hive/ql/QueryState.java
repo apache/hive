@@ -29,6 +29,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.metadata.events.TableVersionRegistry;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -145,6 +146,8 @@ public class QueryState {
     LOG.info("Query-level HMS cache created for {}", getQueryId());
     hmsCache = new HashMap<>();
     hmsCacheEnabled = true;
+    // whether the query may use the HS2 metadata cache by events; for every analyzer creating the cache
+    TableVersionRegistry.startQuery(queryConf, hmsCache);
   }
 
   public String getCommandType() {

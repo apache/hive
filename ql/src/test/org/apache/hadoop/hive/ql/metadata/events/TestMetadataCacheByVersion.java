@@ -98,8 +98,8 @@ public class TestMetadataCacheByVersion {
     SessionState ss = new SessionState(conf);
     SessionState.setCurrentSessionState(ss);
     QueryState queryState = new QueryState.Builder().withHiveConf(conf).withGenerateNewQueryId(false).build();
+    // which also decides, as for every query, whether it may use the cache by versions
     queryState.createHMSCache();
-    TableVersionRegistry.startQuery(conf, queryState.getHMSCache());
     ss.addQueryState(queryId, queryState);
     Hive.get(conf);
     return HiveMetaStoreClientWithLocalCache.newClient(conf, delegate);
