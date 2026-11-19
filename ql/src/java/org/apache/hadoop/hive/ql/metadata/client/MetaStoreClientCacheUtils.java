@@ -68,6 +68,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class MetaStoreClientCacheUtils {
@@ -119,6 +120,10 @@ public class MetaStoreClientCacheUtils {
     TABLE_COLUMN_STATS(ColumnStatisticsObj.class, String.class, long.class, TableWatermark.class),
     // AggrStats <-- getAggrStatsForInternal(PartitionsStatsRequest req), (TableWatermark tw ?)
     AGGR_COL_STATS(AggrStats.class, PartitionsStatsRequest.class, TableWatermark.class),
+    // AggrStats <-- getAggrStatsForInternal(PartitionsStatsRequest req), TableWatermark tw
+    // Stored per set of partitions (the request without colNames), with the aggregate of each column
+    // fetched so far, so that other columns over the same partitions fetch only the missing ones
+    AGGR_COL_STATS_BY_COLUMN(AggrColStatsByColumn.class, PartitionsStatsRequest.class, TableWatermark.class),
     // PartitionsWrapper <-- getPartitionsByExprInternal(PartitionsByExprRequest req), (TableWatermark tw ?)
     PARTITIONS_BY_EXPR(PartitionsWrapper.class, PartitionsByExprRequest.class, TableWatermark.class),
     // PartitionSpecsWrapper <-- getPartitionsSpecByExprInternal(PartitionsByExprRequest req), (TableWatermark tw ?)
@@ -223,6 +228,68 @@ public class MetaStoreClientCacheUtils {
     } catch (HiveException e) {
       LOG.error("Error getting query id. Query level and Global HMS caching will be disabled", e);
       return null;
+    }
+  }
+
+  /**
+   * The aggregate column statistics of one table over one set of partitions, by column. A column aggregate
+   * depends on that column's partition statistics only, so aggregates fetched by different requests combine.
+   * partsFound of a request is compared to the number of partitions only: it equals that number exactly when
+   * it does for every column, so the combined value is the minimum over the requested columns.
+   */
+  public static class AggrColStatsByColumn {
+    // column name -> aggregate; no entry for a column without statistics
+    public final Map<String, ColumnStatisticsObj> colStats;
+    // column name -> partsFound of the request that fetched the column
+    public final Map<String, Long> partsFound;
+
+    public AggrColStatsByColumn(Map<String, ColumnStatisticsObj> colStats, Map<String, Long> partsFound) {
+      this.colStats = colStats;
+      this.partsFound = partsFound;
+    }
+
+    public static AggrColStatsByColumn of(List<String> colNames, AggrStats aggrStats) {
+      Map<String, ColumnStatisticsObj> colStats = new HashMap<>();
+      for (ColumnStatisticsObj colStat : aggrStats.getColStats()) {
+        colStats.put(colStat.getColName(), colStat);
+      }
+      Map<String, Long> partsFound = new HashMap<>();
+      for (String colName : colNames) {
+        partsFound.put(colName, aggrStats.getPartsFound());
+      }
+      return new AggrColStatsByColumn(colStats, partsFound);
+    }
+
+    public List<String> missing(List<String> colNames) {
+      List<String> missing = new ArrayList<>();
+      for (String colName : colNames) {
+        if (!partsFound.containsKey(colName) && !missing.contains(colName)) {
+          missing.add(colName);
+        }
+      }
+      return missing;
+    }
+
+    public AggrColStatsByColumn merge(AggrColStatsByColumn other) {
+      Map<String, ColumnStatisticsObj> mergedColStats = new HashMap<>(colStats);
+      mergedColStats.putAll(other.colStats);
+      Map<String, Long> mergedPartsFound = new HashMap<>(partsFound);
+      mergedPartsFound.putAll(other.partsFound);
+      return new AggrColStatsByColumn(mergedColStats, mergedPartsFound);
+    }
+
+    /** The AggrStats of colNames, which must all be fetched already, in the order of colNames. */
+    public AggrStats aggrStats(List<String> colNames) {
+      List<ColumnStatisticsObj> result = new ArrayList<>();
+      long minPartsFound = colNames.isEmpty() ? 0 : Long.MAX_VALUE;
+      for (String colName : colNames) {
+        ColumnStatisticsObj colStat = colStats.get(colName);
+        if (colStat != null) {
+          result.add(colStat);
+        }
+        minPartsFound = Math.min(minPartsFound, partsFound.get(colName));
+      }
+      return new AggrStats(result, minPartsFound);
     }
   }
 

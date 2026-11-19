@@ -38,7 +38,10 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -150,5 +153,39 @@ public class TestMetadataCacheByVersion {
     verify(delegate, atLeast(4)).getTable(any(GetTableRequest.class));
     verify(delegate, times(2)).listPartitionNames(anyString(), anyString(), anyString(), anyInt());
     verify(delegate, times(2)).getAllTableConstraints(any());
+  }
+
+  private static ColumnStatisticsObj colStats(String colName) {
+    return new ColumnStatisticsObj(colName, "bigint", new ColumnStatisticsData());
+  }
+
+  private AggrStats aggrColStats(List<String> colNames) throws Exception {
+    IMetaStoreClient client = startQuery(true);
+    client.getTable(getTableRequest());
+    return client.getAggrColStatsFor("hive", "db", "t", colNames, List.of("p=1", "p=2"), Constants.HIVE_ENGINE, null);
+  }
+
+  @Test
+  public void testAggrColStatsCachedByColumn() throws Exception {
+    List<String> partNames = List.of("p=1", "p=2");
+    when(delegate.getAggrColStatsFor("hive", "db", "t", List.of("a", "b"), partNames, Constants.HIVE_ENGINE, null))
+        .thenReturn(new AggrStats(new ArrayList<>(List.of(colStats("a"), colStats("b"))), 2));
+    // c has statistics in one partition only, and d in none
+    when(delegate.getAggrColStatsFor("hive", "db", "t", List.of("c", "d"), partNames, Constants.HIVE_ENGINE, null))
+        .thenReturn(new AggrStats(new ArrayList<>(List.of(colStats("c"))), 1));
+
+    assertEquals(2, aggrColStats(List.of("a", "b")).getPartsFound());
+    AggrStats r = aggrColStats(List.of("b", "c", "a", "d"));
+    assertEquals(List.of("b", "c", "a"), r.getColStats().stream().map(ColumnStatisticsObj::getColName).toList());
+    assertEquals("not all partitions have statistics of c", 1, r.getPartsFound());
+    r = aggrColStats(List.of("d", "a"));
+    assertEquals(List.of("a"), r.getColStats().stream().map(ColumnStatisticsObj::getColName).toList());
+    assertEquals(1, r.getPartsFound());
+    assertEquals(2, aggrColStats(List.of("b")).getPartsFound());
+
+    // each column fetched once, only the missing ones
+    verify(delegate, times(2)).getAggrColStatsFor(anyString(), anyString(), anyString(), any(), any(), any(), any());
+    verify(delegate, times(1)).getAggrColStatsFor("hive", "db", "t", List.of("c", "d"), partNames,
+        Constants.HIVE_ENGINE, null);
   }
 }

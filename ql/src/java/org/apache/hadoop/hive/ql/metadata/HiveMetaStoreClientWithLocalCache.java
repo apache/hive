@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
 import org.apache.hadoop.hive.metastore.client.utils.HiveMetaStoreClientUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils;
+import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.AggrColStatsByColumn;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.CacheKey;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.CacheWrapper;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.KeyType;
@@ -70,6 +71,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -449,28 +451,34 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine, String writeIdList) throws TException {
     if (isCacheEnabledAndInitialized()) {
-      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+      // keyed by the partitions only: the columns are cached individually inside the entry
+      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, Collections.emptyList(), partNames);
       req.setEngine(engine);
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
       TableWatermark watermark = watermark(writeIdList, catName, dbName, tblName);
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
-        AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
-        if (r == null) {
-          r = delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
-          mscLocalCache.put(cacheKey, r);
-        } else {
+        CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS_BY_COLUMN, watermark, req);
+        AggrColStatsByColumn cached = (AggrColStatsByColumn) mscLocalCache.getIfPresent(cacheKey);
+        List<String> missing = cached == null ? colNames : cached.missing(colNames);
+        if (missing.isEmpty()) {
           LOG.debug(
               "HS2 level HMS cache: method=getAggrStatsForInternal, dbName={}, tblName={}, partNames={}",
               dbName, tblName, partNames);
+        } else {
+          AggrColStatsByColumn fetched = AggrColStatsByColumn.of(missing,
+              delegate.getAggrColStatsFor(catName, dbName, tblName, missing, partNames, engine, writeIdList));
+          // merge rather than put: a concurrent query may have added other columns meanwhile
+          mscLocalCache.asMap().merge(cacheKey, fetched,
+              (old, added) -> ((AggrColStatsByColumn) old).merge((AggrColStatsByColumn) added));
+          cached = cached == null ? fetched : cached.merge(fetched);
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         }
 
-        return r;
+        return cached.aggrStats(colNames);
       }
     }
 
