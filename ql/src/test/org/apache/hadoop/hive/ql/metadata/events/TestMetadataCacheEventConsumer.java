@@ -146,8 +146,7 @@ public class TestMetadataCacheEventConsumer {
     FakeFetcher fetcher = new FakeFetcher();
     HiveConf conf = new HiveConf();
     conf.setTimeVar(HiveConf.ConfVars.HIVE_NOTFICATION_EVENT_POLL_INTERVAL, 1, TimeUnit.HOURS);
-    conf.setVar(HiveConf.ConfVars.HIVE_NOTFICATION_EVENT_CONSUMERS, "");
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METADATA_CACHE_EVENTS_ENABLED, true);
+    conf.setVar(HiveConf.ConfVars.HIVE_NOTFICATION_EVENT_CONSUMERS, MetadataCacheEventConsumer.class.getName());
     NotificationEventPoll poll = new NotificationEventPoll(conf, fetcher);
     try {
       assertTrue(registry.isEnabled());

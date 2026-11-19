@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -68,6 +67,9 @@ public final class TableVersionRegistry {
 
   /** Table property to never cache a table by its version. */
   public static final String TABLE_CACHE_DISABLED_PROPERTY = "hive.metadata.cache.disabled";
+
+  /** How long a query waits in strict mode for the events to be applied, before it compiles without the cache. */
+  static final long SYNC_TIMEOUT_MS = 5000;
 
   private final AtomicLong counter = new AtomicLong();
   private final ConcurrentMap<String, TableVersion> tables = new ConcurrentHashMap<>();
@@ -117,18 +119,15 @@ public final class TableVersionRegistry {
    * that fails, or takes longer than the timeout, the query compiles without the cache by versions.
    */
   public static void startQuery(Configuration conf, Map<Object, Object> queryCache) {
-    if (queryCache == null || !INSTANCE.enabled ||
-        !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_TABLES_ENABLED)) {
+    if (queryCache == null || !INSTANCE.enabled) {
       return;
     }
-    String mode = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_SYNC_MODE);
+    String mode = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MODE);
     if ("off".equalsIgnoreCase(mode)) {
       return;
     }
     if ("strict".equalsIgnoreCase(mode)) {
-      long timeoutMs = HiveConf.getTimeVar(conf,
-          HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_SYNC_TIMEOUT, TimeUnit.MILLISECONDS);
-      if (!NotificationEventPoll.syncToLatest(timeoutMs)) {
+      if (!NotificationEventPoll.syncToLatest(SYNC_TIMEOUT_MS)) {
         LOG.warn("Compiling without the metadata cache by events: they could not be applied up to the latest one");
         return;
       }
@@ -226,15 +225,12 @@ public final class TableVersionRegistry {
    */
   public static final class QuerySettings {
     final long maxStalenessMs;
-    final Pattern excludedTables;
     final boolean excludeExternalTables;
 
     public QuerySettings(Configuration conf) {
       maxStalenessMs = HiveConf.getTimeVar(conf,
           HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MAX_STALENESS, TimeUnit.MILLISECONDS);
-      String excluded = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_EXCLUDE_TABLES);
-      excludedTables = StringUtils.isBlank(excluded) ? null :
-          Pattern.compile(excluded.trim(), Pattern.CASE_INSENSITIVE);
+      // external tables are not trusted to change only through the metastore
       excludeExternalTables =
           HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS);
     }
@@ -254,11 +250,7 @@ public final class TableVersionRegistry {
       if (params != null && Boolean.parseBoolean(params.get(TABLE_CACHE_DISABLED_PROPERTY))) {
         return false;
       }
-      if (excludeExternalTables && TableType.EXTERNAL_TABLE.name().equals(table.getTableType())) {
-        return false;
-      }
-      return excludedTables == null ||
-          !excludedTables.matcher(table.getDbName() + "." + table.getTableName()).matches();
+      return !excludeExternalTables || !TableType.EXTERNAL_TABLE.name().equals(table.getTableType());
     }
   }
 }

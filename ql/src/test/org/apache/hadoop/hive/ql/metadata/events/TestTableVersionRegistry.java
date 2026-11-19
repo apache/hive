@@ -103,15 +103,11 @@ public class TestTableVersionRegistry {
     TableVersionRegistry.startQuery(conf, queryCache);
     assertNull("not opted in", queryCache.get(TableVersionRegistry.QUERY_SETTINGS_KEY));
 
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_TABLES_ENABLED, true);
+    conf.setVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MODE, "strict");
     TableVersionRegistry.startQuery(conf, queryCache);
     assertNull("strict mode with no poller running", queryCache.get(TableVersionRegistry.QUERY_SETTINGS_KEY));
 
-    conf.setVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_SYNC_MODE, "off");
-    TableVersionRegistry.startQuery(conf, queryCache);
-    assertNull(queryCache.get(TableVersionRegistry.QUERY_SETTINGS_KEY));
-
-    conf.setVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_SYNC_MODE, "bounded");
+    conf.setVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MODE, "bounded");
     TableVersionRegistry.startQuery(conf, queryCache);
     assertTrue(queryCache.get(TableVersionRegistry.QUERY_SETTINGS_KEY) instanceof TableVersionRegistry.QuerySettings);
   }
@@ -119,11 +115,9 @@ public class TestTableVersionRegistry {
   @Test
   public void testCanCache() {
     HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_EXCLUDE_TABLES, "db\\.excluded_.*");
     TableVersionRegistry.QuerySettings settings = new TableVersionRegistry.QuerySettings(conf);
 
     assertTrue(settings.canCache(table("t", TableType.EXTERNAL_TABLE)));
-    assertFalse(settings.canCache(table("EXCLUDED_t", TableType.MANAGED_TABLE)));
     Table disabled = table("t", TableType.MANAGED_TABLE);
     disabled.getParameters().put(TableVersionRegistry.TABLE_CACHE_DISABLED_PROPERTY, "true");
     assertFalse(settings.canCache(disabled));

@@ -93,8 +93,7 @@ public class TestMetadataCacheByVersion {
     String queryId = "test_metadata_cache_by_version_" + queryCount++;
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_TABLES_ENABLED, optIn);
-    conf.setVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_SYNC_MODE, "bounded");
+    conf.setVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MODE, optIn ? "bounded" : "off");
     SessionState ss = new SessionState(conf);
     SessionState.setCurrentSessionState(ss);
     QueryState queryState = new QueryState.Builder().withHiveConf(conf).withGenerateNewQueryId(false).build();

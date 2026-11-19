@@ -107,12 +107,8 @@ public class NotificationEventPoll {
         eventConsumers.add(consumer);
       }
     }
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METADATA_CACHE_EVENTS_ENABLED)) {
-      if (eventConsumers.stream().noneMatch(MetadataCacheEventConsumer.class::isInstance)) {
-        eventConsumers.add(ReflectionUtils.newInstance(MetadataCacheEventConsumer.class, conf));
-      }
-      metadataCacheEnabled = true;
-    }
+    // the HS2 metadata cache by events is on when its consumer is listed
+    metadataCacheEnabled = eventConsumers.stream().anyMatch(MetadataCacheEventConsumer.class::isInstance);
     if (eventConsumers.isEmpty()) {
       LOG.debug("No event consumers configured, notification event polling disabled");
       return;
