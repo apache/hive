@@ -741,8 +741,8 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
   /**
    * Cost criteria, from the statistics of the join and of the input of the join input.
    */
-  private boolean isWorthPushing(JoinOperator join, Operator<?> sideRs, List<ExprNodeDesc> pushedKeys) {
-    Statistics inputStats = sideRs.getStatistics();
+  private boolean isWorthPushing(JoinOperator join, Operator<?> joinInput, List<ExprNodeDesc> pushedKeys) {
+    Statistics inputStats = joinInput.getStatistics();
     Statistics joinStats = join.getStatistics();
     if (inputStats == null || joinStats == null) {
       return false;
