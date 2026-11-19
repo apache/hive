@@ -29,8 +29,8 @@ POSTHOOK: Output: test_insert_col_db@test_basic_table
 PREHOOK: query: SHOW DATABASES LIKE 'test_insert_col_db'
 PREHOOK: type: SHOWDATABASES
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: default type: DATABASE actionType: OTHER dbName: default}
-HIVE PRIVILEGE OBJECT { objectName: test_insert_col_db type: DATABASE actionType: OTHER dbName: test_insert_col_db}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_insert_col_db}
 POSTHOOK: query: SHOW DATABASES LIKE 'test_insert_col_db'
 POSTHOOK: type: SHOWDATABASES
 test_insert_col_db
@@ -186,8 +186,8 @@ POSTHOOK: Output: test_insert_col_db@test_partitioned_table@year=2024
 PREHOOK: query: SHOW DATABASES LIKE 'test_insert_col_db'
 PREHOOK: type: SHOWDATABASES
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: default type: DATABASE actionType: OTHER dbName: default}
-HIVE PRIVILEGE OBJECT { objectName: test_insert_col_db type: DATABASE actionType: OTHER dbName: test_insert_col_db}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_insert_col_db}
 POSTHOOK: query: SHOW DATABASES LIKE 'test_insert_col_db'
 POSTHOOK: type: SHOWDATABASES
 test_insert_col_db
@@ -344,8 +344,8 @@ POSTHOOK: Output: test_insert_col_db@test_acid_table
 PREHOOK: query: SHOW DATABASES LIKE 'test_insert_col_db'
 PREHOOK: type: SHOWDATABASES
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: default type: DATABASE actionType: OTHER dbName: default}
-HIVE PRIVILEGE OBJECT { objectName: test_insert_col_db type: DATABASE actionType: OTHER dbName: test_insert_col_db}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_insert_col_db}
 POSTHOOK: query: SHOW DATABASES LIKE 'test_insert_col_db'
 POSTHOOK: type: SHOWDATABASES
 test_insert_col_db
@@ -494,8 +494,8 @@ POSTHOOK: Output: test_insert_col_db@test_restricted_column_table
 PREHOOK: query: SHOW DATABASES LIKE 'test_insert_col_db'
 PREHOOK: type: SHOWDATABASES
 filterListCmdObjects
-HIVE PRIVILEGE OBJECT { objectName: default type: DATABASE actionType: OTHER dbName: default}
-HIVE PRIVILEGE OBJECT { objectName: test_insert_col_db type: DATABASE actionType: OTHER dbName: test_insert_col_db}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: default}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_insert_col_db}
 POSTHOOK: query: SHOW DATABASES LIKE 'test_insert_col_db'
 POSTHOOK: type: SHOWDATABASES
 test_insert_col_db
