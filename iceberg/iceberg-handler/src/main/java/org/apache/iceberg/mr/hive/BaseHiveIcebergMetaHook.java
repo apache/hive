@@ -179,6 +179,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
     Schema schema = schema(tableProperties, hmsTable, identifierFields, request.getDefaultConstraints());
     schema.columns().forEach(column -> validateUnknownType(column.name(), column.type()));
+    validateHasWritableColumn(schema);
     PartitionSpec spec = spec(conf, schema, hmsTable);
     IcebergTableUtil.validateNoUnknownTypePartitioning(spec);
 
@@ -457,6 +458,19 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   /**
+   * UNKNOWN values are omitted from data files. A table whose columns are all UNKNOWN has an empty file schema and
+   * cannot be written reliably (for example, Parquet rejects an empty message type).
+   */
+  static void validateHasWritableColumn(Schema schema) {
+    Preconditions.checkArgument(hasWritableColumn(schema),
+        "Table schema is not supported: a table must have at least one column that is not of type unknown");
+  }
+
+  static boolean hasWritableColumn(Schema schema) {
+    return schema.columns().stream().anyMatch(column -> !isUnknown(column.type()));
+  }
+
+  /**
    * UNKNOWN values are omitted from data files, so Iceberg can only write them as top-level columns or as struct
    * fields that have at least one sibling of another type. Lists, maps and all-UNKNOWN structs would have no
    * physical representation left.
@@ -467,21 +481,21 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
         List<Types.NestedField> fields = type.asStructType().fields();
         Preconditions.checkArgument(fields.stream().anyMatch(field -> !isUnknown(field.type())),
             "Column '%s' of type %s is not supported: a struct must have at least one field that is not of type " +
-                "unknown", columnPath, type);
+                "unknown", columnPath, HiveSchemaUtil.convertToTypeString(type));
         fields.forEach(field -> validateUnknownType(columnPath + "." + field.name(), field.type()));
       }
       case LIST -> {
         Type elementType = type.asListType().elementType();
         Preconditions.checkArgument(!isUnknown(elementType),
             "Column '%s' of type %s is not supported: unknown cannot be used as an array element type",
-            columnPath, type);
+            columnPath, HiveSchemaUtil.convertToTypeString(type));
         validateUnknownType(columnPath, elementType);
       }
       case MAP -> {
         Types.MapType mapType = type.asMapType();
         Preconditions.checkArgument(!isUnknown(mapType.keyType()) && !isUnknown(mapType.valueType()),
             "Column '%s' of type %s is not supported: unknown cannot be used as a map key or value type",
-            columnPath, type);
+            columnPath, HiveSchemaUtil.convertToTypeString(type));
         validateUnknownType(columnPath, mapType.keyType());
         validateUnknownType(columnPath, mapType.valueType());
       }

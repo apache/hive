@@ -14,6 +14,6 @@ PREHOOK: query: ALTER TABLE unknown_test_add_column ADD COLUMNS (l ARRAY<UNKNOWN
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@unknown_test_add_column
 PREHOOK: Output: default@unknown_test_add_column
-FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. java.lang.IllegalArgumentException: Column 'l' of type list<unknown> is not supported: unknown cannot be used as an array element type
+FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. java.lang.IllegalArgumentException: Column 'l' of type array<unknown> is not supported: unknown cannot be used as an array element type
 #### A masked pattern was here ####
 

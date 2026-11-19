@@ -5,4 +5,4 @@ PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_struct (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@unknown_test_struct
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Column 's' of type struct<3: u: optional unknown> is not supported: a struct must have at least one field that is not of type unknown
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Column 's' of type struct<u:unknown> is not supported: a struct must have at least one field that is not of type unknown
