@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.StreamSupport;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
@@ -37,8 +38,10 @@ import org.apache.iceberg.FileMetadata;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableScan;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -91,8 +94,8 @@ public class TestRewritableDeletes {
 
   @Test
   public void testNoCollectorWithoutADVWriter() {
-    Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, conf));
-    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+    Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, table.currentSnapshot(), conf));
+    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
   }
 
   /**
@@ -106,30 +109,31 @@ public class TestRewritableDeletes {
 
     collect(tasks().stream().filter(t -> t.file().location().equals(fileA.location())).toList());
 
-    Assert.assertEquals(Set.of(fileA.location()), RewritableDeletes.getFromJobConf(TABLE_NAME, conf).keySet());
+    Assert.assertEquals(Set.of(fileA.location()),
+        RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf).keySet());
   }
 
   /**
    * Each scan of the table writes a file of its own, and the writers get the deletes of all of them.
    */
   @Test
-  public void testUnionOfTheScans() {
+  public void testUnionOfTheScans() throws IOException {
     addDV(fileA);
     addDV(fileB);
     RewritableDeletes.addToJobConf(TABLE_NAME, conf);
     for (FileScanTask task : tasks()) {
       collect(List.of(task));
     }
-    Assert.assertEquals(2, queryTempDir.listFiles()[0].list((d, name) -> name.endsWith(".gz")).length);
+    Assert.assertEquals(2, RewritableDeletes.scanFiles(new Path(queryTempDir.getAbsolutePath()), conf).size());
     Assert.assertEquals(Set.of(fileA.location(), fileB.location()),
-        RewritableDeletes.getFromJobConf(TABLE_NAME, conf).keySet());
+        RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf).keySet());
   }
 
   @Test
   public void testScanWithoutPreviousDeletes() {
     RewritableDeletes.addToJobConf(TABLE_NAME, conf);
     collect(tasks());
-    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
   }
 
   /**
@@ -139,7 +143,7 @@ public class TestRewritableDeletes {
   public void testWriterFailsWithoutAScanFile() {
     RewritableDeletes.addToJobConf(TABLE_NAME, conf);
     IllegalStateException thrown = Assert.assertThrows(IllegalStateException.class,
-        () -> RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+        () -> RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
     Assert.assertTrue(thrown.getMessage(), thrown.getMessage().startsWith("No scan collected the rewritable deletes"));
   }
 
@@ -150,10 +154,10 @@ public class TestRewritableDeletes {
     collect(tasks());
 
     LlapProxy.setDaemon(true);
-    Map<String, DeleteFileSet> deletes = RewritableDeletes.getFromJobConf(TABLE_NAME, conf);
+    Map<String, DeleteFileSet> deletes = RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf);
     Assert.assertEquals(Set.of(fileA.location()), deletes.keySet());
     // the second writer of the query finds the rewritable deletes in the cache of the daemon
-    Assert.assertSame(deletes, RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+    Assert.assertSame(deletes, RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
     // which the writers of the daemon share
     Assert.assertThrows(UnsupportedOperationException.class, () -> deletes.remove(fileA.location()));
   }
@@ -164,12 +168,12 @@ public class TestRewritableDeletes {
   @Test
   public void testSessionValueIsIgnored() {
     conf.set("iceberg.mr.rewritable.deletes." + TABLE_NAME, "file:/session-value");
-    Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, conf));
-    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+    Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, table.currentSnapshot(), conf));
+    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
 
     RewritableDeletes.addToJobConf(TABLE_NAME, conf);
     collect(tasks());
-    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
   }
 
   /**
@@ -179,17 +183,43 @@ public class TestRewritableDeletes {
   public void testDirOfAnotherQueryIsIgnored() {
     RewritableDeletes.addToJobConf(TABLE_NAME, conf);
     conf.set(HiveConf.ConfVars.HIVE_QUERY_ID.varname, QUERY_ID + "_next");
-    Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, conf));
+    Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, table.currentSnapshot(), conf));
+  }
+
+  /**
+   * The scans of main and of a branch collect into the subdirs of their snapshots: the writers of a snapshot get its
+   * deletes only.
+   */
+  @Test
+  public void testScansOfAnotherSnapshotAreNotRead() {
+    table.manageSnapshots().createBranch("b1").commit();
+    addDV(fileA);
+    Snapshot branch = table.snapshot("b1");
+    RewritableDeletes.addToJobConf(TABLE_NAME, conf);
+    collect(table.currentSnapshot(), tasks());
+    collect(branch, tasks(table.newScan().useRef("b1")));
+
+    Assert.assertEquals(Set.of(fileA.location()),
+        RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf).keySet());
+    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, branch, conf));
   }
 
   private void collect(List<FileScanTask> tasks) {
-    RewritableDeletes.Collector collector = RewritableDeletes.collector(TABLE_NAME, conf);
+    collect(table.currentSnapshot(), tasks);
+  }
+
+  private void collect(Snapshot snapshot, List<FileScanTask> tasks) {
+    RewritableDeletes.Collector collector = RewritableDeletes.collector(TABLE_NAME, snapshot, conf);
     tasks.forEach(collector::add);
     collector.write(conf);
   }
 
   private List<FileScanTask> tasks() {
-    try (CloseableIterable<FileScanTask> tasks = table.newScan().planFiles()) {
+    return tasks(table.newScan());
+  }
+
+  private static List<FileScanTask> tasks(TableScan scan) {
+    try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
       return StreamSupport.stream(tasks.spliterator(), false).toList();
     } catch (IOException e) {
       throw new RuntimeException(e);

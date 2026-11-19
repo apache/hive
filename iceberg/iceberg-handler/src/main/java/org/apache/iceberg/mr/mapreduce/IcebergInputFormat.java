@@ -223,10 +223,16 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     long fromVersion = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
     Scan<? extends Scan, FileScanTask, CombinedScanTask> scan;
+    RewritableDeletes.Collector rewritableDeletes;
     if (fromVersion != -1) {
       scan = applyConfig(conf, createIncrementalAppendScan(table, conf));
+      rewritableDeletes = null;
     } else {
-      scan = applyConfig(conf, createTableScan(table, conf, serverSidePinTable));
+      TableScan tableScan = applyConfig(conf, createTableScan(table, conf, serverSidePinTable));
+      // collects the position deletes of the planned data files when a DV writer of the job writes this table
+      rewritableDeletes =
+          RewritableDeletes.collector(conf.get(InputFormatConfig.TABLE_IDENTIFIER), tableScan.snapshot(), conf);
+      scan = tableScan;
     }
     scan = scan.planWith(workerPool);
 
@@ -234,10 +240,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         conf.getBoolean(HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
             HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.defaultBoolVal);
     Path tableLocation = new Path(conf.get(InputFormatConfig.TABLE_LOCATION));
-
-    // collects the position deletes of the planned data files when a DV writer of the job writes this table
-    RewritableDeletes.Collector rewritableDeletes = fromVersion == -1 ?
-        RewritableDeletes.collector(conf.get(InputFormatConfig.TABLE_IDENTIFIER), conf) : null;
 
     String[] groupingPartitionColumns = conf.getStrings(InputFormatConfig.GROUPING_PARTITION_COLUMNS);
     generateInputSplits(scan, table, groupingPartitionColumns, taskGroup -> {

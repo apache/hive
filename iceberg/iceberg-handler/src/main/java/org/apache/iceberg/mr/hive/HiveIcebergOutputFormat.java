@@ -35,6 +35,7 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.RewritableDeletes;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder;
@@ -71,7 +72,9 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
 
     return WriterBuilder.builderFor(table, jc::get)
         .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
-        .rewritableDeletes(() -> RewritableDeletes.getFromJobConf(tableName, jc))
+        // of the snapshot the DML writes, which the commit validates from
+        .rewritableDeletes(() -> RewritableDeletes.getFromJobConf(tableName,
+            IcebergTableUtil.getTableSnapshot(table, jc.get(Catalogs.SNAPSHOT_REF)), jc))
         .attemptID(taskAttemptID)
         .addRowLineageColumns(shouldAddRowLineageColumns)
         .build();

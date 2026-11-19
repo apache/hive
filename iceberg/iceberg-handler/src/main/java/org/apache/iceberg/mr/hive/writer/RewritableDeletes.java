@@ -32,7 +32,9 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
@@ -42,6 +44,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileContent;
 import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.Snapshot;
+import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ForwardingMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -56,13 +60,15 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The job names a temp dir of the query for the target table ({@link #addToJobConf}). Every scan of that table collects
  * the position deletes of the data files it plans while its splits are generated, and writes them into a file of its
- * own in the dir ({@link #collector}). A writer reads and merges all files of the dir, once per LLAP daemon
- * ({@link #getFromJobConf}).
+ * own in the subdir of the snapshot it reads ({@link #collector}). A writer reads and merges all files of the subdir of
+ * the snapshot it writes, once per LLAP daemon ({@link #getFromJobConf}): a scan of another branch or tag, or as of
+ * another snapshot, reads other deletes.
  */
 public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet> {
   private static final Logger LOG = LoggerFactory.getLogger(RewritableDeletes.class);
 
   private static final String LOCATION_PREFIX = "iceberg.mr.rewritable.deletes.";
+  private static final String DIR_SUFFIX = "-rewritable-deletes";
 
   // by data file location; shared by the writers of a daemon, so read-only
   private final Map<String, DeleteFileSet> deletes;
@@ -87,17 +93,18 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
     Preconditions.checkState(key != null && tmpDir != null,
         "No query id or temp dir of the query (%s) for the rewritable deletes of %s", DagUtils.TEZ_TMP_DIR_KEY,
         tableName);
-    jobConf.set(key, new Path(tmpDir, tableName + "-rewritable-deletes").toString());
+    jobConf.set(key, new Path(tmpDir, tableName + DIR_SUFFIX).toString());
   }
 
   /**
    * Returns a collector for the rewritable deletes of a scan of a table, or null when no DV writer of the job writes
    * the table.
    * @param tableName The name of the table in the scan's configuration.
+   * @param snapshot The snapshot the scan reads, null when the table has none.
    * @param conf The scan's configuration.
    */
-  public static Collector collector(String tableName, Configuration conf) {
-    String location = location(tableName, conf);
+  public static Collector collector(String tableName, Snapshot snapshot, Configuration conf) {
+    String location = location(tableName, snapshot, conf);
     return location != null ? new Collector(location) : null;
   }
 
@@ -107,20 +114,23 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
     return tableName != null && queryId != null ? LOCATION_PREFIX + queryId + "." + tableName : null;
   }
 
-  private static String location(String tableName, Configuration conf) {
+  // the subdir of the snapshot in the dir of the table
+  private static String location(String tableName, Snapshot snapshot, Configuration conf) {
     String key = key(tableName, conf);
-    return key != null ? conf.get(key) : null;
+    String dir = key != null ? conf.get(key) : null;
+    return dir != null ? new Path(dir, String.valueOf(snapshot != null ? snapshot.snapshotId() : -1)).toString() : null;
   }
 
   /**
-   * Returns the rewritable deletes of a table, merged from the files all scans of the table wrote. Fails when the dir
-   * holds no file, rather than returning no deletes.
+   * Returns the rewritable deletes of a snapshot of a table, merged from the files all scans of the snapshot wrote.
+   * Fails when the dir holds no file, rather than returning no deletes.
    * @param tableName The name of the table in the task's configuration.
+   * @param snapshot The snapshot the task writes, null when the table has none.
    * @param conf The task's configuration.
    * @return The rewritable deletes by data file location; empty when the job writes no DVs to the table.
    */
-  public static Map<String, DeleteFileSet> getFromJobConf(String tableName, Configuration conf) {
-    String location = location(tableName, conf);
+  public static Map<String, DeleteFileSet> getFromJobConf(String tableName, Snapshot snapshot, Configuration conf) {
+    String location = location(tableName, snapshot, conf);
     if (location == null) {
       return Map.of();
     }
@@ -188,16 +198,42 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
       }
       Preconditions.checkState(files.length > 0, "No scan collected the rewritable deletes into %s", location);
       for (FileStatus file : files) {
-        try (InputStream in = new GZIPInputStream(fs.open(file.getPath()))) {
-          Map<String, DeleteFileSet> scanDeletes = SerializationUtil.deserializeFromBytes(in.readAllBytes());
-          scanDeletes.forEach((dataFile, deleteFiles) ->
-              deletes.computeIfAbsent(dataFile, ignored -> DeleteFileSet.create()).addAll(deleteFiles));
-        }
+        read(fs, file.getPath()).forEach((dataFile, deleteFiles) ->
+            deletes.computeIfAbsent(dataFile, ignored -> DeleteFileSet.create()).addAll(deleteFiles));
       }
     } catch (IOException e) {
       throw new UncheckedIOException(String.format("Failed to read rewritable deletes from %s", location), e);
     }
     return new RewritableDeletes(deletes);
+  }
+
+  private static Map<String, DeleteFileSet> read(FileSystem fs, Path file) throws IOException {
+    try (InputStream in = new GZIPInputStream(fs.open(file))) {
+      return SerializationUtil.deserializeFromBytes(in.readAllBytes());
+    }
+  }
+
+  /**
+   * Returns the files the scans wrote under a dir, with the deletes each holds.
+   */
+  @VisibleForTesting
+  static Map<Path, Map<String, DeleteFileSet>> scanFiles(Path root, Configuration conf) throws IOException {
+    Map<Path, Map<String, DeleteFileSet>> scanFiles = Maps.newHashMap();
+    FileSystem fs = root.getFileSystem(conf);
+    RemoteIterator<LocatedFileStatus> files = fs.listFiles(root, true);
+    while (files.hasNext()) {
+      Path file = files.next().getPath();
+      if (isScanFile(file)) {
+        scanFiles.put(file, read(fs, file));
+      }
+    }
+    return scanFiles;
+  }
+
+  // a file in the subdir of a snapshot in the dir of a table, see location
+  private static boolean isScanFile(Path file) {
+    Path tableDir = file.getParent().getParent();
+    return tableDir != null && tableDir.getName().endsWith(DIR_SUFFIX);
   }
 
   // the object cache of a Tez container logs the values it returns

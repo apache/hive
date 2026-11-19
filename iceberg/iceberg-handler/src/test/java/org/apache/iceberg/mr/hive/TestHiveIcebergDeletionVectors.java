@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
-import java.util.zip.GZIPInputStream;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -51,10 +47,10 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.writer.RewritableDeletesTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
-import org.apache.iceberg.relocated.com.google.common.collect.Sets;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.DeleteFileSet;
-import org.apache.iceberg.util.SerializationUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -155,6 +151,60 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
         "ON t.customer_id = s.customer_id WHEN MATCHED THEN DELETE");
     long deleted = LongStream.range(0, ROWS).filter(i -> i % 7 == 0 || i % 5 == 0).count();
     Assert.assertEquals(ROWS - deleted, count("SELECT count(*) FROM default.dv_branch.branch_b1"));
+  }
+
+  private void createTableWithBranch(String name) {
+    testTables.createTable(shell, name, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, records(0, ROWS), formatVersion);
+    shell.executeStatement("ALTER TABLE " + name + " CREATE BRANCH b1");
+  }
+
+  /**
+   * A DELETE from the branch whose subquery reads main: the DVs of the branch do not take the deletes of main.
+   */
+  @Test
+  public void testDeleteFromBranchWithASubqueryOverMain() {
+    createTableWithBranch("dv_branch_main");
+    shell.executeStatement("DELETE FROM dv_branch_main WHERE customer_id % 3 = 0");
+    shell.executeStatement("DELETE FROM default.dv_branch_main.branch_b1 WHERE customer_id IN " +
+        "(SELECT customer_id FROM dv_branch_main WHERE customer_id % 5 = 0)");
+    long deleted = LongStream.range(0, ROWS).filter(i -> i % 5 == 0 && i % 3 != 0).count();
+    Assert.assertEquals(ROWS - deleted, count("SELECT count(*) FROM default.dv_branch_main.branch_b1"));
+  }
+
+  /**
+   * A MERGE into main whose source reads the branch: the DVs of main do not take the deletes of the branch.
+   */
+  @Test
+  public void testMergeIntoMainWithASourceOverTheBranch() {
+    createTableWithBranch("dv_main_branch");
+    shell.executeStatement("DELETE FROM default.dv_main_branch.branch_b1 WHERE customer_id % 3 = 0");
+    shell.executeStatement("MERGE INTO dv_main_branch t USING " +
+        "(SELECT customer_id FROM default.dv_main_branch.branch_b1 WHERE customer_id % 5 = 0) s " +
+        "ON t.customer_id = s.customer_id WHEN MATCHED THEN DELETE");
+    long deleted = LongStream.range(0, ROWS).filter(i -> i % 5 == 0 && i % 3 != 0).count();
+    Assert.assertEquals(ROWS - deleted, count("SELECT count(*) FROM dv_main_branch"));
+  }
+
+  /**
+   * A MERGE whose source reads an older snapshot of the target: the writers do not rewrite the DVs of that snapshot.
+   */
+  @Test
+  public void testMergeWithASourceAsOfAnOlderSnapshot() {
+    Table table = createSingleFileTable("dv_time_travel");
+    shell.executeStatement("DELETE FROM dv_time_travel WHERE customer_id % 3 = 0");
+    table.refresh();
+    long olderSnapshot = table.currentSnapshot().snapshotId();
+    shell.executeStatement("DELETE FROM dv_time_travel WHERE customer_id % 5 = 0");
+    shell.executeStatement("MERGE INTO dv_time_travel t USING " +
+        "(SELECT customer_id FROM dv_time_travel FOR SYSTEM_VERSION AS OF " + olderSnapshot +
+        " WHERE customer_id % 7 = 0) s ON t.customer_id = s.customer_id " +
+        "WHEN MATCHED THEN UPDATE SET first_name = 'x'");
+    Assert.assertEquals(ROWS - LongStream.range(0, ROWS).filter(i -> i % 3 == 0 || i % 5 == 0).count(),
+        count("SELECT count(*) FROM dv_time_travel"));
+    Assert.assertEquals(LongStream.range(0, ROWS).filter(i -> i % 7 == 0 && i % 3 != 0 && i % 5 != 0).count(),
+        count("SELECT count(*) FROM dv_time_travel WHERE first_name = 'x'"));
+    assertOneDVPerDataFileAndNoMerge(table);
   }
 
 
@@ -299,24 +349,17 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   private static volatile boolean rewritableDeletesSeen;
   private static volatile Set<String> collectedDataFiles;
 
-  // the files the scans wrote into the dirs of the rewritable deletes
-  private static Set<Path> rewritableDeleteFiles() throws IOException {
-    Set<Path> files = Sets.newHashSet();
+  // the files the scans wrote into the dirs of the rewritable deletes, with the deletes each holds
+  private static Map<Path, Map<String, DeleteFileSet>> rewritableDeleteFiles() throws IOException {
+    Map<Path, Map<String, DeleteFileSet>> files = Maps.newHashMap();
     for (String scratchDir : scratchDirs) {
-      Path root = new Path(scratchDir);
-      RemoteIterator<LocatedFileStatus> it = root.getFileSystem(new HiveConf()).listFiles(root, true);
-      while (it.hasNext()) {
-        Path file = it.next().getPath();
-        if (file.getParent().getName().endsWith("-rewritable-deletes")) {
-          files.add(file);
-        }
-      }
+      files.putAll(RewritableDeletesTestUtils.scanFiles(new Path(scratchDir), new HiveConf()));
     }
     return files;
   }
 
   private static Set<String> rewritableDeletes() throws IOException {
-    return rewritableDeleteFiles().stream().map(Path::toString).collect(Collectors.toSet());
+    return rewritableDeleteFiles().keySet().stream().map(Path::toString).collect(Collectors.toSet());
   }
 
   /**
@@ -324,17 +367,12 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
    * deletes, and the data files they collected them for.
    */
   public static boolean probeRewritableDeletes() throws IOException {
-    rewritableDeletesSeen = !Sets.difference(rewritableDeletes(), rewritableDeletesBefore).isEmpty();
-    Set<String> dataFiles = Sets.newHashSet();
-    for (Path file : rewritableDeleteFiles()) {
-      if (!rewritableDeletesBefore.contains(file.toString())) {
-        try (InputStream in = new GZIPInputStream(file.getFileSystem(new HiveConf()).open(file))) {
-          Map<String, DeleteFileSet> deletes = SerializationUtil.deserializeFromBytes(in.readAllBytes());
-          dataFiles.addAll(deletes.keySet());
-        }
-      }
-    }
-    collectedDataFiles = dataFiles;
+    Map<Path, Map<String, DeleteFileSet>> files = rewritableDeleteFiles();
+    files.keySet().removeIf(file -> rewritableDeletesBefore.contains(file.toString()));
+    rewritableDeletesSeen = !files.isEmpty();
+    collectedDataFiles = files.values().stream()
+        .flatMap(deletes -> deletes.keySet().stream())
+        .collect(Collectors.toSet());
     return true;
   }
 
