@@ -456,7 +456,10 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
       req.setEngine(engine);
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
-      TableWatermark watermark = watermark(writeIdList, catName, dbName, tblName);
+      // Hive passes no writeIdList when it does not check the statistics against the snapshot; the snapshot of the
+      // query still identifies the table state, as in getTableColumnStatistics
+      TableWatermark watermark = watermark(writeIdList != null ? writeIdList : getValidWriteIdList(dbName, tblName),
+          catName, dbName, tblName);
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS_BY_COLUMN, watermark, req);
         AggrColStatsByColumn cached = (AggrColStatsByColumn) mscLocalCache.getIfPresent(cacheKey);

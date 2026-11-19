@@ -32,9 +32,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
@@ -44,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Test;
@@ -220,5 +223,32 @@ public class TestSessionHiveMetaStoreClientQueryCache {
 
     verify(delegate, times(2)).getTableColumnStatistics(any(), any(), any(), any(), any(), any());
     verify(delegate, times(1)).getTable(any(GetTableRequest.class));
+  }
+
+  @Test
+  public void testLocalCacheAggrColStatsOfTransactionalTableWithoutWriteIdList() throws Exception {
+    HiveConf conf = startQuery("test_local_cache_aggr_col_stats_acid_0");
+    HiveMetaStoreClientWithLocalCache.init(conf);
+    IMetaStoreClient delegate = tableDelegate();
+    delegate.getTable(hiveGetTableRequest()).getParameters().put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+    List<String> partNames = List.of("p=1", "p=2");
+    when(delegate.getAggrColStatsFor("hive", "db", "t", List.of("c"), partNames, Constants.HIVE_ENGINE, null))
+        .thenReturn(new AggrStats(new ArrayList<>(), 2));
+
+    // Hive.getAggrColStatsFor passes no writeIdList unless it checks the statistics; the query snapshot is the same
+    for (int i = 0; i < 2; i++) {
+      if (i > 0) {
+        conf = startQuery("test_local_cache_aggr_col_stats_acid_" + i);
+      }
+      Hive.get().getConf().set(ValidTxnList.VALID_TXNS_KEY, "5:" + Long.MAX_VALUE + "::");
+      Hive.get().getConf().set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, "5$db.t:3:" + Long.MAX_VALUE + "::");
+      SessionHiveMetaStoreClient client =
+          SessionHiveMetaStoreClient.newClient(conf, HiveMetaStoreClientWithLocalCache.newClient(conf, delegate));
+      client.getTable(hiveGetTableRequest());
+      assertEquals(2, client.getAggrColStatsFor("hive", "db", "t", List.of("c"), partNames, Constants.HIVE_ENGINE, null)
+          .getPartsFound());
+    }
+
+    verify(delegate, times(1)).getAggrColStatsFor(any(), any(), any(), any(), any(), any(), any());
   }
 }
