@@ -180,9 +180,11 @@ public class TestPositionDeletesReader {
             .build(),
         deleteFile);
 
-    Map<String, List<Long>> actual = positions(PositionDeletesReader.read(deleteFile, file), deleteFile);
+    PositionDeletesReader.Decoded decoded = PositionDeletesReader.read(deleteFile, file);
+    Map<String, List<Long>> actual = positions(decoded.indexes(), deleteFile);
     Assert.assertFalse(actual.isEmpty());
     Assert.assertEquals(positions(expected, deleteFile), actual);
+    Assert.assertEquals("every row is read", deleteFile.recordCount(), decoded.rows());
   }
 
   private static Map<String, List<Long>> positions(CharSequenceMap<PositionDeleteIndex> indexes,
