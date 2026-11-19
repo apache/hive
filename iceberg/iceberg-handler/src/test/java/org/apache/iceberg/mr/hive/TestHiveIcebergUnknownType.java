@@ -21,15 +21,29 @@ package org.apache.iceberg.mr.hive;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.TableMetadataParser;
+import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.Transaction;
+import org.apache.iceberg.Transactions;
+import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.encryption.EncryptionManager;
+import org.apache.iceberg.exceptions.CommitFailedException;
+import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.io.LocationProvider;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.Pair;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -135,6 +149,127 @@ public class TestHiveIcebergUnknownType extends HiveIcebergStorageHandlerWithEng
   }
 
   @Test
+  public void testUnknownTypePromotionRetriesConflictsAsSingleCommit() {
+    TableIdentifier identifier = TableIdentifier.of("default", "unknown_type_promote_conflict");
+    createTable(identifier, "id INT, placeholder UNKNOWN");
+    shell.executeStatement(String.format("INSERT INTO %s (id) VALUES (1)", identifier));
+
+    Table table = testTables.loadTable(identifier);
+    int fieldId = table.schema().findField("placeholder").fieldId();
+    AtomicInteger commits = new AtomicInteger();
+    TableOperations ops = new CommitInterceptingOperations(((HasTableOperations) table).operations(), () -> {
+      if (commits.incrementAndGet() == 1) {
+        testTables.loadTable(identifier).updateProperties().set("concurrent-change", "true").commit();
+      }
+    });
+
+    HiveIcebergMetaHook.commitChangeColumn(ops, renameAndPromote(ops, table.name(), fieldId));
+
+    Table after = testTables.loadTable(identifier);
+    Assert.assertEquals(2, commits.get());
+    Assert.assertEquals("true", after.properties().get("concurrent-change"));
+    Assert.assertEquals(Types.IntegerType.get(), after.schema().findField("promoted").type());
+    Assert.assertEquals(fieldId, after.schema().findField("promoted").fieldId());
+
+    TableMetadata current = ((HasTableOperations) after).operations().current();
+    TableMetadata previous = TableMetadataParser.read(after.io(), current.previousFiles().getLast().file());
+    Assert.assertEquals("true", previous.properties().get("concurrent-change"));
+    Assert.assertEquals(Types.UnknownType.get(), previous.schema().findField("placeholder").type());
+    Assert.assertNull(previous.schema().findField("promoted"));
+
+    List<Object[]> rows = shell.executeStatement(String.format("SELECT id, promoted FROM %s", identifier));
+    Assert.assertArrayEquals(new Object[] {1, null}, rows.get(0));
+  }
+
+  @Test
+  public void testUnknownTypePromotionFailureCommitsNothing() {
+    TableIdentifier identifier = TableIdentifier.of("default", "unknown_type_promote_failure");
+    createTable(identifier, "id INT, placeholder UNKNOWN");
+    shell.executeStatement(String.format(
+        "ALTER TABLE %s SET TBLPROPERTIES ('%s'='0')", identifier, TableProperties.COMMIT_NUM_RETRIES));
+
+    Table table = testTables.loadTable(identifier);
+    int fieldId = table.schema().findField("placeholder").fieldId();
+    String metadataLocation = ((HasTableOperations) table).operations().current().metadataFileLocation();
+    TableOperations ops = new CommitInterceptingOperations(((HasTableOperations) table).operations(), () -> {
+      throw new CommitFailedException("Injected commit failure");
+    });
+
+    Assertions.assertThatThrownBy(() ->
+            HiveIcebergMetaHook.commitChangeColumn(ops, renameAndPromote(ops, table.name(), fieldId)))
+        .isInstanceOf(CommitFailedException.class)
+        .hasMessage("Injected commit failure");
+
+    Table after = testTables.loadTable(identifier);
+    Assert.assertEquals(metadataLocation, ((HasTableOperations) after).operations().current().metadataFileLocation());
+    Assert.assertEquals(Types.UnknownType.get(), after.schema().findField("placeholder").type());
+    Assert.assertNull(after.schema().findField("promoted"));
+  }
+
+  private static Supplier<HiveIcebergMetaHook.StagedChangeColumn> renameAndPromote(TableOperations ops,
+      String tableName, int fieldId) {
+    return () -> {
+      ops.refresh();
+      Transaction txn = Transactions.newTransaction(tableName, ops);
+      UpdateSchema update = txn.updateSchema();
+      update.renameColumn("placeholder", "promoted");
+      update.commit();
+      return new HiveIcebergMetaHook.StagedChangeColumn(txn, Pair.of(fieldId, Types.IntegerType.get()));
+    };
+  }
+
+  private static class CommitInterceptingOperations implements TableOperations {
+    private final TableOperations delegate;
+    private final Runnable beforeCommit;
+
+    CommitInterceptingOperations(TableOperations delegate, Runnable beforeCommit) {
+      this.delegate = delegate;
+      this.beforeCommit = beforeCommit;
+    }
+
+    @Override
+    public TableMetadata current() {
+      return delegate.current();
+    }
+
+    @Override
+    public TableMetadata refresh() {
+      return delegate.refresh();
+    }
+
+    @Override
+    public void commit(TableMetadata base, TableMetadata metadata) {
+      beforeCommit.run();
+      delegate.commit(base, metadata);
+    }
+
+    @Override
+    public FileIO io() {
+      return delegate.io();
+    }
+
+    @Override
+    public EncryptionManager encryption() {
+      return delegate.encryption();
+    }
+
+    @Override
+    public String metadataFileLocation(String fileName) {
+      return delegate.metadataFileLocation(fileName);
+    }
+
+    @Override
+    public LocationProvider locationProvider() {
+      return delegate.locationProvider();
+    }
+
+    @Override
+    public long newSnapshotId() {
+      return delegate.newSnapshotId();
+    }
+  }
+
+  @Test
   public void testUnknownTypeSchemaDdl() {
     TableIdentifier identifier = TableIdentifier.of("default", "unknown_type_schema_ddl");
 
@@ -181,6 +316,44 @@ public class TestHiveIcebergUnknownType extends HiveIcebergStorageHandlerWithEng
     rows = shell.executeStatement(String.format(
         "SELECT count(*) FROM %s WHERE b IS NULL AND c > 10 AND s.u IS NULL", identifier));
     Assert.assertEquals(2L, rows.get(0)[0]);
+  }
+
+  @Test
+  public void testUnknownTypeTableMustHaveWritableColumn() {
+    TableIdentifier createOnlyUnknown = TableIdentifier.of("default", "unknown_type_all_unknown");
+    Assertions.assertThatThrownBy(() -> createTable(createOnlyUnknown, "u UNKNOWN"))
+        .hasMessageContaining("a table must have at least one column that is not of type unknown");
+
+    TableIdentifier dropToUnknown = TableIdentifier.of("default", "unknown_type_drop_to_unknown");
+    createTable(dropToUnknown, "id INT, u UNKNOWN");
+    shell.executeStatement(String.format("INSERT INTO %s (id) VALUES (1)", dropToUnknown));
+    Assertions.assertThatThrownBy(() -> shell.executeStatement(
+            String.format("ALTER TABLE %s DROP COLUMN id", dropToUnknown)))
+        .hasMessageContaining("Cannot drop column 'id': the table would be left with only columns of type unknown");
+
+    TableIdentifier replaceToUnknown = TableIdentifier.of("default", "unknown_type_replace_to_unknown");
+    createTable(replaceToUnknown, "id INT, u UNKNOWN");
+    Assertions.assertThatThrownBy(() -> shell.executeStatement(String.format(
+            "ALTER TABLE %s REPLACE COLUMNS (u UNKNOWN)", replaceToUnknown)))
+        .hasMessageContaining("Cannot drop columns [id]: the table would be left with only columns of type unknown");
+  }
+
+  @Test
+  public void testUnsupportedUnknownTypeMessagesUseHiveTypeNames() {
+    Types.StructType struct = Types.StructType.of(optional(3, "u", Types.UnknownType.get()));
+    Assertions.assertThatThrownBy(() -> BaseHiveIcebergMetaHook.validateUnknownType("s", struct))
+        .hasMessage("Column 's' of type struct<u:unknown> is not supported: a struct must have at least one field " +
+            "that is not of type unknown");
+
+    Types.ListType list = Types.ListType.ofOptional(3, Types.UnknownType.get());
+    Assertions.assertThatThrownBy(() -> BaseHiveIcebergMetaHook.validateUnknownType("l", list))
+        .hasMessage("Column 'l' of type array<unknown> is not supported: unknown cannot be used as an array " +
+            "element type");
+
+    Types.MapType map = Types.MapType.ofOptional(3, 4, Types.StringType.get(), Types.UnknownType.get());
+    Assertions.assertThatThrownBy(() -> BaseHiveIcebergMetaHook.validateUnknownType("m", map))
+        .hasMessage("Column 'm' of type map<string,unknown> is not supported: unknown cannot be used as a map key " +
+            "or value type");
   }
 
   @Test

@@ -5,4 +5,4 @@ PREHOOK: query: CREATE EXTERNAL TABLE unknown_test_array (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@unknown_test_array
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Column 'l' of type list<unknown> is not supported: unknown cannot be used as an array element type
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Column 'l' of type array<unknown> is not supported: unknown cannot be used as an array element type

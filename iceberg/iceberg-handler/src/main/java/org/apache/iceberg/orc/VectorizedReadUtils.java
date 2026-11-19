@@ -163,8 +163,7 @@ public class VectorizedReadUtils {
       readOrcSchema = ORCSchemaUtil.buildOrcProjection(readSchema, typeWithIds);
     }
 
-    boolean hasUnknownType = TypeUtil.indexById(readSchema.asStruct()).values().stream()
-        .anyMatch(field -> field.type().typeId() == Type.TypeID.UNKNOWN);
+    boolean hasUnknownType = TypeUtil.find(readSchema, type -> type.typeId() == Type.TypeID.UNKNOWN) != null;
     TypeDescription hiveReadOrcSchema = hasUnknownType ?
         addUnknownTypePlaceholders(readSchema.asStruct(), readOrcSchema) : readOrcSchema;
     job.set(ColumnProjectionUtils.ORC_SCHEMA_STRING, hiveReadOrcSchema.toString());

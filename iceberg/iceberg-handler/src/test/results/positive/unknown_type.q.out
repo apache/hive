@@ -842,6 +842,27 @@ POSTHOOK: Input: default@unknown_test_middle
 a                   	int                 	                    
 b                   	int                 	                    
 c                   	int                 	                    
+PREHOOK: query: SELECT * FROM unknown_test_view ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unknown_test_middle
+PREHOOK: Input: default@unknown_test_view
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM unknown_test_view ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unknown_test_middle
+POSTHOOK: Input: default@unknown_test_view
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL
+3	NULL
+4	NULL
+PREHOOK: query: DESCRIBE unknown_test_view
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@unknown_test_view
+POSTHOOK: query: DESCRIBE unknown_test_view
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@unknown_test_view
+a                   	int                 	                    
+b                   	unknown             	                    
 PREHOOK: query: INSERT INTO unknown_test_middle VALUES (5, 500, 50)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

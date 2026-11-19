@@ -201,6 +201,10 @@ ALTER TABLE unknown_test_middle CHANGE COLUMN b b INT;
 
 DESCRIBE unknown_test_middle;
 
+-- View created over UNKNOWN column b before promotion
+SELECT * FROM unknown_test_view ORDER BY a;
+DESCRIBE unknown_test_view;
+
 INSERT INTO unknown_test_middle VALUES (5, 500, 50);
 
 SELECT a, b, c FROM unknown_test_middle ORDER BY a;
