@@ -52,12 +52,20 @@ final class PositionDeletesReader {
   private PositionDeletesReader() {
   }
 
-  static CharSequenceMap<PositionDeleteIndex> read(DeleteFile deleteFile, InputFile file) {
+  /**
+   * The indexes of the data files the file references, and the number of rows read: every row of the file, as nothing
+   * filters them.
+   */
+  record Decoded(CharSequenceMap<PositionDeleteIndex> indexes, long rows) {
+  }
+
+  static Decoded read(DeleteFile deleteFile, InputFile file) {
     return deleteFile.format() == FileFormat.PARQUET ? readParquet(deleteFile, file) : readRecords(deleteFile, file);
   }
 
-  private static CharSequenceMap<PositionDeleteIndex> readParquet(DeleteFile deleteFile, InputFile file) {
+  private static Decoded readParquet(DeleteFile deleteFile, InputFile file) {
     CharSequenceMap<PositionDeleteIndex> indexes = CharSequenceMap.create();
+    long rows = 0;
     try (CloseableIterable<PathPosReader> deletes = Parquet.read(file)
         .project(POS_DELETE_SCHEMA)
         .createReaderFunc(PathPosReader::new)
@@ -72,18 +80,26 @@ final class PositionDeletesReader {
           index = indexes.computeIfAbsent(lastPath.toStringUsingUTF8(), path -> newIndex(path, deleteFile));
         }
         index.delete(delete.pos);
+        rows++;
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
-    return indexes;
+    return new Decoded(indexes, rows);
   }
 
-  private static CharSequenceMap<PositionDeleteIndex> readRecords(DeleteFile deleteFile, InputFile file) {
-    return Deletes.toPositionIndexes(FormatModelRegistry.readBuilder(deleteFile.format(), Record.class, file)
+  private static Decoded readRecords(DeleteFile deleteFile, InputFile file) {
+    long[] rows = { 0 };
+    CloseableIterable<Record> records = FormatModelRegistry.readBuilder(deleteFile.format(), Record.class, file)
         .project(POS_DELETE_SCHEMA)
         .reuseContainers()
-        .build(), deleteFile);
+        .build();
+    CharSequenceMap<PositionDeleteIndex> indexes = Deletes.toPositionIndexes(CloseableIterable.transform(records,
+        record -> {
+          rows[0]++;
+          return record;
+        }), deleteFile);
+    return new Decoded(indexes, rows[0]);
   }
 
   private static PositionDeleteIndex newIndex(CharSequence path, DeleteFile deleteFile) {

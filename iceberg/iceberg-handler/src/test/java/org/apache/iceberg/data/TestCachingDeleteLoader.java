@@ -22,15 +22,27 @@ package org.apache.iceberg.data;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.LongStream;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
+import org.apache.hadoop.hive.llap.cache.EvictionListener;
 import org.apache.hadoop.hive.llap.cache.LlapAllocatorBuffer;
+import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelLrfuCachePolicy;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -60,7 +72,9 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ContentFileUtil;
 import org.apache.iceberg.util.Pair;
 import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.mapreduce.hadoop.mapred.MRReporter;
@@ -73,6 +87,7 @@ import org.mockito.Mockito;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 
 public class TestCachingDeleteLoader {
   private static final Schema SCHEMA = new Schema(required(1, "id", Types.LongType.get()));
@@ -115,6 +130,8 @@ public class TestCachingDeleteLoader {
     assertCounters(counters, 2, 1, 1, 0);
     Assert.assertEquals(dv.contentSizeInBytes().longValue(),
         counters.findCounter(DeleteCacheCounters.DELETE_CACHE_PUT_BYTES).getValue());
+    // a DV has no directory
+    Mockito.verify(cache, Mockito.times(1)).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
     assertBuffersReleased();
   }
 
@@ -209,7 +226,8 @@ public class TestCachingDeleteLoader {
 
     assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B), 2);
 
-    Mockito.verify(cache, Mockito.times(1)).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
+    Mockito.verify(cache, Mockito.times(1)).putFileMetadata(pairKey(), any(ByteBuffer.class), any(), any());
+    Mockito.verify(cache, Mockito.times(1)).putFileMetadata(directoryKey(), any(ByteBuffer.class), any(), any());
     assertBuffersReleased();
   }
 
@@ -227,7 +245,8 @@ public class TestCachingDeleteLoader {
   }
 
   /**
-   * A data file the delete file does not reference gets an empty index and no cache entry.
+   * A data file the delete file does not reference gets an empty index and no entry of its own; once the delete file's
+   * directory is cached, it needs no decode either.
    */
   @Test
   public void testDataFileWithoutDeletesInPositionDeleteFileIsNotCached() throws IOException {
@@ -239,10 +258,107 @@ public class TestCachingDeleteLoader {
       assertDeleted(index);
       Assert.assertSame(deletes, Iterables.getOnlyElement(index.deleteFiles()));
     }
-    // outside a query's object cache every read decodes the file
-    Assert.assertEquals(2, opens.get());
-    Mockito.verify(cache, Mockito.never()).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
+    Assert.assertEquals("the second read finds B missing from the directory", 1, opens.get());
+    Mockito.verify(cache, Mockito.never()).putFileMetadata(pairKey(), any(ByteBuffer.class), any(), any());
+    Mockito.verify(cache, Mockito.times(1)).putFileMetadata(directoryKey(), any(ByteBuffer.class), any(), any());
     assertCounters(counters, 0, 0, 0, 0);
+    Assert.assertEquals(2, counters.findCounter(DeleteCacheCounters.DELETE_CACHE_UNREFERENCED).getValue());
+    assertBuffersReleased();
+  }
+
+  /**
+   * The directory outlives the query: a later query reads an unreferenced data file without opening the delete file.
+   */
+  @Test
+  public void testUnreferencedDataFileOpensNothingInLaterQueries() throws IOException {
+    DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }, DATA_FILE_C, new long[] { 3 }));
+    LlapProxy.setDaemon(true);
+    try {
+      for (String query : List.of("query1", "query2")) {
+        HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID, query);
+        assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B));
+        ObjectCacheFactory.removeLlapQueryCache(query);
+      }
+    } finally {
+      LlapProxy.setDaemon(false);
+    }
+    Assert.assertEquals("only the first query decodes the delete file", 1, opens.get());
+    Assert.assertEquals(2, counters.findCounter(DeleteCacheCounters.DELETE_CACHE_UNREFERENCED).getValue());
+    Mockito.verify(cache, Mockito.never()).putFileMetadata(pairKey(), any(ByteBuffer.class), any(), any());
+    assertBuffersReleased();
+  }
+
+  @Test
+  public void testDirectoryEvictedWhilePairsRemain() throws IOException {
+    DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }, DATA_FILE_C, new long[] { 3 }));
+    assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_A), 1);
+    Mockito.doReturn(null).when(cache).getFileMetadata(directoryKey());
+
+    assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_A), 1);
+    Assert.assertEquals("the pair still serves", 1, opens.get());
+    assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B));
+    Assert.assertEquals("an unknown directory decodes the delete file", 2, opens.get());
+  }
+
+  @Test
+  public void testPairsEvictedWhileDirectoryRemains() throws IOException {
+    DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }, DATA_FILE_C, new long[] { 3 }));
+    assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_A), 1);
+    Mockito.doReturn(null).when(cache).getFileMetadata(pairKey());
+
+    assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B));
+    Assert.assertEquals("the directory answers for an unreferenced data file", 1, opens.get());
+    assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_C), 3);
+    Assert.assertEquals("a referenced data file without its entry decodes the delete file", 2, opens.get());
+  }
+
+  @Test
+  public void testFailedDirectoryPutIsCountedAndDecodesAgain() throws IOException {
+    DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }, DATA_FILE_C, new long[] { 3 }));
+    Mockito.doThrow(new RuntimeException("Cannot reserve memory"))
+        .when(cache).putFileMetadata(directoryKey(), any(ByteBuffer.class), any(), any());
+
+    for (int i = 0; i < 2; i++) {
+      assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B));
+    }
+    Assert.assertEquals("without a directory every read decodes the delete file", 2, opens.get());
+    assertCounters(counters, 0, 0, 0, 2);
+    Assert.assertEquals(2, counters.findCounter(DeleteCacheCounters.DELETE_CACHE_UNREFERENCED).getValue());
+  }
+
+  /**
+   * A file-scoped delete file is attached to its one data file only: it has no directory.
+   */
+  @Test
+  public void testFileScopedDeleteFileHasNoDirectory() throws IOException {
+    DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }));
+    Assert.assertNotNull(ContentFileUtil.referencedDataFile(deletes));
+
+    assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_A), 1);
+
+    Mockito.verify(cache, Mockito.never()).putFileMetadata(directoryKey(), any(ByteBuffer.class), any(), any());
+    Mockito.verify(cache, Mockito.never()).getFileMetadata(directoryKey());
+  }
+
+  /**
+   * A read that does not cover every row of the delete file publishes no directory: one that missed a data file the
+   * delete file references would drop its deletes. Every lookup then decodes the delete file, with exact results.
+   */
+  @Test
+  public void testShortReadPublishesNoDirectory() throws IOException {
+    DeleteFile written =
+        writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }, DATA_FILE_C, new long[] { 3 }));
+    // the reader reads 2 rows of a file that claims 3, as a filtered or truncated read would
+    DeleteFile deletes = FileMetadata.deleteFileBuilder(v2Table.spec()).copy(written)
+        .withRecordCount(written.recordCount() + 1).build();
+
+    for (int i = 0; i < 2; i++) {
+      assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B));
+    }
+    assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_C), 3);
+
+    Assert.assertEquals("without a directory every unreferenced lookup decodes", 3, opens.get());
+    Mockito.verify(cache, Mockito.never()).putFileMetadata(directoryKey(), any(ByteBuffer.class), any(), any());
     Assert.assertEquals(2, counters.findCounter(DeleteCacheCounters.DELETE_CACHE_UNREFERENCED).getValue());
   }
 
@@ -273,8 +389,9 @@ public class TestCachingDeleteLoader {
       ObjectCacheFactory.removeLlapQueryCache("query1");
     }
     Assert.assertEquals("Data files the delete file does not reference must not decode it again", 1, opens.get());
-    // only the data files the delete file references are cached
-    Mockito.verify(cache, Mockito.times(2)).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
+    // the data files the delete file references are cached, and its directory
+    Mockito.verify(cache, Mockito.times(2)).putFileMetadata(pairKey(), any(ByteBuffer.class), any(), any());
+    Mockito.verify(cache, Mockito.times(1)).putFileMetadata(directoryKey(), any(ByteBuffer.class), any(), any());
     assertCounters(counters, 0, 2, 2, 0);
     Assert.assertEquals(1, counters.findCounter(DeleteCacheCounters.DELETE_CACHE_UNREFERENCED).getValue());
     assertBuffersReleased();
@@ -351,6 +468,159 @@ public class TestCachingDeleteLoader {
     Mockito.verifyNoInteractions(cache);
   }
 
+  /**
+   * Concurrent tasks of concurrent queries on one daemon read deletes through the shared metadata cache: referenced and
+   * unreferenced data files of two partition-scoped position delete files, merged, and a DV. Queries end meanwhile,
+   * dropping their query caches. Every result is exact and every buffer is released.
+   */
+  @Test
+  public void testConcurrentReadsAreExact() throws Exception {
+    runConcurrentReads(cache);
+    assertBuffersReleased();
+  }
+
+  /**
+   * As above, with a metadata cache too small for the entries, so that they are evicted while other tasks read and put
+   * them, and with every 7th put throwing and every 4th directory lookup finding nothing.
+   */
+  @Test
+  public void testConcurrentReadsAreExactUnderEvictionAndFailedPuts() throws Exception {
+    AtomicInteger evictions = new AtomicInteger();
+    MetadataCache tinyCache = trackingMetadataCache(conf, handedOut, 512, evictions);
+    AtomicInteger puts = new AtomicInteger();
+    AtomicInteger directoryLookups = new AtomicInteger();
+    Mockito.doAnswer(invocation -> invocation.getArgument(0) instanceof CachingDeleteLoader.DirectoryKey &&
+            directoryLookups.incrementAndGet() % 4 == 0 ? null : track(handedOut, invocation.callRealMethod()))
+        .when(tinyCache).getFileMetadata(any());
+    Mockito.doAnswer(invocation -> {
+      if (puts.incrementAndGet() % 7 == 0) {
+        throw new RuntimeException("Injected put failure");
+      }
+      return track(handedOut, invocation.callRealMethod());
+    }).when(tinyCache).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
+
+    TezCounters total = runConcurrentReads(tinyCache);
+
+    Assert.assertTrue("entries must have been evicted", evictions.get() > 0);
+    Assert.assertTrue("puts must have failed",
+        total.findCounter(DeleteCacheCounters.DELETE_CACHE_PUT_FAILED).getValue() > 0);
+    assertBuffersReleased();
+  }
+
+  private TezCounters runConcurrentReads(MetadataCache metadataCache) throws Exception {
+    ConcurrentReads reads = new ConcurrentReads(metadataCache);
+    List<TezCounters> taskCounters = Lists.newArrayList();
+    CountDownLatch start = new CountDownLatch(1);
+    ExecutorService pool = Executors.newFixedThreadPool(16);
+    LlapProxy.setDaemon(true);
+    try {
+      List<Future<?>> tasks = Lists.newArrayList();
+      for (int t = 0; t < 16; t++) {
+        TezCounters taskCounter = new TezCounters();
+        taskCounters.add(taskCounter);
+        int seed = t;
+        tasks.add(pool.submit(() -> {
+          start.await();
+          reads.run(new Random(seed), seed == 0, taskCounter);
+          return null;
+        }));
+      }
+      start.countDown();
+      for (Future<?> task : tasks) {
+        task.get(2, TimeUnit.MINUTES);
+      }
+    } finally {
+      pool.shutdownNow();
+      LlapProxy.setDaemon(false);
+      reads.endQueries();
+    }
+    Assert.assertTrue("Wrong deletes: " + reads.wrong, reads.wrong.isEmpty());
+    TezCounters total = new TezCounters();
+    taskCounters.forEach(total::incrAllCounters);
+    return total;
+  }
+
+  /**
+   * Two partition-scoped position delete files, the first referencing d0..d11 and the second d6..d17, with u0..u7 in
+   * neither, a DV of DATA_FILE_A, and eight queries whose tasks read them.
+   */
+  private final class ConcurrentReads {
+    private final Map<String, long[]> first = Maps.newTreeMap();
+    private final Map<String, long[]> second = Maps.newTreeMap();
+    private final List<String> dataFiles = Lists.newArrayList();
+    private final List<JobConf> queries = Lists.newArrayList();
+    private final Queue<String> wrong = new ConcurrentLinkedQueue<>();
+    private final long[] dvPositions = LongStream.range(0, 50).map(i -> i * 3).toArray();
+    private final MetadataCache metadataCache;
+    private final List<DeleteFile> posDeletes;
+    private final DeleteFile dv;
+
+    private ConcurrentReads(MetadataCache metadataCache) throws IOException {
+      this.metadataCache = metadataCache;
+      for (int i = 0; i < 18; i++) {
+        String dataFile = "file:/tmp/data/d" + i + ".parquet";
+        dataFiles.add(dataFile);
+        if (i < 12) {
+          first.put(dataFile, new long[] { i, 100 + i, 1000 + 7 * i });
+        }
+        if (i >= 6) {
+          second.put(dataFile, new long[] { 5000 + i, 6000 + 3 * i });
+        }
+      }
+      for (int i = 0; i < 8; i++) {
+        dataFiles.add("file:/tmp/data/u" + i + ".parquet");
+        JobConf query = new JobConf(conf);
+        HiveConf.setVar(query, HiveConf.ConfVars.HIVE_QUERY_ID, "concurrent" + i);
+        queries.add(query);
+      }
+      this.posDeletes = ImmutableList.of(writePosDeletes(first), writePosDeletes(second));
+      posDeletes.forEach(deleteFile -> Assert.assertNull(ContentFileUtil.referencedDataFile(deleteFile)));
+      this.dv = writeDVs(ImmutableMap.of(DATA_FILE_A, dvPositions)).get(0);
+    }
+
+    // 300 reads of one task, each by a loader of its own; the task that ends queries drops a query cache every 50
+    private void run(Random random, boolean endsQueries, TezCounters taskCounter) {
+      for (int i = 0; i < 300; i++) {
+        if (endsQueries && i % 50 == 49) {
+          ObjectCacheFactory.removeLlapQueryCache(queryId(queries.get(random.nextInt(queries.size()))));
+        }
+        JobConf query = queries.get(random.nextInt(queries.size()));
+        CachingDeleteLoader loader = new CachingDeleteLoader(TestCachingDeleteLoader.this::countingInputFile,
+            MapredIcebergInputFormat.newTaskAttemptContext(query, new MRReporter(taskCounter)), metadataCache, query);
+        if (random.nextInt(10) == 0) {
+          check(DATA_FILE_A, loader.loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A), dvPositions);
+        } else {
+          String dataFile = dataFiles.get(random.nextInt(dataFiles.size()));
+          check(dataFile, loader.loadPositionDeletes(posDeletes, dataFile), LongStream.concat(
+              LongStream.of(first.getOrDefault(dataFile, new long[0])),
+              LongStream.of(second.getOrDefault(dataFile, new long[0]))).toArray());
+        }
+      }
+    }
+
+    private void check(String dataFile, PositionDeleteIndex index, long[] expected) {
+      if (index.cardinality() != expected.length || !LongStream.of(expected).allMatch(index::isDeleted)) {
+        wrong.add(dataFile + ": " + index + " instead of " + Arrays.toString(expected));
+      }
+    }
+
+    private void endQueries() {
+      queries.forEach(query -> ObjectCacheFactory.removeLlapQueryCache(queryId(query)));
+    }
+  }
+
+  private static String queryId(JobConf query) {
+    return HiveConf.getVar(query, HiveConf.ConfVars.HIVE_QUERY_ID);
+  }
+
+  private static Object directoryKey() {
+    return argThat(key -> key instanceof CachingDeleteLoader.DirectoryKey);
+  }
+
+  private static Object pairKey() {
+    return argThat(key -> !(key instanceof CachingDeleteLoader.DirectoryKey));
+  }
+
   private CachingDeleteLoader loader(MetadataCache metadataCache) {
     return new CachingDeleteLoader(this::countingInputFile,
         MapredIcebergInputFormat.newTaskAttemptContext(conf, new MRReporter(counters)), metadataCache, conf);
@@ -422,17 +692,41 @@ public class TestCachingDeleteLoader {
    * A real LLAP metadata cache that records every buffer it hands out, so tests can check they got released.
    */
   public static MetadataCache trackingMetadataCache(Configuration conf, List<LlapBufferOrBuffers> handedOut) {
-    return trackingMetadataCache(conf, handedOut, 1 << 20);
+    return trackingMetadataCache(conf, handedOut, 1 << 20, new AtomicInteger());
   }
 
   private static MetadataCache trackingMetadataCache(Configuration conf, List<LlapBufferOrBuffers> handedOut,
       long maxSize) {
+    return trackingMetadataCache(conf, handedOut, maxSize, new AtomicInteger());
+  }
+
+  /**
+   * Evicted buffers are counted and freed, and their entries left to the cache: a lookup or put that cannot lock an
+   * entry drops it. A daemon's EvictionDispatcher also calls MetadataCache.notifyEvicted, which removes the entry by
+   * key alone and asserts that it held the evicted buffer; a key put again in between, after a lookup dropped its
+   * evicted entry, fails that assertion. That costs a miss, not a wrong read, and is not what these tests cover.
+   */
+  private static MetadataCache trackingMetadataCache(Configuration conf, List<LlapBufferOrBuffers> handedOut,
+      long maxSize, AtomicInteger evictions) {
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     LowLevelLrfuCachePolicy policy = new LowLevelLrfuCachePolicy(8, maxSize, conf);
     LowLevelCacheMemoryManager memoryManager = new LowLevelCacheMemoryManager(maxSize, policy, metrics);
     BuddyAllocator allocator = new BuddyAllocator(false, false, 8, MAX_ALLOC, 1, maxSize, 0, null, memoryManager,
         metrics, null, true);
     MetadataCache cache = Mockito.spy(new MetadataCache(allocator, memoryManager, policy, false, metrics));
+    policy.setEvictionListener(new EvictionListener() {
+      @Override
+      public void notifyEvicted(LlapCacheableBuffer buffer) {
+        evictions.incrementAndGet();
+        allocator.deallocateEvicted((MemoryBuffer) buffer);
+      }
+
+      @Override
+      public void notifyProactivelyEvicted(LlapCacheableBuffer buffer) {
+        evictions.incrementAndGet();
+        allocator.deallocateProactivelyEvicted((MemoryBuffer) buffer);
+      }
+    });
     Mockito.doAnswer(invocation -> track(handedOut, invocation.callRealMethod()))
         .when(cache).getFileMetadata(any());
     Mockito.doAnswer(invocation -> track(handedOut, invocation.callRealMethod()))
