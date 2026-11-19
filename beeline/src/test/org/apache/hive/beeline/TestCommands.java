@@ -399,7 +399,7 @@ public class TestCommands {
     assertEquals(Collections.emptyList(),
         sourceScript("-- only a comment; with semicolon\n# shell; comment\n"));
 
-    assertEquals(Arrays.asList("select 1"),
+    assertEquals(Arrays.asList("select 1", "select 2"),
         sourceScript("select 1; -- note; more\nselect 2;\n"));
   }
 

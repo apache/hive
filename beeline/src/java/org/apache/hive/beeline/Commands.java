@@ -906,7 +906,7 @@ public class Commands {
         return true;
       }
       for (String c : getCmdList(lines, false)) {
-        c = c.trim();
+        c = HiveStringUtils.removeComments(c.trim());
         if (!executeInternal(c, false)) {
           return false;
         }
