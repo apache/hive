@@ -91,7 +91,7 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
     this.loadInputFile = loadInputFile;
     this.conf = conf;
     this.context = context;
-    String cacheLevel = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETES).toLowerCase();
+    String cacheLevel = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETEDELTAS).toLowerCase();
     this.metadataCache = "none".equals(cacheLevel) ? null : metadataCache;
     this.cacheConf = cacheConf;
     this.cachePositionDeleteFiles = "all".equals(cacheLevel);
@@ -138,6 +138,7 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
     if (bytes != null) {
       return PositionDeleteIndex.deserialize(bytes, dv);
     }
+    counter(DeleteCacheCounters.DELETE_CACHE_MISS).increment(1);
     bytes = new byte[dv.contentSizeInBytes().intValue()];
     try {
       IOUtil.readFully(loadInputFile.apply(dv), dv.contentOffset(), bytes, 0, bytes.length);
@@ -164,8 +165,9 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
   /**
    * On a miss the whole position delete file is decoded, once per query on a daemon, and only the entry of the
    * requested data file is cached: a daemon caches the deletes of the data files it reads. A data file the delete file
-   * does not reference gets an empty entry of its own. The decoded file has a key of its own in the query's cache: a
-   * reader without the metadata cache (BaseDeleteLoader) caches its indexes under the location.
+   * does not reference gets an empty index and no cache entry; the lookup is counted as UNREFERENCED. The decoded file
+   * has a key of its own in the query's cache: a reader without the metadata cache (BaseDeleteLoader) caches its
+   * indexes under the location.
    */
   private PositionDeleteIndex readPosDeletes(DeleteFile deleteFile, CharSequence filePath) {
     DeletesKey key = new DeletesKey(deleteFile.location(), filePath.toString());
@@ -177,9 +179,10 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
           decodePosDeletes(deleteFile);
       bytes = serialized.get(filePath);
       if (bytes == null) {
-        bytes = Deletes.toPositionIndex(filePath, CloseableIterable.<StructLike>empty(), deleteFile)
-            .serialize().array();
+        counter(DeleteCacheCounters.DELETE_CACHE_UNREFERENCED).increment(1);
+        return Deletes.toPositionIndex(filePath, CloseableIterable.<StructLike>empty(), deleteFile);
       }
+      counter(DeleteCacheCounters.DELETE_CACHE_MISS).increment(1);
       putCached(key, bytes, deleteFile);
     }
     return DeletionVectors.deserialize(bytes, deleteFile);
@@ -196,7 +199,7 @@ public class CachingDeleteLoader extends BaseDeleteLoader {
   private byte[] getCached(DeletesKey key) {
     MemoryBufferOrBuffers buffers = metadataCache.getFileMetadata(key);
     if (buffers == null) {
-      counter(DeleteCacheCounters.DELETE_CACHE_MISS).increment(1);
+      // the caller counts the miss, or an unreferenced pair
       return null;
     }
     counter(DeleteCacheCounters.DELETE_CACHE_HIT).increment(1);
