@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
+import java.util.zip.GZIPInputStream;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
@@ -43,6 +45,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
@@ -50,6 +53,8 @@ import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
+import org.apache.iceberg.util.DeleteFileSet;
+import org.apache.iceberg.util.SerializationUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -204,7 +209,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * A session value of the key of the rewritable deletes is dropped: the job plans them itself.
+   * A dir of the rewritable deletes named in the session is not used, by DMLs nor by reads.
    */
   @Test
   public void testRewritableDeletesKeyOfTheSessionIsIgnored() {
@@ -292,15 +297,17 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   private static volatile List<String> scratchDirs;
   private static volatile Set<String> rewritableDeletesBefore;
   private static volatile boolean rewritableDeletesSeen;
+  private static volatile Set<String> collectedDataFiles;
 
-  private static Set<String> rewritableDeletes() throws IOException {
-    Set<String> files = Sets.newHashSet();
+  // the files the scans wrote into the dirs of the rewritable deletes
+  private static Set<Path> rewritableDeleteFiles() throws IOException {
+    Set<Path> files = Sets.newHashSet();
     for (String scratchDir : scratchDirs) {
       Path root = new Path(scratchDir);
       RemoteIterator<LocatedFileStatus> it = root.getFileSystem(new HiveConf()).listFiles(root, true);
       while (it.hasNext()) {
-        String file = it.next().getPath().toString();
-        if (file.endsWith("-rewritable-deletes")) {
+        Path file = it.next().getPath();
+        if (file.getParent().getName().endsWith("-rewritable-deletes")) {
           files.add(file);
         }
       }
@@ -308,28 +315,126 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
     return files;
   }
 
+  private static Set<String> rewritableDeletes() throws IOException {
+    return rewritableDeleteFiles().stream().map(Path::toString).collect(Collectors.toSet());
+  }
+
   /**
-   * Called by the writing tasks through java_method: records whether the query planned rewritable deletes.
+   * Called by the scan tasks through java_method: records whether the scans of the query collected rewritable
+   * deletes, and the data files they collected them for.
    */
   public static boolean probeRewritableDeletes() throws IOException {
     rewritableDeletesSeen = !Sets.difference(rewritableDeletes(), rewritableDeletesBefore).isEmpty();
+    Set<String> dataFiles = Sets.newHashSet();
+    for (Path file : rewritableDeleteFiles()) {
+      if (!rewritableDeletesBefore.contains(file.toString())) {
+        try (InputStream in = new GZIPInputStream(file.getFileSystem(new HiveConf()).open(file))) {
+          Map<String, DeleteFileSet> deletes = SerializationUtil.deserializeFromBytes(in.readAllBytes());
+          dataFiles.addAll(deletes.keySet());
+        }
+      }
+    }
+    collectedDataFiles = dataFiles;
     return true;
   }
 
-  @Test
-  public void testRewritableDeletesPlannedForTheJob() throws IOException {
-    createSingleFileTable("dv_delete");
-    shell.executeStatement("DELETE FROM dv_delete WHERE customer_id % 7 = 0");
+  private void resetProbe() throws IOException {
     // a query in Hadoop local mode uses the local scratch dir
     scratchDirs = List.of(HiveConf.getVar(shell.getHiveConf(), HiveConf.ConfVars.SCRATCH_DIR),
         HiveConf.getVar(shell.getHiveConf(), HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
-    String delete = "DELETE FROM dv_delete WHERE customer_id % 5 = 0 AND " +
-        "java_method('" + TestHiveIcebergDeletionVectors.class.getName() + "', 'probeRewritableDeletes') = 'true'";
     rewritableDeletesBefore = rewritableDeletes();
-    shell.executeStatement("EXPLAIN " + delete);
-    Assert.assertEquals("planned by EXPLAIN", rewritableDeletesBefore, rewritableDeletes());
     rewritableDeletesSeen = false;
+    collectedDataFiles = null;
+  }
+
+  private String probed(String dml) throws IOException {
+    resetProbe();
+    return dml + " AND java_method('" + TestHiveIcebergDeletionVectors.class.getName() +
+        "', 'probeRewritableDeletes') = 'true'";
+  }
+
+  // the probe runs in the SET list: in the WHERE clause, a nondeterministic function stops the filter's pushdown
+  private String probedUpdate(String tableName, String where) throws IOException {
+    resetProbe();
+    return "UPDATE " + tableName + " SET first_name = java_method('" + TestHiveIcebergDeletionVectors.class.getName() +
+        "', 'probeRewritableDeletes') WHERE " + where;
+  }
+
+  private static Set<String> locations(List<FileScanTask> tasks) {
+    return tasks.stream().map(t -> t.file().location()).collect(Collectors.toSet());
+  }
+
+  @Test
+  public void testRewritableDeletesCollectedByTheScan() throws IOException {
+    createSingleFileTable("dv_delete");
+    shell.executeStatement("DELETE FROM dv_delete WHERE customer_id % 7 = 0");
+    String delete = probed("DELETE FROM dv_delete WHERE customer_id % 5 = 0");
+    shell.executeStatement("EXPLAIN " + delete);
+    Assert.assertEquals("collected by EXPLAIN", rewritableDeletesBefore, rewritableDeletes());
     shell.executeStatement(delete);
-    Assert.assertTrue("planned in the temp dir of the query", rewritableDeletesSeen);
+    Assert.assertTrue("collected in the temp dir of the query", rewritableDeletesSeen);
+  }
+
+  /**
+   * A DML that scans one partition collects the previous deletes of that partition's data files only; the deletes of
+   * the other partitions remain.
+   */
+  @Test
+  public void testPartitionFilteredDmlOverExistingDVs() throws IOException {
+    Table table = createTable("dv_part_filter",
+        PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+            .truncate("customer_id", ROWS / 2).build());
+    shell.executeStatement("DELETE FROM dv_part_filter WHERE customer_id % 7 = 0");
+    table.refresh();
+    Set<String> firstPartition =
+        locations(planFiles(table.newScan().filter(Expressions.lessThan("customer_id", ROWS / 2))));
+    Assert.assertNotEquals(locations(planFiles(table)), firstPartition);
+
+    shell.executeStatement(probedUpdate("dv_part_filter", "customer_id < " + ROWS / 2 + " AND customer_id % 5 = 0"));
+    Assert.assertEquals("the deletes of the scanned partition only", firstPartition, collectedDataFiles);
+    Assert.assertEquals(ROWS - LongStream.range(0, ROWS).filter(i -> i % 7 == 0).count(),
+        count("SELECT count(*) FROM dv_part_filter"));
+    Assert.assertEquals(LongStream.range(0, ROWS / 2).filter(i -> i % 5 == 0 && i % 7 != 0).count(),
+        count("SELECT count(*) FROM dv_part_filter WHERE first_name = 'true'"));
+    assertOneDVPerDataFileAndNoMerge(table);
+  }
+
+  /**
+   * A DML filtered on a data column collects the previous deletes of the data files its stats-pruned scan reads.
+   */
+  @Test
+  public void testDmlFilteredByDataFileStatsOverExistingDVs() throws IOException {
+    // customer ids [0, ROWS) in one file and [ROWS, 2 * ROWS) in another
+    Table table = createSingleFileTable("dv_stats_filter");
+    shell.executeStatement(testTables.getInsertQuery(records(ROWS, 2 * ROWS),
+        TableIdentifier.of("default", "dv_stats_filter"), false));
+    shell.executeStatement("DELETE FROM dv_stats_filter WHERE customer_id % 7 = 0");
+    table.refresh();
+    Set<String> secondFile =
+        locations(planFiles(table.newScan().filter(Expressions.greaterThanOrEqual("customer_id", ROWS))));
+    Assert.assertEquals(1, secondFile.size());
+
+    shell.executeStatement(probedUpdate("dv_stats_filter", "customer_id >= " + ROWS + " AND customer_id % 5 = 0"));
+    Assert.assertEquals(secondFile, collectedDataFiles);
+    Assert.assertEquals(2 * ROWS - LongStream.range(0, 2 * ROWS).filter(i -> i % 7 == 0).count(),
+        count("SELECT count(*) FROM dv_stats_filter"));
+    Assert.assertEquals(LongStream.range(ROWS, 2 * ROWS).filter(i -> i % 5 == 0 && i % 7 != 0).count(),
+        count("SELECT count(*) FROM dv_stats_filter WHERE first_name = 'true'"));
+    assertOneDVPerDataFileAndNoMerge(table);
+  }
+
+  /**
+   * A MERGE whose source subquery reads the target table keeps the previous deletes.
+   */
+  @Test
+  public void testMergeWithASubqueryOverTheTarget() {
+    Table table = createSingleFileTable("dv_merge_self");
+    shell.executeStatement("DELETE FROM dv_merge_self WHERE customer_id % 7 = 0");
+    shell.executeStatement("MERGE INTO dv_merge_self t USING " +
+        "(SELECT customer_id FROM dv_merge_self WHERE customer_id < 100) s ON t.customer_id = s.customer_id " +
+        "WHEN MATCHED AND t.customer_id % 5 = 0 THEN DELETE");
+    long deleted = LongStream.range(0, ROWS).filter(i -> i % 7 == 0 || i < 100 && i % 5 == 0).count();
+    Assert.assertEquals(ROWS - deleted, count("SELECT count(*) FROM dv_merge_self"));
+    assertOneDVPerDataFileAndNoMerge(table);
   }
 }

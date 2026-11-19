@@ -61,6 +61,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
+import org.apache.iceberg.mr.hive.writer.RewritableDeletes;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types.StructType;
 import org.apache.iceberg.util.SerializationUtil;
@@ -234,6 +235,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
             HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.defaultBoolVal);
     Path tableLocation = new Path(conf.get(InputFormatConfig.TABLE_LOCATION));
 
+    // collects the position deletes of the planned data files when a DV writer of the job writes this table
+    RewritableDeletes.Collector rewritableDeletes = fromVersion == -1 ?
+        RewritableDeletes.collector(conf.get(InputFormatConfig.TABLE_IDENTIFIER), conf) : null;
+
     String[] groupingPartitionColumns = conf.getStrings(InputFormatConfig.GROUPING_PARTITION_COLUMNS);
     generateInputSplits(scan, table, groupingPartitionColumns, taskGroup -> {
       if (applyResidual && model == InputFormatConfig.InMemoryDataModel.HIVE) {
@@ -243,8 +248,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       if (allowDataFilesWithinTableLocationOnly) {
         validateFileLocations(taskGroup, tableLocation);
       }
+      if (rewritableDeletes != null) {
+        taskGroup.tasks().forEach(rewritableDeletes::add);
+      }
       splits.add(new IcebergSplit(conf, taskGroup));
     });
+    if (rewritableDeletes != null) {
+      rewritableDeletes.write(conf);
+    }
 
     // If enabled, do not serialize FileIO hadoop config to decrease split size
     // However, do not skip serialization for metatable queries, because some metadata tasks cache the IO object and we

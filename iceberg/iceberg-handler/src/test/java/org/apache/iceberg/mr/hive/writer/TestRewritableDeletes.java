@@ -21,8 +21,10 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
@@ -32,16 +34,19 @@ import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileMetadata;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.DeleteFileSet;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -56,6 +61,28 @@ public class TestRewritableDeletes {
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
+  private Table table;
+  private DataFile fileA;
+  private DataFile fileB;
+  private File queryTempDir;
+  private JobConf conf;
+
+  @Before
+  public void before() throws IOException {
+    File dir = temp.newFolder();
+    Assert.assertTrue(dir.delete());
+    table = new HadoopTables().create(SCHEMA, PartitionSpec.unpartitioned(),
+        ImmutableMap.of(TableProperties.FORMAT_VERSION, "3"), dir.getAbsolutePath());
+    fileA = dataFile(dir, "a");
+    fileB = dataFile(dir, "b");
+    table.newFastAppend().appendFile(fileA).appendFile(fileB).commit();
+    queryTempDir = temp.newFolder();
+    conf = new JobConf();
+    conf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "tez");
+    conf.set(HiveConf.ConfVars.HIVE_QUERY_ID.varname, QUERY_ID);
+    conf.set(DagUtils.TEZ_TMP_DIR_KEY, queryTempDir.getAbsolutePath());
+  }
+
   @After
   public void after() {
     ObjectCacheFactory.removeLlapQueryCache(QUERY_ID);
@@ -63,42 +90,130 @@ public class TestRewritableDeletes {
   }
 
   @Test
-  public void testLoadedOncePerDaemon() throws IOException {
-    File dir = temp.newFolder();
-    Assert.assertTrue(dir.delete());
-    Table table = new HadoopTables().create(SCHEMA, PartitionSpec.unpartitioned(),
-        ImmutableMap.of(TableProperties.FORMAT_VERSION, "3"), dir.getAbsolutePath());
-    DataFile dataFile = DataFiles.builder(table.spec())
-        .withPath(dir.getAbsolutePath() + "/data/file.parquet")
+  public void testNoCollectorWithoutADVWriter() {
+    Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, conf));
+    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+  }
+
+  /**
+   * Only the deletes of the data files a scan planned are collected.
+   */
+  @Test
+  public void testCollectsTheDeletesOfTheScannedFilesOnly() {
+    addDV(fileA);
+    addDV(fileB);
+    RewritableDeletes.addToJobConf(TABLE_NAME, conf);
+
+    collect(tasks().stream().filter(t -> t.file().location().equals(fileA.location())).toList());
+
+    Assert.assertEquals(Set.of(fileA.location()), RewritableDeletes.getFromJobConf(TABLE_NAME, conf).keySet());
+  }
+
+  /**
+   * Each scan of the table writes a file of its own, and the writers get the deletes of all of them.
+   */
+  @Test
+  public void testUnionOfTheScans() {
+    addDV(fileA);
+    addDV(fileB);
+    RewritableDeletes.addToJobConf(TABLE_NAME, conf);
+    for (FileScanTask task : tasks()) {
+      collect(List.of(task));
+    }
+    Assert.assertEquals(2, queryTempDir.listFiles()[0].list((d, name) -> name.endsWith(".gz")).length);
+    Assert.assertEquals(Set.of(fileA.location(), fileB.location()),
+        RewritableDeletes.getFromJobConf(TABLE_NAME, conf).keySet());
+  }
+
+  @Test
+  public void testScanWithoutPreviousDeletes() {
+    RewritableDeletes.addToJobConf(TABLE_NAME, conf);
+    collect(tasks());
+    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+  }
+
+  /**
+   * Reading fails when no scan wrote a file.
+   */
+  @Test
+  public void testWriterFailsWithoutAScanFile() {
+    RewritableDeletes.addToJobConf(TABLE_NAME, conf);
+    IllegalStateException thrown = Assert.assertThrows(IllegalStateException.class,
+        () -> RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+    Assert.assertTrue(thrown.getMessage(), thrown.getMessage().startsWith("No scan collected the rewritable deletes"));
+  }
+
+  @Test
+  public void testLoadedOncePerDaemon() {
+    addDV(fileA);
+    RewritableDeletes.addToJobConf(TABLE_NAME, conf);
+    collect(tasks());
+
+    LlapProxy.setDaemon(true);
+    Map<String, DeleteFileSet> deletes = RewritableDeletes.getFromJobConf(TABLE_NAME, conf);
+    Assert.assertEquals(Set.of(fileA.location()), deletes.keySet());
+    // the second writer of the query finds the rewritable deletes in the cache of the daemon
+    Assert.assertSame(deletes, RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+    // which the writers of the daemon share
+    Assert.assertThrows(UnsupportedOperationException.class, () -> deletes.remove(fileA.location()));
+  }
+
+  /**
+   * A dir named in the session is not used: scans do not collect into it and writers do not read it.
+   */
+  @Test
+  public void testSessionValueIsIgnored() {
+    conf.set("iceberg.mr.rewritable.deletes." + TABLE_NAME, "file:/session-value");
+    Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, conf));
+    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+
+    RewritableDeletes.addToJobConf(TABLE_NAME, conf);
+    collect(tasks());
+    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
+  }
+
+  /**
+   * The dir is named for the job's query only.
+   */
+  @Test
+  public void testDirOfAnotherQueryIsIgnored() {
+    RewritableDeletes.addToJobConf(TABLE_NAME, conf);
+    conf.set(HiveConf.ConfVars.HIVE_QUERY_ID.varname, QUERY_ID + "_next");
+    Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, conf));
+  }
+
+  private void collect(List<FileScanTask> tasks) {
+    RewritableDeletes.Collector collector = RewritableDeletes.collector(TABLE_NAME, conf);
+    tasks.forEach(collector::add);
+    collector.write(conf);
+  }
+
+  private List<FileScanTask> tasks() {
+    try (CloseableIterable<FileScanTask> tasks = table.newScan().planFiles()) {
+      return StreamSupport.stream(tasks.spliterator(), false).toList();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static DataFile dataFile(File dir, String name) {
+    return DataFiles.builder(PartitionSpec.unpartitioned())
+        .withPath(dir.getAbsolutePath() + "/data/" + name + ".parquet")
         .withFileSizeInBytes(10)
         .withRecordCount(2)
         .build();
-    table.newFastAppend().appendFile(dataFile).commit();
-    File queryTempDir = temp.newFolder();
-    JobConf conf = new JobConf();
-    conf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "tez");
-    conf.set(HiveConf.ConfVars.HIVE_QUERY_ID.varname, QUERY_ID);
-    conf.set(DagUtils.TEZ_TMP_DIR_KEY, queryTempDir.getAbsolutePath());
+  }
 
-    RewritableDeletes.addToJobConf(table, TABLE_NAME, null, conf);
-    Assert.assertArrayEquals("planned without previous deletes", new String[0], queryTempDir.list());
-
+  private void addDV(DataFile dataFile) {
     table.newRowDelta().addDeletes(FileMetadata.deleteFileBuilder(table.spec())
         .ofPositionDeletes()
         .withFormat(FileFormat.PUFFIN)
-        .withPath(dir.getAbsolutePath() + "/data/dv.puffin")
+        .withPath(dataFile.location() + ".puffin")
         .withFileSizeInBytes(10)
         .withRecordCount(1)
         .withReferencedDataFile(dataFile.location())
         .withContentOffset(4)
         .withContentSizeInBytes(6)
         .build()).commit();
-    RewritableDeletes.addToJobConf(table, TABLE_NAME, null, conf);
-
-    LlapProxy.setDaemon(true);
-    Map<String, DeleteFileSet> deletes = RewritableDeletes.getFromJobConf(TABLE_NAME, conf);
-    Assert.assertEquals(Set.of(dataFile.location()), deletes.keySet());
-    // the second writer of the query finds the rewritable deletes in the cache of the daemon
-    Assert.assertSame(deletes, RewritableDeletes.getFromJobConf(TABLE_NAME, conf));
   }
 }

@@ -407,8 +407,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   /**
-   * The DV writers of a merge-on-read DML merge the previous deletes of the data files they write. These are planned
-   * while the job is built.
+   * For a merge-on-read DML that writes DVs, names the temp dir into which the scans of the target table collect the
+   * position deletes of the data files they read. The DV writers merge those deletes into the DVs they write.
    */
   @Override
   public void configureJobConf(FileSinkDesc sinkDesc, JobConf jobConf) {
@@ -417,8 +417,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Properties props = tableDesc.getProperties();
     if (sinkDesc.getWriteOperation() == Operation.DELETE && !sinkDesc.isCopyOnWrite() &&
         IcebergTableUtil.formatVersion(Maps.fromProperties(props)) >= 3) {
-      RewritableDeletes.addToJobConf(IcebergTableUtil.getTable(jobConf, props), tableDesc.getTableName(),
-          props.getProperty(Catalogs.SNAPSHOT_REF), jobConf);
+      RewritableDeletes.addToJobConf(tableDesc.getTableName(), jobConf);
     }
   }
 

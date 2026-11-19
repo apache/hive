@@ -46,6 +46,7 @@ import org.apache.iceberg.io.PartitioningDVWriter;
 import org.apache.iceberg.io.PartitioningWriter;
 import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
+import org.apache.iceberg.relocated.com.google.common.base.Suppliers;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.DeleteFileSet;
 import org.apache.iceberg.util.Tasks;
@@ -131,7 +132,7 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
     DeleteGranularity deleteGranularity = context.deleteGranularity();
 
     if (context.useDVs()) {
-      return new PartitioningDVWriter<>(files, new PreviousDeleteLoader(table, rewritableDeletes.get()));
+      return new PartitioningDVWriter<>(files, new PreviousDeleteLoader(table, rewritableDeletes));
     }
     // a writer of partition-scoped position deletes rewrites none
     if (inputOrdered) {
@@ -141,19 +142,23 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
     }
   }
 
+  /**
+   * Loads the previous position deletes of a data file for its DV. The rewritable deletes are read on the first call,
+   * when the writer writes its DVs, after the scans that produced its rows have collected them.
+   */
   private static class PreviousDeleteLoader implements Function<CharSequence, PositionDeleteIndex> {
-    private final Map<String, DeleteFileSet> deleteFiles;
+    private final Supplier<Map<String, DeleteFileSet>> deleteFiles;
     private final DeleteLoader deleteLoader;
 
-    private PreviousDeleteLoader(Table table, Map<String, DeleteFileSet> deleteFiles) {
-      this.deleteFiles = deleteFiles;
+    private PreviousDeleteLoader(Table table, Supplier<Map<String, DeleteFileSet>> deleteFiles) {
+      this.deleteFiles = Suppliers.memoize(deleteFiles::get);
       this.deleteLoader = new BaseDeleteLoader(
           deleteFile -> EncryptingFileIO.combine(table.io(), table.encryption()).newInputFile(deleteFile));
     }
 
     @Override
     public PositionDeleteIndex apply(CharSequence path) {
-      DeleteFileSet deleteFileSet = deleteFiles.get(path.toString());
+      DeleteFileSet deleteFileSet = deleteFiles.get().get(path.toString());
       if (deleteFileSet == null) {
         return null;
       }
