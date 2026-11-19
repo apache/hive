@@ -70,7 +70,7 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
     setWriterLevelConfiguration(jc, table);
     boolean shouldAddRowLineageColumns = jc.getBoolean(SessionStateUtil.ROW_LINEAGE, false);
 
-    return WriterBuilder.builderFor(table, jc::get)
+    return WriterBuilder.builderFor(table, jc)
         .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
         // of the snapshot the DML writes, which the commit validates from
         .rewritableDeletes(() -> RewritableDeletes.getFromJobConf(tableName,

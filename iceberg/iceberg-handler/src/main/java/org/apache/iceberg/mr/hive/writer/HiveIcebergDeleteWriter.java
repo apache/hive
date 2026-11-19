@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.PartitionKey;
@@ -45,10 +46,10 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   private final boolean isMergeTask;
 
   HiveIcebergDeleteWriter(
-      Table table, Supplier<Map<String, DeleteFileSet>> rewritableDeletes,
+      Table table, Supplier<Map<String, DeleteFileSet>> rewritableDeletes, Configuration conf,
       HiveFileWriterFactory writerFactory, OutputFileFactory deleteFileFactory,
       Context context) {
-    super(table, newDeleteWriter(table, rewritableDeletes, writerFactory, deleteFileFactory, context));
+    super(table, newDeleteWriter(table, rewritableDeletes, conf, writerFactory, deleteFileFactory, context));
 
     this.rowDataTemplate = GenericRecord.create(table.schema());
     this.isMergeTask = context.isMergeTask();

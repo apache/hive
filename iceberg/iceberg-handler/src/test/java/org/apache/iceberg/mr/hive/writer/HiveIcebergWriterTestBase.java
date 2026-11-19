@@ -72,7 +72,7 @@ public class HiveIcebergWriterTestBase {
       .build();
 
   private final HadoopTables tables = new HadoopTables(new HiveConf());
-  private TestHelper helper;
+  protected TestHelper helper;
   protected Table table;
   protected WriterBuilder writerBuilder;
 
@@ -121,7 +121,7 @@ public class HiveIcebergWriterTestBase {
 
     TaskAttemptID taskAttemptID =
         new TaskAttemptID(jobId.getJtIdentifier(), jobId.getId(), TaskType.MAP, 0, 0);
-    writerBuilder = WriterBuilder.builderFor(table, jc::get)
+    writerBuilder = WriterBuilder.builderFor(table, jc)
         .attemptID(taskAttemptID)
         .queryId("Q_ID");
   }

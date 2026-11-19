@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -51,6 +52,7 @@ import static org.apache.iceberg.TableProperties.DELETE_DEFAULT_FILE_FORMAT;
 
 public class WriterBuilder {
   private final Table table;
+  private final Configuration conf;
   private Supplier<Map<String, DeleteFileSet>> rewritableDeletes;
   private final Context context;
   private final String tableName;
@@ -65,16 +67,18 @@ public class WriterBuilder {
   // To specify whether to write the actual row data while writing the delete files.
   private boolean shouldAddRowLineageColumns = false;
 
-  private WriterBuilder(Table table, UnaryOperator<String> ops) {
+  private WriterBuilder(Table table, Configuration conf) {
     this.table = table;
+    this.conf = conf;
+    UnaryOperator<String> ops = conf::get;
     this.tableName = ops.apply(Catalogs.NAME);
     this.context = new Context(table.properties(), ops, tableName);
     this.operation = HiveCustomStorageHandlerUtils.getWriteOperation(ops, tableName);
     this.copyOnWrite = HiveCustomStorageHandlerUtils.isCopyOnWrite(ops, tableName);
   }
 
-  public static WriterBuilder builderFor(Table table, UnaryOperator<String> ops) {
-    return new WriterBuilder(table, ops);
+  public static WriterBuilder builderFor(Table table, Configuration conf) {
+    return new WriterBuilder(table, conf);
   }
 
   public WriterBuilder attemptID(TaskAttemptID newAttemptID) {
@@ -127,7 +131,7 @@ public class WriterBuilder {
     } else {
       writer = switch (operation) {
         case DELETE ->
-            new HiveIcebergDeleteWriter(table, rewritableDeletes, writerFactory, deleteFileFactory, context);
+            new HiveIcebergDeleteWriter(table, rewritableDeletes, conf, writerFactory, deleteFileFactory, context);
         case OTHER ->
             new HiveIcebergRecordWriter(table, writerFactory, dataFileFactory, context);
         default ->

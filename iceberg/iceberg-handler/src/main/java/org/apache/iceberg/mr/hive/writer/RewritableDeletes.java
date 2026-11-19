@@ -185,7 +185,7 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
   }
 
   private static RewritableDeletes readDir(String location, Configuration conf) {
-    LOG.info("Reading rewritable deletes from {}", location);
+    LOG.debug("Reading rewritable deletes from {}", location);
     Path dir = new Path(location);
     Map<String, DeleteFileSet> deletes = Maps.newHashMap();
     try {
@@ -234,11 +234,5 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
   private static boolean isScanFile(Path file) {
     Path tableDir = file.getParent().getParent();
     return tableDir != null && tableDir.getName().endsWith(DIR_SUFFIX);
-  }
-
-  // the object cache of a Tez container logs the values it returns
-  @Override
-  public String toString() {
-    return "rewritable deletes of " + deletes.size() + " data files";
   }
 }
