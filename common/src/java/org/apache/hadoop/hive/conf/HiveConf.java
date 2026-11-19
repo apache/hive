@@ -204,12 +204,6 @@ public class HiveConf extends Configuration {
     for (ConfVars confVar : ConfVars.values()) {
       vars.put(confVar.varname, confVar);
     }
-    // Old name: accepted by SET (vars) and mapped onto the new key (deprecation), since defaults are preset under
-    // the new name. Not an altName: getVar would read the deprecated key on every call, and Hadoop logs the
-    // deprecation on the first read in every process.
-    String cacheDeleteDeltas = "hive.llap.io.cache.deletedeltas";
-    vars.put(cacheDeleteDeltas, ConfVars.LLAP_IO_CACHE_DELETES);
-    Configuration.addDeprecation(cacheDeleteDeltas, ConfVars.LLAP_IO_CACHE_DELETES.varname);
 
     Set<String> llapDaemonConfVarsSetLocal = new LinkedHashSet<>();
     populateLlapDaemonVarsSet(llapDaemonConfVarsSetLocal);
@@ -5046,11 +5040,11 @@ public class HiveConf extends Configuration {
          "notifications are received by the daemon. Sweep phase of proactive eviction will only do the cache policy " +
          "cleanup in this case. This can increase cache hit ratio but might scale bad in a workload that generates " +
          "many proactive eviction events."),
-    LLAP_IO_CACHE_DELETES("hive.llap.io.cache.deletes", "all", new StringSet("none", "metadata", "all"),
+    LLAP_IO_CACHE_DELETEDELTAS("hive.llap.io.cache.deletedeltas", "all", new StringSet("none", "metadata", "all"),
          "Which delete files LLAP IO reads through its cache. 'none': deletes are read directly from their FS. " +
          "'metadata': ACID delete delta tails, Iceberg deletion vectors. 'all': also ACID delete events and " +
          "Iceberg V2 position deletes, cached as deletion vectors. For ACID, only ColumnizedDeleteEventRegistry " +
-         "is supported, not SortMergedDeleteEventRegistry. Formerly hive.llap.io.cache.deletedeltas."),
+         "is supported, not SortMergedDeleteEventRegistry."),
     LLAP_IO_PATH_CACHE_SIZE("hive.llap.io.path.cache.size", "10Mb", new SizeValidator(),
         "The amount of the maximum memory allowed to store the file paths."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,

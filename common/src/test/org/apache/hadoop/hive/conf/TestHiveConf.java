@@ -145,26 +145,6 @@ public class TestHiveConf {
   }
 
   @Test
-  public void testLlapIoCacheDeletesHonoursDeprecatedName() {
-    Assert.assertEquals(ConfVars.LLAP_IO_CACHE_DELETES, HiveConf.getConfVars("hive.llap.io.cache.deletedeltas"));
-    HiveConf conf = new HiveConf();
-    conf.set("hive.llap.io.cache.deletedeltas", "none");
-    Assert.assertEquals("none", HiveConf.getVar(new JobConf(conf), ConfVars.LLAP_IO_CACHE_DELETES));
-
-    // reading the new key does not read the old one, whose deprecation Hadoop would log
-    ArrayList<String> read = new ArrayList<>();
-    Configuration recording = new Configuration(false) {
-      @Override
-      public String get(String name, String defaultValue) {
-        read.add(name);
-        return super.get(name, defaultValue);
-      }
-    };
-    HiveConf.getVar(recording, ConfVars.LLAP_IO_CACHE_DELETES);
-    Assert.assertEquals(Lists.newArrayList(ConfVars.LLAP_IO_CACHE_DELETES.varname), read);
-  }
-
-  @Test
   public void testToSizeBytes() throws Exception {
     Assert.assertEquals(1L, HiveConf.toSizeBytes("1b"));
     Assert.assertEquals(1L, HiveConf.toSizeBytes("1bytes"));

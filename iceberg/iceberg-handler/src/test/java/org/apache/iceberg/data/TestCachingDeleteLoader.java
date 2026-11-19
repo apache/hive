@@ -152,7 +152,7 @@ public class TestCachingDeleteLoader {
   public void testCacheLevelNoneBypassesCache() throws IOException {
     DeleteFile dv = writeDVs(ImmutableMap.of(DATA_FILE_A, new long[] { 4 })).get(0);
     // HiveConf validates the level case-insensitively and keeps the user's casing
-    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETES, "NONE");
+    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETEDELTAS, "NONE");
 
     assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A), 4);
     assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A), 4);
@@ -164,7 +164,7 @@ public class TestCachingDeleteLoader {
   @Test
   public void testCacheLevelMetadataCachesDVs() throws IOException {
     DeleteFile dv = writeDVs(ImmutableMap.of(DATA_FILE_A, new long[] { 4 })).get(0);
-    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETES, "metadata");
+    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETEDELTAS, "metadata");
 
     loader(cache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A);
     assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(dv), DATA_FILE_A), 4);
@@ -226,21 +226,30 @@ public class TestCachingDeleteLoader {
     assertBuffersReleased();
   }
 
+  /**
+   * A data file the delete file does not reference gets an empty index and no cache entry.
+   */
   @Test
-  public void testDataFileWithoutDeletesInPositionDeleteFileIsCached() throws IOException {
-    DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }));
+  public void testDataFileWithoutDeletesInPositionDeleteFileIsNotCached() throws IOException {
+    // B is within the file_path bounds [A, C] of the delete file, but has no deletes in it
+    DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }, DATA_FILE_C, new long[] { 2 }));
 
     for (int i = 0; i < 2; i++) {
-      assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B));
+      PositionDeleteIndex index = loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B);
+      assertDeleted(index);
+      Assert.assertSame(deletes, Iterables.getOnlyElement(index.deleteFiles()));
     }
-    Assert.assertEquals(1, opens.get());
-    assertBuffersReleased();
+    // outside a query's object cache every read decodes the file
+    Assert.assertEquals(2, opens.get());
+    Mockito.verify(cache, Mockito.never()).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
+    assertCounters(counters, 0, 0, 0, 0);
+    Assert.assertEquals(2, counters.findCounter(DeleteCacheCounters.DELETE_CACHE_UNREFERENCED).getValue());
   }
 
   @Test
   public void testCacheLevelMetadataSkipsPositionDeleteFiles() throws IOException {
     DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }));
-    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETES, "metadata");
+    HiveConf.setVar(conf, HiveConf.ConfVars.LLAP_IO_CACHE_DELETEDELTAS, "metadata");
 
     assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_A), 1);
     assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_A), 1);
@@ -251,19 +260,23 @@ public class TestCachingDeleteLoader {
 
   @Test
   public void testPositionDeleteFileIsDecodedOncePerQuery() throws IOException {
-    DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }));
+    // B is within the file_path bounds [A, C] of the delete file, but has no deletes in it
+    DeleteFile deletes = writePosDeletes(ImmutableMap.of(DATA_FILE_A, new long[] { 1 }, DATA_FILE_C, new long[] { 3 }));
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID, "query1");
     LlapProxy.setDaemon(true);
     try {
       assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_B));
-      assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_C));
+      assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_C), 3);
       assertDeleted(loader(cache).loadPositionDeletes(ImmutableList.of(deletes), DATA_FILE_A), 1);
     } finally {
       LlapProxy.setDaemon(false);
       ObjectCacheFactory.removeLlapQueryCache("query1");
     }
     Assert.assertEquals("Data files the delete file does not reference must not decode it again", 1, opens.get());
-    Mockito.verify(cache, Mockito.times(3)).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
+    // only the data files the delete file references are cached
+    Mockito.verify(cache, Mockito.times(2)).putFileMetadata(any(), any(ByteBuffer.class), any(), any());
+    assertCounters(counters, 0, 2, 2, 0);
+    Assert.assertEquals(1, counters.findCounter(DeleteCacheCounters.DELETE_CACHE_UNREFERENCED).getValue());
     assertBuffersReleased();
   }
 

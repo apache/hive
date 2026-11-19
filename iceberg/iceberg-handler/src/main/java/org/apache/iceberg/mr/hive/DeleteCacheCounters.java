@@ -22,11 +22,13 @@ package org.apache.iceberg.mr.hive;
 /**
  * Task counters of the LLAP metadata cache lookups and puts made by
  * {@link org.apache.iceberg.data.CachingDeleteLoader}. PUT and PUT_BYTES count what is offered to the cache: a put
- * that races with another one keeps the existing entry.
+ * that races with another one keeps the existing entry. UNREFERENCED counts the lookups of a data file that a
+ * position delete file does not reference; such pairs are not cached and are not counted as misses.
  */
 public enum DeleteCacheCounters {
   DELETE_CACHE_HIT,
   DELETE_CACHE_MISS,
+  DELETE_CACHE_UNREFERENCED,
   DELETE_CACHE_PUT,
   DELETE_CACHE_PUT_BYTES,
   DELETE_CACHE_PUT_FAILED,
