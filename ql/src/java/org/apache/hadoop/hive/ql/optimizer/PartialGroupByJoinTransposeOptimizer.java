@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.GenericUDAFInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -79,13 +78,6 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,38 +113,19 @@ import org.slf4j.LoggerFactory;
  *         value, merged by SUM (counts) or the function itself</li></ul>
  *   </li>
  *   <li>every aggregate key is deterministic and references one join input at most</li>
- *   <li>every aggregation argument (examples over {@code store_sales JOIN date_dim})
- *   <ul>
- *     <li>is deterministic and references one join input at most. For example, in {@code sum(ss_sales_price)} the
- *     argument references store_sales: the input the GROUP BY is pushed to.</li>
- *     <li>or it is an {@code IF(condition, value, else)} whose condition references one join input and whose value
- *     the other. For example, in {@code sum(if(d_day_name = 'Sunday', ss_sales_price, null))}:
- *     <ul>
- *       <li>the condition is {@code d_day_name = 'Sunday'}, it references date_dim;</li>
- *       <li>the value is {@code ss_sales_price}, it references store_sales: the input the GROUP BY is pushed to;</li>
- *       <li>the else is {@code null}.</li>
- *     </ul>
- *     The value is aggregated below the join, {@code sum(ss_sales_price)}, and the condition is applied to the
- *     partial result above the join: {@code sum(if(d_day_name = 'Sunday', partial, null))};</li>
- *     <li>or it is a {@code CASE WHEN condition THEN value [ELSE else] END} with the same condition and value as
- *     the IF; a missing ELSE is NULL. For example,
- *     {@code sum(case when d_day_name = 'Sunday' then ss_sales_price else 0 end)} is aggregated below the join as
- *     {@code sum(ss_sales_price)}, and above the join as {@code sum(if(d_day_name = 'Sunday', partial, 0))}.</li>
- *   </ul>
- *   Splitting an IF or CASE is exact because every row of a pushed group has the same join key, so it joins the
- *   same rows of the other input: for each of those rows, the condition is true or false for the whole group. The
- *   value is aggregated over the rows whose condition is false too, so it must not fail on them: it is built from
- *   columns, constants, +, -, * and casts only. The else is NULL, or 0 for a SUM;</li>
- *   <li>every aggregation argument (the value, for a split IF or CASE) references the same join input, and the
- *   GROUP BY is pushed to it; otherwise the push is skipped.<br>
+ *   <li>every aggregation argument is deterministic and references one join input at most. For example, in
+ *   {@code sum(ss_sales_price)} over {@code store_sales JOIN date_dim} the argument references store_sales: the
+ *   input the GROUP BY is pushed to.</li>
+ *   <li>every aggregation argument references the same join input, and the GROUP BY is pushed to it; otherwise the
+ *   push is skipped.<br>
  *   Example: {@code sum(ss_sales_price), max(d_moy)} over {@code store_sales JOIN date_dim} is not pushed.<br>
  *   An argument without columns does not choose an input; if no argument has columns, the GROUP BY is pushed to
  *   the larger input.<br>
  *   Example: {@code count(*)}, {@code count(1)};</li>
  *   <li>the pushed aggregate's keys are going to be the original keys available on that input plus
  *   the join keys from that side and its columns used by residual join filters (non-equijoin filters)</li>
- *   <li>the push is skipped when the pushed keys outnumber the original keys and the columns of the IF
- *   conditions or are empty, or when a pushed key has an NDV of more than
+ *   <li>the push is skipped when the pushed keys outnumber the original keys or are empty, or when a pushed key has
+ *   an NDV of more than
  *   {@code hive.optimize.partial.aggr.join.transpose.max.key.ndv.ratio} x input rows </li>
  *   <li>missing statistics also skip it. Required:
  *   <ul>
@@ -335,22 +308,9 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
       }
     }
     List<List<ExprNodeDesc>> params = new ArrayList<>();
-    List<CaseSplit> splits = new ArrayList<>();
-    Set<String> conditionCols = new HashSet<>();
     int side = NO_INPUT;
     for (AggregationDesc agg : aggs) {
       List<ExprNodeDesc> aggParams = ExprNodeDescUtils.backtrack(agg.getParameters(), gby, joinChild);
-      CaseSplit split = null;
-      if (aggParams.size() == 1 && inputOf(aggParams.getFirst(), reversedExprs) == INVALID) {
-        // the value is aggregated below the join, on the input other than the condition's
-        split = splitCase(agg, aggParams.getFirst(), reversedExprs);
-        if (split == null) {
-          return null;
-        }
-        conditionCols.addAll(split.conditionCols);
-        aggParams = new ArrayList<>(Arrays.asList(split.value));
-      }
-      splits.add(split);
       for (ExprNodeDesc param : aggParams) {
         int input = inputOf(param, reversedExprs);
         if (input == INVALID) {
@@ -426,9 +386,8 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
       }
     }
     // The push is skipped when the pushed keys (the original keys on this input, its
-    // join keys and its columns used by residual filters) are empty or outnumber the keys of the original GROUP BY
-    // plus the columns of the split IF conditions.
-    if (pushedKeys.isEmpty() || pushedKeys.size() > keys.size() + conditionCols.size()) {
+    // join keys and its columns used by residual filters) are empty or outnumber the keys of the original GROUP BY.
+    if (pushedKeys.isEmpty() || pushedKeys.size() > keys.size()) {
       return null;
     }
     List<ExprNodeDesc> partitionCols = rsDesc.getPartitionCols();
@@ -632,22 +591,7 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
     List<ExprNodeDesc> partialRefs = new ArrayList<>();
     for (int i = 0; i < aggs.size(); i++) {
       int j = numPushedKeys + i;
-      ExprNodeDesc partial = new ExprNodeColumnDesc(pushedCols.get(j).getType(), joinNames[j], null, false);
-      CaseSplit split = splits.get(i);
-      if (split != null) {
-        // a COUNT whose rows all fail the condition is 0; the other functions keep the ELSE
-        TypeInfo type = partial.getTypeInfo();
-        boolean count = "count".equalsIgnoreCase(aggs.get(i).getGenericUDAFName());
-        ExprNodeConstantDesc otherwise = count || split.elseBranch == ElseBranch.ZERO
-            ? zeroOf(type)
-            : new ExprNodeConstantDesc(type, null);
-        if (otherwise == null) {
-          return null;
-        }
-        partial = ExprNodeGenericFuncDesc.newInstance(new GenericUDFIf(),
-            new ArrayList<>(Arrays.asList(split.condition.clone(), partial, otherwise)));
-      }
-      partialRefs.add(partial);
+      partialRefs.add(new ExprNodeColumnDesc(pushedCols.get(j).getType(), joinNames[j], null, false));
     }
 
     LOG.debug("Pushing {} below {} to input {}", gby, join, side);
@@ -779,128 +723,6 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
       input = tag;
     }
     return input;
-  }
-
-  /**
-   * An aggregation argument IF(condition, value, otherwise) split across the join: the value is aggregated below
-   * the join, the condition is applied to the partial result above it. For example, over store_sales JOIN date_dim:
-   * <pre>
-   *   TS(store_sales) - GBY(partialhash) - RS \
-   *                                            JOIN - GBY(hash)
-   *   TS(date_dim) ----------------------- RS /
-   *
-   *   GBY(partialhash): sum(ss_sales_price)                            the value, below the join
-   *   GBY(hash):        sum(if(d_day_name = 'Sunday', partial, null))  the condition, above the join
-   * </pre>
-   */
-  private record CaseSplit(ExprNodeDesc condition, ExprNodeDesc value, ElseBranch elseBranch,
-      Set<String> conditionCols) {}
-
-  /** The else branch of a split IF or CASE: NULL (also a missing ELSE), or 0 for a SUM. */
-  private enum ElseBranch { NULL, ZERO }
-
-  /**
-   * An IF or CASE argument of an aggregate that can be split across the join, or null:
-   * IF(condition, value, otherwise) with the condition on one join input and the value on the other.
-   * The condition is unknown below the join, so the pushed GROUP BY aggregates the value of every row, not just
-   * the ones whose condition would be true. The new query can not fail even when evaluating the value of a row whose
-   * condition would be false so only these expression elements are allowed:<br>
-   * columns, constants, +, -, * and casts.
-   */
-  private static CaseSplit splitCase(AggregationDesc agg, ExprNodeDesc param, Map<String, Byte> reversedExprs)
-      throws SemanticException {
-    if (!(param instanceof ExprNodeGenericFuncDesc) || !ExprNodeDescUtils.isDeterministic(param)) {
-      return null;
-    }
-    GenericUDF udf = ((ExprNodeGenericFuncDesc) param).getGenericUDF();
-    List<ExprNodeDesc> children = param.getChildren();
-    boolean when = udf instanceof GenericUDFWhen && (children.size() == 2 || children.size() == 3);
-    if (!when && !(udf instanceof GenericUDFIf && children.size() == 3)) {
-      return null;
-    }
-    ExprNodeDesc condition = children.get(0);
-    ExprNodeDesc value = children.get(1);
-    int conditionInput = inputOf(condition, reversedExprs);
-    int valueInput = inputOf(value, reversedExprs);
-    if (conditionInput < 0 || valueInput < 0 || conditionInput == valueInput || mayFail(value)) {
-      return null;
-    }
-    String udafName = agg.getGenericUDAFName().toLowerCase();
-    ElseBranch elseBranch = ElseBranch.NULL;
-    if (children.size() == 3 && !isNull(children.get(2))) {
-      if (!("sum".equals(udafName) || "$sum0".equals(udafName)) || !isZero(children.get(2))) {
-        return null;
-      }
-      elseBranch = ElseBranch.ZERO;
-    }
-    // The type of the IF unifies the types of the value and the else branch, so it can be wider than the value.
-    // CBO casts a value of another type (e.g. an int value with ELSE 0.0), but not a decimal of another precision or
-    // scale: IF(c, value, 0) with a decimal(2,2) value is a decimal(3,2), because the 0, a decimal(1,0), needs one
-    // digit before the decimal point and the value has none.
-    if (!value.getTypeInfo().equals(param.getTypeInfo())) {
-      if (!(param.getTypeInfo() instanceof PrimitiveTypeInfo)) {
-        return null;
-      }
-      value = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
-          .createConversionCast(value, (PrimitiveTypeInfo) param.getTypeInfo());
-    }
-    Set<String> conditionCols = new HashSet<>();
-    for (ExprNodeColumnDesc col : columnsOf(condition)) {
-      conditionCols.add(col.getColumn());
-    }
-    return new CaseSplit(condition, value, elseBranch, conditionCols);
-  }
-
-  /**
-   * True unless the expression is built only from columns, constants, +, -, *, / and casts, which cannot fail:
-   * / returns NULL for a zero divisor or an overflow. The operator div (integer division, UDFOPLongDivide)
-   * is not allowed: it fails on a zero divisor.
-   */
-  private static boolean mayFail(ExprNodeDesc expr) {
-    if (expr instanceof ExprNodeColumnDesc || expr instanceof ExprNodeConstantDesc) {
-      return false;
-    }
-    if (!(expr instanceof ExprNodeGenericFuncDesc)) {
-      return true;
-    }
-    GenericUDF udf = ((ExprNodeGenericFuncDesc) expr).getGenericUDF();
-    if (!(udf instanceof GenericUDFOPPlus || udf instanceof GenericUDFOPMinus || udf instanceof GenericUDFOPMultiply
-        || FunctionRegistry.isOpNegative(expr) || FunctionRegistry.isOpCast(expr))) {
-      return true;
-    }
-    for (ExprNodeDesc child : expr.getChildren()) {
-      if (mayFail(child)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private static boolean isNull(ExprNodeDesc expr) {
-    return expr instanceof ExprNodeConstantDesc && ((ExprNodeConstantDesc) expr).getValue() == null;
-  }
-
-  private static boolean isZero(ExprNodeDesc expr) {
-    if (!(expr instanceof ExprNodeConstantDesc)) {
-      return false;
-    }
-    Object value = ((ExprNodeConstantDesc) expr).getValue();
-    if (value instanceof HiveDecimal) {
-      return ((HiveDecimal) value).signum() == 0;
-    }
-    return value instanceof Number && ((Number) value).doubleValue() == 0;
-  }
-
-  private static ExprNodeConstantDesc zeroOf(TypeInfo type) {
-    if (!(type instanceof PrimitiveTypeInfo)) {
-      return null;
-    }
-    return switch (((PrimitiveTypeInfo) type).getPrimitiveCategory()) {
-      case LONG -> new ExprNodeConstantDesc(type, 0L);
-      case DOUBLE -> new ExprNodeConstantDesc(type, 0.0d);
-      case DECIMAL -> new ExprNodeConstantDesc(type, HiveDecimal.ZERO);
-      default -> null;
-    };
   }
 
   /** The join input with the most rows, or NO_INPUT without statistics. */
