@@ -902,9 +902,11 @@ public class Commands {
           lines += "\n" + extra;
         }
       }
-      String[] cmds = lines.split(beeLine.getOpts().getDelimiter());
-      for (String c : cmds) {
-        c = c.trim();
+      if (lines == null || lines.isEmpty()) {
+        return true;
+      }
+      for (String c : getCmdList(lines, false)) {
+        c = HiveStringUtils.removeComments(c.trim());
         if (!executeInternal(c, false)) {
           return false;
         }
