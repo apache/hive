@@ -192,6 +192,9 @@ public class TestHiveSplitGenerator {
     };
     IOException e = Assert.assertThrows(IOException.class, () -> generateEvents(conf, splits));
     Assert.assertEquals("Cannot serialize split 7", e.getMessage());
+
+    // the shared pool serializes the next vertex
+    Assert.assertEquals(11, generateEvents(conf, getSplits(10)).size());
   }
 
   private InputSplit[] getSplits(int numSplits) {

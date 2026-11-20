@@ -38,8 +38,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -106,6 +109,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class HiveSplitGenerator extends InputInitializer {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveSplitGenerator.class);
+  // serializes the splits of all vertices the AM initializes at once, one thread per processor at most
+  private static final ExecutorService SPLIT_PROTO_POOL = newSplitProtoPool();
 
   private final DynamicPartitionPruner pruner;
   private Configuration conf;
@@ -537,8 +542,8 @@ public class HiveSplitGenerator extends InputInitializer {
   /**
    * Serializes the splits into their event payloads, the work Tez's InputSplitInfoMem.getSplitsProto does on one
    * thread. A split can take a millisecond to serialize (an Iceberg split carries the delete files of its data
-   * files), so with more than one thread the splits are serialized on a pool, a few contiguous ranges per thread to
-   * balance splits of uneven cost, each split into its own slot.
+   * files), so with more than one thread up to that many workers on the shared pool take the next split from a
+   * counter, each split into its own slot.
    */
   private List<MRSplitProto> createSplitProtos(InputSplitInfoMem inputSplitInfo) throws IOException {
     int threads = Math.min(HiveConf.getIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_INPUT_SPLIT_SERIALIZATION_THREADS),
@@ -548,23 +553,19 @@ public class HiveSplitGenerator extends InputInitializer {
       return inputSplitInfo.getSplitsProto().getSplitsList();
     }
     MRSplitProto[] protos = new MRSplitProto[splits.length];
-    int rangeSize = Math.max(1, splits.length / (threads * 4));
-    ExecutorService executor = Executors.newFixedThreadPool(Math.min(threads, splits.length),
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("HiveSplitGenerator.SplitProto Thread - #%d").build());
+    AtomicInteger next = new AtomicInteger();
     try {
-      List<Future<?>> ranges = new ArrayList<>();
-      for (int start = 0; start < splits.length; start += rangeSize) {
-        int from = start;
-        int to = Math.min(start + rangeSize, splits.length);
-        ranges.add(executor.submit(() -> {
-          for (int i = from; i < to; i++) {
+      List<Future<?>> workers = new ArrayList<>();
+      for (int n = 0; n < Math.min(threads, splits.length); n++) {
+        workers.add(SPLIT_PROTO_POOL.submit(() -> {
+          for (int i = next.getAndIncrement(); i < splits.length; i = next.getAndIncrement()) {
             protos[i] = MRInputHelpers.createSplitProto(splits[i]);
           }
           return null;
         }));
       }
-      for (Future<?> range : ranges) {
-        range.get();
+      for (Future<?> worker : workers) {
+        worker.get();
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -573,9 +574,19 @@ public class HiveSplitGenerator extends InputInitializer {
       Throwables.throwIfInstanceOf(e.getCause(), IOException.class);
       throw new IOException("Failed to serialize the splits", e.getCause());
     } finally {
-      executor.shutdownNow();
+      // the workers still running stop after their current split
+      next.set(splits.length);
     }
     return Arrays.asList(protos);
+  }
+
+  private static ExecutorService newSplitProtoPool() {
+    int processors = Runtime.getRuntime().availableProcessors();
+    ThreadPoolExecutor pool = new ThreadPoolExecutor(processors, processors, 60L, TimeUnit.SECONDS,
+        new LinkedBlockingQueue<>(),
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("HiveSplitGenerator.SplitProto Thread - #%d").build());
+    pool.allowCoreThreadTimeOut(true);
+    return pool;
   }
 
   @VisibleForTesting
