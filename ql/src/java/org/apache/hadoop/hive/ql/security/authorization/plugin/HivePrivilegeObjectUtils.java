@@ -137,14 +137,6 @@ public class HivePrivilegeObjectUtils {
     }
 
     /**
-     * Creates a ByName
-     * @param tables the tables to consider as a clique
-     */
-    protected TableLookup(List<T> tables) {
-      this(tables, null);
-    }
-
-    /**
      * Creates a ByName where a null catalog name, in the tables or in a lookup, matches the default catalog.
      * @param tables the tables to consider as a clique
      * @param defaultCatName the catalog name used in place of a null catalog name
@@ -199,9 +191,6 @@ public class HivePrivilegeObjectUtils {
    * Specialized lookup for table privilege (HivePrivilegeObject)..
    */
   public static class TablePrivilegeLookup extends TableLookup<HivePrivilegeObject> {
-    public TablePrivilegeLookup(List<HivePrivilegeObject> tables) {
-      super(tables);
-    }
 
     public TablePrivilegeLookup(List<HivePrivilegeObject> tables, String defaultCatName) {
       super(tables, defaultCatName);

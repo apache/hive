@@ -293,7 +293,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     }
 
     public Builder actionType(HivePrivObjectActionType actionType) {
-      this.actionType = actionType == null ? HivePrivObjectActionType.OTHER : actionType;
+      this.actionType = actionType;
       return this;
     }
 

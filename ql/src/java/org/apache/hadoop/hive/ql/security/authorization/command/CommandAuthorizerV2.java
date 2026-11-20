@@ -263,10 +263,6 @@ final class CommandAuthorizerV2 {
     return false;
   }
 
-  private static String catNameOrCurrent(String catName) {
-    return catName != null ? catName : SessionState.get().getCurrentCatalog();
-  }
-
   private static void addHivePrivObject(Entity privObject, Map<String, List<String>> tableName2Cols,
       List<HivePrivilegeObject> hivePrivObjs, HiveOperationType hiveOpType) throws HiveException {
     HivePrivilegeObjectType privObjType = AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
@@ -276,7 +272,7 @@ final class CommandAuthorizerV2 {
     case DATABASE:
       Database database = privObject.getDatabase();
       hivePrivObject = HivePrivilegeObject.builder(privObjType)
-          .catName(catNameOrCurrent(database.getCatalogName()))
+          .catName(database.getCatalogName())
           .dbName(database.getName())
           .actionType(actionType)
           .ownerName(database.getOwnerName())
@@ -288,7 +284,7 @@ final class CommandAuthorizerV2 {
       List<String> columns = tableName2Cols == null ? null :
           tableName2Cols.get(Table.getCompleteName(table.getDbName(), table.getTableName()));
       hivePrivObject = HivePrivilegeObject.builder(privObjType)
-          .catName(catNameOrCurrent(table.getCatalogName()))
+          .catName(table.getCatalogName())
           .dbName(table.getDbName())
           .objectName(table.getTableName())
           .columns(columns)
@@ -330,7 +326,7 @@ final class CommandAuthorizerV2 {
       if (privObject.getFunction() != null) {
         Function function = privObject.getFunction();
         hivePrivObject = HivePrivilegeObject.builder(privObjType)
-            .catName(catNameOrCurrent(function.getCatName()))
+            .catName(function.getCatName())
             .dbName(function.getDbName())
             .objectName(function.getFunctionName())
             .actionType(actionType)
@@ -342,7 +338,7 @@ final class CommandAuthorizerV2 {
         String catName = null;
         String dbName = null;
         if (privObject.getDatabase() != null) {
-          catName = catNameOrCurrent(privObject.getDatabase().getCatalogName());
+          catName = privObject.getDatabase().getCatalogName();
           dbName = privObject.getDatabase().getName();
         }
         hivePrivObject = HivePrivilegeObject.builder(privObjType)
@@ -360,7 +356,7 @@ final class CommandAuthorizerV2 {
       List<String> col = tableName2Cols == null ? null :
               tableName2Cols.get(Table.getCompleteName(tbl.getDbName(), tbl.getTableName()));
       hivePrivObject = HivePrivilegeObject.builder(privObjType)
-          .catName(catNameOrCurrent(tbl.getCatName()))
+          .catName(tbl.getCatName())
           .dbName(tbl.getDbName())
           .objectName(tbl.getTableName())
           .columns(col)
