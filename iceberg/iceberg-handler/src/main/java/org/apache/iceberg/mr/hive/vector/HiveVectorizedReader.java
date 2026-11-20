@@ -24,8 +24,10 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -37,6 +39,7 @@ import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.VectorizedParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
@@ -48,7 +51,6 @@ import org.apache.hive.iceberg.org.apache.orc.OrcConf;
 import org.apache.iceberg.FileContent;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
-import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -88,30 +90,12 @@ public class HiveVectorizedReader {
   }
 
   public static CloseableIterable<HiveBatchContext> reader(Table table, Path path, FileScanTask task,
-      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual, Schema readSchema) {
+      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual, FileMetadataCache metadataCache,
+      Configuration cacheConf) {
 
-    HiveDeleteFilter deleteFilter = null;
-    Schema requiredSchema = readSchema;
-
-    if (!task.deletes().isEmpty()) {
-      deleteFilter =
-          new HiveDeleteFilter(EncryptingFileIO.combine(table.io(), table.encryption()), task, table.schema(),
-              prepareSchemaForDeleteFilter(readSchema), context.getConfiguration()) {
-            @Override
-            protected DeleteLoader newDeleteLoader() {
-              return new CachingDeleteLoader(
-                  deleteFile -> EncryptingFileIO.combine(table.io(), table.encryption()).newInputFile(deleteFile),
-                  context.getConfiguration());
-            }
-          };
-      requiredSchema = deleteFilter.requiredSchema();
-      // TODO: take requiredSchema and adjust readColumnIds below accordingly for equality delete cases
-      // and remove below limitation
-      if (task.deletes().stream().anyMatch(d -> d.content() == FileContent.EQUALITY_DELETES)) {
-        throw new UnsupportedOperationException("Vectorized reading with equality deletes is not supported yet.");
-      }
+    if (task.deletes().stream().anyMatch(d -> d.content() == FileContent.EQUALITY_DELETES)) {
+      throw new UnsupportedOperationException("Vectorized reading with equality deletes is not supported yet.");
     }
-
 
     // Tweaks on jobConf here are relevant for this task only, so we need to copy it first as context's conf is reused..
     JobConf job = new JobConf(context.getConfiguration());
@@ -187,10 +171,26 @@ public class HiveVectorizedReader {
       CloseableIterable<HiveBatchContext> vrbIterable =
           createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues, task);
 
-      return deleteFilter != null ? deleteFilter.filterBatch(vrbIterable) : vrbIterable;
+      return task.deletes().isEmpty() ? vrbIterable :
+          filterDeletes(vrbIterable, table, task, context, metadataCache, cacheConf);
 
     } catch (IOException ioe) {
       throw new RuntimeException("Error creating vectorized record reader for " + path, ioe);
+    }
+  }
+
+  // The deletes load after the record reader is created: LLAP IO reads the data meanwhile. A failed load closes it.
+  private static CloseableIterable<HiveBatchContext> filterDeletes(CloseableIterable<HiveBatchContext> batches,
+      Table table, FileScanTask task, TaskAttemptContext context, FileMetadataCache metadataCache,
+      Configuration cacheConf) {
+    try {
+      EncryptingFileIO io = EncryptingFileIO.combine(table.io(), table.encryption());
+      DeleteLoader deleteLoader = new CachingDeleteLoader(io::newInputFile, context, metadataCache, cacheConf);
+      return new HiveDeleteFilter(deleteLoader.loadPositionDeletes(task.deletes(), task.file().location()))
+          .filterBatch(batches);
+    } catch (RuntimeException e) {
+      IOUtils.closeStream(batches);
+      throw e;
     }
   }
 
@@ -311,16 +311,4 @@ public class HiveVectorizedReader {
       }
     };
   }
-
-  /**
-   * We need to add IS_DELETED metadata field so that DeleteFilter marks deleted rows rather than filering them out.
-   * @param schema original schema
-   * @return adjusted schema
-   */
-  private static Schema prepareSchemaForDeleteFilter(Schema schema) {
-    List<Types.NestedField> columns = Lists.newArrayList(schema.columns());
-    columns.add(MetadataColumns.IS_DELETED);
-    return new Schema(columns);
-  }
-
 }
