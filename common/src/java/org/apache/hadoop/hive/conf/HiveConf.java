@@ -1825,12 +1825,13 @@ public class HiveConf extends Configuration {
         + " hive.map.aggr.hash.min.reduction stays the upper bound, and with\n"
         + "hive.map.aggr.hash.min.reduction.stats the statistics may lower it further."),
     PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_JOIN_REDUCTION("hive.optimize.partial.aggr.join.transpose.max.join.reduction", 10f,
-        "A partial aggregate is not pushed below a join estimated to reduce the pushed input by more than this\n"
-        + "factor: a map join has no dynamic filter on its probe side, so the pushed aggregate would process every\n"
-        + "row the join discards. 0 disables the check."),
+        "A partial aggregate is not pushed below a join estimated to reduce the join input it is pushed to by more\n"
+        + "than this factor: a map join has no dynamic filter on its probe side, so the pushed aggregate would\n"
+        + "process every row the join discards. 0 disables the check."),
     PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_KEY_NDV_RATIO("hive.optimize.partial.aggr.join.transpose.max.key.ndv.ratio", 0.5f,
         "A partial aggregate is not pushed when the estimated number of distinct values of one of its keys is more\n"
-        + "than this fraction of the pushed input rows, since it would reduce its input too little."),
+        + "than this fraction of the rows of the join input it is pushed to, since it would reduce its input too\n"
+        + "little."),
     SEMIJOIN_CONVERSION("hive.optimize.semijoin.conversion", true, "convert group by followed by inner equi join into semijoin"),
     HIVE_COLUMN_ALIGNMENT("hive.order.columnalignment", true, "Flag to control whether we want to try to align" +
         "columns in operators such as Aggregate or Join so that we try to reduce the number of shuffling stages"),
