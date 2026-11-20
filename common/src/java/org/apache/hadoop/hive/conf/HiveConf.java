@@ -4708,6 +4708,10 @@ public class HiveConf extends Configuration {
             + "-1 disables this feature."),
     HIVE_TEZ_INPUT_FS_SERIALIZATION_THREADS("hive.tez.input.fs.serialization.threads", 8,
         "Number of threads used for serializing split payloads to filesystem."),
+    HIVE_TEZ_INPUT_SPLIT_SERIALIZATION_THREADS("hive.tez.input.split.serialization.threads", 8,
+        "Number of threads HiveSplitGenerator uses to serialize the splits of a vertex into their event payloads,"
+            + " capped at the number of processors available to the JVM. 1 serializes them one by one on the input"
+            + " initializer's thread."),
     HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez(Hadoop 2 only)"),
     HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez (Hadoop 2 only)"),
     HIVE_STAGE_ID_REARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),

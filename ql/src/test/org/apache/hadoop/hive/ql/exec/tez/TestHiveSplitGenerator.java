@@ -18,6 +18,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +51,7 @@ import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.InputInitializerContext;
 import org.apache.tez.runtime.api.events.InputDataInformationEvent;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,6 +155,43 @@ public class TestHiveSplitGenerator {
       Assert.assertFalse("A future started after a failure is not supposed to run at all",
           splitGenerator.split2Finished.get());
     }
+  }
+
+  @Test
+  public void testSplitSerializationThreadsKeepTheSplitOrder() throws Exception {
+    Assume.assumeTrue(Runtime.getRuntime().availableProcessors() > 1);
+    InputSplit[] splits = getSplits(100);
+    JobConf sequential = new JobConf(new HiveConf());
+    HiveConf.setIntVar(sequential, HiveConf.ConfVars.HIVE_TEZ_INPUT_SPLIT_SERIALIZATION_THREADS, 1);
+    JobConf parallel = new JobConf(new HiveConf());
+    HiveConf.setIntVar(parallel, HiveConf.ConfVars.HIVE_TEZ_INPUT_SPLIT_SERIALIZATION_THREADS, 8);
+
+    List<Event> expected = generateEvents(sequential, splits);
+    List<Event> actual = generateEvents(parallel, splits);
+    Assert.assertEquals(splits.length + 1, actual.size());
+    for (int i = 1; i < expected.size(); i++) {
+      InputDataInformationEvent expectedEvent = (InputDataInformationEvent) expected.get(i);
+      InputDataInformationEvent actualEvent = (InputDataInformationEvent) actual.get(i);
+      Assert.assertEquals(i - 1, actualEvent.getSourceIndex());
+      Assert.assertEquals("payload of split " + (i - 1), expectedEvent.getUserPayload(), actualEvent.getUserPayload());
+    }
+  }
+
+  @Test
+  public void testExceptionIsPropagatedFromSplitSerializationThreads() throws Exception {
+    Assume.assumeTrue(Runtime.getRuntime().availableProcessors() > 1);
+    JobConf conf = new JobConf(new HiveConf());
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TEZ_INPUT_SPLIT_SERIALIZATION_THREADS, 4);
+    InputSplit[] splits = getSplits(10);
+    splits[7] = new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit("/fake7"),
+        ZeroRowsInputFormat.class.getName()) {
+      @Override
+      public void write(DataOutput out) throws IOException {
+        throw new IOException("Cannot serialize split 7");
+      }
+    };
+    IOException e = Assert.assertThrows(IOException.class, () -> generateEvents(conf, splits));
+    Assert.assertEquals("Cannot serialize split 7", e.getMessage());
   }
 
   private InputSplit[] getSplits(int numSplits) {
