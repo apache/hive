@@ -151,9 +151,8 @@ import org.slf4j.LoggerFactory;
  *   Example: {@code count(*)}, {@code count(1)};</li>
  *   <li>the pushed aggregate's keys are going to be the original keys available on that input plus
  *   the join keys from that side and its columns used by residual join filters (non-equijoin filters)</li>
- *   <li>the push is skipped when the join expands its input by more than
- *   {@code hive.optimize.partial.aggr.join.transpose.max.join.expansion}, when the pushed keys outnumber the
- *   original keys and the columns of the IF conditions or are empty, or when a pushed key has an NDV of more than
+ *   <li>the push is skipped when the pushed keys outnumber the original keys and the columns of the IF
+ *   conditions or are empty, or when a pushed key has an NDV of more than
  *   {@code hive.optimize.partial.aggr.join.transpose.max.key.ndv.ratio} x input rows </li>
  *   <li>missing statistics also skip it. Required:
  *   <ul>
@@ -193,7 +192,6 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
   private HiveConf conf;
   private float minReduction;
   private float maxJoinReduction;
-  private float maxJoinExpansion;
   private float maxKeyNdvRatio;
   // the value lists of synthetic join predicates from residual join filters: their target is an expression over
   // the input of the join input they read from
@@ -204,7 +202,6 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
     conf = pctx.getConf();
     minReduction = HiveConf.getFloatVar(conf, HiveConf.ConfVars.PARTIAL_AGGR_JOIN_TRANSPOSE_MIN_REDUCTION);
     maxJoinReduction = HiveConf.getFloatVar(conf, HiveConf.ConfVars.PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_JOIN_REDUCTION);
-    maxJoinExpansion = HiveConf.getFloatVar(conf, HiveConf.ConfVars.PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_JOIN_EXPANSION);
     maxKeyNdvRatio = HiveConf.getFloatVar(conf, HiveConf.ConfVars.PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_KEY_NDV_RATIO);
     String JOIN = JoinOperator.getOperatorName() + "%";
     String SEL = SelectOperator.getOperatorName() + "%";
@@ -749,9 +746,6 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
     }
     long inputRows = inputStats.getNumRows();
     long joinRows = joinStats.getNumRows();
-    if (joinRows > maxJoinExpansion * inputRows) {
-      return false;
-    }
     if (maxJoinReduction > 0 && joinRows * maxJoinReduction < inputRows) {
       return false;
     }

@@ -148,14 +148,12 @@ from t_fact f
 join t_dim d on f.k = d.k
 group by d.g;
 
--- not pushed: an outer join (the expansion gate is relaxed, the outer join estimate is larger)
-set hive.optimize.partial.aggr.join.transpose.max.join.expansion=2.0;
+-- not pushed: an outer join
 explain
 select d.g, sum(f.v)
 from t_fact f
 left join t_dim d on f.k = d.k
 group by d.g;
-set hive.optimize.partial.aggr.join.transpose.max.join.expansion=1.1;
 
 -- not pushed: a pushed key has too many distinct values for the input rows
 set hive.optimize.partial.aggr.join.transpose.max.key.ndv.ratio=0.1;
