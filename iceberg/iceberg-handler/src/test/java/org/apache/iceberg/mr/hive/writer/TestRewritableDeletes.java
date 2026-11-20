@@ -124,7 +124,7 @@ public class TestRewritableDeletes {
     for (FileScanTask task : tasks()) {
       collect(List.of(task));
     }
-    Assert.assertEquals(2, RewritableDeletes.scanFiles(new Path(queryTempDir.getAbsolutePath()), conf).size());
+    Assert.assertEquals(2, RewritableDeletes.collectorFiles(new Path(queryTempDir.getAbsolutePath()), conf).size());
     Assert.assertEquals(Set.of(fileA.location(), fileB.location()),
         RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf).keySet());
   }
@@ -142,8 +142,9 @@ public class TestRewritableDeletes {
   @Test
   public void testWriterFailsWithoutAScanFile() {
     RewritableDeletes.addToJobConf(TABLE_NAME, conf);
+    Snapshot snapshot = table.currentSnapshot();
     IllegalStateException thrown = Assert.assertThrows(IllegalStateException.class,
-        () -> RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
+        () -> RewritableDeletes.getFromJobConf(TABLE_NAME, snapshot, conf));
     Assert.assertTrue(thrown.getMessage(), thrown.getMessage().startsWith("No scan collected the rewritable deletes"));
   }
 
@@ -159,7 +160,8 @@ public class TestRewritableDeletes {
     // the second writer of the query finds the rewritable deletes in the cache of the daemon
     Assert.assertSame(deletes, RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
     // which the writers of the daemon share
-    Assert.assertThrows(UnsupportedOperationException.class, () -> deletes.remove(fileA.location()));
+    String location = fileA.location();
+    Assert.assertThrows(UnsupportedOperationException.class, () -> deletes.remove(location));
   }
 
   /**

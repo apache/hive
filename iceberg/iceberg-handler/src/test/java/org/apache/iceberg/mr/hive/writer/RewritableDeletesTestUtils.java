@@ -26,14 +26,15 @@ import org.apache.hadoop.fs.Path;
 import org.apache.iceberg.util.DeleteFileSet;
 
 /**
- * Gives the tests of other packages the files the scans of a query wrote for its DV writers.
+ * Gives the tests of other packages the files the collectors of the scans of a query wrote for its DV writers.
  */
 public final class RewritableDeletesTestUtils {
 
   private RewritableDeletesTestUtils() {
   }
 
-  public static Map<Path, Map<String, DeleteFileSet>> scanFiles(Path root, Configuration conf) throws IOException {
-    return RewritableDeletes.scanFiles(root, conf);
+  public static Map<Path, Map<String, DeleteFileSet>> collectorFiles(Path root, Configuration conf)
+      throws IOException {
+    return RewritableDeletes.collectorFiles(root, conf);
   }
 }

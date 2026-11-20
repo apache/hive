@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.mr.hive.writer;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,6 +37,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.mapred.JobConf;
@@ -118,7 +118,11 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
   private static String location(String tableName, Snapshot snapshot, Configuration conf) {
     String key = key(tableName, conf);
     String dir = key != null ? conf.get(key) : null;
-    return dir != null ? new Path(dir, String.valueOf(snapshot != null ? snapshot.snapshotId() : -1)).toString() : null;
+    if (dir == null) {
+      return null;
+    }
+    long snapshotId = snapshot != null ? snapshot.snapshotId() : -1;
+    return new Path(dir, String.valueOf(snapshotId)).toString();
   }
 
   /**
@@ -190,13 +194,10 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
     Map<String, DeleteFileSet> deletes = Maps.newHashMap();
     try {
       FileSystem fs = dir.getFileSystem(conf);
-      FileStatus[] files;
-      try {
-        files = fs.listStatus(dir);
-      } catch (FileNotFoundException e) {
-        files = new FileStatus[0];
-      }
-      Preconditions.checkState(files.length > 0, "No scan collected the rewritable deletes into %s", location);
+      // null when no scan created the dir
+      FileStatus[] files = Utilities.listStatusIfExists(dir, fs);
+      Preconditions.checkState(files != null && files.length > 0,
+          "No scan collected the rewritable deletes into %s", location);
       for (FileStatus file : files) {
         read(fs, file.getPath()).forEach((dataFile, deleteFiles) ->
             deletes.computeIfAbsent(dataFile, ignored -> DeleteFileSet.create()).addAll(deleteFiles));
@@ -214,24 +215,24 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
   }
 
   /**
-   * Returns the files the scans wrote under a dir, with the deletes each holds.
+   * Returns the files the collectors of the scans wrote under a dir, with the deletes each holds.
    */
   @VisibleForTesting
-  static Map<Path, Map<String, DeleteFileSet>> scanFiles(Path root, Configuration conf) throws IOException {
-    Map<Path, Map<String, DeleteFileSet>> scanFiles = Maps.newHashMap();
+  static Map<Path, Map<String, DeleteFileSet>> collectorFiles(Path root, Configuration conf) throws IOException {
+    Map<Path, Map<String, DeleteFileSet>> collectorFiles = Maps.newHashMap();
     FileSystem fs = root.getFileSystem(conf);
     RemoteIterator<LocatedFileStatus> files = fs.listFiles(root, true);
     while (files.hasNext()) {
       Path file = files.next().getPath();
-      if (isScanFile(file)) {
-        scanFiles.put(file, read(fs, file));
+      if (isCollectorFile(file)) {
+        collectorFiles.put(file, read(fs, file));
       }
     }
-    return scanFiles;
+    return collectorFiles;
   }
 
-  // a file in the subdir of a snapshot in the dir of a table, see location
-  private static boolean isScanFile(Path file) {
+  // a file that a Collector wrote: <table name>-rewritable-deletes/<snapshot id>/<file>, see addToJobConf and location
+  private static boolean isCollectorFile(Path file) {
     Path tableDir = file.getParent().getParent();
     return tableDir != null && tableDir.getName().endsWith(DIR_SUFFIX);
   }

@@ -353,7 +353,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   private static Map<Path, Map<String, DeleteFileSet>> rewritableDeleteFiles() throws IOException {
     Map<Path, Map<String, DeleteFileSet>> files = Maps.newHashMap();
     for (String scratchDir : scratchDirs) {
-      files.putAll(RewritableDeletesTestUtils.scanFiles(new Path(scratchDir), new HiveConf()));
+      files.putAll(RewritableDeletesTestUtils.collectorFiles(new Path(scratchDir), new HiveConf()));
     }
     return files;
   }

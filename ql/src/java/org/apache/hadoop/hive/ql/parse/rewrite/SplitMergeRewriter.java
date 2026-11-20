@@ -50,10 +50,10 @@ public class SplitMergeRewriter extends MergeRewriter {
     // requires it.
     boolean hasDelete = mergeStatement.getWhenClauses().stream()
         .anyMatch(MergeStatement.DeleteClause.class::isInstance);
-    updateInDeleteBranch = !hasDelete ? null : mergeStatement.getWhenClauses().stream()
+    updateInDeleteBranch = hasDelete ? mergeStatement.getWhenClauses().stream()
         .filter(MergeStatement.UpdateClause.class::isInstance)
         .map(MergeStatement.UpdateClause.class::cast)
-        .findFirst().orElse(null);
+        .findFirst().orElse(null) : null;
     return new SplitMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement, isRowLineageSupported,
         mergeStatement.getTargetTable().hasNonNativePartitionSupport() ?
             new PartitionSetValuesClause(conf) : new SetValuesClause(conf), updateInDeleteBranch);
