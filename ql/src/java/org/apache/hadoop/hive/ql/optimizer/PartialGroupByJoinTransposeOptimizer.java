@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
 import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
+import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.GenericUDAFInfo;
@@ -144,7 +145,8 @@ import org.slf4j.LoggerFactory;
  * <p>When a pushed GROUP BY is matched again it can be moved further down a chain of joins. It is not kept above the
  * join it moves below: a Select projecting its keys and the partial results replaces it.
  *
- * <p>The TezCompiler annotates the statistics, which the gates above read, right before this optimization.
+ * <p>This optimization annotates the statistics, which the gates above read, when it finds a GROUP BY to push. The
+ * TezCompiler annotates them again later, after this optimization.
  * This optimization runs before the top n key optimization: a Top N Key operator pushed down to the join output
  * would sit between the join and the GROUP BY. It runs before the dynamic partition pruning: its semijoin branches
  * would hang off the join inputs and the joins,
@@ -193,6 +195,8 @@ public class PartialGroupByJoinTransposeOptimizer extends Transform {
     if (ctx.candidates.isEmpty()) {
       return pctx;
     }
+    // the gates read the statistics only: the operator traits are not annotated
+    new AnnotateWithStatistics().transform(pctx);
 
     List<Operator<?>> topOps = new ArrayList<>(pctx.getTopOps().values());
     for (FilterOperator filter : OperatorUtils.findOperators(topOps, FilterOperator.class)) {
