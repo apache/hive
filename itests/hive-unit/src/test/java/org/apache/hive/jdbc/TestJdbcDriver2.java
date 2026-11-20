@@ -1511,7 +1511,7 @@ public class TestJdbcDriver2 {
     ResultSetMetaData resMeta = rs.getMetaData();
     assertEquals(1, resMeta.getColumnCount());
     assertEquals("TABLE_CAT", resMeta.getColumnName(1));
-    assertFalse(rs.next());
+    assertTrue(rs.next());
   }
 
   @Test
