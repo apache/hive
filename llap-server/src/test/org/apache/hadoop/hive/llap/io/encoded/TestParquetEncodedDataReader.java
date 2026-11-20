@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -50,6 +51,8 @@ import java.util.function.Predicate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.impl.OpenFileParameters;
+import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.fs.FileRange;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -64,6 +67,7 @@ import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -108,6 +112,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
@@ -129,10 +134,12 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.TypeDescription;
+import org.apache.parquet.bytes.BytesUtils;
 import org.apache.parquet.example.data.Group;
 import org.apache.parquet.example.data.simple.SimpleGroupFactory;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.example.ExampleParquetWriter;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
@@ -540,6 +547,99 @@ public class TestParquetEncodedDataReader {
     Run second = read(jobConf(COLUMNS, TYPES, 0), wholeFile());
     assertEquals(1, second.counter(LlapIOCounters.METADATA_CACHE_HIT));
     assertEquals(0, second.counter(LlapIOCounters.METADATA_CACHE_MISS));
+  }
+
+  /** A footer within the tail read is read with the tail, in one request. */
+  @Test
+  public void testFooterWithinTailReadIsOneRequest() throws Exception {
+    Path copy = new Path(tmpDir.toString(), "one-request.parquet");
+    FileSystem.getLocal(daemonConf).copyFromLocalFile(false, true, file, copy);
+    CountingFileSystem.reset();
+    LlapProxy.getIo().parquet().getFooterBuffersFromCache(copy, countingJob(), null, "one-request-footer", null);
+    assertEquals(1, CountingFileSystem.SEEKS.get());
+  }
+
+  private static JobConf countingJob() {
+    JobConf job = new JobConf(daemonConf);
+    job.set("fs.file.impl", CountingFileSystem.class.getName());
+    job.setBoolean("fs.file.impl.disable.cache", true);
+    return job;
+  }
+
+  /** A footer larger than the tail read is read on its own and comes back whole. */
+  @Test
+  public void testFooterLargerThanTailRead() throws Exception {
+    int columns = 2000;
+    Types.MessageTypeBuilder builder = Types.buildMessage();
+    for (int i = 0; i < columns; i++) {
+      builder.optional(PrimitiveTypeName.INT64).named("wide_column_" + i);
+    }
+    MessageType schema = builder.named("wide");
+    Path wide = new Path(tmpDir.toString(), "wide.parquet");
+    try (ParquetWriter<Group> writer = ExampleParquetWriter.builder(wide).withConf(daemonConf).withType(schema)
+        .build()) {
+      Group row = new SimpleGroupFactory(schema).newGroup();
+      for (int i = 0; i < columns; i++) {
+        row.append("wide_column_" + i, (long) i);
+      }
+      writer.write(row);
+    }
+    FileSystem fs = wide.getFileSystem(daemonConf);
+    long length = fs.getFileStatus(wide).getLen();
+    byte[] trailer = new byte[4];
+    try (FSDataInputStream in = fs.open(wide)) {
+      in.readFully(length - 8, trailer);
+    }
+    assertTrue("footer fits in the tail read", BytesUtils.readIntLittleEndian(trailer, 0) > 64 * 1024);
+
+    CountingFileSystem.reset();
+    MemoryBufferOrBuffers footerData =
+        LlapProxy.getIo().parquet().getFooterBuffersFromCache(wide, countingJob(), null, "wide-footer", null);
+    assertEquals("the tail, then the footer", 2, CountingFileSystem.SEEKS.get());
+    ParquetMetadata cached = ParquetFileReader.readFooter(
+        new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER);
+    ParquetMetadata expected = ParquetFileReader.readFooter(
+        HadoopInputFile.fromPath(wide, daemonConf), ParquetMetadataConverter.NO_FILTER);
+    assertEquals(expected.getFileMetaData().getSchema(), cached.getFileMetaData().getSchema());
+    assertEquals(expected.getBlocks().toString(), cached.getBlocks().toString());
+  }
+
+  /** A file shorter than the Parquet trailer is refused as not Parquet, not read before its start. */
+  @Test
+  public void testFooterOfAFileTooShortForParquetIsRefused() throws Exception {
+    assertFooterRefused(tmpFile("tiny.parquet", new byte[] {1, 2, 3, 4, 5}), "not a Parquet file");
+  }
+
+  /**
+   * The footer of a file without the Parquet magic at its tail, or whose footer would start outside it, is refused,
+   * and nothing is cached for it.
+   */
+  @Test
+  public void testFooterOfANonParquetFileIsRefusedUncached() throws Exception {
+    byte[] noMagic = new byte[1000];
+    noMagic[999] = 'X';
+    assertFooterRefused(tmpFile("no-magic.parquet", noMagic), "expected magic number");
+    byte[] footerOutside = new byte[1000];
+    // a footer length of 2000 bytes before "PAR1", in a 1000-byte file
+    footerOutside[992] = (byte) 0xD0;
+    footerOutside[993] = 0x07;
+    System.arraycopy(ParquetFileWriter.MAGIC, 0, footerOutside, 996, 4);
+    assertFooterRefused(tmpFile("footer-outside.parquet", footerOutside), "not within the file");
+  }
+
+  private static Path tmpFile(String name, byte[] bytes) throws IOException {
+    java.nio.file.Path local = tmpDir.resolve(name);
+    Files.write(local, bytes);
+    return new Path(local.toUri());
+  }
+
+  /** The footer read refuses the file, twice: a refused footer is not cached. */
+  private static void assertFooterRefused(Path path, String reason) {
+    for (int attempt = 0; attempt < 2; ++attempt) {
+      IOException e = assertThrows(IOException.class, () -> LlapProxy.getIo().parquet().getFooterBuffersFromCache(
+          path, new JobConf(daemonConf), null, path.getName(), null));
+      assertTrue(e.getMessage(), e.getMessage().contains(reason));
+    }
   }
 
   /** A Parquet fragment fills in the same counters the LLAP IO summary already shows for an ORC one. */
@@ -1344,6 +1444,27 @@ public class TestParquetEncodedDataReader {
       out[i] = row[cols[i]];
     }
     return out;
+  }
+
+  /** A local file system that counts the positions read from Parquet files, one request each on an object store. */
+  public static class CountingFileSystem extends RawLocalFileSystem {
+    static final AtomicInteger SEEKS = new AtomicInteger();
+
+    static void reset() {
+      SEEKS.set(0);
+    }
+
+    @Override
+    protected CompletableFuture<FSDataInputStream> openFileWithOptions(Path path, OpenFileParameters parameters)
+        throws IOException {
+      return super.openFileWithOptions(path, parameters).thenApply(stream -> new FSDataInputStream(stream) {
+        @Override
+        public void seek(long position) throws IOException {
+          SEEKS.incrementAndGet();
+          super.seek(position);
+        }
+      });
+    }
   }
 
   private static FileSplit wholeFile() {

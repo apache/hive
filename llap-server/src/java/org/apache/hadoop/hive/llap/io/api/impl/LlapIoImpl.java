@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import javax.management.ObjectName;
 
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -101,6 +103,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.metrics2.util.MBeans;
+import org.apache.hadoop.util.functional.FutureIO;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.orc.impl.OrcTail;
@@ -546,6 +549,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     }
   }
 
+  /**
+   * Bytes read from the end of a Parquet file when looking for its footer: S3A's default readahead,
+   * so the read costs no more than fetching the footer alone, and large enough to hold the footer of
+   * all but very wide schemas.
+   */
+  private static final int FOOTER_READ_BYTES = 64 * 1024;
+
   private class LlapParquetIoImpl implements LlapParquetIo, LlapFormatIo {
     private final ColumnVectorProducer cvp;
 
@@ -564,6 +574,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       return cvp;
     }
 
+    /**
+     * Reads the file's tail once. The footer length sits in the last 8 bytes and the footer itself is
+     * almost always inside the same range, so a miss costs one read rather than a 4 byte read followed
+     * by the footer.
+     */
     @Override
     public MemoryBufferOrBuffers getFooterBuffersFromCache(Path path, JobConf conf, @Nullable CacheTag tag,
         @Nullable Object fileKey, @Nullable BooleanRef cacheHit) throws IOException {
@@ -590,18 +605,45 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
       final FileSystem fs = path.getFileSystem(conf);
       final FileStatus stat = fs.getFileStatus(path);
+      final long length = stat.getLen();
+      final int trailerSize = ParquetFooterInputFromCache.FOOTER_LENGTH_SIZE + ParquetFileWriter.MAGIC.length;
+      // The checks of ParquetFileReader.readFooter, before anything is cached.
+      if (length < ParquetFileWriter.MAGIC.length + trailerSize) {
+        throw new IOException(path + " is not a Parquet file (length is too low: " + length + ")");
+      }
 
       // To avoid reading the footer twice, we will cache it first and then read from cache.
       // Parquet calls protobuf methods directly on the stream and we can't get bytes after the fact.
-      try (SeekableInputStream stream = HadoopStreams.wrap(fs.open(path))) {
-        long footerLengthIndex = stat.getLen()
-            - ParquetFooterInputFromCache.FOOTER_LENGTH_SIZE - ParquetFileWriter.MAGIC.length;
-        stream.seek(footerLengthIndex);
-        int footerLength = BytesUtils.readIntLittleEndian(stream);
-        stream.seek(footerLengthIndex - footerLength);
+      // The status spares S3A the HEAD that open() issues to learn the length.
+      FSDataInputStream in = FutureIO.awaitFuture(fs.openFile(path).withFileStatus(stat).build());
+      try (SeekableInputStream stream = HadoopStreams.wrap(in)) {
+        int tailLength = (int) Math.min(length, FOOTER_READ_BYTES);
+        byte[] tail = new byte[tailLength];
+        stream.seek(length - tailLength);
+        stream.readFully(tail);
+        byte[] magic = Arrays.copyOfRange(tail, tailLength - ParquetFileWriter.MAGIC.length, tailLength);
+        if (!Arrays.equals(ParquetFileWriter.MAGIC, magic) && !Arrays.equals(ParquetFileWriter.EFMAGIC, magic)) {
+          throw new IOException(path + " is not a Parquet file: expected magic number at tail "
+              + Arrays.toString(ParquetFileWriter.MAGIC) + " but found " + Arrays.toString(magic));
+        }
+        int footerLength = BytesUtils.readIntLittleEndian(tail, tailLength - trailerSize);
+        long footerIndex = length - trailerSize - footerLength;
+        if (footerIndex < ParquetFileWriter.MAGIC.length || footerIndex >= length - trailerSize) {
+          throw new IOException("Corrupted Parquet file " + path + ": the footer index " + footerIndex
+              + " is not within the file");
+        }
+        int footerStart = tailLength - trailerSize - footerLength;
+
         LOG.debug("Caching the footer of length {} for {}", footerLength, fileKey);
         // Note: we don't pass in isStopped here - this is not on an IO thread.
-        footerData = fileMetadataCache.putFileMetadata(fileKey, footerLength, stream, tag, null);
+        if (footerStart >= 0) {
+          footerData = fileMetadataCache.putFileMetadata(fileKey, footerLength,
+              new ByteArrayInputStream(tail, footerStart, footerLength), tag, null);
+        } else {
+          // A footer larger than the hint; read it on its own rather than growing the tail read.
+          stream.seek(length - trailerSize - footerLength);
+          footerData = fileMetadataCache.putFileMetadata(fileKey, footerLength, stream, tag, null);
+        }
         try {
           return footerData;
         } finally {
