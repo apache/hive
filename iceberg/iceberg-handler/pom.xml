@@ -74,6 +74,11 @@
       <artifactId>hive-exec</artifactId>
     </dependency>
     <dependency>
+      <!-- the codecs of the split payloads; zstd-jni comes with ORC, and hive-exec bundles it -->
+      <groupId>org.xerial.snappy</groupId>
+      <artifactId>snappy-java</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-serde</artifactId>
     </dependency>

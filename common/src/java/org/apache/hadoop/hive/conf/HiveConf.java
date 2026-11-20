@@ -2161,6 +2161,10 @@ public class HiveConf extends Configuration {
         "If this is set to true the URI for auth will have the default location masked with DEFAULT_TABLE_LOCATION"),
     HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY("hive.iceberg.allow.datafiles.in.table.location.only", false,
         "If this is set to true, then all the data files being read should be withing the table location"),
+    HIVE_ICEBERG_SPLIT_COMPRESSION_CODEC("hive.iceberg.split.compression.codec", "snappy",
+        new StringSet("none", "snappy", "zstd"),
+        "The codec of the Iceberg split payloads that split generation sends to the tasks. Only the writer of a\n" +
+        "split reads it: the payload names its codec."),
     HIVE_ICEBERG_REST_SERVER_SIDE_SCAN_PLANNING_ENABLED(
         "hive.iceberg.rest.server-side-scan-planning.enabled", false,
         "Whether Hive may use server-side scan planning for Iceberg REST catalogs whose\n" +
