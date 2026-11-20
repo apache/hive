@@ -1828,10 +1828,6 @@ public class HiveConf extends Configuration {
         "A partial aggregate is not pushed below a join estimated to reduce the pushed input by more than this\n"
         + "factor: a map join has no dynamic filter on its probe side, so the pushed aggregate would process every\n"
         + "row the join discards. 0 disables the check."),
-    PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_JOIN_EXPANSION("hive.optimize.partial.aggr.join.transpose.max.join.expansion",
-        1.1f,
-        "A partial aggregate is not pushed below a join estimated to output more rows than this factor times the\n"
-        + "rows of the pushed input."),
     PARTIAL_AGGR_JOIN_TRANSPOSE_MAX_KEY_NDV_RATIO("hive.optimize.partial.aggr.join.transpose.max.key.ndv.ratio", 0.5f,
         "A partial aggregate is not pushed when the estimated number of distinct values of one of its keys is more\n"
         + "than this fraction of the pushed input rows, since it would reduce its input too little."),
