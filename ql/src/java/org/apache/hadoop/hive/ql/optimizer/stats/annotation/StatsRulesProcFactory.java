@@ -3114,35 +3114,34 @@ public class StatsRulesProcFactory {
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf hconf = aspCtx.getConf();
 
-      if (conf != null) {
-        Statistics stats = conf.getStatistics();
-        if (stats == null && op.getParentOperators() != null) {
+      if (conf != null && op.getParentOperators() != null) {
 
-          // if parent statistics is null then that branch of the tree is not
-          // walked yet. don't update the stats until all branches are walked
-          if (isAllParentsContainStatistics(op)) {
+        // if parent statistics is null then that branch of the tree is not
+        // walked yet. don't update the stats until all branches are walked
+        if (isAllParentsContainStatistics(op)) {
+          // recompute even if the operator already has statistics: the plan may be annotated more than once
+          // and the statistics of the parents may have changed since
+          Statistics stats = null;
+          for (Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
+            Statistics parentStats = parent.getStatistics();
 
-            for (Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
-              Statistics parentStats = parent.getStatistics();
-
-              if (stats == null) {
-                stats = parentStats.clone();
-              } else {
-                stats.addBasicStats(parentStats);
-              }
-
-              stats.updateColumnStatsState(parentStats.getColumnStatsState());
-              List<ColStatistics> colStats =
-                  StatsUtils.getColStatisticsFromExprMap(hconf, parentStats, op.getColumnExprMap(), op.getSchema());
-              stats.addToColumnStats(colStats);
-
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("[0] STATS-" + op.toString() + ": " + stats.extendedToString());
-              }
+            if (stats == null) {
+              stats = parentStats.clone();
+            } else {
+              stats.addBasicStats(parentStats);
             }
-            stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, op);
-            op.getConf().setStatistics(stats);
+
+            stats.updateColumnStatsState(parentStats.getColumnStatsState());
+            List<ColStatistics> colStats =
+                StatsUtils.getColStatisticsFromExprMap(hconf, parentStats, op.getColumnExprMap(), op.getSchema());
+            stats.addToColumnStats(colStats);
+
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("[0] STATS-" + op.toString() + ": " + stats.extendedToString());
+            }
           }
+          stats = applyRuntimeStats(aspCtx.getParseContext().getContext(), stats, op);
+          op.getConf().setStatistics(stats);
         }
       }
       return null;
