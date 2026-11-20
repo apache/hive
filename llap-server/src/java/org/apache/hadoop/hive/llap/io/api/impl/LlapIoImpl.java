@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -81,6 +82,7 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ParquetColumnVectorProducer;
+import org.apache.hadoop.hive.llap.io.decode.ParquetEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
@@ -96,6 +98,7 @@ import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -562,6 +565,32 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     @Nullable
     public ColumnVectorProducer producer() {
       return cvp;
+    }
+
+    @Override
+    @Nullable
+    public RecordReader<NullWritable, VectorizedRowBatch> vectorizedReaderForPath(Path path, long offset,
+        long length, List<Integer> tableIncludedCols, Map<String, Object> initialDefaults, JobConf conf,
+        Reporter reporter) throws IOException {
+      if (cvp == null) {
+        return null;
+      }
+      FileSplit split = new FileSplit(path, offset, length, (String[]) null);
+      try {
+        LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, HiveStringUtils.getHostname(),
+            cvp, executor, null, null, reporter, daemonConf);
+        // null when the native pipeline declines the split
+        if (rr == null) {
+          return null;
+        }
+        ((ParquetEncodedDataConsumer) rr.readPipeline()).setInitialDefaults(initialDefaults);
+        // no partition values are added to the result batches as constants
+        rr.setPartitionValues(null);
+        rr.start();
+        return rr;
+      } catch (HiveException e) {
+        throw new IOException(e);
+      }
     }
 
     @Override

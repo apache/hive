@@ -70,10 +70,14 @@ import org.apache.iceberg.parquet.TypeWithSchemaVisitor;
 import org.apache.iceberg.parquet.VariantParquetFilters;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Type;
+import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.apache.orc.impl.OrcTail;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.schema.MessageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class to create vectorized readers for Hive.
@@ -82,6 +86,7 @@ import org.apache.parquet.schema.MessageType;
  */
 public class HiveVectorizedReader {
 
+  private static final Logger LOG = LoggerFactory.getLogger(HiveVectorizedReader.class);
 
   private HiveVectorizedReader() {
 
@@ -246,6 +251,11 @@ public class HiveVectorizedReader {
     return recordReader;
   }
 
+  private static boolean usesLlapCache(JobConf job) {
+    return HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
+        LlapProxy.getIo() != null && LlapProxy.getIo().usingLowLevelCache();
+  }
+
   private static RecordReader<NullWritable, VectorizedRowBatch> parquetRecordReader(JobConf job, Reporter reporter,
       FileScanTask task, Path path, long start, long length, SyntheticFileId fileId,
       Map<String, Object> initialColumnDefaults, Expression residual, FileIO io) throws IOException {
@@ -253,8 +263,8 @@ public class HiveVectorizedReader {
     VectorizedParquetInputFormat inputFormat = new VectorizedParquetInputFormat();
 
     MemoryBufferOrBuffers footerData = null;
-    if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
-        LlapProxy.getIo() != null && LlapProxy.getIo().usingLowLevelCache()) {
+    boolean llapCache = usesLlapCache(job);
+    if (llapCache) {
       LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
       // No per-fragment counters on the Iceberg vectorized path yet; footer lookups are
       // recorded as cache traffic but not as META hits/misses in the LLAP IO summary.
@@ -284,11 +294,43 @@ public class HiveVectorizedReader {
     TypeWithSchemaVisitor.visit(expectedSchema.asStruct(), typeWithIds, psv);
     job.set(IOConstants.COLUMNS, psv.retrieveColumnNameList());
 
+    if (llapCache && canUseLlapNativeReader(job, task)) {
+      RecordReader<NullWritable, VectorizedRowBatch> reader =
+          llapNativeParquetReader(job, reporter, path, start, length, initialColumnDefaults);
+      if (reader != null) {
+        return reader;
+      }
+    }
+
     inputFormat.seInitialColumnDefaults(initialColumnDefaults);
     RecordReader<NullWritable, VectorizedRowBatch> reader = inputFormat.getRecordReader(split, job, reporter);
     return ParquetVariantRecordReader
         .tryWrap(reader, job, task, path, start, length, prunedMetadata)
         .orElse(reader);
+  }
+
+  /**
+   * The LLAP native Parquet reader serves unencrypted files of tables without a variant column: LLAP IO
+   * derives its read schema through ORC's type conversion, which has no variant. Position deletes and the
+   * virtual columns are applied by {@link HiveBatchIterator} from the row positions it reports. Projections
+   * into nested types and row lineage columns stored in the file it declines itself, per split.
+   */
+  private static boolean canUseLlapNativeReader(JobConf job, FileScanTask task) {
+    return HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_PARQUET_NATIVE_ENABLED) &&
+        task.file().keyMetadata() == null &&
+        TypeUtil.find(task.spec().schema(), Type::isVariantType) == null;
+  }
+
+  /** The native reader for the split, or null when it declines the split (the reason is logged by LLAP IO). */
+  private static RecordReader<NullWritable, VectorizedRowBatch> llapNativeParquetReader(JobConf job,
+      Reporter reporter, Path path, long start, long length, Map<String, Object> initialColumnDefaults)
+      throws IOException {
+    RecordReader<NullWritable, VectorizedRowBatch> reader = LlapProxy.getIo().parquet().vectorizedReaderForPath(
+        path, start, length, ColumnProjectionUtils.getReadColumnIDs(job), initialColumnDefaults, job, reporter);
+    if (reader == null) {
+      LOG.debug("LLAP native Parquet reader declined {}, using the vectorized Parquet reader", path);
+    }
+    return reader;
   }
 
   private static CloseableIterable<HiveBatchContext> createVectorizedRowBatchIterable(

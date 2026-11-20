@@ -20,6 +20,8 @@
 package org.apache.hadoop.hive.llap.io.api;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -27,7 +29,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 
 /**
  * The Parquet-specific half of {@link LlapIo}, reached through {@link LlapIo#parquet()}. The
@@ -58,4 +64,21 @@ public interface LlapParquetIo {
    */
   MemoryBufferOrBuffers getFooterBuffersFromCache(Path path, JobConf conf, @Nullable CacheTag tag,
       @Nullable Object fileKey, @Nullable BooleanRef cacheHit) throws IOException;
+
+  /**
+   * Parquet counterpart of {@link LlapOrcIo#vectorizedReaderForPath}: an LLAP record reader that reads the column
+   * chunks of a split of the file through the LLAP data cache. Returns null when this daemon has no native Parquet
+   * producer or the reader declines the split (the reason is logged); the caller then reads the split itself.
+   * @param path the file to read
+   * @param offset start of the split
+   * @param length length of the split
+   * @param tableIncludedCols the column #'s to read; the schema serialized in {@code conf} must align with them
+   * @param initialDefaults initial default values of the columns the file does not have, by column name
+   * @param conf job conf of the read; the {@code SyntheticFileId} it carries, if any, is the cache key of the file
+   * @param reporter progress reporter of the task
+   */
+  @Nullable
+  RecordReader<NullWritable, VectorizedRowBatch> vectorizedReaderForPath(Path path, long offset, long length,
+      List<Integer> tableIncludedCols, Map<String, Object> initialDefaults, JobConf conf, Reporter reporter)
+      throws IOException;
 }
