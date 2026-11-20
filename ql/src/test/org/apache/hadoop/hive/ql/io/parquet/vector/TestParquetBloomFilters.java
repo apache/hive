@@ -43,7 +43,7 @@ import org.junit.Test;
  * has none with null and leaves the row group standing, so a predicate collected too widely prunes exactly
  * as much while reading filters it did not need.
  */
-public class TestVectorizedParquetBloomFilters {
+public class TestParquetBloomFilters {
 
   private static final ColumnPath INT_COL = ColumnPath.get("intCol");
   private static final ColumnPath OTHER_COL = ColumnPath.get("otherCol");
@@ -98,11 +98,11 @@ public class TestVectorizedParquetBloomFilters {
   }
 
   private static Set<ColumnPath> columnsRead(org.apache.parquet.filter2.predicate.FilterPredicate predicate) {
-    return VectorizedParquetRecordReader.bloomFilterPlan(FilterCompat.get(predicate)).columnsRead();
+    return ParquetBloomFilters.bloomFilterPlan(FilterCompat.get(predicate)).columnsRead();
   }
 
   private static boolean canPrune(org.apache.parquet.filter2.predicate.FilterPredicate predicate) {
-    return VectorizedParquetRecordReader.bloomFilterPlan(FilterCompat.get(predicate)).canPrune();
+    return ParquetBloomFilters.bloomFilterPlan(FilterCompat.get(predicate)).canPrune();
   }
 
   @Test
@@ -110,7 +110,7 @@ public class TestVectorizedParquetBloomFilters {
     // a file written before the length was recorded states an offset it cannot say the extent of, and
     // the cache is served by extent, so none of the file's filters can be served from it
     assertNull("a chunk of unknown length gives up the file",
-        VectorizedParquetRecordReader.bloomFilterRanges(Set.of(INT_COL),
+        ParquetBloomFilters.bloomFilterRanges(Set.of(INT_COL),
             List.of(blockOf(chunk(INT_COL, 1024L, -1)))));
   }
 
@@ -118,14 +118,14 @@ public class TestVectorizedParquetBloomFilters {
   public void testAChunkWithNoFilterIsPassedOver() {
     // no filter was written for this column, which is not a reason to give up the ones that were
     assertEquals("a chunk holding no filter contributes no range",
-        Map.of(2048L, 64), VectorizedParquetRecordReader.bloomFilterRanges(Set.of(INT_COL, OTHER_COL),
+        Map.of(2048L, 64), ParquetBloomFilters.bloomFilterRanges(Set.of(INT_COL, OTHER_COL),
             List.of(blockOf(chunk(INT_COL, -1L, -1), chunk(OTHER_COL, 2048L, 64)))));
   }
 
   @Test
   public void testOnlyTheColumnsAskedAboutContributeRanges() {
     assertEquals("a column the predicate never named is not read",
-        Map.of(1024L, 32), VectorizedParquetRecordReader.bloomFilterRanges(Set.of(INT_COL),
+        Map.of(1024L, 32), ParquetBloomFilters.bloomFilterRanges(Set.of(INT_COL),
             List.of(blockOf(chunk(INT_COL, 1024L, 32), chunk(OTHER_COL, 4096L, 64)))));
   }
 

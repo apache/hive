@@ -46,6 +46,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -1136,6 +1137,27 @@ public class TestParquetEncodedDataReader {
     assertTrue(run.firstBatchCols[0].isRepeating);
   }
 
+  /**
+   * A value inside a row group's statistics but absent from its bloom filter drops the group, and a value
+   * the group holds keeps it. big holds multiples of 1_000_003, so one past a held value is absent.
+   */
+  @Test
+  public void testBloomFilterPrunesWhatStatisticsKeep() throws Exception {
+    Path bloomFile = new Path(tmpDir.toString(), "bloom.parquet");
+    writeFile(bloomFile, daemonConf, builder -> builder.withBloomFilterEnabled("big", true));
+    long length = bloomFile.getFileSystem(daemonConf).getFileStatus(bloomFile).getLen();
+    FileSplit split = new FileSplit(bloomFile, 0, length, (String[]) null);
+    JobConf job = jobConf(COLUMNS, TYPES, 0, 1);
+
+    setSarg(job, SearchArgumentFactory.newBuilder()
+        .equals("big", PredicateLeaf.Type.LONG, bigValue(1) + 1).build());
+    assertEquals(0, read(job, split).counter(LlapIOCounters.SELECTED_ROWGROUPS));
+
+    setSarg(job, SearchArgumentFactory.newBuilder()
+        .equals("big", PredicateLeaf.Type.LONG, bigValue(1)).build());
+    assertEquals(1, read(job, split).counter(LlapIOCounters.SELECTED_ROWGROUPS));
+  }
+
   /** Row numbering follows the file, not the emitted stream: the rows jump across a pruned group. */
   @Test
   public void testStartRowInFileSkipsPrunedRowGroup() throws Exception {
@@ -1289,13 +1311,18 @@ public class TestParquetEncodedDataReader {
   // ---- fixture ----
 
   private static void writeFile(Path path, Configuration conf) throws IOException {
-    try (ParquetWriter<Group> writer = ExampleParquetWriter.builder(path)
+    writeFile(path, conf, UnaryOperator.identity());
+  }
+
+  private static void writeFile(Path path, Configuration conf, UnaryOperator<ExampleParquetWriter.Builder> options)
+      throws IOException {
+    try (ParquetWriter<Group> writer = options.apply(ExampleParquetWriter.builder(path)
         .withConf(conf)
         .withType(SCHEMA)
         .withCompressionCodec(CompressionCodecName.SNAPPY)
         .withRowGroupSize(1024L)
         .withMinRowCountForPageSizeCheck(ROWS_PER_GROUP)
-        .withMaxRowCountForPageSizeCheck(ROWS_PER_GROUP)
+        .withMaxRowCountForPageSizeCheck(ROWS_PER_GROUP))
         .build()) {
       SimpleGroupFactory factory = new SimpleGroupFactory(SCHEMA);
       for (int i = 0; i < ROWS; ++i) {

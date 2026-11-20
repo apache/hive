@@ -615,17 +615,12 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     }
 
     @Override
-    public Map<Long, MemoryBufferOrBuffers> getBloomFilterBuffersFromCache(Path path, JobConf conf,
-        @Nullable CacheTag tag, @Nullable Object fileKey, SortedMap<Long, Integer> ranges) throws IOException {
+    public <T> T readBloomFiltersFromCache(Path path, JobConf conf, @Nullable CacheTag tag, Object fileKey,
+        SortedMap<Long, Integer> ranges, CachedRangesReader<T> reader) throws IOException {
 
       Preconditions.checkNotNull(fileMetadataCache, "Metadata cache must not be null");
-      if (fileKey == null || ranges.isEmpty()) {
-        return null;
-      }
-
       Map<Long, MemoryBufferOrBuffers> bloomFilters = new HashMap<>(ranges.size());
       SortedMap<Long, Integer> missing = new TreeMap<>();
-      boolean done = false;
       try {
         for (Map.Entry<Long, Integer> range : ranges.entrySet()) {
           MemoryBufferOrBuffers cached = fileMetadataCache.getParquetBloomFilters(fileKey, range.getKey());
@@ -652,13 +647,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
             }
           }
         }
-        done = true;
-        return bloomFilters;
+        return reader.read(bloomFilters);
       } finally {
-        if (!done) {
-          // Nothing will read these, so do not leave them locked for the life of the daemon.
-          bloomFilters.values().forEach(fileMetadataCache::decRefBuffer);
-        }
+        // Nothing reads these past this point, so do not leave them locked for the life of the daemon.
+        bloomFilters.values().forEach(fileMetadataCache::decRefBuffer);
       }
     }
   }

@@ -25,7 +25,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -164,13 +163,14 @@ public class TestLlapParquetBloomFilterCache extends AbstractTestParquetDirect {
     SortedMap<Long, Integer> ranges = new TreeMap<>(
         Map.of(chunk.getBloomFilterOffset(), chunk.getBloomFilterLength()));
     Object fileKey = LlapHiveUtils.createFileIdUsingFS(file.getFileSystem(conf), file, conf);
-    Map<Long, MemoryBufferOrBuffers> served =
-        LlapProxy.getIo().parquet().getBloomFilterBuffersFromCache(file, conf, null, fileKey, ranges);
-
-    // this fetch is the only lock standing: a read that kept its own would make it two
-    LlapAllocatorBuffer buffer = (LlapAllocatorBuffer) served.get(chunk.getBloomFilterOffset()).getSingleBuffer();
-    Assert.assertEquals("the read let go of the filter it locked", 1, buffer.getRefCount());
-    buffer.decRef();
+    LlapAllocatorBuffer buffer = LlapProxy.getIo().parquet().readBloomFiltersFromCache(file, conf, null, fileKey,
+        ranges, served -> {
+          LlapAllocatorBuffer held = (LlapAllocatorBuffer) served.get(chunk.getBloomFilterOffset()).getSingleBuffer();
+          // this read is the only lock standing: a read that kept its own would make it two
+          Assert.assertEquals("the read let go of the filter it locked", 1, held.getRefCount());
+          return held;
+        });
+    Assert.assertEquals("and this one lets go of it too", 0, buffer.getRefCount());
   }
 
   private static String rootCause(Throwable t) {

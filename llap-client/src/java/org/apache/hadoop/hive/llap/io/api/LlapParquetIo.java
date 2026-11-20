@@ -62,17 +62,24 @@ public interface LlapParquetIo {
       @Nullable Object fileKey, @Nullable BooleanRef cacheHit) throws IOException;
 
   /**
-   * Returns the buffers holding the given bloom filters of the Parquet file on the given path, reading and
-   * caching the ones not held yet. The buffers come back locked, so the caller releases each of them with
-   * {@code decRefBuffer} once it has read them.
+   * Hands {@code reader} the given bloom filters of the Parquet file on the given path, reading and caching
+   * the ones the cache does not hold yet. They stay locked while it reads, so the allocations for the
+   * missing ones cannot evict them, and are released when it returns.
    *
    * @param path the path to open the file by on a miss, as for {@link #getFooterBuffersFromCache}
    * @param conf job conf
    * @param tag cache tag of the file, computed by the caller from its name path. Optional.
    * @param fileKey fileId of the Parquet file (either the Long fileId of HDFS or the SyntheticFileId)
    * @param ranges offset to length of every wanted bloom filter, as the footer records them
-   * @return the buffers by offset, or null if there is nothing to serve them for
+   * @param reader reads the filters, keyed by offset
+   * @return what {@code reader} returns
    */
-  Map<Long, MemoryBufferOrBuffers> getBloomFilterBuffersFromCache(Path path, JobConf conf,
-      @Nullable CacheTag tag, @Nullable Object fileKey, SortedMap<Long, Integer> ranges) throws IOException;
+  <T> T readBloomFiltersFromCache(Path path, JobConf conf, @Nullable CacheTag tag, Object fileKey,
+      SortedMap<Long, Integer> ranges, CachedRangesReader<T> reader) throws IOException;
+
+  /** Reads cached ranges of a file, keyed by offset, while the cache holds them locked. */
+  @FunctionalInterface
+  interface CachedRangesReader<T> {
+    T read(Map<Long, MemoryBufferOrBuffers> ranges) throws IOException;
+  }
 }
