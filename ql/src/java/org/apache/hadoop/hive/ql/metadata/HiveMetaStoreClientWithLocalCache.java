@@ -212,8 +212,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   private Table getTableByVersion(GetTableRequest req, QuerySettings settings) throws TException {
     String catName = StringUtils.isEmpty(req.getCatName()) ? getDefaultCatalog(conf) : req.getCatName();
     // the version before the metastore call, so that the entry is never older than it
-    long version = TableVersionRegistry.get().getVersion(catName, req.getDbName(), req.getTblName(),
-        settings.getMaxStalenessMs());
+    long version = TableVersionRegistry.get().getVersion(catName, req.getDbName(), req.getTblName());
     GetTableRequest keyRequest = new GetTableRequest(req);
     keyRequest.unsetId();
     keyRequest.setCatName(catName);
@@ -255,7 +254,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
       }
       if (settings.canCache(table)) {
         long version = TableVersionRegistry.get().getVersion(table.getCatName(), table.getDbName(),
-            table.getTableName(), settings.getMaxStalenessMs());
+            table.getTableName());
         CacheKey cacheKey = new CacheKey(KeyType.ALL_TABLE_CONSTRAINTS_BY_VERSION,
             new AllTableConstraintsRequest(req), version);
         AllTableConstraintsResponse r = (AllTableConstraintsResponse) mscLocalCache.getIfPresent(cacheKey);
@@ -537,8 +536,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     if (validWriteIdList == null) {
       QuerySettings settings = getQuerySettings();
       if (settings != null && !AcidUtils.isTransactionalTable(table) && settings.canCache(table)) {
-        version = TableVersionRegistry.get().getVersion(table.getCatName(), table.getDbName(), table.getTableName(),
-            settings.getMaxStalenessMs());
+        version = TableVersionRegistry.get().getVersion(table.getCatName(), table.getDbName(), table.getTableName());
       }
     }
     return new TableWatermark(validWriteIdList, table.getId(), version);

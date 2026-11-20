@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.function.LongPredicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -32,10 +34,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Ticker;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Versions of the tables cached in HS2, kept by the HMS notification events (HIVE-30264).
@@ -48,15 +57,16 @@ import org.slf4j.LoggerFactory;
  * an event applied in between gives the table a new version and the entry is not found again.
  * <p>
  * Only tables already asked for have a version; events on other tables are ignored, as nothing of theirs is
- * cached.
+ * cached. The versions of at most {@link #MAX_TABLES} tables are kept, each for at most
+ * hive.metadata.cache.nontransactional.max.staleness: a table whose version was dropped gets a new one from the
+ * counter, so dropping a version only costs a cache miss, never a stale hit.
  */
 public final class TableVersionRegistry {
   private static final Logger LOG = LoggerFactory.getLogger(TableVersionRegistry.class);
-  private static final TableVersionRegistry INSTANCE = new TableVersionRegistry();
 
   /**
    * Key of the {@link QuerySettings} in the query-level cache: there only when the query may use the event-based
-   * cache, i.e. the session opted in and, in strict mode, the events were applied up to the start of the query.
+   * cache, i.e. the session opted in and the events were applied up to the start of the query.
    */
   public static final Object QUERY_SETTINGS_KEY = new Object() {
     @Override
@@ -68,11 +78,24 @@ public final class TableVersionRegistry {
   /** Table property to never cache a table by its version. */
   public static final String TABLE_CACHE_DISABLED_PROPERTY = "hive.metadata.cache.disabled";
 
-  /** How long a query waits in strict mode for the events to be applied, before it compiles without the cache. */
+  /** How long a query waits for the events to be applied, before it compiles without the cache. */
   static final long SYNC_TIMEOUT_MS = 5000;
 
+  /** The most tables with a version; queries for any table name add one, so it has to be bounded. */
+  static final int MAX_TABLES = 200_000;
+
+  /** Applies the events up to the latest one, waiting at most the given time; whether it did. */
+  @VisibleForTesting
+  static volatile LongPredicate syncer = NotificationEventPoll::syncToLatest;
+
+  @VisibleForTesting
+  static volatile Ticker ticker = Ticker.systemTicker();
+
+  // after the ticker, which the constructor uses
+  private static final TableVersionRegistry INSTANCE = new TableVersionRegistry();
+
   private final AtomicLong counter = new AtomicLong();
-  private final ConcurrentMap<String, TableVersion> tables = new ConcurrentHashMap<>();
+  private volatile Cache<String, Long> tables = newTables(0);
   private final ConcurrentMap<String, Long> databases = new ConcurrentHashMap<>();
   private volatile long epoch = counter.incrementAndGet();
   private volatile boolean enabled;
@@ -87,21 +110,86 @@ public final class TableVersionRegistry {
 
   /**
    * Enables the registry once the poller has its starting event id.
-   * @return whether it got enabled; it does not when the HMS results are filtered per user
+   * @param metastoreConf the value of a setting of the metastore server HS2 is connected to
+   * @return whether it got enabled; it does not when the HMS results may depend on the user
    */
-  boolean enable(Configuration conf) {
-    String filterHook = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_FILTER_HOOK);
-    if (StringUtils.isNotEmpty(filterHook) && !DefaultMetaStoreFilterHookImpl.class.getName().equals(filterHook)) {
-      // A shared cache would hand out what the filter hook hid from the user
-      LOG.warn("The HS2 metadata cache by events is disabled: {} is set to {}",
-          HiveConf.ConfVars.METASTORE_FILTER_HOOK.varname, filterHook);
+  boolean enable(Configuration conf, Function<String, String> metastoreConf) {
+    // A shared cache would hand out to one user what HMS or its client filtered or denied for another
+    String reason = perUserMetadataReason(conf, metastoreConf);
+    if (reason != null) {
+      LOG.warn("The HS2 metadata cache by events is disabled: {}", reason);
       return false;
     }
     defaultCatalog = MetaStoreUtils.getDefaultCatalog(conf);
+    tables = newTables(HiveConf.getTimeVar(conf,
+        HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MAX_STALENESS, TimeUnit.MILLISECONDS));
     invalidateAll();
     enabled = true;
     LOG.info("The HS2 metadata cache by events is enabled");
     return true;
+  }
+
+  /**
+   * @return why the metadata HMS returns may depend on the user asking, or null if it does not
+   */
+  private static String perUserMetadataReason(Configuration conf, Function<String, String> metastoreConf) {
+    String filterHook = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_FILTER_HOOK);
+    if (!isSharedSafeFilterHook(filterHook)) {
+      return HiveConf.ConfVars.METASTORE_FILTER_HOOK.varname + " is set to " + filterHook;
+    }
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+      // HS2 asks HMS as itself, so HMS answers every session alike
+      return null;
+    }
+    // With doAs HMS sees the session user, and may filter or deny by it. Only the HMS HS2 is connected to now is
+    // checked: the others behind the same URIs are expected to be configured alike.
+    String setting = null;
+    try {
+      setting = MetastoreConf.ConfVars.METASTORE_SERVER_FILTER_ENABLED.getVarname();
+      if (Boolean.parseBoolean(StringUtils.trim(metastoreConf.apply(setting)))) {
+        setting = MetastoreConf.ConfVars.FILTER_HOOK.getVarname();
+        String serverFilterHook = StringUtils.trim(metastoreConf.apply(setting));
+        if (!isSharedSafeFilterHook(serverFilterHook)) {
+          return HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname + " is on and the metastore filters by " +
+              serverFilterHook;
+        }
+      }
+      setting = MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname();
+      String preEventListeners = StringUtils.trim(metastoreConf.apply(setting));
+      if (StringUtils.isNotEmpty(preEventListeners)) {
+        return HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname + " is on and the metastore authorizes by " +
+            preEventListeners;
+      }
+    } catch (RuntimeException e) {
+      LOG.warn("Could not read {} from the metastore", setting, e);
+      return HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname + " is on and " + setting +
+          " of the metastore could not be read";
+    }
+    return null;
+  }
+
+  /**
+   * Whether a filter hook keeps the results the cache holds the same for every user. The
+   * {@link AuthorizationMetaStoreFilterHook}, which HS2 sets for the V2 authorizers, filters lists of names, tables
+   * and databases only, none of which is cached by version.
+   */
+  private static boolean isSharedSafeFilterHook(String filterHook) {
+    return StringUtils.isEmpty(filterHook) ||
+        DefaultMetaStoreFilterHookImpl.class.getName().equals(filterHook) ||
+        AuthorizationMetaStoreFilterHook.class.getName().equals(filterHook);
+  }
+
+  private static Cache<String, Long> newTables(long maxStalenessMs) {
+    Caffeine<Object, Object> builder = Caffeine.newBuilder()
+        .maximumSize(MAX_TABLES)
+        .ticker(ticker)
+        // maintenance on the calling thread, so that the bound holds without a background task
+        .executor(Runnable::run);
+    if (maxStalenessMs > 0) {
+      // a table having the same version longer than that gets a new one, so it is loaded again
+      builder.expireAfterWrite(maxStalenessMs, TimeUnit.MILLISECONDS);
+    }
+    return builder.build();
   }
 
   void disable() {
@@ -115,45 +203,36 @@ public final class TableVersionRegistry {
 
   /**
    * Decides at the start of the compilation whether the query may use the cache by versions, and records it in
-   * the query-level cache. In strict mode the events are applied first up to the latest one in the metastore; if
-   * that fails, or takes longer than the timeout, the query compiles without the cache by versions.
+   * the query-level cache. The events are applied first up to the latest one in the metastore; if that fails, or
+   * takes longer than the timeout, the query compiles without the cache by versions.
    */
   public static void startQuery(Configuration conf, Map<Object, Object> queryCache) {
     if (queryCache == null || !INSTANCE.enabled) {
       return;
     }
     String mode = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MODE);
-    if ("off".equalsIgnoreCase(mode)) {
+    if (!"strict".equalsIgnoreCase(mode)) {
       return;
     }
-    if ("strict".equalsIgnoreCase(mode)) {
-      if (!NotificationEventPoll.syncToLatest(SYNC_TIMEOUT_MS)) {
-        LOG.warn("Compiling without the metadata cache by events: they could not be applied up to the latest one");
-        return;
-      }
+    if (!syncer.test(SYNC_TIMEOUT_MS)) {
+      LOG.warn("Compiling without the metadata cache by events: they could not be applied up to the latest one");
+      return;
     }
     queryCache.put(QUERY_SETTINGS_KEY, new QuerySettings(conf));
   }
 
-  /**
-   * @param maxStalenessMs a table having the same version longer than that gets a new one, so it is loaded
-   *     again; not positive for no limit
-   */
-  public long getVersion(String catName, String dbName, String tblName, long maxStalenessMs) {
-    long now = System.currentTimeMillis();
-    TableVersion v = tables.compute(tableKey(catName, dbName, tblName), (k, old) ->
-        old == null || (maxStalenessMs > 0 && now - old.since > maxStalenessMs) ?
-            new TableVersion(counter.incrementAndGet(), now) : old);
+  public long getVersion(String catName, String dbName, String tblName) {
+    // get, not compute: reading a version must not extend how long it is kept
+    long version = tables.get(tableKey(catName, dbName, tblName), k -> counter.incrementAndGet());
     long dbVersion = databases.getOrDefault(databaseKey(catName, dbName), 0L);
-    return Math.max(v.version, Math.max(dbVersion, epoch));
+    return Math.max(version, Math.max(dbVersion, epoch));
   }
 
   public void invalidateTable(String catName, String dbName, String tblName) {
     if (dbName == null || tblName == null) {
       return;
     }
-    tables.computeIfPresent(tableKey(catName, dbName, tblName),
-        (k, old) -> new TableVersion(counter.incrementAndGet(), System.currentTimeMillis()));
+    tables.asMap().computeIfPresent(tableKey(catName, dbName, tblName), (k, old) -> counter.incrementAndGet());
   }
 
   public void invalidateDatabase(String catName, String dbName) {
@@ -166,7 +245,7 @@ public final class TableVersionRegistry {
   public void invalidateAll() {
     epoch = counter.incrementAndGet();
     // the versions are all older than the epoch now
-    tables.clear();
+    tables.invalidateAll();
     databases.clear();
   }
 
@@ -206,37 +285,21 @@ public final class TableVersionRegistry {
         StringUtils.lowerCase(dbName);
   }
 
-  int tableCount() {
-    return tables.size();
-  }
-
-  private static final class TableVersion {
-    final long version;
-    final long since;
-
-    TableVersion(long version, long since) {
-      this.version = version;
-      this.since = since;
-    }
+  long tableCount() {
+    tables.cleanUp();
+    return tables.estimatedSize();
   }
 
   /**
    * What a query decided at its start about using the cache by versions.
    */
   public static final class QuerySettings {
-    final long maxStalenessMs;
     final boolean excludeExternalTables;
 
     public QuerySettings(Configuration conf) {
-      maxStalenessMs = HiveConf.getTimeVar(conf,
-          HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MAX_STALENESS, TimeUnit.MILLISECONDS);
       // external tables are not trusted to change only through the metastore
       excludeExternalTables =
           HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS);
-    }
-
-    public long getMaxStalenessMs() {
-      return maxStalenessMs;
     }
 
     /**

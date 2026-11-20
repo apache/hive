@@ -28,6 +28,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -82,11 +83,16 @@ public class NotificationEventPoll {
   }
 
   private NotificationEventPoll(Configuration conf) throws Exception {
-    this(conf, null);
+    this(conf, null, null);
   }
 
+  /**
+   * @param fetcher the notification fetcher, or null for one on the metastore of conf
+   * @param metastoreConf the settings of the metastore server, or null to ask the metastore of conf
+   */
   @VisibleForTesting
-  NotificationEventPoll(Configuration conf, Supplier<EventUtils.NotificationFetcher> fetcher) throws Exception {
+  NotificationEventPoll(Configuration conf, Supplier<EventUtils.NotificationFetcher> fetcher,
+      Function<String, String> metastoreConf) throws Exception {
     this.conf = conf;
 
     long pollInterval = HiveConf.getTimeVar(conf,
@@ -119,7 +125,8 @@ public class NotificationEventPoll {
     lastCheckedEventId = evFetcher.get().getCurrentNotificationEventId();
     LOG.info("Initializing lastCheckedEventId to {}", lastCheckedEventId);
     if (metadataCacheEnabled) {
-      metadataCacheEnabled = TableVersionRegistry.get().enable(conf);
+      metadataCacheEnabled = TableVersionRegistry.get().enable(conf,
+          metastoreConf != null ? metastoreConf : key -> getMetastoreConf(hiveConf, key));
     }
 
     // Start the scheduled poll task
@@ -234,6 +241,14 @@ public class NotificationEventPoll {
     }
     LOG.debug("Processed {} notification events", eventsProcessed);
     return eventsProcessed;
+  }
+
+  private static String getMetastoreConf(HiveConf conf, String key) {
+    try {
+      return Hive.get(conf).getMSC().getConfigValue(key, "");
+    } catch (Exception e) {
+      throw new IllegalStateException("Could not read " + key + " from the metastore", e);
+    }
   }
 
   private static EventUtils.NotificationFetcher newFetcher(HiveConf conf) {

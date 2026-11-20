@@ -49,7 +49,7 @@ public class TestMetadataCacheEventConsumer {
 
   @Before
   public void setUp() {
-    registry.enable(new HiveConf());
+    registry.enable(new HiveConf(), key -> "");
   }
 
   @After
@@ -147,7 +147,7 @@ public class TestMetadataCacheEventConsumer {
     HiveConf conf = new HiveConf();
     conf.setTimeVar(HiveConf.ConfVars.HIVE_NOTFICATION_EVENT_POLL_INTERVAL, 1, TimeUnit.HOURS);
     conf.setVar(HiveConf.ConfVars.HIVE_NOTFICATION_EVENT_CONSUMERS, MetadataCacheEventConsumer.class.getName());
-    NotificationEventPoll poll = new NotificationEventPoll(conf, fetcher);
+    NotificationEventPoll poll = new NotificationEventPoll(conf, fetcher, key -> "");
     try {
       assertTrue(registry.isEnabled());
       long t = version("t");
@@ -171,7 +171,7 @@ public class TestMetadataCacheEventConsumer {
   }
 
   private long version(String tbl) {
-    return registry.getVersion("hive", "db", tbl, 0);
+    return registry.getVersion("hive", "db", tbl);
   }
 
   private NotificationEvent event(String type, String db, String tbl, String message) {

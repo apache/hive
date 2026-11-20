@@ -67,7 +67,9 @@ public class TestMetadataCacheByVersion {
   public void setUp() throws Exception {
     HiveConf conf = new HiveConf();
     HiveMetaStoreClientWithLocalCache.init(conf);
-    registry.enable(conf);
+    registry.enable(conf, key -> "");
+    // as if the events were applied up to the latest one
+    TableVersionRegistry.syncer = timeoutMs -> true;
 
     Table table = new Table();
     table.setId(42L);
@@ -88,6 +90,7 @@ public class TestMetadataCacheByVersion {
 
   @After
   public void tearDown() {
+    TableVersionRegistry.syncer = NotificationEventPoll::syncToLatest;
     registry.disable();
   }
 
@@ -96,7 +99,7 @@ public class TestMetadataCacheByVersion {
     String queryId = "test_metadata_cache_by_version_" + queryCount++;
     HiveConf conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
-    conf.setVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MODE, optIn ? "bounded" : "off");
+    conf.setVar(HiveConf.ConfVars.HIVE_METADATA_CACHE_NONTRANSACTIONAL_MODE, optIn ? "strict" : "off");
     SessionState ss = new SessionState(conf);
     SessionState.setCurrentSessionState(ss);
     QueryState queryState = new QueryState.Builder().withHiveConf(conf).withGenerateNewQueryId(false).build();
