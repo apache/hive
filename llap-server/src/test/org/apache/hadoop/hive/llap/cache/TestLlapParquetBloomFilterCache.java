@@ -16,13 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hadoop.hive.llap.io.api.impl;
+package org.apache.hadoop.hive.llap.cache;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -48,9 +53,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.api.WriteSupport;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
+import org.apache.parquet.hadoop.metadata.ColumnChunkMetaData;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
@@ -137,6 +145,32 @@ public class TestLlapParquetBloomFilterCache extends AbstractTestParquetDirect {
       Assert.assertTrue("expected the cache only refusal, got: " + rootCause(e),
           rootCause(e).contains(HiveConf.ConfVars.LLAP_IO_CACHE_ONLY.varname));
     }
+  }
+
+  /**
+   * A buffer left locked is never evicted, so a leak fills a daemon's cache with entries nothing can reclaim,
+   * and because a locked buffer is still readable, the other tests here would keep passing.
+   */
+  @Test
+  public void testAReadLetsGoOfTheFiltersItLocks() throws Exception {
+    Path file = writeBloomFilterFile("LlapBloomRelease");
+    Assert.assertEquals("the row group holds no odd value, so the bloom filter drops it",
+        0, filteredBlocks(file, objectInspector(), 51, new GenericUDFOPEqual()).size());
+
+    ColumnChunkMetaData chunk;
+    try (ParquetFileReader reader = ParquetFileReader.open(HadoopInputFile.fromPath(file, conf))) {
+      chunk = reader.getFooter().getBlocks().get(0).getColumns().get(0);
+    }
+    SortedMap<Long, Integer> ranges = new TreeMap<>(
+        Map.of(chunk.getBloomFilterOffset(), chunk.getBloomFilterLength()));
+    Object fileKey = LlapHiveUtils.createFileIdUsingFS(file.getFileSystem(conf), file, conf);
+    Map<Long, MemoryBufferOrBuffers> served =
+        LlapProxy.getIo().parquet().getBloomFilterBuffersFromCache(file, conf, null, fileKey, ranges);
+
+    // this fetch is the only lock standing: a read that kept its own would make it two
+    LlapAllocatorBuffer buffer = (LlapAllocatorBuffer) served.get(chunk.getBloomFilterOffset()).getSingleBuffer();
+    Assert.assertEquals("the read let go of the filter it locked", 1, buffer.getRefCount());
+    buffer.decRef();
   }
 
   private static String rootCause(Throwable t) {

@@ -232,23 +232,6 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
   }
 
   /**
-   * The JIRA is about the vectorized reader, which is the only one parquet did not already apply the bloom
-   * filter level for, so assert the pruning on that reader and not just on the mapred one.
-   */
-  @Test
-  public void testBloomFilterRowGroupFilterVectorized() throws Exception {
-    StructObjectInspector inspector = writeBloomFilterFile();
-
-    setEqualsPredicate(inspector, 50);
-    Assert.assertEquals("row group with a value present in the bloom filter must be read",
-        1, filteredBlocksVectorized(inspector).size());
-
-    setEqualsPredicate(inspector, 51);
-    Assert.assertEquals("vectorized reader must drop the row group on the bloom filter",
-        0, filteredBlocksVectorized(inspector).size());
-  }
-
-  /**
    * A conjunction is dropped when either side drops it, so a range term alongside an equality term must not
    * stop the bloom filter from being consulted.
    */
@@ -338,14 +321,6 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
         new FileSplit(bloomTestPath, 0, fileLength(bloomTestPath), (String[]) null), new JobConf(conf))) {
       return reader.getFilteredBlocks();
     }
-  }
-
-  private void setEqualsPredicate(StructObjectInspector inspector, int value) {
-    List<ExprNodeDesc> children = Lists.newArrayList(
-        new ExprNodeColumnDesc(Integer.class, "intCol", "T", false), new ExprNodeConstantDesc(value));
-    ExprNodeGenericFuncDesc predicate =
-        new ExprNodeGenericFuncDesc(inspector, new GenericUDFOPEqual(), children);
-    conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, SerializationUtilities.serializeExpression(predicate));
   }
 
   private List<BlockMetaData> filteredBlocksForEquals(StructObjectInspector inspector, int value)

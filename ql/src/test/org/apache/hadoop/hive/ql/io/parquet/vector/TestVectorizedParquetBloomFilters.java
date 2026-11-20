@@ -41,7 +41,7 @@ import org.junit.Test;
  * The gate deciding which bloom filters are worth reading, and so whether the data file is worth opening
  * at all. The block count alone cannot see an error here: Parquet answers a filter read for a column that
  * has none with null and leaves the row group standing, so a predicate collected too widely prunes exactly
- * as much while reading megabytes it did not need.
+ * as much while reading filters it did not need.
  */
 public class TestVectorizedParquetBloomFilters {
 

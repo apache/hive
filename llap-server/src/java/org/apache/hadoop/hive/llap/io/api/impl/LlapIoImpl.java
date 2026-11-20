@@ -97,7 +97,6 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
-import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
@@ -617,7 +616,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     @Override
     public Map<Long, MemoryBufferOrBuffers> getBloomFilterBuffersFromCache(Path path, JobConf conf,
-        Object fileKey, SortedMap<Long, Integer> ranges) throws IOException {
+        @Nullable CacheTag tag, @Nullable Object fileKey, SortedMap<Long, Integer> ranges) throws IOException {
 
       Preconditions.checkNotNull(fileMetadataCache, "Metadata cache must not be null");
       if (fileKey == null || ranges.isEmpty()) {
@@ -640,7 +639,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         }
         if (!missing.isEmpty()) {
           throwIfCacheOnlyRead(HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_CACHE_ONLY));
-          CacheTag tag = VectorizedParquetRecordReader.cacheTagOfParquetFile(path, daemonConf, conf);
           final FileSystem fs = path.getFileSystem(conf);
           // One open serves every filter this reader is missing.
           try (SeekableInputStream stream = HadoopStreams.wrap(fs.open(path))) {

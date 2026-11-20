@@ -363,7 +363,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     if (cacheKey == null || metadataCache == null) {
       return null;
     }
-    return LlapProxy.getIo().parquet().getBloomFilterBuffersFromCache(filePath, jobConf, cacheKey, ranges);
+    return LlapProxy.getIo().parquet().getBloomFilterBuffersFromCache(filePath, jobConf, cacheTag, cacheKey,
+        ranges);
   }
 
   /**

@@ -194,8 +194,9 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
 
   /**
    * Cached at NORMAL rather than the HIGH the footers use. A footer is a few hundred bytes and the file
-   * cannot be read without it, while a bloom filter runs to a megabyte and only saves work, so it does not
-   * deserve the priority boost that would have it evict column data.
+   * cannot be read without it, while a bloom filter runs up to write.parquet.bloom-filter-max-bytes (1 MB by
+   * default) and only saves work, so it does not deserve the priority boost that would have it evict column
+   * data.
    */
   public LlapBufferOrBuffers putParquetBloomFilters(Object fileKey, long offset, int length, InputStream is,
       CacheTag tag, AtomicBoolean isStopped) throws IOException {

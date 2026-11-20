@@ -66,12 +66,13 @@ public interface LlapParquetIo {
    * caching the ones not held yet. The buffers come back locked, so the caller releases each of them with
    * {@code decRefBuffer} once it has read them.
    *
-   * @param path Parquet file path
+   * @param path the path to open the file by on a miss, as for {@link #getFooterBuffersFromCache}
    * @param conf job conf
+   * @param tag cache tag of the file, computed by the caller from its name path. Optional.
    * @param fileKey fileId of the Parquet file (either the Long fileId of HDFS or the SyntheticFileId)
    * @param ranges offset to length of every wanted bloom filter, as the footer records them
    * @return the buffers by offset, or null if there is nothing to serve them for
    */
   Map<Long, MemoryBufferOrBuffers> getBloomFilterBuffersFromCache(Path path, JobConf conf,
-      @Nullable Object fileKey, SortedMap<Long, Integer> ranges) throws IOException;
+      @Nullable CacheTag tag, @Nullable Object fileKey, SortedMap<Long, Integer> ranges) throws IOException;
 }

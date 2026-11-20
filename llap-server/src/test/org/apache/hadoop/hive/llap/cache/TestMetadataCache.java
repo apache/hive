@@ -254,8 +254,8 @@ public class TestMetadataCache {
   /**
    * A file's bloom filters are cached under a wrapper key while its footer keeps the bare file key.
    * Eviction removes an entry by the key its buffers carry, so a bloom filter whose buffers carried the
-   * file key would take the footer's entry with it - and bloom filters, about a megabyte each against a
-   * footer of a few hundred bytes, are exactly what gets evicted.
+   * file key would take the footer's entry with it - and bloom filters, far larger than a footer of a few
+   * hundred bytes, are exactly what gets evicted.
    */
   @Test
   public void testEvictingBloomFilterKeepsFooter() throws Exception {
