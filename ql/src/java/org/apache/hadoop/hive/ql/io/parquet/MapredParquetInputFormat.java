@@ -19,11 +19,25 @@
 package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,11 +53,13 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.security.TokenCache;
 import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.mapreduce.lib.input.FileInputFormat.LIST_STATUS_NUM_THREADS;
+import static org.apache.hadoop.mapreduce.lib.input.FileInputFormat.shrinkStatus;
 
 
 /**
@@ -68,16 +84,64 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
   }
 
   /**
-   * Parallelize split-generation file listing by sizing Hadoop's {@code LocatedFileStatusFetcher}
-   * from {@code hive.compute.splits.num.threads}. We set it on the job conf here because that
-   * property's cluster default does not reach the conf split generation uses; a value of 1 stays
-   * serial.
+   * Lists the input paths as {@link FileInputFormat} does, on {@code hive.compute.splits.num.threads} threads, without
+   * its glob: on an object store the glob of a partition directory costs a HEAD and a LIST before the directory's own
+   * LIST.
    */
   @Override
   protected FileStatus[] listStatus(JobConf job) throws IOException {
-    job.setInt(LIST_STATUS_NUM_THREADS,
-        HiveConf.getIntVar(job, HiveConf.ConfVars.HIVE_COMPUTE_SPLITS_NUM_THREADS));
-    return super.listStatus(job);
+    Path[] dirs = getInputPaths(job);
+    if (dirs.length == 0) {
+      throw new IOException("No input paths specified in job");
+    }
+    TokenCache.obtainTokensForNamenodes(job.getCredentials(), dirs, job);
+    boolean recursive = job.getBoolean(INPUT_DIR_RECURSIVE, false);
+    PathFilter jobFilter = getInputPathFilter(job);
+    PathFilter filter = path -> FileUtils.HIDDEN_FILES_PATH_FILTER.accept(path)
+        && (jobFilter == null || jobFilter.accept(path));
+
+    int numThreads = Math.min(dirs.length, HiveConf.getIntVar(job, HiveConf.ConfVars.HIVE_COMPUTE_SPLITS_NUM_THREADS));
+    ExecutorService pool = Executors.newFixedThreadPool(numThreads,
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Parquet-ListStatus-%d").build());
+    try {
+      List<Future<List<FileStatus>>> listings = new ArrayList<>(dirs.length);
+      for (Path dir : dirs) {
+        listings.add(pool.submit(() -> listInputPath(job, dir, filter, recursive)));
+      }
+      List<FileStatus> result = new ArrayList<>();
+      for (Future<List<FileStatus>> listing : listings) {
+        result.addAll(listing.get());
+      }
+      LOG.info("Total input files to process : {}", result.size());
+      return result.toArray(new FileStatus[0]);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new InterruptedIOException("Interrupted while listing the input paths");
+    } catch (ExecutionException e) {
+      Throwables.throwIfInstanceOf(e.getCause(), IOException.class);
+      Throwables.throwIfUnchecked(e.getCause());
+      throw new IOException(e.getCause());
+    } finally {
+      pool.shutdownNow();
+    }
+  }
+
+  private List<FileStatus> listInputPath(JobConf job, Path dir, PathFilter filter, boolean recursive)
+      throws IOException {
+    FileSystem fs = dir.getFileSystem(job);
+    List<FileStatus> result = new ArrayList<>();
+    if (recursive) {
+      addInputPathRecursively(result, fs, dir, filter);
+    } else {
+      RemoteIterator<LocatedFileStatus> statuses = fs.listLocatedStatus(dir);
+      while (statuses.hasNext()) {
+        LocatedFileStatus status = statuses.next();
+        if (filter.accept(status.getPath())) {
+          result.add(shrinkStatus(status));
+        }
+      }
+    }
+    return result;
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
