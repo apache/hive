@@ -120,11 +120,11 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
     for (int id = 200; id < 206; id++) {
       Record address = GenericRecord.create(addressType);
       address.setField("city", id % 2 == 0 ? "x" : "y");
-      Record record = GenericRecord.create(table.schema());
-      record.setField("id", id);
-      record.setField("data", "d" + id);
-      record.setField("address", address);
-      records.add(record);
+      Record row = GenericRecord.create(table.schema());
+      row.setField("id", id);
+      row.setField("data", "d" + id);
+      row.setField("address", address);
+      records.add(row);
     }
     helper.appendToTable(records);
     Set<Integer> deletedIds = Sets.newHashSet(29, 61, 200, 201, 204);
@@ -147,7 +147,7 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
     List<Integer> filtered = Lists.newArrayList();
     try (CloseableIterable<Record> reader =
              IcebergGenerics2.read(table).where(Expressions.equal("address.city", "x")).build()) {
-      reader.forEach(record -> filtered.add((Integer) record.getField("id")));
+      reader.forEach(row -> filtered.add((Integer) row.getField("id")));
     }
     Assert.assertEquals(List.of(202), filtered);
   }
