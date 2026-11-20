@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.hive.HiveHadoopUtil;
 import org.apache.iceberg.rest.metrics.IcebergMetricsReporter;
 
 /**
@@ -123,8 +124,12 @@ public class HMSCatalogFactory {
     if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION)) {
       properties.put(CatalogProperties.UNIQUE_TABLE_LOCATION, "true");
     }
+    // The REST catalog records the authenticated caller as owner, whatever owner a client requests. Set on a copy,
+    // keeping the caller's (possibly HMS-wide) configuration unchanged.
+    final Configuration catalogConf = new Configuration(configuration);
+    catalogConf.setBoolean(HiveHadoopUtil.CLIENT_SUPPLIED_OWNER_ENABLED, false);
     final HiveCatalog hiveCatalog = new org.apache.iceberg.hive.HiveCatalog();
-    hiveCatalog.setConf(configuration);
+    hiveCatalog.setConf(catalogConf);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     hiveCatalog.initialize(catalogName, properties);
     return hiveCatalog;

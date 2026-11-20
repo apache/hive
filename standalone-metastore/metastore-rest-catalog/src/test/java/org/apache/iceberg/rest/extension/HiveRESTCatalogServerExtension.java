@@ -27,8 +27,11 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.iceberg.hive.HiveCatalog;
@@ -145,6 +148,19 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
     Configuration catalogConf = new Configuration(conf);
     MetastoreConf.setVar(catalogConf, ConfVars.THRIFT_URIS, restCatalogServer.getThriftUri());
     return HMSCatalogFactory.createHiveCatalog(catalogConf);
+  }
+
+  /**
+   * Opens a Thrift client against the embedded metastore, for tests that need to inspect the raw
+   * HMS objects the REST catalog wrote. The caller is responsible for closing it.
+   *
+   * @return a new metastore client
+   * @throws MetaException if the client cannot connect
+   */
+  public IMetaStoreClient newMetastoreClient() throws MetaException {
+    Configuration clientConf = new Configuration(conf);
+    MetastoreConf.setVar(clientConf, ConfVars.THRIFT_URIS, restCatalogServer.getThriftUri());
+    return new HiveMetaStoreClient(clientConf);
   }
 
   /**

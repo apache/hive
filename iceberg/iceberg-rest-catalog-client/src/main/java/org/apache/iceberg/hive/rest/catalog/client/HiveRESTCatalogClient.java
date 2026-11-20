@@ -49,6 +49,7 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -61,6 +62,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.rest.RESTCatalog;
+import org.apache.iceberg.view.View;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,11 +209,18 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
       return MetastoreUtil.toHiveTable(icebergTable, conf);
     } catch (NoSuchTableException tableMissing) {
       if (restCatalog instanceof ViewCatalog viewCatalog) {
-        if (!viewCatalog.viewExists(id)) {
+        View view;
+        try {
+          view = viewCatalog.loadView(id);
+        } catch (NoSuchViewException viewMissing) {
           throw new NoSuchObjectException();
         }
-        return MetastoreUtil.buildMinimalHMSView(
+        Table hmsView = MetastoreUtil.buildMinimalHMSView(
             tableRequest.getCatName(), tableRequest.getDbName(), tableRequest.getTblName());
+        // Carry the server-reported Authorized state as the HMS view parameter; when the server reports none, the
+        // view is treated as a deferred-authorization view.
+        MetastoreUtil.applyReportedViewAuthorization(view, hmsView, true);
+        return hmsView;
       }
       throw new NoSuchObjectException();
     }

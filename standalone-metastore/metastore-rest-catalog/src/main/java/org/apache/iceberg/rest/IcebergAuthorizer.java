@@ -21,7 +21,6 @@ package org.apache.iceberg.rest;
 
 import static org.apache.iceberg.hive.HiveCatalog.HMS_DB_OWNER;
 import static org.apache.iceberg.hive.HiveCatalog.HMS_DB_OWNER_TYPE;
-import static org.apache.iceberg.hive.HiveCatalog.HMS_TABLE_OWNER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -198,7 +197,9 @@ class IcebergAuthorizer {
       var rawOwnerType = namespaceMetadata.get(HMS_DB_OWNER_TYPE);
       databaseOwnerType = rawOwnerType == null ? null : PrincipalType.valueOf(rawOwnerType);
     }
-    final String tableOwnerName = request.properties().getOrDefault(HMS_TABLE_OWNER, currentUser);
+    // The owner HMS will record, the caller (see HMSCatalogFactory#createHiveCatalog), so that owner-based
+    // policies are evaluated against the actual owner
+    final String tableOwnerName = currentUser;
     List<HivePrivilegeObject> outputs = List.of(
         new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, catalogName, databaseName, null,
             null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,

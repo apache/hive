@@ -218,6 +218,7 @@ Database:           	ice_rest
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	Authorized          	false               
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"}]}
 	metadata_location   	#MASKED#/warehouse/ice_rest/ice_v1/metadata/#Masked#.metadata.json
@@ -277,6 +278,7 @@ Database:           	ice_rest
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	Authorized          	false               
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"}]}
 	metadata_location   	#MASKED#/warehouse/ice_rest/ice_v1/metadata/#Masked#.metadata.json
@@ -334,6 +336,7 @@ Database:           	ice_rest
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	Authorized          	false               
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":1,\"fields\":[{\"id\":1,\"name\":\"_c0\",\"required\":false,\"type\":\"string\"}]}
 	metadata_location   	#MASKED#/warehouse/ice_rest/ice_v1/metadata/#Masked#.metadata.json
@@ -403,6 +406,7 @@ Database:           	ice_rest
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	Authorized          	false               
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"_c1\",\"required\":false,\"type\":\"string\"}]}
 	metadata_location   	#MASKED#/warehouse/ice_rest/ice_v2/metadata/#Masked#.metadata.json
