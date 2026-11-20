@@ -1,3 +1,5 @@
+set hive.optimize.partial.aggr.join.transpose=false;
+
 CREATE TABLE t0 (
     phi bigint,
     vn string,
