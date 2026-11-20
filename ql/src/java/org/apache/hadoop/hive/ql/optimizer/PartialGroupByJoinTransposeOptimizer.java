@@ -163,7 +163,7 @@ import org.slf4j.LoggerFactory;
  *     {@code count(*)} or {@code count(1)}).</li>
  *   </ul>
  *   </li>
- *   <li>the push is also skipped when the join reduces the pushed input by more than
+ *   <li>the push is also skipped when the join reduces the join input the GROUP BY is pushed to by more than
  *   {@code hive.optimize.partial.aggr.join.transpose.max.join.reduction}: Hive has no dynamic filters for a map
  *   join, so the pushed GROUP BY would process every row the join discards.</li>
  * </ul>
@@ -176,8 +176,8 @@ import org.slf4j.LoggerFactory;
  * would sit between the join and the GROUP BY. It runs before the dynamic partition pruning: its semijoin branches
  * would hang off the join inputs and the joins,
  * so the GROUP BY could not move below them, and built afterwards they read from the pushed GROUP BY. The
- * synthetic join predicates of residual join filters that read the values of a pushed join input are moved to the
- * pushed GROUP BY output.
+ * synthetic join predicates of residual join filters that read the values of the join input the GROUP BY is pushed
+ * to are moved to the pushed GROUP BY output.
  */
 public class PartialGroupByJoinTransposeOptimizer extends Transform {
 

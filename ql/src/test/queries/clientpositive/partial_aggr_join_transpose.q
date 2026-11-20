@@ -65,7 +65,7 @@ set hive.optimize.partial.aggr.join.transpose.min.reduction=0.8;
 set hive.groupby.mapaggr.checkinterval=100000;
 set hive.vectorized.groupby.maxentries=1000000;
 
--- pushed: a key of the pushed input that is also its join key
+-- pushed: a key of the join input the group by is pushed to that is also its join key
 explain
 select f.k, d.g, sum(f.v)
 from t_fact f
