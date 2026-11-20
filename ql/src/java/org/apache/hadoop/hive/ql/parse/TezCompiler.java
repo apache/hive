@@ -182,7 +182,6 @@ public class TezCompiler extends TaskCompiler {
         && procCtx.conf.getBoolVar(ConfVars.HIVE_MAPSIDE_AGGREGATE)
         && !procCtx.conf.getBoolVar(ConfVars.HIVE_GROUPBY_SKEW)) {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-      runStatsAnnotation(procCtx);
       new PartialGroupByJoinTransposeOptimizer().transform(procCtx.parseContext);
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Partial group by join transpose");
     }
