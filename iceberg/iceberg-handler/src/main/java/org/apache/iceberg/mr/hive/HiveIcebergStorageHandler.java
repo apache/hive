@@ -1629,8 +1629,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
     return switch (operation) {
-      case DELETE -> IcebergTableUtil.isFanoutEnabled(table.getParameters()) ?
-        EMPTY_ORDERING : POSITION_DELETE_ORDERING;
+      // the delete writers buffer the positions of each data file
+      case DELETE -> EMPTY_ORDERING;
       case MERGE -> POSITION_DELETE_ORDERING;
       // For update operations we use the same sort order defined by
       // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}
