@@ -80,7 +80,7 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
     try {
       value = (T) registry.get(key);
       if ( value != null) {
-        LOG.info("Found " + key + " in cache with value: " + value);
+        LOG.debug("Found {} in cache", key);
       }
     } catch (Exception e) {
       throw new HiveException(e);
@@ -99,7 +99,7 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
         LOG.info("Caching key: " + key);
         registry.cacheForVertex(key, value);
       } else {
-        LOG.info("Found " + key + " in cache with value: " + value);
+        LOG.debug("Found {} in cache", key);
       }
     } catch (Exception e) {
       throw new HiveException(e);
