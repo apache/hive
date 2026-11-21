@@ -32,11 +32,7 @@ window.options = {
             true : "true",
             false : "false"
         },
-        showImage : true,
-        img : {
-            true : 'css/true.png',
-            false : 'css/false.png'
-        }
+        showImage : false
     }
 };
 
