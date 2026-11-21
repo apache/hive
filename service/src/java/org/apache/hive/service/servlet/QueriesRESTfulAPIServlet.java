@@ -23,9 +23,11 @@ import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.session.SessionManager;
+import org.apache.hive.service.rpc.thrift.TOperationState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
@@ -142,6 +144,7 @@ public class QueriesRESTfulAPIServlet extends HttpServlet {
     response.setContentType("application/json");
     response.setStatus(HttpServletResponse.SC_OK);
     ObjectMapper mapper = new ObjectMapper();
+    mapper.addMixIn(QueryInfo.class, QueryInfoJsonMixin.class);
     SimpleModule module = new SimpleModule("CustomSessionModule", new Version(1, 0, 0, null, null, null));
     module.addSerializer(HiveSession.class, new HiveSessionSerializer());
     mapper.registerModule(module);
@@ -156,6 +159,11 @@ public class QueriesRESTfulAPIServlet extends HttpServlet {
       LOG.error("Caught an exception while writing an HTTP response", e);
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
+  }
+
+  private abstract static class QueryInfoJsonMixin {
+    @JsonIgnore
+    abstract TOperationState getOperationState();
   }
 
   private static class HiveSessionSerializer extends JsonSerializer<HiveSession> {
