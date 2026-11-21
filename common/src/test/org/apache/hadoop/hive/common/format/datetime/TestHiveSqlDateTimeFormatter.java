@@ -427,6 +427,10 @@ public class TestHiveSqlDateTimeFormatter {
     verifyBadParseString("DD-MM-YYYYFX", "1-01-1998");
     //same separators required
     verifyBadParseString("FXDD-MM-YYYY", "15/01/1998");
+    // A trailing hyphen before TZH is the timezone sign, not part of the separator run.
+    checkParseTimestamp("FXyyyy-mm-dd -tzh:tzm", "2026-10-20 -07:00", "2026-10-20 00:00:00");
+    checkParseTimestamp("FXyyyy-mm-dd -tzh:tzm", "2026-10-20 +07:00", "2026-10-20 00:00:00");
+    verifyBadParseString("FXyyyy-mm-dd -tzh:tzm", "2026-10-20  07:00");
     //no filling in zeroes or year digits
     verifyBadParseString("FXDD-MM-YYYY", "1-01-1998");
     verifyBadParseString("FXDD-MM-YYYY", "01-01-98");
