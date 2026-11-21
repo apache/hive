@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
@@ -558,18 +559,26 @@ public class StatsRulesProcFactory {
         factor *= children.size() - 1;
       }
       for (int i = 0; i < columnStats.size(); i++) {
-        long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
+        ColStatistics cs = columnStats.get(i);
+        long dvs = cs == null ? -1L : cs.getCountDistint();
         if (dvs == 0) {
+          // verified zero distinct values: no non-null value can match, so start from 0;
+          // like any column without a usable range, it is still subject to the min-ratio clamp
+          factor = 0;
+          break;
+        }
+        if (dvs < 0) {
+          // missing stats or unknown NDV
           factor *= 0.5;
-          continue;
+        } else {
+          // (num of distinct vals for col in IN clause  / num of distinct vals for col )
+          double columnFactor = 1.0 / dvs;
+          if (!multiColumn) {
+            columnFactor *= estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
+          }
+          // max can be 1, even when ndv is larger in IN clause than in column stats
+          factor *= Math.min(columnFactor, 1.0);
         }
-        // (num of distinct vals for col in IN clause  / num of distinct vals for col )
-        double columnFactor = 1.0 / dvs;
-        if (!multiColumn) {
-          columnFactor *= estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
-        }
-        // max can be 1, even when ndv is larger in IN clause than in column stats
-        factor *= Math.min(columnFactor, 1.0);
       }
 
       // Clamp at 1 to be sure that we don't get out of range.
@@ -1283,12 +1292,13 @@ public class StatsRulesProcFactory {
         GenericUDF udf = genFunc.getGenericUDF();
 
         if (udf instanceof GenericUDFOPEqual) {
+          boolean nullSafe = udf instanceof GenericUDFOPEqualNS;
           String colName = null;
           boolean isConst = false;
           Object prevConst = null;
 
           for (ExprNodeDesc leaf : genFunc.getChildren()) {
-            if (leaf instanceof ExprNodeConstantDesc) {
+            if (leaf instanceof ExprNodeConstantDesc constLeaf) {
 
               // constant = constant expressions. We shouldn't be getting this
               // after constant folding
@@ -1296,7 +1306,7 @@ public class StatsRulesProcFactory {
 
                 // special case: if both constants are not equal then return 0
                 if (prevConst != null &&
-                    !prevConst.equals(((ExprNodeConstantDesc) leaf).getValue())) {
+                    !prevConst.equals(constLeaf.getValue())) {
                   return 0;
                 }
                 return numRows;
@@ -1305,7 +1315,7 @@ public class StatsRulesProcFactory {
               // if the first argument is const then just set the flag and continue
               if (colName == null) {
                 isConst = true;
-                prevConst = ((ExprNodeConstantDesc) leaf).getValue();
+                prevConst = constLeaf.getValue();
                 continue;
               }
 
@@ -1318,9 +1328,8 @@ public class StatsRulesProcFactory {
 
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
-                long dvs = cs.getCountDistint();
-                numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
-                return numRows;
+                return rowsAfterEqualityFilter(numRows, cs.getCountDistint(),
+                    nullSafe && constLeaf.getValue() == null);
               }
             } else if (leaf instanceof ExprNodeColumnDesc) {
               ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
@@ -1339,9 +1348,7 @@ public class StatsRulesProcFactory {
 
                 ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
                 if (cs != null) {
-                  long dvs = cs.getCountDistint();
-                  numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
-                  return numRows;
+                  return rowsAfterEqualityFilter(numRows, cs.getCountDistint(), nullSafe && prevConst == null);
                 }
               }
             }
@@ -1379,6 +1386,17 @@ public class StatsRulesProcFactory {
 
       // worst case
       return numRows / 2;
+    }
+
+    private static long rowsAfterEqualityFilter(long numRows, long dvs, boolean nullSafeEqualsNull) {
+      if (dvs < 0) {
+        return numRows / 2;
+      }
+      if (dvs == 0) {
+        // no non-null values: only null-safe equality with NULL (col <=> NULL) can match, and then every row does
+        return nullSafeEqualsNull ? numRows : 0;
+      }
+      return Math.round((double) numRows / dvs);
     }
 
   }
@@ -1519,14 +1537,12 @@ public class StatsRulesProcFactory {
         // compute product of distinct values of grouping columns
         long ndvProduct =
             StatsUtils.computeNDVGroupingColumns(colStats, parentStats, false);
-        // if ndvProduct is 0 then column stats state must be partial and we are missing
-        // column stats for a group by column
-        if (ndvProduct == 0) {
+        if (ndvProduct < 0) {
+          // unknown - missing column stats or unknown NDV on a grouping column
           ndvProduct = parentNumRows / 2;
 
           if (LOG.isDebugEnabled()) {
-            LOG.debug("STATS-" + gop.toString() + ": ndvProduct became 0 as some column does not" +
-                " have stats. ndvProduct changed to: " + ndvProduct);
+            LOG.debug("STATS-{}: ndvProduct unknown; falling back to {}", gop, ndvProduct);
           }
         }
         final long maxColumnNDV = colStats.stream()
@@ -1721,6 +1737,10 @@ public class StatsRulesProcFactory {
           long valuesCount = agg.getDistinct() ?
               parentCS.getCountDistint() :
               parentStats.getNumRows() - numNulls;
+          // countDistinct < 0 would produce a Range with a negative maxValue
+          if (agg.getDistinct() && valuesCount < 0) {
+            return;
+          }
           Range range = parentCS.getRange();
           // Get the aggregate function matching the name in the query.
           GenericUDAFResolver udaf =
@@ -1822,6 +1842,11 @@ public class StatsRulesProcFactory {
         long avgKeySize = 0;
         for (ColStatistics cs : colStats) {
           if (cs != null) {
+            if (cs.getCountDistint() < 0) {
+              // unknown NDV: the hash table cannot be sized. Keep the decision made when unknown
+              // was stored as 0: an empty estimated table, so only the memory budget matters.
+              return maxMemHashAgg > 0;
+            }
             numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, cs.getCountDistint());
             avgKeySize += Math.ceil(cs.getAvgColLen());
           }
@@ -2041,12 +2066,13 @@ public class StatsRulesProcFactory {
 
           if (numAttr > 1 && conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS)) {
             denom = Collections.max(distinctVals);
-            distinctUnmatched = denom - ndvsUnmatched.get(distinctVals.indexOf(denom));
+            distinctUnmatched = computeDistinctUnmatched(denom,
+                ndvsUnmatched.get(distinctVals.indexOf(denom)));
           } else {
             // To avoid denominator getting larger and aggressively reducing
             // number of rows, we will ease out denominator.
             denom = StatsUtils.addWithExpDecay(distinctVals);
-            distinctUnmatched = denom - StatsUtils.addWithExpDecay(ndvsUnmatched);
+            distinctUnmatched = computeDistinctUnmatched(denom, StatsUtils.addWithExpDecay(ndvsUnmatched));
           }
         }
 
@@ -2228,7 +2254,8 @@ public class StatsRulesProcFactory {
       return null;
     }
 
-    private long calculateUnmatchedRowsForOuter(HiveConf conf, long inputRowCount,
+    @VisibleForTesting
+    long calculateUnmatchedRowsForOuter(HiveConf conf, long inputRowCount,
         List<String> joinKeys, Statistics statistics, long distinctUnmatched) {
       // Extract the ndv from each of the columns involved in the join
       List<Long> distinctVals = new ArrayList<>();
@@ -2249,14 +2276,15 @@ public class StatsRulesProcFactory {
           distinctVal = StatsUtils.addWithExpDecay(distinctVals);
         }
       }
-      // If we have a greater number of unmatched values than number of distinct values,
-      // we just return the number of rows in the input as we can assume there are no
-      // matches
-      if (distinctUnmatched >= distinctVal) {
+      // distinctVal <= 0 covers unknown (<0) and verified-zero (==0) cases; the latter means
+      // no key value matches anything, so every input row is unmatched in an outer join.
+      // distinctUnmatched < 0 (unknown) is treated conservatively the same way.
+      // If unmatched >= distinctVal, all rows can be assumed unmatched.
+      if (distinctVal <= 0 || distinctUnmatched < 0 || distinctUnmatched >= distinctVal) {
         return inputRowCount;
       }
       // Otherwise, divide the number of input rows by the number of distinct values
-      // and divide by the number of distinct values unmatched
+      // and multiply by the number of distinct values unmatched
       return StatsUtils.safeMult(inputRowCount / distinctVal, distinctUnmatched);
     }
 
@@ -2605,7 +2633,8 @@ public class StatsRulesProcFactory {
       colStats.setNumNulls(newNumNulls);
     }
 
-    private void updateColStats(HiveConf conf, Statistics stats, long leftUnmatchedRows, long rightUnmatchedRows,
+    @VisibleForTesting
+    void updateColStats(HiveConf conf, Statistics stats, long leftUnmatchedRows, long rightUnmatchedRows,
         long newNumRows, CommonJoinOperator<? extends JoinDesc> jop, Map<Integer, Long> rowCountParents) {
 
       if (newNumRows < 0) {
@@ -2633,26 +2662,21 @@ public class StatsRulesProcFactory {
         int pos = jop.getConf().getReversedExprs().get(cs.getColumnName());
         long oldDV = cs.getCountDistint();
 
-        boolean useCalciteForNdvReadjustment
-            = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_JOIN_NDV_READJUSTMENT);
-        long newDV = oldDV;
-        if (useCalciteForNdvReadjustment) {
-          Double approxNdv = RelMdUtil.numDistinctVals(oldDV * 1.0, newNumRows * 1.0);
-          Preconditions.checkNotNull(approxNdv, "approximate NDV is null");
-          newDV = approxNdv.longValue();
-        } else {
-          long oldRowCount = rowCountParents.get(pos);
-          double ratio = (double) newNumRows / (double) oldRowCount;
-
-          // if ratio is greater than 1, then number of rows increases. This can happen
-          // when some operators like GROUPBY duplicates the input rows in which case
-          // number of distincts should not change. Update the distinct count only when
-          // the output number of rows is less than input number of rows.
-          if (ratio <= 1.0) {
-            newDV = (long) Math.ceil(ratio * oldDV);
+        // countDistinct < 0 means "unknown"
+        if (oldDV >= 0) {
+          boolean useCalciteForNdvReadjustment
+              = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_JOIN_NDV_READJUSTMENT);
+          long newDV;
+          if (useCalciteForNdvReadjustment) {
+            Double approxNdv = RelMdUtil.numDistinctVals(oldDV * 1.0, newNumRows * 1.0);
+            Preconditions.checkNotNull(approxNdv, "approximate NDV is null");
+            newDV = approxNdv.longValue();
+          } else {
+            long oldRowCount = rowCountParents.get(pos);
+            newDV = StatsUtils.scaleDownNDV(oldDV, (double) newNumRows / (double) oldRowCount);
           }
+          cs.setCountDistint(newDV);
         }
-        cs.setCountDistint(newDV);
         updateNumNulls(cs, leftUnmatchedRows, rightUnmatchedRows, newNumRows, pos, jop);
       }
       stats.setColumnStats(colStats);
@@ -2719,7 +2743,8 @@ public class StatsRulesProcFactory {
       return result;
     }
 
-    private long computeRowCountAssumingInnerJoin(List<Long> rowCountParents, long denom,
+    @VisibleForTesting
+    long computeRowCountAssumingInnerJoin(List<Long> rowCountParents, long denom,
         CommonJoinOperator<? extends JoinDesc> join) {
       double factor = 0.0d;
       long result = 1;
@@ -2735,7 +2760,12 @@ public class StatsRulesProcFactory {
         }
       }
 
-      denom = denom == 0 ? 1 : denom;
+      // denom < 0 (unknown) and denom == 0 (verified-zero join key, cardinality formula
+      // degenerate) both fall back to "no constraint" rather than producing a negative
+      // factor or div-by-zero
+      if (denom <= 0) {
+        denom = 1;
+      }
       factor = (double) max / (double) denom;
 
       for (int i = 0; i < rowCountParents.size(); i++) {
@@ -2782,10 +2812,27 @@ public class StatsRulesProcFactory {
       }
     }
 
-    private long getDenominatorForUnmatchedRows(List<Long> distinctVals) {
+    /**
+     * Distinct key values expected to stay unmatched. An unknown (-1) unmatched estimate
+     * means every key value in the denominator may be unmatched.
+     */
+    @VisibleForTesting
+    static long computeDistinctUnmatched(long denom, long unmatched) {
+      if (denom < 0) {
+        return denom;
+      }
+      return unmatched < 0 ? denom : denom - unmatched;
+    }
+
+    @VisibleForTesting
+    long getDenominatorForUnmatchedRows(List<Long> distinctVals) {
 
       if (distinctVals.isEmpty()) {
         return 2;
+      }
+      // a single unknown (-1) NDV translates to an unknown denominator
+      if (StatsUtils.containsUnknownNDV(distinctVals)) {
+        return -1L;
       }
 
       // simple join from 2 relations: denom = min(v1, v2)
@@ -2816,7 +2863,8 @@ public class StatsRulesProcFactory {
       }
     }
 
-    private long getDenominator(List<Long> distinctVals) {
+    @VisibleForTesting
+    long getDenominator(List<Long> distinctVals) {
 
       if (distinctVals.isEmpty()) {
 
@@ -2826,6 +2874,12 @@ public class StatsRulesProcFactory {
         // to get proper column statistics. For now assume, worst case in which
         // denominator is 2.
         return 2;
+      }
+
+      // the known NDVs bound the join key domain from below no matter what the unknown
+      // (-1) ones resolve to, so the denominator is the product of the known values
+      if (StatsUtils.containsUnknownNDV(distinctVals)) {
+        return distinctVals.stream().filter(v -> v >= 0).reduce(StatsUtils::safeMult).orElse(-1L);
       }
 
       // simple join from 2 relations: denom = max(v1, v2)
