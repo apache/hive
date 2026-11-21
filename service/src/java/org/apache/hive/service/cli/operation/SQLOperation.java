@@ -222,15 +222,37 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       setHasResultSet(driver.hasResultSet());
     } catch (CommandProcessorException e) {
+      if (isCancelledWhileCompiling(e)) {
+        return;
+      }
       setState(OperationState.ERROR);
       throw toSQLException("Error while compiling statement", e, queryState.getQueryId());
     } catch (Throwable e) {
-      setState(OperationState.ERROR);
       if (e instanceof OutOfMemoryError) {
+        setState(OperationState.ERROR);
         throw e;
       }
+      if (isCancelledWhileCompiling(e)) {
+        return;
+      }
+      setState(OperationState.ERROR);
       throw new HiveSQLException("Error running query", e, queryState.getQueryId());
     }
+  }
+
+  /**
+   * The query timeout or another thread may cancel the operation while the query is compiling, which
+   * makes the compilation fail. The operation is then already in a terminal state (e.g. TIMEDOUT),
+   * which keeps its own outcome: the failure is not reported, and {@link #runQuery()} does not run
+   * the query.
+   */
+  private boolean isCancelledWhileCompiling(Throwable e) {
+    OperationState opState = getState();
+    if (!opState.isTerminal()) {
+      return false;
+    }
+    log.warn("Ignore compilation failure in terminal state: {}", opState, e);
+    return true;
   }
 
   private void runQuery() throws HiveSQLException {
