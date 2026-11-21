@@ -18,8 +18,10 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -117,6 +119,10 @@ public class SerializationUtilities {
    */
   public static void setGlobalHook(Hook hook) {
     globalHook = hook;
+  }
+
+  static Hook globalHook() {
+    return globalHook;
   }
 
   /**
@@ -615,12 +621,11 @@ public class SerializationUtilities {
 
     @Override
     public void write(Kryo kryo, Output output, MapWork mapWork) {
-      filterMapworkProperties(kryo, mapWork);
+      filterMapworkProperties(((KryoWithHooks) kryo).getConf(), mapWork);
       super.write(kryo, output, mapWork);
     }
 
-    private void filterMapworkProperties(Kryo kryo, MapWork mapWork) {
-      Configuration configuration = ((KryoWithHooks) kryo).getConf();
+    private static void filterMapworkProperties(Configuration configuration, MapWork mapWork) {
       if (configuration == null || HiveConf
           .getVar(configuration, HiveConf.ConfVars.HIVE_PLAN_MAPWORK_SERIALIZATION_SKIP_PROPERTIES).isEmpty()) {
         return;
@@ -662,9 +667,17 @@ public class SerializationUtilities {
       }
     }
 
-    private boolean isRegex(String prop) {
+    private static boolean isRegex(String prop) {
       return prop.contains("*");
     }
+  }
+
+  /** Re-runs the interning setters of a PartitionDesc after it was materialized by a serializer. */
+  private static void internPartitionDesc(PartitionDesc partitionDesc) {
+    partitionDesc.setBaseFileName(partitionDesc.getBaseFileName());
+    partitionDesc.setPartSpec(partitionDesc.getPartSpec());
+    partitionDesc.setInputFileFormatClass(partitionDesc.getInputFileFormatClass());
+    partitionDesc.setOutputFileFormatClass(partitionDesc.getOutputFileFormatClass());
   }
 
   /**
@@ -684,10 +697,7 @@ public class SerializationUtilities {
       PartitionDesc partitionDesc = super.read(kryo, input, type);
       // The set methods in PartitionDesc intern the any duplicate strings which is why we call them
       // during de-serialization
-      partitionDesc.setBaseFileName(partitionDesc.getBaseFileName());
-      partitionDesc.setPartSpec(partitionDesc.getPartSpec());
-      partitionDesc.setInputFileFormatClass(partitionDesc.getInputFileFormatClass());
-      partitionDesc.setOutputFileFormatClass(partitionDesc.getOutputFileFormatClass());
+      internPartitionDesc(partitionDesc);
       return partitionDesc;
     }
   }
@@ -748,6 +758,128 @@ public class SerializationUtilities {
     return plan;
   }
 
+  // Prefix of every plan written by the Fory engine, so readers pick the engine from the data and not from the
+  // configuration. A Kryo plan starts with a small reference-marker byte, not 'F'.
+  private static final byte[] FORY_MAGIC = {'F', 'O', 'R', 'Y'};
+
+  public static boolean isForyEngine(Configuration conf) {
+    return conf != null
+        && "fory".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_PLAN_SERIALIZATION_ENGINE));
+  }
+
+  /**
+   * Serializes a plan with the engine selected by hive.plan.serialization.engine in the given configuration.
+   * Only for same-version, trusted plan data: never for metastore-bound or other untrusted payloads.
+   */
+  public static void serializePlanWithEngine(Configuration conf, Object plan, OutputStream out) {
+    if (!isForyEngine(conf)) {
+      serializePlan(plan, out, conf);
+      return;
+    }
+    filterPlanProperties(conf, plan);
+    serializeWithFory(plan, out);
+  }
+
+  private static void serializeWithFory(Object plan, OutputStream out) {
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
+    LOG.info("Serializing " + plan.getClass().getSimpleName() + " using fory");
+    try {
+      out.write(FORY_MAGIC);
+      ForyPlanSerializer.serialize(Utilities.getSessionSpecifiedClassLoader(), plan, out);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
+  }
+
+  // In-memory clones pick the engine from the session but, like the kryo clones, never filter properties: the
+  // filter mutates the plan it is given, which here is the live plan.
+  private static void serializeForClone(Object plan, OutputStream out) {
+    if (isForyEngine(sessionConf())) {
+      serializeWithFory(plan, out);
+    } else {
+      serializePlan(plan, out);
+    }
+  }
+
+  private static <T> T deserializeForClone(byte[] bytes, Class<T> planClass) {
+    Configuration conf = sessionConf();
+    InputStream in = new ByteArrayInputStream(bytes);
+    return isForyEngine(conf) ? deserializePlanWithEngine(conf, in, planClass) : deserializePlan(in, planClass);
+  }
+
+  /**
+   * Deserializes a plan written by {@link #serializePlanWithEngine}. The engine is detected from the data, so a
+   * plan stays readable if the configuration changed (e.g. a rollback to kryo) after it was written.
+   */
+  public static <T> T deserializePlanWithEngine(Configuration conf, InputStream in, Class<T> planClass) {
+    BufferedInputStream bin = new BufferedInputStream(in);
+    boolean fory;
+    try {
+      bin.mark(FORY_MAGIC.length);
+      byte[] head = new byte[FORY_MAGIC.length];
+      fory = bin.readNBytes(head, 0, head.length) == head.length && Arrays.equals(head, FORY_MAGIC);
+      if (!fory) {
+        bin.reset();
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    if (!fory) {
+      return deserializePlan(bin, planClass);
+    }
+    if (!kryoTypeHooks.isEmpty()) {
+      // Fail closed: per-type hooks are only implemented for kryo. The global hook (LLAP UDF whitelist) is ported.
+      throw new UnsupportedOperationException("A fory serialized plan cannot be read where per-type kryo hooks "
+          + "are installed. Set " + HiveConf.ConfVars.HIVE_PLAN_SERIALIZATION_ENGINE.varname + "=kryo.");
+    }
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
+    LOG.info("Deserializing " + planClass.getSimpleName() + " using fory");
+    T plan = ForyPlanSerializer.deserialize(Utilities.getSessionSpecifiedClassLoader(), bin, planClass);
+    internPartitionDescs(plan);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
+    return plan;
+  }
+
+  /** Counterpart of PartitionDescSerializer.read, which Fory cannot hook per type. */
+  private static void internPartitionDescs(Object plan) {
+    MapWork mapWork = null;
+    if (plan instanceof MapredWork) {
+      mapWork = ((MapredWork) plan).getMapWork();
+    } else if (plan instanceof MapWork) {
+      mapWork = (MapWork) plan;
+    }
+    if (mapWork == null) {
+      return;
+    }
+    Map<Path, PartitionDesc> byPath = mapWork.getPathToPartitionInfo();
+    if (byPath != null) {
+      byPath.values().forEach(SerializationUtilities::internPartitionDesc);
+    }
+    mapWork.getPartitionDescs().forEachRemaining(SerializationUtilities::internPartitionDesc);
+  }
+
+  /** Mirrors MapWorkSerializer, which Kryo registers for the exact MapWork class only. */
+  private static void filterPlanProperties(Configuration conf, Object plan) {
+    MapWork mapWork = null;
+    if (plan instanceof MapredWork) {
+      mapWork = ((MapredWork) plan).getMapWork();
+    } else if (plan instanceof MapWork) {
+      mapWork = (MapWork) plan;
+    }
+    if (mapWork != null && mapWork.getClass() == MapWork.class) {
+      MapWorkSerializer.filterMapworkProperties(conf, mapWork);
+    }
+  }
+
+  /** The configuration used to choose the engine for in-memory clones, which have no configuration of their own. */
+  private static Configuration sessionConf() {
+    SessionState ss = SessionState.get();
+    return ss == null ? null : ss.getConf();
+  }
+
   /**
    * Clones using the powers of XML. Do not use unless necessary.
    * @param plan The plan.
@@ -760,9 +892,8 @@ public class SerializationUtilities {
     Operator<?> op = plan.getAnyOperator();
     CompilationOpContext ctx = (op == null) ? null : op.getCompilationOpContext();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    serializePlan(plan, baos);
-    MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-        MapredWork.class);
+    serializeForClone(plan, baos);
+    MapredWork newPlan = deserializeForClone(baos.toByteArray(), MapredWork.class);
     // Restore the context.
     for (Operator<?> newOp : newPlan.getAllOperators()) {
       newOp.setCompilationOpContext(ctx);
@@ -782,11 +913,9 @@ public class SerializationUtilities {
     }
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
     CompilationOpContext ctx = roots.get(0).getCompilationOpContext();
-    serializePlan(roots, baos);
+    serializeForClone(roots, baos);
     @SuppressWarnings("unchecked")
-    List<Operator<?>> result =
-        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-            roots.getClass());
+    List<Operator<?>> result = deserializeForClone(baos.toByteArray(), roots.getClass());
     // Restore the context.
     LinkedList<Operator<?>> newOps = new LinkedList<>(result);
     while (!newOps.isEmpty()) {
@@ -811,9 +940,8 @@ public class SerializationUtilities {
     Operator<?> op = plan.getAnyRootOperator();
     CompilationOpContext ctx = (op == null) ? null : op.getCompilationOpContext();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    serializePlan(plan, baos);
-    BaseWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-        plan.getClass());
+    serializeForClone(plan, baos);
+    BaseWork newPlan = deserializeForClone(baos.toByteArray(), plan.getClass());
     // Restore the context.
     for (Operator<?> newOp : newPlan.getAllOperators()) {
       newOp.setCompilationOpContext(ctx);
