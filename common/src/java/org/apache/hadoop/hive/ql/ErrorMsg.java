@@ -543,6 +543,10 @@ public enum ErrorMsg {
   PARQUET_FOOTER_ERROR(20022, "Failed to read parquet footer:"),
   PARQUET_UNHANDLED_TYPE(20023, "Unhandled type {0}", true),
   ORC_FOOTER_ERROR(20024, "Failed to read orc footer:"),
+  INVALID_OPERATION_HANDLE(20025, "Invalid OperationHandle:"),
+  OPERATION_NOT_EXIST(20026, "Operation does not exist:"),
+  HS2_DECOMMISSIONED_OR_INACTIVE(20027,
+      "Unable to run new queries as HiveServer2 is decommissioned or inactive, state:"),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
