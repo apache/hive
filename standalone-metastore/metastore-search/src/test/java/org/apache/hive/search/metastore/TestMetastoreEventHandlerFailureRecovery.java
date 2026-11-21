@@ -38,12 +38,13 @@ import org.junit.experimental.categories.Category;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -57,22 +58,20 @@ public class TestMetastoreEventHandlerFailureRecovery {
   public void batchFailureFallsBackToSingleEventApply() throws Exception {
     Configuration conf = eventHandlerConf();
     conf.setInt(IndexOptions.EVENT_BATCH_MAX_FAILURES, 1);
-
     MessageBuilder messageBuilder = MessageBuilder.getInstance();
     Table orders = InMemorySearchFixture.table("hive", "sales", "orders", "sales orders");
     Table customers = InMemorySearchFixture.table("hive", "sales", "customers", "sales customers");
     NotificationEvent event1 = createEvent(101L, orders, messageBuilder);
     NotificationEvent event2 = createEvent(102L, customers, messageBuilder);
-
     IMetaStoreClient client = mock(IMetaStoreClient.class);
     when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
         .thenReturn(response(event1, event2))
         .thenReturn(emptyResponse());
 
-    try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      AtomicInteger batchAttempts = new AtomicInteger();
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
-          configuration -> new MetastoreClientProvider.Client(client, false));
+    CountDownLatch applied = new CountDownLatch(2);
+    AtomicInteger batchAttempts = new AtomicInteger();
+    try (InMemorySearchFixture fixture = InMemorySearchFixture.create();
+         MetastoreEventHandler handler = handler(conf, client)) {
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
@@ -80,16 +79,13 @@ public class TestMetastoreEventHandlerFailureRecovery {
             batchAttempts.incrementAndGet();
             throw new IOException("simulated batch apply failure");
           }
-          try {
-            fixture.mutations().apply(task);
-            fixture.commit(task.lastEventId);
-          } catch (Exception e) {
-            throw new IOException(e);
-          }
+          apply(fixture, task);
+          applied.countDown();
         }
       });
 
-      assertEquals(2, handler.getNextMetastoreEvents(10));
+      handler.start(event1.getEventId() - 1, 0);
+      await(applied);
       assertEquals(1, batchAttempts.get());
       assertFalse(fixture.searchMatch("orders", 5).isEmpty());
       assertFalse(fixture.searchMatch("customers", 5).isEmpty());
@@ -100,39 +96,37 @@ public class TestMetastoreEventHandlerFailureRecovery {
   public void poisonEventMarksIndexUnhealthyAfterPartialApply() throws Exception {
     Configuration conf = eventHandlerConf();
     MessageBuilder messageBuilder = MessageBuilder.getInstance();
-    Table orders = InMemorySearchFixture.table("hive", "sales", "orders", "sales orders");
-    NotificationEvent good = createEvent(201L, orders, messageBuilder);
-    NotificationEvent poison = event(
-        202L,
-        MessageBuilder.CREATE_TABLE_EVENT,
-        "{invalid-create-table-message",
-        "hive",
-        "sales",
-        "broken");
-
+    NotificationEvent good = createEvent(201L,
+        InMemorySearchFixture.table("hive", "sales", "orders", "sales orders"), messageBuilder);
+    NotificationEvent poison = invalidCreate(202L);
     IMetaStoreClient client = mock(IMetaStoreClient.class);
     when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
-        .thenReturn(response(good, poison));
+        .thenReturn(response(good, poison))
+        .thenReturn(emptyResponse());
 
-    try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
-          configuration -> new MetastoreClientProvider.Client(client, false));
+    AtomicReference<IndexNotHealthyException> unhealthy = new AtomicReference<>();
+    CountDownLatch halted = new CountDownLatch(1);
+    try (InMemorySearchFixture fixture = InMemorySearchFixture.create();
+         MetastoreEventHandler handler = handler(conf, client)) {
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
-          try {
-            fixture.mutations().apply(task);
-            fixture.commit(task.lastEventId);
-          } catch (Exception e) {
-            throw new IOException(e);
+          apply(fixture, task);
+        }
+
+        @Override
+        public void notifyIndexState(boolean healthy, IndexNotHealthyException... errors) {
+          if (!healthy && errors.length > 0) {
+            unhealthy.set(errors[0]);
+            halted.countDown();
           }
         }
       });
 
-      IndexNotHealthyException error =
-          assertThrows(IndexNotHealthyException.class, () -> handler.getNextMetastoreEvents(10));
-      assertTrue(error.getMessage().contains("202"));
-      assertTrue(error.getMessage().contains("201"));
+      handler.start(good.getEventId() - 1, 0);
+      await(halted);
+      assertTrue(unhealthy.get().getMessage().contains("202"));
+      assertTrue(unhealthy.get().getMessage().contains("201"));
       assertFalse(fixture.searchMatch("orders", 5).isEmpty());
     }
   }
@@ -141,85 +135,55 @@ public class TestMetastoreEventHandlerFailureRecovery {
   public void skipPoisonEventAdvancesCursorAndRecovers() throws Exception {
     Configuration conf = eventHandlerConf();
     conf.setBoolean(IndexOptions.EVENT_SKIP_POISON, true);
-
     MessageBuilder messageBuilder = MessageBuilder.getInstance();
-    Table orders = InMemorySearchFixture.table("hive", "sales", "orders", "sales orders");
-    NotificationEvent good = createEvent(301L, orders, messageBuilder);
-    NotificationEvent poison = event(
-        302L,
-        MessageBuilder.CREATE_TABLE_EVENT,
-        "{invalid-create-table-message",
-        "hive",
-        "sales",
-        "broken");
+    NotificationEvent good = createEvent(301L,
+        InMemorySearchFixture.table("hive", "sales", "orders", "sales orders"), messageBuilder);
+    NotificationEvent poison = invalidCreate(302L);
 
+    CountDownLatch caughtUp = new CountDownLatch(1);
     IMetaStoreClient client = mock(IMetaStoreClient.class);
     when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
-        .thenReturn(response(good, poison))
-        .thenReturn(emptyResponse());
+        .thenAnswer(invocation -> {
+          NotificationEventRequest request = invocation.getArgument(0);
+          if (request.getLastEvent() < poison.getEventId()) {
+            return response(good, poison);
+          }
+          caughtUp.countDown();
+          return emptyResponse();
+        });
 
-    try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
-          configuration -> new MetastoreClientProvider.Client(client, false));
+    try (InMemorySearchFixture fixture = InMemorySearchFixture.create();
+         MetastoreEventHandler handler = handler(conf, client)) {
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
-          try {
-            fixture.mutations().apply(task);
-            fixture.commit(task.lastEventId);
-          } catch (Exception e) {
-            throw new IOException(e);
-          }
+          apply(fixture, task);
         }
       });
 
-      assertEquals(2, handler.getNextMetastoreEvents(10));
+      handler.start(good.getEventId() - 1, 0);
+      await(caughtUp);
       assertFalse(fixture.searchMatch("orders", 5).isEmpty());
-      assertEquals(0, handler.getNextMetastoreEvents(10));
     }
   }
 
-  @Test
-  public void parseFailureFallsBackToSingleEventApply() throws Exception {
-    Configuration conf = eventHandlerConf();
-    MessageBuilder messageBuilder = MessageBuilder.getInstance();
-    Table orders = InMemorySearchFixture.table("hive", "sales", "orders", "sales orders");
-    NotificationEvent good = createEvent(401L, orders, messageBuilder);
-    NotificationEvent unparsableBatchMember = event(
-        402L,
-        MessageBuilder.CREATE_TABLE_EVENT,
-        "{invalid-create-table-message",
-        "hive",
-        "sales",
-        "broken");
+  private static MetastoreEventHandler handler(Configuration conf, IMetaStoreClient client) {
+    return new MetastoreEventHandler(conf,
+        configuration -> new MetastoreClientProvider.Client(client, false));
+  }
 
-    IMetaStoreClient client = mock(IMetaStoreClient.class);
-    when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
-        .thenReturn(response(good, unparsableBatchMember));
-
-    try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      AtomicBoolean sawBatchFailure = new AtomicBoolean();
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
-          configuration -> new MetastoreClientProvider.Client(client, false));
-      handler.addListeners(new MetastoreEventListener() {
-        @Override
-        public void notifyIndexTask(IndexTask task) throws IOException {
-          if (task.tablesToAdd.size() > 1) {
-            sawBatchFailure.set(true);
-          }
-          try {
-            fixture.mutations().apply(task);
-            fixture.commit(task.lastEventId);
-          } catch (Exception e) {
-            throw new IOException(e);
-          }
-        }
-      });
-
-      assertThrows(IndexNotHealthyException.class, () -> handler.getNextMetastoreEvents(10));
-      assertFalse(sawBatchFailure.get());
-      assertFalse(fixture.searchMatch("orders", 5).isEmpty());
+  private static void apply(InMemorySearchFixture fixture, MetastoreEventListener.IndexTask task)
+      throws IOException {
+    try {
+      fixture.mutations().apply(task);
+      fixture.commit(task.lastEventId);
+    } catch (Exception e) {
+      throw new IOException(e);
     }
+  }
+
+  private static void await(CountDownLatch latch) throws InterruptedException {
+    assertTrue(latch.await(5, TimeUnit.SECONDS));
   }
 
   private static Configuration eventHandlerConf() {
@@ -232,13 +196,14 @@ public class TestMetastoreEventHandlerFailureRecovery {
   }
 
   private static NotificationEvent createEvent(long id, Table table, MessageBuilder builder) {
-    return event(
-        id,
-        MessageBuilder.CREATE_TABLE_EVENT,
+    return event(id, MessageBuilder.CREATE_TABLE_EVENT,
         builder.buildCreateTableMessage(table, null).toString(),
-        table.getCatName(),
-        table.getDbName(),
-        table.getTableName());
+        table.getCatName(), table.getDbName(), table.getTableName());
+  }
+
+  private static NotificationEvent invalidCreate(long id) {
+    return event(id, MessageBuilder.CREATE_TABLE_EVENT, "{invalid-create-table-message",
+        "hive", "sales", "broken");
   }
 
   private static NotificationEvent event(

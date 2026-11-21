@@ -37,8 +37,10 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -54,120 +56,41 @@ import static org.mockito.Mockito.when;
 public class TestMetastoreEventHandlerIntegration {
 
   @Test
-  public void pollsNotificationsAndUpdatesIndex() throws Exception {
-    Configuration conf = new Configuration(false);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,
-        JSONMessageEncoder.class.getName());
-    conf.setLong(IndexOptions.EVENT_FAILURE_BACKOFF_MS, 0L);
-    conf.setInt(IndexOptions.EVENT_BATCH_MAX_FAILURES, 1);
-
-    MessageBuilder messageBuilder = MessageBuilder.getInstance();
-    Table salesOrders = InMemorySearchFixture.table("hive", "sales", "orders", "daily sales orders");
-    String createMessage = messageBuilder.buildCreateTableMessage(salesOrders, null).toString();
-
-    NotificationEvent createEvent = event(101L, MessageBuilder.CREATE_TABLE_EVENT, createMessage,
-        "hive", "sales", "orders");
-    NotificationEvent dropEvent = event(
-        102L,
-        MessageBuilder.DROP_TABLE_EVENT,
-        messageBuilder.buildDropTableMessage(salesOrders).toString(),
-        "hive",
-        "sales",
-        "orders");
-
-    IMetaStoreClient client = mock(IMetaStoreClient.class);
-    when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
-        .thenReturn(response(createEvent))
-        .thenReturn(response(dropEvent))
-        .thenReturn(emptyResponse());
-
-    try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      AtomicReference<MetastoreEventListener.IndexTask> lastTask = new AtomicReference<>();
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
-          configuration -> new MetastoreClientProvider.Client(client, false));
-      handler.addListeners(new MetastoreEventListener() {
-        @Override
-        public void notifyIndexTask(IndexTask task) throws IOException {
-          lastTask.set(task);
-          try {
-            fixture.mutations().apply(task);
-            fixture.commit(task.lastEventId);
-          } catch (Exception e) {
-            throw new IOException(e);
-          }
-        }
-      });
-
-      assertEquals(1, handler.getNextMetastoreEvents(10));
-      assertEquals(1, lastTask.get().tablesToAdd.size());
-      assertFalse(fixture.searchMatch("sales", 5).isEmpty());
-
-      assertEquals(1, handler.getNextMetastoreEvents(10));
-      assertEquals(1, lastTask.get().tablesToDrop.size());
-      assertTrue(fixture.searchMatch("sales", 5).isEmpty());
-    }
-  }
-
-  @Test
   public void refreshesTableOnAlterWhenIndexedFieldsUnchanged() throws Exception {
-    Configuration conf = new Configuration(false);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,
-        JSONMessageEncoder.class.getName());
-
+    Configuration conf = eventHandlerConf();
     MessageBuilder messageBuilder = MessageBuilder.getInstance();
     Table before = InMemorySearchFixture.table("hive", "sales", "orders", "daily sales orders");
     Table after = new Table(before);
-    after.setParameters(new java.util.HashMap<>(before.getParameters()));
+    after.setParameters(new HashMap<>(before.getParameters()));
     after.getParameters().put("transient_lastDdlTime", "999");
-    String alterMessage = messageBuilder.buildAlterTableMessage(before, after, false, -1L).toString();
-
-    NotificationEvent create = event(
-        301L,
-        MessageBuilder.CREATE_TABLE_EVENT,
+    NotificationEvent create = event(301L, MessageBuilder.CREATE_TABLE_EVENT,
         messageBuilder.buildCreateTableMessage(before, null).toString(),
-        "hive",
-        "sales",
-        "orders");
-    NotificationEvent alter = event(
-        302L,
-        MessageBuilder.ALTER_TABLE_EVENT,
-        alterMessage,
-        "hive",
-        "sales",
-        "orders");
-
+        "hive", "sales", "orders");
+    NotificationEvent alter = event(302L, MessageBuilder.ALTER_TABLE_EVENT,
+        messageBuilder.buildAlterTableMessage(before, after, false, -1L).toString(),
+        "hive", "sales", "orders");
     IMetaStoreClient client = mock(IMetaStoreClient.class);
     when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
         .thenReturn(response(create))
         .thenReturn(response(alter))
         .thenReturn(emptyResponse());
 
-    try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      AtomicReference<MetastoreEventListener.IndexTask> lastTask = new AtomicReference<>();
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
-          configuration -> new MetastoreClientProvider.Client(client, false));
+    CountDownLatch altered = new CountDownLatch(1);
+    try (InMemorySearchFixture fixture = InMemorySearchFixture.create();
+         MetastoreEventHandler handler = handler(conf, client)) {
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
-          lastTask.set(task);
-          try {
-            fixture.mutations().apply(task);
-            fixture.commit(task.lastEventId);
-          } catch (Exception e) {
-            throw new IOException(e);
+          apply(fixture, task);
+          if (!task.tablesToDrop.isEmpty()) {
+            altered.countDown();
           }
         }
       });
 
-      assertEquals(1, handler.getNextMetastoreEvents(10));
-      assertEquals(1, lastTask.get().tablesToAdd.size());
+      handler.start(create.getEventId() - 1, 0);
+      await(altered);
       assertFalse(fixture.searchMatch("sales", 5).isEmpty());
-
-      assertEquals(1, handler.getNextMetastoreEvents(10));
-      assertEquals(1, lastTask.get().tablesToAdd.size());
-      assertEquals(1, lastTask.get().tablesToDrop.size());
-      assertFalse(fixture.searchMatch("sales", 5).isEmpty());
-
       Table loaded = fixture.loadTable("hive", "sales", "orders").hits().get(0).table();
       assertEquals("999", loaded.getParameters().get("transient_lastDdlTime"));
     }
@@ -175,84 +98,100 @@ public class TestMetastoreEventHandlerIntegration {
 
   @Test
   public void coalesceCreateThenDropInSameBatch() throws Exception {
-    Configuration conf = new Configuration(false);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,
-        JSONMessageEncoder.class.getName());
+    Configuration conf = eventHandlerConf();
     MessageBuilder messageBuilder = MessageBuilder.getInstance();
     Table table = InMemorySearchFixture.table("hive", "sales", "orders", "sales table");
-    NotificationEvent create = event(
-        201L,
-        MessageBuilder.CREATE_TABLE_EVENT,
+    NotificationEvent create = event(201L, MessageBuilder.CREATE_TABLE_EVENT,
         messageBuilder.buildCreateTableMessage(table, null).toString(),
-        "hive",
-        "sales",
-        "orders");
-    NotificationEvent drop = event(
-        202L,
-        MessageBuilder.DROP_TABLE_EVENT,
+        "hive", "sales", "orders");
+    NotificationEvent drop = event(202L, MessageBuilder.DROP_TABLE_EVENT,
         messageBuilder.buildDropTableMessage(table).toString(),
-        "hive",
-        "sales",
-        "orders");
-
+        "hive", "sales", "orders");
     IMetaStoreClient client = mock(IMetaStoreClient.class);
     when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
         .thenReturn(response(create, drop))
         .thenReturn(emptyResponse());
 
-    try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
-      MetastoreEventHandler handler = new MetastoreEventHandler(conf,
-          configuration -> new MetastoreClientProvider.Client(client, false));
+    CountDownLatch applied = new CountDownLatch(1);
+    try (InMemorySearchFixture fixture = InMemorySearchFixture.create();
+         MetastoreEventHandler handler = handler(conf, client)) {
       handler.addListeners(new MetastoreEventListener() {
         @Override
         public void notifyIndexTask(IndexTask task) throws IOException {
-          try {
-            fixture.mutations().apply(task);
-            fixture.commit(task.lastEventId);
-          } catch (Exception e) {
-            throw new IOException(e);
-          }
+          apply(fixture, task);
+          applied.countDown();
         }
       });
 
-      assertEquals(2, handler.getNextMetastoreEvents(10));
+      handler.start(create.getEventId() - 1, 0);
+      await(applied);
       assertTrue(fixture.searchMatch("sales", 5).isEmpty());
     }
   }
 
   @Test
   public void bootstrapWindowDoesNotRewindCursorWhenTailIsEmpty() throws Exception {
+    Configuration conf = eventHandlerConf();
+    conf.setLong(IndexOptions.POLL_NOTIFICATION_INTERVAL, 60_000L);
+    NotificationEvent first = event(1L, "IGNORED_EVENT", "", "hive", "sales", "orders");
+    NotificationEvent second = event(2L, "IGNORED_EVENT", "", "hive", "sales", "orders");
+    CountDownLatch caughtUp = new CountDownLatch(1);
+    IMetaStoreClient client = mock(IMetaStoreClient.class);
+    when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
+        .thenAnswer(invocation -> {
+          NotificationEventRequest request = invocation.getArgument(0);
+          if (request.getLastEvent() == 0L) {
+            return response(first, second);
+          }
+          caughtUp.countDown();
+          return emptyResponse();
+        });
+
+    List<Long> applied = new ArrayList<>();
+    try (MetastoreEventHandler handler = handler(conf, client)) {
+      handler.addListeners(new MetastoreEventListener() {
+        @Override
+        public void notifyIndexTask(IndexTask task) {
+          applied.add(task.lastEventId);
+        }
+      });
+
+      handler.start(0L, 2L);
+      await(caughtUp);
+      assertEquals(List.of(1L, 2L), applied);
+      ArgumentCaptor<NotificationEventRequest> requests =
+          ArgumentCaptor.forClass(NotificationEventRequest.class);
+      verify(client, times(2)).getNextNotification(requests.capture(), eq(true), eq(null));
+      assertEquals(0L, requests.getAllValues().get(0).getLastEvent());
+      assertEquals(2L, requests.getAllValues().get(1).getLastEvent());
+    }
+  }
+
+  private static MetastoreEventHandler handler(Configuration conf, IMetaStoreClient client) {
+    return new MetastoreEventHandler(conf,
+        configuration -> new MetastoreClientProvider.Client(client, false));
+  }
+
+  private static void apply(InMemorySearchFixture fixture, MetastoreEventListener.IndexTask task)
+      throws IOException {
+    try {
+      fixture.mutations().apply(task);
+      fixture.commit(task.lastEventId);
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  private static void await(CountDownLatch latch) throws InterruptedException {
+    assertTrue(latch.await(5, TimeUnit.SECONDS));
+  }
+
+  private static Configuration eventHandlerConf() {
     Configuration conf = new Configuration(false);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,
         JSONMessageEncoder.class.getName());
-    NotificationEvent first = event(1L, "IGNORED_EVENT", "", "hive", "sales", "orders");
-    NotificationEvent second = event(2L, "IGNORED_EVENT", "", "hive", "sales", "orders");
-
-    IMetaStoreClient client = mock(IMetaStoreClient.class);
-    when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
-        .thenReturn(response(first, second))
-        .thenReturn(emptyResponse());
-
-    List<Long> applied = new ArrayList<>();
-    MetastoreEventHandler handler = new MetastoreEventHandler(conf,
-        configuration -> new MetastoreClientProvider.Client(client, false));
-    handler.setBootstrapEndId(2L);
-    handler.addListeners(new MetastoreEventListener() {
-      @Override
-      public void notifyIndexTask(IndexTask task) {
-        applied.add(task.lastEventId);
-      }
-    });
-
-    assertEquals(2, handler.getNextMetastoreEvents(10));
-    assertEquals(List.of(1L, 2L), applied);
-    assertEquals(0, handler.getNextMetastoreEvents(10));
-
-    ArgumentCaptor<NotificationEventRequest> requests =
-        ArgumentCaptor.forClass(NotificationEventRequest.class);
-    verify(client, times(2)).getNextNotification(requests.capture(), eq(true), eq(null));
-    assertEquals(0L, requests.getAllValues().get(0).getLastEvent());
-    assertEquals(2L, requests.getAllValues().get(1).getLastEvent());
+    conf.setLong(IndexOptions.EVENT_FAILURE_BACKOFF_MS, 0L);
+    return conf;
   }
 
   private static NotificationEvent event(

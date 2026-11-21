@@ -123,11 +123,6 @@ public class MetastoreEventHandler implements Closeable {
     return this;
   }
 
-  /** Events at or before this id are applied one at a time so a bootstrap scan cannot hide a delete. */
-  void setBootstrapEndId(long bootstrapEndId) {
-    this.bootstrapEndId = bootstrapEndId;
-  }
-
   @Override
   public void close() {
     stopped.set(true);
