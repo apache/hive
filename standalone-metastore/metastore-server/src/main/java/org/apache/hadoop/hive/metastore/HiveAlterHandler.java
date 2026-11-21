@@ -104,7 +104,7 @@ public class HiveAlterHandler implements AlterHandler {
 
   @Override
   public void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
-      String name, Table newt, EnvironmentContext environmentContext,
+      String name, Table newTable, EnvironmentContext environmentContext,
       IHMSHandler handler, String writeIdList)
           throws InvalidOperationException, MetaException {
     String catalogName = normalizeIdentifier(catName);
@@ -122,9 +122,14 @@ public class HiveAlterHandler implements AlterHandler {
       replDataLocationChanged = false;
     }
 
-    if (newt == null) {
+    if (newTable == null) {
       throw new InvalidOperationException("New table is null");
     }
+    // Work on a private copy: the rename flow below rewrites the location of the new table, and
+    // RetryingHMSHandler re-invokes a failed call with the same argument objects. A retry that
+    // sees the rewritten location would skip the rename flow and commit the new name/location
+    // without moving the data or updating the partition locations.
+    final Table newt = newTable.deepCopy();
 
     String newTblName = newt.getTableName().toLowerCase();
     String newDbName = newt.getDbName().toLowerCase();
@@ -153,9 +158,6 @@ public class HiveAlterHandler implements AlterHandler {
     boolean success = false;
     boolean dataWasMoved = false;
     boolean isPartitionedTable = false;
-    // Location of the new table as passed in by the caller, kept so it can be put back on failure.
-    String originalNewLocation = null;
-    boolean locationRewritten = false;
 
     Database olddb = null;
     Table oldt = null;
@@ -306,16 +308,12 @@ public class HiveAlterHandler implements AlterHandler {
               } else {
                 Path databasePath = constructRenamedPath(wh.getDatabaseExternalPath(db), srcPath);
                 destPath = new Path(databasePath, newTblName);
-                originalNewLocation = newt.getSd().getLocation();
                 newt.getSd().setLocation(destPath.toString());
-                locationRewritten = true;
               }
             } else {
               Path databasePath = constructRenamedPath(wh.getDatabaseManagedPath(db), srcPath);
               destPath = new Path(databasePath, newTblName);
-              originalNewLocation = newt.getSd().getLocation();
               newt.getSd().setLocation(destPath.toString());
-              locationRewritten = true;
             }
 
             destFs = wh.getFs(destPath);
@@ -528,13 +526,6 @@ public class HiveAlterHandler implements AlterHandler {
         }
       } else {
         LOG.error("Failed to alter table " + TableName.getQualified(catalogName, databaseName, tableName));
-        // RetryingHMSHandler re-invokes with the same newt. Put the caller's location back,
-        // otherwise the retry sees the renamed path, skips the rename flow above, and commits
-        // the new name/location without moving the data or updating the partition locations.
-        // Done before the rollback, which may itself throw.
-        if (locationRewritten) {
-          newt.getSd().setLocation(originalNewLocation);
-        }
         msdb.rollbackTransaction();
         if (!replDataLocationChanged && dataWasMoved) {
           try {
