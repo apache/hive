@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -1604,6 +1605,10 @@ public class StatsUtils {
         // virtual columns
         colType = encd.getTypeInfo().getTypeName();
         countDistincts = numRows;
+        VirtualColumn virtualColumn = VirtualColumn.VIRTUAL_COLUMN_NAME_MAP.get(colName);
+        if (virtualColumn != null) {
+          avgColSize = virtualColumn.getAvgLength().orElse(0);
+        }
       } else {
 
         // clone the column stats and return
@@ -1686,7 +1691,9 @@ public class StatsUtils {
     }
 
     colType = colType.toLowerCase();
-    avgColSize = getAvgColLenOf(conf, oi, colType);
+    if (avgColSize == 0) {
+      avgColSize = getAvgColLenOf(conf, oi, colType);
+    }
     ColStatistics colStats = new ColStatistics(colName, colType);
     colStats.setAvgColLen(avgColSize);
     colStats.setCountDistint(countDistincts);

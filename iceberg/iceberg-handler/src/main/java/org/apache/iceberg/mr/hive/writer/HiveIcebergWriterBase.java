@@ -22,10 +22,12 @@ package org.apache.iceberg.mr.hive.writer;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.data.BaseDeleteLoader;
+import org.apache.iceberg.data.CachingDeleteLoader;
 import org.apache.iceberg.data.DeleteLoader;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
@@ -45,6 +47,7 @@ import org.apache.iceberg.io.PartitioningDVWriter;
 import org.apache.iceberg.io.PartitioningWriter;
 import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
+import org.apache.iceberg.relocated.com.google.common.base.Suppliers;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.DeleteFileSet;
 import org.apache.iceberg.util.Tasks;
@@ -121,51 +124,48 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
   // use a fanout writer if the input is unordered no matter whether fanout writers are enabled
   // clustered writers assume that the position deletes are already ordered by file and position
   static PartitioningWriter<PositionDelete<Record>, DeleteWriteResult> newDeleteWriter(
-      Table table, Map<String, DeleteFileSet> rewritableDeletes, HiveFileWriterFactory writers,
-      OutputFileFactory files, Context context) {
+      Table table, Supplier<Map<String, DeleteFileSet>> rewritableDeletes, Configuration conf,
+      HiveFileWriterFactory writers, OutputFileFactory files, Context context) {
 
-    Function<CharSequence, PositionDeleteIndex> previousDeleteLoader =
-        PreviousDeleteLoader.create(table, rewritableDeletes);
     FileIO io = table.io();
     boolean inputOrdered = context.inputOrdered();
     long targetFileSize = context.targetDeleteFileSize();
     DeleteGranularity deleteGranularity = context.deleteGranularity();
 
     if (context.useDVs()) {
-      return new PartitioningDVWriter<>(files, previousDeleteLoader);
-    } else if (inputOrdered && rewritableDeletes == null) {
+      return new PartitioningDVWriter<>(files, new PreviousDeleteLoader(table, rewritableDeletes, conf));
+    }
+    // a writer of partition-scoped position deletes rewrites none
+    if (inputOrdered) {
       return new ClusteredPositionDeleteWriter<>(writers, files, io, targetFileSize, deleteGranularity);
     } else {
-      return new FanoutPositionOnlyDeleteWriter<>(
-          writers, files, io, targetFileSize, deleteGranularity, previousDeleteLoader);
+      return new FanoutPositionOnlyDeleteWriter<>(writers, files, io, targetFileSize, deleteGranularity);
     }
   }
 
+  /**
+   * Loads the previous position deletes of a data file for its DV. The rewritable deletes are read on the first call,
+   * when the writer writes its DVs, after the scans that produced its rows have collected them. A position delete file
+   * applies to every data file of its partition, so it is decoded once and cached for the query: per LLAP daemon, or
+   * per container in Tez container mode.
+   */
   private static class PreviousDeleteLoader implements Function<CharSequence, PositionDeleteIndex> {
-    private final Map<String, DeleteFileSet> deleteFiles;
+    private final Supplier<Map<String, DeleteFileSet>> deleteFiles;
     private final DeleteLoader deleteLoader;
 
-    private PreviousDeleteLoader(Table table, Map<String, DeleteFileSet> deleteFiles) {
-      this.deleteFiles = deleteFiles;
-      this.deleteLoader = new BaseDeleteLoader(
-          deleteFile -> EncryptingFileIO.combine(table.io(), table.encryption()).newInputFile(deleteFile));
+    private PreviousDeleteLoader(Table table, Supplier<Map<String, DeleteFileSet>> deleteFiles, Configuration conf) {
+      this.deleteFiles = Suppliers.memoize(deleteFiles::get);
+      this.deleteLoader = new CachingDeleteLoader(
+          deleteFile -> EncryptingFileIO.combine(table.io(), table.encryption()).newInputFile(deleteFile), conf);
     }
 
     @Override
     public PositionDeleteIndex apply(CharSequence path) {
-      DeleteFileSet deleteFileSet = deleteFiles.get(path.toString());
+      DeleteFileSet deleteFileSet = deleteFiles.get().get(path.toString());
       if (deleteFileSet == null) {
         return null;
       }
       return deleteLoader.loadPositionDeletes(deleteFileSet, path);
-    }
-
-    public static Function<CharSequence, PositionDeleteIndex> create(
-        Table table, Map<String, DeleteFileSet> deleteFiles) {
-      if (deleteFiles == null) {
-        return path -> null;
-      }
-      return new PreviousDeleteLoader(table, deleteFiles);
     }
   }
 

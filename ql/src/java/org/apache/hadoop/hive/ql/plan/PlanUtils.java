@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -914,11 +915,21 @@ public final class PlanUtils {
   }
 
   public static void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    configureJobConf(tableDesc, jobConf, storageHandler -> storageHandler.configureJobConf(tableDesc, jobConf));
+  }
+
+  public static void configureJobConf(FileSinkDesc sinkDesc, JobConf jobConf) {
+    configureJobConf(sinkDesc.getTableInfo(), jobConf,
+        storageHandler -> storageHandler.configureJobConf(sinkDesc, jobConf));
+  }
+
+  private static void configureJobConf(TableDesc tableDesc, JobConf jobConf,
+      Consumer<HiveStorageHandler> configure) {
     try {
       HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(
           jobConf, tableDesc.getProperties().getProperty(hive_metastoreConstants.META_TABLE_STORAGE));
       if (storageHandler != null) {
-        storageHandler.configureJobConf(tableDesc, jobConf);
+        configure.accept(storageHandler);
       }
       if (tableDesc.getJobSecrets() != null) {
         for (Map.Entry<String, String> entry : tableDesc.getJobSecrets().entrySet()) {

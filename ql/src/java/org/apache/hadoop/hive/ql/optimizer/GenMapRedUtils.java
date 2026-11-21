@@ -122,7 +122,6 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -1282,10 +1281,6 @@ public final class GenMapRedUtils {
       if (Context.Operation.DELETE.equals(fsInputDesc.getWriteOperation()) && storageHandler != null && storageHandler.supportsMergeFiles()) {
         storageHandler.setMergeTaskDeleteProperties(ts);
         isCustomDelete = true;
-      }
-      if (ts.getTableName() != null) {
-        ts.getProperties().put(HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED +
-            ts.getTableName(), Boolean.toString(Boolean.TRUE));
       }
 
       // Create a TableScan operator

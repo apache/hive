@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 
@@ -39,8 +41,8 @@ public class NonNativeAcidMaterializedViewASTBuilder extends MaterializedViewAST
 
   @Override
   public List<ASTNode> createDeleteSelectNodes(String tableName) {
-    return wrapIntoSelExpr(mvTable.getStorageHandler().acidSelectColumns(mvTable, Context.Operation.DELETE)
-            .stream().map(fieldSchema -> createQualifiedColumnNode(tableName, fieldSchema.getName()))
+    return wrapIntoSelExpr(deleteSelectColumns()
+            .stream().map(column -> createQualifiedColumnNode(tableName, column))
             .collect(Collectors.toList()));
   }
 
@@ -53,12 +55,22 @@ public class NonNativeAcidMaterializedViewASTBuilder extends MaterializedViewAST
       selectedColumns.add(selectExpr.getChild(selectExpr.getChildCount() - 1).getText());
     }
 
-    for (FieldSchema fieldSchema : mvTable.getStorageHandler().acidSelectColumns(mvTable, Context.Operation.DELETE)) {
-      if (!selectedColumns.contains(fieldSchema.getName())) {
+    for (String column : deleteSelectColumns()) {
+      if (!selectedColumns.contains(column)) {
         ParseDriver.adaptor.addChild(selectNode, wrapIntoSelExpr(
-            createQualifiedColumnNode(tableName, fieldSchema.getName())));
+            createQualifiedColumnNode(tableName, column)));
       }
     }
+  }
+
+  // the incremental rebuild is a MERGE: a merge-on-read MERGE deletes the virtual columns of a record
+  private List<String> deleteSelectColumns() {
+    HiveStorageHandler storageHandler = mvTable.getStorageHandler();
+    if (storageHandler.shouldOverwrite(mvTable, Context.Operation.MERGE)) {
+      return storageHandler.acidSelectColumns(mvTable, Context.Operation.DELETE).stream()
+          .map(FieldSchema::getName).toList();
+    }
+    return storageHandler.acidVirtualColumns().stream().map(VirtualColumn::getName).toList();
   }
 
   @Override
