@@ -23,6 +23,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Weigher;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
@@ -32,6 +33,8 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
@@ -41,11 +44,13 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
 import org.apache.hadoop.hive.metastore.client.utils.HiveMetaStoreClientUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils;
+import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.AggrColStatsByColumn;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.CacheKey;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.CacheWrapper;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.KeyType;
@@ -54,6 +59,8 @@ import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.Parti
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.PartitionsWrapper;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.Supplier;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.TableWatermark;
+import org.apache.hadoop.hive.ql.metadata.events.TableVersionRegistry;
+import org.apache.hadoop.hive.ql.metadata.events.TableVersionRegistry.QuerySettings;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
@@ -64,10 +71,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 
 /**
@@ -76,6 +86,10 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
  * Its design is simple, relying on snapshot information being queried to cache and invalidate the metadata.
  * It helps to reduce the time spent in compilation by using HS2 memory more effectively, and it allows to
  * improve HMS throughput for multi-tenant workloads by reducing the number of calls it needs to serve.
+ * <p>
+ * Tables with no snapshot (non-transactional ones), and the Table objects and constraints of all tables, are
+ * cached by their {@link TableVersionRegistry} version instead, which the metastore notification events change,
+ * when the query opted in (HIVE-30264).
  */
 public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
 
@@ -187,8 +201,75 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
 
         return r;
       }
+      QuerySettings settings = getQuerySettings();
+      if (settings != null) {
+        return getTableByVersion(req, settings);
+      }
     }
     return delegate.getTable(req);
+  }
+
+  private Table getTableByVersion(GetTableRequest req, QuerySettings settings) throws TException {
+    String catName = StringUtils.isEmpty(req.getCatName()) ? getDefaultCatalog(conf) : req.getCatName();
+    // the version before the metastore call, so that the entry is never older than it
+    long version = TableVersionRegistry.get().getVersion(catName, req.getDbName(), req.getTblName());
+    GetTableRequest keyRequest = new GetTableRequest(req);
+    keyRequest.unsetId();
+    keyRequest.setCatName(catName);
+    if (!keyRequest.isGetColumnStats()) {
+      // the same table whether these were set or not
+      keyRequest.unsetGetColumnStats();
+      keyRequest.unsetEngine();
+    }
+    CacheKey cacheKey = new CacheKey(KeyType.TABLE_BY_VERSION, keyRequest, version);
+    Table r = (Table) mscLocalCache.getIfPresent(cacheKey);
+    if (r == null || !settings.canCache(r) || (req.getId() != -1 && req.getId() != r.getId())) {
+      r = delegate.getTable(req);
+      if (!settings.canCache(r)) {
+        return r;
+      }
+      mscLocalCache.put(cacheKey, r);
+    } else {
+      LOG.debug("HS2 level HMS cache: method=getTableByVersion, dbName={}, tblName={}, version={}",
+          req.getDbName(), req.getTblName(), version);
+    }
+
+    if (LOG.isDebugEnabled() && recordStats) {
+      LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+    }
+
+    // a copy: it is shared by queries, and the ql Table built from it changes the object it gets
+    return new Table(r);
+  }
+
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest req) throws TException {
+    QuerySettings settings = isCacheEnabledAndInitialized() ? getQuerySettings() : null;
+    if (settings != null) {
+      Table table;
+      try {
+        table = getTableForWatermark(req.getCatName(), req.getDbName(), req.getTblName());
+      } catch (NoSuchObjectException e) {
+        return delegate.getAllTableConstraints(req);
+      }
+      if (settings.canCache(table)) {
+        long version = TableVersionRegistry.get().getVersion(table.getCatName(), table.getDbName(),
+            table.getTableName());
+        CacheKey cacheKey = new CacheKey(KeyType.ALL_TABLE_CONSTRAINTS_BY_VERSION,
+            new AllTableConstraintsRequest(req), version);
+        AllTableConstraintsResponse r = (AllTableConstraintsResponse) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = new AllTableConstraintsResponse(delegate.getAllTableConstraints(req));
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug("HS2 level HMS cache: method=getAllTableConstraints, dbName={}, tblName={}, version={}",
+              req.getDbName(), req.getTblName(), version);
+        }
+        // a copy: Hive.getTableConstraints keeps only the RELY constraints in the object it gets
+        return new SQLAllTableConstraints(r.getAllTableConstraints());
+      }
+    }
+    return delegate.getAllTableConstraints(req);
   }
 
   @Override
@@ -221,9 +302,9 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   private PartitionsWrapper getPartitionsByExprInternal(
       PartitionsByExprRequest req, Supplier<PartitionsWrapper, TException> supplier) throws TException {
     if (isCacheEnabledAndInitialized()) {
-      // table should be transactional to get responses from the cache
-      TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
+      // by write ids for a transactional table, else by version if the query may use those
+      TableWatermark watermark =
+          watermark(req.getValidWriteIdList(), req.getCatName(), req.getDbName(), req.getTblName());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, watermark, req);
         PartitionsWrapper r = (PartitionsWrapper) mscLocalCache.getIfPresent(cacheKey);
@@ -251,9 +332,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   public List<String> listPartitionNames(String catName, String dbName, String tableName, int maxParts)
       throws TException {
     if (isCacheEnabledAndInitialized()) {
-      TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(dbName, tableName),
-          getTable(catName, dbName, tableName).getId());
+      TableWatermark watermark = watermark(getValidWriteIdList(dbName, tableName), catName, dbName, tableName);
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, watermark,
             catName, dbName, tableName, maxParts);
@@ -296,9 +375,9 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   private PartitionSpecsWrapper getPartitionsSpecByExprInternal(
       PartitionsByExprRequest req, Supplier<PartitionSpecsWrapper, TException> supplier) throws TException {
     if (isCacheEnabledAndInitialized()) {
-      // table should be transactional to get responses from the cache
-      TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
+      // by write ids for a transactional table, else by version if the query may use those
+      TableWatermark watermark =
+          watermark(req.getValidWriteIdList(), req.getCatName(), req.getDbName(), req.getTblName());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, watermark, req);
         PartitionSpecsWrapper r = (PartitionSpecsWrapper) mscLocalCache.getIfPresent(cacheKey);
@@ -326,9 +405,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine, String validWriteIdList) throws TException {
     if (isCacheEnabledAndInitialized()) {
-      TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(dbName, tableName),
-          getTable(catName, dbName, tableName).getId());
+      TableWatermark watermark = watermark(getValidWriteIdList(dbName, tableName), catName, dbName, tableName);
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -373,28 +450,37 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine, String writeIdList) throws TException {
     if (isCacheEnabledAndInitialized()) {
-      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+      // keyed by the partitions only: the columns are cached individually inside the entry
+      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, Collections.emptyList(), partNames);
       req.setEngine(engine);
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
-      TableWatermark watermark = new TableWatermark(writeIdList, getTable(catName, dbName, tblName).getId());
+      // Hive passes no writeIdList when it does not check the statistics against the snapshot; the snapshot of the
+      // query still identifies the table state, as in getTableColumnStatistics
+      TableWatermark watermark = watermark(writeIdList != null ? writeIdList : getValidWriteIdList(dbName, tblName),
+          catName, dbName, tblName);
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
-        AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
-        if (r == null) {
-          r = delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
-          mscLocalCache.put(cacheKey, r);
-        } else {
+        CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS_BY_COLUMN, watermark, req);
+        AggrColStatsByColumn cached = (AggrColStatsByColumn) mscLocalCache.getIfPresent(cacheKey);
+        List<String> missing = cached == null ? colNames : cached.missing(colNames);
+        if (missing.isEmpty()) {
           LOG.debug(
               "HS2 level HMS cache: method=getAggrStatsForInternal, dbName={}, tblName={}, partNames={}",
               dbName, tblName, partNames);
+        } else {
+          AggrColStatsByColumn fetched = AggrColStatsByColumn.of(missing,
+              delegate.getAggrColStatsFor(catName, dbName, tblName, missing, partNames, engine, writeIdList));
+          // merge rather than put: a concurrent query may have added other columns meanwhile
+          mscLocalCache.asMap().merge(cacheKey, fetched,
+              (old, added) -> ((AggrColStatsByColumn) old).merge((AggrColStatsByColumn) added));
+          cached = cached == null ? fetched : cached.merge(fetched);
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         }
 
-        return r;
+        return cached.aggrStats(colNames);
       }
     }
 
@@ -406,8 +492,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
       throws TException {
     if (isCacheEnabledAndInitialized()) {
       String dbName = parseDbName(req.getDb_name(), conf)[1];
-      TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(dbName, req.getTbl_name()).getId());
+      TableWatermark watermark = watermark(req.getValidWriteIdList(), null, dbName, req.getTbl_name());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -441,6 +526,53 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     return delegate.getPartitionsByNames(req);
   }
 
+  /**
+   * The watermark of a table: by its write ids if it has them, else by its version if the query may use those.
+   */
+  private TableWatermark watermark(String validWriteIdList, String catName, String dbName, String tblName)
+      throws TException {
+    Table table = getTableForWatermark(catName, dbName, tblName);
+    Long version = null;
+    if (validWriteIdList == null) {
+      QuerySettings settings = getQuerySettings();
+      if (settings != null && !AcidUtils.isTransactionalTable(table) && settings.canCache(table)) {
+        version = TableVersionRegistry.get().getVersion(table.getCatName(), table.getDbName(), table.getTableName());
+      }
+    }
+    return new TableWatermark(validWriteIdList, table.getId(), version);
+  }
+
+  /**
+   * @return what the query decided about the cache by versions at its start, or null if it may not use it
+   */
+  private static QuerySettings getQuerySettings() {
+    if (!TableVersionRegistry.get().isEnabled() || SessionState.get() == null) {
+      return null;
+    }
+    Map<Object, Object> queryCache = SessionState.get().getQueryCache(MetaStoreClientCacheUtils.getQueryId());
+    return queryCache != null ? (QuerySettings) queryCache.get(TableVersionRegistry.QUERY_SETTINGS_KEY) : null;
+  }
+
+  /**
+   * The table for a cache watermark (its id) or the transactional check. It is usually in the query-level cache
+   * already, as the compiler loaded it; the getTable of this class is below that cache and would go to HMS.
+   */
+  private Table getTableForWatermark(String catName, String dbName, String tblName) throws TException {
+    String cat = (catName == null || catName.isEmpty()) ? getDefaultCatalog(conf) : catName;
+    Map<Object, Object> queryCache = SessionState.get() != null ?
+        SessionState.get().getQueryCache(MetaStoreClientCacheUtils.getQueryId()) : null;
+    if (queryCache == null) {
+      return getTable(cat, dbName, tblName);
+    }
+    CacheKey cacheKey = MetaStoreClientCacheUtils.tableByNameKey(cat, dbName, tblName);
+    Table table = (Table) queryCache.get(cacheKey);
+    if (table == null) {
+      table = getTable(cat, dbName, tblName);
+      queryCache.put(cacheKey, table);
+    }
+    return table;
+  }
+
   // cf. SessionHiveMetaStoreClient.getValidWriteIdList
   private String getValidWriteIdList(String dbName, String tblName) {
     try {
@@ -448,7 +580,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
       if (validTxnsList == null) {
         return HiveMetaStoreClientUtils.getValidWriteIdList(dbName, tblName, conf);
       }
-      if (!AcidUtils.isTransactionalTable(getTable(dbName, tblName))) {
+      if (!AcidUtils.isTransactionalTable(getTableForWatermark(null, dbName, tblName))) {
         return null;
       }
       final String validWriteIds = Hive.get().getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);

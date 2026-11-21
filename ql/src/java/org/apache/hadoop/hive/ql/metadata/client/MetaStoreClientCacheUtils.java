@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.ql.metadata.client;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -37,8 +38,14 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
@@ -61,6 +68,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class MetaStoreClientCacheUtils {
@@ -80,6 +88,17 @@ public class MetaStoreClientCacheUtils {
     DATABASE(Database.class, String.class, String.class),
     // Table <-- getTableInternal(GetTableRequest req)
     TABLE(Table.class, GetTableRequest.class),
+    // Table <-- getTable(GetTableRequest req), across queries, by the request without the table id and the
+    // TableVersionRegistry version (HiveMetaStoreClientWithLocalCache)
+    TABLE_BY_VERSION(Table.class, GetTableRequest.class, Long.class),
+    // AllTableConstraintsResponse <-- getAllTableConstraints(AllTableConstraintsRequest req), across queries,
+    // by the request and the TableVersionRegistry version (HiveMetaStoreClientWithLocalCache)
+    ALL_TABLE_CONSTRAINTS_BY_VERSION(AllTableConstraintsResponse.class, AllTableConstraintsRequest.class, Long.class),
+    // Table <-- any getTable(GetTableRequest req) answered at compile time, by String catName, dbName, tblName.
+    // Used by HiveMetaStoreClientWithLocalCache for the table id and the transactional check.
+    TABLE_BY_NAME(Table.class, String.class),
+    // NoSuchObjectException message <-- getTable(GetTableRequest req), by String catName, dbName, tblName
+    TABLE_NOT_FOUND(String.class, String.class),
     // PrimaryKeysResponse <-- getPrimaryKeysInternal(PrimaryKeysRequest req)
     PRIMARY_KEYS(PrimaryKeysResponse.class, PrimaryKeysRequest.class),
     // ForeignKeysResponse <-- getForeignKeysInternal(ForeignKeysRequest req)
@@ -88,6 +107,12 @@ public class MetaStoreClientCacheUtils {
     UNIQUE_CONSTRAINTS(UniqueConstraintsResponse.class, UniqueConstraintsRequest.class),
     // NotNullConstraintsResponse <-- getNotNullConstraintsInternal(NotNullConstraintsRequest req)
     NOT_NULL_CONSTRAINTS(NotNullConstraintsResponse.class, NotNullConstraintsRequest.class),
+    // AllTableConstraintsResponse <-- getAllTableConstraints(AllTableConstraintsRequest req)
+    // CheckConstraintsResponse <-- getCheckConstraints(CheckConstraintsRequest req)
+    CHECK_CONSTRAINTS(CheckConstraintsResponse.class, CheckConstraintsRequest.class),
+    // DefaultConstraintsResponse <-- getDefaultConstraints(DefaultConstraintsRequest req)
+    DEFAULT_CONSTRAINTS(DefaultConstraintsResponse.class, DefaultConstraintsRequest.class),
+    ALL_TABLE_CONSTRAINTS(AllTableConstraintsResponse.class, AllTableConstraintsRequest.class),
     // TableStatsResult <-- getTableColumnStatisticsInternal(TableStatsRequest rqst)
     // Stored individually as:
     // ColumnStatisticsObj <-- String dbName, String tblName, List<string> colNames,
@@ -95,6 +120,10 @@ public class MetaStoreClientCacheUtils {
     TABLE_COLUMN_STATS(ColumnStatisticsObj.class, String.class, long.class, TableWatermark.class),
     // AggrStats <-- getAggrStatsForInternal(PartitionsStatsRequest req), (TableWatermark tw ?)
     AGGR_COL_STATS(AggrStats.class, PartitionsStatsRequest.class, TableWatermark.class),
+    // AggrStats <-- getAggrStatsForInternal(PartitionsStatsRequest req), TableWatermark tw
+    // Stored per set of partitions (the request without colNames), with the aggregate of each column
+    // fetched so far, so that other columns over the same partitions fetch only the missing ones
+    AGGR_COL_STATS_BY_COLUMN(AggrColStatsByColumn.class, PartitionsStatsRequest.class, TableWatermark.class),
     // PartitionsWrapper <-- getPartitionsByExprInternal(PartitionsByExprRequest req), (TableWatermark tw ?)
     PARTITIONS_BY_EXPR(PartitionsWrapper.class, PartitionsByExprRequest.class, TableWatermark.class),
     // PartitionSpecsWrapper <-- getPartitionsSpecByExprInternal(PartitionsByExprRequest req), (TableWatermark tw ?)
@@ -113,6 +142,9 @@ public class MetaStoreClientCacheUtils {
     // List<Partition> <- listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
     //      List<String> partialPvals, int maxParts, String userName, List<String> groupNames)
     LIST_PARTITIONS_AUTH_INFO(org.apache.hadoop.hive.metastore.api.Partition.class, String.class, int.class),
+    // Partition <-- getPartitionWithAuthInfo(String catName, String dbName, String tableName,
+    //      List<String> pvals, String userName, List<String> groupNames)
+    PARTITION_WITH_AUTH_INFO(org.apache.hadoop.hive.metastore.api.Partition.class, String.class),
     // GetPartitionsPsWithAuthResponse <- listPartitionsWithAuthInfoRequestInternal(GetPartitionsPsWithAuthRequest req)
     LIST_PARTITIONS_AUTH_INFO_REQ(GetPartitionsPsWithAuthResponse.class, GetPartitionsPsWithAuthRequest.class),
     // GetPartitionsByNamesResult <-- getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
@@ -186,12 +218,78 @@ public class MetaStoreClientCacheUtils {
     return keySize + valSize;
   }
 
+  public static CacheKey tableByNameKey(String catName, String dbName, String tblName) {
+    return new CacheKey(KeyType.TABLE_BY_NAME, catName, StringUtils.lowerCase(dbName), StringUtils.lowerCase(tblName));
+  }
+
   public static String getQueryId() {
     try {
       return Hive.get().getConf().get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     } catch (HiveException e) {
       LOG.error("Error getting query id. Query level and Global HMS caching will be disabled", e);
       return null;
+    }
+  }
+
+  /**
+   * The aggregate column statistics of one table over one set of partitions, by column. A column aggregate
+   * depends on that column's partition statistics only, so aggregates fetched by different requests combine.
+   * partsFound of a request is compared to the number of partitions only: it equals that number exactly when
+   * it does for every column, so the combined value is the minimum over the requested columns.
+   */
+  public static class AggrColStatsByColumn {
+    // column name -> aggregate; no entry for a column without statistics
+    public final Map<String, ColumnStatisticsObj> colStats;
+    // column name -> partsFound of the request that fetched the column
+    public final Map<String, Long> partsFound;
+
+    public AggrColStatsByColumn(Map<String, ColumnStatisticsObj> colStats, Map<String, Long> partsFound) {
+      this.colStats = colStats;
+      this.partsFound = partsFound;
+    }
+
+    public static AggrColStatsByColumn of(List<String> colNames, AggrStats aggrStats) {
+      Map<String, ColumnStatisticsObj> colStats = new HashMap<>();
+      for (ColumnStatisticsObj colStat : aggrStats.getColStats()) {
+        colStats.put(colStat.getColName(), colStat);
+      }
+      Map<String, Long> partsFound = new HashMap<>();
+      for (String colName : colNames) {
+        partsFound.put(colName, aggrStats.getPartsFound());
+      }
+      return new AggrColStatsByColumn(colStats, partsFound);
+    }
+
+    public List<String> missing(List<String> colNames) {
+      List<String> missing = new ArrayList<>();
+      for (String colName : colNames) {
+        if (!partsFound.containsKey(colName) && !missing.contains(colName)) {
+          missing.add(colName);
+        }
+      }
+      return missing;
+    }
+
+    public AggrColStatsByColumn merge(AggrColStatsByColumn other) {
+      Map<String, ColumnStatisticsObj> mergedColStats = new HashMap<>(colStats);
+      mergedColStats.putAll(other.colStats);
+      Map<String, Long> mergedPartsFound = new HashMap<>(partsFound);
+      mergedPartsFound.putAll(other.partsFound);
+      return new AggrColStatsByColumn(mergedColStats, mergedPartsFound);
+    }
+
+    /** The AggrStats of colNames, which must all be fetched already, in the order of colNames. */
+    public AggrStats aggrStats(List<String> colNames) {
+      List<ColumnStatisticsObj> result = new ArrayList<>();
+      long minPartsFound = colNames.isEmpty() ? 0 : Long.MAX_VALUE;
+      for (String colName : colNames) {
+        ColumnStatisticsObj colStat = colStats.get(colName);
+        if (colStat != null) {
+          result.add(colStat);
+        }
+        minPartsFound = Math.min(minPartsFound, partsFound.get(colName));
+      }
+      return new AggrStats(result, minPartsFound);
     }
   }
 
@@ -260,14 +358,21 @@ public class MetaStoreClientCacheUtils {
   public static class TableWatermark {
     final String validWriteIdList;
     final long tableId;
+    // the TableVersionRegistry version, for a table with no write ids
+    final Long version;
 
     public TableWatermark(String validWriteIdList, long tableId) {
+      this(validWriteIdList, tableId, null);
+    }
+
+    public TableWatermark(String validWriteIdList, long tableId, Long version) {
       this.validWriteIdList = validWriteIdList;
       this.tableId = tableId;
+      this.version = validWriteIdList != null ? null : version;
     }
 
     public boolean isValid() {
-      return validWriteIdList != null && tableId != -1;
+      return (validWriteIdList != null || version != null) && tableId != -1;
     }
 
     @Override
@@ -280,17 +385,19 @@ public class MetaStoreClientCacheUtils {
       }
       TableWatermark that = (TableWatermark) o;
       return tableId == that.tableId &&
-          Objects.equals(validWriteIdList, that.validWriteIdList);
+          Objects.equals(validWriteIdList, that.validWriteIdList) &&
+          Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(validWriteIdList, tableId);
+      return Objects.hash(validWriteIdList, tableId, version);
     }
 
     @Override
     public String toString() {
-      return "TableWatermark {" + tableId + " @@ " + (validWriteIdList != null ? validWriteIdList : "null") + "}";
+      return "TableWatermark {" + tableId + " @@ " + (validWriteIdList != null ? validWriteIdList : "v" + version) +
+          "}";
     }
   }
 
