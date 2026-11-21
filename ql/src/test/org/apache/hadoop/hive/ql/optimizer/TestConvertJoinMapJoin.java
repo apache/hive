@@ -30,11 +30,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class TestConvertJoinMapJoin {
 
@@ -161,5 +171,28 @@ class TestConvertJoinMapJoin {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static Stream<Arguments> joinConditions() {
+    return Stream.of(
+        Arguments.of(new int[] {JoinDesc.INNER_JOIN, JoinDesc.LEFT_OUTER_JOIN}, true),
+        Arguments.of(new int[] {JoinDesc.LEFT_OUTER_JOIN, JoinDesc.INNER_JOIN}, true),
+        Arguments.of(new int[] {JoinDesc.INNER_JOIN, JoinDesc.INNER_JOIN}, false));
+  }
+
+  @ParameterizedTest
+  @MethodSource("joinConditions")
+  void testHasOuterJoin(int[] condTypes, boolean expected) throws SemanticException {
+    assertEquals(expected, ConvertJoinMapJoin.hasOuterJoin(createJoin(condTypes)));
+  }
+
+  private static JoinOperator createJoin(int... condTypes) {
+    JoinCondDesc[] conds = new JoinCondDesc[condTypes.length];
+    for (int i = 0; i < condTypes.length; i++) {
+      conds[i] = new JoinCondDesc(i, i + 1, condTypes[i]);
+    }
+    JoinDesc joinDesc = new JoinDesc();
+    joinDesc.setConds(conds);
+    return (JoinOperator) OperatorFactory.get(new CompilationOpContext(), joinDesc);
   }
 }
