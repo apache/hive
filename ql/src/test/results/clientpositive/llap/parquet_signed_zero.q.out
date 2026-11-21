@@ -1,0 +1,100 @@
+PREHOOK: query: create table pz_src (d double, f float)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pz_src
+POSTHOOK: query: create table pz_src (d double, f float)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pz_src
+PREHOOK: query: insert into pz_src values (cast('0.0' as double), cast('0.0' as float)), (cast('-0.0' as double), cast('-0.0' as float))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pz_src
+POSTHOOK: query: insert into pz_src values (cast('0.0' as double), cast('0.0' as float)), (cast('-0.0' as double), cast('-0.0' as float))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pz_src
+POSTHOOK: Lineage: pz_src.d SCRIPT []
+POSTHOOK: Lineage: pz_src.f SCRIPT []
+PREHOOK: query: create table pz_plain (d double, f float) stored as parquet tblproperties ('parquet.enable.dictionary'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pz_plain
+POSTHOOK: query: create table pz_plain (d double, f float) stored as parquet tblproperties ('parquet.enable.dictionary'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pz_plain
+PREHOOK: query: create table pz_dict (d double, f float) stored as parquet tblproperties ('parquet.enable.dictionary'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pz_dict
+POSTHOOK: query: create table pz_dict (d double, f float) stored as parquet tblproperties ('parquet.enable.dictionary'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pz_dict
+Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: insert into pz_plain select s.d, s.f from (select posexplode(split(space(999), ' '))) t, pz_src s
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@pz_src
+PREHOOK: Output: default@pz_plain
+POSTHOOK: query: insert into pz_plain select s.d, s.f from (select posexplode(split(space(999), ' '))) t, pz_src s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@pz_src
+POSTHOOK: Output: default@pz_plain
+POSTHOOK: Lineage: pz_plain.d SIMPLE [(pz_src)s.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: pz_plain.f SIMPLE [(pz_src)s.FieldSchema(name:f, type:float, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: insert into pz_dict select s.d, s.f from (select posexplode(split(space(999), ' '))) t, pz_src s
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@pz_src
+PREHOOK: Output: default@pz_dict
+POSTHOOK: query: insert into pz_dict select s.d, s.f from (select posexplode(split(space(999), ' '))) t, pz_src s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@pz_src
+POSTHOOK: Output: default@pz_dict
+POSTHOOK: Lineage: pz_dict.d SIMPLE [(pz_src)s.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: pz_dict.f SIMPLE [(pz_src)s.FieldSchema(name:f, type:float, comment:null), ]
+PREHOOK: query: select cast(d as string), cast(f as string), count(*) from pz_plain group by cast(d as string), cast(f as string)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pz_plain
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(d as string), cast(f as string), count(*) from pz_plain group by cast(d as string), cast(f as string)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pz_plain
+#### A masked pattern was here ####
+-0.0	-0.0	1000
+0.0	0.0	1000
+PREHOOK: query: select cast(d as string), cast(f as string), count(*) from pz_dict group by cast(d as string), cast(f as string)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pz_dict
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(d as string), cast(f as string), count(*) from pz_dict group by cast(d as string), cast(f as string)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pz_dict
+#### A masked pattern was here ####
+-0.0	-0.0	1000
+0.0	0.0	1000
+PREHOOK: query: select cast(d as string), cast(f as string), count(*) from pz_plain group by cast(d as string), cast(f as string)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pz_plain
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(d as string), cast(f as string), count(*) from pz_plain group by cast(d as string), cast(f as string)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pz_plain
+#### A masked pattern was here ####
+-0.0	-0.0	1000
+0.0	0.0	1000
+PREHOOK: query: select cast(d as string), cast(f as string), count(*) from pz_dict group by cast(d as string), cast(f as string)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pz_dict
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(d as string), cast(f as string), count(*) from pz_dict group by cast(d as string), cast(f as string)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pz_dict
+#### A masked pattern was here ####
+-0.0	-0.0	1000
+0.0	0.0	1000
