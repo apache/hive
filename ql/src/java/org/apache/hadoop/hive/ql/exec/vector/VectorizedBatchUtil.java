@@ -154,6 +154,7 @@ public class VectorizedBatchUtil {
         case DOUBLE:
           return new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
         case BINARY:
+        case GEOMETRY:
         case STRING:
         case CHAR:
         case VARCHAR:
@@ -440,7 +441,8 @@ public class VectorizedBatchUtil {
       }
     }
       break;
-    case BINARY: {
+    case BINARY:
+    case GEOMETRY: {
       BytesColumnVector bcv = (BytesColumnVector) batch.cols[offset + colIndex];
       if (writableCol != null) {
           bcv.isNull[rowIndex] = false;
@@ -913,6 +915,7 @@ public class VectorizedBatchUtil {
     case DOUBLE:
       return new DoubleWritable(0);
     case BINARY:
+    case GEOMETRY:
       return new BytesWritable(ArrayUtils.EMPTY_BYTE_ARRAY);
     case STRING:
       return new Text(ArrayUtils.EMPTY_BYTE_ARRAY);

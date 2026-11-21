@@ -1,0 +1,14 @@
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_partition_identity (id INT, geom GEOMETRY)
+PARTITIONED BY SPEC (geom)
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_partition_identity
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.iceberg.exceptions.ValidationException: Invalid source type geometry(OGC:CRS84) for transform: identity
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_partition_identity (id INT, geom GEOMETRY)
+PARTITIONED BY SPEC (geom)
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_partition_identity
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.iceberg.exceptions.ValidationException: Invalid source type geometry(OGC:CRS84) for transform: identity

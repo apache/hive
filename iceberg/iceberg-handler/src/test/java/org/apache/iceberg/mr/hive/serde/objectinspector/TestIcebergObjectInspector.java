@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.serde.objectinspector;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnknownObjectInspector;
@@ -63,7 +64,9 @@ public class TestIcebergObjectInspector {
                   "struct comment"
           ),
           required(21, "time_field", Types.TimeType.get(), "time comment"),
-          optional(22, "unknown_field", Types.UnknownType.get(), "unknown comment")
+          optional(22, "unknown_field", Types.UnknownType.get(), "unknown comment"),
+          optional(23, "geometry_field", Types.GeometryType.crs84(), "geometry comment"),
+          optional(24, "geometry_3857_field", Types.GeometryType.of("EPSG:3857"))
   );
 
   @Test
@@ -215,6 +218,25 @@ public class TestIcebergObjectInspector {
     Assertions.assertEquals("unknown_field", unknownField.getFieldName());
     Assertions.assertEquals("unknown comment", unknownField.getFieldComment());
     Assertions.assertEquals(UnknownObjectInspector.get(), unknownField.getFieldObjectInspector());
+  }
+
+  @Test
+  public void testIcebergGeometryObjectInspector() {
+    StructObjectInspector soi = (StructObjectInspector) IcebergObjectInspector.create(schema);
+
+    StructField geometryField = soi.getStructFieldRef("geometry_field");
+    Assertions.assertEquals(23, geometryField.getFieldID());
+    Assertions.assertEquals("geometry_field", geometryField.getFieldName());
+    Assertions.assertEquals("geometry comment", geometryField.getFieldComment());
+    PrimitiveObjectInspector geometryOI = (PrimitiveObjectInspector) geometryField.getFieldObjectInspector();
+    Assertions.assertEquals(TypeInfoFactory.geometryTypeInfo, geometryOI.getTypeInfo());
+    Assertions.assertEquals(PrimitiveObjectInspector.PrimitiveCategory.GEOMETRY, geometryOI.getPrimitiveCategory());
+    Assertions.assertSame(IcebergBinaryObjectInspector.get(TypeInfoFactory.geometryTypeInfo), geometryOI);
+
+    StructField geometry3857Field = soi.getStructFieldRef("geometry_3857_field");
+    Assertions.assertEquals(TypeInfoFactory.getGeometryTypeInfo("EPSG:3857"),
+        ((PrimitiveObjectInspector) geometry3857Field.getFieldObjectInspector()).getTypeInfo());
+    Assertions.assertEquals("geometry('EPSG:3857')", geometry3857Field.getFieldObjectInspector().getTypeName());
   }
 
   private static ObjectInspector getPrimitiveObjectInspector(Class<?> clazz) {

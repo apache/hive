@@ -20,29 +20,67 @@
 package org.apache.iceberg.mr.hive.serde.objectinspector;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.iceberg.geospatial.GeospatialBound;
 import org.apache.iceberg.util.ByteBuffers;
 
 public class IcebergBinaryObjectInspector extends AbstractPrimitiveJavaObjectInspector
     implements BinaryObjectInspector, WriteObjectInspector {
 
-  private static final IcebergBinaryObjectInspector INSTANCE = new IcebergBinaryObjectInspector();
+  private static final IcebergBinaryObjectInspector INSTANCE =
+      new IcebergBinaryObjectInspector(TypeInfoFactory.binaryTypeInfo);
+
+  private static final Map<PrimitiveTypeInfo, IcebergBinaryObjectInspector> INSTANCES = new ConcurrentHashMap<>();
 
   public static IcebergBinaryObjectInspector get() {
     return INSTANCE;
   }
 
-  private IcebergBinaryObjectInspector() {
-    super(TypeInfoFactory.binaryTypeInfo);
+  /**
+   * Returns an inspector for a Hive type whose values are binary, for example GEOMETRY.
+   */
+  public static IcebergBinaryObjectInspector get(PrimitiveTypeInfo typeInfo) {
+    if (TypeInfoFactory.binaryTypeInfo.equals(typeInfo)) {
+      return INSTANCE;
+    }
+    return INSTANCES.computeIfAbsent(typeInfo, IcebergBinaryObjectInspector::new);
+  }
+
+  private IcebergBinaryObjectInspector(PrimitiveTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override
   public byte[] getPrimitiveJavaObject(Object o) {
+    if (o instanceof GeospatialBound bound) {
+      return toWkbPoint(bound);
+    }
     return ByteBuffers.toByteArray((ByteBuffer) o);
+  }
+
+  /**
+   * Metadata tables report the bounds of geospatial columns as {@link GeospatialBound} points rather than WKB.
+   */
+  private static byte[] toWkbPoint(GeospatialBound bound) {
+    int dimensionCode = (bound.hasZ() ? 1 : 0) + (bound.hasM() ? 2 : 0);
+    int dimensions = 2 + (bound.hasZ() ? 1 : 0) + (bound.hasM() ? 1 : 0);
+    ByteBuffer wkb = ByteBuffer.allocate(1 + 4 + dimensions * Double.BYTES).order(ByteOrder.LITTLE_ENDIAN);
+    wkb.put((byte) 1).putInt(1 + 1000 * dimensionCode).putDouble(bound.x()).putDouble(bound.y());
+    if (bound.hasZ()) {
+      wkb.putDouble(bound.z());
+    }
+    if (bound.hasM()) {
+      wkb.putDouble(bound.m());
+    }
+    return wkb.array();
   }
 
   @Override

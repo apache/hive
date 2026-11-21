@@ -726,6 +726,7 @@ public class StatsUtils {
     String colTypeLowerCase = columnInfo.getTypeName().toLowerCase();
     if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)
+        || isGeometryType(colTypeLowerCase)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.LIST_TYPE_NAME)
@@ -1024,6 +1025,7 @@ public class StatsUtils {
       cs.setRange(Double.MIN_VALUE, Double.MAX_VALUE);
     } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.BINARY_TYPE_NAME)
+        || isGeometryType(colTypeLowerCase)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
       cs.setAvgColLen(getAvgColLenOf(conf,cinfo.getObjectInspector(), cinfo.getTypeName()));
@@ -1194,7 +1196,7 @@ public class StatsUtils {
         CharTypeInfo type = (CharTypeInfo) ((HiveCharObjectInspector) oi).getTypeInfo();
         return type.getLength();
       }
-    } else if (colTypeLowCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
+    } else if (colTypeLowCase.equals(serdeConstants.BINARY_TYPE_NAME) || isGeometryType(colTypeLowCase)) {
 
       // constant byte arrays
       if (oi instanceof ConstantObjectInspector) {
@@ -1217,6 +1219,11 @@ public class StatsUtils {
     throw new IllegalArgumentException("Size requested for unknown type: " + colType + " OI: " + oi.getTypeName());
   }
 
+  private static boolean isGeometryType(String colTypeLowerCase) {
+    return colTypeLowerCase.equals(serdeConstants.GEOMETRY_TYPE_NAME)
+        || colTypeLowerCase.startsWith(serdeConstants.GEOMETRY_TYPE_NAME + "(");
+  }
+
   /**
    * Get the size of complex data types
    * @return raw data size
@@ -1235,7 +1242,7 @@ public class StatsUtils {
           || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
         int avgColLen = (int) getAvgColLenOf(conf, oi, colTypeLowerCase);
         result += JavaDataModel.get().lengthForStringOfLength(avgColLen);
-      } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
+      } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME) || isGeometryType(colTypeLowerCase)) {
         int avgColLen = (int) getAvgColLenOf(conf, oi, colTypeLowerCase);
         result += JavaDataModel.get().lengthForByteArrayOfSize(avgColLen);
       } else {
@@ -1374,6 +1381,9 @@ public class StatsUtils {
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
       int charTypeLen = JavaDataModel.get().lengthForStringOfLength(maxLength);
       return JavaDataModel.get().lengthForPrimitiveArrayOfSize(charTypeLen, length);
+    }
+    if (isGeometryType(colTypeLowerCase)) {
+      return JavaDataModel.get().lengthForByteArrayOfSize(length);
     }
     switch (colTypeLowerCase) {
     case serdeConstants.TINYINT_TYPE_NAME:
@@ -1895,7 +1905,7 @@ public class StatsUtils {
             || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
           int acl = (int) Math.round(cs.getAvgColLen());
           sizeOf = JavaDataModel.get().lengthForStringOfLength(acl);
-        } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
+        } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME) || isGeometryType(colTypeLowerCase)) {
           int acl = (int) Math.round(cs.getAvgColLen());
           sizeOf = JavaDataModel.get().lengthForByteArrayOfSize(acl);
         } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||

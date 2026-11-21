@@ -128,6 +128,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       readDoubles(num, (DoubleColumnVector) column, rowId);
       break;
     case BINARY:
+    case GEOMETRY:
       readBinaries(num, (BytesColumnVector) column, rowId);
       break;
     case STRING:
@@ -571,6 +572,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
       break;
     case BINARY:
+    case GEOMETRY:
       for (int i = rowId; i < rowId + num; ++i) {
         if (!column.isNull[i]) {
           ((BytesColumnVector) column)

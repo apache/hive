@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_ewkb (id INT, geom GEOMETRY) STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_ewkb
+POSTHOOK: query: CREATE EXTERNAL TABLE geometry_ewkb (id INT, geom GEOMETRY) STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_ewkb
+FAILED: RuntimeException org.apache.hadoop.hive.ql.metadata.HiveException: Cannot cast binary to geometry: Invalid WKB: extended WKB (EWKB) is not supported, geometry values must be ISO WKB at position 2

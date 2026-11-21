@@ -292,6 +292,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     patternBuilder.append("|").append(serdeConstants.CHAR_TYPE_NAME).append(".*");
     patternBuilder.append("|").append(serdeConstants.VARCHAR_TYPE_NAME).append(".*");
 
+    // GEOMETRY types can be specified with a coordinate reference system.
+    patternBuilder.append("|").append(serdeConstants.GEOMETRY_TYPE_NAME).append(".*");
+
     supportedDataTypesPattern = Pattern.compile(patternBuilder.toString());
   }
 

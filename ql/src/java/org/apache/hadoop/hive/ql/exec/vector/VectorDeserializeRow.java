@@ -281,6 +281,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         deserializer = new VectorDoubleDeserializer();
         break;
       case BINARY:
+      case GEOMETRY:
         deserializer = new VectorBinaryDeserializer();
         break;
       case STRING:

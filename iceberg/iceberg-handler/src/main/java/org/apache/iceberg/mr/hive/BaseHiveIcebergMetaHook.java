@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -74,6 +75,8 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Type;
+import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,6 +204,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
 
     assertFileFormat(tableProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
+    assertFileFormatSupportsSchema(tableProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT), () -> schema);
 
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
@@ -388,6 +392,30 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     String lowerCaseFormat = format.toLowerCase();
     Preconditions.checkArgument(Arrays.stream(FileFormat.values()).anyMatch(v -> lowerCaseFormat.contains(v.label)),
         String.format("Unsupported fileformat %s", format));
+  }
+
+  /**
+   * Iceberg cannot write geospatial columns to ORC files, so reject the combination before any data is written.
+   */
+  static void assertFileFormatSupportsSchema(String format, Supplier<Schema> schemaSupplier) {
+    if (format == null || !format.toLowerCase().contains(FileFormat.ORC.getLabel())) {
+      return;
+    }
+    Schema schema = schemaSupplier.get();
+    TypeUtil.indexByName(schema.asStruct()).entrySet().stream()
+        .filter(entry -> isGeospatial(schema.findType(entry.getValue())))
+        .map(Map.Entry::getKey)
+        .sorted()
+        .findFirst()
+        .ifPresent(column -> {
+          throw new IllegalArgumentException(String.format(
+              "Column %s has type %s, which is not supported by the ORC file format. Use Parquet or Avro instead",
+              column, schema.findType(column)));
+        });
+  }
+
+  private static boolean isGeospatial(Type type) {
+    return type.typeId() == Type.TypeID.GEOMETRY || type.typeId() == Type.TypeID.GEOGRAPHY;
   }
 
   protected void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {

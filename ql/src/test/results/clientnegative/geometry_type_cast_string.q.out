@@ -1,0 +1,1 @@
+FAILED: SemanticException Line 0:-1 Wrong arguments ''POINT (1 2)'': Only binary data in the WKB format can be cast into geometry, but got string. Convert hex-encoded WKB with unhex() and WKT with ST_AsBinary(ST_GeomFromText(...)) first

@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToGeometry;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
@@ -341,7 +342,8 @@ public class RexNodeConverter {
           || (udf instanceof GenericUDFToString)
           || (udf instanceof GenericUDFToDecimal) || (udf instanceof GenericUDFToDate)
           || (udf instanceof GenericUDFTimestamp) || (udf instanceof GenericUDFToTimestampLocalTZ)
-          || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)
+          || (udf instanceof GenericUDFToBinary) || (udf instanceof GenericUDFToGeometry)
+          || castExprUsingUDFBridge(udf)
           || (udf instanceof GenericUDFToMap)
           || (udf instanceof GenericUDFToArray)
           || (udf instanceof GenericUDFToStruct)) {

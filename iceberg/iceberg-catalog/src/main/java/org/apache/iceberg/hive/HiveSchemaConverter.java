@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.GeometryTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -148,6 +149,8 @@ class HiveSchemaConverter {
           case DECIMAL:
             DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
             return Types.DecimalType.of(decimalTypeInfo.precision(), decimalTypeInfo.scale());
+          case GEOMETRY:
+            return Types.GeometryType.of(((GeometryTypeInfo) typeInfo).getCrs());
           case INTERVAL_YEAR_MONTH:
           case INTERVAL_DAY_TIME:
           default:

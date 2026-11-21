@@ -1,0 +1,492 @@
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_expr (id INT, geom GEOMETRY, geom_3857 GEOMETRY('EPSG:3857'))
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_expr
+POSTHOOK: query: CREATE EXTERNAL TABLE geometry_expr (id INT, geom GEOMETRY, geom_3857 GEOMETRY('EPSG:3857'))
+STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_expr
+PREHOOK: query: INSERT INTO geometry_expr VALUES
+(1, unhex('0101000000000000000000F03F0000000000000040'), unhex('010100000000000000000008400000000000001040')),
+(2, NULL, unhex('0101000000000000000000F03F0000000000000040')),
+(3, unhex('010100000000000000000008400000000000001040'), NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@geometry_expr
+POSTHOOK: query: INSERT INTO geometry_expr VALUES
+(1, unhex('0101000000000000000000F03F0000000000000040'), unhex('010100000000000000000008400000000000001040')),
+(2, NULL, unhex('0101000000000000000000F03F0000000000000040')),
+(3, unhex('010100000000000000000008400000000000001040'), NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@geometry_expr
+PREHOOK: query: SELECT hex(CAST(CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857')) AS BINARY))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT hex(CAST(CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857')) AS BINARY))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0101000000000000000000F03F0000000000000040
+PREHOOK: query: SELECT hex(CAST(CAST(geom_3857 AS GEOMETRY('EPSG:3857')) AS BINARY)) FROM geometry_expr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT hex(CAST(CAST(geom_3857 AS GEOMETRY('EPSG:3857')) AS BINARY)) FROM geometry_expr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+010100000000000000000008400000000000001040
+0101000000000000000000F03F0000000000000040
+NULL
+PREHOOK: query: SELECT hex(CAST(CAST(CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:32632')) AS GEOMETRY('epsg:32632')) AS BINARY))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT hex(CAST(CAST(CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:32632')) AS GEOMETRY('epsg:32632')) AS BINARY))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0101000000000000000000F03F0000000000000040
+PREHOOK: query: SELECT hex(CAST(CAST(geom AS GEOMETRY('OGC:CRS84')) AS BINARY)) FROM geometry_expr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT hex(CAST(CAST(geom AS GEOMETRY('OGC:CRS84')) AS BINARY)) FROM geometry_expr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+010100000000000000000008400000000000001040
+0101000000000000000000F03F0000000000000040
+NULL
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_expr_case (id INT, g_upper GEOMETRY('EPSG:32632'), g_lower GEOMETRY('epsg:32632'))
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_expr_case
+POSTHOOK: query: CREATE EXTERNAL TABLE geometry_expr_case (id INT, g_upper GEOMETRY('EPSG:32632'), g_lower GEOMETRY('epsg:32632'))
+STORED BY ICEBERG tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_expr_case
+PREHOOK: query: DESCRIBE geometry_expr_case
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_expr_case
+POSTHOOK: query: DESCRIBE geometry_expr_case
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_expr_case
+id                  	int                 	                    
+g_upper             	geometry('EPSG:32632')	                    
+g_lower             	geometry('epsg:32632')	                    
+PREHOOK: query: INSERT INTO geometry_expr_case SELECT 1,
+    CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('epsg:32632')),
+    CAST(unhex('010100000000000000000008400000000000001040') AS GEOMETRY('EPSG:32632'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@geometry_expr_case
+POSTHOOK: query: INSERT INTO geometry_expr_case SELECT 1,
+    CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('epsg:32632')),
+    CAST(unhex('010100000000000000000008400000000000001040') AS GEOMETRY('EPSG:32632'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@geometry_expr_case
+PREHOOK: query: INSERT INTO geometry_expr_case SELECT id + 1, g_lower, g_upper FROM geometry_expr_case
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr_case
+PREHOOK: Output: default@geometry_expr_case
+POSTHOOK: query: INSERT INTO geometry_expr_case SELECT id + 1, g_lower, g_upper FROM geometry_expr_case
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr_case
+POSTHOOK: Output: default@geometry_expr_case
+PREHOOK: query: INSERT INTO geometry_expr_case SELECT 3, g_upper, g_upper FROM geometry_expr_case WHERE id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr_case
+PREHOOK: Output: default@geometry_expr_case
+POSTHOOK: query: INSERT INTO geometry_expr_case SELECT 3, g_upper, g_upper FROM geometry_expr_case WHERE id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr_case
+POSTHOOK: Output: default@geometry_expr_case
+PREHOOK: query: SELECT id, hex(CAST(g_upper AS BINARY)), hex(CAST(g_lower AS BINARY)) FROM geometry_expr_case
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr_case
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(g_upper AS BINARY)), hex(CAST(g_lower AS BINARY)) FROM geometry_expr_case
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr_case
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	0101000000000000000000F03F0000000000000040	010100000000000000000008400000000000001040
+2	010100000000000000000008400000000000001040	0101000000000000000000F03F0000000000000040
+3	0101000000000000000000F03F0000000000000040	0101000000000000000000F03F0000000000000040
+PREHOOK: query: SELECT id FROM geometry_expr_case WHERE g_upper = g_lower
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr_case
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id FROM geometry_expr_case WHERE g_upper = g_lower
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr_case
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3
+PREHOOK: query: CREATE TABLE geometry_expr_case_ctas STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT COALESCE(g_lower, g_upper) AS c_coalesce, CASE WHEN id = 1 THEN g_upper ELSE g_lower END AS c_case
+FROM geometry_expr_case
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@geometry_expr_case
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_expr_case_ctas
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE TABLE geometry_expr_case_ctas STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT COALESCE(g_lower, g_upper) AS c_coalesce, CASE WHEN id = 1 THEN g_upper ELSE g_lower END AS c_case
+FROM geometry_expr_case
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@geometry_expr_case
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_expr_case_ctas
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: geometry_expr_case_ctas.c_case EXPRESSION [(geometry_expr_case)geometry_expr_case.FieldSchema(name:id, type:int, comment:null), (geometry_expr_case)geometry_expr_case.FieldSchema(name:g_upper, type:geometry('EPSG:32632'), comment:null), (geometry_expr_case)geometry_expr_case.FieldSchema(name:g_lower, type:geometry('epsg:32632'), comment:null), ]
+POSTHOOK: Lineage: geometry_expr_case_ctas.c_coalesce EXPRESSION [(geometry_expr_case)geometry_expr_case.FieldSchema(name:g_lower, type:geometry('epsg:32632'), comment:null), (geometry_expr_case)geometry_expr_case.FieldSchema(name:g_upper, type:geometry('EPSG:32632'), comment:null), ]
+PREHOOK: query: DESCRIBE geometry_expr_case_ctas
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_expr_case_ctas
+POSTHOOK: query: DESCRIBE geometry_expr_case_ctas
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_expr_case_ctas
+c_coalesce          	geometry('EPSG:32632')	                    
+c_case              	geometry('epsg:32632')	                    
+PREHOOK: query: CREATE TABLE geometry_expr_case_union STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT g_upper AS u FROM geometry_expr_case
+UNION ALL
+SELECT g_lower AS u FROM geometry_expr_case
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@geometry_expr_case
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_expr_case_union
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE TABLE geometry_expr_case_union STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT g_upper AS u FROM geometry_expr_case
+UNION ALL
+SELECT g_lower AS u FROM geometry_expr_case
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@geometry_expr_case
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_expr_case_union
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: geometry_expr_case_union.u EXPRESSION [(geometry_expr_case)geometry_expr_case.FieldSchema(name:g_upper, type:geometry('EPSG:32632'), comment:null), (geometry_expr_case)geometry_expr_case.FieldSchema(name:g_lower, type:geometry('epsg:32632'), comment:null), ]
+PREHOOK: query: DESCRIBE geometry_expr_case_union
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_expr_case_union
+POSTHOOK: query: DESCRIBE geometry_expr_case_union
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_expr_case_union
+u                   	geometry('EPSG:32632')	                    
+PREHOOK: query: SELECT hex(CAST(u AS BINARY)), count(*) FROM geometry_expr_case_union GROUP BY u
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr_case_union
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT hex(CAST(u AS BINARY)), count(*) FROM geometry_expr_case_union GROUP BY u
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr_case_union
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+010100000000000000000008400000000000001040	2
+0101000000000000000000F03F0000000000000040	4
+PREHOOK: query: SELECT id, hex(CAST(CAST(CAST(geom AS BINARY) AS GEOMETRY('EPSG:3857')) AS BINARY)) FROM geometry_expr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(CAST(CAST(geom AS BINARY) AS GEOMETRY('EPSG:3857')) AS BINARY)) FROM geometry_expr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	0101000000000000000000F03F0000000000000040
+2	NULL
+3	010100000000000000000008400000000000001040
+PREHOOK: query: CREATE TABLE geometry_expr_relabel STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT id, CAST(CAST(geom AS BINARY) AS GEOMETRY('EPSG:4326')) AS geom_4326 FROM geometry_expr
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_expr_relabel
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE TABLE geometry_expr_relabel STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT id, CAST(CAST(geom AS BINARY) AS GEOMETRY('EPSG:4326')) AS geom_4326 FROM geometry_expr
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_expr_relabel
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: geometry_expr_relabel.geom_4326 EXPRESSION [(geometry_expr)geometry_expr.FieldSchema(name:geom, type:geometry, comment:null), ]
+POSTHOOK: Lineage: geometry_expr_relabel.id SIMPLE [(geometry_expr)geometry_expr.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: DESCRIBE geometry_expr_relabel
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_expr_relabel
+POSTHOOK: query: DESCRIBE geometry_expr_relabel
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_expr_relabel
+id                  	int                 	                    
+geom_4326           	geometry('EPSG:4326')	                    
+PREHOOK: query: SELECT id, hex(CAST(geom_4326 AS BINARY)) FROM geometry_expr_relabel
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr_relabel
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(geom_4326 AS BINARY)) FROM geometry_expr_relabel
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr_relabel
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	0101000000000000000000F03F0000000000000040
+2	NULL
+3	010100000000000000000008400000000000001040
+PREHOOK: query: SELECT CAST(NULL AS GEOMETRY), CAST(NULL AS GEOMETRY('EPSG:3857')) IS NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(NULL AS GEOMETRY), CAST(NULL AS GEOMETRY('EPSG:3857')) IS NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	true
+PREHOOK: query: SELECT hex(CAST(CAST(CAST(NULL AS BINARY) AS GEOMETRY) AS BINARY))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT hex(CAST(CAST(CAST(NULL AS BINARY) AS GEOMETRY) AS BINARY))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL
+PREHOOK: query: CREATE TABLE geometry_expr_conditional STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT id,
+    COALESCE(geom_3857, CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857'))) AS c_coalesce,
+    CASE WHEN id = 1 THEN geom_3857 ELSE NULL END AS c_case,
+    IF(id = 2, geom_3857, NULL) AS c_if,
+    NVL(geom_3857, geom_3857) AS c_nvl,
+    COALESCE(geom, geom) AS c_default_crs
+FROM geometry_expr
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_expr_conditional
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE TABLE geometry_expr_conditional STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT id,
+    COALESCE(geom_3857, CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857'))) AS c_coalesce,
+    CASE WHEN id = 1 THEN geom_3857 ELSE NULL END AS c_case,
+    IF(id = 2, geom_3857, NULL) AS c_if,
+    NVL(geom_3857, geom_3857) AS c_nvl,
+    COALESCE(geom, geom) AS c_default_crs
+FROM geometry_expr
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_expr_conditional
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: geometry_expr_conditional.c_case EXPRESSION [(geometry_expr)geometry_expr.FieldSchema(name:id, type:int, comment:null), (geometry_expr)geometry_expr.FieldSchema(name:geom_3857, type:geometry('EPSG:3857'), comment:null), ]
+POSTHOOK: Lineage: geometry_expr_conditional.c_coalesce EXPRESSION [(geometry_expr)geometry_expr.FieldSchema(name:geom_3857, type:geometry('EPSG:3857'), comment:null), ]
+POSTHOOK: Lineage: geometry_expr_conditional.c_default_crs SIMPLE [(geometry_expr)geometry_expr.FieldSchema(name:geom, type:geometry, comment:null), ]
+POSTHOOK: Lineage: geometry_expr_conditional.c_if EXPRESSION [(geometry_expr)geometry_expr.FieldSchema(name:id, type:int, comment:null), (geometry_expr)geometry_expr.FieldSchema(name:geom_3857, type:geometry('EPSG:3857'), comment:null), ]
+POSTHOOK: Lineage: geometry_expr_conditional.c_nvl EXPRESSION [(geometry_expr)geometry_expr.FieldSchema(name:geom_3857, type:geometry('EPSG:3857'), comment:null), ]
+POSTHOOK: Lineage: geometry_expr_conditional.id SIMPLE [(geometry_expr)geometry_expr.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: DESCRIBE geometry_expr_conditional
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_expr_conditional
+POSTHOOK: query: DESCRIBE geometry_expr_conditional
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_expr_conditional
+id                  	int                 	                    
+c_coalesce          	geometry('EPSG:3857')	                    
+c_case              	geometry('EPSG:3857')	                    
+c_if                	geometry('EPSG:3857')	                    
+c_nvl               	geometry('EPSG:3857')	                    
+c_default_crs       	geometry            	                    
+PREHOOK: query: SELECT id, hex(CAST(c_coalesce AS BINARY)), hex(CAST(c_case AS BINARY)), hex(CAST(c_if AS BINARY)),
+    hex(CAST(c_nvl AS BINARY)), hex(CAST(c_default_crs AS BINARY))
+FROM geometry_expr_conditional
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr_conditional
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(c_coalesce AS BINARY)), hex(CAST(c_case AS BINARY)), hex(CAST(c_if AS BINARY)),
+    hex(CAST(c_nvl AS BINARY)), hex(CAST(c_default_crs AS BINARY))
+FROM geometry_expr_conditional
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr_conditional
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	010100000000000000000008400000000000001040	010100000000000000000008400000000000001040	NULL	010100000000000000000008400000000000001040	0101000000000000000000F03F0000000000000040
+2	0101000000000000000000F03F0000000000000040	NULL	0101000000000000000000F03F0000000000000040	0101000000000000000000F03F0000000000000040	NULL
+3	0101000000000000000000F03F0000000000000040	NULL	NULL	NULL	010100000000000000000008400000000000001040
+PREHOOK: query: CREATE TABLE geometry_expr_union STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT geom_3857 AS u FROM geometry_expr
+UNION ALL
+SELECT CAST(unhex('010100000000000000000008400000000000001040') AS GEOMETRY('EPSG:3857')) AS u
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_expr_union
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE TABLE geometry_expr_union STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT geom_3857 AS u FROM geometry_expr
+UNION ALL
+SELECT CAST(unhex('010100000000000000000008400000000000001040') AS GEOMETRY('EPSG:3857')) AS u
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_expr_union
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: geometry_expr_union.u EXPRESSION [(geometry_expr)geometry_expr.FieldSchema(name:geom_3857, type:geometry('EPSG:3857'), comment:null), ]
+PREHOOK: query: DESCRIBE geometry_expr_union
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_expr_union
+POSTHOOK: query: DESCRIBE geometry_expr_union
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_expr_union
+u                   	geometry('EPSG:3857')	                    
+PREHOOK: query: SELECT hex(CAST(u AS BINARY)) FROM geometry_expr_union
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr_union
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT hex(CAST(u AS BINARY)) FROM geometry_expr_union
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr_union
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+010100000000000000000008400000000000001040
+010100000000000000000008400000000000001040
+0101000000000000000000F03F0000000000000040
+NULL
+PREHOOK: query: SELECT hex(CAST(u AS BINARY)) FROM (
+    SELECT geom AS u FROM geometry_expr
+    UNION
+    SELECT geom AS u FROM geometry_expr) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT hex(CAST(u AS BINARY)) FROM (
+    SELECT geom AS u FROM geometry_expr
+    UNION
+    SELECT geom AS u FROM geometry_expr) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+010100000000000000000008400000000000001040
+0101000000000000000000F03F0000000000000040
+NULL
+PREHOOK: query: EXPLAIN CBO
+SELECT CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857')) FROM geometry_expr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN CBO
+SELECT CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857')) FROM geometry_expr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(_c0=[CAST(unhex('0101000000000000000000F03F0000000000000040':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")):ObjectSqlType(geometry('EPSG:3857'))])
+  HiveTableScan(table=[[default, geometry_expr]], table:alias=[geometry_expr])
+
+PREHOOK: query: EXPLAIN
+SELECT CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857')) FROM geometry_expr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN
+SELECT CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857')) FROM geometry_expr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_1]
+      Output:["_col0"]
+      TableScan [TS_0]
+
+PREHOOK: query: EXPLAIN
+SELECT id FROM geometry_expr
+WHERE geom_3857 = CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN
+SELECT id FROM geometry_expr
+WHERE geom_3857 = CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_2]
+      Output:["_col0"]
+      Filter Operator [FIL_4]
+        predicate:(geom_3857 = 0101000000000000000000F03F0000000000000040)
+        TableScan [TS_0]
+          Output:["id","geom_3857"]
+
+PREHOOK: query: CREATE TABLE geometry_expr_constant STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT id, CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857')) AS c,
+    CAST(NULL AS GEOMETRY('EPSG:3857')) AS n
+FROM geometry_expr
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_expr_constant
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE TABLE geometry_expr_constant STORED BY ICEBERG tblproperties('format-version'='3') AS
+SELECT id, CAST(unhex('0101000000000000000000F03F0000000000000040') AS GEOMETRY('EPSG:3857')) AS c,
+    CAST(NULL AS GEOMETRY('EPSG:3857')) AS n
+FROM geometry_expr
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geometry_expr_constant
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: geometry_expr_constant.c SIMPLE []
+POSTHOOK: Lineage: geometry_expr_constant.id SIMPLE [(geometry_expr)geometry_expr.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: geometry_expr_constant.n SIMPLE []
+PREHOOK: query: DESCRIBE geometry_expr_constant
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@geometry_expr_constant
+POSTHOOK: query: DESCRIBE geometry_expr_constant
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@geometry_expr_constant
+id                  	int                 	                    
+c                   	geometry('EPSG:3857')	                    
+n                   	geometry('EPSG:3857')	                    
+PREHOOK: query: SELECT id, hex(CAST(c AS BINARY)), n FROM geometry_expr_constant
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr_constant
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, hex(CAST(c AS BINARY)), n FROM geometry_expr_constant
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr_constant
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	0101000000000000000000F03F0000000000000040	NULL
+2	0101000000000000000000F03F0000000000000040	NULL
+3	0101000000000000000000F03F0000000000000040	NULL
+PREHOOK: query: INSERT INTO geometry_expr
+SELECT 4, ST_AsBinary(ST_GeomFromText('POINT (7 8)')), CAST(ST_AsBinary(ST_GeomFromText('POINT (9 10)')) AS GEOMETRY('EPSG:3857'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@geometry_expr
+POSTHOOK: query: INSERT INTO geometry_expr
+SELECT 4, ST_AsBinary(ST_GeomFromText('POINT (7 8)')), CAST(ST_AsBinary(ST_GeomFromText('POINT (9 10)')) AS GEOMETRY('EPSG:3857'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@geometry_expr
+PREHOOK: query: SELECT id, ST_AsText(ST_GeomFromWKB(CAST(geom AS BINARY))), ST_AsText(ST_GeomFromWKB(CAST(geom_3857 AS BINARY)))
+FROM geometry_expr WHERE id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geometry_expr
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, ST_AsText(ST_GeomFromWKB(CAST(geom AS BINARY))), ST_AsText(ST_GeomFromWKB(CAST(geom_3857 AS BINARY)))
+FROM geometry_expr WHERE id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geometry_expr
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	POINT (7 8)	POINT (9 10)
