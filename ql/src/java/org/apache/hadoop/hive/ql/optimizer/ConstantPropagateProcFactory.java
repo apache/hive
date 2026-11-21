@@ -1430,7 +1430,7 @@ public final class ConstantPropagateProcFactory {
       ConstantPropagateProcCtx cppCtx = (ConstantPropagateProcCtx) ctx;
       Map<ColumnInfo, ExprNodeDesc> constants = cppCtx.getPropagatedConstants(op);
       cppCtx.getOpToConstantExprs().put(op, constants);
-      ExprNodeGenericFuncDesc pred = conf.getFilterExpr();
+      ExprNodeDesc pred = conf.getFilterExpr();
       if (pred == null) {
         return null;
       }

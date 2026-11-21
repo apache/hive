@@ -875,7 +875,7 @@ public class SerializationUtilities {
     }
   }
 
-  public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
+  public static String serializeExpression(ExprNodeDesc expr) {
     return new String(Base64.encodeBase64(serializeObjectToKryo(expr)),
         StandardCharsets.UTF_8);
   }
