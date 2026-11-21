@@ -69,7 +69,7 @@ public class ComponentAutoscaler {
    * raw metric value, proposed replicas, and the actual patch (null if no change).
    */
   public EvaluationResult evaluate(List<PodMetrics> metrics, AutoscalingSpec spec,
-      int currentReplicas, int maxReplicas) {
+      int currentReplicas, int appliedWorkloadReplicas, int maxReplicas) {
 
     ensureWindows(spec);
 
@@ -92,9 +92,10 @@ public class ComponentAutoscaler {
     scaleUpWindow.record(clamped);
     scaleDownWindow.record(clamped);
 
-    int target;
+    int target = currentReplicas;
+    boolean isLlap = component.startsWith(ConfigUtils.COMPONENT_LLAP + "-");
     if (clamped > currentReplicas) {
-      if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
+      if (isLlap) {
         // HS2 sessions activation gate scales up the LLAP pods to atleast 1
         // in presence of sessions. Avoid stabilizedMin in this start-up case.
         target = currentReplicas == 0 ? clamped : scaleUpWindow.stabilizedMin();
@@ -106,22 +107,20 @@ public class ComponentAutoscaler {
       // prevents premature scale-down, matches HPA selectPolicy: Max behavior).
       // The stabilization window duration serves as the cooldown between scale-downs.
       target = scaleDownWindow.stabilizedMax();
-    } else {
-      target = currentReplicas;
+
+      // Scale down for LLAP should be sequential
+      target = isLlap ? Math.max(target, currentReplicas - 1) : target;
     }
 
     // Ensure target is still within bounds
     target = Math.max(spec.minReplicas(), Math.min(target, maxReplicas));
 
-    if (target == currentReplicas) {
+    if (target == currentReplicas || (appliedWorkloadReplicas >= 0 && target == appliedWorkloadReplicas)) {
       return new EvaluationResult(metricValue, lastCpuPercent, cpuDesired, clamped, null);
     }
 
-    if (target < currentReplicas) {
-      LOG.info("[{}] Scaling down: {} -> {}", component, currentReplicas, target);
-    } else {
-      LOG.info("[{}] Scaling up: {} -> {}", component, currentReplicas, target);
-    }
+    String evaluateAction = target < currentReplicas ? "Scaling down" : "Scaling up";
+    LOG.info("[{}] {}: {} -> {}", component, evaluateAction, currentReplicas, target);
     return new EvaluationResult(metricValue, lastCpuPercent, cpuDesired, clamped, target);
   }
 
