@@ -331,7 +331,7 @@ public class TestQueryDisplay {
 
     @Override
     public StageType getType() {
-      return StageType.ATLAS_DUMP;
+      return StageType.REPL_DUMP;
 
     }
 
