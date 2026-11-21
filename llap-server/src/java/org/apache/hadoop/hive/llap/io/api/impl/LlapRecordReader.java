@@ -674,6 +674,10 @@ final class LlapRecordReader implements RecordReader<NullWritable, VectorizedRow
     this.partitionValues = partitionValues;
   }
 
+  ReadPipeline readPipeline() {
+    return rp;
+  }
+
   /** This class encapsulates include-related logic for LLAP readers. It is not actually specific
    *  to LLAP IO but in LLAP IO in particular, I want to encapsulate all this mess for now until
    *  we have smth better like Schema Evolution v2. This can also hypothetically encapsulate

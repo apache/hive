@@ -4989,7 +4989,9 @@ public class HiveConf extends Configuration {
         "on LLAP Server side to determine if the infrastructure for that is initialized."),
     LLAP_IO_PARQUET_NATIVE_ENABLED("hive.llap.io.parquet.native.enabled", false,
         "Whether LLAP IO caches Parquet column chunks and decodes them from the cache, as it does\n" +
-        "for ORC. Read per query from the session configuration, so it can be turned on for one\n" +
+        "for ORC, for Hive and Iceberg tables alike (Iceberg files that are encrypted or belong to\n" +
+        "a table with a variant column are read by the vectorized Parquet reader). Read per query\n" +
+        "from the session configuration, so it can be turned on for one\n" +
         "query, and only has an effect with hive.llap.io.memory.mode=cache - there is nowhere to\n" +
         "put the column chunks otherwise, and the daemon declines the split. When it applies it\n" +
         "takes precedence over hive.llap.io.encode.formats, which is not consulted for a format\n" +

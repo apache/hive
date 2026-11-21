@@ -91,9 +91,9 @@ import org.apache.orc.impl.RecordReaderUtils;
  *       ({@code ParquetColumnVectorProducer} / {@code ParquetEncodedDataReader}) declines the
  *       split and {@code LlapInputFormat} falls back to the source
  *       {@code VectorizedParquetInputFormat} - e.g. nested-type projections or setup errors.
- *   <li>Iceberg vectorized Parquet reads via {@code HiveVectorizedReader.parquetRecordReader},
- *       which always uses {@code VectorizedParquetInputFormat} directly and injects caches when
- *       LLAP is on - the native Parquet cache pipeline is not reachable from that entry point.
+ *   <li>Iceberg vectorized Parquet reads via {@code HiveVectorizedReader.parquetRecordReader}
+ *       that do not take the native pipeline: native reads disabled, encrypted files, or splits
+ *       the native reader declines.
  * </ul>
  * Non-LLAP execution (no daemon, no {@code DataCache} injected) skips this shim entirely and
  * reads directly from the real file system. The chunk boundaries come from the caller and the
