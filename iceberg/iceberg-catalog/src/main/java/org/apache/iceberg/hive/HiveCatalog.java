@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -52,6 +53,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.encryption.EncryptionUtil;
 import org.apache.iceberg.encryption.KeyManagementClient;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
+import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchIcebergViewException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
@@ -424,15 +426,26 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
       Table table = clients.run(client -> client.getTable(fromDatabase, fromName));
       validateTableIsIcebergTableOrView(contentType, table, CatalogUtil.fullTableName(name, from));
 
+      String metadataLocation = table.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
       table.setDbName(toDatabase);
       table.setTableName(to.name());
 
       clients.run(client -> {
-        MetastoreUtil.alterTable(client, fromDatabase, fromName, table);
+        MetastoreUtil.alterTable(client, fromDatabase, fromName, table,
+            HiveOperationsBase.expectedMetadataLocationContext(metadataLocation));
         return null;
       });
 
       LOG.info("Renamed {} from {}, to {}", contentType.value(), from, to);
+
+    } catch (MetaException e) {
+      if (e.getMessage() != null && e.getMessage().startsWith(
+          "The table has been modified. The parameter value for key '" +
+              BaseMetastoreTableOperations.METADATA_LOCATION_PROP + "' is")) {
+        throw new CommitFailedException(
+            e, "Cannot rename %s to %s. It has been modified concurrently", from, to);
+      }
+      throw new RuntimeException("Failed to rename " + from + " to " + to, e);
 
     } catch (NoSuchObjectException e) {
       switch (contentType) {

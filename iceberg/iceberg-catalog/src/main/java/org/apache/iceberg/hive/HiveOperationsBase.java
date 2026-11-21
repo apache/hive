@@ -94,6 +94,14 @@ public interface HiveOperationsBase {
   }
 
   default Map<String, String> hmsEnvContext(String metadataLocation) {
+    return expectedMetadataLocationContext(metadataLocation);
+  }
+
+  /**
+   * Returns the environment context that makes HMS apply an alter only if the table's current
+   * metadata location is still the given one.
+   */
+  static Map<String, String> expectedMetadataLocationContext(String metadataLocation) {
     return metadataLocation == null ? ImmutableMap.of() :
         ImmutableMap.of(
             NO_LOCK_EXPECTED_KEY,
