@@ -65,9 +65,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 
 /**
@@ -223,7 +225,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     if (isCacheEnabledAndInitialized()) {
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
+          req.getValidWriteIdList(), getTableForWatermark(req.getCatName(), req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, watermark, req);
         PartitionsWrapper r = (PartitionsWrapper) mscLocalCache.getIfPresent(cacheKey);
@@ -253,7 +255,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     if (isCacheEnabledAndInitialized()) {
       TableWatermark watermark = new TableWatermark(
           getValidWriteIdList(dbName, tableName),
-          getTable(catName, dbName, tableName).getId());
+          getTableForWatermark(catName, dbName, tableName).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, watermark,
             catName, dbName, tableName, maxParts);
@@ -298,7 +300,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     if (isCacheEnabledAndInitialized()) {
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
+          req.getValidWriteIdList(), getTableForWatermark(req.getCatName(), req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, watermark, req);
         PartitionSpecsWrapper r = (PartitionSpecsWrapper) mscLocalCache.getIfPresent(cacheKey);
@@ -328,7 +330,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     if (isCacheEnabledAndInitialized()) {
       TableWatermark watermark = new TableWatermark(
           getValidWriteIdList(dbName, tableName),
-          getTable(catName, dbName, tableName).getId());
+          getTableForWatermark(catName, dbName, tableName).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -377,7 +379,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
       req.setEngine(engine);
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
-      TableWatermark watermark = new TableWatermark(writeIdList, getTable(catName, dbName, tblName).getId());
+      TableWatermark watermark = new TableWatermark(writeIdList, getTableForWatermark(catName, dbName, tblName).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
         AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
@@ -407,7 +409,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     if (isCacheEnabledAndInitialized()) {
       String dbName = parseDbName(req.getDb_name(), conf)[1];
       TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(dbName, req.getTbl_name()).getId());
+          req.getValidWriteIdList(), getTableForWatermark(null, dbName, req.getTbl_name()).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -441,6 +443,26 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     return delegate.getPartitionsByNames(req);
   }
 
+  /**
+   * The table for a cache watermark (its id) or the transactional check. It is usually in the query-level cache
+   * already, as the compiler loaded it; the getTable of this class is below that cache and would go to HMS.
+   */
+  private Table getTableForWatermark(String catName, String dbName, String tblName) throws TException {
+    String cat = (catName == null || catName.isEmpty()) ? getDefaultCatalog(conf) : catName;
+    Map<Object, Object> queryCache = SessionState.get() != null ?
+        SessionState.get().getQueryCache(MetaStoreClientCacheUtils.getQueryId()) : null;
+    if (queryCache == null) {
+      return getTable(cat, dbName, tblName);
+    }
+    CacheKey cacheKey = MetaStoreClientCacheUtils.tableByNameKey(cat, dbName, tblName);
+    Table table = (Table) queryCache.get(cacheKey);
+    if (table == null) {
+      table = getTable(cat, dbName, tblName);
+      queryCache.put(cacheKey, table);
+    }
+    return table;
+  }
+
   // cf. SessionHiveMetaStoreClient.getValidWriteIdList
   private String getValidWriteIdList(String dbName, String tblName) {
     try {
@@ -448,7 +470,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
       if (validTxnsList == null) {
         return HiveMetaStoreClientUtils.getValidWriteIdList(dbName, tblName, conf);
       }
-      if (!AcidUtils.isTransactionalTable(getTable(dbName, tblName))) {
+      if (!AcidUtils.isTransactionalTable(getTableForWatermark(null, dbName, tblName))) {
         return null;
       }
       final String validWriteIds = Hive.get().getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
