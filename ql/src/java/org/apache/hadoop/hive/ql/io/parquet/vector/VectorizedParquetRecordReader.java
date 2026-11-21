@@ -55,6 +55,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.parquet.column.ColumnDescriptor;
+import org.apache.parquet.filter2.compat.FilterCompat;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.format.converter.ParquetMetadataConverter.MetadataFilter;
 import org.apache.parquet.hadoop.ParquetFileReader;
@@ -62,6 +63,7 @@ import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.ColumnChunkMetaData;
 import org.apache.parquet.hadoop.metadata.ColumnPath;
+import org.apache.parquet.hadoop.metadata.FileMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.HadoopStreams;
 import org.apache.parquet.io.InputFile;
@@ -272,6 +274,17 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     Path path = wrapPathForCache(filePath, cacheKey, configuration, blocks, cacheTag);
     this.reader = new ParquetFileReader(
       configuration, parquetMetadata.getFileMetaData(), path, blocks, requestedSchema.getColumns());
+  }
+
+  /**
+   * Prunes the row groups of this split with the pushed down predicate: by statistics, then by the bloom
+   * filters of the row groups statistics kept.
+   */
+  @Override
+  protected List<BlockMetaData> filterRowGroups(FilterCompat.Filter filter, List<BlockMetaData> splitGroup,
+      FileMetaData fileMetaData) throws IOException {
+    return ParquetBloomFilters.filterRowGroups(filter, super.filterRowGroups(filter, splitGroup, fileMetaData),
+        fileMetaData, filePath, jobConf, cacheKey, cacheTag);
   }
 
   private Path wrapPathForCache(Path path, Object fileKey, JobConf configuration,
