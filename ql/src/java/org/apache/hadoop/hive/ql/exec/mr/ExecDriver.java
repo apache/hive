@@ -375,7 +375,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
 
-      addOpensFlags(job);
+      JavaVersionUtils.addOpensFlags(job);
       jc = new JobClient(job);
       // make this client wait if job tracker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
@@ -494,16 +494,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return (returnVal);
   }
 
-  private static void addOpensFlags(JobConf job) {
-    String addOpens = JavaVersionUtils.getAddOpensFlags();
-    addJavaOpts(job, "mapreduce.map.java.opts", addOpens);
-    addJavaOpts(job, "mapreduce.reduce.java.opts", addOpens);
-    addJavaOpts(job, "yarn.app.mapreduce.am.command-opts", addOpens);
-  }
-  private static void addJavaOpts(JobConf job, String conf, String extraOpts) {
-    String javaOpts = StringUtils.defaultString(job.get(conf));
-    job.set(conf, javaOpts + extraOpts);
-  }
 
   public static void propagateSplitSettings(JobConf job, MapWork work) {
     if (work.getNumMapTasks() != null) {

@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.TaskQueue;
@@ -171,6 +172,8 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
       if (pwd != null) {
         HiveConf.setVar(job, HiveConf.ConfVars.METASTORE_PWD, "HIVE");
       }
+      // submitted directly, not through ExecDriver
+      JavaVersionUtils.addOpensFlags(job);
       JobClient jc = new JobClient(job);
 
       String addedJars = Utilities.getResourceFiles(job, SessionState.ResourceType.JAR);
