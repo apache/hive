@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -63,7 +64,7 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
   public ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
       Includes includes, SearchArgument sarg, QueryFragmentCounters counters,
       SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
-      Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) {
+      Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) throws IOException {
     // Before the footer read, so a decline costs no IO. This pipeline cannot fill a row-lineage
     // slot, and an unfilled one is not a visible failure: the -1 it leaves is the sentinel
     // HiveBatchIterator reads as "synthesize the id from the manifest", so the query would answer
@@ -97,6 +98,17 @@ public class ParquetColumnVectorProducer implements ColumnVectorProducer {
       edc.init(reader, reader);
       return edc;
     } catch (IOException e) {
+      if (JavaUtils.isInterrupt(e)) {
+        // Not a split this pipeline cannot serve: the fragment is being killed, or the daemon shut
+        // down. Falling back would only restart the same read on the stock reader, on a thread that
+        // should be unwinding. Rethrown as is, with the interrupt flag restored in case whoever
+        // wrapped it consumed it, so HiveInputFormat's limit-reached check, which uses the same
+        // JavaUtils.isInterrupt, turns it into an empty split once the limit is reached.
+        LlapIoImpl.LOG.info("Parquet native cache: interrupted while reading the footer of {}, "
+            + "not falling back to normal reader", split.getPath());
+        Thread.currentThread().interrupt();
+        throw e;
+      }
       // WARN with the throwable, unlike the decline above: the query still answers, but reading the
       // footer failed and nobody downstream will report it, so the stack is the only record of why
       // this split lost its vectored reads and its IO counters. e.toString() dropped it.
