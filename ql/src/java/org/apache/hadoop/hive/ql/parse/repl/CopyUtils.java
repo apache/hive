@@ -212,6 +212,7 @@ public class CopyUtils {
         incrementTotalBytesCopied(copyStatistics.getBytesCopied());
       }
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       LOG.error("Failed to copy ", e);
       throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
     } finally {
