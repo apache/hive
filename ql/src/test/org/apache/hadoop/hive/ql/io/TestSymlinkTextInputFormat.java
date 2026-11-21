@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -52,6 +53,8 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.After;
@@ -111,6 +114,7 @@ public class TestSymlinkTextInputFormat {
    */
   @Test
   public void testCombine() throws Exception {
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, testDir.toString());
     JobConf newJob = new JobConf(job);
 
     Path dir1_file1 = new Path(dataDir1, "combinefile1_1");
@@ -132,6 +136,7 @@ public class TestSymlinkTextInputFormat {
 
 
     HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
+    hiveConf.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, testDir.toString());
     // TODO: HIVE-28032: TestSymlinkTextInputFormat.testCombine to run on Tez
     hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     hiveConf
@@ -201,6 +206,7 @@ public class TestSymlinkTextInputFormat {
    */
   @Test
   public void testAccuracy1() throws IOException {
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, testDir.toString());
     // First data dir, contains 2 files.
 
     FileSystem fs = dataDir1.getFileSystem(job);
@@ -363,5 +369,196 @@ public class TestSymlinkTextInputFormat {
       writer.write("\n");
     }
     writer.close();
+  }
+
+  @Test
+  public void testTargetOutsideOfAllowedPaths() throws IOException {
+    writeTextFile(new Path(dataDir1, "file1"), "dir1_file1_line1\n");
+    writeSymlinkFile(new Path(symlinkDir, "symlink_file"), new Path(dataDir1, "file1"));
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertRejected(
+        assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause()
+    );
+    assertRejected(
+        assertThrows(IOException.class, () -> inputFormat.getContentSummary(symlinkDir, job)).getCause()
+    );
+  }
+
+  @Test
+  public void testTargetEscapingAllowedPath() throws IOException {
+    writeTextFile(new Path(dataDir2, "file2"), "dir2_file2_line1\n");
+    // Allowed root is dataDir1, but ".." leads to dataDir2.
+    writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1 + "/../datadir2/file2\n");
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertRejected(assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause());
+  }
+
+  /** A target with an unknown scheme is rejected as outside the allowed locations, not as a missing filesystem. */
+  @Test
+  public void testUnknownSchemeTargetRejectedByAllowlist() throws IOException {
+    writeTextFile(new Path(symlinkDir, "symlink_file"), "unknownfs://custom:1234/abc\n");
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    // A filesystem lookup for "unknownfs" would fail with "No FileSystem for scheme".
+    // Getting "is outside of the allowed locations" instead means the check ran first.
+    assertRejected(assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause());
+  }
+
+  /** A target on an allowed non-default filesystem is listed with its own filesystem. */
+  @Test
+  public void testTargetOnOtherAllowedFileSystem() throws IOException {
+    job.set("fs.pfile.impl", "org.apache.hadoop.fs.ProxyLocalFileSystem");
+    writeTextFile(new Path(dataDir1, "file1"), "dir1_file1_line1\n");
+    Path pfileDir1 = new Path("pfile", null, dataDir1.toUri().getPath());
+    writeSymlinkFile(new Path(symlinkDir, "symlink_file"), new Path(pfileDir1, "file1"));
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, pfileDir1.toString());
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertEquals(1, inputFormat.getContentSummary(symlinkDir, job).getFileCount());
+  }
+
+  /** Relative or unknown-scheme entries in the allowed paths don't affect the valid ones. */
+  @Test
+  public void testInvalidAllowedPathIgnored() throws IOException {
+    writeTextFile(new Path(dataDir1, "file1"), "dir1_file1_line1\n");
+    writeSymlinkFile(new Path(symlinkDir, "symlink_file"), new Path(dataDir1, "file1"));
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname,
+        "unknownfs://custom:1234/abc,relative/dir," + dataDir1);
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertEquals(1, inputFormat.getContentSummary(symlinkDir, job).getFileCount());
+  }
+
+  @Test
+  public void testReworkRejectsTargetOutsideOfAllowedPaths() throws IOException {
+    writeTextFile(new Path(dataDir2, "file2"), "dir2_file2_line1\n");
+    Path symlinkFile = new Path(dataDir1, "symlink_file");
+    writeTextFile(symlinkFile, new Path(dataDir2, "file2") + "\n");
+
+    MapredWork work = symlinkWork(symlinkFile);
+    HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
+
+    assertRejected(assertThrows(IOException.class, () -> new SymbolicInputFormat().rework(hiveConf, work)));
+  }
+
+  @Test
+  public void testTargetGlobEscapingAllowedPath() throws IOException {
+    writeTextFile(new Path(dataDir2, "file2"), "dir2_file2_line1\n");
+    // The line starts with dataDir1, but the glob {../datadir2/file2} matches a file in dataDir2.
+    writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1 + "/{../datadir2/file2}\n");
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertRejected(assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause());
+  }
+
+  /** A directory literally named "{.." passes the root check, but globbing it again would match outside the root. */
+  @Test
+  public void testTargetGlobEscapingAllowedPathOnSecondExpansion() throws IOException {
+    writeTextFile(new Path(dataDir2, "file2"), "dir2_file2_line1\n");
+    // A file literally at dataDir1/{../datadir2/file2}, matched by the line below with backslash-escaped braces.
+    writeTextFile(new Path(new Path(new Path(dataDir1, "{.."), "datadir2"), "file2}"), "dir1_braces_line1\n");
+    writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1 + "/\\{../datadir2/file2\\}\n");
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    // The match is dataDir1/{../datadir2/file2}, which would be globbed again when read.
+    Throwable error = assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause();
+    assertTrue("Unexpected error: " + error, error.getMessage().contains("matches a path with glob metacharacters"));
+  }
+
+  /** A glob in the directory name is rejected even if it would expand to the allowed root. */
+  @Test
+  public void testTargetGlobInAllowedRootNameRejected() throws IOException {
+    writeTextFile(new Path(dataDir1, "file1"), "dir1_file1_line1\n");
+    // The line matches dataDir1/file1 only after expansion, but its text is not under dataDir1.
+    writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1.getParent() + "/datadir*/file1\n");
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertRejected(assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2)).getCause());
+  }
+
+  @Test
+  public void testTargetGlobWithinAllowedPath() throws IOException {
+    writeTextFile(new Path(dataDir1, "file1"), "dir1_file1_line1\n");
+    writeTextFile(new Path(dataDir1, "file2"), "dir1_file2_line1\n");
+    writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1 + "/file*\n");
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertEquals(2, inputFormat.getSplits(job, 2).length);
+    assertEquals(2, inputFormat.getContentSummary(symlinkDir, job).getFileCount());
+  }
+
+  @Test
+  public void testTargetMatchingNothing() throws IOException {
+    writeTextFile(new Path(symlinkDir, "symlink_file"), dataDir1 + "/file*\n");
+    job.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+
+    SymlinkTextInputFormat inputFormat = new SymlinkTextInputFormat();
+    FileInputFormat.setInputPaths(job, symlinkDir);
+
+    assertThrows(IOException.class, () -> inputFormat.getSplits(job, 2));
+    assertThrows(IOException.class, () -> inputFormat.getContentSummary(symlinkDir, job));
+  }
+
+  @Test
+  public void testReworkRejectsGlobEscapingAllowedPath() throws IOException {
+    writeTextFile(new Path(dataDir2, "file2"), "dir2_file2_line1\n");
+    Path symlinkFile = new Path(dataDir1, "symlink_file");
+    writeTextFile(symlinkFile, dataDir1 + "/{../datadir2/file2}\n");
+
+    MapredWork work = symlinkWork(symlinkFile);
+    HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
+    hiveConf.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+
+    assertRejected(assertThrows(IOException.class, () -> new SymbolicInputFormat().rework(hiveConf, work)));
+  }
+
+  @Test
+  public void testReworkSkipsTargetMatchingNothing() throws IOException {
+    Path symlinkFile = new Path(dataDir1, "symlink_file");
+    writeTextFile(symlinkFile, dataDir1 + "/nofile*\n");
+
+    MapredWork work = symlinkWork(symlinkFile);
+    HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
+    hiveConf.set(ConfVars.HIVE_SYMLINK_ALLOWED_TARGET_PATHS.varname, dataDir1.toString());
+    new SymbolicInputFormat().rework(hiveConf, work);
+
+    assertTrue(work.getMapWork().getPathToPartitionInfo().isEmpty());
+  }
+
+  private void assertRejected(Throwable error) {
+    assertTrue("Unexpected error: " + error, error.getMessage().contains("is outside of the allowed locations"));
+  }
+
+  private MapredWork symlinkWork(Path symlinkFile) {
+    PartitionDesc partDesc = new PartitionDesc(Utilities.defaultTd, null);
+    partDesc.setInputFileFormatClass(SymlinkTextInputFormat.class);
+    MapredWork work = new MapredWork();
+    work.getMapWork().addPathToPartitionInfo(symlinkFile, partDesc);
+    return work;
   }
 }
