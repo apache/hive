@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -456,6 +457,16 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       if ((part != null) && (part.getTableDesc() != null)) {
         Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), job);
         nonNative = part.getTableDesc().isNonNative();
+        // When the table uses a multi-byte line.delim, propagate it to
+        // Hadoop's TextInputFormat so that LineRecordReader splits records
+        // on the full delimiter sequence instead of the default '\n'.
+        // TableDesc.getProperties() returns the raw (unescaped) value.
+        String lineDelim = part.getTableDesc().getProperties()
+            .getProperty(serdeConstants.LINE_DELIM);
+        if (lineDelim != null && !lineDelim.isEmpty()
+            && !"\n".equals(lineDelim)) {
+          job.set("textinputformat.record.delimiter", lineDelim);
+        }
       }
     } catch (HiveException e) {
       throw new IOException(e);
