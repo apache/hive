@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.ddl.JdbcStorageHandlerDdlUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -55,6 +57,12 @@ public abstract class AbstractAlterTablePropertiesAnalyzer extends AbstractAlter
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
     Map<String, String> properties = getProps((ASTNode) (command.getChild(0)).getChild(0));
+
+    if (partitionSpec == null) {
+      Table table = getTable(tableName, true);
+      JdbcStorageHandlerDdlUtils.validateMetastoreDatabaseTypeProperty(conf,
+          table.getProperty(hive_metastoreConstants.META_TABLE_STORAGE), tableName.getDb(), properties);
+    }
 
     boolean updateStats = validate(tableName, properties);
 

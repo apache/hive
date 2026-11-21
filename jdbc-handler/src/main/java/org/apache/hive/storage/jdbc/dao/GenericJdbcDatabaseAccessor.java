@@ -48,10 +48,12 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,6 +65,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
   protected static final String DBCP_CONFIG_PREFIX = Constants.JDBC_CONFIG_PREFIX + ".dbcp";
+  private static final Set<String> DBCP_USER_DENIED_KEYS = Collections.unmodifiableSet(new HashSet<>(
+      Collections.singletonList("connectionInitSqls")));
   protected static final int DEFAULT_FETCH_SIZE = 1000;
   protected static final Logger LOGGER = LoggerFactory.getLogger(GenericJdbcDatabaseAccessor.class);
   private DataSource dbcpDataSource = null;
@@ -434,7 +438,12 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     Map<String, String> userProperties = conf.getValByRegex(DBCP_CONFIG_PREFIX + "\\.*");
     if ((userProperties != null) && (!userProperties.isEmpty())) {
       for (Entry<String, String> entry : userProperties.entrySet()) {
-        dbProperties.put(removeDbcpPrefix(entry.getKey()), entry.getValue());
+        String dbcpKey = removeDbcpPrefix(entry.getKey());
+        if (DBCP_USER_DENIED_KEYS.contains(dbcpKey)) {
+          LOGGER.warn("Ignoring disallowed DBCP property from table configuration: {}", dbcpKey);
+          continue;
+        }
+        dbProperties.put(dbcpKey, entry.getValue());
       }
     }
 
