@@ -40,6 +40,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+/**
+ * Generic UDAF for the FIRST_VALUE window function.
+ */
 @Description(
         name = "first_value",
         value = "_FUNC_(x)")
