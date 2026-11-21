@@ -348,8 +348,10 @@ POSTHOOK: Input: database:test_db
 test_view_n100      	VIRTUAL_VIEW        
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE foo_n4
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@foo_n4
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE foo_n4
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@foo_n4
 tableName:foo_n4
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -365,8 +367,10 @@ minFileSize:0
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "foo\_n4"
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@foo_n4
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "foo\_n4"
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@foo_n4
 tableName:foo_n4
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -382,8 +386,10 @@ minFileSize:0
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE foo_n_
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@foo_n4
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE foo_n_
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@foo_n4
 tableName:foo_n4
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -399,8 +405,10 @@ minFileSize:0
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "foo_n4"
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@foo_n4
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "foo_n4"
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@foo_n4
 tableName:foo_n4
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -416,8 +424,10 @@ minFileSize:0
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'foo_n4'
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@foo_n4
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'foo_n4'
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@foo_n4
 tableName:foo_n4
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -433,8 +443,10 @@ minFileSize:0
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `foo_n4`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@foo_n4
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `foo_n4`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@foo_n4
 tableName:foo_n4
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -450,8 +462,12 @@ minFileSize:0
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'ba%'
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@bar_n0
+PREHOOK: Input: test_db@baz
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'ba%'
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@bar_n0
+POSTHOOK: Input: test_db@baz
 tableName:bar_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -480,8 +496,12 @@ minFileSize:0
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "ba%"
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@bar_n0
+PREHOOK: Input: test_db@baz
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "ba%"
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@bar_n0
+POSTHOOK: Input: test_db@baz
 tableName:bar_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -510,8 +530,12 @@ minFileSize:0
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `ba%`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@bar_n0
+PREHOOK: Input: test_db@baz
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `ba%`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@bar_n0
+POSTHOOK: Input: test_db@baz
 tableName:bar_n0
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -540,8 +564,10 @@ minFileSize:0
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `ba_`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: test_db@baz
 POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `ba_`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: test_db@baz
 tableName:baz
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

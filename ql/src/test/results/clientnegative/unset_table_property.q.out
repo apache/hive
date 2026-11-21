@@ -16,8 +16,10 @@ POSTHOOK: Input: default@testtable
 POSTHOOK: Output: default@testtable
 PREHOOK: query: SHOW TBLPROPERTIES testTable
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@testtable
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@testtable
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
 a	1
 bucketing_version	2

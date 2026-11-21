@@ -15,8 +15,10 @@ POSTHOOK: Input: database:default
 {"tables":["jsontable"]}
 PREHOOK: query: SHOW TABLE EXTENDED LIKE 'jsontab%'
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@jsontable
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE 'jsontab%'
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@jsontable
 #### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE jsontable SET TBLPROPERTIES ('id' = 'jsontable')
 PREHOOK: type: ALTERTABLE_PROPERTIES

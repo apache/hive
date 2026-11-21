@@ -98,8 +98,10 @@ Table name          	Snapshot
 default.cmv_basetable_n8	N/A                 	 
 PREHOOK: query: show tblproperties cmv_mat_view_n8
 PREHOOK: type: SHOW_TBLPROPERTIES
+PREHOOK: Input: default@cmv_mat_view_n8
 POSTHOOK: query: show tblproperties cmv_mat_view_n8
 POSTHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: Input: default@cmv_mat_view_n8
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","c":"true"}}
 bucketing_version	2
 comment	this is the first view
