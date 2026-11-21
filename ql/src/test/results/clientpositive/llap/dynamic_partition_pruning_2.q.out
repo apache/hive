@@ -183,30 +183,37 @@ STAGE PLANS:
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col1 (type: int)
-                        1 _col0 (type: int)
-                      outputColumnNames: _col0, _col3
-                      input vertices:
-                        1 Map 4
-                      Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count(), sum(_col0)
-                        keys: _col3 (type: string)
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+                    Group By Operator
+                      aggregations: count(), sum(_col0)
+                      keys: _col1 (type: int)
+                      minReductionHashAggr: 0.8
+                      mode: partialhash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 9 Data size: 1116 Basic stats: COMPLETE Column stats: PARTIAL
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0, _col1, _col3
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 9 Data size: 1227 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(_col0), sum(_col1)
+                          keys: _col3 (type: string)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 9 Data size: 1227 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            null sort order: z
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 9 Data size: 1227 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Execution mode: llap
             LLAP IO: all inputs
         Map 4 
@@ -255,12 +262,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
                   sort order: +
-                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
         Reducer 3 
             Execution mode: llap
@@ -268,10 +275,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -369,30 +376,37 @@ STAGE PLANS:
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col1 (type: int)
-                        1 _col0 (type: int)
-                      outputColumnNames: _col0, _col3
-                      input vertices:
-                        1 Map 4
-                      Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count(), sum(_col0)
-                        keys: _col3 (type: string)
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+                    Group By Operator
+                      aggregations: count(), sum(_col0)
+                      keys: _col1 (type: int)
+                      minReductionHashAggr: 0.8
+                      mode: partialhash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 9 Data size: 1116 Basic stats: COMPLETE Column stats: PARTIAL
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0, _col1, _col3
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 9 Data size: 1227 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(_col0), sum(_col1)
+                          keys: _col3 (type: string)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 9 Data size: 1227 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            null sort order: z
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 9 Data size: 1227 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Execution mode: llap
             LLAP IO: all inputs
         Map 4 
@@ -425,12 +439,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
                   sort order: +
-                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
         Reducer 3 
             Execution mode: llap
@@ -438,10 +452,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -782,30 +796,37 @@ STAGE PLANS:
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col1 (type: int)
-                        1 _col0 (type: int)
-                      outputColumnNames: _col0, _col3
-                      input vertices:
-                        1 Map 4
-                      Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count(), sum(_col0)
-                        keys: _col3 (type: string)
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
+                    Group By Operator
+                      aggregations: count(), sum(_col0)
+                      keys: _col1 (type: int)
+                      minReductionHashAggr: 0.8
+                      mode: partialhash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 9 Data size: 1116 Basic stats: COMPLETE Column stats: PARTIAL
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0, _col1, _col3
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 9 Data size: 1227 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count(_col0), sum(_col1)
+                          keys: _col3 (type: string)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 9 Data size: 1227 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string)
+                            null sort order: z
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 9 Data size: 1227 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Execution mode: llap
             LLAP IO: all inputs
         Map 4 
@@ -854,12 +875,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
                   sort order: +
-                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
         Reducer 3 
             Execution mode: llap
@@ -867,10 +888,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 545 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -5382,6 +5382,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case COMPLETE:
       return GenericUDAFEvaluator.Mode.COMPLETE;
     case HASH:
+    case PARTIAL_HASH:
     case PARTIAL1:
       return GenericUDAFEvaluator.Mode.PARTIAL1;
     case PARTIAL2:

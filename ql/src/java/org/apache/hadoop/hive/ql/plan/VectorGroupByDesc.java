@@ -126,7 +126,8 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
    *
    *         Mode.COMPLETE      --&gt; (numKeys == 0 ? ProcessingMode.GLOBAL : ProcessingMode.STREAMING)
    *
-   *         Mode.HASH          --&gt; ProcessingMode.HASH
+   *         Mode.HASH,
+   *         Mode.PARTIAL_HASH  --&gt; ProcessingMode.HASH
    *
    *         Mode.MERGEPARTIAL  --&gt; (numKeys == 0 ? ProcessingMode.GLOBAL : ProcessingMode.MERGE_PARTIAL)
    *
@@ -142,6 +143,7 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
     case COMPLETE:
       return (hasKeys ? ProcessingMode.STREAMING : ProcessingMode.GLOBAL);
     case HASH:
+    case PARTIAL_HASH:
       return ProcessingMode.HASH;
     case MERGEPARTIAL:
       return (hasKeys ? ProcessingMode.MERGE_PARTIAL : ProcessingMode.GLOBAL);
