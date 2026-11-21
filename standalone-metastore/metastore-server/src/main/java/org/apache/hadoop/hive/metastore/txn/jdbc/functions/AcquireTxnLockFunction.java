@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.metastore.txn.jdbc.functions;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class AcquireTxnLockFunction implements TransactionalFunction<Void> {
       stmt.execute(sqlStmt);
       return null;
     });
-    LOG.debug("TXN lock locked by '{}' in mode {}", JavaUtils.hostname(), shared);
+    LOG.debug("TXN lock locked by '{}' in mode {}", MetaStoreUtils.getHostname(), shared);
     return null;
   }
 }

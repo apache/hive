@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.retry.SqlRetryHandler;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,7 +107,7 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
         derbySemaphore.acquire();
       }
       if (LOG.isDebugEnabled()) {
-        LOG.debug("{} locked by {}", key, JavaUtils.hostname());
+        LOG.debug("{} locked by {}", key, MetaStoreUtils.getHostname());
       }
       //OK, so now we have a lock
       return new LockHandleImpl(jdbcResource, context, key, lastUpdateTime, derbySemaphore);
@@ -136,7 +136,7 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
   public static final class LockHandleImpl implements LockHandle {
   
     private static final Logger LOG = LoggerFactory.getLogger(LockHandleImpl.class);
-    private static final String HOSTNAME = JavaUtils.hostname();
+    private static final String HOSTNAME = MetaStoreUtils.getHostname();
   
     private final MultiDataSourceJdbcResource jdbcResource;
     private final TransactionContext context;
