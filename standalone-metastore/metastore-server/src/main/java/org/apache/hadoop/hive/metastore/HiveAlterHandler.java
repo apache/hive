@@ -104,7 +104,7 @@ public class HiveAlterHandler implements AlterHandler {
 
   @Override
   public void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
-      String name, Table newt, EnvironmentContext environmentContext,
+      String name, Table newTable, EnvironmentContext environmentContext,
       IHMSHandler handler, String writeIdList)
           throws InvalidOperationException, MetaException {
     String catalogName = normalizeIdentifier(catName);
@@ -122,9 +122,14 @@ public class HiveAlterHandler implements AlterHandler {
       replDataLocationChanged = false;
     }
 
-    if (newt == null) {
+    if (newTable == null) {
       throw new InvalidOperationException("New table is null");
     }
+    // Work on a private copy: the rename flow below rewrites the location of the new table, and
+    // RetryingHMSHandler re-invokes a failed call with the same argument objects. A retry that
+    // sees the rewritten location would skip the rename flow and commit the new name/location
+    // without moving the data or updating the partition locations.
+    final Table newt = newTable.deepCopy();
 
     String newTblName = newt.getTableName().toLowerCase();
     String newDbName = newt.getDbName().toLowerCase();
