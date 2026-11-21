@@ -3013,11 +3013,18 @@ public class Vectorizer implements PhysicalPlanResolver {
         throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
       }
 
-      // Row mode also accepts a non-constant ntile argument (read from the first row of the partition).
-      if (supportedFunctionType == SupportedFunctionType.NTILE &&
-          !isPositiveIntConstant(singleExprNodeDesc)) {
-        setOperatorIssue(functionName + " only supports a positive integer constant number of buckets");
-        return false;
+      // A non-constant ntile argument is read from the first row of each partition, as in row mode.
+      if (supportedFunctionType == SupportedFunctionType.NTILE) {
+        if (singleExprNodeDesc instanceof ExprNodeConstantDesc) {
+          if (!isPositiveIntConstant(singleExprNodeDesc)) {
+            setOperatorIssue(functionName + " only supports a positive integer as a constant number of buckets");
+            return false;
+          }
+        } else if (containsLeadLag(singleExprNodeDesc)) {
+          setOperatorIssue("lead and lag function not supported in argument expression of aggregation function "
+              + functionName);
+          return false;
+        }
       }
 
       if (!VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType)) {
