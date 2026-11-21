@@ -47,9 +47,13 @@ cluster:
   image: "apache/hive:4.3.0-SNAPSHOT"
   imagePullPolicy: IfNotPresent
 
-  # ServiceAccount name for all component pods (HS2, Metastore, LLAP, TezAM, schema-init).
-  # If empty, pods use the namespace default service account.
+  # ServiceAccount name for all component pods (HS2, Metastore, LLAP, TezAm, schema-init).
+  # If empty, pods use the namespace "default" ServiceAccount, which must have label
+  # hive.apache.org/service-account-approved=true (same as any explicit name).
   serviceAccountName: ""
+
+  # Numeric UID for workload pods. Required as the operator enforces runAsNonRoot.
+  runAsUser: 1000
 
   # ---------------------------------------------------------------------------
   # DATABASE (Required) — RDBMS for the Hive Metastore backend
