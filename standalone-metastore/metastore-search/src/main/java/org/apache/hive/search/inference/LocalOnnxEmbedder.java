@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.search.inference;
@@ -100,13 +102,12 @@ public final class LocalOnnxEmbedder implements Embedder {
       this.session = localSession;
       this.tokenizer = localTokenizer;
     } catch (Exception e) {
-      if (localTokenizer != null) {
-        localTokenizer.close();
-      }
       if (localSession != null) {
         try {
           localSession.close();
-        } catch (OrtException ignored) {
+        } catch (OrtException closeError) {
+          // The session cannot be used after initialization fails.
+          e.addSuppressed(closeError);
         }
       }
       throw InitializeException.wrap("Failed to initialize ONNX embedder", e);
@@ -120,7 +121,9 @@ public final class LocalOnnxEmbedder implements Embedder {
 
   @Override
   public float[][] embedBatch(TaskType task, String[] texts) throws InferenceException {
-    if (texts == null || texts.length == 0) return new float[0][];
+    if (texts == null || texts.length == 0) {
+      return new float[0][];
+    }
     ensureOpen();
     for (String text : texts) {
       if (StringUtils.isBlank(text)) {
@@ -129,13 +132,13 @@ public final class LocalOnnxEmbedder implements Embedder {
     }
     try {
       return embedBatchInternal(task, texts);
-    } catch (OrtException | IOException e) {
+    } catch (OrtException e) {
       throw InferenceException.wrap("Failed to encode text batch", e);
     }
   }
 
   private float[][] embedBatchInternal(TaskType task, String[] texts)
-      throws OrtException, IOException, InferenceException {
+      throws OrtException, InferenceException {
     String prefix = modelSpec.prefixFor(task);
     String[] inputs = new String[texts.length];
     for (int i = 0; i < texts.length; i++) {
@@ -170,7 +173,7 @@ public final class LocalOnnxEmbedder implements Embedder {
         }
       }
 
-      long[] tensorShape = new long[]{batchSize, seqLength};
+      long[] tensorShape = {batchSize, seqLength};
       Map<String, OnnxTensor> tensorMap = new HashMap<>();
       try (
           OnnxTensor idsTensor = createBufferTensor("input_ids", inputIds, tensorShape, tensorMap);
@@ -249,7 +252,9 @@ public final class LocalOnnxEmbedder implements Embedder {
 
   private OnnxTensor createBufferTensor(String name, long[] data, long[] shape, Map<String, OnnxTensor> map)
       throws OrtException {
-    if (data == null) return null;
+    if (data == null) {
+      return null;
+    }
     LongBuffer buffer = ByteBuffer.allocateDirect(data.length * Long.BYTES)
         .order(ByteOrder.nativeOrder())
         .asLongBuffer();
@@ -321,7 +326,7 @@ public final class LocalOnnxEmbedder implements Embedder {
           throw new InferenceException("attention mask has no active tokens");
         }
         for (int j = 0; j < vectorLength; j++) {
-          averagedVector[j] /= activeTokens;
+          averagedVector[j] /= (float) activeTokens;
         }
         yield averagedVector;
       }
@@ -330,10 +335,14 @@ public final class LocalOnnxEmbedder implements Embedder {
 
   static void normalizeInPlace(float[] vec) {
     double sum = 0;
-    for (float v : vec) sum += (double) v * v;
+    for (float v : vec) {
+      sum += (double) v * v;
+    }
     float norm = (float) Math.sqrt(sum);
     if (norm > 0 && !Float.isNaN(norm) && !Float.isInfinite(norm)) {
-      for (int i = 0; i < vec.length; i++) vec[i] /= norm;
+      for (int i = 0; i < vec.length; i++) {
+        vec[i] /= norm;
+      }
     }
   }
 
