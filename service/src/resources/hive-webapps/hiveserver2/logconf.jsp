@@ -17,32 +17,7 @@
  * limitations under the License.
  */
 --%>
-<%@ page contentType="text/html;charset=UTF-8"
-         import="org.apache.hadoop.conf.Configuration"
-         import="org.apache.hadoop.hive.conf.HiveConf"
-         import="org.apache.hadoop.hive.conf.HiveConf.ConfVars"
-         import="org.apache.hive.common.util.HiveVersionInfo"
-         import="org.apache.hive.http.HttpServer"
-         import="org.apache.hive.service.cli.operation.Operation"
-         import="org.apache.hive.service.cli.operation.SQLOperation"
-         import="org.apache.hadoop.hive.ql.QueryInfo"
-         import="org.apache.hive.service.cli.session.SessionManager"
-         import="org.apache.hive.service.cli.session.HiveSession"
-         import="javax.servlet.ServletContext"
-         import="java.util.Collection"
-         import="java.util.Date"
-         import="java.util.List"
-         import="jodd.net.HtmlEncoder"
-%>
-
-<%
-    ServletContext ctx = getServletContext();
-    Configuration conf = (Configuration)ctx.getAttribute("hive.conf");
-    long startcode = conf.getLong("startcode", System.currentTimeMillis());
-    SessionManager sessionManager =
-            (SessionManager)ctx.getAttribute("hive.sm");
-    String remoteUser = request.getRemoteUser();
-%>
+<%@ page contentType="text/html;charset=UTF-8" %>
 
 <!--[if IE]>
 <!DOCTYPE html>
@@ -62,7 +37,7 @@
     <link rel="stylesheet" type="text/css" href="/static/css/json.human.css">
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/json.human.js"></script>
-    <script src="/static/js/logconf.js"></script>
+    <script src="/static/js/logconf.js?v=28184-2"></script>
 </head>
 
 <body>
@@ -112,32 +87,30 @@
                     </tbody>
                 </table>
             </div>
-            <% Collection<HiveSession> hiveSessions = sessionManager.getSessions();
-            for (HiveSession hiveSession: hiveSessions) {
-            if( hiveSessions.size() > 0 && HttpServer.hasAccess(remoteUser, hiveSession.getUserName(), ctx, request) ) { %>
             <h2>Set new logging rules</h2>
 
-            <form class="form-inline">
-                <div class="form-group">
-                    <input type="text" id="logger-name" class="form-control" placeholder="Logger name">
-                </div>
-                <div class="form-group">
-                    <select id="log-level" class="form-control">
-                        <option value="TRACE">TRACE</option>
-                        <option value="DEBUG">DEBUG</option>
-                        <option value="INFO">INFO</option>
-                        <option value="WARN">WARN</option>
-                        <option value="ERROR">ERROR</option>
-                        <option value="FATAL">FATAL</option>
-                    </select>
-                </div>
+            <p id="logconf-error" class="text-danger" style="display: none;"></p>
 
-                <button id="log-level-submit" type="button" class="btn btn-primary">Submit</button>
+            <form>
+                <div style="display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
+                    <div class="form-group" style="margin: 0;">
+                        <label for="logger-name" style="display: block; margin-bottom: 4px;">Logger</label>
+                        <select id="logger-name" class="form-control" style="min-width: 320px;"></select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label for="log-level" style="display: block; margin-bottom: 4px;">Level</label>
+                        <select id="log-level" class="form-control" style="min-width: 120px;">
+                            <option value="TRACE">TRACE</option>
+                            <option value="DEBUG">DEBUG</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARN">WARN</option>
+                            <option value="ERROR">ERROR</option>
+                            <option value="FATAL">FATAL</option>
+                        </select>
+                    </div>
+                    <button id="log-level-submit" type="button" class="btn btn-primary">Submit</button>
+                </div>
             </form>
-            <% } else {%>
-                <p>Cannot configure logging rules unless user <%= hiveSession.getUserName() %> has admin privileges</p>
-            <% }
-             } %>
         </div>
     </div>
 
