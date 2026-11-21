@@ -5164,4 +5164,37 @@ public final class Utilities {
   public static int getTableCreateTime(Configuration conf, String tableName) {
     return conf.getInt(String.format("%s.%s", tableName, CREATE_TIME), 0);
   }
+
+  /**
+   * Returns the physical (unquoted) form of a JDBC identifier supplied through table properties such as
+   * {@code hive.sql.table} or {@code hive.sql.schema}, for use in contexts that need the identifier exactly as
+   * stored in the remote catalog (JDBC metadata lookups, Calcite resolution, authorization URIs).
+   *
+   * <p>Recognises ANSI/Oracle/Postgres double quotes ({@code "id"}), MySQL/MariaDB back-ticks ({@code `id`}) and
+   * SQL Server brackets ({@code [id]}). Unquoted identifiers are returned unchanged.
+   *
+   * <p>Only the outer quote pair is removed. A name that itself contains these characters has to be quoted in the
+   * table property, e.g. {@code "[id]"} gives {@code [id]}, so it is never confused with the bare name {@code id}.
+   */
+  public static String unquoteJdbcIdentifier(String identifier) {
+    if (identifier == null || identifier.length() < 2) {
+      return identifier;
+    }
+    char start = identifier.charAt(0);
+    char end = identifier.charAt(identifier.length() - 1);
+    final char closing;
+    if (start == '"' || start == '`') {
+      closing = start;
+    } else if (start == '[') {
+      closing = ']';
+    } else {
+      return identifier;
+    }
+    if (end != closing) {
+      return identifier;
+    }
+    String inner = identifier.substring(1, identifier.length() - 1);
+    // A use of the closing char inside the table name is escaped by doubling it.
+    return inner.replace(String.valueOf(closing) + closing, String.valueOf(closing));
+  }
 }
