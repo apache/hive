@@ -21,6 +21,7 @@ package org.apache.hive.service.cli.operation;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -41,7 +42,6 @@ import org.apache.hive.service.cli.session.HiveSession;
  */
 public abstract class MetadataOperation extends Operation {
 
-  protected static final String DEFAULT_HIVE_CATALOG = "";
   protected static TableSchema RESULT_SET_SCHEMA;
   private static final char SEARCH_STRING_ESCAPE = '\\';
 
@@ -168,5 +168,10 @@ public abstract class MetadataOperation extends Operation {
       firstColumn = false;
     }
     return debugMessage.toString();
+  }
+
+  protected String catalogOrDefault(String catalogName) {
+    return StringUtils.isNotBlank(catalogName) ? catalogName
+        : parentSession.getSessionState().getCurrentCatalog();
   }
 }

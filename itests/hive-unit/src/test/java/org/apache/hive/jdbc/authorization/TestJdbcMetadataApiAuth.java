@@ -147,7 +147,7 @@ public class TestJdbcMetadataApiAuth {
     ResultSet res;
 
     res = dbmetadata.getCatalogs();
-    assertFalse(res.next());
+    assertTrue(res.next());
 
     res = dbmetadata.getSchemas();
     assertTrue(res.next());

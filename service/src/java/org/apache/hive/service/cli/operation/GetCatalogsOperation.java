@@ -21,6 +21,7 @@ package org.apache.hive.service.cli.operation;
 
 import java.util.Collections;
 
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -59,11 +60,22 @@ public class GetCatalogsOperation extends MetadataOperation {
       if (isAuthV2Enabled()) {
         authorizeMetaGets(HiveOperationType.GET_CATALOGS, null);
       }
+      IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
+      for (String catalog : metastoreClient.getCatalogs()) {
+        rowSet.addRow(new Object[] {catalog});
+        if (LOG.isDebugEnabled()) {
+          String debugMessage = getDebugMessage("catalog", RESULT_SET_SCHEMA);
+          LOG.debug(debugMessage, catalog);
+        }
+      }
+      if (LOG.isDebugEnabled() && rowSet.numRows() == 0) {
+        LOG.debug("No catalog has been returned.");
+      }
       setState(OperationState.FINISHED);
       LOG.info("Fetching catalog metadata has been successfully finished");
-    } catch (HiveSQLException e) {
+    } catch (Exception e) {
       setState(OperationState.ERROR);
-      throw e;
+      throw new HiveSQLException(e);
     }
   }
 

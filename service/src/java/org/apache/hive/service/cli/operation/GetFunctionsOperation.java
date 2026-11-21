@@ -69,13 +69,17 @@ public class GetFunctionsOperation extends MetadataOperation {
   private final String catalogName;
   private final String schemaName;
   private final String functionName;
+  /** Built-in functions are returned only when the caller leaves both catalog and schema unset. */
+  private final boolean builtinFunctions;
 
   private final RowSet rowSet;
 
   public GetFunctionsOperation(HiveSession parentSession, String catalogName, String schemaName,
       String functionName) {
     super(parentSession, OperationType.GET_FUNCTIONS);
-    this.catalogName = catalogName;
+    this.builtinFunctions = (catalogName == null || catalogName.isEmpty())
+        && (schemaName == null || schemaName.isEmpty());
+    this.catalogName = catalogOrDefault(catalogName);
     this.schemaName = schemaName;
     this.functionName = functionName;
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
@@ -94,7 +98,7 @@ public class GetFunctionsOperation extends MetadataOperation {
       String schemaPattern = convertSchemaPattern(schemaName);
       List<String> matchingDbs;
       try {
-        matchingDbs = metastoreClient.getDatabases(schemaPattern);
+        matchingDbs = metastoreClient.getDatabases(catalogName, schemaPattern);
       } catch (TException e) {
         setState(OperationState.ERROR);
         throw new HiveSQLException(e);
@@ -107,8 +111,7 @@ public class GetFunctionsOperation extends MetadataOperation {
     }
 
     try {
-      if ((null == catalogName || "".equals(catalogName))
-          && (null == schemaName || "".equals(schemaName))) {
+      if (builtinFunctions) {
         Set<String> functionNames =  FunctionRegistry
             .getFunctionNames(CLIServiceUtils.patternToRegex(functionName));
         for (String functionName : functionNames) {

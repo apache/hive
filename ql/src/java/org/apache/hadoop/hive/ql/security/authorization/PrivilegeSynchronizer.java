@@ -162,23 +162,36 @@ public class PrivilegeSynchronizer implements Runnable {
     switch (type) {
     case DATACONNECTOR:
       objectAcls = policyProvider
-              .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATACONNECTOR, null, null, objName));
+              .getResourceACLs(HivePrivilegeObject.builder(HivePrivilegeObjectType.DATACONNECTOR)
+                  .objectName(objName)
+                  .build());
       break;
 
     case DATABASE:
       objectAcls = policyProvider
-          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, catName, dbName, (String) null));
+          .getResourceACLs(HivePrivilegeObject.builder(HivePrivilegeObjectType.DATABASE)
+              .catName(catName)
+              .dbName(dbName)
+              .build());
       break;
 
     case TABLE:
       objectAcls = policyProvider
-          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, catName, dbName, objName));
+          .getResourceACLs(HivePrivilegeObject.builder(HivePrivilegeObjectType.TABLE_OR_VIEW)
+              .catName(catName)
+              .dbName(dbName)
+              .objectName(objName)
+              .build());
       break;
 
     case COLUMN:
       objectAcls = policyProvider
-          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.COLUMN, catName, dbName, objName, null,
-              columnName == null ? null : Arrays.asList(columnName)));
+          .getResourceACLs(HivePrivilegeObject.builder(HivePrivilegeObjectType.COLUMN)
+              .catName(catName)
+              .dbName(dbName)
+              .objectName(objName)
+              .columns(columnName == null ? null : Arrays.asList(columnName))
+              .build());
       break;
 
     default:

@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -47,6 +48,10 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class HiveV1Authorizer extends AbstractHiveAuthorizer {
 
   private final HiveConf conf;
+  private final Set<HivePrivilegeObject.HivePrivilegeObjectType> tablePrivilegeTypes =
+      Set.of(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW,
+          HivePrivilegeObject.HivePrivilegeObjectType.COLUMN,
+          HivePrivilegeObject.HivePrivilegeObjectType.PARTITION);
   static private final String AUTHORIZER = "v1";
 
   public HiveV1Authorizer(HiveConf conf) {
@@ -150,8 +155,9 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
     if (dbObj == null) {
       throw new HiveException("Database " + privObject.getDbname() + " does not exists");
     }
+
     Table tableObj = null;
-    if (privObject.getObjectName() != null) {
+    if (tablePrivilegeTypes.contains(privObject.getType()) && privObject.getObjectName() != null) {
       tableObj = hive.getTable(dbObj.getName(), privObject.getObjectName());
     }
 
@@ -325,7 +331,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
           throw new HiveException("Database " + privObj.getDbname() + " does not exists");
         }
         Table tableObj = null;
-        if (privObj.getObjectName() != null) {
+        if (tablePrivilegeTypes.contains(privObj.getType()) && privObj.getObjectName() != null) {
           tableObj = hive.getTable(dbObj.getName(), privObj.getObjectName());
         }
         List<String> partValues = privObj.getPartKeys();

@@ -50,8 +50,16 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   @Override
   public List<String> filterTableNames(String catName, String dbName, List<String> tableList)
       throws MetaException {
-    List<HivePrivilegeObject> listObjs = getHivePrivObjects(catName, dbName, tableList);
+    List<HivePrivilegeObject> listObjs = getHivePrivObjects(catNameOrDefault(catName), dbName, tableList);
     return getFilteredObjectNames(getFilteredObjects(listObjs));
+  }
+
+  private String getDefaultCatName() {
+    return MetaStoreUtils.getDefaultCatalog(conf);
+  }
+
+  private String catNameOrDefault(String catName) {
+    return catName != null ? catName : getDefaultCatName();
   }
 
   /**
@@ -62,9 +70,8 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
    * privilege objects back to the original {@link Table} objects in O(n log n), replacing an
    * earlier O(nÂ²) nested-loop implementation that was prohibitively slow for large table lists.
    *
-   * <p>A table's catName is normalized to the default catalog before the lookup when it is
-   * {@code null}, consistent with how {@code tablesToPrivilegeObjs} builds the privilege objects
-   * that are sent to the authorizer.
+   * <p>A {@code null} catName, on a table or on a privilege object returned by the authorizer,
+   * is treated as the default catalog.
    *
    * @param tableList the full list of tables returned by the MetaStore before authorization
    * @return the sub-list of tables the current user is permitted to list
@@ -73,12 +80,10 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   @Override
   public List<Table> filterTables(List<Table> tableList) throws MetaException {
     List<HivePrivilegeObject> listObjs = tablesToPrivilegeObjs(tableList);
-    TablePrivilegeLookup index = new TablePrivilegeLookup(getFilteredObjects(listObjs));
+    TablePrivilegeLookup index = new TablePrivilegeLookup(getFilteredObjects(listObjs), getDefaultCatName());
     List<Table> ret = new ArrayList<>();
-    String defaultCatName = MetaStoreUtils.getDefaultCatalog(HivePrivilegeObject.getConf());
     for (Table table : tableList) {
-      String catName = table.getCatName() != null ? table.getCatName() : defaultCatName;
-      if (index.lookup(catName, table.getDbName(), table.getTableName()) != null) {
+      if (index.lookup(table.getCatName(), table.getDbName(), table.getTableName()) != null) {
         ret.add(table);
       }
     }
@@ -87,7 +92,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
 
   @Override
   public List<String> filterDatabases(String catName, List<String> dbList) throws MetaException {
-    List<HivePrivilegeObject> listObjs = HivePrivilegeObjectUtils.getHivePrivDbObjects(catName, dbList);
+    List<HivePrivilegeObject> listObjs = HivePrivilegeObjectUtils.getHivePrivDbObjects(catNameOrDefault(catName), dbList);
     return getDbNames(getFilteredObjects(listObjs));
   }
 
@@ -130,21 +135,32 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   private List<HivePrivilegeObject> getHivePrivObjects(String catName, String dbName, List<String> tableList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for(String tname : tableList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, catName, dbName, tname));
+      objs.add(HivePrivilegeObject.builder(HivePrivilegeObjectType.TABLE_OR_VIEW)
+          .catName(catName)
+          .dbName(dbName)
+          .objectName(tname)
+          .build());
     }
     return objs;
   }
 
   private HivePrivilegeObject createPrivilegeObjectForTable(String catName, String dbName, String tableName,
       String owner, PrincipalType ownerType) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, catName, dbName, tableName, null, null,
-        HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null, owner, ownerType);
+    return HivePrivilegeObject.builder(HivePrivilegeObjectType.TABLE_OR_VIEW)
+        .catName(catName)
+        .dbName(dbName)
+        .objectName(tableName)
+        .ownerName(owner)
+        .ownerType(ownerType)
+        .build();
   }
 
   private List<HivePrivilegeObject> tablesToPrivilegeObjs(List<Table> tableList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
+    String defaultCatName = getDefaultCatName();
     for (Table tableObject : tableList) {
-      objs.add(createPrivilegeObjectForTable(tableObject.getCatName(), tableObject.getDbName(), tableObject.getTableName(),
+      String catName = tableObject.getCatName() != null ? tableObject.getCatName() : defaultCatName;
+      objs.add(createPrivilegeObjectForTable(catName, tableObject.getDbName(), tableObject.getTableName(),
           tableObject.getOwner(), tableObject.getOwnerType()));
     }
     return objs;
@@ -152,8 +168,10 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
 
   private List<HivePrivilegeObject> tableMetasToPrivilegeObjs(List<TableMeta> tableMetas) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
+    String defaultCatName = getDefaultCatName();
     for (TableMeta tableMeta : tableMetas) {
-      objs.add(createPrivilegeObjectForTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName(),
+      String catName = tableMeta.getCatName() != null ? tableMeta.getCatName() : defaultCatName;
+      objs.add(createPrivilegeObjectForTable(catName, tableMeta.getDbName(), tableMeta.getTableName(),
           tableMeta.getOwnerName(), tableMeta.getOwnerType()));
     }
     return objs;
@@ -164,7 +182,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     List<HivePrivilegeObject> listObjs = tableMetasToPrivilegeObjs(tableMetas);
     List<HivePrivilegeObject> filteredList = getFilteredObjects(listObjs);
     final List<TableMeta> ret = new ArrayList<>();
-    final TablePrivilegeLookup index = new TablePrivilegeLookup(filteredList);
+    final TablePrivilegeLookup index = new TablePrivilegeLookup(filteredList, getDefaultCatName());
     for(TableMeta table : tableMetas) {
       if (index.lookup(table.getCatName(), table.getDbName(), table.getTableName()) != null) {
         ret.add(table);

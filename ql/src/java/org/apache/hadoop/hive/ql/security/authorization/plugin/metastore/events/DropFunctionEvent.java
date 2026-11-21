@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.events.PreDropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
@@ -64,12 +63,18 @@ public class DropFunctionEvent extends HiveMetaStoreAuthorizableEvent {
         PreDropFunctionEvent event = (PreDropFunctionEvent) preEventContext;
         Function function = event.getFunction();
         List<ResourceUri> uris   = function.getResourceUris();
-        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.FUNCTION, function.getCatName(), function.getDbName(), function.getFunctionName(),
-            null, null, HivePrivObjectActionType.OTHER, null, function.getClassName(), function.getOwnerName(), function.getOwnerType()));
+        ret.add(HivePrivilegeObject.builder(HivePrivilegeObjectType.FUNCTION)
+            .catName(function.getCatName())
+            .dbName(function.getDbName())
+            .objectName(function.getFunctionName())
+            .className(function.getClassName())
+            .ownerName(function.getOwnerName())
+            .ownerType(function.getOwnerType())
+            .build());
 
         if (uris != null && !uris.isEmpty()) {
             for(ResourceUri uri: uris) {
-                ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri.getUri()));
+                ret.add(getHivePrivilegeObjectDfsUri(uri.getUri()));
             }
         }
 
