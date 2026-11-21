@@ -7,7 +7,6 @@ SET hive.optimize.ppd=true;
 SET hive.ppd.remove.duplicatefilters=true;
 SET hive.tez.dynamic.partition.pruning=true;
 SET hive.optimize.metadataonly=false;
-SET hive.optimize.index.filter=true;
 SET hive.tez.min.bloom.filter.entries=1;
 
 SET hive.stats.fetch.column.stats=true;

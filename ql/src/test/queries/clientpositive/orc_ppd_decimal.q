@@ -13,167 +13,112 @@ insert overwrite table newtypesorc_n5 select * from (select cast("apple" as char
 -- decimal data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
 select sum(hash(*)) from newtypesorc_n5 where d=0.22;
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d=0.22;
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d='0.22';
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d='0.22';
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d=cast('0.22' as float);
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d=cast('0.22' as float);
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d!=0.22;
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d!=0.22;
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d!='0.22';
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d!='0.22';
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d!=cast('0.22' as float);
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d!=cast('0.22' as float);
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<11.22;
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<11.22;
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<'11.22';
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<'11.22';
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<cast('11.22' as float);
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<cast('11.22' as float);
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<1;
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<1;
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<=11.22;
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<=11.22;
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<='11.22';
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<='11.22';
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<=cast('11.22' as float);
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<=cast('11.22' as float);
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<=cast('11.22' as decimal);
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<=cast('11.22' as decimal);
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<=11.22BD;
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<=11.22BD;
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d<=12;
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d<=12;
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.22', '1.0');
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.22', '1.0');
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.22', '11.22');
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.22', '11.22');
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', '1.0');
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', '1.0');
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', 0.22);
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', 0.22);
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d in (0.9, 0.22, 11.22);
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d in (0.9, 0.22, 11.22);
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', '0.22', '11.22');
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d in ('0.9', '0.22', '11.22');
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d in (cast('0.9' as float), cast('0.22' as float), cast('11.22' as float));
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d in (cast('0.9' as float), cast('0.22' as float), cast('11.22' as float));
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d between 0 and 1;
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d between 0 and 1;
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d between 0 and 1000;
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d between 0 and 1000;
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d between 0 and '2.0';
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d between 0 and '2.0';
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d between 0 and cast(3 as float);
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d between 0 and cast(3 as float);
 
-set hive.optimize.index.filter=false;
 select sum(hash(*)) from newtypesorc_n5 where d between 1 and cast(30 as char(10));
 
-set hive.optimize.index.filter=true;
 select sum(hash(*)) from newtypesorc_n5 where d between 1 and cast(30 as char(10));

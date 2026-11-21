@@ -89,7 +89,7 @@ public class TestSQLStdHiveAccessControllerHS2 {
 
     // create list with variables that match some of the regexes
     List<String> confVarRegexList = Arrays.asList("hive.convert.join.bucket.mapjoin.tez",
-        "hive.optimize.index.filter.compact.maxsize", "hive.tez.dummy", "tez.task.dummy",
+        "hive.tez.dummy", "tez.task.dummy",
         "hive.exec.dynamic.partition", "hive.exec.dynamic.partition.mode",
         "hive.exec.max.dynamic.partitions", "hive.exec.max.dynamic.partitions.pernode",
         "oozie.HadoopAccessorService.created", "tez.queue.name",

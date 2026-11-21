@@ -1,5 +1,4 @@
 set hive.vectorized.execution.enabled=false;
-set hive.optimize.index.filter = true;
 set hive.auto.convert.join=false;
 
 CREATE TABLE tbl1_n6(id INT) STORED AS PARQUET;
