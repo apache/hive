@@ -293,6 +293,12 @@ public class MergeStatement {
     void appendWhenNotMatchedInsertClause(InsertClause insertClause);
     void appendWhenMatchedUpdateClause(UpdateClause updateClause);
     void appendWhenMatchedDeleteClause(DeleteClause deleteClause);
+
+    /**
+     * Called after all the when clauses were appended: appends the branches the generator collected meanwhile.
+     */
+    default void build() {
+    }
   }
 
   public interface DestClausePrefixSetter {

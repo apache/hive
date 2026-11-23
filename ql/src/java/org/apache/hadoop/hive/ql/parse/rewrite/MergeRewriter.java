@@ -78,6 +78,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     for (MergeStatement.WhenClause whenClause : mergeStatement.getWhenClauses()) {
       whenClause.toSql(mergeSqlGenerator);
     }
+    mergeSqlGenerator.build();
 
     boolean validateCardinalityViolation = mergeStatement.shouldValidateCardinalityViolation(conf);
     if (validateCardinalityViolation) {
@@ -94,6 +95,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     for (MergeStatement.WhenClause whenClause : mergeStatement.getWhenClauses()) {
       insClauseIdx += whenClause.addDestNamePrefixOfInsert(this, insClauseIdx, rewrittenCtx);
     }
+    addDestNamePrefixOfCollectedBranches(mergeStatement, insClauseIdx, rewrittenCtx);
 
     if (validateCardinalityViolation) {
       //here means the last branch of the multi-insert is Cardinality Validation
@@ -101,6 +103,15 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     }
 
     return rr;
+  }
+
+  /**
+   * Sets the dest name prefixes of the branches appended by {@link MergeStatement.MergeSqlGenerator#build()}, which
+   * follow the branches of the when clauses.
+   * @return the number of these branches
+   */
+  protected int addDestNamePrefixOfCollectedBranches(MergeStatement mergeStatement, int pos, Context context) {
+    return 0;
   }
 
   protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
