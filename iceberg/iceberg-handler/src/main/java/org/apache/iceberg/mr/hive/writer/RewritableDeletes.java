@@ -55,14 +55,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The position deletes that the DV writers of a merge-on-read DML merge into the DVs they write, by data file location:
- * a DV replaces every position delete of its data file.
+ * The previous position deletes that a DV writer merges into its DVs, by data file location.
  * <p>
- * The job names a temp dir of the query for the target table ({@link #addToJobConf}). Every scan of that table collects
- * the position deletes of the data files it plans while its splits are generated, and writes them into a file of its
- * own in the subdir of the snapshot it reads ({@link #collector}). A writer reads and merges all files of the subdir of
- * the snapshot it writes, once per LLAP daemon ({@link #getFromJobConf}): a scan of another branch or tag, or as of
- * another snapshot, reads other deletes.
+ * Each scan of the target table writes the deletes of the data files it plans to its own file in a temp dir of the
+ * query, with one subdir per snapshot ({@link #collector}). A writer reads the files of the snapshot it writes to, once
+ * per LLAP daemon ({@link #getFromJobConf}).
  */
 public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet> {
   private static final Logger LOG = LoggerFactory.getLogger(RewritableDeletes.class);
@@ -70,7 +67,7 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
   private static final String LOCATION_PREFIX = "iceberg.mr.rewritable.deletes.";
   private static final String DIR_SUFFIX = "-rewritable-deletes";
 
-  // by data file location; shared by the writers of a daemon, so read-only
+  // read-only: the writers of an LLAP daemon share it
   private final Map<String, DeleteFileSet> deletes;
 
   private RewritableDeletes(Map<String, DeleteFileSet> deletes) {
@@ -83,9 +80,9 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
   }
 
   /**
-   * Names the temp dir that the scans of a table collect its rewritable deletes into, under a key of the query.
-   * @param tableName The name of the table in the job's configuration.
-   * @param jobConf The job's configuration, with the temp dir of the query.
+   * Sets the temp dir the scans of the table write their deletes to.
+   * @param tableName The table name, as used in the job configuration.
+   * @param jobConf The job configuration, which holds the temp dir of the query.
    */
   public static void addToJobConf(String tableName, JobConf jobConf) {
     String key = key(tableName, jobConf);
@@ -97,24 +94,23 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
   }
 
   /**
-   * Returns a collector for the rewritable deletes of a scan of a table, or null when no DV writer of the job writes
-   * the table.
-   * @param tableName The name of the table in the scan's configuration.
-   * @param snapshot The snapshot the scan reads, null when the table has none.
-   * @param conf The scan's configuration.
+   * Returns a collector for a scan of the table, or null if no DV writer of the job writes to the table.
+   * @param tableName The table name, as used in the scan configuration.
+   * @param snapshot The snapshot the scan reads, or null if the table has no snapshot.
+   * @param conf The scan configuration.
    */
   public static Collector collector(String tableName, Snapshot snapshot, Configuration conf) {
     String location = location(tableName, snapshot, conf);
     return location != null ? new Collector(location) : null;
   }
 
-  // keyed by the query id: a session cannot set the key of a query, so scans never write where a session names
+  // includes the query id, so a value set in the session is never used
   private static String key(String tableName, Configuration conf) {
     String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     return tableName != null && queryId != null ? LOCATION_PREFIX + queryId + "." + tableName : null;
   }
 
-  // the subdir of the snapshot in the dir of the table
+  // <table dir>/<snapshot id>, or null if no DV writer of the job writes to the table
   private static String location(String tableName, Snapshot snapshot, Configuration conf) {
     String key = key(tableName, conf);
     String dir = key != null ? conf.get(key) : null;
@@ -126,12 +122,11 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
   }
 
   /**
-   * Returns the rewritable deletes of a snapshot of a table, merged from the files all scans of the snapshot wrote.
-   * Fails when the dir holds no file, rather than returning no deletes.
-   * @param tableName The name of the table in the task's configuration.
-   * @param snapshot The snapshot the task writes, null when the table has none.
-   * @param conf The task's configuration.
-   * @return The rewritable deletes by data file location; empty when the job writes no DVs to the table.
+   * Returns the deletes the scans of the snapshot collected. Fails if no scan wrote a file.
+   * @param tableName The table name, as used in the task configuration.
+   * @param snapshot The snapshot the task writes to, or null if the table has no snapshot.
+   * @param conf The task configuration.
+   * @return The deletes by data file location; empty if the job writes no DVs to the table.
    */
   public static Map<String, DeleteFileSet> getFromJobConf(String tableName, Snapshot snapshot, Configuration conf) {
     String location = location(tableName, snapshot, conf);
@@ -144,7 +139,7 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
       return readDir(location, conf);
     }
     try {
-      // the writers keep the cached value itself: the LLAP object cache holds its values softly
+      // the cache holds its values softly; the writers keep the returned map
       return cache.retrieve(location, () -> readDir(location, conf));
     } catch (HiveException e) {
       throw new RuntimeException(e);
@@ -163,7 +158,7 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
     }
 
     /**
-     * Adds the position deletes, DVs included, of the task's data file.
+     * Adds the position deletes of the task's data file, including its DV.
      */
     public void add(FileScanTask task) {
       for (DeleteFile delete : task.deletes()) {
@@ -174,8 +169,7 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
     }
 
     /**
-     * Writes the collected deletes into a new file of the dir. A file is written also when nothing was collected, so a
-     * writer can tell a scan without previous deletes from a missing one.
+     * Writes the collected deletes to a new file, also when empty: a missing file means the scan did not collect.
      */
     public void write(Configuration conf) {
       Path path = new Path(location, UUID.randomUUID() + ".gz");
@@ -215,7 +209,7 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
   }
 
   /**
-   * Returns the files the collectors of the scans wrote under a dir, with the deletes each holds.
+   * Returns the files that collectors wrote under the root dir, with the deletes in each.
    */
   @VisibleForTesting
   static Map<Path, Map<String, DeleteFileSet>> collectorFiles(Path root, Configuration conf) throws IOException {
@@ -231,7 +225,7 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
     return collectorFiles;
   }
 
-  // a file that a Collector wrote: <table name>-rewritable-deletes/<snapshot id>/<file>, see addToJobConf and location
+  // a Collector file: <table name>-rewritable-deletes/<snapshot id>/<uuid>.gz
   private static boolean isCollectorFile(Path file) {
     Path tableDir = file.getParent().getParent();
     return tableDir != null && tableDir.getName().endsWith(DIR_SUFFIX);

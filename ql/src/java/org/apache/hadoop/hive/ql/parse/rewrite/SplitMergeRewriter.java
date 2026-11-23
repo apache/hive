@@ -50,7 +50,7 @@ public class SplitMergeRewriter extends MergeRewriter {
 
   static class SplitMergeWhenClauseSqlGenerator extends MergeWhenClauseSqlGenerator {
     private final boolean isRowLineageSupported;
-    // the deletes of the WHEN MATCHED clauses in clause order, appended as a single delete branch by build()
+    // deletes of the WHEN MATCHED clauses; build() appends them as one delete branch
     private final List<DeleteBranch> deleteBranches = new ArrayList<>(2);
 
     SplitMergeWhenClauseSqlGenerator(
@@ -103,9 +103,7 @@ public class SplitMergeRewriter extends MergeRewriter {
         handleWhenMatchedDelete(onClauseAsString, deleteBranch.extraPredicate(),
             deleteBranch.precedingClausePredicate(), hintStr, sqlGenerator);
       } else {
-        // The update and delete clauses never match the same row, so a single delete branch deletes the same rows, into
-        // one delete delta or set of delete files. A target that needs all the deletes of a data file in one writer
-        // (DVs) requires it.
+        // one delete branch for both clauses, so that all deletes of a data file reach the same DV writer
         String deletePredicate = deleteBranches.stream()
             .map(deleteBranch -> "(" + deleteBranch.clausePredicate() + ")")
             .collect(Collectors.joining(" OR ", "(", ")"));
@@ -115,7 +113,7 @@ public class SplitMergeRewriter extends MergeRewriter {
     }
 
     private record DeleteBranch(String comment, String extraPredicate, String precedingClausePredicate) {
-      // the matched rows the WHEN MATCHED clause handles: its own predicate, minus the rows of the clause before it
+      // rows matched by this clause and not by the preceding one
       String clausePredicate() {
         String predicate = extraPredicate == null ? "true" : "(" + extraPredicate + ")";
         return precedingClausePredicate == null ? predicate : predicate + " AND NOT(" + precedingClausePredicate + ")";
@@ -129,8 +127,7 @@ public class SplitMergeRewriter extends MergeRewriter {
   }
 
   /**
-   * The half of a split update whose rows are not counted: the delete branch counts the updated rows, so the insert
-   * branch of the update does not.
+   * The insert half of a split update. Its rows are not counted; the delete half counts them.
    */
   private static class DeleteOfUpdateBranch extends Branch {
     DeleteOfUpdateBranch() {

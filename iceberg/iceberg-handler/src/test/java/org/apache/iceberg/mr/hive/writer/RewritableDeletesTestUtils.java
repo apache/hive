@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.iceberg.util.DeleteFileSet;
 
 /**
- * Gives the tests of other packages the files the collectors of the scans of a query wrote for its DV writers.
+ * Exposes the collector files of a query's scans to tests in other packages.
  */
 public final class RewritableDeletesTestUtils {
 

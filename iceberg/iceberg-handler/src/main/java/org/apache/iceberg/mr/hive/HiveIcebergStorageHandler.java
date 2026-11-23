@@ -407,8 +407,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   /**
-   * For a merge-on-read DML that writes DVs, names the temp dir into which the scans of the target table collect the
-   * position deletes of the data files they read. The DV writers merge those deletes into the DVs they write.
+   * For the delete sink of a merge-on-read DML on a V3 table, also sets the temp dir for the rewritable deletes.
    */
   @Override
   public void configureJobConf(FileSinkDesc sinkDesc, JobConf jobConf) {
@@ -1641,7 +1640,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
     return switch (operation) {
-      // a DV writer does not need its deletes ordered
+      // fanout and DV writers do not need sorted input
       case DELETE -> IcebergTableUtil.isFanoutEnabled(table.getParameters()) ||
           IcebergTableUtil.formatVersion(table.getParameters()) >= 3 ? EMPTY_ORDERING : POSITION_DELETE_ORDERING;
       case MERGE -> POSITION_DELETE_ORDERING;
@@ -1652,7 +1651,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   /**
-   * A task writes one DV per data file, so all deletes of a data file must reach the same task.
+   * V3: distributes the deleted records by data file, so one task writes the DV of a data file.
    */
   @Override
   public List<FieldSchema> acidDistributeColumns(org.apache.hadoop.hive.ql.metadata.Table table,

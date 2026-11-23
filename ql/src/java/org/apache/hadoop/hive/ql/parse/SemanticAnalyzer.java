@@ -8619,7 +8619,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Some non-native tables might be partitioned without partition spec information being present in the Table object
       HiveStorageHandler storageHandler = dest_tab.getStorageHandler();
-      // the rewritten statement distributes and sorts the records a merge-on-read DML deletes
+      // merge-on-read deletes skip the dynamic partition context: the rewritten statement distributes and sorts them
       if (dest_tab.hasNonNativePartitionSupport() && !isMergeOnReadDelete(dest, dest_tab)) {
         DynamicPartitionCtx nonNativeDpCtx = storageHandler.createDPContext(conf, dest_tab, writeOperation);
         if (dpCtx == null && nonNativeDpCtx != null) {
@@ -15162,7 +15162,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return table.getStorageHandler().shouldOverwrite(table, ctx.getOperation());
   }
 
-  // the destination of the records a merge-on-read DML deletes
+  // whether the destination is the delete branch of a merge-on-read DML
   private boolean isMergeOnReadDelete(String destination, Table table) {
     return deleting(destination) && !isCopyOnWrite(table);
   }

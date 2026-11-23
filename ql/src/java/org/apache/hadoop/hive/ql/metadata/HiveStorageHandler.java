@@ -206,11 +206,11 @@ public interface HiveStorageHandler extends Configurable {
   void configureJobConf(TableDesc tableDesc, JobConf jobConf);
 
   /**
-   * Called while the job is built, for every file sink of the job.
+   * Called for every file sink of the job while the job is built.
    *
-   * @param sinkDesc descriptor of the file sink
-   * @param jobConf jobConf shared by all vertices of the job, whose
-   *     {@link org.apache.hadoop.hive.ql.exec.tez.DagUtils#TEZ_TMP_DIR_KEY} is a temp dir of the query
+   * @param sinkDesc the file sink descriptor
+   * @param jobConf the configuration shared by all vertices of the job; its
+   *     {@link org.apache.hadoop.hive.ql.exec.tez.DagUtils#TEZ_TMP_DIR_KEY} holds a temp dir of the query
    */
   default void configureJobConf(FileSinkDesc sinkDesc, JobConf jobConf) {
     configureJobConf(sinkDesc.getTableInfo(), jobConf);
@@ -626,8 +626,7 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * {@link org.apache.hadoop.hive.ql.metadata.HiveStorageHandler} method to get the columns the deleted records of a
-   * DELETE/UPDATE/MERGE statement are distributed by in the rewritten query. {@link #acidSortColumns} orders them
-   * within a writer.
+   * DELETE/UPDATE/MERGE are distributed by. {@link #acidSortColumns} sorts them within a writer.
    *
    * @param table the table which is being deleted/updated/merged into
    * @param operation the operation type we are executing

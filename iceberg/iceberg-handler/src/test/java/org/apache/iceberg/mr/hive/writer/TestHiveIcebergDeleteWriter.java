@@ -133,8 +133,8 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
   }
 
   /**
-   * A position delete file of a V2 table applies to every data file of its partition. After an upgrade to V3, a DV
-   * writer merges it into the DVs of all of them, and decodes it once for the query.
+   * A V2 position delete file applies to every data file of its partition. After an upgrade to V3, a DV writer merges
+   * it into the DV of each of them, and decodes it only once per query.
    */
   @Test
   public void testDVWriterDecodesAPositionDeleteFileOncePerQuery() throws IOException, HiveException {
@@ -145,7 +145,7 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
       tasks.forEach(task -> dataFiles.add(task.file().location()));
     }
     Assert.assertEquals(2, dataFiles.size());
-    // the first record of each data file
+    // deletes the first record of each data file
     DeleteFile positionDeletes = FileHelpers.writeDeleteFile(table,
         Files.localOutput(new File(temp.newFolder(), "pos-deletes")),
         dataFiles.stream().map(file -> Pair.<CharSequence, Long>of(file, 0L)).toList()).first();
@@ -153,7 +153,7 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
     TableOperations ops = ((BaseTable) table).operations();
     ops.commit(ops.current(), ops.current().upgradeToFormatVersion(3));
 
-    // the writers of a Hive job find the format version in the properties of their table
+    // Hive writers read the format version from the table properties
     Table writerTable = SerializableTable.copyOf(table);
     writerTable.properties().put(TableProperties.FORMAT_VERSION, "3");
     Map<String, DeleteFileSet> rewritableDeletes = Maps.newHashMap();
@@ -184,7 +184,7 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
 
       Collection<DeleteFile> dvs = writer.files().deleteFiles();
       Assert.assertEquals("a DV per data file", 2, dvs.size());
-      // the deleted record and the previous delete of the data file
+      // each DV holds the deleted record and the previous delete of its data file
       dvs.forEach(dv -> Assert.assertEquals(2, dv.recordCount()));
       boolean[] decodedAgain = { false };
       ObjectCacheFactory.getCache(jc, DV_WRITER_QUERY_ID, false).retrieve(positionDeletes.location(), () -> {

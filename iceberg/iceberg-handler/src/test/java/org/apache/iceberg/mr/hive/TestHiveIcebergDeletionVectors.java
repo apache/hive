@@ -119,7 +119,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * Returns the data files whose DV Iceberg merged from duplicates at commit time, into a "merged-dvs-*.puffin".
+   * Returns the data files whose duplicate DVs Iceberg merged at commit ("merged-dvs-*.puffin").
    */
   private static Set<String> assertOneDVPerDataFile(List<FileScanTask> tasks) {
     List<DeleteFile> dvs = dvs(tasks);
@@ -160,7 +160,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * A DELETE from the branch whose subquery reads main: the DVs of the branch do not take the deletes of main.
+   * A DELETE from the branch with a subquery over main: the branch's DVs must not take main's deletes.
    */
   @Test
   public void testDeleteFromBranchWithASubqueryOverMain() {
@@ -173,7 +173,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * A MERGE into main whose source reads the branch: the DVs of main do not take the deletes of the branch.
+   * A MERGE into main with a source over the branch: main's DVs must not take the branch's deletes.
    */
   @Test
   public void testMergeIntoMainWithASourceOverTheBranch() {
@@ -187,7 +187,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * A MERGE whose source reads an older snapshot of the target: the writers do not rewrite the DVs of that snapshot.
+   * A MERGE with a source as of an older snapshot of the target: the writers must not rewrite that snapshot's DVs.
    */
   @Test
   public void testMergeWithASourceAsOfAnOlderSnapshot() {
@@ -233,7 +233,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
 
   @Test
   public void testDeleteOfSplitDataFilesInPartitionedTable() {
-    // several writer tasks
+    // use several writer tasks
     shell.setHiveSessionValue("mapreduce.job.reduces", "3");
     shell.setHiveSessionValue("hive.tez.auto.reducer.parallelism", "false");
     Table table = createTable("dv_delete_part",
@@ -259,13 +259,13 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * A dir of the rewritable deletes named in the session is not used, by DMLs nor by reads.
+   * A rewritable deletes dir set in the session is ignored by both DMLs and reads.
    */
   @Test
   public void testRewritableDeletesKeyOfTheSessionIsIgnored() {
     Table table = createSingleFileTable("dv_session");
     shell.setHiveSessionValue("iceberg.mr.rewritable.deletes.default.dv_session", "file:/session-value");
-    // without previous deletes, then over the DVs of the first DELETE
+    // the first DELETE has no previous deletes, the second merges the DVs of the first
     shell.executeStatement("DELETE FROM dv_session WHERE customer_id % 7 = 0");
     shell.executeStatement("DELETE FROM dv_session WHERE customer_id % 5 = 0");
     long deleted = LongStream.range(0, ROWS).filter(i -> i % 7 == 0 || i % 5 == 0).count();
@@ -286,7 +286,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * Both clauses hit the same data file, their deletes go through one delete branch.
+   * The MERGE clauses hit the same data file, so their deletes go through one delete branch.
    */
   private void assertMerge(String merge, long updated, long deleted, long inserted) throws HiveSQLException {
     Table table = createSingleFileTable("dv_merge");
@@ -349,7 +349,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   private static volatile boolean rewritableDeletesSeen;
   private static volatile Set<String> collectedDataFiles;
 
-  // the files the scans wrote into the dirs of the rewritable deletes, with the deletes each holds
+  // the collector files of the scans, with the deletes each one holds
   private static Map<Path, Map<String, DeleteFileSet>> rewritableDeleteFiles() throws IOException {
     Map<Path, Map<String, DeleteFileSet>> files = Maps.newHashMap();
     for (String scratchDir : scratchDirs) {
@@ -363,8 +363,8 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * Called by the scan tasks through java_method: records whether the scans of the query collected rewritable
-   * deletes, and the data files they collected them for.
+   * Called through java_method by the query's tasks, after split generation. Records which data files the scans
+   * collected deletes for.
    */
   public static boolean probeRewritableDeletes() throws IOException {
     Map<Path, Map<String, DeleteFileSet>> files = rewritableDeleteFiles();
@@ -391,7 +391,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
         "', 'probeRewritableDeletes') = 'true'";
   }
 
-  // the probe runs in the SET list: in the WHERE clause, a nondeterministic function stops the filter's pushdown
+  // the probe goes in the SET list: in the WHERE clause, a nondeterministic function would block filter pushdown
   private String probedUpdate(String tableName, String where) throws IOException {
     resetProbe();
     return "UPDATE " + tableName + " SET first_name = java_method('" + TestHiveIcebergDeletionVectors.class.getName() +
@@ -414,8 +414,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * A DML that scans one partition collects the previous deletes of that partition's data files only; the deletes of
-   * the other partitions remain.
+   * A DML that scans one partition collects only that partition's previous deletes.
    */
   @Test
   public void testPartitionFilteredDmlOverExistingDVs() throws IOException {
@@ -438,7 +437,7 @@ public class TestHiveIcebergDeletionVectors extends HiveIcebergStorageHandlerWit
   }
 
   /**
-   * A DML filtered on a data column collects the previous deletes of the data files its stats-pruned scan reads.
+   * A DML filtered on a data column collects previous deletes only for the data files left after stats pruning.
    */
   @Test
   public void testDmlFilteredByDataFileStatsOverExistingDVs() throws IOException {

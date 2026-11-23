@@ -229,7 +229,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       rewritableDeletes = null;
     } else {
       TableScan tableScan = applyConfig(conf, createTableScan(table, conf, serverSidePinTable));
-      // collects the position deletes of the planned data files when a DV writer of the job writes this table
+      // null unless a DV writer of the job writes to this table
       rewritableDeletes =
           RewritableDeletes.collector(conf.get(InputFormatConfig.TABLE_IDENTIFIER), tableScan.snapshot(), conf);
       scan = tableScan;

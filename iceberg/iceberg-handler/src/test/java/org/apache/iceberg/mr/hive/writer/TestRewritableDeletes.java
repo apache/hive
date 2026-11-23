@@ -114,7 +114,7 @@ public class TestRewritableDeletes {
   }
 
   /**
-   * Each scan of the table writes a file of its own, and the writers get the deletes of all of them.
+   * Each scan writes its own file, and the writers get the deletes of all of them.
    */
   @Test
   public void testUnionOfTheScans() throws IOException {
@@ -157,15 +157,15 @@ public class TestRewritableDeletes {
     LlapProxy.setDaemon(true);
     Map<String, DeleteFileSet> deletes = RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf);
     Assert.assertEquals(Set.of(fileA.location()), deletes.keySet());
-    // the second writer of the query finds the rewritable deletes in the cache of the daemon
+    // a second writer of the query gets the same map from the daemon's cache
     Assert.assertSame(deletes, RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
-    // which the writers of the daemon share
+    // which the writers share, so it is read-only
     String location = fileA.location();
     Assert.assertThrows(UnsupportedOperationException.class, () -> deletes.remove(location));
   }
 
   /**
-   * A dir named in the session is not used: scans do not collect into it and writers do not read it.
+   * A dir set in the session is ignored: scans do not write to it and writers do not read it.
    */
   @Test
   public void testSessionValueIsIgnored() {
@@ -179,7 +179,7 @@ public class TestRewritableDeletes {
   }
 
   /**
-   * The dir is named for the job's query only.
+   * The dir set for one query is not used by another query.
    */
   @Test
   public void testDirOfAnotherQueryIsIgnored() {
@@ -189,8 +189,7 @@ public class TestRewritableDeletes {
   }
 
   /**
-   * The scans of main and of a branch collect into the subdirs of their snapshots: the writers of a snapshot get its
-   * deletes only.
+   * A writer gets only the deletes collected for the snapshot it writes to.
    */
   @Test
   public void testScansOfAnotherSnapshotAreNotRead() {

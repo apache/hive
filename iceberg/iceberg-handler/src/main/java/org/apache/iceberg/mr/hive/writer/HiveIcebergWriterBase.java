@@ -135,7 +135,7 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
     if (context.useDVs()) {
       return new PartitioningDVWriter<>(files, new PreviousDeleteLoader(table, rewritableDeletes, conf));
     }
-    // a writer of partition-scoped position deletes rewrites none
+    // partition-scoped position delete writers do not rewrite previous deletes
     if (inputOrdered) {
       return new ClusteredPositionDeleteWriter<>(writers, files, io, targetFileSize, deleteGranularity);
     } else {
@@ -144,10 +144,9 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
   }
 
   /**
-   * Loads the previous position deletes of a data file for its DV. The rewritable deletes are read on the first call,
-   * when the writer writes its DVs, after the scans that produced its rows have collected them. A position delete file
-   * applies to every data file of its partition, so it is decoded once and cached for the query: per LLAP daemon, or
-   * per container in Tez container mode.
+   * Loads the previous deletes of a data file for its DV. The rewritable deletes are read on first use, after the scans
+   * have collected them. A position delete file applies to every data file of its partition, so it is decoded once per
+   * query and cached: per LLAP daemon, or per container in Tez container mode.
    */
   private static class PreviousDeleteLoader implements Function<CharSequence, PositionDeleteIndex> {
     private final Supplier<Map<String, DeleteFileSet>> deleteFiles;

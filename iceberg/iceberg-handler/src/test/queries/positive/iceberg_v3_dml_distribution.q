@@ -26,7 +26,7 @@ when not matched then insert values (s.id, 'z');
 
 select * from ice_v3 order by id;
 
--- a merge-on-read UPDATE of a sorted table that copies on DELETE: the deleted records are distributed by FILE__PATH only
+-- sorted table, merge-on-read UPDATE and copy-on-write DELETE: the deleted records are distributed by FILE__PATH only
 create external table ice_v3_sorted (id int, name string) write locally ordered by id
 stored by iceberg tblproperties ('format-version'='3', 'write.delete.mode'='copy-on-write',
   'write.update.mode'='merge-on-read');

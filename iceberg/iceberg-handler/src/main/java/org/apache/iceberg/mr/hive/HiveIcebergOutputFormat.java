@@ -72,7 +72,7 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
 
     return WriterBuilder.builderFor(table, jc)
         .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
-        // of the snapshot the DML writes, which the commit validates from
+        // the deletes collected for the snapshot the DML writes to, which the commit also validates from
         .rewritableDeletes(() -> RewritableDeletes.getFromJobConf(tableName,
             IcebergTableUtil.getTableSnapshot(table, jc.get(Catalogs.SNAPSHOT_REF)), jc))
         .attemptID(taskAttemptID)
