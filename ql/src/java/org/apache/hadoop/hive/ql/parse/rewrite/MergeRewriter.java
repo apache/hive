@@ -176,6 +176,21 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
     context.setOperation(Operation.MERGE);
   }
 
+  /**
+   * A branch of the multi-insert, sets its dest name prefix on the rewritten context.
+   */
+  protected static class Branch {
+    protected final Context.DestClausePrefix prefix;
+
+    protected Branch(Context.DestClausePrefix prefix) {
+      this.prefix = prefix;
+    }
+
+    protected void addDestNamePrefix(int pos, Context context) {
+      context.addDestNamePrefix(pos, prefix);
+    }
+  }
+
   protected static class MergeWhenClauseSqlGenerator implements MergeStatement.MergeSqlGenerator {
 
     protected final HiveConf conf;
@@ -200,10 +215,9 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
     /**
      * Records a branch appended to the multi-insert, so that its dest name prefix is set by
      * {@link #addDestNamePrefixes(int, Context)}.
-     * @param isDeleteOfUpdate the branch is the half of a split update whose rows are not counted
      */
-    protected void addBranch(Context.DestClausePrefix prefix, boolean isDeleteOfUpdate) {
-      branches.add(new Branch(prefix, isDeleteOfUpdate));
+    protected void addBranch(Branch branch) {
+      branches.add(branch);
     }
 
     /**
@@ -211,20 +225,13 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
      */
     void addDestNamePrefixes(int pos, Context context) {
       for (Branch branch : branches) {
-        if (branch.isDeleteOfUpdate()) {
-          context.addDeleteOfUpdateDestNamePrefix(pos++, branch.prefix());
-        } else {
-          context.addDestNamePrefix(pos++, branch.prefix());
-        }
+        branch.addDestNamePrefix(pos++, context);
       }
-    }
-
-    private record Branch(Context.DestClausePrefix prefix, boolean isDeleteOfUpdate) {
     }
 
     @Override
     public void appendWhenNotMatchedInsertClause(MergeStatement.InsertClause insertClause) {
-      addBranch(Context.DestClausePrefix.INSERT, false);
+      addBranch(new Branch(Context.DestClausePrefix.INSERT));
       sqlGenerator.append("INSERT INTO ").append(mergeStatement.getTargetName());
       if (insertClause.getColumnList() != null) {
         sqlGenerator.append(" (");
@@ -258,7 +265,7 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
       String targetAlias = mergeStatement.getTargetAlias();
       String onClauseAsString = mergeStatement.getOnClauseAsText();
 
-      addBranch(Context.DestClausePrefix.UPDATE, false);
+      addBranch(new Branch(Context.DestClausePrefix.UPDATE));
       sqlGenerator.append("    -- update clause").append("\n");
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
           targetTable.getAllCols().size() + 1);
@@ -294,7 +301,7 @@ public class MergeRewriter implements Rewriter<MergeStatement> {
 
     @Override
     public void appendWhenMatchedDeleteClause(MergeStatement.DeleteClause deleteClause) {
-      addBranch(Context.DestClausePrefix.DELETE, false);
+      addBranch(new Branch(Context.DestClausePrefix.DELETE));
       handleWhenMatchedDelete(mergeStatement.getOnClauseAsText(),
           deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate(), hintStr, sqlGenerator);
       hintStr = null;

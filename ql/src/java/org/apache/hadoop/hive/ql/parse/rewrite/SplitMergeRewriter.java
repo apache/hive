@@ -66,8 +66,7 @@ public class SplitMergeRewriter extends MergeRewriter {
       String targetAlias = mergeStatement.getTargetAlias();
       String onClauseAsString = mergeStatement.getOnClauseAsText();
 
-      // the delete branch counts the updated rows, so the insert branch of the update does not
-      addBranch(Context.DestClausePrefix.INSERT, true);
+      addBranch(new DeleteOfUpdateBranch());
       sqlGenerator.append("    -- update clause (insert part)\n");
       List<String> values = new ArrayList<>(targetTable.getAllCols().size());
       setValuesClause.addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
@@ -95,7 +94,7 @@ public class SplitMergeRewriter extends MergeRewriter {
       if (deleteBranches.isEmpty()) {
         return;
       }
-      addBranch(Context.DestClausePrefix.DELETE, false);
+      addBranch(new Branch(Context.DestClausePrefix.DELETE));
       sqlGenerator.append(deleteBranches.stream().map(DeleteBranch::comment)
           .collect(Collectors.joining(" and ", "    -- ", "\n")));
       String onClauseAsString = mergeStatement.getOnClauseAsText();
@@ -127,5 +126,20 @@ public class SplitMergeRewriter extends MergeRewriter {
   @Override
   public void setOperation(Context context) {
     context.setOperation(Context.Operation.MERGE, true);
+  }
+
+  /**
+   * The half of a split update whose rows are not counted: the delete branch counts the updated rows, so the insert
+   * branch of the update does not.
+   */
+  private static class DeleteOfUpdateBranch extends Branch {
+    DeleteOfUpdateBranch() {
+      super(Context.DestClausePrefix.INSERT);
+    }
+
+    @Override
+    protected void addDestNamePrefix(int pos, Context context) {
+      context.addDeleteOfUpdateDestNamePrefix(pos, prefix);
+    }
   }
 }
