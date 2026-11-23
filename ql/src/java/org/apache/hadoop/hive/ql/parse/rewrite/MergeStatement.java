@@ -20,7 +20,6 @@
 package org.apache.hadoop.hive.ql.parse.rewrite;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,8 +196,6 @@ public class MergeStatement {
     }
 
     public abstract void toSql(MergeSqlGenerator sqlGenerator);
-    public abstract int addDestNamePrefixOfInsert(
-        DestClausePrefixSetter destClausePrefixSetter, int pos, Context context);
   }
 
   public static class InsertClause extends WhenClause {
@@ -230,11 +227,6 @@ public class MergeStatement {
     public void toSql(MergeSqlGenerator sqlGenerator) {
       sqlGenerator.appendWhenNotMatchedInsertClause(this);
     }
-
-    @Override
-    public int addDestNamePrefixOfInsert(DestClausePrefixSetter setter, int pos, Context context) {
-      return setter.addDestNamePrefixOfInsert(pos, context);
-    }
   }
 
   public static class UpdateClause extends WhenClause {
@@ -259,11 +251,6 @@ public class MergeStatement {
     public void toSql(MergeSqlGenerator sqlGenerator) {
       sqlGenerator.appendWhenMatchedUpdateClause(this);
     }
-
-    @Override
-    public int addDestNamePrefixOfInsert(DestClausePrefixSetter setter, int pos, Context context) {
-      return setter.addDestNamePrefixOfUpdate(pos, context);
-    }
   }
 
   public static class DeleteClause extends WhenClause {
@@ -282,11 +269,6 @@ public class MergeStatement {
     public void toSql(MergeSqlGenerator sqlGenerator) {
       sqlGenerator.appendWhenMatchedDeleteClause(this);
     }
-
-    @Override
-    public int addDestNamePrefixOfInsert(DestClausePrefixSetter setter, int pos, Context context) {
-      return setter.addDestNamePrefixOfDelete(pos, context);
-    }
   }
 
   public interface MergeSqlGenerator {
@@ -298,23 +280,6 @@ public class MergeStatement {
      * Called after all the when clauses were appended: appends the branches the generator collected meanwhile.
      */
     default void build() {
-    }
-  }
-
-  public interface DestClausePrefixSetter {
-    default int addDestNamePrefixOfInsert(int pos, Context context) {
-      context.addDestNamePrefix(pos, Context.DestClausePrefix.INSERT);
-      return 1;
-    }
-
-    default int addDestNamePrefixOfUpdate(int pos, Context context) {
-      context.addDestNamePrefix(pos, Context.DestClausePrefix.UPDATE);
-      return 1;
-    }
-
-    default int addDestNamePrefixOfDelete(int pos, Context context) {
-      context.addDestNamePrefix(pos, Context.DestClausePrefix.DELETE);
-      return 1;
     }
   }
 }

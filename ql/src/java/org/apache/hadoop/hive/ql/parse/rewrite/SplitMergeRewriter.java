@@ -66,6 +66,8 @@ public class SplitMergeRewriter extends MergeRewriter {
       String targetAlias = mergeStatement.getTargetAlias();
       String onClauseAsString = mergeStatement.getOnClauseAsText();
 
+      // the delete branch counts the updated rows, so the insert branch of the update does not
+      addBranch(Context.DestClausePrefix.INSERT, true);
       sqlGenerator.append("    -- update clause (insert part)\n");
       List<String> values = new ArrayList<>(targetTable.getAllCols().size());
       setValuesClause.addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
@@ -93,6 +95,7 @@ public class SplitMergeRewriter extends MergeRewriter {
       if (deleteBranches.isEmpty()) {
         return;
       }
+      addBranch(Context.DestClausePrefix.DELETE, false);
       sqlGenerator.append(deleteBranches.stream().map(DeleteBranch::comment)
           .collect(Collectors.joining(" and ", "    -- ", "\n")));
       String onClauseAsString = mergeStatement.getOnClauseAsText();
@@ -124,29 +127,5 @@ public class SplitMergeRewriter extends MergeRewriter {
   @Override
   public void setOperation(Context context) {
     context.setOperation(Context.Operation.MERGE, true);
-  }
-
-  @Override
-  public int addDestNamePrefixOfUpdate(int pos, Context context) {
-    // the delete branch counts the updated rows, so the insert branch of the update does not
-    context.addDeleteOfUpdateDestNamePrefix(pos, Context.DestClausePrefix.INSERT);
-    return 1;
-  }
-
-  @Override
-  public int addDestNamePrefixOfDelete(int pos, Context context) {
-    // the delete clause has no branch of its own, see addDestNamePrefixOfCollectedBranches
-    return 0;
-  }
-
-  @Override
-  protected int addDestNamePrefixOfCollectedBranches(MergeStatement mergeStatement, int pos, Context context) {
-    boolean hasDeleteBranch = mergeStatement.getWhenClauses().stream().anyMatch(whenClause ->
-        whenClause instanceof MergeStatement.UpdateClause || whenClause instanceof MergeStatement.DeleteClause);
-    if (!hasDeleteBranch) {
-      return 0;
-    }
-    context.addDestNamePrefix(pos, Context.DestClausePrefix.DELETE);
-    return 1;
   }
 }
