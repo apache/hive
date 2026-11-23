@@ -1,6 +1,5 @@
 ansicolor
 antisamy-markup-formatter
-blueocean
 build-environment
 build-name-setter
 build-timeout
@@ -24,6 +23,7 @@ metrics
 parallel-test-executor
 parameterized-trigger
 pipeline-github
+pipeline-graph-view
 rebuild
 schedule-build
 slack
