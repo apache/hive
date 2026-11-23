@@ -1,0 +1,6 @@
+PREHOOK: query: CREATE EXTERNAL TABLE geometry_orc (id INT, geom GEOMETRY)
+STORED BY ICEBERG STORED AS ORC tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geometry_orc
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Column geom has type geometry(OGC:CRS84), which is not supported by the ORC file format. Use Parquet or Avro instead

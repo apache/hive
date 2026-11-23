@@ -225,6 +225,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.GeospatialTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -529,6 +530,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, GenericUDFToIntervalYearMonth.class);
     system.registerGenericUDF(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME, GenericUDFToIntervalDayTime.class);
     system.registerGenericUDF(serdeConstants.BINARY_TYPE_NAME, GenericUDFToBinary.class);
+    system.registerGenericUDF(serdeConstants.GEOMETRY_TYPE_NAME, GenericUDFToGeometry.class);
     system.registerGenericUDF(serdeConstants.DECIMAL_TYPE_NAME, GenericUDFToDecimal.class);
     system.registerGenericUDF(serdeConstants.VARCHAR_TYPE_NAME, GenericUDFToVarchar.class);
     system.registerGenericUDF(serdeConstants.CHAR_TYPE_NAME, GenericUDFToChar.class);
@@ -992,11 +994,39 @@ public final class FunctionRegistry {
         return TypeInfoFactory.getVarcharTypeInfo(maxLength);
       case DECIMAL:
         return HiveDecimalUtils.getDecimalTypeForPrimitiveCategories(a, b);
+      case GEOMETRY:
+        return getCommonGeospatialTypeInfo(a, b, typeCategory);
       default:
         // Type doesn't require any qualifiers.
         return TypeInfoFactory.getPrimitiveTypeInfo(
             PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveCategory(typeCategory).typeName);
     }
+  }
+
+  /**
+   * Geospatial types with different coordinate reference systems have no common type. The other type may be
+   * VOID or BINARY (WKB).
+   */
+  private static TypeInfo getCommonGeospatialTypeInfo(
+      PrimitiveTypeInfo a, PrimitiveTypeInfo b, PrimitiveCategory typeCategory) {
+    boolean isGeospatialA = a.getPrimitiveCategory() == typeCategory;
+    boolean isGeospatialB = b.getPrimitiveCategory() == typeCategory;
+    if (isGeospatialA && isGeospatialB) {
+      return ((GeospatialTypeInfo) a).isCompatibleWith(b) ? a : null;
+    }
+    if (isGeospatialA) {
+      return a;
+    }
+    if (isGeospatialB) {
+      return b;
+    }
+    return TypeInfoFactory.getPrimitiveTypeInfo(
+        PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveCategory(typeCategory).typeName);
+  }
+
+  private static boolean isBinaryAndGeospatial(PrimitiveCategory pcA, PrimitiveCategory pcB) {
+    return (pcA == PrimitiveCategory.BINARY && pcB == PrimitiveCategory.GEOMETRY)
+        || (pcA == PrimitiveCategory.GEOMETRY && pcB == PrimitiveCategory.BINARY);
   }
 
   /**
@@ -1090,6 +1120,10 @@ public final class FunctionRegistry {
       return a;
     }
 
+    if (isBinaryAndGeospatial(pcA, pcB)) {
+      return pcA == PrimitiveCategory.BINARY ? b : a;
+    }
+
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
     PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
 
@@ -1152,6 +1186,10 @@ public final class FunctionRegistry {
     if (pcB == PrimitiveCategory.VOID) {
       // Handle NULL, we return the type of pcA
       return pcA;
+    }
+
+    if (isBinaryAndGeospatial(pcA, pcB)) {
+      return pcA == PrimitiveCategory.BINARY ? pcB : pcA;
     }
 
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
@@ -1639,7 +1677,8 @@ public final class FunctionRegistry {
         udfClass == GenericUDFToVarchar.class || udfClass == GenericUDFToChar.class ||
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
         udfClass == GenericUDFToDate.class || udfClass == GenericUDFToDecimal.class ||
-        udfClass == GenericUDFToTimestampLocalTZ.class || udfClass == GenericUDFToVariant.class;
+        udfClass == GenericUDFToTimestampLocalTZ.class || udfClass == GenericUDFToVariant.class ||
+        udfClass == GenericUDFToGeometry.class;
   }
 
   /**

@@ -479,7 +479,8 @@ public class LazyBinarySerDe extends AbstractSerDe {
         serializeText(byteStream, t, skipLengthPrefix);
         return;
       }
-      case BINARY: {
+      case BINARY:
+      case GEOMETRY: {
         BinaryObjectInspector baoi = (BinaryObjectInspector) poi;
         BytesWritable bw = baoi.getPrimitiveWritableObject(obj);
         int length = bw.getLength();

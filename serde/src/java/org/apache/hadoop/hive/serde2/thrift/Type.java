@@ -118,7 +118,11 @@ public enum Type {
       true, false),
   UNKNOWN_TYPE(serdeConstants.UNKNOWN_TYPE_NAME.toUpperCase(),
       java.sql.Types.NULL,
-      TTypeId.UNKNOWN_TYPE);
+      TTypeId.UNKNOWN_TYPE),
+  GEOMETRY_TYPE(serdeConstants.GEOMETRY_TYPE_NAME.toUpperCase(),
+      java.sql.Types.BINARY,
+      TTypeId.GEOMETRY_TYPE,
+      true, false, false);
 
   private final String name;
   private final TTypeId tType;
@@ -227,6 +231,7 @@ public enum Type {
       case INTERVAL_YEAR_MONTH -> Type.INTERVAL_YEAR_MONTH_TYPE;
       case INTERVAL_DAY_TIME -> Type.INTERVAL_DAY_TIME_TYPE;
       case DECIMAL -> Type.DECIMAL_TYPE;
+      case GEOMETRY -> Type.GEOMETRY_TYPE;
       default ->
           throw new RuntimeException("Unrecognized type: " + category);
     };

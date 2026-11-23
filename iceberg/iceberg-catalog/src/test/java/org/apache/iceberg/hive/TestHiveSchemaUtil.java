@@ -201,6 +201,52 @@ public class TestHiveSchemaUtil {
     checkConvert(TypeInfoFactory.getUnknownTypeInfo(), Types.UnknownType.get());
   }
 
+  @Test
+  public void testGeometryTypeConvertToIcebergSchema() {
+    List<FieldSchema> hiveSchema = ImmutableList.of(
+        new FieldSchema("id", serdeConstants.INT_TYPE_NAME, null),
+        new FieldSchema("geom", serdeConstants.GEOMETRY_TYPE_NAME, "geometry comment"),
+        new FieldSchema("geom_3857", "geometry('EPSG:3857')", null));
+    Schema expected = new Schema(
+        optional(1, "id", Types.IntegerType.get()),
+        optional(2, "geom", Types.GeometryType.crs84(), "geometry comment"),
+        optional(3, "geom_3857", Types.GeometryType.of("EPSG:3857")));
+
+    assertThat(HiveSchemaUtil.convert(hiveSchema).asStruct()).isEqualTo(expected.asStruct());
+  }
+
+  @Test
+  public void testGeometryTypeConvertToHiveSchema() {
+    Schema icebergSchema = new Schema(
+        optional(1, "id", Types.IntegerType.get()),
+        optional(2, "geom", Types.GeometryType.crs84(), "geometry comment"),
+        optional(3, "geom_3857", Types.GeometryType.of("EPSG:3857")));
+    List<FieldSchema> expected = ImmutableList.of(
+        new FieldSchema("id", serdeConstants.INT_TYPE_NAME, null),
+        new FieldSchema("geom", serdeConstants.GEOMETRY_TYPE_NAME, "geometry comment"),
+        new FieldSchema("geom_3857", "geometry('EPSG:3857')", null));
+
+    assertThat(HiveSchemaUtil.convert(icebergSchema)).isEqualTo(expected);
+  }
+
+  @Test
+  public void testGeometryTypeAndTypeInfoConvert() {
+    checkConvert(TypeInfoFactory.geometryTypeInfo, Types.GeometryType.crs84());
+    checkConvert(TypeInfoFactory.getGeometryTypeInfo("OGC:CRS84"), Types.GeometryType.crs84());
+    checkConvert(TypeInfoFactory.getGeometryTypeInfo("EPSG:3857"), Types.GeometryType.of("EPSG:3857"));
+    checkConvert(TypeInfoFactory.getListTypeInfo(TypeInfoFactory.getGeometryTypeInfo("EPSG:4326")),
+        Types.ListType.ofOptional(1, Types.GeometryType.of("EPSG:4326")));
+  }
+
+  @Test
+  public void testGeometryTypeDefaultValueNotSupported() {
+    assertThat(HiveSchemaUtil.getDefaultValue(null, Types.GeometryType.crs84())).isNull();
+    assertThat(HiveSchemaUtil.getDefaultValue("NULL", Types.GeometryType.crs84())).isNull();
+    assertThatThrownBy(() -> HiveSchemaUtil.getDefaultValue("'0101000000'", Types.GeometryType.crs84()))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessageContaining("Default values for type geometry");
+  }
+
   protected List<FieldSchema> getSupportedFieldSchemas() {
     List<FieldSchema> fields = Lists.newArrayList();
     fields.add(new FieldSchema("c_float", serdeConstants.FLOAT_TYPE_NAME, "float comment"));

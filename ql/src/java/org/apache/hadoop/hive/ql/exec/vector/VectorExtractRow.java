@@ -314,6 +314,7 @@ public class VectorExtractRow {
             return doubleValue;
           }
         case BINARY:
+        case GEOMETRY:
           {
             final BytesColumnVector bytesColVector =
                 ((BytesColumnVector) colVector);

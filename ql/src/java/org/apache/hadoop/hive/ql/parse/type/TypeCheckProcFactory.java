@@ -128,6 +128,8 @@ public class TypeCheckProcFactory<T> {
         serdeConstants.VARCHAR_TYPE_NAME);
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_BINARY,
         serdeConstants.BINARY_TYPE_NAME);
+    CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_GEOMETRY,
+        serdeConstants.GEOMETRY_TYPE_NAME);
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_DATE,
         serdeConstants.DATE_TYPE_NAME);
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_TIMESTAMP,
@@ -1156,6 +1158,8 @@ public class TypeCheckProcFactory<T> {
           return timestampLocalTZTypeInfo;
         case HiveParser.TOK_DECIMAL:
           return ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
+        case HiveParser.TOK_GEOMETRY:
+          return ParseUtils.getGeometryTypeInfo(funcNameNode);
         case HiveParser.TOK_MAP:
         case HiveParser.TOK_LIST:
         case HiveParser.TOK_STRUCT:

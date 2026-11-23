@@ -210,7 +210,7 @@ public class ColumnValue {
       return stringValue((HiveIntervalDayTime) value);
     case DECIMAL_TYPE:
       return stringValue((HiveDecimal)value, typeDescriptor);
-    case BINARY_TYPE:
+    case BINARY_TYPE, GEOMETRY_TYPE:
       return stringValue((String)value);
     case ARRAY_TYPE, MAP_TYPE, STRUCT_TYPE, UNION_TYPE, VARIANT_TYPE, USER_DEFINED_TYPE:
       return stringValue((String)value);
