@@ -140,10 +140,9 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   @Override
   public final Database filterDatabase(Database database) throws MetaException, NoSuchObjectException {
     if (database != null) {
-      String dbName = database.getName();
-      List<String> databases = filterDatabases(database.getCatalogName(), Collections.singletonList(dbName));
-      if (databases.isEmpty()) {
-        throw new NoSuchObjectException(String.format("Database %s does not exist", dbName));
+      List<Database> filteredDatabases = filterDatabaseObjects(Collections.singletonList(database));
+      if (filteredDatabases.isEmpty()) {
+        throw new NoSuchObjectException(String.format("Database %s does not exist", database.getName()));
       }
     }
     return database;
@@ -302,6 +301,21 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return filteredDataConnector;
   }
 
+  private HiveAuthzContext applyClientConfig(HiveAuthzContext hiveAuthzContext) {
+    Map<String, Object> clientConfig = cConfig.get();
+    if (clientConfig == null) {
+      return hiveAuthzContext;
+    }
+    HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
+    builder.setClientConfig(clientConfig);
+    if (hiveAuthzContext != null) {
+      builder.setCommandString(hiveAuthzContext.getCommandString());
+      builder.setUserIpAddress(hiveAuthzContext.getIpAddress());
+      builder.setForwardedAddresses(hiveAuthzContext.getForwardedAddresses());
+    }
+    return builder.build();
+  }
+
   private List<String> filterDatabaseObjects(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo) throws MetaException {
     List<String> ret = null;
 
@@ -310,18 +324,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     try {
       HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
       List<HivePrivilegeObject> hivePrivilegeObjects = hiveMetaStoreAuthzInfo.getInputHObjs();
-      HiveAuthzContext hiveAuthzContext = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
-      Map<String, Object> clientConfig = cConfig.get();
-      if (clientConfig != null) {
-        HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
-        builder.setClientConfig(clientConfig);
-        if (hiveAuthzContext != null) {
-          builder.setCommandString(hiveAuthzContext.getCommandString());
-          builder.setUserIpAddress(hiveAuthzContext.getIpAddress());
-          builder.setForwardedAddresses(hiveAuthzContext.getForwardedAddresses());
-        }
-        hiveAuthzContext = builder.build();
-      }
+      HiveAuthzContext hiveAuthzContext = applyClientConfig(hiveMetaStoreAuthzInfo.getHiveAuthzContext());
       List<HivePrivilegeObject> filteredHivePrivilegeObjects =
           hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
       if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
@@ -351,7 +354,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
       HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
       List<HivePrivilegeObject> hivePrivilegeObjects = hiveMetaStoreAuthzInfo.getInputHObjs();
-      HiveAuthzContext hiveAuthzContext = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
+      HiveAuthzContext hiveAuthzContext = applyClientConfig(hiveMetaStoreAuthzInfo.getHiveAuthzContext());
 
       List<HivePrivilegeObject> filteredHivePrivilegeObjects =
           hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
@@ -419,7 +422,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     try {
       HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
       List<HivePrivilegeObject> hivePrivilegeObjects = hiveMetaStoreAuthzInfo.getInputHObjs();
-      HiveAuthzContext hiveAuthzContext = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
+      HiveAuthzContext hiveAuthzContext = applyClientConfig(hiveMetaStoreAuthzInfo.getHiveAuthzContext());
       List<HivePrivilegeObject> filteredHivePrivilegeObjects =
           hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
       if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
@@ -444,7 +447,8 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
   private List<Table> getFilteredTableList(List<HivePrivilegeObject> hivePrivilegeObjects, List<Table> tableList) {
     final List<Table> ret = new ArrayList<>();
-    final TablePrivilegeLookup index = new TablePrivilegeLookup(hivePrivilegeObjects);
+    final TablePrivilegeLookup index =
+        new TablePrivilegeLookup(hivePrivilegeObjects, MetaStoreUtils.getDefaultCatalog(getConf()));
     for(Table table : tableList) {
       if (index.lookup(table.getCatName(), table.getDbName(), table.getTableName()) != null) {
         ret.add(table);
@@ -460,18 +464,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     try {
       HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
       List<HivePrivilegeObject> hivePrivilegeObjects = hiveMetaStoreAuthzInfo.getInputHObjs();
-      HiveAuthzContext hiveAuthzContext = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
-      Map<String, Object> clientConfig = cConfig.get();
-      if (clientConfig != null) {
-        HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
-        builder.setClientConfig(clientConfig);
-        if (hiveAuthzContext != null) {
-          builder.setCommandString(hiveAuthzContext.getCommandString());
-          builder.setUserIpAddress(hiveAuthzContext.getIpAddress());
-          builder.setForwardedAddresses(hiveAuthzContext.getForwardedAddresses());
-        }
-        hiveAuthzContext = builder.build();
-      }
+      HiveAuthzContext hiveAuthzContext = applyClientConfig(hiveMetaStoreAuthzInfo.getHiveAuthzContext());
       List<HivePrivilegeObject> filteredHivePrivilegeObjects =
           hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
       if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
@@ -487,7 +480,8 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
   private List<String> getFilteredTableNames(List<HivePrivilegeObject> hivePrivilegeObjects, String catalogName, String databaseName, List<String> tableNames) {
     List<String> ret = new ArrayList<>();
-    final TablePrivilegeLookup index = new TablePrivilegeLookup(hivePrivilegeObjects);
+    final TablePrivilegeLookup index =
+        new TablePrivilegeLookup(hivePrivilegeObjects, MetaStoreUtils.getDefaultCatalog(getConf()));
     for(String tableName : tableNames) {
       if (index.lookup(catalogName, databaseName, tableName) != null) {
         ret.add(tableName);

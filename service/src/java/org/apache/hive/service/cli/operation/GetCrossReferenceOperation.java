@@ -21,7 +21,9 @@ package org.apache.hive.service.cli.operation;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -127,17 +129,28 @@ public class GetCrossReferenceOperation extends MetadataOperation {
   public void runInternal() throws HiveSQLException {
     setState(OperationState.RUNNING);
     log.info("Fetching cross reference metadata");
+    if (StringUtils.isNotBlank(parentCatalogName) && StringUtils.isNotBlank(foreignCatalogName)
+        && !Objects.equals(parentCatalogName, foreignCatalogName)) {
+      throw new HiveSQLException("No cross reference metadata: parent and foreign catalogs differ");
+    }
+
+    // Foreign keys are stored in one catalog. A side left blank follows the side that was set,
+    // and both follow the session catalog when neither was set.
+    String catalog = catalogOrDefault(StringUtils.isNotBlank(parentCatalogName)
+        ? parentCatalogName : foreignCatalogName);
     try {
        IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
      ForeignKeysRequest fkReq = new ForeignKeysRequest(parentSchemaName, parentTableName, foreignSchemaName, foreignTableName);
+     fkReq.setCatName(catalog);
      List<SQLForeignKey> fks = metastoreClient.getForeignKeys(fkReq);
       if (fks == null) {
+        setState(OperationState.FINISHED);
         return;
       }
       for (SQLForeignKey fk : fks) {
-        Object[] rowData = new Object[] {parentCatalogName,
+        Object[] rowData = new Object[] {catalog,
             fk.getPktable_db(), fk.getPktable_name(), fk.getPkcolumn_name(),
-            foreignCatalogName,
+            catalog,
             fk.getFktable_db(), fk.getFktable_name(), fk.getFkcolumn_name(),
             fk.getKey_seq(), fk.getUpdate_rule(), fk.getDelete_rule(), fk.getFk_name(),
             fk.getPk_name(), 0};

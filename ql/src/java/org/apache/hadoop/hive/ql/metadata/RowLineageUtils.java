@@ -145,15 +145,21 @@ public class RowLineageUtils {
     return insertClauseValues;
   }
 
+  /**
+   * Marks the row lineage columns (-1 in row 0, no nulls) before a batch is read. If the mark survives the read,
+   * the file does not store the column, and HiveBatchIterator generates the values.
+   */
   public static void initializeRowLineageColumns(VectorizedRowBatchCtx vrbCtx, VectorizedRowBatch batch) {
     int rowIdIdx = vrbCtx.findVirtualColumnNum(VirtualColumn.ROW_LINEAGE_ID);
     if (rowIdIdx != -1) {
       LongColumnVector rowIdLcv = (LongColumnVector) batch.cols[rowIdIdx];
+      rowIdLcv.noNulls = true;
       rowIdLcv.vector[0] = -1L;
     }
     int lusnIdx = vrbCtx.findVirtualColumnNum(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
     if (lusnIdx != -1) {
       LongColumnVector lusnLcv = (LongColumnVector) batch.cols[lusnIdx];
+      lusnLcv.noNulls = true;
       lusnLcv.vector[0] = -1L;
     }
   }

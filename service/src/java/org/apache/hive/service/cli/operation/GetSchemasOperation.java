@@ -53,7 +53,7 @@ public class GetSchemasOperation extends MetadataOperation {
 
   protected GetSchemasOperation(HiveSession parentSession, String catalogName, String schemaName) {
     super(parentSession, OperationType.GET_SCHEMAS);
-    this.catalogName = catalogName;
+    this.catalogName = catalogOrDefault(catalogName);
     this.schemaName = schemaName;
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
     LOG.info(
@@ -72,11 +72,11 @@ public class GetSchemasOperation extends MetadataOperation {
     try {
       IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
       String schemaPattern = convertSchemaPattern(schemaName);
-      for (String dbName : metastoreClient.getDatabases(schemaPattern)) {
-        rowSet.addRow(new Object[] {dbName, DEFAULT_HIVE_CATALOG});
+      for (String dbName : metastoreClient.getDatabases(catalogName, schemaPattern)) {
+        rowSet.addRow(new Object[] {dbName, catalogName});
         if (LOG.isDebugEnabled()) {
           String debugMessage = getDebugMessage("schema", RESULT_SET_SCHEMA);
-          LOG.debug(debugMessage, dbName, DEFAULT_HIVE_CATALOG);
+          LOG.debug(debugMessage, dbName, catalogName);
         }
       }
       if (LOG.isDebugEnabled() && rowSet.numRows() == 0) {

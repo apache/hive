@@ -1812,7 +1812,7 @@
           },
           {
             "name": "w_warehouse_name",
-            "ndv": 27
+            "ndv": 26
           },
           {
             "name": "w_warehouse_id",
@@ -1826,19 +1826,19 @@
           },
           {
             "name": "w_street_number",
-            "ndv": 26
+            "ndv": 25
           },
           {
             "name": "w_street_name",
-            "ndv": 27
+            "ndv": 26
           },
           {
             "name": "w_street_type",
-            "ndv": 16
+            "ndv": 15
           },
           {
             "name": "w_suite_number",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "w_city",
@@ -2160,7 +2160,7 @@
           },
           {
             "name": "web_name",
-            "ndv": 15
+            "ndv": 14
           },
           {
             "name": "web_site_id",
@@ -2192,11 +2192,11 @@
           },
           {
             "name": "web_class",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "web_manager",
-            "ndv": 60
+            "ndv": 59
           },
           {
             "name": "web_mkt_id",
@@ -2206,7 +2206,7 @@
           },
           {
             "name": "web_mkt_class",
-            "ndv": 65
+            "ndv": 64
           },
           {
             "name": "web_mkt_desc",
@@ -2214,7 +2214,7 @@
           },
           {
             "name": "web_market_manager",
-            "ndv": 66
+            "ndv": 65
           },
           {
             "name": "web_company_id",
@@ -2224,15 +2224,15 @@
           },
           {
             "name": "web_company_name",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "web_street_number",
-            "ndv": 58
+            "ndv": 57
           },
           {
             "name": "web_street_name",
-            "ndv": 80
+            "ndv": 79
           },
           {
             "name": "web_street_type",
@@ -2244,11 +2244,11 @@
           },
           {
             "name": "web_city",
-            "ndv": 52
+            "ndv": 51
           },
           {
             "name": "web_county",
-            "ndv": 58
+            "ndv": 57
           },
           {
             "name": "web_state",
@@ -2260,7 +2260,7 @@
           },
           {
             "name": "web_country",
-            "ndv": 2
+            "ndv": 1
           },
           {
             "name": "web_gmt_offset",

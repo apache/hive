@@ -78,7 +78,7 @@ public class GetTablesOperation extends MetadataOperation {
       String catalogName, String schemaName, String tableName,
       List<String> tableTypes) {
     super(parentSession, OperationType.GET_TABLES);
-    this.catalogName = catalogName;
+    this.catalogName = catalogOrDefault(catalogName);
     this.schemaName = schemaName;
     this.tableName = tableName;
     String tableMappingStr = getParentSession().getHiveConf().
@@ -107,7 +107,7 @@ public class GetTablesOperation extends MetadataOperation {
     try {
       IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
       String schemaPattern = convertSchemaPattern(schemaName);
-      List<String> matchingDbs = metastoreClient.getDatabases(schemaPattern);
+      List<String> matchingDbs = metastoreClient.getDatabases(catalogName, schemaPattern);
       if(isAuthV2Enabled()){
         List<HivePrivilegeObject> privObjs = HivePrivilegeObjectUtils.getHivePrivDbObjects(catalogName, matchingDbs);
         String cmdStr = "catalog : " + catalogName + ", schemaPattern : " + schemaName;
@@ -115,12 +115,12 @@ public class GetTablesOperation extends MetadataOperation {
       }
 
       String tablePattern = convertIdentifierPattern(tableName, true);
-      for (String dbName : metastoreClient.getDatabases(schemaPattern)) {
+      for (String dbName : matchingDbs) {
         for (TableMeta tableMeta :
-                metastoreClient.getTableMeta(dbName, tablePattern, tableTypeList)) {
+                metastoreClient.getTableMeta(catalogName, dbName, tablePattern, tableTypeList)) {
           String tableType = tableTypeMapping.mapToClientType(tableMeta.getTableType());
           rowSet.addRow(new Object[]{
-                  DEFAULT_HIVE_CATALOG,
+                  catalogName,
                   tableMeta.getDbName(),
                   tableMeta.getTableName(),
                   tableType,
@@ -130,7 +130,7 @@ public class GetTablesOperation extends MetadataOperation {
 
           if (LOG.isDebugEnabled()) {
             String debugMessage = getDebugMessage("table", RESULT_SET_SCHEMA);
-            LOG.debug(debugMessage, DEFAULT_HIVE_CATALOG, tableMeta.getDbName(),
+            LOG.debug(debugMessage, catalogName, tableMeta.getDbName(),
                     tableMeta.getTableName(), tableType, tableMeta.getComments());
           }
         }

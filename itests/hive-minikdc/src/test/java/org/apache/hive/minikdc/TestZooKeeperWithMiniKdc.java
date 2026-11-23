@@ -104,7 +104,7 @@ public class TestZooKeeperWithMiniKdc {
         "serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2;principal=hive/localhost@EXAMPLE.COM";
     try (Connection con = DriverManager.getConnection(url);
          ResultSet rs = con.getMetaData().getCatalogs()) {
-      Assert.assertFalse(rs.next());
+      Assert.assertTrue(rs.next());
       ((HiveConnection) con).getDelegationToken("hive", "hive");
     }
     Assert.assertNotNull(System.getProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY));

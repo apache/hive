@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
 import org.slf4j.Logger;
@@ -69,7 +68,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     if (StringUtils.isNotEmpty(uri)) {
       // Skip DFS_URI only if table location is under default db path
       if (this.needDFSUriAuth(uri, this.getDefaultTablePath(database, table))) {
-        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri));
+        ret.add(getHivePrivilegeObjectDfsUri(uri));
       }
     }
 
@@ -103,7 +102,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
       // Skip DFS_URI for external tables and if managed table location is under default db path
       if (!MetaStoreUtils.isExternalTable(table) && this.needDFSUriAuth(uri,
           this.getDefaultTablePath(database, table))) {
-        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri));
+        ret.add(getHivePrivilegeObjectDfsUri(uri));
       }
     }
 

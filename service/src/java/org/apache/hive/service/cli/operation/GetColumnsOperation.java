@@ -126,7 +126,7 @@ public class GetColumnsOperation extends MetadataOperation {
   protected GetColumnsOperation(HiveSession parentSession, String catalogName, String schemaName,
       String tableName, String columnName) {
     super(parentSession, OperationType.GET_COLUMNS);
-    this.catalogName = catalogName;
+    this.catalogName = catalogOrDefault(catalogName);
     this.schemaName = schemaName;
     this.tableName = tableName;
     this.columnName = columnName;
@@ -150,12 +150,12 @@ public class GetColumnsOperation extends MetadataOperation {
         columnPattern = Pattern.compile(convertIdentifierPattern(columnName, false));
       }
 
-      List<String> dbNames = metastoreClient.getDatabases(schemaPattern);
+      List<String> dbNames = metastoreClient.getDatabases(catalogName, schemaPattern);
       Collections.sort(dbNames);
       Map<String, List<String>> db2Tabs = new HashMap<>();
 
       for (String dbName : dbNames) {
-        List<String> tableNames = metastoreClient.getTables(dbName, tablePattern);
+        List<String> tableNames = metastoreClient.getTables(catalogName, dbName, tablePattern);
         Collections.sort(tableNames);
         db2Tabs.put(dbName, tableNames);
       }
@@ -171,12 +171,13 @@ public class GetColumnsOperation extends MetadataOperation {
       for (Entry<String, List<String>> dbTabs : db2Tabs.entrySet()) {
         String dbName = dbTabs.getKey();
         List<String> tableNames = dbTabs.getValue();
+        for (Table table : new TableIterable(metastoreClient, catalogName, dbName, tableNames, maxBatchSize)) {
 
-        for (Table table : new TableIterable(metastoreClient, dbName, tableNames, maxBatchSize)) {
-
-          TableSchema schema = new TableSchema(metastoreClient.getSchema(dbName,
+          TableSchema schema = new TableSchema(metastoreClient.getSchema(catalogName, dbName,
               table.getTableName()));
-          List<SQLPrimaryKey> primaryKeys = metastoreClient.getPrimaryKeys(new PrimaryKeysRequest(dbName, table.getTableName()));
+          PrimaryKeysRequest primaryKeysRequest = new PrimaryKeysRequest(dbName, table.getTableName());
+          primaryKeysRequest.setCatName(catalogName);
+          List<SQLPrimaryKey> primaryKeys = metastoreClient.getPrimaryKeys(primaryKeysRequest);
           Set<String> pkColNames = new HashSet<>();
           for(SQLPrimaryKey key : primaryKeys) {
             pkColNames.add(key.getColumn_name().toLowerCase());
@@ -235,8 +236,11 @@ public class GetColumnsOperation extends MetadataOperation {
     List<HivePrivilegeObject> privObjs = new ArrayList<>();
     for (Entry<String, List<String>> dbTabs : db2Tabs.entrySet()) {
       for (String tabName : dbTabs.getValue()) {
-        privObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, catalogName, dbTabs.getKey(),
-            tabName));
+        privObjs.add(HivePrivilegeObject.builder(HivePrivilegeObjectType.TABLE_OR_VIEW)
+            .catName(catalogName)
+            .dbName(dbTabs.getKey())
+            .objectName(tabName)
+            .build());
       }
     }
     return privObjs;

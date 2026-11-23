@@ -782,7 +782,7 @@
           },
           {
             "name": "t_meal_time",
-            "ndv": 4
+            "ndv": 3
           }
         ]
       },
@@ -1880,7 +1880,7 @@
           },
           {
             "name": "w_warehouse_name",
-            "ndv": 27
+            "ndv": 26
           },
           {
             "name": "w_warehouse_sq_ft",
@@ -1910,19 +1910,19 @@
           },
           {
             "name": "w_street_number",
-            "ndv": 26
+            "ndv": 25
           },
           {
             "name": "w_street_name",
-            "ndv": 27
+            "ndv": 26
           },
           {
             "name": "w_street_type",
-            "ndv": 16
+            "ndv": 15
           },
           {
             "name": "w_suite_number",
-            "ndv": 21
+            "ndv": 20
           },
           {
             "name": "w_zip",

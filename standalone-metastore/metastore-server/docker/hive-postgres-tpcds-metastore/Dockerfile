@@ -14,9 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-FROM postgres:12.3
+FROM postgres:18-alpine
 
-ADD https://github.com/zabetak/hive-test-datasets/releases/download/1.0/metastore_tpcds30tb_3_1_3000.dump.gz /tmp/metastore.dump.gz
-RUN chown postgres:postgres /tmp/metastore.dump.gz
-COPY init_user_db.sql /docker-entrypoint-initdb.d/init_user_db.sql
-COPY restore_metastore.sh /docker-entrypoint-initdb.d/restore_metastore.sh
+RUN wget -O /tmp/metastore_db.zstd https://nightlies.apache.org/hive/datasets/tpcds-metastore-30tb-1.0.zstd \
+ && echo 'dbeb9f4572dc001d84e10c47817a10166cdf1ac2f6fefd7a78f825f8afd4f3ab  /tmp/metastore_db.zstd' > /tmp/metastore_db.sha256 \
+ && sha256sum -c /tmp/metastore_db.sha256 \
+ && chown postgres:postgres /tmp/metastore_db.zstd
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod u+x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+

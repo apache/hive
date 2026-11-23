@@ -163,7 +163,7 @@ public class TestTablePermissionFilterAlgos {
    */
   private static class TestLookup extends HivePrivilegeObjectUtils.TableLookup<TestTable> {
     protected TestLookup(List<TestTable> tables) {
-      super(tables);
+      super(tables, "hive");
     }
 
     @Override protected String getCatName(TestTable o) {

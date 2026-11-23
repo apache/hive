@@ -128,7 +128,7 @@ public class TestHDFSPermissionPolicyProvider {
     fs.setOwner(new Path(db1Tbl1Loc), "user1", "group1");
     fs.setPermission(new Path(defaultTbl1Loc), new FsPermission("444")); // r--r--r--
     HiveResourceACLs acls = policyProvider.getResourceACLs(
-        new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, "hive", "default", "tbl1"));
+        tableObject("default", "tbl1"));
     assertEquals(acls.getUserPermissions().size(), 1);
     assertTrue(acls.getUserPermissions().keySet().contains("user1"));
     assertEquals(acls.getGroupPermissions().size(), 2);
@@ -137,7 +137,7 @@ public class TestHDFSPermissionPolicyProvider {
 
     fs.setPermission(new Path(defaultTbl1Loc), new FsPermission("440")); // r--r-----
     acls = policyProvider.getResourceACLs(
-        new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, "hive", "default", "tbl1"));
+        tableObject("default", "tbl1"));
     assertEquals(acls.getUserPermissions().size(), 1);
     assertEquals(acls.getUserPermissions().keySet().iterator().next(), "user1");
     assertEquals(acls.getGroupPermissions().size(), 1);
@@ -145,7 +145,7 @@ public class TestHDFSPermissionPolicyProvider {
 
     fs.setPermission(new Path(defaultTbl1Loc), new FsPermission("404")); // r-----r--
     acls = policyProvider.getResourceACLs(
-        new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, "hive", "default", "tbl1"));
+        tableObject("default", "tbl1"));
     assertEquals(acls.getUserPermissions().size(), 1);
     assertTrue(acls.getUserPermissions().keySet().contains("user1"));
     assertEquals(acls.getGroupPermissions().size(), 1);
@@ -153,7 +153,7 @@ public class TestHDFSPermissionPolicyProvider {
 
     fs.setPermission(new Path(defaultTbl1Loc), new FsPermission("400")); // r--------
     acls = policyProvider.getResourceACLs(
-        new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, "hive", "default", "tbl1"));
+        tableObject("default", "tbl1"));
     assertEquals(acls.getUserPermissions().size(), 1);
     assertTrue(acls.getUserPermissions().keySet().contains("user1"));
     assertEquals(acls.getGroupPermissions().size(), 0);
@@ -161,12 +161,12 @@ public class TestHDFSPermissionPolicyProvider {
     fs.setPermission(new Path(defaultTbl1Loc), new FsPermission("004")); // ------r--
     fs.setPermission(new Path(defaultTbl2Loc), new FsPermission("777")); // rwxrwxrwx
     acls = policyProvider.getResourceACLs(
-        new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, "hive", "default", "tbl1"));
+        tableObject("default", "tbl1"));
     assertEquals(acls.getUserPermissions().size(), 0);
     assertEquals(acls.getGroupPermissions().size(), 1);
     assertTrue(acls.getGroupPermissions().keySet().contains("public"));
     acls = policyProvider.getResourceACLs(
-        new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, "hive", "default", "tbl2"));
+        tableObject("default", "tbl2"));
     assertEquals(acls.getUserPermissions().size(), 1);
     assertTrue(acls.getUserPermissions().keySet().contains("user1"));
     assertEquals(acls.getGroupPermissions().size(), 2);
@@ -176,15 +176,23 @@ public class TestHDFSPermissionPolicyProvider {
     fs.setPermission(new Path(db1Loc), new FsPermission("400")); // ------r--
     fs.delete(new Path(db1Tbl1Loc), true);
     acls = policyProvider.getResourceACLs(
-        new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, "hive", "db1", (String) null));
+        HivePrivilegeObject.builder(HivePrivilegeObjectType.DATABASE).catName("hive").dbName("db1").build());
     assertEquals(acls.getUserPermissions().size(), 1);
     assertTrue(acls.getUserPermissions().keySet().contains("user1"));
     assertEquals(acls.getGroupPermissions().size(), 0);
     acls = policyProvider.getResourceACLs(
-        new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, "hive", "db1", "tbl1"));
+        tableObject("db1", "tbl1"));
     assertEquals(acls.getUserPermissions().size(), 1);
     assertTrue(acls.getUserPermissions().keySet().contains("user1"));
     assertEquals(acls.getGroupPermissions().size(), 0);
 
+  }
+
+  private static HivePrivilegeObject tableObject(String dbName, String tableName) {
+    return HivePrivilegeObject.builder(HivePrivilegeObjectType.TABLE_OR_VIEW)
+        .catName("hive")
+        .dbName(dbName)
+        .objectName(tableName)
+        .build();
   }
 }

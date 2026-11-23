@@ -122,7 +122,9 @@ public class KillQueryImpl implements KillQuery {
   private static boolean isAdmin() {
     boolean isAdmin = false;
     // RANGER-1851
-    HivePrivilegeObject serviceNameObj = new HivePrivilegeObject(HivePrivilegeObjectType.SERVICE_NAME, "hiveservice");
+    HivePrivilegeObject serviceNameObj = HivePrivilegeObject.builder(HivePrivilegeObjectType.SERVICE_NAME)
+        .objectName("hiveservice")
+        .build();
     SessionState ss = SessionState.get();
     if (!HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
       // If authorization is disabled, hs2 process owner should have kill privileges

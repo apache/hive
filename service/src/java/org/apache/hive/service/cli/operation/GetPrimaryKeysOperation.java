@@ -76,7 +76,7 @@ PK_NAME String => primary key name (may be null)
   public GetPrimaryKeysOperation(HiveSession parentSession,
       String catalogName, String schemaName, String tableName) {
     super(parentSession, OperationType.GET_FUNCTIONS);
-    this.catalogName = catalogName;
+    this.catalogName = catalogOrDefault(catalogName);
     this.schemaName = schemaName;
     this.tableName = tableName;
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
@@ -92,6 +92,7 @@ PK_NAME String => primary key name (may be null)
     try {
       IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
       PrimaryKeysRequest sqlReq = new PrimaryKeysRequest(schemaName, tableName);
+      sqlReq.setCatName(catalogName);
       List<SQLPrimaryKey> pks = metastoreClient.getPrimaryKeys(sqlReq);
       if (pks == null) {
         return;

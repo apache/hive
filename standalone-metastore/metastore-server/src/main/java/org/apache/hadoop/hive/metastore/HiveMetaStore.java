@@ -383,7 +383,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
-    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
+    final SslContextFactory sslContextFactory =
+        ServletSecurity.createSslContextFactory(conf, MetastoreConf.getSslClientAuth(conf));
     if (sslContextFactory != null) {
       connector = new ServerConnector(server, sslContextFactory, http);
     } else {
@@ -541,17 +542,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     if (!useSSL) {
       serverSocket = SecurityUtils.getServerSocket(msHost, port);
     } else {
-      String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
-      if (keyStorePath.isEmpty()) {
-        throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH.toString()
-            + " Not configured for SSL connection");
-      }
-      String keyStorePassword =
-          MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
-      String keyStoreType =
-          MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_TYPE).trim();
-      String keyStoreAlgorithm =
-          MetastoreConf.getVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
+      SecurityUtils.StoreConfig keyStore = MetastoreConf.getSslServerKeyStore(conf);
       // enable SSL support for HMS
       List<String> sslVersionBlacklist = new ArrayList<>();
       for (String sslVersion : MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",")) {
@@ -559,10 +550,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
       String includeCipherSuites = MetastoreConf.getVar(conf, ConfVars.SSL_INCLUDE_CIPHERSUITES);
+      SecurityUtils.ClientAuth clientAuth = MetastoreConf.getSslClientAuth(conf);
+      SecurityUtils.StoreConfig trustStore = clientAuth == SecurityUtils.ClientAuth.NONE
+          ? SecurityUtils.StoreConfig.NONE : MetastoreConf.getSslServerTrustStore(conf);
 
-      serverSocket = SecurityUtils.getServerSSLSocket(msHost, port, keyStorePath,
-          keyStorePassword, keyStoreType, keyStoreAlgorithm, sslVersionBlacklist,
-          includeProtocols, includeCipherSuites);
+      serverSocket = SecurityUtils.getServerSSLSocket(msHost, port, keyStore, clientAuth, trustStore,
+          sslVersionBlacklist, includeProtocols, includeCipherSuites);
     }
 
     ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads,

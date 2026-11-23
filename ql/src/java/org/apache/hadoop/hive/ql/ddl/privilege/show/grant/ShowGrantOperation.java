@@ -87,7 +87,9 @@ public class ShowGrantOperation extends DDLOperation<ShowGrantDesc> {
       HivePrincipal grantor = privilege.getGrantorPrincipal();
 
       ShowUtils.appendNonNull(builder, resource.getDbname(), true);
-      ShowUtils.appendNonNull(builder, resource.getObjectName());
+      String objectName =
+          resource.getType() == HivePrivilegeObject.HivePrivilegeObjectType.DATABASE ? "" : resource.getObjectName();
+      ShowUtils.appendNonNull(builder, objectName);
       ShowUtils.appendNonNull(builder, resource.getPartKeys());
       ShowUtils.appendNonNull(builder, resource.getColumns());
       ShowUtils.appendNonNull(builder, principal.getName());

@@ -1248,11 +1248,11 @@
           },
           {
             "name": "c_preferred_cust_flag",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "c_birth_country",
-            "ndv": 216
+            "ndv": 214
           },
           {
             "name": "c_login",
@@ -1294,7 +1294,7 @@
           },
           {
             "name": "c_salutation",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "c_birth_day",
@@ -2209,7 +2209,7 @@
           },
           {
             "name": "c_salutation",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "c_first_name",
@@ -2221,7 +2221,7 @@
           },
           {
             "name": "c_preferred_cust_flag",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "c_birth_day",
@@ -2243,7 +2243,7 @@
           },
           {
             "name": "c_birth_country",
-            "ndv": 216
+            "ndv": 214
           },
           {
             "name": "c_login",
@@ -4976,7 +4976,7 @@
           },
           {
             "name": "c_salutation",
-            "ndv": 7
+            "ndv": 6
           },
           {
             "name": "c_first_name",
@@ -4988,7 +4988,7 @@
           },
           {
             "name": "c_preferred_cust_flag",
-            "ndv": 3
+            "ndv": 2
           },
           {
             "name": "c_birth_day",
@@ -5010,7 +5010,7 @@
           },
           {
             "name": "c_birth_country",
-            "ndv": 216
+            "ndv": 214
           },
           {
             "name": "c_login",

@@ -186,8 +186,7 @@ class IcebergAuthorizer {
 
     List<HivePrivilegeObject> inputs = request.location() == null
         ? Collections.emptyList()
-        : Collections.singletonList(new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI,
-            request.location()));
+        : Collections.singletonList(dfsUri(request.location()));
     final String currentUser = HiveHadoopUtil.currentUser();
     String databaseOwnerName = currentUser;
     final PrincipalType databaseOwnerType;
@@ -200,12 +199,19 @@ class IcebergAuthorizer {
     }
     final String tableOwnerName = request.properties().getOrDefault(HMS_TABLE_OWNER, currentUser);
     List<HivePrivilegeObject> outputs = List.of(
-        new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, catalogName, databaseName, null,
-            null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
-            databaseOwnerName, databaseOwnerType),
-        new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, catalogName, databaseName,
-            request.name(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
-            tableOwnerName, PrincipalType.USER)
+        HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE)
+            .catName(catalogName)
+            .dbName(databaseName)
+            .ownerName(databaseOwnerName)
+            .ownerType(databaseOwnerType)
+            .build(),
+        HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW)
+            .catName(catalogName)
+            .dbName(databaseName)
+            .objectName(request.name())
+            .ownerName(tableOwnerName)
+            .ownerType(PrincipalType.USER)
+            .build()
     );
 
     check(authorizer, HiveOperationType.CREATETABLE, inputs, outputs, "create table " + request.name());
@@ -344,14 +350,25 @@ class IcebergAuthorizer {
   }
 
   private static HivePrivilegeObject tableOrView(String catalogName, TableIdentifier identifier) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, catalogName,
-        identifier.namespace().level(0), identifier.name());
+    return HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW)
+        .catName(catalogName)
+        .dbName(identifier.namespace().level(0))
+        .objectName(identifier.name())
+        .build();
   }
 
   private static HivePrivilegeObject database(String catalogName, Namespace namespace) {
     Preconditions.checkArgument(namespace.levels().length == 1, "Hive does not support multi-level namespaces");
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, catalogName,
-        namespace.level(0), (String) null);
+    return HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE)
+        .catName(catalogName)
+        .dbName(namespace.level(0))
+        .build();
+  }
+
+  private static HivePrivilegeObject dfsUri(String location) {
+    return HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI)
+        .objectName(location)
+        .build();
   }
 
   private void check(HiveOperationType operation, List<HivePrivilegeObject> inputs,
@@ -429,10 +446,8 @@ class IcebergAuthorizer {
       return;
     }
 
-    var inputs = Collections.singletonList(
-        new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
-    var outputs = Collections.singletonList(
-        new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
+    var inputs = Collections.singletonList(dfsUri(location));
+    var outputs = Collections.singletonList(dfsUri(location));
     check(authorizer, HiveOperationType.DROPTABLE, inputs, outputs, "drop table " + identifier.name());
   }
 
@@ -476,8 +491,7 @@ class IcebergAuthorizer {
       return;
     }
 
-    var inputs = Collections.singletonList(
-        new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, location));
+    var inputs = Collections.singletonList(dfsUri(location));
     check(authorizer, HiveOperationType.CREATETABLE, inputs, Collections.emptyList(), commandString);
   }
 
@@ -499,14 +513,12 @@ class IcebergAuthorizer {
       List<String> columns) {
     // We may add the owner and owner type in the future. It requires an extra metastore request.
     final var readPrivileges = Collections.singletonList(
-        new HivePrivilegeObject(
-            HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW,
-            catalog,
-            database,
-            table,
-            null,
-            columns
-        )
+        HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW)
+            .catName(catalog)
+            .dbName(database)
+            .objectName(table)
+            .columns(columns)
+            .build()
     );
     final var builder = new HiveAuthzContext.Builder();
     builder.setCommandString("read");
@@ -537,16 +549,12 @@ class IcebergAuthorizer {
 
   // Check if the user has the INSERT INTO permission
   private boolean isWritable(HiveAuthorizer authorizer, String catalog, String database, String table) {
-    final var object = new HivePrivilegeObject(
-        HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW,
-        catalog,
-        database,
-        table,
-        null,
-        null,
-        HivePrivilegeObject.HivePrivObjectActionType.INSERT,
-        null
-    );
+    final var object = HivePrivilegeObject.builder(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW)
+        .catName(catalog)
+        .dbName(database)
+        .objectName(table)
+        .actionType(HivePrivilegeObject.HivePrivObjectActionType.INSERT)
+        .build();
     final var builder = new HiveAuthzContext.Builder();
     builder.setCommandString("write");
     final var context = builder.build();

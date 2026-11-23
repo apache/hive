@@ -598,7 +598,9 @@ public class CompactorUtil {
             .filter(entry -> entry.getKey().startsWith(COMPACTOR_PREFIX))
             .forEach(entry -> {
               String property = entry.getKey().substring(COMPACTOR_PREFIX.length());
-              conf.set(property, entry.getValue());
+              if (CompactorPropertyValidator.isParameterAllowed(conf, property)) {
+                conf.set(property, entry.getValue());
+              }
             });
   }
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -52,7 +53,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -132,6 +131,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
@@ -155,6 +155,8 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       FileFormat.PARQUET.name().toLowerCase(),
       FileFormat.ORC.name().toLowerCase(),
       FileFormat.AVRO.name().toLowerCase());
+  private static final Set<String> METADATA_FILE_PROPS = ImmutableSet.of(
+      BaseMetastoreTableOperations.METADATA_LOCATION_PROP, BaseMetastoreTableOperations.METADATA_HASH_PROP);
   private static final PartitionDropOptions DROP_OPTIONS = new PartitionDropOptions().deleteData(false).ifExists(true);
   private static final List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> EMPTY_FILTER =
       Lists.newArrayList(org.apache.commons.lang3.tuple.Pair.of(1, new byte[0]));
@@ -307,24 +309,32 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     }
   }
 
+  /**
+   * An alter without an operation type (e.g. a stats update) commits nothing to Iceberg: the metadata_location CAS
+   * protects it instead of the lock.
+   */
   private HiveLock lockObject(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    if (!HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf) ||
-        SessionStateUtil.getQueryState(conf)
-            .map(QueryState::getHiveOperation)
-            .filter(opType -> HiveOperation.QUERY == opType)
-            .isPresent()) {
+    if (currentAlterTableOp == null || !HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf)) {
       return new NoLock();
     } else {
       return new MetastoreLock(
           conf,
-          new CachedClientPool(conf, Maps.fromProperties(tableProperties)),
+          newClientPool(),
           tableProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(),
           hmsTable.getTableName());
     }
   }
 
+  private CachedClientPool newClientPool() {
+    return new CachedClientPool(conf, Maps.fromProperties(tableProperties));
+  }
+
   private void doPreAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
-      throws MetaException {
+      throws TException {
+    if (currentAlterTableOp == null) {
+      refreshMetadataLocation(hmsTable, context);
+      return;
+    }
     try {
       icebergTable = IcebergTableUtil.getTable(conf, tableProperties, true);
     } catch (NoSuchTableException nte) {
@@ -429,6 +439,43 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
             "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
             newMetadataLocation, currentMetadata.metadataFileLocation());
       }
+      setExpectedMetadataLocation(currentMetadata.metadataFileLocation(), context);
+    }
+  }
+
+  /**
+   * Makes the alter carry the current metadata location, read from HMS as HiveTableOperations does, with the metadata
+   * hash that belongs to it.
+   */
+  private void refreshMetadataLocation(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
+      throws TException {
+    Map<String, String> params = hmsTable.getParameters();
+    if (!params.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+      return;
+    }
+    Map<String, String> currentParams;
+    try {
+      currentParams = newClientPool()
+          .run(client -> client.getTable(hmsTable.getDbName(), hmsTable.getTableName()))
+          .getParameters();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException("Interrupted during refresh", e);
+    }
+    params.putAll(Maps.filterKeys(currentParams, METADATA_FILE_PROPS::contains));
+    String metadataLocation = currentParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+    setExpectedMetadataLocation(metadataLocation, context);
+  }
+
+  /**
+   * Without a lock, HMS applies the alter only if no commit moved the metadata location since it was read.
+   * No-op under the HMS lock: the lock and the CAS are alternatives, as in HiveTableOperations.doCommit.
+   */
+  private void setExpectedMetadataLocation(String currentMetadataLocation, EnvironmentContext context) {
+    if (commitLock instanceof NoLock) {
+      context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY,
+          BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, currentMetadataLocation);
     }
   }
 

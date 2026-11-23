@@ -21,13 +21,52 @@ package org.apache.iceberg.mr.hive.test.concurrent;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.JobContext;
+import org.apache.iceberg.mr.hive.HiveIcebergMetaHook;
 import org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter;
 import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
 
 public class HiveIcebergStorageHandlerStub extends HiveIcebergStorageHandler {
+
+  private static final AtomicReference<Callable<?>> PRE_ALTER_TABLE_POST_ACTION = new AtomicReference<>();
+
+  /**
+   * Runs the action once, in the next alter_table call, between the meta hook and the HMS call.
+   */
+  public static void setPreAlterTablePostAction(Callable<?> action) {
+    PRE_ALTER_TABLE_POST_ACTION.set(action);
+  }
+
+  @Override
+  public HiveMetaHook getMetaHook() {
+    HiveMetaHook metaHook = super.getMetaHook();
+    if (!(metaHook instanceof HiveIcebergMetaHook)) {
+      return metaHook;
+    }
+    return new HiveIcebergMetaHook(conf) {
+
+      @Override
+      public void preAlterTable(Table hmsTable, EnvironmentContext context) throws MetaException {
+        super.preAlterTable(hmsTable, context);
+        Callable<?> action = PRE_ALTER_TABLE_POST_ACTION.getAndSet(null);
+        if (action != null) {
+          try {
+            action.call();
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+    };
+  }
 
   @Override
   public HiveIcebergOutputCommitter getOutputCommitter() {
