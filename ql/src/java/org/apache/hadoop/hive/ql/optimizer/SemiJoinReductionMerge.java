@@ -143,7 +143,7 @@ public class SemiJoinReductionMerge extends Transform {
       RuntimeValuesInfo valuesInfo = createRuntimeValuesInfo(rsCompleteOp, sjBranches, parseContext);
       parseContext.getRsToRuntimeValuesInfoMap().put(rsCompleteOp, valuesInfo);
 
-      ExprNodeDesc sjPredicate = createSemiJoinPredicate(sjBranches, valuesInfo, parseContext);
+      ExprNodeGenericFuncDesc sjPredicate = createSemiJoinPredicate(sjBranches, valuesInfo, parseContext);
 
       // Update filter operators with the new semi-join predicate
       for (Operator<?> op : sjTargetTable.getChildOperators()) {
@@ -153,7 +153,8 @@ public class SemiJoinReductionMerge extends Transform {
         }
       }
       // Update tableScan with the new semi-join predicate
-      sjTargetTable.getConf().setFilterExpr(and(sjTargetTable.getConf().getFilterExpr(), sjPredicate));
+      sjTargetTable.getConf()
+          .setFilterExpr((ExprNodeGenericFuncDesc) and(sjTargetTable.getConf().getFilterExpr(), sjPredicate));
 
       for (ReduceSinkOperator rs : sjBranches) {
         GenTezUtils.removeSemiJoinOperator(parseContext, rs, sjTargetTable);
@@ -216,7 +217,7 @@ public class SemiJoinReductionMerge extends Transform {
    * </pre>
    * where the question mark (?) indicates dynamic values bound at runtime.
    */
-  private static ExprNodeDesc createSemiJoinPredicate(List<ReduceSinkOperator> sjBranches,
+  private static ExprNodeGenericFuncDesc createSemiJoinPredicate(List<ReduceSinkOperator> sjBranches,
       RuntimeValuesInfo sjValueInfo, ParseContext context) {
     // Performance note: To speed-up evaluation 'BETWEEN' predicates should come before the 'IN_BLOOM_FILTER'
     Deque<String> dynamicIds = new ArrayDeque<>(sjValueInfo.getDynamicValueIDs());
@@ -249,7 +250,8 @@ public class SemiJoinReductionMerge extends Transform {
     sjPredicates.add(
         new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFInBloomFilter(), "in_bloom_filter",
             Arrays.asList(hashExp, new ExprNodeDynamicValueDesc(bloomDynamic))));
-    return and(sjPredicates);
+    // There are always at least two distinct predicates (BETWEEN and IN_BLOOM_FILTER) so the result is an AND
+    return (ExprNodeGenericFuncDesc) and(sjPredicates);
   }
 
   /**

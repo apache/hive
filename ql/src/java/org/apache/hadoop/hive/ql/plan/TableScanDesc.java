@@ -81,7 +81,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private boolean statsReliable;
   private String tmpStatsDir;
 
-  private ExprNodeDesc filterExpr;
+  private ExprNodeGenericFuncDesc filterExpr;
   private Serializable filterObject;
   private String serializedFilterExpr;
   private String serializedFilterObject;
@@ -277,11 +277,11 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   }
 
   // @Signature // XXX
-  public ExprNodeDesc getFilterExpr() {
+  public ExprNodeGenericFuncDesc getFilterExpr() {
     return filterExpr;
   }
 
-  public void setFilterExpr(ExprNodeDesc filterExpr) {
+  public void setFilterExpr(ExprNodeGenericFuncDesc filterExpr) {
     this.filterExpr = filterExpr;
   }
 

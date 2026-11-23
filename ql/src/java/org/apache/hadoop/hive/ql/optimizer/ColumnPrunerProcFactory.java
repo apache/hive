@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -520,7 +521,7 @@ public final class ColumnPrunerProcFactory {
         return cols;
       }
 
-      ExprNodeDesc filterExpr = desc.getFilterExpr();
+      ExprNodeGenericFuncDesc filterExpr = desc.getFilterExpr();
       if (filterExpr != null) {
         cols = mergeFieldNodesWithDesc(cols, filterExpr);
       }

@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -105,8 +105,8 @@ public class FixedBucketPruningOptimizer extends Transform {
           }
         }
       }
-
-      ExprNodeDesc filter = top.getConf().getFilterExpr();
+      
+      ExprNodeGenericFuncDesc filter = top.getConf().getFilterExpr();
       if (filter == null) {
         return;
       }

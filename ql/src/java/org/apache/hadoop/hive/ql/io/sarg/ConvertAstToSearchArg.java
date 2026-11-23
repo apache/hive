@@ -101,7 +101,7 @@ public class ConvertAstToSearchArg {
    * Builds the expression and leaf list from the original predicate.
    * @param expression the expression to translate.
    */
-  ConvertAstToSearchArg(Configuration conf, ExprNodeDesc expression) {
+  ConvertAstToSearchArg(Configuration conf, ExprNodeGenericFuncDesc expression) {
     this.conf = conf;
     builder = SearchArgumentFactory.newBuilder(conf);
     parse(expression);
@@ -566,11 +566,11 @@ public class ConvertAstToSearchArg {
     }
   }
 
-  public static SearchArgument create(Configuration conf, ExprNodeDesc expression) {
+  public static SearchArgument create(Configuration conf, ExprNodeGenericFuncDesc expression) {
     return new ConvertAstToSearchArg(conf, expression).buildSearchArgument();
   }
 
-  public static ConvertAstToSearchArg.Result createSearchArgument(Configuration conf, ExprNodeDesc expression) {
+  public static ConvertAstToSearchArg.Result createSearchArgument(Configuration conf, ExprNodeGenericFuncDesc expression) {
     ConvertAstToSearchArg convertAstToSearchArg = new ConvertAstToSearchArg(conf, expression);
     return new ConvertAstToSearchArg.Result(convertAstToSearchArg.buildSearchArgument(), convertAstToSearchArg.isPartial());
   }

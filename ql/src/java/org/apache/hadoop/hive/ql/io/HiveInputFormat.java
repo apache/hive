@@ -954,14 +954,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     Utilities.setColumnNameList(jobConf, tableScan);
     Utilities.setColumnTypeList(jobConf, tableScan);
     // push down filters
-    ExprNodeDesc filterExpr = scanDesc.getFilterExpr();
+    ExprNodeGenericFuncDesc filterExpr = scanDesc.getFilterExpr();
     String pruningFilter = jobConf.get(TableScanDesc.PARTITION_PRUNING_FILTER);
     // If we have a pruning filter then combine it with the original
     if (pruningFilter != null) {
       ExprNodeGenericFuncDesc pruningExpr = SerializationUtilities.deserializeExpression(pruningFilter);
       if (filterExpr != null) {
         // Combine the 2 filters with AND
-        filterExpr = ExprNodeDescUtils.and(filterExpr, pruningExpr);
+        ExprNodeDesc combinedExpr = ExprNodeDescUtils.and(filterExpr, pruningExpr);
+        if (combinedExpr instanceof ExprNodeGenericFuncDesc combinedFuncExpr) {
+          filterExpr = combinedFuncExpr;
+        }
       } else {
         // Use the pruning filter if there was no filter before
         filterExpr = pruningExpr;
