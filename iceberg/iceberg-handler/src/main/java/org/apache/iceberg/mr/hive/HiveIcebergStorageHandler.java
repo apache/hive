@@ -243,7 +243,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   private static final List<FieldSchema> POSITION_DELETE_ORDERING =
       orderBy(PARTITION_SPEC_ID, PARTITION_KEY, FILE_PATH, ROW_POSITION);
 
-  // the spec and partition of a row are functions of its file
+  // the file and position identify a row; its spec and partition follow from the file
   private static final List<FieldSchema> ROW_IDENTITY = orderBy(FILE_PATH, ROW_POSITION);
 
   private static final List<FieldSchema> EMPTY_ORDERING = ImmutableList.of();
@@ -1617,7 +1617,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
     return switch (operation) {
-      // the full row is for copy-on-write rewrites
+      // copy-on-write rewrites need the full row
       case DELETE -> ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
       case UPDATE, MERGE -> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default -> ImmutableList.of();
@@ -1636,7 +1636,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       // fanout and DV writers do not need sorted input
       case DELETE -> IcebergTableUtil.isFanoutEnabled(table.getParameters()) ||
           IcebergTableUtil.formatVersion(table.getParameters()) >= 3 ? EMPTY_ORDERING : POSITION_DELETE_ORDERING;
-      // the cardinality check of a MERGE groups the matches of a row
+      // sorted by row, so the MERGE cardinality check sees all matches of a row together
       case MERGE -> ROW_IDENTITY;
       // For update operations we use the same sort order defined by
       // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}

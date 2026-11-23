@@ -1,5 +1,4 @@
--- The records a merge-on-read DELETE/UPDATE/MERGE deletes carry their virtual columns only: the spec, partition, file
--- and position of a record
+-- A merge-on-read DELETE/UPDATE/MERGE deletes by the virtual columns only: spec, partition, file and position
 --! qt:replace:/(.*fromVersion=\[)\S+(\].*)/$1#Masked#$2/
 --! qt:replace:/(\s+Version\sinterval\sfrom\:\s+)\d+(\s*)/$1#Masked#/
 set hive.explain.user=false;
@@ -136,8 +135,8 @@ select * from ice_evo_v3 order by id, name;
 select id, name, amount from ice_evo_v2 where region = 'us' order by id;
 select id, name, amount from ice_evo_v3 where region = 'us' order by id;
 
--- from unpartitioned through specs of several fields: different transforms, transforms of the same source, a null in
--- one field; a statement deletes from files of every spec
+-- specs from unpartitioned to several fields: mixed transforms, one source twice, a null field
+-- one statement deletes from the files of every spec
 create external table ice_multi_v2 (id int, name string, region string, ts timestamp, dt date)
 stored by iceberg tblproperties ('format-version'='2');
 create external table ice_multi_v3 (id int, name string, region string, ts timestamp, dt date)
@@ -187,9 +186,8 @@ select count(*) from default.ice_multi_v3.delete_files d
 join default.ice_multi_v3.data_files f on d.referenced_data_file = f.file_path
 where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`);
 
--- a field dropped from a V1 spec becomes a void transform: unpartitioned, then a void field next to a real one, then
--- void fields only, then void fields next to a real one; amount is not a partition source: a vectorized Parquet read
--- with a pushed down filter fails when every column of a table is one
+-- V1: a dropped partition field becomes a void transform; specs with void fields only, and next to real ones
+-- amount is not a partition source: a vectorized Parquet read with a pushed down filter fails if every column is one
 create external table ice_void_v2 (id int, name string, region string, amount int)
 stored by iceberg tblproperties ('format-version'='1');
 create external table ice_void_v3 (id int, name string, region string, amount int)
@@ -265,7 +263,7 @@ select count(*) from default.ice_str_v3.delete_files d
 join default.ice_str_v3.data_files f on d.referenced_data_file = f.file_path
 where d.spec_id != f.spec_id or not(d.`partition` <=> f.`partition`);
 
--- the deletes of a merge-on-read UPDATE and MERGE into a table that deletes in copy-on-write mode
+-- merge-on-read UPDATE and MERGE into a table with copy-on-write DELETE
 create external table ice_mixed_v2 (id int, name string, cat string)
 partitioned by spec (cat, bucket(2, id)) stored by iceberg
 tblproperties ('format-version'='2', 'write.delete.mode'='copy-on-write');

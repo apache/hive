@@ -117,8 +117,8 @@ public enum VirtualColumn {
   }
 
   /**
-   * An estimate of the average length in bytes of this column's values, for a variable-length column without
-   * column statistics. A column without one is sized like any other column of its type.
+   * The estimated average size in bytes of this variable-length column, for when it has no column statistics. Empty
+   * if the column is sized like any other of its type.
    */
   public OptionalInt getAvgLength() {
     return avgLength > 0 ? OptionalInt.of(avgLength) : OptionalInt.empty();

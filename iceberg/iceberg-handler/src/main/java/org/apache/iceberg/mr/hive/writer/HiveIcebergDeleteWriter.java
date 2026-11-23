@@ -45,7 +45,7 @@ import org.apache.iceberg.util.DeleteFileSet;
 
 class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
-  // the partitions of the deleted records by spec and serialized partition
+  // deserialized partitions, by spec id and serialized partition
   private final Map<Integer, Map<ByteBuffer, StructLike>> partitions;
 
   HiveIcebergDeleteWriter(
@@ -67,9 +67,8 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   }
 
   /**
-   * A delete file holds the partition of the data files it applies to, and Iceberg validates a DV's partition against
-   * its data file's. The partition field of a dropped source column has the unknown type, which a manifest stores as
-   * null, so a delete file cannot hold the value of the data files.
+   * Fails for a spec whose partition source column was dropped. A manifest stores that field as null, so a delete file
+   * cannot match the partition of its data files, which Iceberg validates for DVs.
    */
   private Map<ByteBuffer, StructLike> newPartitionCache(PartitionSpec spec) {
     Preconditions.checkArgument(spec.partitionType().fields().stream()

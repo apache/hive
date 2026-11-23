@@ -76,7 +76,7 @@ public abstract class MultiInsertSqlGenerator {
   public abstract List<String> getDeleteValues(Operation operation);
 
   /**
-   * Appends the columns of the records a DELETE statement deletes.
+   * Appends the select columns of the deleted records.
    */
   public void appendDeletedRecordColumns() {
     appendAcidSelectColumns(Operation.DELETE);

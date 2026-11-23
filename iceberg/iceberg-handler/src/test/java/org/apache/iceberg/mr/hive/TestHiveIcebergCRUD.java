@@ -454,7 +454,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name");
     Assert.assertEquals(7, objects.size());
-    // partition-filtered reads of files of the old spec find the deletes, which carry the partitions of that spec
+    // the deletes carry the old spec's partitions, so partition-filtered reads still apply them
     Assert.assertEquals(0L, shell.executeStatement(
         "SELECT count(*) FROM customers WHERE last_name IN ('Barna', 'Burr', 'Pierce', 'Silver') " +
         "AND (customer_id = 3 OR given_name = 'Joanna')").get(0)[0]);
@@ -770,7 +770,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   @Test
   public void testDeleteFromFilesOfSpecWithDroppedSource() throws IOException {
     Assume.assumeTrue(formatVersion >= 2 && testTableType == TestTableType.HIVE_CATALOG);
-    // a Hive query reads the Iceberg partition statistics, which fail once a partition source is dropped
+    // Iceberg partition statistics fail once a partition source is dropped
     shell.setHiveSessionValue("hive.iceberg.stats.source", "metastore");
     shell.executeStatement(String.format("CREATE EXTERNAL TABLE dropped (id int, name string, region string) " +
         "PARTITIONED BY SPEC (region) STORED BY ICEBERG STORED AS %s TBLPROPERTIES ('format-version'='%d')",
@@ -780,7 +780,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
     shell.executeStatement("INSERT INTO dropped VALUES (5, 'e', 'eu'), (6, 'f', 'us')");
     shell.executeStatement("ALTER TABLE dropped DROP COLUMN region");
 
-    // a delete from files of the dropped source's spec fails before writing, one from files of the new spec does not
+    // deleting from files of the old spec fails before writing; deleting from files of the new spec works
     IllegalArgumentException failure = Assert.assertThrows(IllegalArgumentException.class,
         () -> shell.executeStatement("DELETE FROM dropped WHERE id IN (1, 5)"));
     Assert.assertTrue(failure.getMessage(), failure.getMessage().contains(
@@ -792,7 +792,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
         rows(testTables.loadTable(TableIdentifier.of("default", "dropped"))));
   }
 
-  // reads with Iceberg: Hive fails to plan a query of a table whose partition source was dropped
+  // reads with Iceberg: Hive cannot plan a query once a partition source is dropped
   private static List<String> rows(Table table) throws IOException {
     try (CloseableIterable<Record> records = IcebergGenerics.read(table).build()) {
       return StreamSupport.stream(records.spliterator(), false)

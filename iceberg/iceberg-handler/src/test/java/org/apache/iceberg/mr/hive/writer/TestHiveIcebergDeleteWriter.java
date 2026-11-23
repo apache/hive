@@ -143,7 +143,7 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
     rowDelta.commit();
 
     Assert.assertEquals("Table should contain expected rows", expected, actualRowSet(table));
-    // a partition-filtered read finds the deletes, which carry the partitions of the deleted records
+    // the deletes carry the partitions of the deleted records, so a partition-filtered read applies them
     List<Integer> filtered = Lists.newArrayList();
     try (CloseableIterable<Record> reader =
              IcebergGenerics2.read(table).where(Expressions.equal("address.city", "x")).build()) {
@@ -154,7 +154,7 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
 
   private static List<GenericRecord> deleteRecords(Table table, Set<Integer> idsToRemove)
       throws IOException {
-    // the readers carry the partition of the data file of a record
+    // the reader adds the partition of each record's data file
     Map<String, ByteBuffer> partitions = Maps.newHashMap();
     try (CloseableIterable<FileScanTask> tasks = table.newScan().planFiles()) {
       tasks.forEach(task -> partitions.put(task.file().location(),

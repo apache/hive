@@ -78,11 +78,11 @@ public class IcebergAcidUtil {
     FILE_READ_META_COLS.put(MetadataColumns.ROW_POSITION, 2);
   }
 
-  // the partition of the data file of a record, serialized by serializePartition
+  // the record's partition, as written by serializePartition
   private static final Types.NestedField PARTITION_META_COL = Types.NestedField.required(
       MetadataColumns.PARTITION_COLUMN_ID, MetadataColumns.PARTITION_COLUMN_NAME, Types.BinaryType.get());
 
-  // the virtual columns of a deleted record, the row data of a copy-on-write record follows them
+  // the virtual columns of a deleted record; in copy-on-write, the row data follows them
   private static final Map<Types.NestedField, Integer> SERDE_META_COLS = Maps.newLinkedHashMap();
 
   static {
@@ -104,7 +104,7 @@ public class IcebergAcidUtil {
   }
 
   /**
-   * The schema of the records a merge-on-read DML or a merge task deletes: their virtual columns.
+   * The schema of a record deleted by a merge-on-read DML or a merge task: the virtual columns only.
    */
   public static Schema createSerdeSchemaForDelete() {
     return new Schema(Lists.newArrayList(SERDE_META_COLS.keySet()));
@@ -112,7 +112,7 @@ public class IcebergAcidUtil {
 
   /**
    * @param dataCols The columns of the serde projection schema
-   * @return The schema of the records of a copy-on-write DML: the virtual columns, followed by the row data
+   * @return The copy-on-write schema: the virtual columns, then the row data
    */
   public static Schema createSerdeSchemaForDelete(List<Types.NestedField> dataCols) {
     List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + SERDE_META_COLS.size());
@@ -122,7 +122,7 @@ public class IcebergAcidUtil {
   }
 
   /**
-   * @param rec The record a merge-on-read DML or a merge task deletes
+   * @param rec A record deleted by a merge-on-read DML or a merge task
    * @return The position delete of the record, without row data
    */
   public static PositionDelete<Record> getPositionDelete(Record rec) {
@@ -134,7 +134,7 @@ public class IcebergAcidUtil {
   /**
    * Based on `rec` the method creates a position delete object, and also populates the data filed of `rowData` with
    * the field values from `rec`.
-   * @param rec The record of a copy-on-write DML: the virtual columns, followed by the row data
+   * @param rec A copy-on-write record: the virtual columns, then the row data
    * @param rowData The record object to populate with the rowData fields only
    * @return The position delete object
    */
@@ -177,8 +177,8 @@ public class IcebergAcidUtil {
   }
 
   /**
-   * Serializes the partition of a data file for the delete writer: per field of the partition type, a VInt of 0 for
-   * null, otherwise of 1 + the length of the single-value serialization of the value, followed by it.
+   * Serializes a data file's partition for the delete writer. Per field: VInt 0 for null, else VInt (1 + length)
+   * followed by the single-value serialization of the value.
    * @param partition The partition of the data file
    * @param partitionSpec The spec of the data file
    * @return The serialized partition, empty for an unpartitioned spec
@@ -190,8 +190,7 @@ public class IcebergAcidUtil {
       for (int pos = 0; pos < fields.size(); pos++) {
         Type type = fields.get(pos).type();
         Object value = partition.get(pos, Object.class);
-        // a field whose source column was dropped has the unknown type, which holds no value: a data file written
-        // before the drop still has one
+        // a field of a dropped source column has the unknown type: written as null, even if an older file has a value
         if (value == null || type.typeId() == Type.TypeID.UNKNOWN) {
           WritableUtils.writeVInt(out, 0);
         } else {
@@ -221,7 +220,7 @@ public class IcebergAcidUtil {
           byte[] value = new byte[length - 1];
           in.readFully(value);
           Object field = Conversions.fromByteBuffer(partitionType.fields().get(pos).type(), ByteBuffer.wrap(value));
-          // a partition holds a string as a String, the single-value serialization reads it as a CharBuffer
+          // partitions hold strings as String; fromByteBuffer returns a CharBuffer
           partition.set(pos, field instanceof CharSequence chars ? chars.toString() : field);
         }
       }

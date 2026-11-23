@@ -63,7 +63,7 @@ public class NonNativeAcidMaterializedViewASTBuilder extends MaterializedViewAST
     }
   }
 
-  // the incremental rebuild is a MERGE: a merge-on-read MERGE deletes the virtual columns of a record
+  // the incremental rebuild is a MERGE; in merge-on-read, its deletes select the virtual columns only
   private List<String> deleteSelectColumns() {
     HiveStorageHandler storageHandler = mvTable.getStorageHandler();
     if (storageHandler.shouldOverwrite(mvTable, Context.Operation.MERGE)) {

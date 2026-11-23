@@ -61,7 +61,7 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
     appendAcidSelectColumns(deletedRecordColumns(), false, false, "-1");
   }
 
-  // the virtual columns of the records a merge-on-read statement deletes
+  // the virtual columns that identify a deleted record in merge-on-read
   private List<FieldSchema> deletedRecordColumns() {
     return targetTable.getStorageHandler().acidVirtualColumns().stream()
         .map(column -> new FieldSchema(column.getName(), column.getTypeInfo().getTypeName(), ""))
@@ -88,7 +88,7 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
     }
   }
 
-  // the column, or the expression of the row id of a deleted record
+  // the column name, or deletedRowIdExpr for the row id of a deleted record
   private String selectExpr(String name, boolean deletedRowId, String deletedRowIdExpr) {
     return deletedRowId ? deletedRowIdExpr : HiveUtils.unparseIdentifier(name, this.conf);
   }
