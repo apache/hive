@@ -118,7 +118,7 @@ public final class IcebergColStatsReader {
     List<ColumnStatisticsObj> entries = Lists.newArrayList();
     String statsPath = statsFile.path();
 
-    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath))
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath, statsFile.fileSizeInBytes()))
         .withFileSize(statsFile.fileSizeInBytes())
         .withFooterSize(statsFile.fileFooterSizeInBytes())
         .build()) {
@@ -234,7 +234,7 @@ public final class IcebergColStatsReader {
     Set<String> columns = Sets.newHashSet(colNames);
     List<ColumnStatisticsObj> aggregated = Lists.newArrayList();
 
-    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsFile.path()))
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsFile.path(), statsFile.fileSizeInBytes()))
         .withFileSize(statsFile.fileSizeInBytes())
         .withFooterSize(statsFile.fileFooterSizeInBytes())
         .build()) {
@@ -284,7 +284,7 @@ public final class IcebergColStatsReader {
       Predicate<String> partitionFilter, Set<String> columns, boolean withVectors) {
     Map<String, List<ColumnStatisticsObj>> result = Maps.newLinkedHashMap();
 
-    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsFile.path()))
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsFile.path(), statsFile.fileSizeInBytes()))
         .withFileSize(statsFile.fileSizeInBytes())
         .withFooterSize(statsFile.fileFooterSizeInBytes())
         .build()) {

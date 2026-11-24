@@ -20,7 +20,9 @@
 package org.apache.iceberg.hive;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -36,6 +38,7 @@ import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -57,6 +60,7 @@ import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -175,6 +179,28 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     return new Schema(
         required(1, "id", Types.IntegerType.get(), "unique ID"),
         required(2, "data", Types.StringType.get()));
+  }
+
+  @Test
+  public void testMetadataCacheReadsATablesMetadataOncePerProcess() throws IOException {
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+    catalog.createTable(tableIdent, getTestSchema());
+    assertThat(catalog.loadTable(tableIdent).io().getClass()).isEqualTo(HadoopFileIO.class);
+
+    Map<String, String> cached = ImmutableMap.of(CatalogProperties.IO_MANIFEST_CACHE_ENABLED, "true");
+    Table table = initCatalog("hive", cached).loadTable(tableIdent);
+    assertThat(table.io()).isInstanceOf(MetadataCachingFileIO.class);
+    assertThat(initCatalog("hive", ImmutableMap.<String, String>builder().putAll(cached)
+        .put(CatalogProperties.FILE_IO_IMPL, HadoopFileIO.class.getName()).build()).loadTable(tableIdent).io())
+        .isInstanceOf(MetadataCachingFileIO.class);
+
+    // the metadata file can no longer be parsed: only the cache still has what it said
+    String metadataFile = ((HasTableOperations) table).operations().current().metadataFileLocation();
+    java.nio.file.Path file = Paths.get(new org.apache.hadoop.fs.Path(metadataFile).toUri().getPath());
+    Files.writeString(file, " ".repeat((int) Files.size(file)));
+    // the next query loads the table through a catalog of its own
+    assertThat(initCatalog("hive", cached).loadTable(tableIdent).schema().asStruct())
+        .isEqualTo(getTestSchema().asStruct());
   }
 
   @Test

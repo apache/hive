@@ -142,8 +142,10 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
     this.listAllTables = Boolean.parseBoolean(properties.getOrDefault(LIST_ALL_TABLES, LIST_ALL_TABLES_DEFAULT));
 
     String fileIOImpl = properties.get(CatalogProperties.FILE_IO_IMPL);
-    if (fileIOImpl == null) {
-      this.fileIO = new HadoopFileIO(conf);
+    if (fileIOImpl == null || HadoopFileIO.class.getName().equals(fileIOImpl)) {
+      boolean cachesMetadata = PropertyUtil.propertyAsBoolean(properties, CatalogProperties.IO_MANIFEST_CACHE_ENABLED,
+          CatalogProperties.IO_MANIFEST_CACHE_ENABLED_DEFAULT);
+      this.fileIO = cachesMetadata ? new MetadataCachingFileIO(conf) : new HadoopFileIO(conf);
       this.fileIO.initialize(properties);
     } else {
       this.fileIO = CatalogUtil.loadFileIO(fileIOImpl, properties, conf);
