@@ -41,7 +41,15 @@ rules:
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["create", "patch"]
-  # Pods: read-only for readiness checking
+  # Pods: read + patch (patch needed for pod-deletion-cost annotation)
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "patch"]
+  # PodDisruptionBudgets for graceful autoscaling
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # EndpointSlices: operator manages a custom per-pod-hostname slice for TezAM DNS
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get", "list", "create", "patch", "delete"]
