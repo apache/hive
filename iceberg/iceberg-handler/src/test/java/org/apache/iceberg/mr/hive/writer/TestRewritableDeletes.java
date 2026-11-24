@@ -95,7 +95,7 @@ public class TestRewritableDeletes {
   @Test
   public void testNoCollectorWithoutADVWriter() {
     Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, table.currentSnapshot(), conf));
-    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
+    assertNoTempDir();
   }
 
   /**
@@ -172,7 +172,7 @@ public class TestRewritableDeletes {
   public void testSessionValueIsIgnored() {
     conf.set("iceberg.mr.rewritable.deletes." + TABLE_NAME, "file:/session-value");
     Assert.assertNull(RewritableDeletes.collector(TABLE_NAME, table.currentSnapshot(), conf));
-    Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf));
+    assertNoTempDir();
 
     RewritableDeletes.addToJobConf(TABLE_NAME, conf);
     collect(tasks());
@@ -204,6 +204,13 @@ public class TestRewritableDeletes {
     Assert.assertEquals(Set.of(fileA.location()),
         RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf).keySet());
     Assert.assertEquals(Map.of(), RewritableDeletes.getFromJobConf(TABLE_NAME, branch, conf));
+  }
+
+  private void assertNoTempDir() {
+    Snapshot snapshot = table.currentSnapshot();
+    IllegalStateException thrown = Assert.assertThrows(IllegalStateException.class,
+        () -> RewritableDeletes.getFromJobConf(TABLE_NAME, snapshot, conf));
+    Assert.assertTrue(thrown.getMessage(), thrown.getMessage().startsWith("No temp dir for the rewritable deletes"));
   }
 
   private void collect(List<FileScanTask> tasks) {

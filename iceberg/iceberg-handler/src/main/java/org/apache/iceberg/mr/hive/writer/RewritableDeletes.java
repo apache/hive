@@ -112,17 +112,18 @@ public final class RewritableDeletes {
   }
 
   /**
-   * Returns the deletes the scans of the snapshot collected. Fails if no scan wrote a file.
+   * Returns the deletes the scans of the snapshot collected. Fails if the job set no temp dir for the table, or if no
+   * scan wrote a file.
    * @param tableName The table name, as used in the task configuration.
    * @param snapshot The snapshot the task writes to, or null if the table has no snapshot.
    * @param conf The task configuration.
-   * @return The deletes by data file location; empty if the job writes no DVs to the table.
+   * @return The deletes by data file location.
    */
   public static Map<String, DeleteFileSet> getFromJobConf(String tableName, Snapshot snapshot, Configuration conf) {
     String location = location(tableName, snapshot, conf);
-    if (location == null) {
-      return Map.of();
-    }
+    // a DV writer without the temp dir would drop the previous deletes of its data files
+    Preconditions.checkState(location != null, "No temp dir for the rewritable deletes of %s in the job configuration",
+        tableName);
     ObjectCache cache =
         ObjectCacheFactory.getCache(conf, conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname), false, true);
     if (cache == null) {
