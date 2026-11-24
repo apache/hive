@@ -54,7 +54,7 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
 
   // Number of buckets of a constant argument, or null when it is read from the partition's first
   // row.
-  private final Long constantNumBuckets;
+  private final Integer constantNumBuckets;
 
   // Per-partition bucket layout, set up by setUpBuckets once the first batch is replayed.
   private int bucketSize;
@@ -68,7 +68,7 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
       VectorExpression numBucketsExpression, int outputColumnNum) {
     super(windowFrameDef, getInputExpression(numBucketsExpression), outputColumnNum);
     constantNumBuckets = numBucketsExpression instanceof ConstantVectorExpression constantExpr
-        ? constantExpr.getLongValue() : null;
+        ? (int) constantExpr.getLongValue() : null;
     resetEvaluator();
   }
 
@@ -107,12 +107,12 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
    * it: wherever row mode produces a result this produces the same one, and wherever row mode
    * fails this fails fast.
    */
-  private void setUpBuckets(Long numBuckets) throws HiveException {
+  private void setUpBuckets(Integer numBuckets) throws HiveException {
     final int buckets;
     if (numBuckets != null && numBuckets > 0) {
       // With more buckets than rows every row gets its own bucket, which is ntile(partitionSize);
-      // capping the bucket count keeps every bucket non-empty (and fits it in an int).
-      buckets = (int) Math.min(numBuckets, partitionSize);
+      // capping the bucket count keeps every bucket non-empty.
+      buckets = Math.min(numBuckets, partitionSize);
     } else if (numBuckets != null && numBuckets < -partitionSize) {
       // Row mode's truncating division yields an empty base bucket size, so every row gets its own
       // bucket, as for a positive count larger than the partition.
@@ -133,11 +133,14 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
    * Reads the number of buckets, or null for NULL, from the first row of the partition, held by the
    * first replayed batch. Replayed batches never use a selection vector, so that row is at index 0,
    * which is also where a repeating vector (e.g. a partition key column) keeps its value.
+   *
+   * <p>The value is narrowed to an int as in row mode: a vectorized cast to int from a wider
+   * integer type is a no-op, so the vector can hold a value outside the int range.
    */
-  private Long readNumBuckets(VectorizedRowBatch batch) {
+  private Integer readNumBuckets(VectorizedRowBatch batch) {
     LongColumnVector numBucketsColVector = (LongColumnVector) batch.cols[inputColumnNum];
     return !numBucketsColVector.noNulls && numBucketsColVector.isNull[0]
-        ? null : numBucketsColVector.vector[0];
+        ? null : (int) numBucketsColVector.vector[0];
   }
 
   @Override

@@ -325,6 +325,8 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     evaluators = VectorPTFDesc.getEvaluators(vectorDesc, vectorPTFInfo);
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
       evaluator.setNullsLast(HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
+      // Evaluated in process(), which needs its transient state (e.g. a cast's target type).
+      VectorExpression.doTransientInit(evaluator.inputVecExpr, hconf);
     }
 
     streamingEvaluatorNums = VectorPTFDesc.getStreamingEvaluatorNums(evaluators);

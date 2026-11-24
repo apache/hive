@@ -229,6 +229,53 @@ from vector_ptf_ntile_buckets;
 
 set hive.vectorized.ptf.max.memory.buffering.batch.count=25;
 
+-- Cast arguments, again taken from the first row of each partition by ord; the later rows hold
+-- values that must not be read, such as non-numeric strings and 4294967296 (0 as an int)
+DROP TABLE IF EXISTS vector_ptf_ntile_casts;
+
+CREATE TABLE vector_ptf_ntile_casts(k int, ord int, s string, b bigint) stored as orc;
+
+INSERT INTO vector_ptf_ntile_casts values
+(1, 1, '2', 4294967297), (1, 2, 'x', NULL), (1, 3, NULL, 4294967296),
+(2, 4, '3', 4294967299), (2, 5, '0', 0), (2, 6, NULL, NULL), (2, 7, '-5', -1), (2, 8, '9', 9),
+(2, 9, 'y', 4294967296), (2, 10, '1', 1),
+(3, 11, '1', -4294967294), (3, 12, NULL, 0), (3, 13, '-1', NULL), (3, 14, '8', 8);
+
+set hive.vectorized.execution.ptf.enabled=false;
+
+select k, ord, s,
+ntile(cast(s as int)) over (partition by k order by ord) as nt,
+sum(cast(s as int)) over (partition by k order by ord) as su
+from vector_ptf_ntile_casts;
+
+select k, ord, b,
+ntile(cast(b as int)) over (partition by k order by ord) as nt
+from vector_ptf_ntile_casts;
+
+set hive.vectorized.execution.ptf.enabled=true;
+
+-- a string argument cast to int: the cast expression must be initialized before batches are
+-- processed, for ntile and for any other function
+explain vectorization detail select k, ord, s,
+ntile(cast(s as int)) over (partition by k order by ord) as nt,
+sum(cast(s as int)) over (partition by k order by ord) as su
+from vector_ptf_ntile_casts;
+
+select k, ord, s,
+ntile(cast(s as int)) over (partition by k order by ord) as nt,
+sum(cast(s as int)) over (partition by k order by ord) as su
+from vector_ptf_ntile_casts;
+
+-- a bigint argument cast to int, which vectorized mode does not narrow: the first rows,
+-- 4294967297, 4294967299 and -4294967294, are 1, 3 and 2 buckets as ints
+explain vectorization detail select k, ord, b,
+ntile(cast(b as int)) over (partition by k order by ord) as nt
+from vector_ptf_ntile_casts;
+
+select k, ord, b,
+ntile(cast(b as int)) over (partition by k order by ord) as nt
+from vector_ptf_ntile_casts;
+
 -- NOT VECTORIZED: a non-positive constant number of buckets
 explain vectorization select k,
 ntile(0) over (partition by k order by ord) as nt
