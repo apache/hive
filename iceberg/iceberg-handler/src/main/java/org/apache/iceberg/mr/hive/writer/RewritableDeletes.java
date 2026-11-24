@@ -31,9 +31,7 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
@@ -47,7 +45,6 @@ import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
-import org.apache.iceberg.relocated.com.google.common.collect.ForwardingMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.DeleteFileSet;
 import org.apache.iceberg.util.SerializationUtil;
@@ -55,28 +52,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The previous position deletes that a DV writer merges into its DVs, by data file location.
+ * Carries the previous position deletes of the target table's data files from its scans to the DV writers, which merge
+ * them into their DVs.
  * <p>
  * Each scan of the target table writes the deletes of the data files it plans to its own file in a temp dir of the
  * query, with one subdir per snapshot ({@link #collector}). A writer reads the files of the snapshot it writes to, once
  * per LLAP daemon ({@link #getFromJobConf}).
  */
-public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet> {
+public final class RewritableDeletes {
   private static final Logger LOG = LoggerFactory.getLogger(RewritableDeletes.class);
 
   private static final String LOCATION_PREFIX = "iceberg.mr.rewritable.deletes.";
-  private static final String DIR_SUFFIX = "-rewritable-deletes";
+  @VisibleForTesting
+  static final String DIR_SUFFIX = "-rewritable-deletes";
 
-  // read-only: the writers of an LLAP daemon share it
-  private final Map<String, DeleteFileSet> deletes;
-
-  private RewritableDeletes(Map<String, DeleteFileSet> deletes) {
-    this.deletes = Collections.unmodifiableMap(deletes);
-  }
-
-  @Override
-  protected Map<String, DeleteFileSet> delegate() {
-    return deletes;
+  private RewritableDeletes() {
   }
 
   /**
@@ -182,7 +172,7 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
     }
   }
 
-  private static RewritableDeletes readDir(String location, Configuration conf) {
+  private static Map<String, DeleteFileSet> readDir(String location, Configuration conf) {
     LOG.debug("Reading rewritable deletes from {}", location);
     Path dir = new Path(location);
     Map<String, DeleteFileSet> deletes = Maps.newHashMap();
@@ -199,35 +189,14 @@ public final class RewritableDeletes extends ForwardingMap<String, DeleteFileSet
     } catch (IOException e) {
       throw new UncheckedIOException(String.format("Failed to read rewritable deletes from %s", location), e);
     }
-    return new RewritableDeletes(deletes);
+    // read-only: the writers of an LLAP daemon share it
+    return Collections.unmodifiableMap(deletes);
   }
 
-  private static Map<String, DeleteFileSet> read(FileSystem fs, Path file) throws IOException {
+  @VisibleForTesting
+  static Map<String, DeleteFileSet> read(FileSystem fs, Path file) throws IOException {
     try (InputStream in = new GZIPInputStream(fs.open(file))) {
       return SerializationUtil.deserializeFromBytes(in.readAllBytes());
     }
-  }
-
-  /**
-   * Returns the files that collectors wrote under the root dir, with the deletes in each.
-   */
-  @VisibleForTesting
-  static Map<Path, Map<String, DeleteFileSet>> collectorFiles(Path root, Configuration conf) throws IOException {
-    Map<Path, Map<String, DeleteFileSet>> collectorFiles = Maps.newHashMap();
-    FileSystem fs = root.getFileSystem(conf);
-    RemoteIterator<LocatedFileStatus> files = fs.listFiles(root, true);
-    while (files.hasNext()) {
-      Path file = files.next().getPath();
-      if (isCollectorFile(file)) {
-        collectorFiles.put(file, read(fs, file));
-      }
-    }
-    return collectorFiles;
-  }
-
-  // a Collector file: <table name>-rewritable-deletes/<snapshot id>/<uuid>.gz
-  private static boolean isCollectorFile(Path file) {
-    Path tableDir = file.getParent().getParent();
-    return tableDir != null && tableDir.getName().endsWith(DIR_SUFFIX);
   }
 }

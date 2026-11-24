@@ -124,7 +124,8 @@ public class TestRewritableDeletes {
     for (FileScanTask task : tasks()) {
       collect(List.of(task));
     }
-    Assert.assertEquals(2, RewritableDeletes.collectorFiles(new Path(queryTempDir.getAbsolutePath()), conf).size());
+    Assert.assertEquals(2,
+        RewritableDeletesTestUtils.collectorFiles(new Path(queryTempDir.getAbsolutePath()), conf).size());
     Assert.assertEquals(Set.of(fileA.location(), fileB.location()),
         RewritableDeletes.getFromJobConf(TABLE_NAME, table.currentSnapshot(), conf).keySet());
   }

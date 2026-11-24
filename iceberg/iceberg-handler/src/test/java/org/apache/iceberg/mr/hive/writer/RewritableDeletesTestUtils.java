@@ -22,19 +22,41 @@ package org.apache.iceberg.mr.hive.writer;
 import java.io.IOException;
 import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.DeleteFileSet;
 
 /**
- * Exposes the collector files of a query's scans to tests in other packages.
+ * Reads the files that the collectors of a query's scans wrote, for tests.
  */
 public final class RewritableDeletesTestUtils {
 
   private RewritableDeletesTestUtils() {
   }
 
+  /**
+   * Returns the files that collectors wrote under the root dir, with the deletes in each.
+   */
   public static Map<Path, Map<String, DeleteFileSet>> collectorFiles(Path root, Configuration conf)
       throws IOException {
-    return RewritableDeletes.collectorFiles(root, conf);
+    Map<Path, Map<String, DeleteFileSet>> collectorFiles = Maps.newHashMap();
+    FileSystem fs = root.getFileSystem(conf);
+    RemoteIterator<LocatedFileStatus> files = fs.listFiles(root, true);
+    while (files.hasNext()) {
+      Path file = files.next().getPath();
+      if (isCollectorFile(file)) {
+        collectorFiles.put(file, RewritableDeletes.read(fs, file));
+      }
+    }
+    return collectorFiles;
+  }
+
+  // a Collector file: <table name>-rewritable-deletes/<snapshot id>/<uuid>.gz
+  private static boolean isCollectorFile(Path file) {
+    Path tableDir = file.getParent().getParent();
+    return tableDir != null && tableDir.getName().endsWith(RewritableDeletes.DIR_SUFFIX);
   }
 }
