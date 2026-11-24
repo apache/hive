@@ -28,9 +28,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
@@ -79,9 +81,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.BaseTransaction;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.NullOrder;
@@ -98,6 +102,7 @@ import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
+import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.Transaction;
@@ -105,6 +110,7 @@ import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.UpdateProperties;
 import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
@@ -127,6 +133,7 @@ import org.apache.iceberg.mapping.NameMapping;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
@@ -139,6 +146,7 @@ import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.StructProjection;
+import org.apache.iceberg.util.Tasks;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,6 +178,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   private PreAlterTableProperties preAlterTableProperties;
   private UpdateSchema updateSchema;
   private Transaction transaction;
+  private Pair<Integer, Type.PrimitiveType> unknownTypePromotion;
   private AlterTableType currentAlterTableOp;
   private HiveLock commitLock;
   private List<SQLDefaultConstraint> sqlDefaultConstraints;
@@ -583,7 +592,9 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         case REPLACE_COLUMNS:
         case RENAME_COLUMN:
         case ADDCOLS:
-          if (transaction != null) {
+          if (unknownTypePromotion != null) {
+            commitUnknownTypePromotion(hmsTable);
+          } else if (transaction != null) {
             transaction.commitTransaction();
           }
           setSqlDefaultConstraints();
@@ -806,6 +817,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       String defaultValue = defaultValues.get(addedCol.getName());
       Type type = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType()), defaultValue,
           !isOrc);
+      validateUnknownType(addedCol.getName(), type);
       Literal<Object> defaultVal = Optional.ofNullable(defaultValue).filter(v -> !type.isStructType())
           .map(v -> Expressions.lit(HiveSchemaUtil.getDefaultValue(v, type))).orElse(null);
       // ORC doesn't have support for initialDefault from iceberg layer, we only need to set default for writeDefault.
@@ -826,6 +838,10 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     if (removedCols.isEmpty()) {
       return;
     }
+
+    Preconditions.checkArgument(hasWritableColumn(HiveSchemaUtil.convert(hmsCols)),
+        "Cannot drop column '%s': the table would be left with only columns of type unknown",
+        removedCols.getFirst().getName());
 
     transaction = icebergTable.newTransaction();
     transaction.updateSchema().deleteColumn(removedCols.getFirst().getName()).commit();
@@ -868,6 +884,10 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
           "mismatches between HMS and Iceberg, please consider the UPDATE COLUMNS command.");
     }
 
+    Preconditions.checkArgument(hasWritableColumn(HiveSchemaUtil.convert(hmsCols)),
+        "Cannot drop columns %s: the table would be left with only columns of type unknown",
+        schemaDifference.getMissingFromFirst().stream().map(FieldSchema::getName).toList());
+
     transaction = icebergTable.newTransaction();
     updateSchema = transaction.updateSchema();
     LOG.info("handleReplaceColumns: Dropping the following columns for Iceberg table {}, cols: {}",
@@ -879,6 +899,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   }
 
   private void handleChangeColumn(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
+    unknownTypePromotion = null;
     List<FieldSchema> hmsCols = hmsTable.getSd().getCols();
     List<FieldSchema> icebergCols = HiveSchemaUtil.convert(icebergTable.schema());
     // compute schema difference for renames, type/comment changes
@@ -916,7 +937,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
       // check if type/comment changed too
       if (!Objects.equals(oldField.getType(), updatedField.getType())) {
-        updateSchema.updateColumn(oldField.getName(), getPrimitiveTypeOrThrow(updatedField), updatedField.getComment());
+        updateColumnType(oldField.getName(), updatedField);
       } else if (!Objects.equals(oldField.getComment(), updatedField.getComment())) {
         updateSchema.updateColumnDoc(oldField.getName(), updatedField.getComment());
       }
@@ -924,8 +945,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     // case 2: only column type and/or comment changed
     } else if (!schemaDifference.getTypeChanged().isEmpty()) {
       FieldSchema updatedField = schemaDifference.getTypeChanged().getFirst();
-      updateSchema.updateColumn(updatedField.getName(), getPrimitiveTypeOrThrow(updatedField),
-          updatedField.getComment());
+      updateColumnType(updatedField.getName(), updatedField);
 
     // case 3: only comment changed
     } else if (!schemaDifference.getCommentChanged().isEmpty()) {
@@ -990,6 +1010,108 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         updatePartitionSpec.commit();
       }
     }
+  }
+
+  private void updateColumnType(String columnName, FieldSchema updatedField) throws MetaException {
+    Type.PrimitiveType newType = getPrimitiveTypeOrThrow(updatedField);
+    Types.NestedField field = icebergTable.schema().findField(columnName);
+    if (field != null && field.type().typeId() == Type.TypeID.UNKNOWN) {
+      // UpdateSchema rejects unknown -> any type, see commitUnknownTypePromotion
+      unknownTypePromotion = Pair.of(field.fieldId(), newType);
+      if (!Objects.equals(field.doc(), updatedField.getComment())) {
+        updateSchema.updateColumnDoc(columnName, updatedField.getComment());
+      }
+    } else {
+      updateSchema.updateColumn(columnName, newType, updatedField.getComment());
+    }
+  }
+
+  /**
+   * Promotes an UNKNOWN column to the primitive type requested by ALTER TABLE CHANGE COLUMN.
+   * <p>
+   * The Iceberg v3 spec allows promoting unknown to any type, but Iceberg Java does not implement it yet:
+   * TypeUtil.isPromotionAllowed, which UpdateSchema.updateColumn calls, rejects it
+   * (https://github.com/apache/iceberg/issues/18305). Until Hive uses an Iceberg release with that fix, the new
+   * schema is committed directly through the table operations, bypassing only that check. The column keeps its
+   * field ID, and because UNKNOWN values are never written to data files, existing files read it as NULL. The
+   * resulting metadata is the same as a native promotion would produce, so tables changed this way stay readable
+   * by any engine, and this method can be replaced by UpdateSchema.updateColumn once Iceberg supports it.
+   * <p>
+   * The rest of the CHANGE COLUMN changes (rename, comment, reorder, defaults) are staged in a transaction that is
+   * never committed itself: the promotion is applied on top of its staged metadata, and the result is committed
+   * once, so the statement either applies all of its changes or none of them. On commit conflicts the changes are
+   * staged again against the refreshed table, like an Iceberg transaction commit. As with any transaction that
+   * changes the schema more than once, the schema staged before the promotion is also kept in the table metadata,
+   * but it never becomes the current schema.
+   */
+  private void commitUnknownTypePromotion(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    StagedChangeColumn firstAttempt = new StagedChangeColumn(transaction, unknownTypePromotion);
+    AtomicBoolean restage = new AtomicBoolean();
+    try {
+      commitChangeColumn(((HasTableOperations) icebergTable).operations(), () -> {
+        if (!restage.getAndSet(true)) {
+          return firstAttempt;
+        }
+        icebergTable.refresh();
+        transaction = null;
+        try {
+          handleChangeColumn(hmsTable);
+        } catch (MetaException e) {
+          throw new RuntimeException(e);
+        }
+        return new StagedChangeColumn(transaction, unknownTypePromotion);
+      });
+    } finally {
+      unknownTypePromotion = null;
+    }
+  }
+
+  /**
+   * A staged CHANGE COLUMN transaction, and the promotion of an UNKNOWN column (field ID and new type) to apply on
+   * top of it, if any. The transaction is null if there is nothing to change.
+   */
+  record StagedChangeColumn(Transaction transaction, Pair<Integer, Type.PrimitiveType> unknownTypePromotion) {
+  }
+
+  @VisibleForTesting
+  static void commitChangeColumn(TableOperations ops, Supplier<StagedChangeColumn> stage) {
+    TableMetadata current = ops.current();
+    Tasks.foreach(ops)
+        .retry(current.propertyAsInt(TableProperties.COMMIT_NUM_RETRIES,
+            TableProperties.COMMIT_NUM_RETRIES_DEFAULT))
+        .exponentialBackoff(
+            current.propertyAsInt(TableProperties.COMMIT_MIN_RETRY_WAIT_MS,
+                TableProperties.COMMIT_MIN_RETRY_WAIT_MS_DEFAULT),
+            current.propertyAsInt(TableProperties.COMMIT_MAX_RETRY_WAIT_MS,
+                TableProperties.COMMIT_MAX_RETRY_WAIT_MS_DEFAULT),
+            current.propertyAsInt(TableProperties.COMMIT_TOTAL_RETRY_TIME_MS,
+                TableProperties.COMMIT_TOTAL_RETRY_TIME_MS_DEFAULT),
+            2.0)
+        .onlyRetryOn(CommitFailedException.class)
+        .run(tableOps -> {
+          StagedChangeColumn staged = stage.get();
+          if (staged.transaction() == null) {
+            return;
+          }
+          BaseTransaction txn = (BaseTransaction) staged.transaction();
+          TableMetadata metadata = txn.currentMetadata();
+          if (staged.unknownTypePromotion() != null) {
+            int fieldId = staged.unknownTypePromotion().first();
+            Type.PrimitiveType newType = staged.unknownTypePromotion().second();
+            Schema schema = metadata.schema();
+            Types.NestedField field = schema.findField(fieldId);
+            Preconditions.checkArgument(field != null && field.type().typeId() == Type.TypeID.UNKNOWN,
+                "Cannot promote column with field id %s to %s: it is no longer of type unknown", fieldId, newType);
+            List<Types.NestedField> columns = schema.columns().stream()
+                .map(column -> column.fieldId() == fieldId ?
+                    Types.NestedField.from(column).ofType(newType).build() : column)
+                .toList();
+            metadata = metadata.updateSchema(new Schema(columns, schema.identifierFieldIds()));
+          }
+          if (metadata != txn.startMetadata()) {
+            tableOps.commit(txn.startMetadata(), metadata);
+          }
+        });
   }
 
   private Type.PrimitiveType getPrimitiveTypeOrThrow(FieldSchema field) throws MetaException {

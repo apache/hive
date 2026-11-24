@@ -621,6 +621,8 @@ public final class HiveSchemaUtil {
       return null;
     }
     return switch (type.typeId()) {
+      case UNKNOWN -> throw new IllegalArgumentException(String.format(
+          "Invalid default value %s: columns of type unknown only allow a NULL default", defaultValue));
       case DATE, TIME, TIMESTAMP, TIMESTAMP_NANO ->
           Literal.of(stripQuotes(defaultValue)).to(type);
       default -> Conversions.fromPartitionString(type, stripQuotes(defaultValue));
