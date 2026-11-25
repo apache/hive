@@ -255,29 +255,57 @@ class TestStatsRulesProcFactory {
   @ParameterizedTest(name = "{0}")
   @MethodSource("groupByHashCases")
   void testCheckMapSideAggregationHashCardinality(String name, List<Long> keyNdvs, long parentRows,
-      long containerMb, long expectedRows) throws SemanticException {
-    assertGroupByHashCardinality(keyNdvs, parentRows, containerMb, expectedRows);
+      long containerMb, double keyWidth, long expectedRows) throws SemanticException {
+    assertGroupByHashCardinality(keyNdvs, Collections.nCopies(keyNdvs.size(), 0L), parentRows, containerMb,
+        keyWidth, expectedRows);
   }
 
-  // Hash entries are 64 bytes, so a 1 MB container holds about 7,300 entries. With hash
-  // aggregation the map-side estimate is parentRows / 2, without it parentRows.
-  // An unknown NDV must keep the pre-HIVE-29625 decision (unknown was 0, so the estimated
-  // table was empty): hash aggregation whenever there is any memory, regardless of input size.
+  // Hash entries are 64 bytes plus the key widths, so a 1 MB container holds about 7,300 entries
+  // of 64 bytes. With hash aggregation the map-side estimate is at most parentRows / 2 (the
+  // grouping cardinality if smaller), without it parentRows. An unknown NDV on any key sizes the
+  // table once with the GROUP BY fallback for an unknown group count (parentRows / 2), then the
+  // usual memory check applies.
   private static Stream<Arguments> groupByHashCases() {
     return Stream.of(
-        Arguments.of("ndvUnknownUsesGroupByFallback", Arrays.asList(-1L), 1000L, 1024L, 500L),
-        Arguments.of("ndvKnownUsesProduct", Arrays.asList(100L), 1000L, 1024L, 100L),
-        Arguments.of("ndvUnknownKeysKeepHashAggregation", Arrays.asList(-1L, -1L), 1000L, 1L, 500L),
-        Arguments.of("ndvUnknownAndKnownKeysKeepHashAggregation", Arrays.asList(-1L, 100L), 1000L, 1L, 500L),
-        Arguments.of("ndvUnknownLargeInputKeepsHashAggregation", Arrays.asList(-1L), 100000L, 1L, 50000L),
-        Arguments.of("ndvUnknownWithoutHashMemoryDisablesHashAggregation", Arrays.asList(-1L), 1000L, 0L, 1000L),
+        Arguments.of("ndvUnknownUsesGroupByFallback", Arrays.asList(-1L), 1000L, 1024L, 0.0, 500L),
+        Arguments.of("ndvKnownUsesProduct", Arrays.asList(100L), 1000L, 1024L, 0.0, 100L),
+        Arguments.of("ndvUnknownKeysSizedOnceNotPerKey", Arrays.asList(-1L, -1L), 10000L, 1L, 0.0, 5000L),
+        Arguments.of("ndvUnknownAndKnownKeysUseFallback", Arrays.asList(-1L, 100L), 1000L, 1L, 0.0, 500L),
+        Arguments.of("ndvUnknownLargeInputDisablesHashAggregation", Arrays.asList(-1L), 100000L, 1L, 0.0,
+            100000L),
+        Arguments.of("ndvUnknownCountsKeyWidths", Arrays.asList(-1L, 100L), 1000L, 1L, 500.0, 1000L),
+        Arguments.of("ndvUnknownWithoutHashMemoryDisablesHashAggregation", Arrays.asList(-1L), 1000L, 0L, 0.0,
+            1000L),
         Arguments.of("ndvKnownProductOverMemoryDisablesHashAggregation", Arrays.asList(100L, 100L), 1000L, 1L,
-            1000L)
+            0.0, 1000L)
     );
   }
 
-  private void assertGroupByHashCardinality(List<Long> keyNdvs, long parentRows, long containerMb,
-      long expectedRows) throws SemanticException {
+  /**
+   * HIVE-29625: the hash table is sized with the same grouping cardinality as the GROUP BY row
+   * estimate, which counts NULL as one group of a key that has NULLs.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("groupByHashNullGroupCases")
+  void testCheckMapSideAggregationCountsNullGroup(String name, List<Long> keyNdvs, List<Long> keyNulls,
+      double keyWidth, long expectedRows) throws SemanticException {
+    assertGroupByHashCardinality(keyNdvs, keyNulls, 20000L, 1L, keyWidth, expectedRows);
+  }
+
+  // 1 MB container: about 471,859 bytes of hash memory. 20,000 parent rows.
+  private static Stream<Arguments> groupByHashNullGroupCases() {
+    return Stream.of(
+        // (0 + 1) x 8000 entries of 64 bytes do not fit; the all-NULL key must not zero the product
+        Arguments.of("allNullKeyCountsAsOneGroup", Arrays.asList(0L, 8000L), Arrays.asList(20000L, 0L), 0.0,
+            20000L),
+        // 115 entries of 4096 bytes fit, 116 (one more for the NULL group) do not
+        Arguments.of("nullableKeyCountsNullGroup", Arrays.asList(115L), Arrays.asList(1L), 4032.0, 20000L),
+        Arguments.of("nonNullableKeyFits", Arrays.asList(115L), Arrays.asList(0L), 4032.0, 115L)
+    );
+  }
+
+  private void assertGroupByHashCardinality(List<Long> keyNdvs, List<Long> keyNulls, long parentRows,
+      long containerMb, double keyWidth, long expectedRows) throws SemanticException {
     Statistics parentStats = new Statistics(parentRows, parentRows * 8, 0, 0);
     parentStats.setBasicStatsState(Statistics.State.COMPLETE);
     parentStats.setColumnStatsState(Statistics.State.COMPLETE);
@@ -289,7 +317,8 @@ class TestStatsRulesProcFactory {
     for (int i = 0; i < keyNdvs.size(); i++) {
       ColStatistics keyCol = new ColStatistics("k" + i, "int");
       keyCol.setCountDistint(keyNdvs.get(i));
-      keyCol.setNumNulls(0);
+      keyCol.setNumNulls(keyNulls.get(i));
+      keyCol.setAvgColLen(keyWidth);
       keyCols.add(keyCol);
       ExprNodeColumnDesc keyExpr = new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "k" + i, "table", false);
       keyExprs.add(keyExpr);

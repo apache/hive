@@ -2,9 +2,9 @@
 
 -- HIVE-29625: map-side GROUP BY hash-table sizing with unknown key NDVs.
 -- The binary columns carry the unknown NDV sentinel (-1). With two unknown grouping keys,
--- checkMapSideAggregation must keep the decision it made when unknown was stored as 0
--- (estimated hash table empty, hash aggregation assumed), so the Group By estimates stay
--- unchanged instead of the hash-table estimate growing as (rows / 2) ^ keys.
+-- checkMapSideAggregation sizes the hash table once with the GROUP BY fallback for an unknown
+-- group count (rows / 2), not as (rows / 2) ^ keys, so the 5,000 estimated entries fit and the
+-- map-side estimate assumes hash aggregation.
 
 create table gby_ndv_unk_a stored as orc as
 select cast(key as binary) as k1 from src order by key limit 100;

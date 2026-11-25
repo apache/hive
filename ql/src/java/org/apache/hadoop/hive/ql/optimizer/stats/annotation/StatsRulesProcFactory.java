@@ -1525,11 +1525,6 @@ public class StatsRulesProcFactory {
       // satisfying precondition means column statistics is available
       if (satisfyPrecondition(parentStats)) {
 
-        // check if map side aggregation is possible or not based on column stats
-        hashAgg = checkMapSideAggregation(gop, colStats, conf);
-
-        LOG.debug("STATS-{} hashAgg: {}", gop, hashAgg);
-
         stats = parentStats.clone();
         stats.setColumnStats(colStats);
         final long parentNumRows = stats.getNumRows();
@@ -1545,6 +1540,12 @@ public class StatsRulesProcFactory {
             LOG.debug("STATS-{}: ndvProduct unknown; falling back to {}", gop, ndvProduct);
           }
         }
+
+        // check if map side aggregation is possible or not based on column stats
+        hashAgg = checkMapSideAggregation(gop, colStats, conf, ndvProduct);
+
+        LOG.debug("STATS-{} hashAgg: {}", gop, hashAgg);
+
         final long maxColumnNDV = colStats.stream()
                 .filter(Objects::nonNull)
                 .mapToLong(ColStatistics::getCountDistint)
@@ -1818,10 +1819,11 @@ public class StatsRulesProcFactory {
      * @param gop - group by operator
      * @param colStats - column stats for key columns
      * @param conf - hive conf
+     * @param ndvProduct - estimated number of groups, as used for the GROUP BY row estimate
      * @return
      */
     private boolean checkMapSideAggregation(GroupByOperator gop,
-        List<ColStatistics> colStats, HiveConf conf) {
+        List<ColStatistics> colStats, HiveConf conf, long ndvProduct) {
 
       List<AggregationDesc> aggDesc = gop.getConf().getAggregators();
       GroupByDesc desc = gop.getConf();
@@ -1835,19 +1837,13 @@ public class StatsRulesProcFactory {
         long totalMemory = DagUtils.getContainerResource(conf).getMemorySize() * 1024L * 1024L;
         long maxMemHashAgg = Math.round(totalMemory * hashAggMem * hashAggMaxThreshold);
 
-        // estimated number of rows will be product of NDVs
-        long numEstimatedRows = 1;
+        // one hash entry per group
+        long numEstimatedRows = ndvProduct;
 
         // estimate size of key from column statistics
         long avgKeySize = 0;
         for (ColStatistics cs : colStats) {
           if (cs != null) {
-            if (cs.getCountDistint() < 0) {
-              // unknown NDV: the hash table cannot be sized. Keep the decision made when unknown
-              // was stored as 0: an empty estimated table, so only the memory budget matters.
-              return maxMemHashAgg > 0;
-            }
-            numEstimatedRows = StatsUtils.safeMult(numEstimatedRows, cs.getCountDistint());
             avgKeySize += Math.ceil(cs.getAvgColLen());
           }
         }
