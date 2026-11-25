@@ -168,6 +168,8 @@ public abstract class CompactorTest {
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     Path tmpPath = new Path(System.getProperty("test.tmp.dir"), "compactor_test_table_" + TMP_DIR_ID.getAndIncrement());
+    // TMP_DIR_ID restarts at 0 in every forked JVM, so the dir may hold leftovers of a previous test class
+    fs.delete(tmpPath, true);
     fs.mkdirs(tmpPath);
     tmpdir = fs.resolvePath(tmpPath);
   }
