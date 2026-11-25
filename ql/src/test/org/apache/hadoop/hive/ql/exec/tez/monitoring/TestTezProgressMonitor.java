@@ -44,6 +44,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -87,7 +88,7 @@ public class TestTezProgressMonitor {
 
   @Test
   public void setupInternalStateOnObjectCreation() throws IOException, TezException {
-    when(dagStatus.getState()).thenReturn(DAGStatus.State.RUNNING);
+    when(dagStatus.getState()).thenReturn(DAGStatus.State.KILLED);
     when(dagClient.getVertexStatus(eq(MAPPER), any())).thenReturn(succeeded);
     when(dagClient.getVertexStatus(eq(REDUCER), any())).thenReturn(running);
 
@@ -105,14 +106,26 @@ public class TestTezProgressMonitor {
 
     assertThat(monitor.progressCountsMap.keySet(), hasItems(MAPPER, REDUCER));
     TezProgressMonitor.VertexProgress expectedMapperState =
-        new TezProgressMonitor.VertexProgress(2, 1, 3, 4, 5, DAGStatus.State.RUNNING);
+        new TezProgressMonitor.VertexProgress(2, 1, 3, 4, 5, DAGStatus.State.KILLED);
     assertThat(monitor.progressCountsMap.get(MAPPER), is(equalTo(expectedMapperState)));
 
     TezProgressMonitor.VertexProgress expectedReducerState =
-        new TezProgressMonitor.VertexProgress(3, 2, 1, 0, 1, DAGStatus.State.RUNNING);
+        new TezProgressMonitor.VertexProgress(3, 2, 1, 0, 1, DAGStatus.State.KILLED);
     assertThat(monitor.progressCountsMap.get(REDUCER), is(equalTo(expectedReducerState)));
-
-
   }
 
+  @Test
+  public void skipVertexStatusFetchWhenRunning() throws IOException, TezException {
+    when(dagStatus.getState()).thenReturn(DAGStatus.State.RUNNING);
+
+    for (int i = 0; i < 5; i++) {
+      TezProgressMonitor monitor =
+          new TezProgressMonitor(dagClient, dagStatus, new ArrayList<>(), progressMap(), console,
+              Long.MAX_VALUE, NoOpQueueMetricsCollector.INSTANCE);
+      assertThat(monitor.vertexStatusMap.isEmpty(), is(true));
+    }
+
+    verify(dagClient, never()).getVertexStatus(any(), any());
+    verifyNoMoreInteractions(dagClient);
+  }
 }
