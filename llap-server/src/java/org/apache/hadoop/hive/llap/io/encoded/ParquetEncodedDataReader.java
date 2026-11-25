@@ -72,6 +72,7 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.functional.FutureIO;
+import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.filter2.compat.FilterCompat;
 import org.apache.parquet.filter2.compat.RowGroupFilter;
@@ -102,6 +103,10 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     implements ConsumerFeedback<ParquetEncodedColumnBatch>, TezCounterSource {
 
   private static final BufferObjectFactory DATA_BUFFER_FACTORY = LlapDataBuffer::new;
+  // The options ParquetFileReader.readFooter(InputFile, filter) builds for a non-Hadoop file, built once: each build
+  // parses the Hadoop default configuration (18.5% of q28's LLAP task time at 10 TB, one per split).
+  private static final ParquetReadOptions FOOTER_OPTIONS =
+      ParquetReadOptions.builder().withMetadataFilter(ParquetMetadataConverter.NO_FILTER).build();
 
   private final LowLevelCache lowLevelCache;
   private final BufferUsageManager bufferManager;
@@ -165,8 +170,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
           HdfsUtils.getFileIdPath(path, fileKey, daemonConf), jobConf, cacheTag, fileKey, cacheHit);
       counters.incrCounter(cacheHit.value
           ? LlapIOCounters.METADATA_CACHE_HIT : LlapIOCounters.METADATA_CACHE_MISS);
-      footer = ParquetFileReader.readFooter(
-          new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER);
+      footer = readFooter(new ParquetFooterInputFromCache(footerData));
     } else {
       // Fallback path: no cache key, so we read status + footer straight from HDFS. Time both
       // under HDFS_TIME_NS to match how ORC accounts for cache-miss footer reads.
@@ -185,7 +189,7 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
         }
       };
       hdfsStart = counters.startTimeCounter();
-      footer = ParquetFileReader.readFooter(inputFile, ParquetMetadataConverter.NO_FILTER);
+      footer = readFooter(inputFile);
       counters.recordHdfsTime(hdfsStart);
     }
     requestedSchema = DataWritableReadSupport.getRequestedSchema(
@@ -194,6 +198,12 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
         DataWritableReadSupport.getColumnTypes(jobConf.get(IOConstants.COLUMNS_TYPES)),
         footer.getFileMetaData().getSchema(), jobConf);
     return footer;
+  }
+
+  private static ParquetMetadata readFooter(InputFile file) throws IOException {
+    try (SeekableInputStream in = file.newStream()) {
+      return ParquetFileReader.readFooter(file, FOOTER_OPTIONS, in);
+    }
   }
 
   @Override
