@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 import java.io.IOException;
-import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -142,10 +141,8 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     } catch (IOException ioe) {
       throw ioe;
     } catch (Exception ex) {
-      Throwable rootCause = JavaUtils.findRootCause(ex);
-      if (checkLimitReached(job)
-          && (rootCause instanceof InterruptedException || rootCause instanceof ClosedByInterruptException)) {
-        LlapIoImpl.LOG.info("Ignoring exception while getting record reader as limit is reached", rootCause);
+      if (checkLimitReached(job) && JavaUtils.isInterrupt(ex)) {
+        LlapIoImpl.LOG.info("Ignoring exception while getting record reader as limit is reached", ex);
         return new NullRowsRecordReader(job, split);
       } else {
         throw new IOException(ex);

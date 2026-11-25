@@ -21,10 +21,14 @@ package org.apache.hadoop.hive.common;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
 import java.net.URLClassLoader;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,11 +127,20 @@ public final class JavaUtils {
     // prevent instantiation
   }
 
-  public static Throwable findRootCause(Throwable throwable) {
-    Throwable rootCause = throwable;
-    while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
-      rootCause = rootCause.getCause();
-    }
-    return rootCause;
+  /**
+   * Whether a failure is the current thread being interrupted rather than the operation failing on
+   * its own. The whole cause chain is checked, not just the root cause, because Hadoop's IPC and
+   * filesystem clients wrap an interrupt in an InterruptedIOException of their own.
+   */
+  public static boolean isInterrupt(Throwable throwable) {
+    return Thread.currentThread().isInterrupted()
+        || ExceptionUtils.stream(throwable).anyMatch(JavaUtils::isInterruptType);
+  }
+
+  // A SocketTimeoutException is an InterruptedIOException too, but it is a timeout, not an interrupt.
+  private static boolean isInterruptType(Throwable t) {
+    return t instanceof InterruptedException
+        || t instanceof ClosedByInterruptException
+        || (t instanceof InterruptedIOException && !(t instanceof SocketTimeoutException));
   }
 }
