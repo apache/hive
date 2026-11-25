@@ -816,8 +816,8 @@ class TestStatsRulesProcFactory {
     // numNulls=-1 is treated as 0, so valuesCount = 100 - 0 = 100
     // Without the fix, valuesCount = 100 - (-1) = 101 (WRONG)
     assertNotNull(cs.getRange(), "Range should be set on COUNT column");
-    assertEquals(0L, ((Number) cs.getRange().minValue).longValue(), "COUNT min should be 0");
-    assertEquals(100L, ((Number) cs.getRange().maxValue).longValue(),
+    assertEquals(0L, cs.getRange().minValue.longValue(), "COUNT min should be 0");
+    assertEquals(100L, cs.getRange().maxValue.longValue(),
         "COUNT max should be 100 (numRows), not 101");
   }
 
@@ -848,8 +848,8 @@ class TestStatsRulesProcFactory {
 
     // With known numNulls=20, valuesCount = 100 - 20 = 80
     assertNotNull(cs.getRange(), "Range should be set");
-    assertEquals(0L, ((Number) cs.getRange().minValue).longValue());
-    assertEquals(80L, ((Number) cs.getRange().maxValue).longValue(),
+    assertEquals(0L, cs.getRange().minValue.longValue());
+    assertEquals(80L, cs.getRange().maxValue.longValue(),
         "COUNT max should be 80 (numRows - numNulls)");
   }
 
@@ -888,8 +888,8 @@ class TestStatsRulesProcFactory {
       assertNull(cs.getRange(), "Range should NOT be set when DISTINCT NDV is unknown");
     } else {
       assertNotNull(cs.getRange(), "Range should be set when DISTINCT NDV is known");
-      assertEquals(0L, ((Number) cs.getRange().minValue).longValue());
-      assertEquals(expectedMax.longValue(), ((Number) cs.getRange().maxValue).longValue(),
+      assertEquals(0L, cs.getRange().minValue.longValue());
+      assertEquals(expectedMax.longValue(), cs.getRange().maxValue.longValue(),
           "COUNT DISTINCT max should equal the parent NDV");
     }
   }

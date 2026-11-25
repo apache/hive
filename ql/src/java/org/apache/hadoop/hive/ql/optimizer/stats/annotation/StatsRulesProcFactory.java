@@ -2276,11 +2276,10 @@ public class StatsRulesProcFactory {
           distinctVal = StatsUtils.addWithExpDecay(distinctVals);
         }
       }
-      // distinctVal <= 0 covers unknown (<0) and verified-zero (==0) cases; the latter means
-      // no key value matches anything, so every input row is unmatched in an outer join.
-      // distinctUnmatched < 0 (unknown) is treated conservatively the same way.
-      // If unmatched >= distinctVal, all rows can be assumed unmatched.
-      if (distinctVal <= 0 || distinctUnmatched < 0 || distinctUnmatched >= distinctVal) {
+      // An unknown distinctUnmatched (< 0) is treated conservatively: every input row is unmatched.
+      // Otherwise distinctUnmatched >= 0, so the second test also covers an unknown (< 0) or
+      // verified-zero distinctVal; zero means no key value matches anything.
+      if (distinctUnmatched < 0 || distinctUnmatched >= distinctVal) {
         return inputRowCount;
       }
       // Otherwise, divide the number of input rows by the number of distinct values
