@@ -1209,7 +1209,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           numRows = 1;
         }
         LOG.info("{}: {} written - {}",
-                this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
+                this, conf.isDeleteOfSplitUpdate() ? "uncounted records" : "records", numRows);
       }
 
       int writerOffset;
@@ -1511,7 +1511,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : numRows);
 
     LOG.info("{}: {} written - {}",
-            this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
+            this, conf.isDeleteOfSplitUpdate() ? "uncounted records" : "records", numRows);
 
     if (!bDynParts && !filesCreated) {
       boolean isTez = "tez".equalsIgnoreCase(

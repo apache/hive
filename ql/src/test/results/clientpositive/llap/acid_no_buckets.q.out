@@ -1861,28 +1861,25 @@ PLAN VECTORIZATION:
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
-  Stage-6 depends on stages: Stage-5
-  Stage-0 depends on stages: Stage-6
-  Stage-7 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-6
-  Stage-8 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-6
-  Stage-9 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-6
-  Stage-10 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-6
-  Stage-11 depends on stages: Stage-4
+  Stage-4 is a root stage
+  Stage-5 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-5
+  Stage-7 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-5
+  Stage-8 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-5
+  Stage-9 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-5
+  Stage: Stage-4
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 7 <- Map 6 (SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -1922,7 +1919,7 @@ STAGE PLANS:
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
                     scratchColumnTypeNames: []
-        Map 6 
+        Map 5 
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
@@ -1989,29 +1986,6 @@ STAGE PLANS:
                       className: VectorFileSinkOperator
                       native: false
         Reducer 4 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: z
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 3
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:string, VALUE._col1:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [0, 1, 2]
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
-        Reducer 5 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
@@ -2019,7 +1993,7 @@ STAGE PLANS:
                 notVectorizedReason: Key expression for GROUPBY operator: Vectorizing complex type STRUCT not supported
                 vectorized: false
             Reduce Operator Tree:
-        Reducer 7 
+        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -2076,27 +2050,23 @@ STAGE PLANS:
                           className: VectorAppMasterEventOperator
                           native: true
 
-  Stage: Stage-6
+  Stage: Stage-5
 
   Stage: Stage-0
 
-  Stage: Stage-7
+  Stage: Stage-6
 
   Stage: Stage-1
 
-  Stage: Stage-8
+  Stage: Stage-7
 
   Stage: Stage-2
 
-  Stage: Stage-9
+  Stage: Stage-8
 
   Stage: Stage-3
 
-  Stage: Stage-10
-
-  Stage: Stage-4
-
-  Stage: Stage-11
+  Stage: Stage-9
 
 PREHOOK: query: merge into srcpart_acidv t using (select distinct ds, hr, key, value from srcpart_acidv) s
 on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value
@@ -2763,30 +2733,27 @@ PLAN VECTORIZATION:
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
 STAGE DEPENDENCIES:
-  Stage-5 is a root stage
-  Stage-6 depends on stages: Stage-5
-  Stage-0 depends on stages: Stage-6
-  Stage-7 depends on stages: Stage-0
-  Stage-1 depends on stages: Stage-6
-  Stage-8 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-6
-  Stage-9 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-6
-  Stage-10 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-6
-  Stage-11 depends on stages: Stage-4
+  Stage-4 is a root stage
+  Stage-5 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-5
+  Stage-7 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-5
+  Stage-8 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-5
+  Stage-9 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-5
+  Stage: Stage-4
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 9 <- Map 8 (SIMPLE_EDGE)
+        Reducer 8 <- Map 7 (SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -2826,7 +2793,7 @@ STAGE PLANS:
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
                     scratchColumnTypeNames: []
-        Map 8 
+        Map 7 
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
@@ -2897,29 +2864,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: z
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 3
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:string, VALUE._col1:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [0, 1, 2]
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
@@ -2938,7 +2882,7 @@ STAGE PLANS:
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-        Reducer 6 
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -2962,7 +2906,7 @@ STAGE PLANS:
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-        Reducer 7 
+        Reducer 6 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
@@ -2970,7 +2914,7 @@ STAGE PLANS:
                 notVectorizedReason: Key expression for GROUPBY operator: Vectorizing complex type STRUCT not supported
                 vectorized: false
             Reduce Operator Tree:
-        Reducer 9 
+        Reducer 8 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -3027,27 +2971,23 @@ STAGE PLANS:
                           className: VectorAppMasterEventOperator
                           native: true
 
-  Stage: Stage-6
+  Stage: Stage-5
 
   Stage: Stage-0
 
-  Stage: Stage-7
+  Stage: Stage-6
 
   Stage: Stage-1
 
-  Stage: Stage-8
+  Stage: Stage-7
 
   Stage: Stage-2
 
-  Stage: Stage-9
+  Stage: Stage-8
 
   Stage: Stage-3
 
-  Stage: Stage-10
-
-  Stage: Stage-4
-
-  Stage: Stage-11
+  Stage: Stage-9
 
 PREHOOK: query: merge into srcpart_acidvb t using (select distinct ds, hr, key, value from srcpart_acidvb) s
 on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value

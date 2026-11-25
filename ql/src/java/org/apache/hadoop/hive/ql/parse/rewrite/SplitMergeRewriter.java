@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addRowLineageColumnsForWhenMatchedUpdateClause;
 
@@ -49,6 +50,8 @@ public class SplitMergeRewriter extends MergeRewriter {
 
   static class SplitMergeWhenClauseSqlGenerator extends MergeWhenClauseSqlGenerator {
     private final boolean isRowLineageSupported;
+    // deletes of the WHEN MATCHED clauses; build() appends them as one delete branch
+    private final List<DeleteBranch> deleteBranches = new ArrayList<>(2);
 
     SplitMergeWhenClauseSqlGenerator(
         HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement,
@@ -63,6 +66,7 @@ public class SplitMergeRewriter extends MergeRewriter {
       String targetAlias = mergeStatement.getTargetAlias();
       String onClauseAsString = mergeStatement.getOnClauseAsText();
 
+      addBranch(new DeleteOfUpdateBranch());
       sqlGenerator.append("    -- update clause (insert part)\n");
       List<String> values = new ArrayList<>(targetTable.getAllCols().size());
       setValuesClause.addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
@@ -75,9 +79,45 @@ public class SplitMergeRewriter extends MergeRewriter {
 
       sqlGenerator.append("\n");
 
-      sqlGenerator.append("    -- update clause (delete part)\n");
-      handleWhenMatchedDelete(onClauseAsString,
-          updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), hintStr, sqlGenerator);
+      deleteBranches.add(new DeleteBranch("update clause (delete part)",
+          updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate()));
+    }
+
+    @Override
+    public void appendWhenMatchedDeleteClause(MergeStatement.DeleteClause deleteClause) {
+      deleteBranches.add(new DeleteBranch("delete clause",
+          deleteClause.getExtraPredicate(), deleteClause.getUpdateExtraPredicate()));
+    }
+
+    @Override
+    public void build() {
+      if (deleteBranches.isEmpty()) {
+        return;
+      }
+      addBranch(new Branch(Context.DestClausePrefix.DELETE));
+      sqlGenerator.append(deleteBranches.stream().map(DeleteBranch::comment)
+          .collect(Collectors.joining(" and ", "    -- ", "\n")));
+      String onClauseAsString = mergeStatement.getOnClauseAsText();
+      if (deleteBranches.size() == 1) {
+        DeleteBranch deleteBranch = deleteBranches.getFirst();
+        handleWhenMatchedDelete(onClauseAsString, deleteBranch.extraPredicate(),
+            deleteBranch.precedingClausePredicate(), hintStr, sqlGenerator);
+      } else {
+        // one delete branch for both clauses, so that all deletes of a data file reach the same DV writer
+        String deletePredicate = deleteBranches.stream()
+            .map(deleteBranch -> "(" + deleteBranch.clausePredicate() + ")")
+            .collect(Collectors.joining(" OR ", "(", ")"));
+        handleWhenMatchedDelete(onClauseAsString, deletePredicate, null, hintStr, sqlGenerator);
+      }
+      hintStr = null;
+    }
+
+    private record DeleteBranch(String comment, String extraPredicate, String precedingClausePredicate) {
+      // rows matched by this clause and not by the preceding one
+      String clausePredicate() {
+        String predicate = extraPredicate == null ? "true" : "(" + extraPredicate + ")";
+        return precedingClausePredicate == null ? predicate : predicate + " AND NOT(" + precedingClausePredicate + ")";
+      }
     }
   }
 
@@ -86,10 +126,17 @@ public class SplitMergeRewriter extends MergeRewriter {
     context.setOperation(Context.Operation.MERGE, true);
   }
 
-  @Override
-  public int addDestNamePrefixOfUpdate(int pos, Context context) {
-    context.addDestNamePrefix(pos, Context.DestClausePrefix.INSERT);
-    context.addDeleteOfUpdateDestNamePrefix(pos + 1, Context.DestClausePrefix.DELETE);
-    return 2;
+  /**
+   * The insert half of a split update. Its rows are not counted; the delete half counts them.
+   */
+  private static class DeleteOfUpdateBranch extends Branch {
+    DeleteOfUpdateBranch() {
+      super(Context.DestClausePrefix.INSERT);
+    }
+
+    @Override
+    protected void addDestNamePrefix(int pos, Context context) {
+      context.addDeleteOfUpdateDestNamePrefix(pos, prefix);
+    }
   }
 }

@@ -61,6 +61,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
+import org.apache.iceberg.mr.hive.writer.RewritableDeletes;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types.StructType;
 import org.apache.iceberg.util.SerializationUtil;
@@ -222,10 +223,16 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     long fromVersion = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
     Scan<? extends Scan, FileScanTask, CombinedScanTask> scan;
+    RewritableDeletes.Collector rewritableDeletes;
     if (fromVersion != -1) {
       scan = applyConfig(conf, createIncrementalAppendScan(table, conf));
+      rewritableDeletes = null;
     } else {
-      scan = applyConfig(conf, createTableScan(table, conf, serverSidePinTable));
+      TableScan tableScan = applyConfig(conf, createTableScan(table, conf, serverSidePinTable));
+      // null unless a DV writer of the job writes to this table
+      rewritableDeletes =
+          RewritableDeletes.collector(conf.get(InputFormatConfig.TABLE_IDENTIFIER), tableScan.snapshot(), conf);
+      scan = tableScan;
     }
     scan = scan.planWith(workerPool);
 
@@ -243,8 +250,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       if (allowDataFilesWithinTableLocationOnly) {
         validateFileLocations(taskGroup, tableLocation);
       }
+      if (rewritableDeletes != null) {
+        taskGroup.tasks().forEach(rewritableDeletes::add);
+      }
       splits.add(new IcebergSplit(conf, taskGroup));
     });
+    if (rewritableDeletes != null) {
+      rewritableDeletes.write(conf);
+    }
 
     // If enabled, do not serialize FileIO hadoop config to decrease split size
     // However, do not skip serialization for metatable queries, because some metadata tasks cache the IO object and we
