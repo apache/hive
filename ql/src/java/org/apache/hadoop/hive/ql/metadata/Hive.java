@@ -22,7 +22,6 @@ package org.apache.hadoop.hive.ql.metadata;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -5244,6 +5243,25 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return destFilePath;
   }
 
+  private static Integer copyCounterEndIndex(String name, String fileName) {
+    String marker = name + Utilities.COPY_KEYWORD;
+    if (!fileName.startsWith(marker)) {
+      return null;
+    }
+    int counterEndIdx = -1;
+    for (int i = marker.length(); i < fileName.length(); i++) {
+      if (!Character.isDigit(fileName.charAt(i))) {
+        break;
+      }
+      counterEndIdx = i;
+    }
+    return counterEndIdx;
+  }
+
+  private static IOException moveFailure(String message, Path sourcePath, Path destFilePath) {
+    return new IOException(String.format(message, sourcePath, destFilePath));
+  }
+
   /**
    * <p>
    *   Moves a file from one {@link Path} to another. If {@code isRenameAllowed} is true then the
@@ -5277,7 +5295,46 @@ private void constructOneLBLocationMap(FileStatus fSta,
         isRenameAllowed);
 
     if (isRenameAllowed) {
-      destFs.rename(sourcePath, destFilePath);
+      // Filesystems that take the per-query _copy_<tag> name do not use a numeric _copy_N
+      // counter. Parsing that tag as a counter throws or rewrites the name, so rename once.
+      if (FileUtils.isNonAtomicRenameFs(destFs)) {
+        destFs.rename(sourcePath, destFilePath);
+      } else {
+        // HDFS rename returns false (and leaves the source in place) when the destination
+        // already exists. Concurrent inserts can all choose the same name. Overwrite deletes
+        // that file and retries the same name; otherwise advance or introduce _copy_N.
+        String name = taskId == -1 ? FilenameUtils.getBaseName(sourcePath.getName()) : getPathName(taskId);
+        String currentDestFileName = destFilePath.getName();
+        Integer counterEndIdx = copyCounterEndIndex(name, currentDestFileName);
+        int counter;
+        final String prefix = name + Utilities.COPY_KEYWORD;
+        final String suffix;
+        if (counterEndIdx == null) {
+          counter = 0;
+          suffix = currentDestFileName.substring(name.length());
+        } else {
+          counter = counterEndIdx == -1 ? -1
+              : Integer.parseInt(currentDestFileName.substring(prefix.length(), counterEndIdx + 1));
+          suffix = currentDestFileName.substring(counterEndIdx + 1);
+        }
+        while (!destFs.rename(sourcePath, destFilePath)) {
+          if (!destFs.exists(destFilePath) || counter < 0) {
+            throw moveFailure("Unable to rename %s to %s; rename returned false", sourcePath, destFilePath);
+          }
+          if (isOverwrite) {
+            if (!destFs.delete(destFilePath, false)) {
+              throw moveFailure("Unable to delete %2$s to overwrite it with %1$s", sourcePath, destFilePath);
+            }
+            continue;
+          }
+          if (counter == Integer.MAX_VALUE) {
+            throw moveFailure("Unable to rename %s to %s; no free _copy_N name", sourcePath, destFilePath);
+          }
+          counter++;
+          destFilePath = new Path(destDirPath, prefix + counter + suffix);
+          LOG.warn("Rename lost a race with a concurrent writer; retrying as {}", destFilePath.getName());
+        }
+      }
     } else if (isSrcLocal) {
       destFs.copyFromLocalFile(sourcePath, destFilePath);
     } else {
