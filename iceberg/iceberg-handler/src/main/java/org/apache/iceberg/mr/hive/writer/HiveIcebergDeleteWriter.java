@@ -45,7 +45,7 @@ import org.apache.iceberg.util.DeleteFileSet;
 
 class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
-  // deserialized partitions, by spec id and serialized partition
+  // Maps spec id -> PARTITION__KEY bytes -> the partition decoded from those bytes, so each partition is decoded once.
   private final Map<Integer, Map<ByteBuffer, StructLike>> partitions;
 
   HiveIcebergDeleteWriter(
@@ -60,6 +60,7 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
     PartitionSpec spec = specs.get(IcebergAcidUtil.parseSpecId(rec));
+
     StructLike partition = partitions.computeIfAbsent(spec.specId(), id -> newPartitionCache(spec))
         .computeIfAbsent(IcebergAcidUtil.parseSerializedPartition(rec),
             serialized -> IcebergAcidUtil.deserializePartition(serialized, spec));
@@ -67,8 +68,9 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   }
 
   /**
-   * Fails for a spec whose partition source column was dropped. A manifest stores that field as null, so a delete file
-   * cannot match the partition of its data files, which Iceberg validates for DVs.
+   * Returns an empty map for the partitions decoded under the spec. Fails for a spec whose partition source column was
+   * dropped: a manifest stores that field as null, so a delete file cannot match the partition of its data files, which
+   * Iceberg validates for DVs.
    */
   private Map<ByteBuffer, StructLike> newPartitionCache(PartitionSpec spec) {
     Preconditions.checkArgument(spec.partitionType().fields().stream()

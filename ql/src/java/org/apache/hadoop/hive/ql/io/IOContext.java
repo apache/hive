@@ -56,8 +56,8 @@ public class IOContext {
   private RowLineageInfo rowLineageInfo;
 
   // the partition of the rows the reader currently serves
-  private String partitionName;
   private byte[] partitionKey;
+  private String partitionName;
 
   public enum Comparison {
     GREATER,
@@ -202,20 +202,20 @@ public class IOContext {
     return pdi;
   }
 
-  public void setPartitionName(String partitionName) {
-    this.partitionName = partitionName;
-  }
-
-  public String getPartitionName() {
-    return partitionName;
-  }
-
   public void setPartitionKey(byte[] partitionKey) {
     this.partitionKey = partitionKey;
   }
 
   public byte[] getPartitionKey() {
     return partitionKey;
+  }
+
+  public void setPartitionName(String partitionName) {
+    this.partitionName = partitionName;
+  }
+
+  public String getPartitionName() {
+    return partitionName;
   }
 
   public void setRowLineageInfo(RowLineageInfo rowLineageInfo) {

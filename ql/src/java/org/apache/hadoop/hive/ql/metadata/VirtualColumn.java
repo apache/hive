@@ -54,10 +54,10 @@ public enum VirtualColumn {
   ROWID("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi),
   ROWISDELETED("ROW__IS__DELETED", TypeInfoFactory.booleanTypeInfo),
   PARTITION_SPEC_ID("PARTITION__SPEC__ID", TypeInfoFactory.intTypeInfo),
+  PARTITION_KEY("PARTITION__KEY", TypeInfoFactory.binaryTypeInfo, 8),
   FILE_PATH("FILE__PATH", TypeInfoFactory.stringTypeInfo),
   ROW_POSITION("ROW__POSITION", TypeInfoFactory.longTypeInfo),
   SNAPSHOT_ID("SNAPSHOT__ID", TypeInfoFactory.longTypeInfo),
-  PARTITION_KEY("PARTITION__KEY", TypeInfoFactory.binaryTypeInfo, 8),
   PARTITION_NAME("PARTITION__NAME", TypeInfoFactory.stringTypeInfo),
   ROW_LINEAGE_ID("ROW__LINEAGE__ID", TypeInfoFactory.longTypeInfo),
   LAST_UPDATED_SEQUENCE_NUMBER("LAST__UPDATED__SEQUENCE__NUMBER", TypeInfoFactory.longTypeInfo),
@@ -74,8 +74,8 @@ public enum VirtualColumn {
   public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(),
           RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName(), ROWISDELETED.getName(),
-          PARTITION_SPEC_ID.getName(), FILE_PATH.getName(), ROW_POSITION.getName(),
-          PARTITION_KEY.getName(), PARTITION_NAME.getName(), ROW_LINEAGE_ID.getName(),
+          PARTITION_SPEC_ID.getName(), PARTITION_KEY.getName(), FILE_PATH.getName(), ROW_POSITION.getName(),
+          PARTITION_NAME.getName(), ROW_LINEAGE_ID.getName(),
           LAST_UPDATED_SEQUENCE_NUMBER.getName());
 
   public static final ImmutableMap<String, VirtualColumn> VIRTUAL_COLUMN_NAME_MAP =
@@ -101,7 +101,7 @@ public enum VirtualColumn {
 
   VirtualColumn(String name, PrimitiveTypeInfo typeInfo, int avgLength) {
     this(name, typeInfo, true,
-      PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo), avgLength);
+        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo), avgLength);
   }
 
   VirtualColumn(String name, TypeInfo typeInfo, boolean isHidden, ObjectInspector oi) {

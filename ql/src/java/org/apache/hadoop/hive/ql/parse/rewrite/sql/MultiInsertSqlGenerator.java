@@ -74,14 +74,6 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public abstract List<String> getDeleteValues(Operation operation);
-
-  /**
-   * Appends the select columns of the deleted records.
-   */
-  public void appendDeletedRecordColumns() {
-    appendAcidSelectColumns(Operation.DELETE);
-  }
-
   public abstract List<String> getSortKeys(Operation operation);
   public abstract List<String> getDistributeKeys(Operation operation);
 
@@ -115,6 +107,7 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendDeleteBranch(String hintStr) {
+    // only MERGE builds a delete branch here, and its deletes need only the virtual columns
     List<String> deleteValues = getDeleteValues(Operation.MERGE);
     appendInsertBranch(hintStr, deleteValues);
   }

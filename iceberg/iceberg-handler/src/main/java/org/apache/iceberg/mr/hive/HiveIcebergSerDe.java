@@ -181,7 +181,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     }
     if (copyOnWrite) {
-      return getSchemaWithRowLineage(IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns()), conf);
+      return getSchemaWithRowLineage(
+          IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns()), conf);
     }
     switch (operation) {
       case DELETE:

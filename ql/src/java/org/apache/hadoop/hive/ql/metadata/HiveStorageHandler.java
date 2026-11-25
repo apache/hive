@@ -588,7 +588,7 @@ public interface HiveStorageHandler extends Configurable {
    * INSERT INTO T SELECT &lt;selectCols&gt;, &lt;newValues&gt; FROM T WHERE A = 32 SORT BY &lt;sortCols&gt;.
    *
    * This method specifies which columns should be injected into the &lt;selectCols&gt; part of the rewritten query.
-   * A merge-on-read DELETE selects the {@link #acidVirtualColumns()} instead.
+   * A merge-on-read DELETE selects the columns of a MERGE, which must hold only the {@link #acidVirtualColumns()}.
    *
    * Should only return a non-empty list if
    * {@link HiveStorageHandler#supportsAcidOperations()} returns something

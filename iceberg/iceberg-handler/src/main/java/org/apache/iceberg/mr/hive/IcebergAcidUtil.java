@@ -285,9 +285,9 @@ public class IcebergAcidUtil {
     private final Supplier<IOContext> ioContext;
 
     private final int specId;
+    private final byte[] partitionKey;
     private final String filePath;
     private final String partitionName;
-    private final byte[] partitionKey;
 
     public VirtualColumnAwareIterator(CloseableIterator<T> currentIterator, List<Types.NestedField> columns,
         FileScanTask task, Supplier<IOContext> ioContext) {
@@ -297,9 +297,9 @@ public class IcebergAcidUtil {
       this.ioContext = ioContext;
 
       this.specId = task.file().specId();
+      this.partitionKey = serializePartition(task.file().partition(), task.spec());
       this.filePath = task.file().location();
       this.partitionName = IcebergTableUtil.toPartitionName(task.spec(), task.file().partition());
-      this.partitionKey = serializePartition(task.file().partition(), task.spec());
     }
 
     @Override
@@ -318,10 +318,10 @@ public class IcebergAcidUtil {
       GenericRecord rec = (GenericRecord) next;
       IcebergAcidUtil.copyFields(rec, FILE_READ_META_COLS.size(), current.size(), current);
       IOContext ioCxt = ioContext.get();
-      ioCxt.setPartitionName(partitionName);
       ioCxt.setPartitionKey(partitionKey);
-      ioCxt.setPositionDeleteInfo(
-          new PositionDeleteInfo(specId, filePath, rec.get(ROW_POSITION_INDEX, Long.class)));
+      ioCxt.setPartitionName(partitionName);
+      ioCxt.setPositionDeleteInfo(new PositionDeleteInfo(
+          specId, filePath, rec.get(ROW_POSITION_INDEX, Long.class)));
       ioCxt.setRowLineageInfo(new RowLineageInfo(
           RowLineageReader.readRowId(rec), RowLineageReader.readLastUpdatedSequenceNumber(rec)));
       return (T) current;
