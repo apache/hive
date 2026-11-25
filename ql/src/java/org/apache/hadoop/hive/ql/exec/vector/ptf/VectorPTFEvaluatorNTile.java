@@ -135,7 +135,8 @@ public class VectorPTFEvaluatorNTile extends VectorPTFEvaluatorBase {
    * which is also where a repeating vector (e.g. a partition key column) keeps its value.
    *
    * <p>The value is narrowed to an int as in row mode: a vectorized cast to int from a wider
-   * integer type is a no-op, so the vector can hold a value outside the int range.
+   * integer type is a no-op (HIVE-19399), so the vector can hold a value outside the int range. The
+   * narrowing can go once HIVE-19399 is fixed.
    */
   private Integer readNumBuckets(VectorizedRowBatch batch) {
     LongColumnVector numBucketsColVector = (LongColumnVector) batch.cols[inputColumnNum];

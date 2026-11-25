@@ -3013,18 +3013,12 @@ public class Vectorizer implements PhysicalPlanResolver {
         throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
       }
 
-      // A non-constant ntile argument is read from the first row of each partition, as in row mode.
-      if (supportedFunctionType == SupportedFunctionType.NTILE) {
-        if (singleExprNodeDesc instanceof ExprNodeConstantDesc) {
-          if (!isPositiveIntConstant(singleExprNodeDesc)) {
-            setOperatorIssue(functionName + " only supports a positive integer as a constant number of buckets");
-            return false;
-          }
-        } else if (containsLeadLag(singleExprNodeDesc)) {
-          setOperatorIssue("lead and lag function not supported in argument expression of aggregation function "
-              + functionName);
-          return false;
-        }
+      // A non-constant ntile argument is read from the first row of each partition, as in row mode,
+      // and goes through the generic argument checks below.
+      if (supportedFunctionType == SupportedFunctionType.NTILE && singleExprNodeDesc instanceof ExprNodeConstantDesc
+          && !isPositiveIntConstant(singleExprNodeDesc)) {
+        setOperatorIssue(functionName + " only supports a positive integer as a constant number of buckets");
+        return false;
       }
 
       if (!VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType)) {
@@ -5063,8 +5057,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         && constantDesc.getValue() instanceof Integer value && value > 0;
   }
 
-  // TODO: An evaluator that wants to handle an unbuffered partition-only column in its calculation could
-  // opt in to vectorization here.
+  // An evaluator that handles an unbuffered partition-only column in its calculation opts in to vectorization
+  // in evaluatorArgsReferencePartitionOnlyExprs, as ntile does.
   private static boolean hasUnbufferedPartitionColumnInEvaluatorArgs(
       VectorPTFDesc vectorPTFDesc) {
 
@@ -5092,8 +5086,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       SupportedFunctionType supportedFunctionType =
           VectorPTFDesc.supportedFunctionsMap.get(evaluatorFunctionNames[i].toLowerCase());
       List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
+      // ntile reads its argument only from forwarded batches, where the partition columns are restored.
       if (supportedFunctionType == null ||
           VectorPTFDesc.COLUMN_AGNOSTIC_FUNCTIONS.contains(supportedFunctionType) ||
+          supportedFunctionType == SupportedFunctionType.NTILE ||
           exprNodeDescList == null) {
         continue;
       }

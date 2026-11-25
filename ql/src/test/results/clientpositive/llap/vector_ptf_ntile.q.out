@@ -1718,6 +1718,8 @@ PREHOOK: query: select k, ord, nb,
 rank() over (partition by k order by ord) as r,
 ntile(3) over (partition by k order by ord) as nt3,
 ntile(nb) over (partition by k order by ord) as nt,
+ntile(k * 2) over (partition by k order by ord) as nt2,
+ntile(k) over (partition by k order by ord) as ntk,
 sum(nb) over (partition by k order by ord) as s
 from vector_ptf_ntile_buckets
 PREHOOK: type: QUERY
@@ -1727,40 +1729,42 @@ POSTHOOK: query: select k, ord, nb,
 rank() over (partition by k order by ord) as r,
 ntile(3) over (partition by k order by ord) as nt3,
 ntile(nb) over (partition by k order by ord) as nt,
+ntile(k * 2) over (partition by k order by ord) as nt2,
+ntile(k) over (partition by k order by ord) as ntk,
 sum(nb) over (partition by k order by ord) as s
 from vector_ptf_ntile_buckets
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_ntile_buckets
 #### A masked pattern was here ####
--4	26	-4	1	1	1	-4
--4	27	0	2	2	2	-4
--4	28	NULL	3	3	3	-4
-1	1	1	1	1	1	1
-1	2	NULL	2	1	1	1
-1	3	0	3	2	1	1
-1	4	-3	4	2	1	-2
-1	5	7	5	3	1	5
-2	13	3	1	1	1	3
-2	14	NULL	2	1	1	3
-2	15	0	3	2	2	3
-2	16	1	4	2	2	4
-2	17	-6	5	3	3	-2
-2	18	4	6	3	3	2
-3	6	2	1	1	1	2
-3	7	0	2	1	1	2
-3	8	NULL	3	1	1	2
-3	9	100	4	2	1	102
-3	10	-1	5	2	2	101
-3	11	2	6	3	2	103
-3	12	5	7	3	2	108
-4	19	4	1	1	1	4
-4	20	0	2	1	2	4
-4	21	NULL	3	2	3	4
-4	22	1	4	3	4	5
-5	29	-2	1	1	1	-2
-10	23	2147483647	1	1	1	2147483647
-10	24	NULL	2	2	2	2147483647
-10	25	0	3	3	3	2147483647
+-4	26	-4	1	1	1	1	1	-4
+-4	27	0	2	2	2	2	2	-4
+-4	28	NULL	3	3	3	3	3	-4
+1	1	1	1	1	1	1	1	1
+1	2	NULL	2	1	1	1	1	1
+1	3	0	3	2	1	1	1	1
+1	4	-3	4	2	1	2	1	-2
+1	5	7	5	3	1	2	1	5
+2	13	3	1	1	1	1	1	3
+2	14	NULL	2	1	1	1	1	3
+2	15	0	3	2	2	2	1	3
+2	16	1	4	2	2	2	2	4
+2	17	-6	5	3	3	3	2	-2
+2	18	4	6	3	3	4	2	2
+3	6	2	1	1	1	1	1	2
+3	7	0	2	1	1	1	1	2
+3	8	NULL	3	1	1	2	1	2
+3	9	100	4	2	1	3	2	102
+3	10	-1	5	2	2	4	2	101
+3	11	2	6	3	2	5	3	103
+3	12	5	7	3	2	6	3	108
+4	19	4	1	1	1	1	1	4
+4	20	0	2	1	2	2	2	4
+4	21	NULL	3	2	3	3	3	4
+4	22	1	4	3	4	4	4	5
+5	29	-2	1	1	1	1	1	-2
+10	23	2147483647	1	1	1	1	1	2147483647
+10	24	NULL	2	2	2	2	2	2147483647
+10	25	0	3	3	3	3	3	2147483647
 PREHOOK: query: explain vectorization detail select k, ord, nb,
 ntile(nb) over (partition by k order by ord) as nt
 from vector_ptf_ntile_buckets
@@ -2408,6 +2412,8 @@ PREHOOK: query: select k, ord, nb,
 rank() over (partition by k order by ord) as r,
 ntile(3) over (partition by k order by ord) as nt3,
 ntile(nb) over (partition by k order by ord) as nt,
+ntile(k * 2) over (partition by k order by ord) as nt2,
+ntile(k) over (partition by k order by ord) as ntk,
 sum(nb) over (partition by k order by ord) as s
 from vector_ptf_ntile_buckets
 PREHOOK: type: QUERY
@@ -2417,40 +2423,42 @@ POSTHOOK: query: select k, ord, nb,
 rank() over (partition by k order by ord) as r,
 ntile(3) over (partition by k order by ord) as nt3,
 ntile(nb) over (partition by k order by ord) as nt,
+ntile(k * 2) over (partition by k order by ord) as nt2,
+ntile(k) over (partition by k order by ord) as ntk,
 sum(nb) over (partition by k order by ord) as s
 from vector_ptf_ntile_buckets
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_ntile_buckets
 #### A masked pattern was here ####
--4	26	-4	1	1	1	-4
--4	27	0	2	2	2	-4
--4	28	NULL	3	3	3	-4
-1	1	1	1	1	1	1
-1	2	NULL	2	1	1	1
-1	3	0	3	2	1	1
-1	4	-3	4	2	1	-2
-1	5	7	5	3	1	5
-2	13	3	1	1	1	3
-2	14	NULL	2	1	1	3
-2	15	0	3	2	2	3
-2	16	1	4	2	2	4
-2	17	-6	5	3	3	-2
-2	18	4	6	3	3	2
-3	6	2	1	1	1	2
-3	7	0	2	1	1	2
-3	8	NULL	3	1	1	2
-3	9	100	4	2	1	102
-3	10	-1	5	2	2	101
-3	11	2	6	3	2	103
-3	12	5	7	3	2	108
-4	19	4	1	1	1	4
-4	20	0	2	1	2	4
-4	21	NULL	3	2	3	4
-4	22	1	4	3	4	5
-5	29	-2	1	1	1	-2
-10	23	2147483647	1	1	1	2147483647
-10	24	NULL	2	2	2	2147483647
-10	25	0	3	3	3	2147483647
+-4	26	-4	1	1	1	1	1	-4
+-4	27	0	2	2	2	2	2	-4
+-4	28	NULL	3	3	3	3	3	-4
+1	1	1	1	1	1	1	1	1
+1	2	NULL	2	1	1	1	1	1
+1	3	0	3	2	1	1	1	1
+1	4	-3	4	2	1	2	1	-2
+1	5	7	5	3	1	2	1	5
+2	13	3	1	1	1	1	1	3
+2	14	NULL	2	1	1	1	1	3
+2	15	0	3	2	2	2	1	3
+2	16	1	4	2	2	2	2	4
+2	17	-6	5	3	3	3	2	-2
+2	18	4	6	3	3	4	2	2
+3	6	2	1	1	1	1	1	2
+3	7	0	2	1	1	1	1	2
+3	8	NULL	3	1	1	2	1	2
+3	9	100	4	2	1	3	2	102
+3	10	-1	5	2	2	4	2	101
+3	11	2	6	3	2	5	3	103
+3	12	5	7	3	2	6	3	108
+4	19	4	1	1	1	1	1	4
+4	20	0	2	1	2	2	2	4
+4	21	NULL	3	2	3	3	3	4
+4	22	1	4	3	4	4	4	5
+5	29	-2	1	1	1	1	1	-2
+10	23	2147483647	1	1	1	1	1	2147483647
+10	24	NULL	2	2	2	2	2	2147483647
+10	25	0	3	3	3	3	3	2147483647
 PREHOOK: query: DROP TABLE IF EXISTS vector_ptf_ntile_casts
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default

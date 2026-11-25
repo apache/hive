@@ -174,6 +174,8 @@ select k, ord, nb,
 rank() over (partition by k order by ord) as r,
 ntile(3) over (partition by k order by ord) as nt3,
 ntile(nb) over (partition by k order by ord) as nt,
+ntile(k * 2) over (partition by k order by ord) as nt2,
+ntile(k) over (partition by k order by ord) as ntk,
 sum(nb) over (partition by k order by ord) as s
 from vector_ptf_ntile_buckets;
 
@@ -217,13 +219,16 @@ ntile(mynumber % 8 + 1) over (partition by name order by mynumber desc nulls las
 from vector_ptf_ntile_int;
 
 -- constant and non-constant ntile mixed with streaming (rank) and buffered (sum) evaluators while
--- spilling every batch to disk
+-- spilling every batch to disk: the column (nb) and scratch column (k * 2) arguments are read back
+-- from spilled batches, and the partition key (k) is restored when they are replayed
 set hive.vectorized.ptf.max.memory.buffering.batch.count=1;
 
 select k, ord, nb,
 rank() over (partition by k order by ord) as r,
 ntile(3) over (partition by k order by ord) as nt3,
 ntile(nb) over (partition by k order by ord) as nt,
+ntile(k * 2) over (partition by k order by ord) as nt2,
+ntile(k) over (partition by k order by ord) as ntk,
 sum(nb) over (partition by k order by ord) as s
 from vector_ptf_ntile_buckets;
 

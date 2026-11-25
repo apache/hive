@@ -164,15 +164,13 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     supportedFunctionNames.addAll(treeSet);
   }
 
-  // Functions that take no argument, or (ntile) read it only from forwarded batches, where the
-  // partition columns are restored, rather than aggregating it over buffered batches.
+  // Functions that do not depend on input columns.
   public static final Set<SupportedFunctionType> COLUMN_AGNOSTIC_FUNCTIONS =
       EnumSet.of(
           SupportedFunctionType.RANK,
           SupportedFunctionType.DENSE_RANK,
           SupportedFunctionType.PERCENT_RANK,
-          SupportedFunctionType.CUME_DIST,
-          SupportedFunctionType.NTILE);
+          SupportedFunctionType.CUME_DIST);
 
   private TypeInfo[] reducerBatchTypeInfos;
   private DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations;
