@@ -63,11 +63,9 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     List<ColStatistics> colStats = htRel.getColStat(projIndxLst);
     Double noDistinctRows = 1.0;
     for (ColStatistics cStat : colStats) {
-      // unknown (< 0) or zero NDV yields 0; null (Calcite's
-      // "unknown") would need matching guards in
-      // HiveRelMdRowCount's PK-FK analysis
-      if (cStat.getCountDistint() <= 0) {
-        return 0.0;
+      // countDistinct < 0 means "unknown", which Calcite represents as null
+      if (cStat.getCountDistint() < 0) {
+        return null;
       }
       noDistinctRows *= cStat.getCountDistint();
     }

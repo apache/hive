@@ -1,0 +1,1549 @@
+PREHOOK: query: create table ndv_unknown_bin stored as orc as
+select cast(value as binary) as kb, value as ks, cast(key as int) as ki from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ndv_unknown_bin
+POSTHOOK: query: create table ndv_unknown_bin stored as orc as
+select cast(value as binary) as kb, value as ks, cast(key as int) as ki from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ndv_unknown_bin
+POSTHOOK: Lineage: ndv_unknown_bin.kb EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ndv_unknown_bin.ki EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ndv_unknown_bin.ks SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table ndv_unknown_bin compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ndv_unknown_bin
+PREHOOK: Output: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ndv_unknown_bin compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ndv_unknown_bin
+POSTHOOK: Output: default@ndv_unknown_bin
+#### A masked pattern was here ####
+PREHOOK: query: create table ndv_known_dim stored as orc as select distinct value as v from src where cast(key as int) < 100
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ndv_known_dim
+POSTHOOK: query: create table ndv_known_dim stored as orc as select distinct value as v from src where cast(key as int) < 100
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ndv_known_dim
+POSTHOOK: Lineage: ndv_known_dim.v SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table ndv_known_dim compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Output: default@ndv_known_dim
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ndv_known_dim compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Output: default@ndv_known_dim
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo joincost select kb, count(*) from ndv_unknown_bin group by kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select kb, count(*) from ndv_unknown_bin group by kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(kb=[$0], _c1=[$1]): rowcount: 50.0
+  HiveAggregate(group=[{0}], agg#0=[count()]): rowcount: 50.0
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from (select kb from ndv_unknown_bin group by kb) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select kb from ndv_unknown_bin group by kb) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+309
+PREHOOK: query: explain cbo joincost select kb, ki, count(*) from ndv_unknown_bin group by kb, ki
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select kb, ki, count(*) from ndv_unknown_bin group by kb, ki
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(kb=[$0], ki=[$1], _c2=[$2]): rowcount: 50.0
+  HiveAggregate(group=[{0, 2}], agg#0=[count()]): rowcount: 50.0
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from (select kb, ki from ndv_unknown_bin group by kb, ki) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select kb, ki from ndv_unknown_bin group by kb, ki) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+309
+PREHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb = cast('val_100' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb = cast('val_100' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ks=[$1]): rowcount: 500.0
+  HiveFilter(condition=[=($0, CAST('val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 500.0
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin where kb = cast('val_100' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin where kb = cast('val_100' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+2
+PREHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb <> cast('val_100' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb <> cast('val_100' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ks=[$1]): rowcount: 500.0
+  HiveFilter(condition=[<>($0, CAST('val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 500.0
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin where kb <> cast('val_100' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin where kb <> cast('val_100' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+498
+PREHOOK: query: explain cbo joincost select ks from ndv_unknown_bin
+where kb in (cast('val_1' as binary), cast('val_2' as binary), cast('val_3' as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ks from ndv_unknown_bin
+where kb in (cast('val_1' as binary), cast('val_2' as binary), cast('val_3' as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ks=[$1]): rowcount: 500.0
+  HiveFilter(condition=[IN($0, CAST('val_1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY, CAST('val_2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 500.0
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin
+where kb in (cast('val_1' as binary), cast('val_2' as binary), cast('val_3' as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin
+where kb in (cast('val_1' as binary), cast('val_2' as binary), cast('val_3' as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+1
+PREHOOK: query: explain cbo joincost select ks from ndv_unknown_bin
+where not (kb in (cast('val_1' as binary), cast('val_2' as binary)))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ks from ndv_unknown_bin
+where not (kb in (cast('val_1' as binary), cast('val_2' as binary)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ks=[$1]): rowcount: 500.0
+  HiveFilter(condition=[AND(<>($0, CAST('val_1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY), <>($0, CAST('val_2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY))]): rowcount: 500.0
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin where not (kb in (cast('val_1' as binary), cast('val_2' as binary)))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin where not (kb in (cast('val_1' as binary), cast('val_2' as binary)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+499
+PREHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb = cast('val_100' as binary) and ks = 'val_100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb = cast('val_100' as binary) and ks = 'val_100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ks=[CAST('val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]): rowcount: 1.6286644951140066
+  HiveFilter(condition=[AND(=($1, 'val_100'), =($0, CAST('val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY))]): rowcount: 1.6286644951140066
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin where kb = cast('val_100' as binary) and ks = 'val_100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin where kb = cast('val_100' as binary) and ks = 'val_100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+2
+PREHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb = cast('val_100' as binary) or ks = 'val_200'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb = cast('val_100' as binary) or ks = 'val_200'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ks=[$1]): rowcount: 495.0162866449511
+  HiveFilter(condition=[OR(=($1, 'val_200'), =($0, CAST('val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY))]): rowcount: 495.0162866449511
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin where kb = cast('val_100' as binary) or ks = 'val_200'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin where kb = cast('val_100' as binary) or ks = 'val_200'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+4
+PREHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb = cast(ks as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where kb = cast(ks as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ks=[$1]): rowcount: 500.0
+  HiveFilter(condition=[=($0, CAST($1):BINARY)]): rowcount: 500.0
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin where kb = cast(ks as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin where kb = cast(ks as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+500
+PREHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a join ndv_unknown_bin b on a.kb = b.kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a join ndv_unknown_bin b on a.kb = b.kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a.ks=[$1], b.ks=[$3]): rowcount: 250000.0
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 250000.0
+    HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[a]): rowcount: 500.0
+    HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[b]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin a join ndv_unknown_bin b on a.kb = b.kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin a join ndv_unknown_bin b on a.kb = b.kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+1028
+PREHOOK: query: explain cbo joincost select f.ks, d.v from ndv_unknown_bin f join ndv_known_dim d on f.kb = cast(d.v as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.ks, d.v from ndv_unknown_bin f join ndv_known_dim d on f.kb = cast(d.v as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.ks=[$1], d.v=[$2]): rowcount: 1139.8936674774673
+  HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[{557.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 1139.8936674774673
+    HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+    HiveProject(v=[$0], EXPR$0=[CAST($0):BINARY]): rowcount: 57.0
+      HiveFilter(condition=[IS NOT NULL(CAST($0):BINARY)]): rowcount: 57.0
+        HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin f join ndv_known_dim d on f.kb = cast(d.v as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin f join ndv_known_dim d on f.kb = cast(d.v as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+84
+PREHOOK: query: explain cbo joincost select f.ks from ndv_unknown_bin f where f.kb in (select cast(d.v as binary) from ndv_known_dim d)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.ks from ndv_unknown_bin f where f.kb in (select cast(d.v as binary) from ndv_known_dim d)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.ks=[$1]): rowcount: 500.0
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi]): rowcount: 500.0
+    HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+    HiveProject(v=[CAST($0):BINARY]): rowcount: 57.0
+      HiveFilter(condition=[IS NOT NULL(CAST($0):BINARY)]): rowcount: 57.0
+        HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin f where f.kb in (select cast(d.v as binary) from ndv_known_dim d)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin f where f.kb in (select cast(d.v as binary) from ndv_known_dim d)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+84
+PREHOOK: query: explain cbo joincost select f.ks from ndv_unknown_bin f
+where not exists (select 1 from ndv_known_dim d where cast(d.v as binary) = f.kb)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.ks from ndv_unknown_bin f
+where not exists (select 1 from ndv_known_dim d where cast(d.v as binary) = f.kb)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.ks=[$1]): rowcount: 500.0
+  HiveAntiJoin(condition=[=($3, $0)], joinType=[anti]): rowcount: 500.0
+    HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+      HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+    HiveProject(literalTrue=[true], v0=[CAST($0):BINARY]): rowcount: 57.0
+      HiveFilter(condition=[IS NOT NULL(CAST($0):BINARY)]): rowcount: 57.0
+        HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where cast(d.v as binary) = f.kb)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where cast(d.v as binary) = f.kb)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+416
+PREHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a left outer join ndv_unknown_bin b
+on a.kb = b.kb and a.ki < b.ki
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a left outer join ndv_unknown_bin b
+on a.kb = b.kb and a.ki < b.ki
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a.ks=[$1], b.ks=[$4]): rowcount: 250000.0
+  HiveJoin(condition=[AND(=($0, $3), <($2, $5))], joinType=[left], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 250000.0
+    HiveProject(kb=[$0], ks=[$1], ki=[$2]): rowcount: 500.0
+      HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[a]): rowcount: 500.0
+    HiveProject(kb=[$0], ks=[$1], ki=[$2]): rowcount: 500.0
+      HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($0))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[b]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.kb = b.kb and a.ki < b.ki
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.kb = b.kb and a.ki < b.ki
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+500
+PREHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.ks = b.ks
+where coalesce(b.kb, a.kb) = cast('val_1' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.ks = b.ks
+where coalesce(b.kb, a.kb) = cast('val_1' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a.ks=[$1], b.ks=[$3]): rowcount: 1312.7035830618893
+  HiveFilter(condition=[CASE(IS NOT NULL($2), =($2, CAST('val_1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY), =($0, CAST('val_1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY))]): rowcount: 1312.7035830618893
+    HiveJoin(condition=[=($1, $3)], joinType=[left], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 1312.7035830618893
+      HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[a]): rowcount: 500.0
+      HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+        HiveFilter(condition=[IS NOT NULL($1)]): rowcount: 500.0
+          HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[b]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.ks = b.ks
+where coalesce(b.kb, a.kb) = cast('val_1' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.ks = b.ks
+where coalesce(b.kb, a.kb) = cast('val_1' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain cbo joincost
+select g.c, f.ki, d.v from (select kb, count(*) c from ndv_unknown_bin group by kb) g
+join ndv_unknown_bin f on g.kb = f.kb join ndv_known_dim d on f.ks = d.v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost
+select g.c, f.ki, d.v from (select kb, count(*) c from ndv_unknown_bin group by kb) g
+join ndv_unknown_bin f on g.kb = f.kb join ndv_known_dim d on f.ks = d.v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(g.c=[$4], f.ki=[$2], d.v=[$5]): rowcount: 500.0
+  HiveJoin(condition=[=($1, $5)], joinType=[inner], algorithm=[none], cost=[{557.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 500.0
+    HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[{550.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 500.0
+      HiveProject(kb=[$0], ks=[$1], ki=[$2]): rowcount: 500.0
+        HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))]): rowcount: 500.0
+          HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+      HiveProject(kb=[$0], $f1=[$1]): rowcount: 50.0
+        HiveAggregate(group=[{0}], agg#0=[count()]): rowcount: 50.0
+          HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+            HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+    HiveProject(v=[$0]): rowcount: 57.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 57.0
+        HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+
+PREHOOK: query: select count(*) from (select kb, count(*) c from ndv_unknown_bin group by kb) g
+join ndv_unknown_bin f on g.kb = f.kb join ndv_known_dim d on f.ks = d.v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select kb, count(*) c from ndv_unknown_bin group by kb) g
+join ndv_unknown_bin f on g.kb = f.kb join ndv_known_dim d on f.ks = d.v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+84
+PREHOOK: query: create table ndv_unknown_key (k int not null disable novalidate rely, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ndv_unknown_key
+POSTHOOK: query: create table ndv_unknown_key (k int not null disable novalidate rely, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ndv_unknown_key
+PREHOOK: query: insert into ndv_unknown_key select row_number() over (order by key, value), value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ndv_unknown_key
+POSTHOOK: query: insert into ndv_unknown_key select row_number() over (order by key, value), value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ndv_unknown_key
+POSTHOOK: Lineage: ndv_unknown_key.k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ndv_unknown_key.v SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table ndv_unknown_key compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ndv_unknown_key
+PREHOOK: Output: default@ndv_unknown_key
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ndv_unknown_key compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ndv_unknown_key
+POSTHOOK: Output: default@ndv_unknown_key
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo joincost select d.v, b.ks from ndv_unknown_key d join ndv_unknown_bin b on d.k = length(b.kb)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+PREHOOK: Input: default@ndv_unknown_key
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select d.v, b.ks from ndv_unknown_key d join ndv_unknown_bin b on d.k = length(b.kb)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+POSTHOOK: Input: default@ndv_unknown_key
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(d.v=[$1], b.ks=[$2]): rowcount: 500.0
+  HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 500.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 500.0
+      HiveTableScan(table=[[default, ndv_unknown_key]], table:alias=[d]): rowcount: 500.0
+    HiveProject(ks=[$1], EXPR$0=[CHARACTER_LENGTH($0)]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL(CHARACTER_LENGTH($0))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[b]): rowcount: 500.0
+
+PREHOOK: query: explain cbo joincost select d.v, b.ks from ndv_unknown_bin b join ndv_unknown_key d on length(b.kb) = d.k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+PREHOOK: Input: default@ndv_unknown_key
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select d.v, b.ks from ndv_unknown_bin b join ndv_unknown_key d on length(b.kb) = d.k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+POSTHOOK: Input: default@ndv_unknown_key
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(d.v=[$3], b.ks=[$0]): rowcount: 500.0
+  HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 500.0
+    HiveProject(ks=[$1], EXPR$0=[CHARACTER_LENGTH($0)]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL(CHARACTER_LENGTH($0))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[b]): rowcount: 500.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 500.0
+      HiveTableScan(table=[[default, ndv_unknown_key]], table:alias=[d]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_key d join ndv_unknown_bin b on d.k = length(b.kb)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+PREHOOK: Input: default@ndv_unknown_key
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_key d join ndv_unknown_bin b on d.k = length(b.kb)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+POSTHOOK: Input: default@ndv_unknown_key
+#### A masked pattern was here ####
+500
+PREHOOK: query: create table ndv_unknown_pk2 (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ndv_unknown_pk2
+POSTHOOK: query: create table ndv_unknown_pk2 (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ndv_unknown_pk2
+PREHOOK: query: create table ndv_unknown_fk2 (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ndv_unknown_fk2
+POSTHOOK: query: create table ndv_unknown_fk2 (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ndv_unknown_fk2
+PREHOOK: query: alter table ndv_unknown_pk2 add constraint ndv_unknown_pk2_pk primary key (k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@ndv_unknown_pk2
+PREHOOK: Output: default@ndv_unknown_pk2
+POSTHOOK: query: alter table ndv_unknown_pk2 add constraint ndv_unknown_pk2_pk primary key (k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@ndv_unknown_pk2
+POSTHOOK: Output: default@ndv_unknown_pk2
+PREHOOK: query: alter table ndv_unknown_fk2 add constraint ndv_unknown_fk2_fk foreign key (k) references ndv_unknown_pk2(k)
+disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@ndv_unknown_fk2
+PREHOOK: Output: default@ndv_unknown_fk2
+POSTHOOK: query: alter table ndv_unknown_fk2 add constraint ndv_unknown_fk2_fk foreign key (k) references ndv_unknown_pk2(k)
+disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@ndv_unknown_fk2
+POSTHOOK: Output: default@ndv_unknown_fk2
+PREHOOK: query: insert into ndv_unknown_pk2 values (cast('a' as binary), 'one'), (cast('b' as binary), 'two')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ndv_unknown_pk2
+POSTHOOK: query: insert into ndv_unknown_pk2 values (cast('a' as binary), 'one'), (cast('b' as binary), 'two')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ndv_unknown_pk2
+POSTHOOK: Lineage: ndv_unknown_pk2.k SCRIPT []
+POSTHOOK: Lineage: ndv_unknown_pk2.v SCRIPT []
+PREHOOK: query: insert into ndv_unknown_fk2 values (cast('a' as binary), 'x'), (cast('c' as binary), 'z')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ndv_unknown_fk2
+POSTHOOK: query: insert into ndv_unknown_fk2 values (cast('a' as binary), 'x'), (cast('c' as binary), 'z')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ndv_unknown_fk2
+POSTHOOK: Lineage: ndv_unknown_fk2.k SCRIPT []
+POSTHOOK: Lineage: ndv_unknown_fk2.v SCRIPT []
+PREHOOK: query: analyze table ndv_unknown_pk2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ndv_unknown_pk2
+PREHOOK: Output: default@ndv_unknown_pk2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ndv_unknown_pk2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ndv_unknown_pk2
+POSTHOOK: Output: default@ndv_unknown_pk2
+#### A masked pattern was here ####
+PREHOOK: query: analyze table ndv_unknown_fk2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ndv_unknown_fk2
+PREHOOK: Output: default@ndv_unknown_fk2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ndv_unknown_fk2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ndv_unknown_fk2
+POSTHOOK: Output: default@ndv_unknown_fk2
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo joincost select p.v, f.v from ndv_unknown_pk2 p join ndv_unknown_fk2 f on p.k = f.k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_fk2
+PREHOOK: Input: default@ndv_unknown_pk2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from ndv_unknown_pk2 p join ndv_unknown_fk2 f on p.k = f.k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_fk2
+POSTHOOK: Input: default@ndv_unknown_pk2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 1.000000000000002E15
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{4.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 1.000000000000002E15
+    HiveProject(k=[$0], v=[$1]): rowcount: 2.0
+      HiveTableScan(table=[[default, ndv_unknown_pk2]], table:alias=[p]): rowcount: 2.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 2.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 2.0
+        HiveTableScan(table=[[default, ndv_unknown_fk2]], table:alias=[f]): rowcount: 2.0
+
+PREHOOK: query: select p.v, f.v from ndv_unknown_pk2 p join ndv_unknown_fk2 f on p.k = f.k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_fk2
+PREHOOK: Input: default@ndv_unknown_pk2
+#### A masked pattern was here ####
+POSTHOOK: query: select p.v, f.v from ndv_unknown_pk2 p join ndv_unknown_fk2 f on p.k = f.k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_fk2
+POSTHOOK: Input: default@ndv_unknown_pk2
+#### A masked pattern was here ####
+one	x
+PREHOOK: query: create table ndv_unknown_pk (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ndv_unknown_pk
+POSTHOOK: query: create table ndv_unknown_pk (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ndv_unknown_pk
+PREHOOK: query: create table ndv_unknown_fk (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ndv_unknown_fk
+POSTHOOK: query: create table ndv_unknown_fk (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ndv_unknown_fk
+PREHOOK: query: alter table ndv_unknown_pk add constraint ndv_unknown_pk_pk primary key (k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@ndv_unknown_pk
+PREHOOK: Output: default@ndv_unknown_pk
+POSTHOOK: query: alter table ndv_unknown_pk add constraint ndv_unknown_pk_pk primary key (k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@ndv_unknown_pk
+POSTHOOK: Output: default@ndv_unknown_pk
+PREHOOK: query: alter table ndv_unknown_fk add constraint ndv_unknown_fk_fk foreign key (k) references ndv_unknown_pk(k)
+disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@ndv_unknown_fk
+PREHOOK: Output: default@ndv_unknown_fk
+POSTHOOK: query: alter table ndv_unknown_fk add constraint ndv_unknown_fk_fk foreign key (k) references ndv_unknown_pk(k)
+disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@ndv_unknown_fk
+POSTHOOK: Output: default@ndv_unknown_fk
+PREHOOK: query: insert into ndv_unknown_pk select cast(value as binary), max(key) from src group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ndv_unknown_pk
+POSTHOOK: query: insert into ndv_unknown_pk select cast(value as binary), max(key) from src group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ndv_unknown_pk
+POSTHOOK: Lineage: ndv_unknown_pk.k EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ndv_unknown_pk.v EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into ndv_unknown_fk select cast(value as binary), key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ndv_unknown_fk
+POSTHOOK: query: insert into ndv_unknown_fk select cast(value as binary), key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ndv_unknown_fk
+POSTHOOK: Lineage: ndv_unknown_fk.k EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ndv_unknown_fk.v SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: analyze table ndv_unknown_fk compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ndv_unknown_fk
+PREHOOK: Output: default@ndv_unknown_fk
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ndv_unknown_fk compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ndv_unknown_fk
+POSTHOOK: Output: default@ndv_unknown_fk
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo joincost select p.v, f.v from ndv_unknown_pk p join ndv_unknown_fk f on p.k = f.k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_fk
+PREHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from ndv_unknown_pk p join ndv_unknown_fk f on p.k = f.k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_fk
+POSTHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 1.000000000000309E15
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{809.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 1.000000000000309E15
+    HiveProject(k=[$0], v=[$1]): rowcount: 309.0
+      HiveTableScan(table=[[default, ndv_unknown_pk]], table:alias=[p]): rowcount: 309.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_fk]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_pk p join ndv_unknown_fk f on p.k = f.k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_fk
+PREHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_pk p join ndv_unknown_fk f on p.k = f.k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_fk
+POSTHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+500
+PREHOOK: query: explain cbo joincost select p.v, f.v from ndv_unknown_pk p join ndv_unknown_fk f on p.k = f.k
+where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_fk
+PREHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from ndv_unknown_pk p join ndv_unknown_fk f on p.k = f.k
+where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_fk
+POSTHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 166.66666666666666
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{269.66666666666663 rows, 0.0 cpu, 0.0 io}]): rowcount: 166.66666666666666
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, ndv_unknown_pk]], table:alias=[p]): rowcount: 309.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 166.66666666666666
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 166.66666666666666
+        HiveTableScan(table=[[default, ndv_unknown_fk]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: explain cbo joincost select p.v, f.v from ndv_unknown_fk f join ndv_unknown_pk p on f.k = p.k
+where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_fk
+PREHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from ndv_unknown_fk f join ndv_unknown_pk p on f.k = p.k
+where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_fk
+POSTHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$3], f.v=[$1]): rowcount: 166.66666666666666
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{269.66666666666663 rows, 0.0 cpu, 0.0 io}]): rowcount: 166.66666666666666
+    HiveProject(k=[$0], v=[$1]): rowcount: 166.66666666666666
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 166.66666666666666
+        HiveTableScan(table=[[default, ndv_unknown_fk]], table:alias=[f]): rowcount: 500.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, ndv_unknown_pk]], table:alias=[p]): rowcount: 309.0
+
+PREHOOK: query: select count(*) from ndv_unknown_pk p join ndv_unknown_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_fk
+PREHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_pk p join ndv_unknown_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_fk
+POSTHOOK: Input: default@ndv_unknown_pk
+#### A masked pattern was here ####
+271
+PREHOOK: query: create table ndv_unknown_num stored as orc as select cast(key as int) as ki, value as ks, value as kv from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ndv_unknown_num
+POSTHOOK: query: create table ndv_unknown_num stored as orc as select cast(key as int) as ki, value as ks, value as kv from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ndv_unknown_num
+POSTHOOK: Lineage: ndv_unknown_num.ki EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ndv_unknown_num.ks SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ndv_unknown_num.kv SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table ndv_unknown_num compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Output: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ndv_unknown_num compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Output: default@ndv_unknown_num
+#### A masked pattern was here ####
+PREHOOK: query: alter table ndv_unknown_num update statistics for column ki set ('numDVs'='-1','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Output: default@ndv_unknown_num
+POSTHOOK: query: alter table ndv_unknown_num update statistics for column ki set ('numDVs'='-1','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Output: default@ndv_unknown_num
+PREHOOK: query: alter table ndv_unknown_num update statistics for column ks set ('numDVs'='-1','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Output: default@ndv_unknown_num
+POSTHOOK: query: alter table ndv_unknown_num update statistics for column ks set ('numDVs'='-1','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Output: default@ndv_unknown_num
+PREHOOK: query: explain cbo joincost select kv from ndv_unknown_num where ki = 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select kv from ndv_unknown_num where ki = 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(kv=[$2]): rowcount: 500.0
+  HiveFilter(condition=[=($0, 5)]): rowcount: 500.0
+    HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[ndv_unknown_num]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_num where ki = 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_num where ki = 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+3
+PREHOOK: query: explain cbo joincost select f.kv, b.value from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ki in (5, 7)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.kv, b.value from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ki in (5, 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.kv=[$4], b.value=[$3]): rowcount: 1288.5003917041192
+  HiveJoin(condition=[=($4, $1)], joinType=[inner], algorithm=[none], cost=[{1291.139240506329 rows, 0.0 cpu, 0.0 io}]): rowcount: 1288.5003917041192
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 791.1392405063291
+      HiveProject(key=[$0], value=[$1]): rowcount: 500.0
+        HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[a]): rowcount: 500.0
+      HiveProject(key=[$0], value=[$1]): rowcount: 500.0
+        HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[b]): rowcount: 500.0
+    HiveProject(kv=[$2]): rowcount: 500.0
+      HiveFilter(condition=[AND(IS NOT NULL($2), IN($0, 5, 7))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key where f.ki in (5, 7)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key where f.ki in (5, 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+27
+PREHOOK: query: explain cbo joincost select f.kv, b.value from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ki between 10 and 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.kv, b.value from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ki between 10 and 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.kv=[$4], b.value=[$3]): rowcount: 1288.5003917041192
+  HiveJoin(condition=[=($4, $1)], joinType=[inner], algorithm=[none], cost=[{1291.139240506329 rows, 0.0 cpu, 0.0 io}]): rowcount: 1288.5003917041192
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 791.1392405063291
+      HiveProject(key=[$0], value=[$1]): rowcount: 500.0
+        HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[a]): rowcount: 500.0
+      HiveProject(key=[$0], value=[$1]): rowcount: 500.0
+        HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[b]): rowcount: 500.0
+    HiveProject(kv=[$2]): rowcount: 500.0
+      HiveFilter(condition=[AND(IS NOT NULL($2), BETWEEN(false, $0, 10, 100))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ki between 10 and 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ki between 10 and 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+256
+PREHOOK: query: explain cbo joincost select kv from ndv_unknown_num where ki > 10 and ki < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select kv from ndv_unknown_num where ki > 10 and ki < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(kv=[$2]): rowcount: 55.55555555555555
+  HiveFilter(condition=[AND(>($0, 10), <($0, 100))]): rowcount: 55.55555555555555
+    HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[ndv_unknown_num]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_num where ki > 10 and ki < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_num where ki > 10 and ki < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+73
+PREHOOK: query: explain cbo joincost select kv from ndv_unknown_num where ks = 'val_100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select kv from ndv_unknown_num where ks = 'val_100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(kv=[$2]): rowcount: 500.0
+  HiveFilter(condition=[=($1, 'val_100')]): rowcount: 500.0
+    HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[ndv_unknown_num]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_num where ks = 'val_100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_num where ks = 'val_100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+2
+PREHOOK: query: explain cbo joincost select f.kv, b.value from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ks in ('val_1', 'val_2', 'val_3')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.kv, b.value from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ks in ('val_1', 'val_2', 'val_3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.kv=[$4], b.value=[$3]): rowcount: 1288.5003917041192
+  HiveJoin(condition=[=($4, $1)], joinType=[inner], algorithm=[none], cost=[{1291.139240506329 rows, 0.0 cpu, 0.0 io}]): rowcount: 1288.5003917041192
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 791.1392405063291
+      HiveProject(key=[$0], value=[$1]): rowcount: 500.0
+        HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[a]): rowcount: 500.0
+      HiveProject(key=[$0], value=[$1]): rowcount: 500.0
+        HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[b]): rowcount: 500.0
+    HiveProject(kv=[$2]): rowcount: 500.0
+      HiveFilter(condition=[AND(IS NOT NULL($2), IN($1, 'val_1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'val_2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ks in ('val_1', 'val_2', 'val_3')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key
+where f.ks in ('val_1', 'val_2', 'val_3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: explain cbo joincost select ki, count(*) from ndv_unknown_num group by ki
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ki, count(*) from ndv_unknown_num group by ki
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ki=[$0], _c1=[$1]): rowcount: 50.0
+  HiveAggregate(group=[{0}], agg#0=[count()]): rowcount: 50.0
+    HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[ndv_unknown_num]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from (select ki from ndv_unknown_num group by ki) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select ki from ndv_unknown_num group by ki) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+309
+PREHOOK: query: create table ndv_unknown_dense (k int not null disable novalidate rely, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ndv_unknown_dense
+POSTHOOK: query: create table ndv_unknown_dense (k int not null disable novalidate rely, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ndv_unknown_dense
+PREHOOK: query: insert into ndv_unknown_dense select row_number() over (order by key, value), value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ndv_unknown_dense
+POSTHOOK: query: insert into ndv_unknown_dense select row_number() over (order by key, value), value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ndv_unknown_dense
+POSTHOOK: Lineage: ndv_unknown_dense.k EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ndv_unknown_dense.v SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table ndv_unknown_dense compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ndv_unknown_dense
+PREHOOK: Output: default@ndv_unknown_dense
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table ndv_unknown_dense compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ndv_unknown_dense
+POSTHOOK: Output: default@ndv_unknown_dense
+#### A masked pattern was here ####
+PREHOOK: query: alter table ndv_unknown_dense update statistics for column k set ('numDVs'='-1','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@ndv_unknown_dense
+PREHOOK: Output: default@ndv_unknown_dense
+POSTHOOK: query: alter table ndv_unknown_dense update statistics for column k set ('numDVs'='-1','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@ndv_unknown_dense
+POSTHOOK: Output: default@ndv_unknown_dense
+PREHOOK: query: explain cbo joincost select d.v, f.kv from ndv_unknown_dense d join ndv_unknown_num f on d.k = f.ki
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_dense
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select d.v, f.kv from ndv_unknown_dense d join ndv_unknown_num f on d.k = f.ki
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_dense
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(d.v=[$1], f.kv=[$3]): rowcount: 500.0
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 500.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 500.0
+      HiveTableScan(table=[[default, ndv_unknown_dense]], table:alias=[d]): rowcount: 500.0
+    HiveProject(ki=[$0], kv=[$2]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_dense d join ndv_unknown_num f on d.k = f.ki
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_dense
+PREHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_dense d join ndv_unknown_num f on d.k = f.ki
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_dense
+POSTHOOK: Input: default@ndv_unknown_num
+#### A masked pattern was here ####
+497
+PREHOOK: query: explain cbo joincost select f.ks, d.v from ndv_unknown_bin f join ndv_known_dim d
+on f.kb = cast(d.v as binary) and f.ks = d.v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.ks, d.v from ndv_unknown_bin f join ndv_known_dim d
+on f.kb = cast(d.v as binary) and f.ks = d.v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.ks=[$1], d.v=[$2]): rowcount: 92.83387622149837
+  HiveJoin(condition=[AND(=($0, $3), =($1, $2))], joinType=[inner], algorithm=[none], cost=[{557.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 92.83387622149837
+    HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+      HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+    HiveProject(v=[$0], EXPR$0=[$1]): rowcount: 57.0
+      HiveFilter(condition=[IS NOT NULL($1)]): rowcount: 57.0
+        HiveProject(v=[$0], EXPR$0=[CAST($0):BINARY]): rowcount: 57.0
+          HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 57.0
+            HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin f join ndv_known_dim d on f.kb = cast(d.v as binary) and f.ks = d.v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin f join ndv_known_dim d on f.kb = cast(d.v as binary) and f.ks = d.v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+84
+PREHOOK: query: explain cbo joincost select f.kv, s.value from ndv_unknown_num f join src s
+on f.ki = cast(s.key as int) and f.ks = s.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.kv, s.value from ndv_unknown_num f join src s
+on f.ki = cast(s.key as int) and f.ks = s.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.kv=[$2], s.value=[$3]): rowcount: 814.3322475570033
+  HiveJoin(condition=[AND(=($0, $4), =($1, $3))], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 814.3322475570033
+    HiveProject(ki=[$0], ks=[$1], kv=[$2]): rowcount: 500.0
+      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[f]): rowcount: 500.0
+    HiveProject(value=[$1], EXPR$0=[CAST($0):INTEGER]): rowcount: 500.0
+      HiveFilter(condition=[AND(IS NOT NULL(CAST($0):INTEGER), IS NOT NULL($1))]): rowcount: 500.0
+        HiveTableScan(table=[[default, src]], table:alias=[s]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_num f join src s on f.ki = cast(s.key as int) and f.ks = s.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_num f join src s on f.ki = cast(s.key as int) and f.ks = s.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1028
+PREHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a join ndv_unknown_bin b on a.kb = b.kb and a.ks = b.ks
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a join ndv_unknown_bin b on a.kb = b.kb and a.ks = b.ks
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a.ks=[$1], b.ks=[$3]): rowcount: 814.3322475570033
+  HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 814.3322475570033
+    HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+      HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[a]): rowcount: 500.0
+    HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+      HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[b]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin a join ndv_unknown_bin b on a.kb = b.kb and a.ks = b.ks
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin a join ndv_unknown_bin b on a.kb = b.kb and a.ks = b.ks
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+1028
+PREHOOK: query: explain cbo joincost select d.v, f.ks from ndv_known_dim d join ndv_unknown_bin f on cast(d.v as binary) = f.kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select d.v, f.ks from ndv_known_dim d join ndv_unknown_bin f on cast(d.v as binary) = f.kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(d.v=[$0], f.ks=[$3]): rowcount: 1139.8936674774673
+  HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[{557.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 1139.8936674774673
+    HiveProject(v=[$0], EXPR$0=[CAST($0):BINARY]): rowcount: 57.0
+      HiveFilter(condition=[IS NOT NULL(CAST($0):BINARY)]): rowcount: 57.0
+        HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+    HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_known_dim d join ndv_unknown_bin f on cast(d.v as binary) = f.kb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_known_dim d join ndv_unknown_bin f on cast(d.v as binary) = f.kb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+84
+PREHOOK: query: explain cbo joincost select * from (select f.ks, f.kb, row_number() over (partition by f.kb order by f.ks) rn from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks)) t where rn = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select * from (select f.ks, f.kb, row_number() over (partition by f.kb order by f.ks) rn from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks)) t where rn = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(t.ks=[$1], t.kb=[$0], t.rn=[CAST(1):INTEGER]): rowcount: 500.0
+  HiveFilter(condition=[=($2, 1)]): rowcount: 500.0
+    HiveProject(kb=[$0], ks=[$1], _o__col8=[row_number() OVER (PARTITION BY $0 ORDER BY $1 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)]): rowcount: 500.0
+      HiveAntiJoin(condition=[=($3, $1)], joinType=[anti]): rowcount: 500.0
+        HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+          HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+        HiveProject(literalTrue=[true], v=[$0]): rowcount: 57.0
+          HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 57.0
+            HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+
+PREHOOK: query: select count(*) from (select * from (select f.ks, f.kb, row_number() over (partition by f.kb order by f.ks) rn from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks)) t where rn = 1) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select * from (select f.ks, f.kb, row_number() over (partition by f.kb order by f.ks) rn from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks)) t where rn = 1) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+252
+PREHOOK: query: explain cbo joincost select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t
+where t.kb <> cast('val_100' as binary) or t.ks = 'val_200'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t
+where t.kb <> cast('val_100' as binary) or t.ks = 'val_200'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(t.ks=[$0], t.kb=[$1]): rowcount: 300.0
+  HiveFilter(condition=[OR(=($0, 'val_200'), <>($1, CAST('val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY))]): rowcount: 300.0
+    HiveProject(ks=[$0], kb=[$1]): rowcount: 300.0
+      HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[300]): rowcount: 300.0
+        HiveProject(ks=[$1], kb=[$0]): rowcount: 500.0
+          HiveAntiJoin(condition=[=($3, $1)], joinType=[anti]): rowcount: 500.0
+            HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+              HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+            HiveProject(literalTrue=[true], v=[$0]): rowcount: 57.0
+              HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 57.0
+                HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+
+PREHOOK: query: select count(*) from (select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t
+where t.kb <> cast('val_100' as binary) or t.ks = 'val_200') t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t
+where t.kb <> cast('val_100' as binary) or t.ks = 'val_200') t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+298
+PREHOOK: query: explain cbo joincost select f.ks, count(*) c from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) group by f.ks having count(*) > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.ks, count(*) c from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) group by f.ks having count(*) > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.ks=[$0], c=[$1]): rowcount: 123.06240333725142
+  HiveFilter(condition=[>($1, 1)]): rowcount: 123.06240333725142
+    HiveAggregate(group=[{0}], agg#0=[count()]): rowcount: 246.92913610807966
+      HiveAntiJoin(condition=[=($2, $0)], joinType=[anti]): rowcount: 500.0
+        HiveProject(ks=[$1]): rowcount: 500.0
+          HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+        HiveProject(literalTrue=[true], v=[$0]): rowcount: 57.0
+          HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 57.0
+            HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+
+PREHOOK: query: select count(*) from (select f.ks, count(*) c from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) group by f.ks having count(*) > 1) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select f.ks, count(*) c from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) group by f.ks having count(*) > 1) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+114
+PREHOOK: query: explain cbo joincost select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t where t.ks = 'val_100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t where t.ks = 'val_100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(t.ks=[CAST('val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], t.kb=[$1]): rowcount: 298.78507654168163
+  HiveFilter(condition=[=($0, 'val_100')]): rowcount: 298.78507654168163
+    HiveProject(ks=[$0], kb=[$1]): rowcount: 300.0
+      HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[300]): rowcount: 300.0
+        HiveProject(ks=[$1], kb=[$0]): rowcount: 500.0
+          HiveAntiJoin(condition=[=($3, $1)], joinType=[anti]): rowcount: 500.0
+            HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+              HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+            HiveProject(literalTrue=[true], v=[$0]): rowcount: 57.0
+              HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 57.0
+                HiveTableScan(table=[[default, ndv_known_dim]], table:alias=[d]): rowcount: 57.0
+
+PREHOOK: query: select count(*) from (select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t where t.ks = 'val_100') t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_known_dim
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t where t.ks = 'val_100') t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_known_dim
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+2
+PREHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where not (array_contains(array(ks), 'val_100'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where not (array_contains(array(ks), 'val_100'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ks=[$1]): rowcount: 498.371335504886
+  HiveFilter(condition=[NOT(array_contains(ARRAY($1), 'val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))]): rowcount: 498.371335504886
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from (select ks from ndv_unknown_bin where not (array_contains(array(ks), 'val_100'))) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select ks from ndv_unknown_bin where not (array_contains(array(ks), 'val_100'))) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+498
+PREHOOK: query: explain cbo joincost select f.kv from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key where f.ki = 5 or f.ki > 400
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.kv from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key where f.ki = 5 or f.ki > 400
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.kv=[$3]): rowcount: 1279.9103890927581
+  HiveJoin(condition=[=($3, $1)], joinType=[inner], algorithm=[none], cost=[{1287.8059071729958 rows, 0.0 cpu, 0.0 io}]): rowcount: 1279.9103890927581
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 791.1392405063291
+      HiveProject(key=[$0], value=[$1]): rowcount: 500.0
+        HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[a]): rowcount: 500.0
+      HiveProject(key=[$0]): rowcount: 500.0
+        HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[b]): rowcount: 500.0
+    HiveProject(kv=[$2]): rowcount: 496.66666666666663
+      HiveFilter(condition=[AND(OR(=($0, 5), >($0, 400)), IS NOT NULL($2))]): rowcount: 496.66666666666663
+        HiveTableScan(table=[[default, ndv_unknown_num]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from (select f.kv from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key where f.ki = 5 or f.ki > 400) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_num
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select f.kv from ndv_unknown_num f join src a on f.kv = a.value join src b on a.key = b.key where f.ki = 5 or f.ki > 400) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_num
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+875
+PREHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.ks = b.ks
+where concat(cast(b.kb as string), a.ks) = 'val_1val_1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select a.ks, b.ks from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.ks = b.ks
+where concat(cast(b.kb as string), a.ks) = 'val_1val_1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a.ks=[$0], b.ks=[$2]): rowcount: 1312.7035830618893
+  HiveFilter(condition=[=(||(CAST($1):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0), 'val_1val_1')]): rowcount: 1312.7035830618893
+    HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 1312.7035830618893
+      HiveProject(ks=[$1]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[a]): rowcount: 500.0
+      HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+        HiveFilter(condition=[IS NOT NULL($1)]): rowcount: 500.0
+          HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[b]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.ks = b.ks
+where concat(cast(b.kb as string), a.ks) = 'val_1val_1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin a left outer join ndv_unknown_bin b on a.ks = b.ks
+where concat(cast(b.kb as string), a.ks) = 'val_1val_1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain cbo joincost select f.ks from ndv_unknown_bin f where not exists (select 1 from src s where s.value = f.ks)
+and f.kb = if(rand() < 2, cast('val_100' as binary), null)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.ks from ndv_unknown_bin f where not exists (select 1 from src s where s.value = f.ks)
+and f.kb = if(rand() < 2, cast('val_100' as binary), null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.ks=[$1]): rowcount: 500.0
+  HiveFilter(condition=[CASE(<(rand(), 2.0E0), =($0, CAST('val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY), false)]): rowcount: 500.0
+    HiveAntiJoin(condition=[=($3, $1)], joinType=[anti]): rowcount: 500.0
+      HiveProject(kb=[$0], ks=[$1]): rowcount: 500.0
+        HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[f]): rowcount: 500.0
+      HiveProject(literalTrue=[true], value=[$1]): rowcount: 500.0
+        HiveFilter(condition=[IS NOT NULL($1)]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[s]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from (select f.ks from ndv_unknown_bin f where not exists (select 1 from src s where s.value = f.ks)
+and f.kb = if(rand() < 2, cast('val_100' as binary), null)) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select f.ks from ndv_unknown_bin f where not exists (select 1 from src s where s.value = f.ks)
+and f.kb = if(rand() < 2, cast('val_100' as binary), null)) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0
+PREHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where not (array_contains(array(kb), cast('val_100' as binary)))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select ks from ndv_unknown_bin where not (array_contains(array(kb), cast('val_100' as binary)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ks=[$1]): rowcount: 500.0
+  HiveFilter(condition=[NOT(array_contains(ARRAY($0), CAST('val_100':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY))]): rowcount: 500.0
+    HiveTableScan(table=[[default, ndv_unknown_bin]], table:alias=[ndv_unknown_bin]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from ndv_unknown_bin where not (array_contains(array(kb), cast('val_100' as binary)))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ndv_unknown_bin where not (array_contains(array(kb), cast('val_100' as binary)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ndv_unknown_bin
+#### A masked pattern was here ####
+498
+PREHOOK: query: explain cbo joincost select a.x, b.value from (select x from src lateral view explode(array(key, value)) t as x) a
+left outer join src b on a.x = b.key where concat(a.x, nvl(b.value, '')) = 'val_1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select a.x, b.value from (select x from src lateral view explode(array(key, value)) t as x) a
+left outer join src b on a.x = b.key where concat(a.x, nvl(b.value, '')) = 'val_1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a.x=[$0], b.value=[$2]): rowcount: 1289.5569620253164
+  HiveFilter(condition=[=(||($0, nvl($2, '':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), 'val_1')]): rowcount: 1289.5569620253164
+    HiveJoin(condition=[=($0, $1)], joinType=[left], algorithm=[none], cost=[{1000.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 1289.5569620253164
+      HiveProject(x=[$6]): rowcount: 500.0
+        HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY($0, $1)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) key, VARCHAR(2147483647) value, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) t.x)]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[src]): rowcount: 500.0
+      HiveProject(key=[$0], value=[$1]): rowcount: 500.0
+        HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+          HiveTableScan(table=[[default, src]], table:alias=[b]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from (select a.x, b.value from (select x from src lateral view explode(array(key, value)) t as x) a
+left outer join src b on a.x = b.key where concat(a.x, nvl(b.value, '')) = 'val_1') t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select a.x, b.value from (select x from src lateral view explode(array(key, value)) t as x) a
+left outer join src b on a.x = b.key where concat(a.x, nvl(b.value, '')) = 'val_1') t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0

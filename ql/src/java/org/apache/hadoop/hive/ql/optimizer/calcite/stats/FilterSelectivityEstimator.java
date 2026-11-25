@@ -74,6 +74,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final double  childCardinality;
   private final RelMetadataQuery mq;
   private final RexBuilder rexBuilder;
+  private boolean unknownSeen;
 
   public FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
     super(true);
@@ -87,6 +88,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return predicate.accept(this);
   }
 
+  /** Whether any predicate part estimated so far had no estimate: an unknown NDV, or a non-boolean column. */
+  boolean isUnknownSeen() {
+    return unknownSeen;
+  }
+
   @Override
   public Double visitInputRef(RexInputRef inputRef) {
     if (inputRef.getType().getSqlTypeName() == SqlTypeName.BOOLEAN) {
@@ -94,6 +100,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       // it will filter half the rows
       return 0.5;
     }
+    unknownSeen = true;
     return null;
   }
 
@@ -128,6 +135,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
     case NOT: {
       Double opSelectivity = call.getOperands().get(0).accept(this);
+      if (opSelectivity == null) {
+        return null;
+      }
       assert (opSelectivity >= 0 && opSelectivity <= 1);
       return 1.0 - opSelectivity;
     }
@@ -603,7 +613,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return Optional.of(value);
   }
 
-  private double computeSearchSelectivity(RexCall search) {
+  private Double computeSearchSelectivity(RexCall search) {
     return new SearchSelectivityHelper<>(search).compute();
   }
 
@@ -626,7 +636,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return rexBuilder.makeLiteral(value, operandType, true, true);
     }
 
-    private double compute() {
+    private Double compute() {
       final List<RexNode> inLiterals = new ArrayList<>();
       final List<Double> rangeSelectivities = new ArrayList<>();
       for (Range<C> range : sarg.rangeSet.asRanges()) {
@@ -665,7 +675,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
             rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref).accept(FilterSelectivityEstimator.this));
       }
 
-      return searchSelectivities.size() == 1 ? searchSelectivities.get(0) : computeDisjunctionSelectivity(searchSelectivities);
+      // a single selectivity may be unknown (null); returning it as is keeps that
+      if (searchSelectivities.size() == 1) {
+        return searchSelectivities.get(0);
+      }
+      return computeDisjunctionSelectivity(searchSelectivities);
     }
 
     private void processRangeSelectivity(Range<C> range, List<Double> rangeSelectivities, List<RexNode> inLiterals) {
@@ -853,6 +867,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, mq,
             ((RexInputRef) op).getIndex());
         if (tmpNDV == null) {
+          unknownSeen = true;
           return null;
         }
         if (tmpNDV > maxNDV) {
@@ -865,6 +880,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
           tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel,
               mq, childProjIndx);
           if (tmpNDV == null) {
+            unknownSeen = true;
             return null;
           }
           if (tmpNDV > maxNDV) {

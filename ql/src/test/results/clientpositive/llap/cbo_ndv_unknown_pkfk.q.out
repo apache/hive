@@ -1,0 +1,613 @@
+PREHOOK: query: create table pkfk_pk (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pkfk_pk
+POSTHOOK: query: create table pkfk_pk (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pkfk_pk
+PREHOOK: query: create table pkfk_fk (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pkfk_fk
+POSTHOOK: query: create table pkfk_fk (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pkfk_fk
+PREHOOK: query: alter table pkfk_pk add constraint pkfk_pk_pk primary key (k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@pkfk_pk
+PREHOOK: Output: default@pkfk_pk
+POSTHOOK: query: alter table pkfk_pk add constraint pkfk_pk_pk primary key (k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@pkfk_pk
+POSTHOOK: Output: default@pkfk_pk
+PREHOOK: query: alter table pkfk_fk add constraint pkfk_fk_fk foreign key (k) references pkfk_pk(k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Output: default@pkfk_fk
+POSTHOOK: query: alter table pkfk_fk add constraint pkfk_fk_fk foreign key (k) references pkfk_pk(k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Output: default@pkfk_fk
+PREHOOK: query: insert into pkfk_pk select cast(value as binary), max(key) from src group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@pkfk_pk
+POSTHOOK: query: insert into pkfk_pk select cast(value as binary), max(key) from src group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@pkfk_pk
+POSTHOOK: Lineage: pkfk_pk.k EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: pkfk_pk.v EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into pkfk_fk select cast(value as binary), key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@pkfk_fk
+POSTHOOK: query: insert into pkfk_fk select cast(value as binary), key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@pkfk_fk
+POSTHOOK: Lineage: pkfk_fk.k EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: pkfk_fk.v SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: analyze table pkfk_fk compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Output: default@pkfk_fk
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table pkfk_fk compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Output: default@pkfk_fk
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk p join pkfk_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk p join pkfk_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 166.66666666666666
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{269.66666666666663 rows, 0.0 cpu, 0.0 io}]): rowcount: 166.66666666666666
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk]], table:alias=[p]): rowcount: 309.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 166.66666666666666
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 166.66666666666666
+        HiveTableScan(table=[[default, pkfk_fk]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from pkfk_pk p join pkfk_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_pk p join pkfk_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+271
+PREHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk p join pkfk_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk p join pkfk_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 166.66666666666666
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{269.66666666666663 rows, 0.0 cpu, 0.0 io}]): rowcount: 166.66666666666666
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk]], table:alias=[p]): rowcount: 309.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 166.66666666666666
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 166.66666666666666
+        HiveTableScan(table=[[default, pkfk_fk]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from pkfk_pk p join pkfk_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_pk p join pkfk_fk f on p.k = f.k where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+271
+PREHOOK: query: explain cbo joincost select p.v, f.v from pkfk_fk f left outer join pkfk_pk p
+on f.k = p.k and p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from pkfk_fk f left outer join pkfk_pk p
+on f.k = p.k and p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$3], f.v=[$1]): rowcount: 500.0
+  HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[{603.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 500.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 500.0
+      HiveTableScan(table=[[default, pkfk_fk]], table:alias=[f]): rowcount: 500.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk]], table:alias=[p]): rowcount: 309.0
+
+PREHOOK: query: select count(*) from pkfk_fk f left outer join pkfk_pk p on f.k = p.k and p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_fk f left outer join pkfk_pk p on f.k = p.k and p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+500
+PREHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk p right outer join pkfk_fk f
+on p.k = f.k and p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk p right outer join pkfk_fk f
+on p.k = f.k and p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 500.0
+  HiveJoin(condition=[=($0, $2)], joinType=[right], algorithm=[none], cost=[{603.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 500.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk]], table:alias=[p]): rowcount: 309.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 500.0
+      HiveTableScan(table=[[default, pkfk_fk]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from pkfk_pk p right outer join pkfk_fk f on p.k = f.k and p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_pk p right outer join pkfk_fk f on p.k = f.k and p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+500
+PREHOOK: query: explain cbo joincost select f.v from pkfk_fk f where f.k in (select p.k from pkfk_pk p where p.k > cast('val_3' as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.v from pkfk_fk f where f.k in (select p.k from pkfk_pk p where p.k > cast('val_3' as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.v=[$1]): rowcount: 166.66666666666666
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi]): rowcount: 166.66666666666666
+    HiveProject(k=[$0], v=[$1]): rowcount: 166.66666666666666
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 166.66666666666666
+        HiveTableScan(table=[[default, pkfk_fk]], table:alias=[f]): rowcount: 500.0
+    HiveProject(k=[$0]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk]], table:alias=[p]): rowcount: 309.0
+
+PREHOOK: query: select count(*) from pkfk_fk f where f.k in (select p.k from pkfk_pk p where p.k > cast('val_3' as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_fk f where f.k in (select p.k from pkfk_pk p where p.k > cast('val_3' as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+271
+PREHOOK: query: explain cbo joincost select f.v from pkfk_fk f
+where not exists (select 1 from pkfk_pk p where p.k = f.k and p.k > cast('val_3' as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select f.v from pkfk_fk f
+where not exists (select 1 from pkfk_pk p where p.k = f.k and p.k > cast('val_3' as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(f.v=[$1]): rowcount: 500.0
+  HiveAntiJoin(condition=[=($3, $0)], joinType=[anti]): rowcount: 500.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 500.0
+      HiveTableScan(table=[[default, pkfk_fk]], table:alias=[f]): rowcount: 500.0
+    HiveProject(literalTrue=[true], k=[$0]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk]], table:alias=[p]): rowcount: 309.0
+
+PREHOOK: query: select count(*) from pkfk_fk f
+where not exists (select 1 from pkfk_pk p where p.k = f.k and p.k > cast('val_3' as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk
+PREHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_fk f
+where not exists (select 1 from pkfk_pk p where p.k = f.k and p.k > cast('val_3' as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk
+POSTHOOK: Input: default@pkfk_pk
+#### A masked pattern was here ####
+229
+PREHOOK: query: create table pkfk_pk2 (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pkfk_pk2
+POSTHOOK: query: create table pkfk_pk2 (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pkfk_pk2
+PREHOOK: query: create table pkfk_fk2 (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pkfk_fk2
+POSTHOOK: query: create table pkfk_fk2 (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pkfk_fk2
+PREHOOK: query: alter table pkfk_pk2 add constraint pkfk_pk2_pk primary key (k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@pkfk_pk2
+PREHOOK: Output: default@pkfk_pk2
+POSTHOOK: query: alter table pkfk_pk2 add constraint pkfk_pk2_pk primary key (k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@pkfk_pk2
+POSTHOOK: Output: default@pkfk_pk2
+PREHOOK: query: alter table pkfk_fk2 add constraint pkfk_fk2_fk foreign key (k) references pkfk_pk2(k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@pkfk_fk2
+PREHOOK: Output: default@pkfk_fk2
+POSTHOOK: query: alter table pkfk_fk2 add constraint pkfk_fk2_fk foreign key (k) references pkfk_pk2(k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@pkfk_fk2
+POSTHOOK: Output: default@pkfk_fk2
+PREHOOK: query: insert into pkfk_pk2 select cast(value as binary), max(key) from src group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@pkfk_pk2
+POSTHOOK: query: insert into pkfk_pk2 select cast(value as binary), max(key) from src group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@pkfk_pk2
+POSTHOOK: Lineage: pkfk_pk2.k EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: pkfk_pk2.v EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into pkfk_fk2 select cast(value as binary), key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@pkfk_fk2
+POSTHOOK: query: insert into pkfk_fk2 select cast(value as binary), key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@pkfk_fk2
+POSTHOOK: Lineage: pkfk_fk2.k EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: pkfk_fk2.v SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: analyze table pkfk_pk2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@pkfk_pk2
+PREHOOK: Output: default@pkfk_pk2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table pkfk_pk2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@pkfk_pk2
+POSTHOOK: Output: default@pkfk_pk2
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk2 p join pkfk_fk2 f on p.k = f.k where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk2
+PREHOOK: Input: default@pkfk_pk2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk2 p join pkfk_fk2 f on p.k = f.k where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk2
+POSTHOOK: Input: default@pkfk_pk2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 166.66666666666666
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{269.66666666666663 rows, 0.0 cpu, 0.0 io}]): rowcount: 166.66666666666666
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk2]], table:alias=[p]): rowcount: 309.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 166.66666666666666
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 166.66666666666666
+        HiveTableScan(table=[[default, pkfk_fk2]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from pkfk_pk2 p join pkfk_fk2 f on p.k = f.k where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk2
+PREHOOK: Input: default@pkfk_pk2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_pk2 p join pkfk_fk2 f on p.k = f.k where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk2
+POSTHOOK: Input: default@pkfk_pk2
+#### A masked pattern was here ####
+271
+PREHOOK: query: create table pkfk_pk3 (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pkfk_pk3
+POSTHOOK: query: create table pkfk_pk3 (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pkfk_pk3
+PREHOOK: query: create table pkfk_fk3 (k binary, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pkfk_fk3
+POSTHOOK: query: create table pkfk_fk3 (k binary, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pkfk_fk3
+PREHOOK: query: alter table pkfk_pk3 add constraint pkfk_pk3_pk primary key (k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@pkfk_pk3
+PREHOOK: Output: default@pkfk_pk3
+POSTHOOK: query: alter table pkfk_pk3 add constraint pkfk_pk3_pk primary key (k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@pkfk_pk3
+POSTHOOK: Output: default@pkfk_pk3
+PREHOOK: query: alter table pkfk_fk3 add constraint pkfk_fk3_fk foreign key (k) references pkfk_pk3(k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@pkfk_fk3
+PREHOOK: Output: default@pkfk_fk3
+POSTHOOK: query: alter table pkfk_fk3 add constraint pkfk_fk3_fk foreign key (k) references pkfk_pk3(k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@pkfk_fk3
+POSTHOOK: Output: default@pkfk_fk3
+PREHOOK: query: insert into pkfk_pk3 select cast(value as binary), max(key) from src group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@pkfk_pk3
+POSTHOOK: query: insert into pkfk_pk3 select cast(value as binary), max(key) from src group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@pkfk_pk3
+POSTHOOK: Lineage: pkfk_pk3.k EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: pkfk_pk3.v EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into pkfk_fk3 select cast(value as binary), key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@pkfk_fk3
+POSTHOOK: query: insert into pkfk_fk3 select cast(value as binary), key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@pkfk_fk3
+POSTHOOK: Lineage: pkfk_fk3.k EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: pkfk_fk3.v SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: analyze table pkfk_pk3 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@pkfk_pk3
+PREHOOK: Output: default@pkfk_pk3
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table pkfk_pk3 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@pkfk_pk3
+POSTHOOK: Output: default@pkfk_pk3
+#### A masked pattern was here ####
+PREHOOK: query: analyze table pkfk_fk3 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@pkfk_fk3
+PREHOOK: Output: default@pkfk_fk3
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table pkfk_fk3 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@pkfk_fk3
+POSTHOOK: Output: default@pkfk_fk3
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk3 p join pkfk_fk3 f on p.k = f.k where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk3
+PREHOOK: Input: default@pkfk_pk3
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk3 p join pkfk_fk3 f on p.k = f.k where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk3
+POSTHOOK: Input: default@pkfk_pk3
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 166.66666666666666
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{269.66666666666663 rows, 0.0 cpu, 0.0 io}]): rowcount: 166.66666666666666
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk3]], table:alias=[p]): rowcount: 309.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 166.66666666666666
+      HiveFilter(condition=[>($0, CAST('val_3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):BINARY)]): rowcount: 166.66666666666666
+        HiveTableScan(table=[[default, pkfk_fk3]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from pkfk_pk3 p join pkfk_fk3 f on p.k = f.k where p.k > cast('val_3' as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk3
+PREHOOK: Input: default@pkfk_pk3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_pk3 p join pkfk_fk3 f on p.k = f.k where p.k > cast('val_3' as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk3
+POSTHOOK: Input: default@pkfk_pk3
+#### A masked pattern was here ####
+271
+PREHOOK: query: create table pkfk_pk4 (k string, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pkfk_pk4
+POSTHOOK: query: create table pkfk_pk4 (k string, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pkfk_pk4
+PREHOOK: query: create table pkfk_fk4 (k string, v string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pkfk_fk4
+POSTHOOK: query: create table pkfk_fk4 (k string, v string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pkfk_fk4
+PREHOOK: query: alter table pkfk_pk4 add constraint pkfk_pk4_pk primary key (k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@pkfk_pk4
+PREHOOK: Output: default@pkfk_pk4
+POSTHOOK: query: alter table pkfk_pk4 add constraint pkfk_pk4_pk primary key (k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@pkfk_pk4
+POSTHOOK: Output: default@pkfk_pk4
+PREHOOK: query: alter table pkfk_fk4 add constraint pkfk_fk4_fk foreign key (k) references pkfk_pk4(k) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@pkfk_fk4
+PREHOOK: Output: default@pkfk_fk4
+POSTHOOK: query: alter table pkfk_fk4 add constraint pkfk_fk4_fk foreign key (k) references pkfk_pk4(k) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@pkfk_fk4
+POSTHOOK: Output: default@pkfk_fk4
+PREHOOK: query: insert into pkfk_pk4 select value, max(key) from src group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@pkfk_pk4
+POSTHOOK: query: insert into pkfk_pk4 select value, max(key) from src group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@pkfk_pk4
+POSTHOOK: Lineage: pkfk_pk4.k SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: pkfk_pk4.v EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into pkfk_fk4 select value, key from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@pkfk_fk4
+POSTHOOK: query: insert into pkfk_fk4 select value, key from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@pkfk_fk4
+POSTHOOK: Lineage: pkfk_fk4.k SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: pkfk_fk4.v SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: analyze table pkfk_pk4 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@pkfk_pk4
+PREHOOK: Output: default@pkfk_pk4
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table pkfk_pk4 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@pkfk_pk4
+POSTHOOK: Output: default@pkfk_pk4
+#### A masked pattern was here ####
+PREHOOK: query: analyze table pkfk_fk4 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@pkfk_fk4
+PREHOOK: Output: default@pkfk_fk4
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table pkfk_fk4 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@pkfk_fk4
+POSTHOOK: Output: default@pkfk_fk4
+#### A masked pattern was here ####
+PREHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk4 p join pkfk_fk4 f on p.k = f.k where p.k > 'val_3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk4
+PREHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk4 p join pkfk_fk4 f on p.k = f.k where p.k > 'val_3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk4
+POSTHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 55.55555555555555
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{269.66666666666663 rows, 0.0 cpu, 0.0 io}]): rowcount: 55.55555555555555
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($0, 'val_3')]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk4]], table:alias=[p]): rowcount: 309.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 166.66666666666666
+      HiveFilter(condition=[>($0, 'val_3')]): rowcount: 166.66666666666666
+        HiveTableScan(table=[[default, pkfk_fk4]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from pkfk_pk4 p join pkfk_fk4 f on p.k = f.k where p.k > 'val_3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk4
+PREHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_pk4 p join pkfk_fk4 f on p.k = f.k where p.k > 'val_3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk4
+POSTHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+271
+PREHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk4 p join pkfk_fk4 f on p.k = f.k where p.v > '100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk4
+PREHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from pkfk_pk4 p join pkfk_fk4 f on p.k = f.k where p.v > '100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk4
+POSTHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$1], f.v=[$3]): rowcount: 166.66666666666666
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[{603.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 166.66666666666666
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($1, '100')]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk4]], table:alias=[p]): rowcount: 309.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 500.0
+      HiveFilter(condition=[IS NOT NULL($0)]): rowcount: 500.0
+        HiveTableScan(table=[[default, pkfk_fk4]], table:alias=[f]): rowcount: 500.0
+
+PREHOOK: query: select count(*) from pkfk_pk4 p join pkfk_fk4 f on p.k = f.k where p.v > '100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk4
+PREHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_pk4 p join pkfk_fk4 f on p.k = f.k where p.v > '100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk4
+POSTHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+494
+PREHOOK: query: explain cbo joincost select p.v, f.v from pkfk_fk4 f left outer join pkfk_pk4 p on f.k = p.k and p.v > '100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk4
+PREHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo joincost select p.v, f.v from pkfk_fk4 f left outer join pkfk_pk4 p on f.k = p.k and p.v > '100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk4
+POSTHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(p.v=[$3], f.v=[$1]): rowcount: 166.66666666666666
+  HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[{603.0 rows, 0.0 cpu, 0.0 io}]): rowcount: 166.66666666666666
+    HiveProject(k=[$0], v=[$1]): rowcount: 500.0
+      HiveTableScan(table=[[default, pkfk_fk4]], table:alias=[f]): rowcount: 500.0
+    HiveProject(k=[$0], v=[$1]): rowcount: 103.0
+      HiveFilter(condition=[>($1, '100')]): rowcount: 103.0
+        HiveTableScan(table=[[default, pkfk_pk4]], table:alias=[p]): rowcount: 309.0
+
+PREHOOK: query: select count(*) from pkfk_fk4 f left outer join pkfk_pk4 p on f.k = p.k and p.v > '100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pkfk_fk4
+PREHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from pkfk_fk4 f left outer join pkfk_pk4 p on f.k = p.k and p.v > '100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pkfk_fk4
+POSTHOOK: Input: default@pkfk_pk4
+#### A masked pattern was here ####
+500

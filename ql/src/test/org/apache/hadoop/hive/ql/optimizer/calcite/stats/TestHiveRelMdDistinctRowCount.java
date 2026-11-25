@@ -41,7 +41,7 @@ class TestHiveRelMdDistinctRowCount {
   @ParameterizedTest(name = "{0}")
   @MethodSource("getDistinctRowCountCases")
   void testGetDistinctRowCountHiveTableScan(
-      String scenarioName, long[] ndvs, double rowCount, double expected) {
+      String scenarioName, long[] ndvs, double rowCount, Double expected) {
     HiveTableScan htRel = mock(HiveTableScan.class);
     RelMetadataQuery mq = mock(RelMetadataQuery.class);
 
@@ -62,17 +62,19 @@ class TestHiveRelMdDistinctRowCount {
         // Product exceeds row count -> capped
         Arguments.of("productCappedAtRowCount",         new long[] {2000L, 50L}, 1000.0, 1000.0),
         Arguments.of("singlePositiveExceedsRowCount",   new long[] {5000L},    1000.0, 1000.0),
-        // Verified-zero NDV in any column triggers the <=0 early-exit
+        // Verified-zero NDV in any column makes the product 0
         Arguments.of("verifiedZeroInAnyColumn",         new long[] {10L, 0L, 5L}, 1000.0, 0.0),
-        Arguments.of("verifiedZeroFirstShortCircuits",  new long[] {0L, 10L},    1000.0, 0.0),
+        Arguments.of("verifiedZeroFirst",               new long[] {0L, 10L},    1000.0, 0.0),
         Arguments.of("verifiedZeroAlone",               new long[] {0L},         1000.0, 0.0),
-        // Unknown NDV (-1) in any column triggers the <=0 early-exit (HIVE-29625)
-        Arguments.of("unknownInAnyColumn",              new long[] {10L, -1L, 5L}, 1000.0, 0.0),
-        Arguments.of("unknownFirstShortCircuits",       new long[] {-1L, 10L},   1000.0, 0.0),
-        Arguments.of("unknownAlone",                    new long[] {-1L},        1000.0, 0.0),
-        // Mixed verified-zero and unknown: both produce 0.0 regardless of order
-        Arguments.of("unknownThenVerifiedZero",         new long[] {-1L, 0L},    1000.0, 0.0),
-        Arguments.of("verifiedZeroThenUnknown",         new long[] {0L, -1L},    1000.0, 0.0),
+        // Unknown NDV (-1) in any column is Calcite's unknown, null (HIVE-29625)
+        Arguments.of("unknownInAnyColumn",              new long[] {10L, -1L, 5L}, 1000.0, null),
+        Arguments.of("unknownFirstShortCircuits",       new long[] {-1L, 10L},   1000.0, null),
+        Arguments.of("unknownAlone",                    new long[] {-1L},        1000.0, null),
+        Arguments.of("otherNegativeIsUnknown",          new long[] {-7L},        1000.0, null),
+        Arguments.of("knownWithZeroRows",               new long[] {10L},           0.0, 0.0),
+        // Mixed verified-zero and unknown: unknown wins regardless of order
+        Arguments.of("unknownThenVerifiedZero",         new long[] {-1L, 0L},    1000.0, null),
+        Arguments.of("verifiedZeroThenUnknown",         new long[] {0L, -1L},    1000.0, null),
         // Empty column list - loop doesn't execute, fall through to Math.min(1.0, rowCount)
         Arguments.of("emptyColStatsFallsThroughTo1",    new long[] {},           1000.0, 1.0),
         Arguments.of("emptyColStatsCappedByLowRowCount", new long[] {},          0.5,    0.5)
