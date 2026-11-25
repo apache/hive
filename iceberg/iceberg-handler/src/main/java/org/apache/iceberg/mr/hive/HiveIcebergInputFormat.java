@@ -185,6 +185,14 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     return FilterExpressions.readerResidual(task, conf);
   }
 
+  /**
+   * Returns the Iceberg filter of the pushed-down Hive predicate, including {@code extract(...)} predicates;
+   * intended only for pruning.
+   */
+  public static Expression readerFilter(Configuration conf) {
+    return FilterExpressions.icebergDataFilterFromHiveConf(conf);
+  }
+
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     Expression filter = FilterExpressions.planningFilter(job);
