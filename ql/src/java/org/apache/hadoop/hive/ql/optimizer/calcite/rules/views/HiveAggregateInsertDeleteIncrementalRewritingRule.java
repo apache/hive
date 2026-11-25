@@ -76,11 +76,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
  * <pre>
  * FROM (select *, true flag from mv) mv right outer join _source_ source
  * ON (mv.a &lt;=&gt; source.a AND mv.b &lt;=&gt; source.b)
- * INSERT INTO TABLE mv                                       &lt;- (insert new rows into the view)
- *   SELECT source.a, source.b, s, c
- *   WHERE mv.flag IS NULL
- * INSERT INTO TABLE mv                                       &lt;- (update existing rows in the view)
- *   SELECT mv.ROW__ID, source.a, source.b,
+ * INSERT INTO TABLE mv                                       &lt;- (insert the new version of the updated rows)
+ *   SELECT source.a, source.b,
  *     CASE WHEN mv.s IS NULL AND source.s IS NULL THEN NULL  &lt;- (use case expression to handle nulls from both sides)
  *          WHEN mv.s IS NULL THEN source.s
  *          WHEN source.s IS NULL THEN mv.s
@@ -90,14 +87,28 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
  *          WHEN source.s IS NULL THEN mv.s
  *          ELSE mv.s + source.s END countStar,
  *   WHERE mv.flag AND countStar &lt;&gt; 0
- *   SORT BY mv.ROW__ID;
- * INSERT INTO TABLE mv                                       &lt;- (delete from the views)
- *   SELECT mv.ROW__ID
- *   WHERE mv.flag AND countStar = 0
- *   SORT BY mv.ROW__ID;
+ * INSERT INTO TABLE mv                                       &lt;- (delete the old version of the updated rows
+ *   SELECT mv.ROW__ID                                              and the rows of the groups which became empty)
+ *   WHERE (mv.flag AND countStar &lt;&gt; 0) OR (mv.flag AND countStar = 0)
+ *   SORT BY mv.ROW__ID
+ * INSERT INTO TABLE mv                                       &lt;- (insert new rows into the view)
+ *   SELECT source.a, source.b, s, c
+ *   WHERE mv.flag IS NULL;
  * </pre>
- *
- * @see AlterMaterializedViewRebuildAnalyzer
+ * The update is split to an insert and a delete branch. Both the updated rows and the rows of the emptied groups are
+ * deleted by the same branch, so that all deletes of a data file reach the same writer: an Iceberg V3 view gets one
+ * deletion vector per data file.
+ * <ul>
+ *   <li>In case of native ACID views the delete branch selects ROW__ID and is sorted by it. It has no distribute
+ *   keys: the deleted rows are distributed by the bucket id of ROW__ID, like the deleted rows of any ACID
+ *   DELETE/UPDATE/MERGE.</li>
+ *   <li>In case of non-native views (Iceberg) the delete branch selects the delete columns of the storage handler
+ *   instead of ROW__ID, it is distributed by the storage handler's distribute columns (FILE__PATH in case of V3) and
+ *   sorted by its sort columns (none in case of V3).</li>
+ * </ul>
+ * <br>
+ * This rule only builds the plan; the multi-insert is created from the AST by
+ * {@link AlterMaterializedViewRebuildAnalyzer}.
  */
 public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggregateIncrementalRewritingRuleBase<
         HiveAggregateInsertDeleteIncrementalRewritingRule.IncrementalComputePlanWithDeletedRows> {

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.parse.ParseDriver;
 
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 public class NativeAcidMaterializedViewASTBuilder extends MaterializedViewASTBuilder {
@@ -42,5 +43,10 @@ public class NativeAcidMaterializedViewASTBuilder extends MaterializedViewASTBui
   @Override
   protected List<ASTNode> createAcidSortNodesInternal(String tableName) {
     return singletonList(createQualifiedColumnNode(tableName, VirtualColumn.ROWID.getName()));
+  }
+
+  @Override
+  protected List<ASTNode> createAcidDistributeNodesInternal(String tableName) {
+    return emptyList();
   }
 }
