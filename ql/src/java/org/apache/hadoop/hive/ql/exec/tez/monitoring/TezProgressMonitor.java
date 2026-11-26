@@ -74,10 +74,12 @@ public class TezProgressMonitor implements ProgressMonitor {
     for (Map.Entry<String, Progress> entry : progressMap.entrySet()) {
       String vertexName = entry.getKey();
       progressCountsMap.put(vertexName, new VertexProgress(entry.getValue(), status.getState()));
-      try {
-        vertexStatusMap.put(vertexName, dagClient.getVertexStatus(vertexName, null));
-      } catch (IOException e) {
-        // best attempt, shouldn't really kill DAG for this
+      if (status.getState() == KILLED) {
+        try {
+          vertexStatusMap.put(vertexName, dagClient.getVertexStatus(vertexName, null));
+        } catch (IOException e) {
+          // best attempt, shouldn't really kill DAG for this
+        }
       }
     }
   }
