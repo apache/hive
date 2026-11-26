@@ -187,6 +187,43 @@ from t_fact f
 join t_dim d on f.k = d.k
 group by d.g;
 
+-- pushed: the reduce sink of the group by is merged into the join's (its keys are the join keys),
+-- so the group by above the join finalizes the partial results in the join's reducer
+set hive.auto.convert.join.noconditionaltask=false;
+set hive.convert.join.bucket.mapjoin.tez=false;
+
+explain
+select f.k, count(*), count(f.v), sum(f.v), min(f.v), max(f.v), sum(f.p)
+from t_fact f
+join t_dim d on f.k = d.k
+group by f.k;
+
+select f.k, count(*), count(f.v), sum(f.v), min(f.v), max(f.v), sum(f.p)
+from t_fact f
+join t_dim d on f.k = d.k
+group by f.k;
+
+-- the same results without vectorization
+set hive.vectorized.execution.enabled=false;
+
+select f.k, count(*), count(f.v), sum(f.v), min(f.v), max(f.v), sum(f.p)
+from t_fact f
+join t_dim d on f.k = d.k
+group by f.k;
+
+set hive.vectorized.execution.enabled=true;
+
+-- the same results without the optimization
+set hive.optimize.partial.aggr.join.transpose=false;
+
+select f.k, count(*), count(f.v), sum(f.v), min(f.v), max(f.v), sum(f.p)
+from t_fact f
+join t_dim d on f.k = d.k
+group by f.k;
+
+set hive.optimize.partial.aggr.join.transpose=true;
+set hive.auto.convert.join.noconditionaltask=true;
+
 -- a pushed group by's output is not bucketed: the join must not become a bucket map join
 create table t_dim_b (k int, g string) clustered by (k) into 2 buckets stored as orc;
 
