@@ -890,7 +890,7 @@ public class SerializationUtilities {
     Output output = new Output(baos);
     Kryo kryo = borrowKryo();
     try {
-      kryo.writeObject(output, object);
+      kryo.writeClassAndObject(output, object);
     } finally {
       releaseKryo(kryo);
     }
@@ -902,7 +902,7 @@ public class SerializationUtilities {
     KryoWithHooks kryo = (KryoWithHooks) borrowKryo();
     kryo.setRootType(clazz);
     try (Input inp = new Input(new ByteArrayInputStream(bytes))) {
-      return kryo.readObject(inp, clazz);
+      return clazz.cast(kryo.readClassAndObject(inp));
     } finally {
       releaseKryo(kryo);
     }
