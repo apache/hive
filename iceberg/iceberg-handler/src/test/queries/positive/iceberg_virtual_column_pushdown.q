@@ -10,6 +10,8 @@ insert into ice_vc values (20), (21);
 
 explain cbo select a from ice_vc where a = 1 or file__path is not null;
 
+-- Group the splits into one task, so the counters below do not depend on the slots available to the cluster
+set tez.grouping.split-count=1;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 
 -- under OR: every row qualifies, so every file must be read
