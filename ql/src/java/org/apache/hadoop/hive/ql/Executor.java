@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.client.HMSQueryCache;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -101,6 +102,11 @@ public class Executor {
 
       preExecutionActions();
       preExecutionCacheActions();
+      // The tasks may create a table cached as not found at compile time (CTAS, CREATE TABLE)
+      HMSQueryCache hmsCache = driverContext.getQueryState().getHMSCache();
+      if (hmsCache != null) {
+        hmsCache.dropTablesNotFound();
+      }
       // Disable HMS cache so any metadata calls during execution get fresh responses.
       driverContext.getQueryState().disableHMSCache();
       runTasks(noName);
