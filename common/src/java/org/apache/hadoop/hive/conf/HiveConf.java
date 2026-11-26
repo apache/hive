@@ -5041,11 +5041,10 @@ public class HiveConf extends Configuration {
          "cleanup in this case. This can increase cache hit ratio but might scale bad in a workload that generates " +
          "many proactive eviction events."),
     LLAP_IO_CACHE_DELETEDELTAS("hive.llap.io.cache.deletedeltas", "all", new StringSet("none", "metadata", "all"),
-         "When set to 'all' queries that use LLAP IO for execution will also access delete delta files via " +
-         "LLAP IO layer and thus they will be fully cached. When set to 'metadata', only the tail of delete deltas " +
-         "will be cached. If set to 'none', only the base files and insert deltas will be channeled through LLAP, " +
-         "while delete deltas will be accessed directly from their configured FS without caching them. " +
-         "This feature only works with ColumnizedDeleteEventRegistry, SortMergedDeleteEventRegistry is not supported."),
+         "Which delete files LLAP IO reads through its cache. 'none': deletes are read directly from their FS. " +
+         "'metadata': ACID delete delta tails, Iceberg deletion vectors. 'all': also ACID delete events and " +
+         "Iceberg V2 position deletes, cached as deletion vectors. For ACID, only ColumnizedDeleteEventRegistry " +
+         "is supported, not SortMergedDeleteEventRegistry."),
     LLAP_IO_PATH_CACHE_SIZE("hive.llap.io.path.cache.size", "10Mb", new SizeValidator(),
         "The amount of the maximum memory allowed to store the file paths."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
