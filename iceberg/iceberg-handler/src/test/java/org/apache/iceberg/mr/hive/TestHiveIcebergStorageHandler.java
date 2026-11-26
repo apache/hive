@@ -29,7 +29,23 @@ import org.apache.commons.collections4.IterableUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotSummary;
@@ -51,12 +67,20 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestHiveIcebergStorageHandler {
+
+  private static final ExprNodeDesc DATA_COL = new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "a", "t", false);
+  private static final ExprNodeDesc SPEC_ID_COL =
+      new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, VirtualColumn.PARTITION_SPEC_ID.getName(), "t", true);
+  private static final ExprNodeDesc FILE_PATH_COL =
+      new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, VirtualColumn.FILE_PATH.getName(), "t", true);
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
@@ -227,5 +251,61 @@ public class TestHiveIcebergStorageHandler {
     Iterable<SnapshotContext> result = storageHandler.getSnapshots(snapshotList, since);
 
     assertThat(result.iterator().hasNext(), is(false));
+  }
+
+  @Test
+  public void testDecomposePredicateLeavesOutConjunctsReadingVirtualColumns() throws UDFArgumentException {
+    ExprNodeGenericFuncDesc dataFilter = func(new GenericUDFOPEqual(), DATA_COL, constant(1));
+    ExprNodeGenericFuncDesc filter = func(new GenericUDFOPAnd(), dataFilter, func(new GenericUDFOPEqual(), SPEC_ID_COL,
+        constant(0)), func(new GenericUDFOPNotNull(), FILE_PATH_COL));
+
+    DecomposedPredicate decomposed = decompose(filter);
+    assertThat(decomposed.pushedPredicate.isSame(dataFilter), is(true));
+    assertThat(decomposed.residualPredicate, sameInstance(filter));
+
+    filter = func(new GenericUDFOPAnd(), func(new GenericUDFOPEqual(), SPEC_ID_COL, constant(0)),
+        func(new GenericUDFOPNotNull(), FILE_PATH_COL));
+    assertThat(decompose(filter).pushedPredicate, is(nullValue()));
+  }
+
+  @Test
+  public void testDecomposePredicatePushesNothingWhenOtherOperatorReadsVirtualColumn() throws UDFArgumentException {
+    List<ExprNodeGenericFuncDesc> filters = asList(
+        func(new GenericUDFOPOr(), func(new GenericUDFOPEqual(), DATA_COL, constant(1)),
+            func(new GenericUDFOPEqual(), SPEC_ID_COL, constant(0))),
+        func(new GenericUDFBetween(), constant(false), SPEC_ID_COL, constant(0), constant(1)),
+        func(new GenericUDFIn(), SPEC_ID_COL, constant(0), constant(1)),
+        func(new GenericUDFOPEqual(), SPEC_ID_COL, constant(0)));
+
+    for (ExprNodeGenericFuncDesc filter : filters) {
+      DecomposedPredicate decomposed = decompose(filter);
+      assertThat(filter.getExprString(), decomposed.pushedPredicate, is(nullValue()));
+      assertThat(decomposed.residualPredicate, sameInstance(filter));
+    }
+  }
+
+  @Test
+  public void testDecomposePredicatePushesEntireFilterWithoutVirtualColumns() throws UDFArgumentException {
+    ExprNodeGenericFuncDesc filter = func(new GenericUDFOPOr(), func(new GenericUDFOPEqual(), DATA_COL, constant(1)),
+        func(new GenericUDFOPEqual(), DATA_COL, constant(2)));
+
+    DecomposedPredicate decomposed = decompose(filter);
+    assertThat(decomposed.pushedPredicate.isSame(filter), is(true));
+    assertThat(decomposed.pushedPredicate, not(sameInstance(filter)));
+    assertThat(decomposed.residualPredicate, sameInstance(filter));
+  }
+
+  private static DecomposedPredicate decompose(ExprNodeGenericFuncDesc filter) {
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    storageHandler.setConf(new Configuration());
+    return storageHandler.decomposePredicate(new JobConf(), null, filter);
+  }
+
+  private static ExprNodeGenericFuncDesc func(GenericUDF udf, ExprNodeDesc... children) throws UDFArgumentException {
+    return ExprNodeGenericFuncDesc.newInstance(udf, asList(children));
+  }
+
+  private static ExprNodeConstantDesc constant(Object value) {
+    return new ExprNodeConstantDesc(value);
   }
 }
