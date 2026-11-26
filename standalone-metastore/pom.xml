@@ -68,7 +68,7 @@
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
     <!-- Dependency versions -->
-    <antlr.version>4.9.3</antlr.version>
+    <antlr.version>4.13.1</antlr.version>
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
     <checkstyle.version>11.1.0</checkstyle.version>
     <commons-cli.version>1.5.0</commons-cli.version>

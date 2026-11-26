@@ -154,7 +154,7 @@
                   <replacement>https://asm.ow2.io/license.html</replacement>
                 </licenseUrlReplacement>
                 <licenseUrlReplacement>
-                  <regexp>http://(www\.)?antlr.org/license.html</regexp>
+                  <regexp>https?://(www\.)?antlr\.org/license\.html</regexp>
                   <replacement>http://www.antlr.org/license.html</replacement>
                 </licenseUrlReplacement>
               </licenseUrlReplacements>
