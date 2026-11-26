@@ -58,11 +58,10 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
   private CloseableIterator<T> nextTask() {
     CloseableIterator<T> closeableIterator = openGeneric(mergeSplit.getContentFile(), table.schema()).iterator();
     if (mergeSplit.getContentFile() instanceof DeleteFile) {
-      Schema deleteSchema = IcebergAcidUtil.createSerdeSchemaForDelete(table.schema().columns(), true);
       PartitionSpec spec = table.specs().get(mergeSplit.getContentFile().specId());
 
       return new IcebergAcidUtil.MergeTaskVirtualColumnAwareIterator<>(closeableIterator,
-          deleteSchema, spec, mergeSplit.getContentFile());
+          spec, mergeSplit.getContentFile());
     } else {
       return closeableIterator;
     }

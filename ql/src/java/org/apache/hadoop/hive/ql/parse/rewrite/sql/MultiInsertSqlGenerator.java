@@ -107,7 +107,8 @@ public abstract class MultiInsertSqlGenerator {
   }
 
   public void appendDeleteBranch(String hintStr) {
-    List<String> deleteValues = getDeleteValues(Operation.DELETE);
+    // only MERGE builds a delete branch here, and its deletes need only the virtual columns
+    List<String> deleteValues = getDeleteValues(Operation.MERGE);
     appendInsertBranch(hintStr, deleteValues);
   }
 
