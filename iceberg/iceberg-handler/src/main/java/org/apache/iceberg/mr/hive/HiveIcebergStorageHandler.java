@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -246,6 +247,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   private static final List<FieldSchema> EMPTY_ORDERING = ImmutableList.of();
 
   private static final List<FieldSchema> DV_DISTRIBUTION = schema(ImmutableList.of(FILE_PATH));
+
+  // Iceberg cannot evaluate these virtual columns, so a predicate that reads one of them is not pushed down
+  private static final Set<String> NON_PUSHABLE_VIRTUAL_COLS = Stream.of(
+          FILE_PATH, PARTITION_SPEC_ID, PARTITION_HASH, PARTITION_NAME, ROW_LINEAGE_ID, LAST_UPDATED_SEQUENCE_NUMBER)
+      .map(VirtualColumn::getName).collect(Collectors.toUnmodifiableSet());
 
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
@@ -445,22 +451,23 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public DecomposedPredicate decomposePredicate(JobConf jobConf, Deserializer deserializer, ExprNodeDesc exprNodeDesc) {
     DecomposedPredicate predicate = new DecomposedPredicate();
     predicate.residualPredicate = (ExprNodeGenericFuncDesc) exprNodeDesc;
-    ExprNodeDesc pushedPredicate = exprNodeDesc.clone();
+    ExprNodeDesc pushedPredicate = null;
 
-    List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
-    Set<String> skipList =
-        Stream.of(FILE_PATH, PARTITION_SPEC_ID, PARTITION_HASH, PARTITION_NAME,
-                ROW_LINEAGE_ID, LAST_UPDATED_SEQUENCE_NUMBER)
-            .map(VirtualColumn::getName).collect(Collectors.toSet());
-
-    if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&
-          nodeDesc.getCols().stream().anyMatch(skipList::contains))) {
-      if (subExprNodes.size() == 1) {
-        pushedPredicate = (subExprNodes.getFirst() instanceof ExprNodeGenericFuncDesc) ?
-            subExprNodes.getFirst() : null;
-      } else if (subExprNodes.isEmpty()) {
-        pushedPredicate = null;
+    if (FunctionRegistry.isOpAnd(exprNodeDesc)) {
+      // Leaving out a conjunct only widens the pushed predicate; Hive still applies it through the residual predicate
+      pushedPredicate = exprNodeDesc.clone();
+      List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
+      if (subExprNodes.removeIf(HiveIcebergStorageHandler::readsNonPushableVirtualCol)) {
+        if (subExprNodes.size() == 1) {
+          pushedPredicate = (subExprNodes.getFirst() instanceof ExprNodeGenericFuncDesc) ?
+              subExprNodes.getFirst() : null;
+        } else if (subExprNodes.isEmpty()) {
+          pushedPredicate = null;
+        }
       }
+    } else if (!readsNonPushableVirtualCol(exprNodeDesc)) {
+      // Leaving out a disjunct or an operand would narrow the predicate and lose rows, so push all of it or nothing
+      pushedPredicate = exprNodeDesc.clone();
     }
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;
 
@@ -468,6 +475,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       SessionStateUtil.setConflictDetectionFilter(conf, jobConf.get(Catalogs.NAME), pushedPredicate);
     }
     return predicate;
+  }
+
+  private static boolean readsNonPushableVirtualCol(ExprNodeDesc exprNodeDesc) {
+    List<String> cols = exprNodeDesc.getCols();
+    return cols != null && !Collections.disjoint(cols, NON_PUSHABLE_VIRTUAL_COLS);
   }
 
   @Override
