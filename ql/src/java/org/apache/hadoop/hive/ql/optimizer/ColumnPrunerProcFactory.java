@@ -521,7 +521,7 @@ public final class ColumnPrunerProcFactory {
         return cols;
       }
 
-      ExprNodeGenericFuncDesc filterExpr = desc.getFilterExpr();
+      ExprNodeDesc filterExpr = desc.getFilterExpr();
       if (filterExpr != null) {
         cols = mergeFieldNodesWithDesc(cols, filterExpr);
       }
