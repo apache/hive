@@ -28,7 +28,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCost;
@@ -171,6 +170,11 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         for (Ord<Integer> c : Ord.zip(belowAggregateKeyNotShifted)) {
           map.put(c.e, belowOffset + c.i);
         }
+        final Mappings.TargetMapping mapping =
+            s == 0
+                ? Mappings.createIdentity(fieldCount)
+                : Mappings.createShiftMapping(fieldCount + offset, 0, offset,
+                    fieldCount);
         final ImmutableBitSet belowAggregateKey =
             belowAggregateKeyNotShifted.shift(-offset);
         final boolean unique;
@@ -197,17 +201,41 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         if (unique) {
           ++uniqueCount;
           relBuilder.push(joinInput);
-          relBuilder.project(belowAggregateKey.asList().stream().map(relBuilder::field).collect(Collectors.toList()));
+          final List<RexNode> projects = new ArrayList<>();
+          for (Integer i : belowAggregateKey) {
+            projects.add(relBuilder.field(i));
+          }
+          for (Ord<AggregateCall> aggCall : Ord.zip(aggregate.getAggCallList())) {
+            final SqlAggFunction aggregation = aggCall.e.getAggregation();
+            final SqlSplittableAggFunction splitter =
+                Preconditions.checkNotNull(
+                    aggregation.unwrap(SqlSplittableAggFunction.class));
+            if (!aggCall.e.getArgList().isEmpty()
+                && fieldSet.contains(ImmutableBitSet.of(aggCall.e.getArgList()))) {
+              final RexNode singleton =
+                  splitter.singleton(rexBuilder, joinInput.getRowType(),
+                      aggCall.e.transform(mapping));
+
+              if (singleton instanceof RexInputRef) {
+                final int index = ((RexInputRef) singleton).getIndex();
+                if (!belowAggregateKey.get(index)) {
+                  projects.add(singleton);
+                  side.split.put(aggCall.i, projects.size() - 1);
+                } else {
+                  side.split.put(aggCall.i, belowAggregateKey.indexOf(index));
+                }
+              } else {
+                projects.add(singleton);
+                side.split.put(aggCall.i, projects.size() - 1);
+              }
+            }
+          }
+          relBuilder.project(projects);
           side.newInput = relBuilder.build();
         } else {
           List<AggregateCall> belowAggCalls = new ArrayList<>();
           final SqlSplittableAggFunction.Registry<AggregateCall>
               belowAggCallRegistry = registry(belowAggCalls);
-          final Mappings.TargetMapping mapping =
-              s == 0
-                  ? Mappings.createIdentity(fieldCount)
-                  : Mappings.createShiftMapping(fieldCount + offset, 0, offset,
-                      fieldCount);
           for (Ord<AggregateCall> aggCall : Ord.zip(aggregate.getAggCallList())) {
             final SqlAggFunction aggregation = aggCall.e.getAggregation();
             final SqlSplittableAggFunction splitter =
