@@ -1633,7 +1633,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
     return switch (operation) {
-      // fanout and DV writers do not need sorted input
+      // fanout and DV writers do not need sorted input; with fanout disabled a V2 table's deletes go to the clustered
+      // writer (HiveIcebergWriterBase#newDeleteWriter)
       case DELETE -> IcebergTableUtil.isFanoutEnabled(table.getParameters()) ||
           IcebergTableUtil.formatVersion(table.getParameters()) >= 3 ? EMPTY_ORDERING : POSITION_DELETE_ORDERING;
       // sorted by row, so the MERGE cardinality check sees all matches of a row together

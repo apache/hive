@@ -212,10 +212,6 @@ public class WriterBuilder {
       return useFanoutWriter;
     }
 
-    boolean inputOrdered() {
-      return inputOrdered;
-    }
-
     public boolean useDVs() {
       return useDVs;
     }

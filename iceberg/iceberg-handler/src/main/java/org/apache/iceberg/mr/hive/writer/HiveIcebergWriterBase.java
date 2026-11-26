@@ -119,16 +119,14 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
     }
   }
 
-  // Use the DV writer for V3+ tables
-  // The spec requires position deletes to be ordered by file and position for V2 tables
-  // use a fanout writer if the input is unordered no matter whether fanout writers are enabled
-  // clustered writers assume that the position deletes are already ordered by file and position
+  // Use the DV writer for V3+ tables. A V2 table takes a writer as its data files do: the clustered writer when fanout
+  // is disabled, whose deletes the rewritten statement sorts by spec, partition, file and position
+  // (HiveIcebergStorageHandler#acidSortColumns), the fanout writer otherwise, which buffers the positions of each file
   static PartitioningWriter<PositionDelete<Record>, DeleteWriteResult> newDeleteWriter(
       Table table, Supplier<Map<String, DeleteFileSet>> rewritableDeletes, Configuration conf,
       HiveFileWriterFactory writers, OutputFileFactory files, Context context) {
 
     FileIO io = table.io();
-    boolean inputOrdered = context.inputOrdered();
     long targetFileSize = context.targetDeleteFileSize();
     DeleteGranularity deleteGranularity = context.deleteGranularity();
 
@@ -136,7 +134,7 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
       return new PartitioningDVWriter<>(files, new PreviousDeleteLoader(table, rewritableDeletes, conf));
     }
     // partition-scoped position delete writers do not rewrite previous deletes
-    if (inputOrdered) {
+    if (!context.useFanoutWriter()) {
       return new ClusteredPositionDeleteWriter<>(writers, files, io, targetFileSize, deleteGranularity);
     } else {
       return new FanoutPositionOnlyDeleteWriter<>(writers, files, io, targetFileSize, deleteGranularity);
