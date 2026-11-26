@@ -59,8 +59,7 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
     List<FieldSchema> acidSelectColumns = targetTable.getStorageHandler().acidSelectColumns(targetTable, operation);
     for (FieldSchema fieldSchema : acidSelectColumns) {
       boolean deletedRowId = markRowIdAsDeleted && fieldSchema.equals(targetTable.getStorageHandler().getRowId());
-      String identifier = deletedRowId ?
-          deletedRowIdExpr : HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
+      String identifier = selectExpr(fieldSchema.getName(), deletedRowId, deletedRowIdExpr);
       if (!markRowIdAsDeleted || skipPrefix) {
         queryStr.append(identifier);
       }
@@ -69,12 +68,16 @@ public class NonNativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerato
         if (!markRowIdAsDeleted) {
           queryStr.append(" AS ");
         }
-        String prefixedIdentifier = deletedRowId ?
-            deletedRowIdExpr : HiveUtils.unparseIdentifier(deletePrefix + fieldSchema.getName(), this.conf);
+        String prefixedIdentifier = selectExpr(deletePrefix + fieldSchema.getName(), deletedRowId, deletedRowIdExpr);
         queryStr.append(prefixedIdentifier);
       }
       queryStr.append(",");
     }
+  }
+
+  // the column name, or deletedRowIdExpr for the row id of a deleted record
+  private String selectExpr(String name, boolean deletedRowId, String deletedRowIdExpr) {
+    return deletedRowId ? deletedRowIdExpr : HiveUtils.unparseIdentifier(name, this.conf);
   }
 
   @Override

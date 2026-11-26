@@ -566,7 +566,8 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * Specifies which additional virtual columns should be added to the virtual column registry during compilation
-   * for tables that support ACID operations.
+   * for tables that support ACID operations. The deleted records of a merge-on-read DELETE/UPDATE/MERGE carry only
+   * these columns.
    *
    * Should only return a non-empty list if
    * {@link HiveStorageHandler#supportsAcidOperations()} returns something
@@ -587,6 +588,7 @@ public interface HiveStorageHandler extends Configurable {
    * INSERT INTO T SELECT &lt;selectCols&gt;, &lt;newValues&gt; FROM T WHERE A = 32 SORT BY &lt;sortCols&gt;.
    *
    * This method specifies which columns should be injected into the &lt;selectCols&gt; part of the rewritten query.
+   * A merge-on-read DELETE selects the columns of a MERGE, which must hold only the {@link #acidVirtualColumns()}.
    *
    * Should only return a non-empty list if
    * {@link HiveStorageHandler#supportsAcidOperations()} returns something

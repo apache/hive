@@ -53,7 +53,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
   private long rowOffset = Long.MIN_VALUE;
 
   private final int specId;
-  private final long partitionHash;
+  private final byte[] partitionKey;
   private final String filePath;
   private final String partitionName;
 
@@ -70,7 +70,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
     this.partitionValues = partitionValues;
 
     this.specId = task.file().specId();
-    this.partitionHash = IcebergAcidUtil.computeHash(task.file().partition());
+    this.partitionKey = IcebergAcidUtil.serializePartition(task.file().partition(), task.spec());
     this.filePath = task.file().location();
     this.partitionName = IcebergTableUtil.toPartitionName(task.spec(), task.file().partition());
 
@@ -115,8 +115,8 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
             case PARTITION_SPEC_ID:
               vrbCtx.addPartitionColsToBatch(batch.cols[idx], specId, idx);
               break;
-            case PARTITION_HASH:
-              vrbCtx.addPartitionColsToBatch(batch.cols[idx], partitionHash, idx);
+            case PARTITION_KEY:
+              ((BytesColumnVector) batch.cols[idx]).fill(partitionKey);
               break;
             case FILE_PATH:
               BytesColumnVector bcv = (BytesColumnVector) batch.cols[idx];

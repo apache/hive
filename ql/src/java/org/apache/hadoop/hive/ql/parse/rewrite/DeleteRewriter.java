@@ -46,7 +46,8 @@ public class DeleteRewriter implements Rewriter<DeleteStatement> {
     sqlGenerator.appendPartitionColsOfTarget();
 
     sqlGenerator.append(" select ");
-    sqlGenerator.appendAcidSelectColumns(Context.Operation.DELETE);
+    // the deleted records need only the virtual columns, which acidSelectColumns returns for MERGE
+    sqlGenerator.appendAcidSelectColumns(Context.Operation.MERGE);
     sqlGenerator.removeLastChar();
     sqlGenerator.append(" from ");
     sqlGenerator.append(sqlGenerator.getTargetTableFullName());

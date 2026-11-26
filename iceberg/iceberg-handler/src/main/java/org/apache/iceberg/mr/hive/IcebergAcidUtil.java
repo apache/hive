@@ -19,10 +19,15 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.ObjectUtils;
@@ -33,10 +38,10 @@ import org.apache.hadoop.hive.ql.io.RowLineageInfo;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.io.WritableUtils;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
-import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
@@ -50,8 +55,10 @@ import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.mr.mapreduce.RowLineageReader;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Conversions;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
-import org.apache.iceberg.util.SerializationUtil;
+import org.apache.iceberg.util.ByteBuffers;
 
 public class IcebergAcidUtil {
 
@@ -61,8 +68,6 @@ public class IcebergAcidUtil {
   private static final Map<Types.NestedField, Integer> FILE_READ_META_COLS = Maps.newLinkedHashMap();
   public static final String META_TABLE_PROPERTY = "metaTable";
   private static final Map<Types.NestedField, Integer> DELETE_FILE_META_COLS = Maps.newLinkedHashMap();
-  public static final Integer PARTITION_PROJECTION_COLUMN_ID = Integer.MAX_VALUE - 6;
-  private static final String PARTITION_PROJECTION_COLUMN_NAME = "_partition_projection";
 
   static {
     DELETE_FILE_META_COLS.put(MetadataColumns.FILE_PATH, 0);
@@ -73,25 +78,18 @@ public class IcebergAcidUtil {
     FILE_READ_META_COLS.put(MetadataColumns.ROW_POSITION, 2);
   }
 
-  private static final Types.NestedField PARTITION_HASH_META_COL = Types.NestedField.required(
-      MetadataColumns.PARTITION_COLUMN_ID, MetadataColumns.PARTITION_COLUMN_NAME, Types.LongType.get());
+  // the record's partition, as written by serializePartition
+  private static final Types.NestedField PARTITION_META_COL = Types.NestedField.required(
+      MetadataColumns.PARTITION_COLUMN_ID, MetadataColumns.PARTITION_COLUMN_NAME, Types.BinaryType.get());
 
-  private static final Types.NestedField PARTITION_PROJECTION = Types.NestedField.required(
-      PARTITION_PROJECTION_COLUMN_ID, PARTITION_PROJECTION_COLUMN_NAME, Types.StringType.get());
-
+  // the virtual columns of a deleted record; in copy-on-write, the row data follows them
   private static final Map<Types.NestedField, Integer> SERDE_META_COLS = Maps.newLinkedHashMap();
-
-  // a merge task reads delete files, so its writer has no row data to derive the partition key from
-  private static final Map<Types.NestedField, Integer> MERGE_SERDE_META_COLS = Maps.newLinkedHashMap();
 
   static {
     SERDE_META_COLS.put(MetadataColumns.SPEC_ID, 0);
-    SERDE_META_COLS.put(PARTITION_HASH_META_COL, 1);
+    SERDE_META_COLS.put(PARTITION_META_COL, 1);
     SERDE_META_COLS.put(MetadataColumns.FILE_PATH, 2);
     SERDE_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
-
-    MERGE_SERDE_META_COLS.putAll(SERDE_META_COLS);
-    MERGE_SERDE_META_COLS.put(PARTITION_PROJECTION, 4);
   }
 
   /**
@@ -106,35 +104,46 @@ public class IcebergAcidUtil {
   }
 
   /**
-   * @param dataCols The columns of the serde projection schema
-   * @param isMergeTask Whether the schema is for a merge task, which also carries the partition key
-   * @return The schema for SerDe operations, extended with metadata columns needed for deletes
+   * The schema of a record deleted by a merge-on-read DML or a merge task: the virtual columns only.
    */
-  public static Schema createSerdeSchemaForDelete(List<Types.NestedField> dataCols, boolean isMergeTask) {
-    Map<Types.NestedField, Integer> metaCols = isMergeTask ?
-        MERGE_SERDE_META_COLS : SERDE_META_COLS;
-    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + metaCols.size());
-    cols.addAll(metaCols.keySet());
+  public static Schema createSerdeSchemaForDelete() {
+    return new Schema(Lists.newArrayList(SERDE_META_COLS.keySet()));
+  }
+
+  /**
+   * @param dataCols The columns of the serde projection schema
+   * @return The copy-on-write schema: the virtual columns, then the row data
+   */
+  public static Schema createSerdeSchemaForDelete(List<Types.NestedField> dataCols) {
+    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + SERDE_META_COLS.size());
+    cols.addAll(SERDE_META_COLS.keySet());
     cols.addAll(dataCols);
     return new Schema(cols);
   }
 
   /**
+   * @param rec A record deleted by a merge-on-read DML or a merge task
+   * @return The position delete of the record, without row data
+   */
+  public static PositionDelete<Record> getPositionDelete(Record rec) {
+    PositionDelete<Record> positionDelete = PositionDelete.create();
+    return positionDelete.set(rec.get(SERDE_META_COLS.get(MetadataColumns.FILE_PATH), String.class),
+        rec.get(SERDE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class));
+  }
+
+  /**
    * Based on `rec` the method creates a position delete object, and also populates the data filed of `rowData` with
    * the field values from `rec`.
-   * @param rec The record read by the file scan task, which contains both the metadata fields and the row data fields
+   * @param rec A copy-on-write record: the virtual columns, then the row data
    * @param rowData The record object to populate with the rowData fields only
-   * @param isMergeTask Whether the record was built by a merge task
    * @return The position delete object
    */
-  public static PositionDelete<Record> getPositionDelete(Record rec, Record rowData, boolean isMergeTask) {
-    Map<Types.NestedField, Integer> metaCols = isMergeTask ?
-        MERGE_SERDE_META_COLS : SERDE_META_COLS;
+  public static PositionDelete<Record> getPositionDelete(Record rec, Record rowData) {
     PositionDelete<Record> positionDelete = PositionDelete.create();
-    String filePath = rec.get(metaCols.get(MetadataColumns.FILE_PATH), String.class);
-    Long filePosition = rec.get(metaCols.get(MetadataColumns.ROW_POSITION), Long.class);
+    String filePath = rec.get(SERDE_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
+    Long filePosition = rec.get(SERDE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
 
-    int dataOffset = metaCols.size(); // position in the rec where the actual row data begins
+    int dataOffset = SERDE_META_COLS.size(); // position in the rec where the actual row data begins
     for (int i = dataOffset; i < rec.size(); ++i) {
       rowData.set(i - dataOffset, rec.get(i));
     }
@@ -160,22 +169,65 @@ public class IcebergAcidUtil {
   }
 
   public static int parseSpecId(Record rec) {
-    return rec.get(FILE_READ_META_COLS.get(MetadataColumns.SPEC_ID), Integer.class);
+    return rec.get(SERDE_META_COLS.get(MetadataColumns.SPEC_ID), Integer.class);
   }
 
-  public static PartitionKey parsePartitionKey(Record rec) {
-    String serializedStr = rec.get(MERGE_SERDE_META_COLS.get(PARTITION_PROJECTION), String.class);
-    return SerializationUtil.deserializeFromBase64(serializedStr);
+  public static ByteBuffer parseSerializedPartition(Record rec) {
+    return rec.get(SERDE_META_COLS.get(PARTITION_META_COL), ByteBuffer.class);
   }
 
-  public static String getSerializedPartitionKey(StructLike structLike, PartitionSpec partitionSpec) {
-    PartitionKey partitionKey = new PartitionKey(partitionSpec, partitionSpec.schema());
-    if (structLike != null) {
-      for (int idx = 0; idx < structLike.size(); idx++) {
-        partitionKey.set(idx, structLike.get(idx, Object.class));
+  /**
+   * Serializes a data file's partition for the delete writer. Per field: VInt 0 for null, else VInt (1 + length)
+   * followed by the single-value serialization of the value.
+   * @param partition The partition of the data file
+   * @param partitionSpec The spec of the data file
+   * @return The serialized partition, empty for an unpartitioned spec
+   */
+  public static byte[] serializePartition(StructLike partition, PartitionSpec partitionSpec) {
+    List<Types.NestedField> fields = partitionSpec.partitionType().fields();
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (DataOutputStream out = new DataOutputStream(bytes)) {
+      for (int pos = 0; pos < fields.size(); pos++) {
+        Type type = fields.get(pos).type();
+        Object value = partition.get(pos, Object.class);
+        // a field of a dropped source column has the unknown type: written as null, even if an older file has a value
+        if (value == null || type.typeId() == Type.TypeID.UNKNOWN) {
+          WritableUtils.writeVInt(out, 0);
+        } else {
+          byte[] serialized = ByteBuffers.toByteArray(Conversions.toByteBuffer(type, value));
+          WritableUtils.writeVInt(out, serialized.length + 1);
+          out.write(serialized);
+        }
       }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
-    return SerializationUtil.serializeToBase64(partitionKey);
+    return bytes.toByteArray();
+  }
+
+  /**
+   * @param serialized The partition serialized by {@link #serializePartition}
+   * @param partitionSpec The spec of the data file
+   * @return The partition of the data file
+   */
+  public static StructLike deserializePartition(ByteBuffer serialized, PartitionSpec partitionSpec) {
+    Types.StructType partitionType = partitionSpec.partitionType();
+    GenericRecord partition = GenericRecord.create(partitionType);
+    try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(ByteBuffers.toByteArray(serialized)))) {
+      for (int pos = 0; pos < partitionType.fields().size(); pos++) {
+        int length = WritableUtils.readVInt(in);
+        if (length > 0) {
+          byte[] value = new byte[length - 1];
+          in.readFully(value);
+          Object field = Conversions.fromByteBuffer(partitionType.fields().get(pos).type(), ByteBuffer.wrap(value));
+          // partitions hold strings as String; fromByteBuffer returns a CharBuffer
+          partition.set(pos, field instanceof CharSequence chars ? chars.toString() : field);
+        }
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    return partition;
   }
 
   public static String getFilePath(Record rec) {
@@ -184,18 +236,6 @@ public class IcebergAcidUtil {
 
   public static long getDeleteFilePosition(Record rec) {
     return rec.get(DELETE_FILE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
-  }
-
-  public static long computeHash(StructLike struct) {
-    long partHash = -1;
-    if (struct != null) {
-      Object[] partFields = new Object[struct.size()];
-      for (int i = 0; i < struct.size(); ++i) {
-        partFields[i] = struct.get(i, Object.class);
-      }
-      partHash = Objects.hash(partFields);
-    }
-    return partHash;
   }
 
   public static void copyFields(GenericRecord source, int start, int len, GenericRecord target) {
@@ -245,7 +285,7 @@ public class IcebergAcidUtil {
     private final Supplier<IOContext> ioContext;
 
     private final int specId;
-    private final long partitionHash;
+    private final byte[] partitionKey;
     private final String filePath;
     private final String partitionName;
 
@@ -257,7 +297,7 @@ public class IcebergAcidUtil {
       this.ioContext = ioContext;
 
       this.specId = task.file().specId();
-      this.partitionHash = computeHash(task.file().partition());
+      this.partitionKey = serializePartition(task.file().partition(), task.spec());
       this.filePath = task.file().location();
       this.partitionName = IcebergTableUtil.toPartitionName(task.spec(), task.file().partition());
     }
@@ -278,9 +318,10 @@ public class IcebergAcidUtil {
       GenericRecord rec = (GenericRecord) next;
       IcebergAcidUtil.copyFields(rec, FILE_READ_META_COLS.size(), current.size(), current);
       IOContext ioCxt = ioContext.get();
+      ioCxt.setPartitionKey(partitionKey);
       ioCxt.setPartitionName(partitionName);
       ioCxt.setPositionDeleteInfo(new PositionDeleteInfo(
-          specId, partitionHash, filePath, rec.get(ROW_POSITION_INDEX, Long.class)));
+          specId, filePath, rec.get(ROW_POSITION_INDEX, Long.class)));
       ioCxt.setRowLineageInfo(new RowLineageInfo(
           RowLineageReader.readRowId(rec), RowLineageReader.readLastUpdatedSequenceNumber(rec)));
       return (T) current;
@@ -293,17 +334,15 @@ public class IcebergAcidUtil {
     private final MergeTaskRecordBuilder<T> recordBuilder;
 
     private final int specId;
-    private final long partitionHash;
-    private final String serializedPartitionKey;
+    private final byte[] partitionKey;
 
-    public MergeTaskVirtualColumnAwareIterator(CloseableIterator<T> currentIterator, Schema expectedSchema,
-        PartitionSpec spec, ContentFile<?> file) {
+    public MergeTaskVirtualColumnAwareIterator(CloseableIterator<T> currentIterator, PartitionSpec spec,
+        ContentFile<?> file) {
       this.currentIterator = currentIterator;
-      this.recordBuilder = new MergeTaskRecordBuilder<>(expectedSchema);
+      this.recordBuilder = new MergeTaskRecordBuilder<>(createSerdeSchemaForDelete());
 
       this.specId = spec.specId();
-      this.partitionHash = computeHash(file.partition());
-      this.serializedPartitionKey = getSerializedPartitionKey(file.partition(), spec);
+      this.partitionKey = serializePartition(file.partition(), spec);
     }
 
     @Override
@@ -322,10 +361,9 @@ public class IcebergAcidUtil {
       GenericRecord rec = (GenericRecord) next;
 
       return recordBuilder.withSpecId(specId)
-          .withPartitionHash(partitionHash)
           .withFilePath(IcebergAcidUtil.getFilePath(rec))
           .withFilePosition(IcebergAcidUtil.getDeleteFilePosition(rec))
-          .withPartitionKey(serializedPartitionKey)
+          .withPartitionKey(partitionKey)
           .build();
     }
   }
@@ -338,27 +376,22 @@ public class IcebergAcidUtil {
     }
 
     public MergeTaskRecordBuilder<T> withSpecId(int specId) {
-      current.set(MERGE_SERDE_META_COLS.get(MetadataColumns.SPEC_ID), specId);
-      return this;
-    }
-
-    public MergeTaskRecordBuilder<T> withPartitionHash(long partitionHash) {
-      current.set(MERGE_SERDE_META_COLS.get(PARTITION_HASH_META_COL), partitionHash);
+      current.set(SERDE_META_COLS.get(MetadataColumns.SPEC_ID), specId);
       return this;
     }
 
     public MergeTaskRecordBuilder<T> withFilePath(String filePath) {
-      current.set(MERGE_SERDE_META_COLS.get(MetadataColumns.FILE_PATH), filePath);
+      current.set(SERDE_META_COLS.get(MetadataColumns.FILE_PATH), filePath);
       return this;
     }
 
     public MergeTaskRecordBuilder<T> withFilePosition(long filePosition) {
-      current.set(MERGE_SERDE_META_COLS.get(MetadataColumns.ROW_POSITION), filePosition);
+      current.set(SERDE_META_COLS.get(MetadataColumns.ROW_POSITION), filePosition);
       return this;
     }
 
-    public MergeTaskRecordBuilder<T> withPartitionKey(String serializedPartitionKey) {
-      current.set(MERGE_SERDE_META_COLS.get(PARTITION_PROJECTION), serializedPartitionKey);
+    public MergeTaskRecordBuilder<T> withPartitionKey(byte[] partitionKey) {
+      current.set(SERDE_META_COLS.get(PARTITION_META_COL), ByteBuffer.wrap(partitionKey));
       return this;
     }
 

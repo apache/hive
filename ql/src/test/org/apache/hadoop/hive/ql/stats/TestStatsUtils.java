@@ -45,8 +45,10 @@ import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -634,4 +636,15 @@ class TestStatsUtils {
     assertEquals(allColumnStats.getFirst(), colStatNotNeededButExists);
   }
 
+  @Test
+  void testVirtualColumnStatsUseTheAvgLengthHint() {
+    ColStatistics partitionKey = StatsUtils.getColStatisticsFromExpression(new HiveConf(),
+        new Statistics(1000, 8000, 0, 0), virtualColumn(VirtualColumn.PARTITION_KEY));
+    assertEquals(8, partitionKey.getAvgColLen());
+    assertEquals(1000, partitionKey.getCountDistint());
+  }
+
+  private static ExprNodeColumnDesc virtualColumn(VirtualColumn column) {
+    return new ExprNodeColumnDesc(column.getTypeInfo(), column.getName(), "t", true);
+  }
 }
