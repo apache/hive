@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.execute.AlterTableExecuteDesc;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.rewrite.DeleteStatement;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -148,8 +150,9 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatem
     if (!topOps.containsKey(table.getTableName())) {
       return null;
     }
-    ExprNodeGenericFuncDesc hiveFilter = topOps.get(table.getTableName()).getConf().getFilterExpr();
-    if (hiveFilter == null) {
+    TableScanOperator tableScan = topOps.get(table.getTableName());
+    ExprNodeGenericFuncDesc hiveFilter = tableScan.getConf().getFilterExpr();
+    if (hiveFilter == null || filtersOnVirtualColumn(tableScan)) {
       return null;
     }
     ConvertAstToSearchArg.Result result = ConvertAstToSearchArg.createSearchArgument(ctx.getConf(), hiveFilter);
@@ -157,6 +160,18 @@ public class DeleteSemanticAnalyzer extends RewriteSemanticAnalyzer<DeleteStatem
       return null;
     }
     return result.getSearchArgument();
+  }
+
+  /**
+   * Whether the filter on the scan reads a virtual column. The storage handler cannot evaluate a virtual column, so the
+   * filter pushed to it leaves out the conjuncts that read one: deleting the files that filter matches would also
+   * delete the rows those conjuncts exclude.
+   */
+  private static boolean filtersOnVirtualColumn(TableScanOperator tableScan) {
+    return tableScan.getChildOperators().stream()
+        .filter(FilterOperator.class::isInstance)
+        .map(op -> ((FilterOperator) op).getConf().getPredicate().getCols())
+        .anyMatch(cols -> cols != null && cols.stream().anyMatch(VirtualColumn.VIRTUAL_COLUMN_NAMES::contains));
   }
 
   private DDLWork createDDLWorkOfMetadataUpdate(TableName tableName, SearchArgument sarg) throws SemanticException {

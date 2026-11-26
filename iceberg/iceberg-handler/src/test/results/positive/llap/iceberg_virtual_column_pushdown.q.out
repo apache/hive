@@ -105,6 +105,68 @@ Stage-1 INPUT COUNTERS:
 11
 20
 21
+PREHOOK: query: select a from ice_vc where not (a = 1 and partition__spec__id = 1) order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc
+#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 6
+   RECORDS_OUT_0: 6
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_7: 6
+   RECORDS_OUT_OPERATOR_FS_11: 6
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_9: 6
+   RECORDS_OUT_OPERATOR_SEL_10: 6
+   RECORDS_OUT_OPERATOR_SEL_8: 6
+   RECORDS_OUT_OPERATOR_TS_0: 6
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 3
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 3
+1
+2
+10
+11
+20
+21
+PREHOOK: query: select a from ice_vc where partition__spec__id between 0 and 1 order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc
+#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 6
+   RECORDS_OUT_0: 6
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_7: 6
+   RECORDS_OUT_OPERATOR_FS_11: 6
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_9: 6
+   RECORDS_OUT_OPERATOR_SEL_10: 6
+   RECORDS_OUT_OPERATOR_SEL_8: 6
+   RECORDS_OUT_OPERATOR_TS_0: 6
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 3
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 3
+1
+2
+10
+11
+20
+21
 PREHOOK: query: select a from ice_vc where a = 1 and file__path is not null order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_vc
@@ -128,3 +190,149 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 1
+PREHOOK: query: create table ice_vc_del (a int) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_vc_del
+POSTHOOK: query: create table ice_vc_del (a int) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_vc_del
+PREHOOK: query: insert into ice_vc_del values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_vc_del
+POSTHOOK: query: insert into ice_vc_del values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_vc_del
+PREHOOK: query: insert into ice_vc_del values (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_vc_del
+POSTHOOK: query: insert into ice_vc_del values (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_vc_del
+PREHOOK: query: delete from ice_vc_del where a = 1 and partition__spec__id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc_del
+PREHOOK: Output: default@ice_vc_del
+POSTHOOK: query: delete from ice_vc_del where a = 1 and partition__spec__id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_vc_del
+POSTHOOK: Output: default@ice_vc_del
+PREHOOK: query: select a from ice_vc_del order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc_del
+#### A masked pattern was here ####
+POSTHOOK: query: select a from ice_vc_del order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_vc_del
+#### A masked pattern was here ####
+1
+2
+PREHOOK: query: delete from ice_vc_del where a = 1 or partition__spec__id = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc_del
+PREHOOK: Output: default@ice_vc_del
+POSTHOOK: query: delete from ice_vc_del where a = 1 or partition__spec__id = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_vc_del
+POSTHOOK: Output: default@ice_vc_del
+PREHOOK: query: select a from ice_vc_del order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc_del
+#### A masked pattern was here ####
+POSTHOOK: query: select a from ice_vc_del order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_vc_del
+#### A masked pattern was here ####
+PREHOOK: query: create table ice_vc_cow (a int) stored by iceberg stored as parquet
+  tblproperties ('format-version'='2', 'write.delete.mode'='copy-on-write')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_vc_cow
+POSTHOOK: query: create table ice_vc_cow (a int) stored by iceberg stored as parquet
+  tblproperties ('format-version'='2', 'write.delete.mode'='copy-on-write')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_vc_cow
+PREHOOK: query: insert into ice_vc_cow values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_vc_cow
+POSTHOOK: query: insert into ice_vc_cow values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_vc_cow
+PREHOOK: query: insert into ice_vc_cow values (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_vc_cow
+POSTHOOK: query: insert into ice_vc_cow values (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_vc_cow
+PREHOOK: query: delete from ice_vc_cow where a = 1 and partition__spec__id = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc_cow
+PREHOOK: Output: default@ice_vc_cow
+POSTHOOK: query: delete from ice_vc_cow where a = 1 and partition__spec__id = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_vc_cow
+POSTHOOK: Output: default@ice_vc_cow
+PREHOOK: query: select a from ice_vc_cow order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc_cow
+#### A masked pattern was here ####
+POSTHOOK: query: select a from ice_vc_cow order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_vc_cow
+#### A masked pattern was here ####
+1
+2
+PREHOOK: query: create table ice_vc_upd (a int, b string) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_vc_upd
+POSTHOOK: query: create table ice_vc_upd (a int, b string) stored by iceberg stored as parquet tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_vc_upd
+PREHOOK: query: insert into ice_vc_upd values (1, 'x')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_vc_upd
+POSTHOOK: query: insert into ice_vc_upd values (1, 'x')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_vc_upd
+PREHOOK: query: insert into ice_vc_upd values (2, 'x')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_vc_upd
+POSTHOOK: query: insert into ice_vc_upd values (2, 'x')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_vc_upd
+PREHOOK: query: update ice_vc_upd set b = 'y' where a = 1 or partition__spec__id = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc_upd
+PREHOOK: Output: default@ice_vc_upd
+PREHOOK: Output: default@ice_vc_upd
+POSTHOOK: query: update ice_vc_upd set b = 'y' where a = 1 or partition__spec__id = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_vc_upd
+POSTHOOK: Output: default@ice_vc_upd
+POSTHOOK: Output: default@ice_vc_upd
+PREHOOK: query: select a, b from ice_vc_upd order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_vc_upd
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b from ice_vc_upd order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_vc_upd
+#### A masked pattern was here ####
+1	y
+2	y
