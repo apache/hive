@@ -68,16 +68,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     if (j.getJoinType().equals(JoinRelType.INNER) || j.isSemiJoin() || j.getJoinType().equals(JoinRelType.ANTI)) {
       Double selectivity =  computeInnerJoinSelectivity(j, mq, predicate);
       if (j.getJoinType().equals(JoinRelType.ANTI)) {
-        Pair<Boolean, RexNode> predInfo = getCombinedPredicateForJoin(j, predicate);
-        if (!predInfo.getKey()) {
-          FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(j, mq);
-          Double filterSelectivity = estimator.estimateSelectivity(predInfo.getValue());
-          // inverting the fallback values used for an unknown NDV would lower the estimate: keep every row instead
-          if (filterSelectivity == null || estimator.isUnknownSeen()) {
-            return 1.0;
-          }
-        }
-        return 1 - selectivity;
+        return antiJoinSelectivity(j, mq, predicate, selectivity);
       }
       return selectivity;
     } else if (j.getJoinType().equals(JoinRelType.LEFT) ||
@@ -99,10 +90,23 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     return selectivity != null ? selectivity : 1.0;
   }
 
+  private Double antiJoinSelectivity(Join j, RelMetadataQuery mq, RexNode predicate, Double selectivity) {
+    Pair<Boolean, RexNode> predInfo = getCombinedPredicateForJoin(j, predicate);
+    if (Boolean.FALSE.equals(predInfo.getKey())) {
+      FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(j, mq);
+      Double filterSelectivity = estimator.estimateSelectivity(predInfo.getValue());
+      // inverting the fallback values used for an unknown NDV would lower the estimate: keep every row instead
+      if (filterSelectivity == null || estimator.isUnknownSeen()) {
+        return 1.0;
+      }
+    }
+    return 1 - selectivity;
+  }
+
   private Double computeInnerJoinSelectivity(Join j, RelMetadataQuery mq, RexNode predicate) {
     Pair<Boolean, RexNode> predInfo =
         getCombinedPredicateForJoin(j, predicate);
-    if (!predInfo.getKey()) {
+    if (Boolean.FALSE.equals(predInfo.getKey())) {
       return noFilteringIfUnknown(new FilterSelectivityEstimator(j, mq).estimateSelectivity(predInfo.getValue()));
     }
 
