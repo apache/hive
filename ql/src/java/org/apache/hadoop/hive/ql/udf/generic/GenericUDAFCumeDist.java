@@ -33,6 +33,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 
+/**
+ * Generic UDAF for the CUME_DIST window function.
+ */
 @Description(
         name = "cume_dist",
         value = "_FUNC_(x) - The CUME_DIST function (defined as the inverse of percentile in some " +

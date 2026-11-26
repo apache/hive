@@ -36,6 +36,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+/**
+ * Generic UDAF for the LAST_VALUE window function.
+ */
 @Description(name = "last_value", value = "_FUNC_(x)")
 @WindowFunctionDescription(
   supportsWindow = true, pivotResult = false, impliesOrder = true, supportsNullTreatment = true)
