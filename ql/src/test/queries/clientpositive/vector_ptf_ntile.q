@@ -125,14 +125,170 @@ ntile(3) over (partition by name order by mynumber) as nt,
 sum(mynumber) over (partition by name order by mynumber) as s
 from vector_ptf_ntile_int;
 
--- NOT VECTORIZED: a non-constant number of buckets falls back to row mode, which takes the value
--- from the first row of each partition
-explain vectorization detail select name, rowindex,
-ntile(rowindex) over (partition by name order by rowindex) as nt
-from vector_ptf_ntile_int;
+-- Non-constant number of buckets: taken from the first row of each partition, as in row mode.
+-- Each partition of vector_ptf_ntile_buckets holds its number of buckets (nb) in its first row by
+-- ord; the later rows hold NULL, 0, negative and other counts, which must not be read.
+DROP TABLE IF EXISTS vector_ptf_ntile_buckets;
+
+CREATE TABLE vector_ptf_ntile_buckets(k int, ord int, nb int) stored as orc;
+
+INSERT INTO vector_ptf_ntile_buckets values
+-- a single bucket
+(1, 1, 1), (1, 2, NULL), (1, 3, 0), (1, 4, -3), (1, 5, 7),
+-- fewer buckets than rows, with a remainder: 7 rows in 2 buckets
+(3, 6, 2), (3, 7, 0), (3, 8, NULL), (3, 9, 100), (3, 10, -1), (3, 11, 2), (3, 12, 5),
+-- fewer buckets than rows, without a remainder: 6 rows in 3 buckets
+(2, 13, 3), (2, 14, NULL), (2, 15, 0), (2, 16, 1), (2, 17, -6), (2, 18, 4),
+-- as many buckets as rows
+(4, 19, 4), (4, 20, 0), (4, 21, NULL), (4, 22, 1),
+-- more buckets than rows: the largest int
+(10, 23, 2147483647), (10, 24, NULL), (10, 25, 0),
+-- a negative number of buckets larger in magnitude than the partition: one row per bucket
+(-4, 26, -4), (-4, 27, 0), (-4, 28, NULL),
+-- a single row
+(5, 29, -2);
+
+set hive.vectorized.execution.ptf.enabled=false;
+
+select k, ord, nb,
+ntile(nb) over (partition by k order by ord) as nt
+from vector_ptf_ntile_buckets;
+
+select k,
+ntile(k * 2) over (partition by k) as nt
+from vector_ptf_ntile_buckets;
+
+select k, ord,
+ntile(k) over (partition by k order by ord) as nt
+from vector_ptf_ntile_buckets;
 
 select name, rowindex,
 ntile(rowindex) over (partition by name order by rowindex) as nt
+from vector_ptf_ntile_int;
+
+select name, rowindex, mynumber,
+ntile(mynumber % 8 + 1) over (partition by name order by mynumber desc nulls last, rowindex) as nt
+from vector_ptf_ntile_int;
+
+select k, ord, nb,
+rank() over (partition by k order by ord) as r,
+ntile(3) over (partition by k order by ord) as nt3,
+ntile(nb) over (partition by k order by ord) as nt,
+ntile(k * 2) over (partition by k order by ord) as nt2,
+ntile(k) over (partition by k order by ord) as ntk,
+sum(nb) over (partition by k order by ord) as s
+from vector_ptf_ntile_buckets;
+
+set hive.vectorized.execution.ptf.enabled=true;
+
+-- column argument
+explain vectorization detail select k, ord, nb,
+ntile(nb) over (partition by k order by ord) as nt
+from vector_ptf_ntile_buckets;
+
+select k, ord, nb,
+ntile(nb) over (partition by k order by ord) as nt
+from vector_ptf_ntile_buckets;
+
+-- expression argument; with PARTITION BY only, a batch holds several rows of the partition
+explain vectorization detail select k,
+ntile(k * 2) over (partition by k) as nt
+from vector_ptf_ntile_buckets;
+
+select k,
+ntile(k * 2) over (partition by k) as nt
+from vector_ptf_ntile_buckets;
+
+-- partition key argument, which is not buffered but restored when the partition is forwarded
+explain vectorization detail select k, ord,
+ntile(k) over (partition by k order by ord) as nt
+from vector_ptf_ntile_buckets;
+
+select k, ord,
+ntile(k) over (partition by k order by ord) as nt
+from vector_ptf_ntile_buckets;
+
+-- order key argument
+select name, rowindex,
+ntile(rowindex) over (partition by name order by rowindex) as nt
+from vector_ptf_ntile_int;
+
+-- expression argument, read from the first row in ORDER BY order rather than insertion order
+select name, rowindex, mynumber,
+ntile(mynumber % 8 + 1) over (partition by name order by mynumber desc nulls last, rowindex) as nt
+from vector_ptf_ntile_int;
+
+-- constant and non-constant ntile mixed with streaming (rank) and buffered (sum) evaluators while
+-- spilling every batch to disk: the column (nb) and scratch column (k * 2) arguments are read back
+-- from spilled batches, and the partition key (k) is restored when they are replayed
+set hive.vectorized.ptf.max.memory.buffering.batch.count=1;
+
+select k, ord, nb,
+rank() over (partition by k order by ord) as r,
+ntile(3) over (partition by k order by ord) as nt3,
+ntile(nb) over (partition by k order by ord) as nt,
+ntile(k * 2) over (partition by k order by ord) as nt2,
+ntile(k) over (partition by k order by ord) as ntk,
+sum(nb) over (partition by k order by ord) as s
+from vector_ptf_ntile_buckets;
+
+set hive.vectorized.ptf.max.memory.buffering.batch.count=25;
+
+-- Cast arguments, again taken from the first row of each partition by ord; the later rows hold
+-- values that must not be read, such as non-numeric strings and 4294967296 (0 as an int)
+DROP TABLE IF EXISTS vector_ptf_ntile_casts;
+
+CREATE TABLE vector_ptf_ntile_casts(k int, ord int, s string, b bigint) stored as orc;
+
+INSERT INTO vector_ptf_ntile_casts values
+(1, 1, '2', 4294967297), (1, 2, 'x', NULL), (1, 3, NULL, 4294967296),
+(2, 4, '3', 4294967299), (2, 5, '0', 0), (2, 6, NULL, NULL), (2, 7, '-5', -1), (2, 8, '9', 9),
+(2, 9, 'y', 4294967296), (2, 10, '1', 1),
+(3, 11, '1', -4294967294), (3, 12, NULL, 0), (3, 13, '-1', NULL), (3, 14, '8', 8);
+
+set hive.vectorized.execution.ptf.enabled=false;
+
+select k, ord, s,
+ntile(cast(s as int)) over (partition by k order by ord) as nt,
+sum(cast(s as int)) over (partition by k order by ord) as su
+from vector_ptf_ntile_casts;
+
+select k, ord, b,
+ntile(cast(b as int)) over (partition by k order by ord) as nt
+from vector_ptf_ntile_casts;
+
+set hive.vectorized.execution.ptf.enabled=true;
+
+-- a string argument cast to int: the cast expression must be initialized before batches are
+-- processed, for ntile and for any other function
+explain vectorization detail select k, ord, s,
+ntile(cast(s as int)) over (partition by k order by ord) as nt,
+sum(cast(s as int)) over (partition by k order by ord) as su
+from vector_ptf_ntile_casts;
+
+select k, ord, s,
+ntile(cast(s as int)) over (partition by k order by ord) as nt,
+sum(cast(s as int)) over (partition by k order by ord) as su
+from vector_ptf_ntile_casts;
+
+-- a bigint argument cast to int, which vectorized mode does not narrow: the first rows,
+-- 4294967297, 4294967299 and -4294967294, are 1, 3 and 2 buckets as ints
+explain vectorization detail select k, ord, b,
+ntile(cast(b as int)) over (partition by k order by ord) as nt
+from vector_ptf_ntile_casts;
+
+select k, ord, b,
+ntile(cast(b as int)) over (partition by k order by ord) as nt
+from vector_ptf_ntile_casts;
+
+-- NOT VECTORIZED: a non-positive constant number of buckets
+explain vectorization select k,
+ntile(0) over (partition by k order by ord) as nt
+from vector_ptf_ntile_buckets;
+
+-- NOT VECTORIZED: lead and lag in the number of buckets expression
+explain vectorization select name, rowindex,
+ntile(lag(rowindex, 1, 4)) over (partition by name order by rowindex) as nt
 from vector_ptf_ntile_int;
 
 -- Default reducer batch size: each partition arrives as a single batch spanning several buckets
@@ -149,3 +305,15 @@ set hive.vectorized.execution.ptf.enabled=true;
 select name, rowindex, mynumber,
 ntile(10) over (partition by name) as nt
 from vector_ptf_ntile_int;
+
+set hive.vectorized.execution.ptf.enabled=false;
+
+select k,
+ntile(k * 2) over (partition by k) as nt
+from vector_ptf_ntile_buckets;
+
+set hive.vectorized.execution.ptf.enabled=true;
+
+select k,
+ntile(k * 2) over (partition by k) as nt
+from vector_ptf_ntile_buckets;

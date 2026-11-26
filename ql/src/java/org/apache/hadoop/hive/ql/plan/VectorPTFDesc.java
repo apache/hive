@@ -170,8 +170,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
           SupportedFunctionType.RANK,
           SupportedFunctionType.DENSE_RANK,
           SupportedFunctionType.PERCENT_RANK,
-          SupportedFunctionType.CUME_DIST,
-          SupportedFunctionType.NTILE);
+          SupportedFunctionType.CUME_DIST);
 
   private TypeInfo[] reducerBatchTypeInfos;
   private DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations;
