@@ -179,6 +179,7 @@ public class TezCompiler extends TaskCompiler {
     OptimizeTezProcContext procCtx = new OptimizeTezProcContext(conf, pCtx);
 
     if (procCtx.conf.getBoolVar(ConfVars.PARTIAL_AGGR_JOIN_TRANSPOSE)
+        && pCtx.getContext().isCboSucceeded()
         && procCtx.conf.getBoolVar(ConfVars.HIVE_MAPSIDE_AGGREGATE)
         && !procCtx.conf.getBoolVar(ConfVars.HIVE_GROUPBY_SKEW)) {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);

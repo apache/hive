@@ -1818,7 +1818,7 @@ public class HiveConf extends Configuration {
         "Whether to push a map-side partial aggregate below an inner join, to the join input that holds all\n"
         + "aggregate arguments. The pushed aggregate runs in the vertex of the join input, before its existing\n"
         + "shuffle. The map-side aggregate above the join stays and merges the partial results before the shuffle\n"
-        + "of the aggregate."),
+        + "of the aggregate. Applies only to queries planned by CBO."),
     PARTIAL_AGGR_JOIN_TRANSPOSE_MIN_REDUCTION("hive.optimize.partial.aggr.join.transpose.min.reduction", 0.8f,
         "Hash aggregation of a pushed partial aggregate is turned off when the ratio between hash table size and\n"
         + "input rows is bigger than this number, and its rows then pass through as partial results."
