@@ -67,4 +67,11 @@ public class NonNativeAcidMaterializedViewASTBuilder extends MaterializedViewAST
             .map(fieldSchema -> createQualifiedColumnNode(tableName, fieldSchema.getName()))
             .collect(Collectors.toList());
   }
+
+  @Override
+  protected List<ASTNode> createAcidDistributeNodesInternal(String tableName) {
+    return mvTable.getStorageHandler().acidDistributeColumns(mvTable, Context.Operation.DELETE).stream()
+            .map(fieldSchema -> createQualifiedColumnNode(tableName, fieldSchema.getName()))
+            .collect(Collectors.toList());
+  }
 }

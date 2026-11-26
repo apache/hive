@@ -132,6 +132,16 @@ import static java.util.Collections.singletonList;
  *    When any base tables has delete operations the {@link HiveTableScan} operators are fetching the deleted rows too
  *    and {@link HiveRowIsDeletedPropagator} ensures that extra filter conditions are added to address these.
  *    </li>
+ *    <li>In case of aggregate the incremental rebuild plan is transformed into a MERGE equivalent multi-insert with
+ *    a single delete branch, like the rewritten MERGE statement. It deletes both the old version of the updated rows
+ *    and the rows of the groups which became empty, so that all deletes of a data file reach the same writer.
+ *    <ul>
+ *      <li>In case of native acid views the delete branch selects and sorts by ROW__ID and the deleted rows are
+ *      distributed by the bucket id of ROW__ID.</li>
+ *      <li>In case of non-native views (Iceberg) the delete branch selects, distributes and sorts by the columns
+ *      provided by the StorageHandler (Iceberg V3: distributed by FILE__PATH, no sort).</li>
+ *    </ul>
+ *    </li>
  * </ul>
  */
 
@@ -579,7 +589,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
           MaterializedViewASTBuilder astBuilder)
           throws SemanticException {
     // Replace INSERT OVERWRITE by MERGE equivalent rewriting. The update branch is
-    // split to a delete (updateDeleteNode) and an insert (updateInsertNode) branch
+    // split to a delete (updateDeleteNode) and an insert (updateInsertNode) branch.
+    // The delete branch also deletes the groups which became empty, if there is a DELETE disjunct.
     // Here we need to do this complex AST rewriting that generates the same plan
     // that a MERGE clause would generate because CBO does not support MERGE yet.
     // TODO: Support MERGE as first class member in CBO to simplify this logic.
@@ -636,7 +647,17 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     // We bypass the OR clause and select the first disjunct for the Update branch
     ParseDriver.adaptor.setChild(whereClauseInUpdate, 0, disjuncts.get(Context.DestClausePrefix.UPDATE));
     ASTNode updateDeleteNode = (ASTNode) ParseDriver.adaptor.dupTree(updateInsertNode);
-    // 4.2) Adding acid sort columns (ROW__ID in case of native acid query StorageHandler otherwise)
+    // 4.2) The rows of the groups which became empty are deleted by the same branch as the old version of the
+    // updated rows, so that all deletes of a data file reach the same DV writer
+    ASTNode deleteDisjunct = disjuncts.get(Context.DestClausePrefix.DELETE);
+    if (deleteDisjunct != null) {
+      ASTNode whereClauseInUpdateDelete = findWhereClause(updateDeleteNode);
+      ASTNode orNode = (ASTNode) ParseDriver.adaptor.create(HiveParser.KW_OR, "or");
+      ParseDriver.adaptor.addChild(orNode, whereClauseInUpdateDelete.getChild(0));
+      ParseDriver.adaptor.addChild(orNode, ParseDriver.adaptor.dupTree(deleteDisjunct));
+      ParseDriver.adaptor.setChild(whereClauseInUpdateDelete, 0, orNode);
+    }
+    // 4.3) Adding acid sort columns (ROW__ID in case of native acid query StorageHandler otherwise)
     ASTNode selectNodeInUpdateDelete = (ASTNode) updateDeleteNode.getChild(1);
     if (selectNodeInUpdateDelete.getType() != HiveParser.TOK_SELECT) {
       throw new SemanticException("TOK_SELECT expected in incremental rewriting got "
@@ -652,10 +673,18 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     for (int i = 0; i < selectExprNodesInUpdate.size(); ++i) {
       selectNodeInUpdateDelete.insertChild(i, selectExprNodesInUpdate.get(i));
     }
-    // 4.3) Finally, we add SORT clause, this is needed for the UPDATE.
-    ASTNode sortExprNode = astBuilder.createSortNodes(
-            astBuilder.createAcidSortNodes((ASTNode) subqueryNodeInputROJ.getChild(1)));
-    ParseDriver.adaptor.addChild(updateDeleteNode, sortExprNode);
+    // 4.4) Finally, we add DISTRIBUTE and SORT clauses, these are needed for the UPDATE.
+    // Native acid: no DISTRIBUTE, SORT BY ROW__ID; the deleted rows are distributed by the bucket id of ROW__ID.
+    // Non-native acid: DISTRIBUTE and SORT by the columns of the StorageHandler (Iceberg V3: DISTRIBUTE BY FILE__PATH).
+    ASTNode mvAliasNode = (ASTNode) subqueryNodeInputROJ.getChild(1);
+    List<ASTNode> distributeKeyNodes = astBuilder.createAcidDistributeNodes(mvAliasNode);
+    if (!distributeKeyNodes.isEmpty()) {
+      ParseDriver.adaptor.addChild(updateDeleteNode, astBuilder.createDistributeNodes(distributeKeyNodes));
+    }
+    List<ASTNode> sortKeyNodes = astBuilder.createAcidSortNodes(mvAliasNode);
+    if (!sortKeyNodes.isEmpty()) {
+      ParseDriver.adaptor.addChild(updateDeleteNode, astBuilder.createSortNodes(sortKeyNodes));
+    }
     // 5) Modify INSERT branch condition. In particular, we need to modify the
     // WHERE clause and pick up the disjunct for the Insert branch.
     ASTNode whereClauseInInsert = findWhereClause(insertNode);
@@ -721,9 +750,6 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     }
 
     fixUpASTAggregateIncrementalRebuild(subqueryNodeInputROJ, updateNode, disjunctMap, astBuilder);
-    addDeleteBranch(updateNode, subqueryNodeInputROJ, disjunctMap.get(Context.DestClausePrefix.DELETE), astBuilder);
-
-    ctx.addDestNamePrefix(4, Context.DestClausePrefix.DELETE);
   }
 
   private ASTNode findWhereClause(ASTNode updateNode) throws SemanticException {
@@ -739,32 +765,6 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     }
 
     return whereClauseInUpdate;
-  }
-
-  private void addDeleteBranch(ASTNode updateNode, ASTNode subqueryNodeInputROJ, ASTNode predicate,
-                               MaterializedViewASTBuilder astBuilder)
-          throws SemanticException {
-    ASTNode updateParent = (ASTNode) updateNode.getParent();
-    ASTNode deleteNode = (ASTNode) ParseDriver.adaptor.dupTree(updateNode);
-    deleteNode.setParent(updateParent);
-    updateParent.addChild(deleteNode);
-
-    // 1) Transform first INSERT branch into a DELETE
-    ASTNode selectNodeInDelete = (ASTNode) deleteNode.getChild(1);
-    if (selectNodeInDelete.getType() != HiveParser.TOK_SELECT) {
-      throw new SemanticException("TOK_SELECT expected in incremental rewriting");
-    }
-    // 2) Remove all fields
-    while (selectNodeInDelete.getChildCount() > 0) {
-      selectNodeInDelete.deleteChild(0);
-    }
-    // 3) Adding acid sort columns
-    astBuilder.createDeleteSelectNodes(subqueryNodeInputROJ.getChild(1).getText())
-            .forEach(astNode -> ParseDriver.adaptor.addChild(selectNodeInDelete, astNode));
-
-    // 4) Add filter condition to delete
-    ASTNode whereClauseInDelete = findWhereClause(deleteNode);
-    ParseDriver.adaptor.setChild(whereClauseInDelete, 0, predicate);
   }
 
   private void fixUpASTJoinInsertIncrementalRebuild(ASTNode newAST) throws SemanticException {

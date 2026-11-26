@@ -28,6 +28,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild.AlterMaterializedViewRebuildAnalyzer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 import java.util.List;
@@ -36,7 +37,8 @@ import java.util.List;
  * This rule will perform a rewriting to prepare the plan for incremental
  * view maintenance in case there exist aggregation operator, so we can
  * avoid the INSERT OVERWRITE and use a MERGE statement instead.
- *
+ * <br>
+ * <pre>
  * In particular, the INSERT OVERWRITE maintenance will look like this
  * (in SQL):
  * INSERT OVERWRITE mv
@@ -50,8 +52,9 @@ import java.util.List;
  *   WHERE TAB_A.ROW_ID &gt; 5
  *   GROUP BY a, b) inner_subq
  * GROUP BY a, b;
- *
+ * </pre>
  * We need to transform that into:
+ * <pre>
  * MERGE INTO mv
  * USING (
  *   SELECT a, b, SUM(x) AS s, COUNT(*) AS c --NEW DATA
@@ -64,24 +67,39 @@ import java.util.List;
  *   THEN UPDATE SET mv.s = mv.s + source.s, mv.c = mv.c + source.c
  * WHEN NOT MATCHED
  *   THEN INSERT VALUES (source.a, source.b, s, c);
- *
+ * </pre>
  * To be precise, we need to convert it into a MERGE rewritten as:
+ * <pre>
  * FROM (select *, true flag from mv) mv right outer join _source_ source
  * ON (mv.a &lt;=&gt; source.a AND mv.b &lt;=&gt; source.b)
- * INSERT INTO TABLE mv
- *   SELECT source.a, source.b, s, c
- *   WHERE mv.flag IS NULL
- * INSERT INTO TABLE mv
- *   SELECT mv.ROW__ID, source.a, source.b,
+ * INSERT INTO TABLE mv                     &lt;- (insert the new version of the updated rows)
+ *   SELECT source.a, source.b,
  *     CASE WHEN mv.s IS NULL AND source.s IS NULL THEN NULL
  *          WHEN mv.s IS NULL THEN source.s
  *          WHEN source.s IS NULL THEN mv.s
  *          ELSE mv.s + source.s END,
  *          &lt;same CASE statement for mv.c + source.c like above&gt;
  *   WHERE mv.flag
- *   SORT BY mv.ROW__ID;
+ * INSERT INTO TABLE mv                     &lt;- (delete the old version of the updated rows)
+ *   SELECT mv.ROW__ID
+ *   WHERE mv.flag
+ *   SORT BY mv.ROW__ID
+ * INSERT INTO TABLE mv                     &lt;- (insert new rows into the view)
+ *   SELECT source.a, source.b, s, c
+ *   WHERE mv.flag IS NULL;
+ * </pre>
+ * The update is split to an insert and a delete branch.
+ * <ul>
+ *   <li>In case of native ACID views the delete branch selects ROW__ID and is sorted by it. It has no distribute
+ *   keys: the deleted rows are distributed by the bucket id of ROW__ID, like the deleted rows of any ACID
+ *   DELETE/UPDATE/MERGE.</li>
+ *   <li>In case of non-native views (Iceberg) the delete branch selects the delete columns of the storage handler
+ *   instead of ROW__ID, it is distributed by the storage handler's distribute columns (FILE__PATH in case of V3) and
+ *   sorted by its sort columns (none in case of V3).</li>
+ * </ul>
  *
  * @see org.apache.hadoop.hive.ql.parse.CalcitePlanner
+ * @see AlterMaterializedViewRebuildAnalyzer
  */
 public class HiveAggregateInsertIncrementalRewritingRule extends HiveAggregateIncrementalRewritingRuleBase<
         HiveAggregateIncrementalRewritingRuleBase.IncrementalComputePlan> {
