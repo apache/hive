@@ -37,5 +37,10 @@ spec:
         - name: operator
           image: "{{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}"
           imagePullPolicy: {{ .Values.operator.image.pullPolicy }}
+          {{- with .Values.operator.watchNamespaces }}
+          env:
+            - name: HIVE_OPERATOR_WATCH_NAMESPACES
+              value: {{ join "," . | quote }}
+          {{- end }}
           resources:
             {{- toYaml .Values.operator.resources | nindent 12 }}

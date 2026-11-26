@@ -34,6 +34,11 @@ operator:
       memory: 256Mi
     limits:
       memory: 512Mi
+  # Namespaces watched for HiveCluster resources:
+  #   []                 -> only the release namespace
+  #   ["ns1", "ns2"]     -> custom namespaces
+  #   ["*"]              -> all namespaces in the cluster
+  watchNamespaces: []
 
 # -- HiveCluster Instance Configuration ---------------------------------------
 

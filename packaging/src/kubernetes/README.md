@@ -1313,6 +1313,7 @@ setup is needed — simply connect to HS2 and the operator wakes LLAP/TezAM as n
 | `operator.image.tag` | `operator-4.3.0-SNAPSHOT` | Operator image tag |
 | `operator.image.pullPolicy` | `IfNotPresent` | Image pull policy |
 | `operator.resources` | `{requests: {cpu: 200m, memory: 256Mi}, limits: {memory: 512Mi}}` | Operator pod resources |
+| `operator.watchNamespaces` | `[]` | Namespaces watched for HiveCluster resources. Defaults to the release namespace when empty or unset. Specify a list of namespaces (e.g., ["ns1", "ns2"]) or ["*"] to watch all namespaces |
 
 ### Cluster (HiveCluster CR)
 

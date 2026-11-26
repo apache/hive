@@ -19,6 +19,11 @@
 
 package org.apache.hive.kubernetes.operator;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.config.ResolvedControllerConfiguration;
@@ -34,6 +39,8 @@ public final class HiveOperatorMain {
 
   private static final Logger LOG =
       LoggerFactory.getLogger(HiveOperatorMain.class);
+  private static final String WATCH_NAMESPACES_ENV_KEY = "HIVE_OPERATOR_WATCH_NAMESPACES";
+  private static final String WATCH_ALL_NAMESPACES_VALUE = "*";
 
   private HiveOperatorMain() {
   }
@@ -47,11 +54,33 @@ public final class HiveOperatorMain {
     ControllerConfiguration<HiveCluster> baseConfig =
         operator.getConfigurationService().getConfigurationFor(reconciler);
 
-    // Watch only our own namespace: cluster-wide, a HiveCluster elsewhere using a field this
+    // By Default watch only our own namespace: cluster-wide, a HiveCluster elsewhere using a field this
     // build does not know fails to deserialise in the informer, which stops the process.
-    baseConfig = ControllerConfigurationOverrider.override(baseConfig)
-        .watchingOnlyCurrentNamespace().build();
-    LOG.info("Watching only this operator's own namespace");
+    // Watching other namespaces is configurable via HIVE_OPERATOR_WATCH_NAMESPACES: a comma-separated
+    // list of namespaces, or "*" for all namespaces.
+    String watchNamespaces = System.getenv(WATCH_NAMESPACES_ENV_KEY);
+    String watchNsValue = watchNamespaces == null ? "" : watchNamespaces.trim();
+    ControllerConfigurationOverrider<HiveCluster> overrider = ControllerConfigurationOverrider.override(baseConfig);
+    if (watchNsValue.isEmpty()) {
+      overrider.watchingOnlyCurrentNamespace();
+      LOG.info("Watching only this operator's own namespace");
+    } else if (WATCH_ALL_NAMESPACES_VALUE.equals(watchNsValue)) {
+      overrider.watchingAllNamespaces();
+      LOG.info("Watching all namespaces in the cluster");
+    } else {
+      Set<String> namespaces = Arrays.stream(watchNsValue.split(","))
+          .map(String::trim)
+          .filter(ns -> !ns.isEmpty())
+          .collect(Collectors.toCollection(HashSet::new));
+      if (namespaces.isEmpty() || namespaces.contains(WATCH_ALL_NAMESPACES_VALUE)) {
+        throw new IllegalArgumentException("Invalid " + WATCH_NAMESPACES_ENV_KEY + "='"
+            + watchNamespaces + "': expected a comma-separated list of namespaces, or '"
+            + WATCH_ALL_NAMESPACES_VALUE + "' for all namespaces");
+      }
+      overrider.settingNamespaces(namespaces);
+      LOG.info("Watching namespaces: {}", namespaces);
+    }
+    baseConfig = overrider.build();
 
     HiveWorkflowSpec workflowSpec = new HiveWorkflowSpec();
     ((ResolvedControllerConfiguration<HiveCluster>) baseConfig)
