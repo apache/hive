@@ -126,6 +126,7 @@ public class HMSCatalogAdapter implements Closeable {
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
   private final ViewCatalog asViewCatalog;
+  private final HMSViewProperties viewProperties;
   private final IcebergAuthorizer icebergAuthorizer;
   private final IcebergVendedCredentialProvider credentialProvider;
   private final List<IcebergMetricsReporter> metricsReporters;
@@ -149,6 +150,7 @@ public class HMSCatalogAdapter implements Closeable {
     this.catalog = catalog;
     this.asNamespaceCatalog = (SupportsNamespaces) catalog;
     this.asViewCatalog = (ViewCatalog) catalog;
+    this.viewProperties = new HMSViewProperties(catalog);
     this.icebergAuthorizer = icebergAuthorizer;
     this.credentialProvider = credentialProvider;
     this.metricsReporters = metricsReporters;
@@ -479,8 +481,9 @@ public class HMSCatalogAdapter implements Closeable {
 
   private LoadViewResponse createView(Map<String, String> vars, Object body) {
     Namespace namespace = namespaceFromPathVars(vars);
-    CreateViewRequest request = castRequest(CreateViewRequest.class, body);
-    return CatalogHandlers.createView(asViewCatalog, namespace, request);
+    CreateViewRequest request = viewProperties.withoutReservedProperties(castRequest(CreateViewRequest.class, body));
+    return viewProperties.withViewAuthorization(TableIdentifier.of(namespace, request.name()),
+        CatalogHandlers.createView(asViewCatalog, namespace, request));
   }
 
   private RESTResponse viewExists(Map<String, String> vars) {
@@ -491,13 +494,13 @@ public class HMSCatalogAdapter implements Closeable {
 
   private LoadViewResponse loadView(Map<String, String> vars) {
     TableIdentifier ident = viewIdentFromPathVars(vars);
-    return CatalogHandlers.loadView(asViewCatalog, ident);
+    return viewProperties.withViewAuthorization(ident, CatalogHandlers.loadView(asViewCatalog, ident));
   }
 
   private LoadViewResponse updateView(Map<String, String> vars, Object body) {
     TableIdentifier ident = viewIdentFromPathVars(vars);
-    UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
-    return CatalogHandlers.updateView(asViewCatalog, ident, request);
+    UpdateTableRequest request = viewProperties.withoutReservedProperties(castRequest(UpdateTableRequest.class, body));
+    return viewProperties.withViewAuthorization(ident, CatalogHandlers.updateView(asViewCatalog, ident, request));
   }
 
   private RESTResponse renameView(Object body) {
@@ -513,8 +516,11 @@ public class HMSCatalogAdapter implements Closeable {
 
   private LoadViewResponse registerView(Map<String, String> vars, Object body) {
     Namespace namespace = namespaceFromPathVars(vars);
+    // The registered metadata file is not rewritten, so it keeps any HMS-managed properties; they are not copied
+    // into HMS (HMSTablePropertyHelper) and are set from HMS in the response (HMSViewProperties).
     RegisterViewRequest request = castRequest(RegisterViewRequest.class, body);
-    return CatalogHandlers.registerView(asViewCatalog, namespace, request);
+    return viewProperties.withViewAuthorization(TableIdentifier.of(namespace, request.name()),
+        CatalogHandlers.registerView(asViewCatalog, namespace, request));
   }
 
   private LoadTableResponse withCredentials(

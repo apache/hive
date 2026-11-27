@@ -213,16 +213,40 @@ public class MetastoreUtil {
         maxHiveTablePropertySize,
         null,
         sqlText);
+    // Take the Authorized state reported with this view version, the one the SQL above comes from
+    applyReportedViewAuthorization(view, hmsTable, false);
 
     hmsTable.setCreateTime((int) (metadata.version(1).timestampMillis() / 1000));
     hmsTable.setLastAccessTime((int) (metadata.currentVersion().timestampMillis() / 1000));
-    hmsTable.setOwner(
-        PropertyUtil.propertyAsString(
-            metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()));
+    // Keep the owner HMS recorded. Only a view built without HMS (REST catalog client) takes it from the property,
+    // which then holds the owner the HMS REST catalog reports (the one HMS recorded), not a client-requested owner:
+    // HiveHadoopUtil.resolveTableOwner and its client-supplied-owner setting apply to creation only.
+    if (StringUtils.isEmpty(hmsTable.getOwner())) {
+      hmsTable.setOwner(
+          PropertyUtil.propertyAsString(
+              metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()));
+    }
 
     String catalogType = IcebergCatalogProperties.getCatalogType(conf);
     if (!StringUtils.isEmpty(catalogType) && !IcebergCatalogProperties.NO_CATALOG_TYPE.equals(catalogType)) {
       hmsTable.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, IcebergCatalogProperties.getCatalogType(conf));
+    }
+  }
+
+  /**
+   * Marks an HMS view {@link HiveCatalog#HMS_VIEW_AUTHORIZED}{@code =false} from the
+   * {@link HiveCatalog#VIEW_AUTHORIZED_PROPERTY} reported with an Iceberg view version: any value other than
+   * {@code true} marks it. A reported state never clears a marker already set.
+   *
+   * @param view the Iceberg view version
+   * @param hmsView the HMS view to mark
+   * @param markWhenUnreported whether to also mark the view when the version reports no state, for a view
+   *     whose properties come from the HMS REST catalog, which always reports it
+   */
+  public static void applyReportedViewAuthorization(View view, Table hmsView, boolean markWhenUnreported) {
+    String authorized = view.properties().get(HiveCatalog.VIEW_AUTHORIZED_PROPERTY);
+    if ((authorized != null || markWhenUnreported) && !"true".equalsIgnoreCase(authorized)) {
+      hmsView.getParameters().put(HiveCatalog.HMS_VIEW_AUTHORIZED, "false");
     }
   }
 
