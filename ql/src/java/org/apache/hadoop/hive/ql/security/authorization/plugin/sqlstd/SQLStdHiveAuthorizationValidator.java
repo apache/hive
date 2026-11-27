@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.Operation2Privilege.IOType;
 
 public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValidator {
@@ -108,6 +110,14 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
     // Compare required privileges and available privileges for each hive object
     for (HivePrivilegeObject hiveObj : hiveObjects) {
 
+      if (hiveObj.getType() == HivePrivilegeObjectType.STORAGEHANDLER_URI) {
+        if (isMetastoreJdbcStorageUri(hiveObj.getObjectName()) && !privController.isUserAdmin()) {
+          SQLAuthorizationUtils.addMissingPrivMsg(
+              Collections.singleton(SQLPrivTypeGrant.ADMIN_PRIV), hiveObj, deniedMessages);
+        }
+        continue;
+      }
+
       RequiredPrivileges requiredPrivs = Operation2Privilege.getRequiredPrivs(hiveOpType, hiveObj,
           ioType);
 
@@ -163,6 +173,10 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
       LOG.debug(msg);
     }
     return listObjs;
+  }
+
+  private static boolean isMetastoreJdbcStorageUri(String uri) {
+    return uri != null && uri.startsWith("jdbc:metastore://");
   }
 
   @Override

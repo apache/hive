@@ -1,3 +1,6 @@
+-- Legacy qtest: METASTORE JDBC helper tables are created in default DB.
+SET hive.storage.jdbc.allow.metastore.database.type=true;
+
 CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
   `CD_ID` bigint,
   `COMMENT` string,
@@ -86,3 +89,5 @@ drop table t1_n2939;
 
 select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939';
 select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2';
+
+SET hive.storage.jdbc.allow.metastore.database.type=false;

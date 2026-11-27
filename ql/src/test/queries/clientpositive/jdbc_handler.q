@@ -2,6 +2,8 @@
 --! qt:dataset:src
 
 set hive.strict.checks.cartesian.product= false;
+-- Legacy qtest: METASTORE JDBC tables live in default DB (not sys).
+SET hive.storage.jdbc.allow.metastore.database.type=true;
 
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
@@ -167,3 +169,5 @@ INSERT INTO insert_to_ext_derby_table VALUES(false, 10, 100, 2.63, 999.9999, '20
 
 INSERT INTO insert_to_ext_derby_table select * from test_insert_tbl;
 select * from insert_to_ext_derby_table;
+
+SET hive.storage.jdbc.allow.metastore.database.type=false;

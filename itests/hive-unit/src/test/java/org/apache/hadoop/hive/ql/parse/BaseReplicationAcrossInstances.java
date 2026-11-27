@@ -67,6 +67,7 @@ public class BaseReplicationAcrossInstances {
     Map<String, String> localOverrides = new HashMap<String, String>() {{
       put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
       put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+      put(HiveConf.ConfVars.HIVE_STORAGE_JDBC_ALLOW_METASTORE_DATABASE_TYPE.varname, "true");
       // Disable proxy authorization white-list for testing
       put(MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.getVarname(), "false");
     }};
