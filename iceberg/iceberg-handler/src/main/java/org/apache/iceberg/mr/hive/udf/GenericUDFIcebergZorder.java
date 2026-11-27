@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.udf;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.iceberg.util.DateTimeUtil;
 import org.apache.iceberg.util.ZOrderByteUtils;
 
 /**
@@ -151,15 +153,16 @@ public class GenericUDFIcebergZorder extends GenericUDF {
 
       case TIMESTAMP:
         Object tsValue = oi.getPrimitiveJavaObject(value);
-        long tsInMillis;
+        long tsInMicros;
         if (tsValue instanceof org.apache.hadoop.hive.common.type.Timestamp ts) {
-          tsInMillis = ts.toEpochMilli();
+          tsInMicros = ts.toEpochMicro();
         } else if (tsValue instanceof java.sql.Timestamp ts) {
-          tsInMillis = ts.getTime();
+          Instant instant = ts.toInstant();
+          tsInMicros = DateTimeUtil.microsFromInstant(instant);
         } else {
           throw new HiveException("Unsupported TIMESTAMP backing type: " + tsValue.getClass());
         }
-        return ZOrderByteUtils.longToOrderedBytes(tsInMillis, reUseBuffer[position]).array();
+        return ZOrderByteUtils.longToOrderedBytes(tsInMicros, reUseBuffer[position]).array();
 
       case CHAR:
       case VARCHAR:
