@@ -209,6 +209,6 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
   public HiveBatchContext next() {
     advance();
     advanced = false;
-    return new HiveBatchContext(batch, vrbCtx, rowOffset);
+    return new HiveBatchContext(batch, rowOffset);
   }
 }
