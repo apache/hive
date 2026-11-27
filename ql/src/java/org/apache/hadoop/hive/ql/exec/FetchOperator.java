@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
@@ -141,6 +142,18 @@ public class FetchOperator implements Serializable {
     this.job = job;
     this.work = work;
     this.operator = operator;
+    // When the table uses a multi-byte line.delim, propagate it to
+    // Hadoop's TextInputFormat so that LineRecordReader splits records
+    // on the full delimiter sequence instead of the default '\n'.
+    // FetchTask bypasses HiveInputFormat, so we must set it here.
+    if (work.getTblDesc() != null) {
+      String lineDelim = work.getTblDesc().getProperties()
+          .getProperty(serdeConstants.LINE_DELIM);
+      if (lineDelim != null && !lineDelim.isEmpty()
+          && !"\n".equals(lineDelim)) {
+        job.set("textinputformat.record.delimiter", lineDelim);
+      }
+    }
     if (operator instanceof TableScanOperator) {
       Utilities.addTableSchemaToConf(job,
           (TableScanOperator) operator);
