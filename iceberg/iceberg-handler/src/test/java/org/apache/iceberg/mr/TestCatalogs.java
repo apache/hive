@@ -37,6 +37,8 @@ import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.MetadataCachingFileIO;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.types.Types;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -275,9 +277,10 @@ public class TestCatalogs {
     conf.setBoolean(defaultCatalogProperty, true);
     HiveCatalog defaultCatalog = (HiveCatalog) Catalogs.loadCatalog(conf, null).get();
     Assert.assertEquals("true", defaultCatalog.properties().get(catalogProperty));
-    Assert.assertEquals("true",
-            defaultCatalog.newTableOps(TableIdentifier.of("default", "iceberg"))
-                    .io().properties().get(catalogProperty));
+    // the flag selects the metadata caching FileIO, which does not pass it on to Iceberg's own manifest cache
+    FileIO io = defaultCatalog.newTableOps(TableIdentifier.of("default", "iceberg")).io();
+    Assert.assertTrue(io instanceof MetadataCachingFileIO);
+    Assert.assertNull(io.properties().get(catalogProperty));
 
     // set property at catalog level, and that should take precedence over the global property.
     conf.setBoolean(
