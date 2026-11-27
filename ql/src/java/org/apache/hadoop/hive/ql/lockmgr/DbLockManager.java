@@ -387,6 +387,7 @@ public final class DbLockManager implements HiveLockManager{
     try {
       Thread.sleep(nextSleep);
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
   }
 }
