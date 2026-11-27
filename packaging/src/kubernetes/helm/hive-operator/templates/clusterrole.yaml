@@ -50,10 +50,10 @@ rules:
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["create", "patch"]
-  # Pods: read + patch (patch needed for pod-deletion-cost annotation)
+  # Pods: read + patch (pod-deletion-cost) + delete (bulk update / Recreate)
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch", "patch"]
+    verbs: ["get", "list", "watch", "patch", "delete"]
   # PodDisruptionBudgets for graceful autoscaling
   - apiGroups: ["policy"]
     resources: ["poddisruptionbudgets"]
