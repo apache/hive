@@ -753,8 +753,11 @@ public class Hive implements AutoCloseable {
     req.setDeleteData(desc.isDeleteData());
     req.setCascade(desc.isCascade());
     req.setSoftDelete(isSoftDelete);
-    req.setTxnId(txnId);
-    
+    // Avoid flipping the thrift isSet bit when there is no open txn (HIVE-30284).
+    if (txnId > 0) {
+      req.setTxnId(txnId);
+    }
+
     try {
       getMSC().dropDatabase(req);
     } catch (NoSuchObjectException e) {

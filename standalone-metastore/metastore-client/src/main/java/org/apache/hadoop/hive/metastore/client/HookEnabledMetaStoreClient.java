@@ -265,7 +265,11 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
         // The correct way to propagate txnId is passing EnvironmentContext to underlying clients.
         // However, to prevent adding one more method in IMetaStoreClient, we hack Table object here.
         table.setTxnId(req.getTxnId());
-        req.setDeleteManagedDir(false);
+        // deleteManagedDir=false is a soft-delete semantic (async ACID cleaner); don't apply
+        // it to plain cascade drops or the managed dir leaks (HIVE-30284).
+        if (req.isSoftDelete()) {
+          req.setDeleteManagedDir(false);
+        }
       }
       dropTable(table, deleteData, false, false);
     }
