@@ -32,6 +32,8 @@ spring:
     timeout-per-shutdown-phase: 30s
 
 # Actuator endpoints for Kubernetes
+# Served on the server port unless a separate management port is set, e.g.:
+#   -Dmanagement.server.port=8081
 management:
   endpoints:
     web:
@@ -39,7 +41,7 @@ management:
         include: health,prometheus,info
   endpoint:
     health:
-      show-details: always
+      show-details: never
       probes:
         enabled: true
   health:
