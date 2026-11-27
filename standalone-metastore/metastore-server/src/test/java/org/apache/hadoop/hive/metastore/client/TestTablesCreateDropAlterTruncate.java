@@ -120,6 +120,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Map<MetastoreConf.ConfVars, String> msConf = new HashMap<MetastoreConf.ConfVars, String>();
     // Enable trash, so it can be tested
     Map<String, String> extraConf = new HashMap<>();
+    // Smaller than the partition count of the partitioned test table, so batching is exercised
+    extraConf.put(ConfVars.BATCH_RETRIEVE_MAX.getVarname(), "2");
     extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
     extraConf.put(ConfVars.HIVE_IN_TEST.getVarname(), "true");
@@ -750,15 +752,22 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   @Test
   public void testTruncateTablePartitionedDeleteAll() throws Exception {
     // Partitioned table - delete all
+    for (Partition partition : client.listPartitions(partitionedTable.getDbName(),
+        partitionedTable.getTableName(), (short)-1)) {
+      Assert.assertFalse(StatsSetupConst.areBasicStatsUptoDate(partition.getParameters()));
+    }
     client.truncateTable(partitionedTable.getDbName(), partitionedTable.getTableName(), null);
     Assert.assertTrue("Location should exist",
         metaStore.isPathExists(new Path(testTables[0].getSd().getLocation())));
     List<Partition> partitions =
         client.listPartitions(partitionedTable.getDbName(), partitionedTable.getTableName(),
             (short)-1);
+    Assert.assertEquals(3, partitions.size());
     for(Partition partition : partitions) {
       Path dataFile = new Path(partition.getSd().getLocation() + "/dataFile");
       Assert.assertFalse("Every dataFile should be removed", metaStore.isPathExists(dataFile));
+      Assert.assertTrue("Every partition should have its stats reset",
+          StatsSetupConst.areBasicStatsUptoDate(partition.getParameters()));
     }
   }
 

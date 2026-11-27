@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.hadoop.hive.metastore.metastore.PartitionsIterable;
+import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.AlterDatabaseRequest;
@@ -1196,16 +1198,13 @@ public abstract class DeprecatedHandler extends BaseHandler {
         } else {
           throw new MetaException("Table is partitioned");
         }
-        int batchSize = MetastoreConf.getIntVar(
-            conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
-        int index = 0;
+        int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+        TableName qualifiedTable = new TableName(getDefaultCatalog(conf), dbName, tblName);
         int successCount = 0, failCount = 0;
         HashSet<String> failFormats = null;
-        while (index < partNames.size()) {
-          int currentBatchSize = Math.min(batchSize, partNames.size() - index);
-          List<String> nameBatch = partNames.subList(index, index + currentBatchSize);
-          index += currentBatchSize;
-          List<Partition> parts = ms.getPartitionsByNames(getDefaultCatalog(conf), dbName, tblName, nameBatch);
+        PartitionsIterable partitionBatches = PartitionsIterable.create(
+            ms.unwrap(TableStore.class), qualifiedTable, batchSize, partNames);
+        for (List<Partition> parts : partitionBatches) {
           for (Partition part : parts) {
             if (!part.isSetSd() || !part.getSd().isSetLocation()) {
               throw new MetaException("Partition does not have storage location;" +
