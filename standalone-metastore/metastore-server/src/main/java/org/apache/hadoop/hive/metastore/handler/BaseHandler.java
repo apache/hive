@@ -971,4 +971,18 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
     }
     firePreEvent(supplier.get());
   }
+
+  /**
+   * Tells whether the caller is a trusted proxy/operator (e.g. HiveServer2 or the compactor): the caller passes
+   * {@link #authorizeProxyPrivilege()}. A failure of the check, including not being able to determine the caller,
+   * means the caller is not trusted.
+   */
+  protected boolean hasProxyPrivilege() {
+    try {
+      authorizeProxyPrivilege();
+      return true;
+    } catch (TException e) {
+      return false;
+    }
+  }
 }
