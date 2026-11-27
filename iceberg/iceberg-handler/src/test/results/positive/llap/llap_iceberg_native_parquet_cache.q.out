@@ -1,0 +1,497 @@
+PREHOOK: query: DROP TABLE IF EXISTS llap_native_orders PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS llap_native_orders PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE llap_native_orders (
+  orderid INT,
+  quantity BIGINT,
+  price DECIMAL(7,2),
+  total DECIMAL(20,2),
+  item STRING,
+  orderdate DATE,
+  tradets TIMESTAMP,
+  shipped BOOLEAN,
+  region STRING)
+PARTITIONED BY SPEC (region, bucket(4, orderid))
+STORED BY ICEBERG STORED AS PARQUET
+TBLPROPERTIES ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: CREATE EXTERNAL TABLE llap_native_orders (
+  orderid INT,
+  quantity BIGINT,
+  price DECIMAL(7,2),
+  total DECIMAL(20,2),
+  item STRING,
+  orderdate DATE,
+  tradets TIMESTAMP,
+  shipped BOOLEAN,
+  region STRING)
+PARTITIONED BY SPEC (region, bucket(4, orderid))
+STORED BY ICEBERG STORED AS PARQUET
+TBLPROPERTIES ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: INSERT INTO llap_native_orders VALUES
+(0, 48, 35000.10, 1680004.80, 'Model 3', date('2000-06-04'), timestamp('2000-06-04 19:55:46.129'), true, 'EU'),
+(1, 12, 45000.25, 540003.00, 'Model 3', date('2007-06-24'), timestamp('2007-06-24 19:23:22.829'), false, 'US'),
+(2, 76, 48000.00, 3648000.00, 'Model Y', date('2018-02-19'), timestamp('2018-02-19 23:43:51.995'), true, 'EU'),
+(3, 91, 83000.99, 7553090.09, 'Model S', date('2000-07-15'), timestamp('2000-07-15 09:09:11.587'), false, 'US'),
+(4, 18, 123000.00, 2214000.00, 'Model S', date('2007-12-02'), timestamp('2007-12-02 22:30:39.302'), true, 'EU')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: INSERT INTO llap_native_orders VALUES
+(0, 48, 35000.10, 1680004.80, 'Model 3', date('2000-06-04'), timestamp('2000-06-04 19:55:46.129'), true, 'EU'),
+(1, 12, 45000.25, 540003.00, 'Model 3', date('2007-06-24'), timestamp('2007-06-24 19:23:22.829'), false, 'US'),
+(2, 76, 48000.00, 3648000.00, 'Model Y', date('2018-02-19'), timestamp('2018-02-19 23:43:51.995'), true, 'EU'),
+(3, 91, 83000.99, 7553090.09, 'Model S', date('2000-07-15'), timestamp('2000-07-15 09:09:11.587'), false, 'US'),
+(4, 18, 123000.00, 2214000.00, 'Model S', date('2007-12-02'), timestamp('2007-12-02 22:30:39.302'), true, 'EU')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: INSERT INTO llap_native_orders VALUES
+(5, 71, 35000.10, 2485007.10, 'Model 3', date('2010-02-08'), timestamp('2010-02-08 20:31:23.430'), NULL, 'EU'),
+(6, 78, NULL, NULL, 'Model Y', date('2016-02-22'), timestamp('2016-02-22 20:37:37.025'), false, 'EU'),
+(7, 88, 55000.50, 4840044.00, NULL, NULL, NULL, true, 'US'),
+(8, 87, 48000.00, 4176000.00, 'Model Y', date('2003-02-20'), timestamp('2003-02-20 00:48:09.139'), true, 'EU'),
+(9, 60, 123000.00, 7380000.00, 'Model S', date('2012-08-28'), timestamp('2012-08-28 01:35:54.283'), false, 'US')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: INSERT INTO llap_native_orders VALUES
+(5, 71, 35000.10, 2485007.10, 'Model 3', date('2010-02-08'), timestamp('2010-02-08 20:31:23.430'), NULL, 'EU'),
+(6, 78, NULL, NULL, 'Model Y', date('2016-02-22'), timestamp('2016-02-22 20:37:37.025'), false, 'EU'),
+(7, 88, 55000.50, 4840044.00, NULL, NULL, NULL, true, 'US'),
+(8, 87, 48000.00, 4176000.00, 'Model Y', date('2003-02-20'), timestamp('2003-02-20 00:48:09.139'), true, 'EU'),
+(9, 60, 123000.00, 7380000.00, 'Model S', date('2012-08-28'), timestamp('2012-08-28 01:35:54.283'), false, 'US')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: INSERT INTO llap_native_orders VALUES
+(10, 24, 83000.99, 1992023.76, 'Model S', date('2015-03-28'), timestamp('2015-03-28 18:57:50.069'), true, 'ASIA')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: INSERT INTO llap_native_orders VALUES
+(10, 24, 83000.99, 1992023.76, 'Model S', date('2015-03-28'), timestamp('2015-03-28 18:57:50.069'), true, 'ASIA')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: SELECT * FROM llap_native_orders ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM llap_native_orders ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+0	48	35000.10	1680004.80	Model 3	2000-06-04	2000-06-04 19:55:46.129	true	EU
+1	12	45000.25	540003.00	Model 3	2007-06-24	2007-06-24 19:23:22.829	false	US
+2	76	48000.00	3648000.00	Model Y	2018-02-19	2018-02-19 23:43:51.995	true	EU
+3	91	83000.99	7553090.09	Model S	2000-07-15	2000-07-15 09:09:11.587	false	US
+4	18	NULL	2214000.00	Model S	2007-12-02	2007-12-02 22:30:39.302	true	EU
+5	71	35000.10	2485007.10	Model 3	2010-02-08	2010-02-08 20:31:23.43	NULL	EU
+6	78	NULL	NULL	Model Y	2016-02-22	2016-02-22 20:37:37.025	false	EU
+7	88	55000.50	4840044.00	NULL	NULL	NULL	true	US
+8	87	48000.00	4176000.00	Model Y	2003-02-20	2003-02-20 00:48:09.139	true	EU
+9	60	NULL	7380000.00	Model S	2012-08-28	2012-08-28 01:35:54.283	false	US
+10	24	83000.99	1992023.76	Model S	2015-03-28	2015-03-28 18:57:50.069	true	ASIA
+PREHOOK: query: SELECT count(*) FROM llap_native_orders
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM llap_native_orders
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+11
+PREHOOK: query: SELECT orderid, item, shipped FROM llap_native_orders WHERE region = 'EU' ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, item, shipped FROM llap_native_orders WHERE region = 'EU' ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 6
+   RECORDS_OUT_0: 6
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_7: 6
+   RECORDS_OUT_OPERATOR_FS_11: 6
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_9: 6
+   RECORDS_OUT_OPERATOR_SEL_10: 6
+   RECORDS_OUT_OPERATOR_SEL_8: 6
+   RECORDS_OUT_OPERATOR_TS_0: 6
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 578
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 4
+   NUM_DECODED_BATCHES: 4
+   NUM_VECTOR_BATCHES: 4
+   ROWS_EMITTED: 6
+   SELECTED_ROWGROUPS: 4
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 4
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 4
+0	Model 3	true
+2	Model Y	true
+4	Model S	true
+5	Model 3	NULL
+6	Model Y	false
+8	Model Y	true
+PREHOOK: query: SELECT orderid, quantity FROM llap_native_orders WHERE quantity > 70 AND orderdate > date('2005-01-01') ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, quantity FROM llap_native_orders WHERE quantity > 70 AND orderdate > date('2005-01-01') ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+2	76
+5	71
+6	78
+PREHOOK: query: SELECT orderid, tradets FROM llap_native_orders WHERE tradets < timestamp('2008-01-01 00:00:00') ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, tradets FROM llap_native_orders WHERE tradets < timestamp('2008-01-01 00:00:00') ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+0	2000-06-04 19:55:46.129
+1	2007-06-24 19:23:22.829
+3	2000-07-15 09:09:11.587
+4	2007-12-02 22:30:39.302
+8	2003-02-20 00:48:09.139
+PREHOOK: query: SELECT orderid FROM llap_native_orders WHERE item IS NULL OR price IS NULL ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid FROM llap_native_orders WHERE item IS NULL OR price IS NULL ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+4
+6
+7
+9
+PREHOOK: query: SELECT region, count(*), sum(quantity), min(price), max(price), sum(total), avg(price) FROM llap_native_orders GROUP BY region ORDER BY region
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT region, count(*), sum(quantity), min(price), max(price), sum(total), avg(price) FROM llap_native_orders GROUP BY region ORDER BY region
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+ASIA	1	24	83000.99	83000.99	1992023.76	83000.990000
+EU	6	378	35000.10	48000.00	14203011.90	41500.050000
+US	4	251	45000.25	83000.99	20313137.09	61000.580000
+PREHOOK: query: SELECT item, sum(price * quantity), sum(total) FROM llap_native_orders WHERE shipped GROUP BY item ORDER BY item
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT item, sum(price * quantity), sum(total) FROM llap_native_orders WHERE shipped GROUP BY item ORDER BY item
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+Model 3	1680004.80	1680004.80
+Model S	1992023.76	4206023.76
+Model Y	7824000.00	7824000.00
+NULL	4840044.00	4840044.00
+PREHOOK: query: SELECT orderid, ROW__POSITION, PARTITION__SPEC__ID, PARTITION__HASH, PARTITION__NAME FROM llap_native_orders ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, ROW__POSITION, PARTITION__SPEC__ID, PARTITION__HASH, PARTITION__NAME FROM llap_native_orders ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+0	0	0	69905	region=EU/orderid_bucket=0
+1	0	0	85219	region=US/orderid_bucket=0
+2	1	0	69905	region=EU/orderid_bucket=0
+3	0	0	85222	region=US/orderid_bucket=3
+4	0	0	69907	region=EU/orderid_bucket=2
+5	0	0	69908	region=EU/orderid_bucket=3
+6	0	0	69906	region=EU/orderid_bucket=1
+7	0	0	85222	region=US/orderid_bucket=3
+8	1	0	69908	region=EU/orderid_bucket=3
+9	1	0	85222	region=US/orderid_bucket=3
+10	0	0	62574647	region=ASIA/orderid_bucket=0
+PREHOOK: query: SELECT PARTITION__NAME, count(*), count(distinct FILE__PATH), max(ROW__POSITION) FROM llap_native_orders GROUP BY PARTITION__NAME ORDER BY PARTITION__NAME
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT PARTITION__NAME, count(*), count(distinct FILE__PATH), max(ROW__POSITION) FROM llap_native_orders GROUP BY PARTITION__NAME ORDER BY PARTITION__NAME
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+region=ASIA/orderid_bucket=0	1	1	0
+region=EU/orderid_bucket=0	2	1	1
+region=EU/orderid_bucket=1	1	1	0
+region=EU/orderid_bucket=2	1	1	0
+region=EU/orderid_bucket=3	2	1	1
+region=US/orderid_bucket=0	1	1	0
+region=US/orderid_bucket=3	3	2	1
+PREHOOK: query: ALTER TABLE llap_native_orders CHANGE item product STRING AFTER shipped
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@llap_native_orders
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: ALTER TABLE llap_native_orders CHANGE item product STRING AFTER shipped
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@llap_native_orders
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: ALTER TABLE llap_native_orders CHANGE price unitprice DECIMAL(7,2) AFTER product
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@llap_native_orders
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: ALTER TABLE llap_native_orders CHANGE price unitprice DECIMAL(7,2) AFTER product
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@llap_native_orders
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: SELECT orderid, product, unitprice FROM llap_native_orders WHERE unitprice >= 50000 ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, product, unitprice FROM llap_native_orders WHERE unitprice >= 50000 ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+3	Model S	83000.99
+7	NULL	55000.50
+10	Model S	83000.99
+PREHOOK: query: ALTER TABLE llap_native_orders ADD COLUMNS (discount INT)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@llap_native_orders
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: ALTER TABLE llap_native_orders ADD COLUMNS (discount INT)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@llap_native_orders
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: INSERT INTO llap_native_orders VALUES
+(11, 10, 1000000.00, date('2021-01-04'), timestamp('2021-01-04 19:55:46.129'), true, 'Model X', 93000.00, 'EU', 5),
+(12, 11, 1243000.00, date('2021-02-04'), timestamp('2021-02-04 19:55:46.129'), false, 'Model X', 113000.00, 'US', NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: INSERT INTO llap_native_orders VALUES
+(11, 10, 1000000.00, date('2021-01-04'), timestamp('2021-01-04 19:55:46.129'), true, 'Model X', 93000.00, 'EU', 5),
+(12, 11, 1243000.00, date('2021-02-04'), timestamp('2021-02-04 19:55:46.129'), false, 'Model X', 113000.00, 'US', NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: SELECT product, min(discount), max(discount), count(*) FROM llap_native_orders GROUP BY product ORDER BY product
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT product, min(discount), max(discount), count(*) FROM llap_native_orders GROUP BY product ORDER BY product
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+Model 3	NULL	NULL	3
+Model S	NULL	NULL	4
+Model X	5	5	2
+Model Y	NULL	NULL	3
+NULL	NULL	NULL	1
+PREHOOK: query: ALTER TABLE llap_native_orders REPLACE COLUMNS (orderid INT, quantity BIGINT, total DECIMAL(20,2), orderdate DATE, tradets TIMESTAMP, shipped BOOLEAN, product STRING, unitprice DECIMAL(7,2), region STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@llap_native_orders
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: ALTER TABLE llap_native_orders REPLACE COLUMNS (orderid INT, quantity BIGINT, total DECIMAL(20,2), orderdate DATE, tradets TIMESTAMP, shipped BOOLEAN, product STRING, unitprice DECIMAL(7,2), region STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@llap_native_orders
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: SELECT orderid, product, unitprice, total FROM llap_native_orders WHERE orderid > 8 ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, product, unitprice, total FROM llap_native_orders WHERE orderid > 8 ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+9	Model S	NULL	7380000.00
+10	Model S	83000.99	1992023.76
+11	Model X	93000.00	1000000.00
+12	Model X	NULL	1243000.00
+PREHOOK: query: ALTER TABLE llap_native_orders REPLACE COLUMNS (orderid INT, quantity BIGINT, total DECIMAL(20,2), orderdate DATE, tradets TIMESTAMP, shipped BOOLEAN, product STRING, region STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@llap_native_orders
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: ALTER TABLE llap_native_orders REPLACE COLUMNS (orderid INT, quantity BIGINT, total DECIMAL(20,2), orderdate DATE, tradets TIMESTAMP, shipped BOOLEAN, product STRING, region STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@llap_native_orders
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: ALTER TABLE llap_native_orders ADD COLUMNS (unitprice DECIMAL(7,2))
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@llap_native_orders
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: ALTER TABLE llap_native_orders ADD COLUMNS (unitprice DECIMAL(7,2))
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@llap_native_orders
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: INSERT INTO llap_native_orders VALUES
+(13, 5, 250000.00, date('2022-03-01'), timestamp('2022-03-01 10:00:00.000'), true, 'Cybertruck', 'US', 50000.00)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: INSERT INTO llap_native_orders VALUES
+(13, 5, 250000.00, date('2022-03-01'), timestamp('2022-03-01 10:00:00.000'), true, 'Cybertruck', 'US', 50000.00)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: SELECT orderid, product, unitprice FROM llap_native_orders WHERE orderid > 10 ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, product, unitprice FROM llap_native_orders WHERE orderid > 10 ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+11	Model X	NULL
+12	Model X	NULL
+13	Cybertruck	50000.00
+PREHOOK: query: SELECT count(*), count(unitprice), sum(unitprice) FROM llap_native_orders
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*), count(unitprice), sum(unitprice) FROM llap_native_orders
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+14	1	50000.00
+PREHOOK: query: DELETE FROM llap_native_orders WHERE orderid IN (2, 7, 12)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: DELETE FROM llap_native_orders WHERE orderid IN (2, 7, 12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+POSTHOOK: Output: default@llap_native_orders
+PREHOOK: query: SELECT orderid, product, unitprice, total FROM llap_native_orders ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, product, unitprice, total FROM llap_native_orders ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+Stage-1 FILE SYSTEM COUNTERS:
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 11
+   RECORDS_OUT_0: 11
+   RECORDS_OUT_INTERMEDIATE_Map_1: 11
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_8: 11
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_6: 11
+   RECORDS_OUT_OPERATOR_SEL_5: 11
+   RECORDS_OUT_OPERATOR_SEL_7: 11
+   RECORDS_OUT_OPERATOR_TS_0: 11
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   ALLOCATED_BYTES: 4096
+   ALLOCATED_USED_BYTES: 50
+   CACHE_HIT_BYTES: 1657
+   CACHE_MISS_BYTES: 50
+   METADATA_CACHE_HIT: 11
+   NUM_DECODED_BATCHES: 11
+   NUM_VECTOR_BATCHES: 11
+   ROWS_EMITTED: 14
+   SELECTED_ROWGROUPS: 11
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 11
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 11
+0	Model 3	NULL	1680004.80
+1	Model 3	NULL	540003.00
+3	Model S	NULL	7553090.09
+4	Model S	NULL	2214000.00
+5	Model 3	NULL	2485007.10
+6	Model Y	NULL	NULL
+8	Model Y	NULL	4176000.00
+9	Model S	NULL	7380000.00
+10	Model S	NULL	1992023.76
+11	Model X	NULL	1000000.00
+13	Cybertruck	50000.00	250000.00
+PREHOOK: query: SELECT orderid, ROW__POSITION, PARTITION__NAME FROM llap_native_orders WHERE region = 'EU' ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, ROW__POSITION, PARTITION__NAME FROM llap_native_orders WHERE region = 'EU' ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+0	0	region=EU/orderid_bucket=0
+4	0	region=EU/orderid_bucket=2
+5	0	region=EU/orderid_bucket=3
+6	0	region=EU/orderid_bucket=1
+8	1	region=EU/orderid_bucket=3
+11	0	region=EU/orderid_bucket=3
+PREHOOK: query: SELECT region, count(*), sum(quantity), sum(total) FROM llap_native_orders GROUP BY region ORDER BY region
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT region, count(*), sum(quantity), sum(total) FROM llap_native_orders GROUP BY region ORDER BY region
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+ASIA	1	24	1992023.76
+EU	6	312	11555011.90
+US	4	168	15723093.09
+PREHOOK: query: SELECT orderid, product, unitprice FROM llap_native_orders WHERE orderid > 10 ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, product, unitprice FROM llap_native_orders WHERE orderid > 10 ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+11	Model X	NULL
+13	Cybertruck	50000.00
+PREHOOK: query: SELECT region, count(*), sum(quantity), sum(total) FROM llap_native_orders GROUP BY region ORDER BY region
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT region, count(*), sum(quantity), sum(total) FROM llap_native_orders GROUP BY region ORDER BY region
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+ASIA	1	24	1992023.76
+EU	6	312	11555011.90
+US	4	168	15723093.09
+PREHOOK: query: SELECT orderid, product, unitprice FROM llap_native_orders WHERE orderid > 10 ORDER BY orderid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT orderid, product, unitprice FROM llap_native_orders WHERE orderid > 10 ORDER BY orderid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_native_orders
+#### A masked pattern was here ####
+11	Model X	NULL
+13	Cybertruck	50000.00
+PREHOOK: query: DROP TABLE llap_native_orders PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@llap_native_orders
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_native_orders
+POSTHOOK: query: DROP TABLE llap_native_orders PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@llap_native_orders
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_native_orders
