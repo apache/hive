@@ -571,7 +571,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
           IcebergViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
           return;
         }
-        Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
+        Table tbl = IcebergTableUtil.getTableFromFetched(conf, hmsTable);
         String formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
         hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         // Set the serde info

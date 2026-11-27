@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.ClientPool;
@@ -250,6 +251,28 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
   @Override
   public String name() {
     return name;
+  }
+
+  /**
+   * Loads a table from the metastore table the caller already fetched, which saves asking the metastore for it
+   * again. Any other identifier, or a metastore table of another name, loads as {@link #loadTable(TableIdentifier)}.
+   * @param identifier the table
+   * @param hmsTable the metastore table of the identifier, as fresh as the caller needs the Iceberg table to be
+   */
+  public org.apache.iceberg.Table loadTable(TableIdentifier identifier, Table hmsTable) {
+    if (hmsTable == null || !isValidIdentifier(identifier) ||
+        !identifier.namespace().level(0).equalsIgnoreCase(hmsTable.getDbName()) ||
+        !identifier.name().equalsIgnoreCase(hmsTable.getTableName())) {
+      return loadTable(identifier);
+    }
+    HiveTableOperations ops = (HiveTableOperations) newTableOps(identifier);
+    ops.useKnownTable(hmsTable);
+    if (ops.current() == null) {
+      throw new NoSuchTableException("Table does not exist: %s", identifier);
+    }
+    org.apache.iceberg.Table result = new BaseTable(ops, fullTableName(name(), identifier), metricsReporter());
+    LOG.debug("Table loaded by catalog from the known metastore table: {}", result);
+    return result;
   }
 
   @Override

@@ -19,7 +19,9 @@
 
 package org.apache.hadoop.hive.ql.metadata.events;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -64,6 +66,9 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public final class TableVersionRegistry {
   private static final Logger LOG = LoggerFactory.getLogger(TableVersionRegistry.class);
+
+  /** The metastore listener that records the notification events, named as it is listed (hcatalog, not ql). */
+  static final String DB_NOTIFICATION_LISTENER = "org.apache.hive.hcatalog.listener.DbNotificationListener";
 
   /**
    * Key of the {@link QuerySettings} in the query-level cache: there only when the query may use the event-based
@@ -112,11 +117,15 @@ public final class TableVersionRegistry {
   /**
    * Enables the registry once the poller has its starting event id.
    * @param metastoreConf the value of a setting of the metastore server HS2 is connected to
-   * @return whether it got enabled; it does not when the HMS results may depend on the user
+   * @return whether it got enabled; it does not when the metastore records no events, or when the HMS results may
+   *         depend on the user
    */
   boolean enable(Configuration conf, Function<String, String> metastoreConf) {
-    // A shared cache would hand out to one user what HMS or its client filtered or denied for another
-    String reason = perUserMetadataReason(conf, metastoreConf);
+    String reason = noEventsReason(metastoreConf);
+    if (reason == null) {
+      // A shared cache would hand out to one user what HMS or its client filtered or denied for another
+      reason = perUserMetadataReason(conf, metastoreConf);
+    }
     if (reason != null) {
       LOG.warn("The HS2 metadata cache by events is disabled: {}", reason);
       return false;
@@ -128,6 +137,34 @@ public final class TableVersionRegistry {
     enabled = true;
     LOG.info("The HS2 metadata cache by events is enabled");
     return true;
+  }
+
+  /**
+   * Without notification events the latest event id never moves, so every sync would succeed with nothing applied
+   * and no table would ever get a new version. That is the case for a metastore without the listener that records
+   * them, and for a metastore client that is not backed by a metastore, such as the one for an Iceberg REST catalog,
+   * which answers every setting with a placeholder.
+   * @return why the metastore HS2 is connected to may record no notification events, or null if it records them
+   */
+  private static String noEventsReason(Function<String, String> metastoreConf) {
+    List<MetastoreConf.ConfVars> listenerSettings =
+        List.of(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS, MetastoreConf.ConfVars.EVENT_LISTENERS);
+    for (MetastoreConf.ConfVars listenerSetting : listenerSettings) {
+      String setting = listenerSetting.getVarname();
+      String listeners;
+      try {
+        listeners = metastoreConf.apply(setting);
+      } catch (RuntimeException e) {
+        LOG.warn("Could not read {} from the metastore", setting, e);
+        return setting + " of the metastore could not be read";
+      }
+      if (listeners != null &&
+          Arrays.stream(listeners.split(",")).map(String::trim).anyMatch(DB_NOTIFICATION_LISTENER::equals)) {
+        return null;
+      }
+    }
+    return "the metastore records no notification events: neither " + listenerSettings.get(0).getVarname() +
+        " nor " + listenerSettings.get(1).getVarname() + " lists " + DB_NOTIFICATION_LISTENER;
   }
 
   /**

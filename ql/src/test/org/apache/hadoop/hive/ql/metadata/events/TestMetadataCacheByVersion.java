@@ -67,7 +67,7 @@ public class TestMetadataCacheByVersion {
   public void setUp() throws Exception {
     HiveConf conf = new HiveConf();
     HiveMetaStoreClientWithLocalCache.init(conf);
-    registry.enable(conf, key -> "");
+    registry.enable(conf, TestTableVersionRegistry.NO_METASTORE_CONF);
     // as if the events were applied up to the latest one
     TableVersionRegistry.syncer = timeoutMs -> true;
 

@@ -44,7 +44,10 @@ import org.junit.Test;
 import com.github.benmanes.caffeine.cache.Ticker;
 
 public class TestTableVersionRegistry {
-  private static final Function<String, String> NO_METASTORE_CONF = key -> "";
+  /** A metastore that records notification events, with nothing else configured. */
+  static final Function<String, String> NO_METASTORE_CONF = key ->
+      MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getVarname().equals(key) ?
+          TableVersionRegistry.DB_NOTIFICATION_LISTENER : "";
 
   private final TableVersionRegistry registry = TableVersionRegistry.get();
   private final AtomicLong nanos = new AtomicLong();
@@ -162,12 +165,31 @@ public class TestTableVersionRegistry {
     }));
   }
 
+  @Test
+  public void testMetastoreWithoutEventsDisables() {
+    String transactional = MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getVarname();
+    String nonTransactional = MetastoreConf.ConfVars.EVENT_LISTENERS.getVarname();
+    String listener = TableVersionRegistry.DB_NOTIFICATION_LISTENER;
+
+    assertEnabled(false, false, Map.of(transactional, ""));
+    assertEnabled(true, false, Map.of(transactional, "org.example.Listener, " + listener));
+    assertEnabled(true, false, Map.of(transactional, "", nonTransactional, listener));
+
+    // a client that is not a metastore, as for an Iceberg REST catalog, answers every setting alike
+    registry.disable();
+    assertFalse("a placeholder for every setting", registry.enable(new HiveConf(), key -> "50"));
+    registry.disable();
+    assertFalse("the metastore could not be asked", registry.enable(new HiveConf(), key -> {
+      throw new IllegalStateException("unreachable");
+    }));
+  }
+
   private void assertEnabled(boolean expected, boolean doAs, Map<String, String> metastoreConf) {
     registry.disable();
     HiveConf conf = new HiveConf();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, doAs);
     assertEquals(metastoreConf + ", doAs=" + doAs, expected,
-        registry.enable(conf, key -> metastoreConf.getOrDefault(key, "")));
+        registry.enable(conf, key -> metastoreConf.getOrDefault(key, NO_METASTORE_CONF.apply(key))));
   }
 
   @Test

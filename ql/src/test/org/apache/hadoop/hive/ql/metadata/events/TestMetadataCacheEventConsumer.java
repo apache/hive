@@ -49,7 +49,7 @@ public class TestMetadataCacheEventConsumer {
 
   @Before
   public void setUp() {
-    registry.enable(new HiveConf(), key -> "");
+    registry.enable(new HiveConf(), TestTableVersionRegistry.NO_METASTORE_CONF);
   }
 
   @After
@@ -147,7 +147,7 @@ public class TestMetadataCacheEventConsumer {
     HiveConf conf = new HiveConf();
     conf.setTimeVar(HiveConf.ConfVars.HIVE_NOTFICATION_EVENT_POLL_INTERVAL, 1, TimeUnit.HOURS);
     conf.setVar(HiveConf.ConfVars.HIVE_NOTFICATION_EVENT_CONSUMERS, MetadataCacheEventConsumer.class.getName());
-    NotificationEventPoll poll = new NotificationEventPoll(conf, fetcher, key -> "");
+    NotificationEventPoll poll = new NotificationEventPoll(conf, fetcher, TestTableVersionRegistry.NO_METASTORE_CONF);
     try {
       assertTrue(registry.isEnabled());
       long t = version("t");

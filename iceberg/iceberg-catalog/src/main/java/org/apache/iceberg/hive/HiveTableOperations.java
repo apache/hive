@@ -96,6 +96,9 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
   private List<EncryptedKey> encryptedKeys = List.of();
 
+  // the metastore table the caller already has, used by the next refresh instead of asking the metastore
+  private Table knownHmsTable;
+
   protected HiveTableOperations(
       Configuration conf,
       ClientPool<IMetaStoreClient, TException> metaClients,
@@ -126,6 +129,21 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
    */
   public StagingTableOperations toStagingOps() {
     return new StagingTableOperations(conf, metaClients, fileIO, keyManagementClient, catalogName, database, tableName);
+  }
+
+  /**
+   * Makes the next refresh read the table from this metastore table rather than from the metastore; later
+   * refreshes ask the metastore again. A commit still checks the metadata location in the metastore, so a stale
+   * table here can only fail a commit, which is then retried after a refresh from the metastore.
+   */
+  void useKnownTable(Table table) {
+    this.knownHmsTable = table;
+  }
+
+  private Table takeKnownOrFetchHmsTable() throws TException, InterruptedException {
+    Table known = knownHmsTable;
+    knownHmsTable = null;
+    return known != null ? known : metaClients.run(client -> client.getTable(database, tableName));
   }
 
   @Override
@@ -179,7 +197,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     String dekLengthFromHMS = null;
     String metadataHashFromHMS = null;
     try {
-      Table table = metaClients.run(client -> client.getTable(database, tableName));
+      Table table = takeKnownOrFetchHmsTable();
 
       // Check if we are trying to load an Iceberg View as a Table
       HiveOperationsBase.validateIcebergViewNotLoadedAsIcebergTable(table, fullName);

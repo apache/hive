@@ -35,7 +35,9 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.LoadedTableHandoff;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -103,6 +105,28 @@ public final class Catalogs {
   public static Table loadTable(Configuration conf, Properties props) {
     return loadTable(conf, props.getProperty(NAME), props.getProperty(LOCATION),
             props.getProperty(InputFormatConfig.CATALOG_NAME));
+  }
+
+  /**
+   * Like {@link #loadTable(Configuration, Properties)}, for the metastore table the caller has just fetched. A table
+   * its metastore client has just loaded, as one backed by an Iceberg REST catalog does, is taken as it is, and a
+   * table of a Hive catalog is read from the metastore table instead of asking the metastore for it again.
+   * @param hmsTable the metastore table named by the properties; ignored for other catalogs and metadata tables
+   */
+  public static Table loadTable(Configuration conf, Properties props,
+      org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    // before any catalog is built: building a REST catalog asks its server for the configuration
+    Optional<Table> loaded = hmsTable != null ? LoadedTableHandoff.take(hmsTable) : Optional.empty();
+    if (loaded.isPresent()) {
+      return loaded.get();
+    }
+    Optional<Catalog> catalog = loadCatalog(conf, props.getProperty(InputFormatConfig.CATALOG_NAME));
+    if (hmsTable != null && catalog.isPresent() && catalog.get() instanceof HiveCatalog) {
+      String tableIdentifier = props.getProperty(NAME);
+      Preconditions.checkArgument(tableIdentifier != null, "Table identifier not set");
+      return ((HiveCatalog) catalog.get()).loadTable(TableIdentifier.parse(tableIdentifier), hmsTable);
+    }
+    return loadTable(conf, props);
   }
 
   private static Table loadTable(Configuration conf, String tableIdentifier, String tableLocation,
