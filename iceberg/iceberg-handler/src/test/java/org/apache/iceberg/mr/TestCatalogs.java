@@ -20,9 +20,12 @@
 package org.apache.iceberg.mr;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -37,6 +40,8 @@ import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.LoadedTableHandoff;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -77,6 +82,28 @@ public class TestCatalogs {
     conf.set(InputFormatConfig.TABLE_LOCATION, hadoopTable.location());
 
     Assert.assertEquals(hadoopTable.location(), Catalogs.loadTable(conf).location());
+  }
+
+  @Test
+  public void testLoadTableHandedOverByTheMetastoreClient() throws IOException {
+    // no catalog can load this table: only the one the metastore client has just loaded is there
+    conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
+    Table loaded = new HadoopTables().create(SCHEMA, temp.newFolder("handed_over").toString());
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = new org.apache.hadoop.hive.metastore.api.Table();
+    hmsTable.setDbName("db");
+    hmsTable.setTableName("t");
+    hmsTable.setParameters(Maps.newHashMap(Map.of(BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
+        ((BaseTable) loaded).operations().current().metadataFileLocation())));
+    Properties props = new Properties();
+    props.setProperty(Catalogs.NAME, "db.t");
+
+    LoadedTableHandoff.offer(hmsTable, loaded);
+    assertThat(Catalogs.loadTable(conf, props, hmsTable)).isSameAs(loaded);
+
+    // handed over once: the next load goes to the catalog
+    Assertions.assertThatThrownBy(() -> Catalogs.loadTable(conf, props, hmsTable))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Table location not set");
   }
 
   @Test

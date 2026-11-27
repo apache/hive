@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.util.Sets;
+import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFiles;
@@ -100,6 +101,7 @@ import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.LoadedTableHandoff;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
@@ -150,6 +152,29 @@ public class IcebergTableUtil {
    */
   static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable,
       boolean skipCache) {
+    return getTable(configuration, tableProperties(hmsTable), skipCache);
+  }
+
+  /**
+   * Like {@link #getTable(Configuration, org.apache.hadoop.hive.metastore.api.Table)}, for a metastore table the
+   * caller has just fetched: a table not loaded yet in the query is read from it, rather than fetched from the
+   * metastore again, so the query's metastore table and its Iceberg table are one and the same version.
+   * @param fetchedHmsTable the metastore table as the metastore has just returned it
+   */
+  static Table getTableFromFetched(Configuration configuration,
+      org.apache.hadoop.hive.metastore.api.Table fetchedHmsTable) {
+    org.apache.hadoop.hive.metastore.api.Table known =
+        fetchedHmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP) ?
+            fetchedHmsTable : null;
+    try {
+      return getTable(configuration, tableProperties(fetchedHmsTable), false, known);
+    } finally {
+      // a table the query has loaded already leaves the one handed over untaken
+      LoadedTableHandoff.clear();
+    }
+  }
+
+  private static Properties tableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     Properties properties = new Properties();
     properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
     properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
@@ -158,7 +183,7 @@ public class IcebergTableUtil {
           properties.setProperty(k, v);
           return v;
         });
-    return getTable(configuration, properties, skipCache);
+    return properties;
   }
 
   public static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable) {
@@ -175,6 +200,11 @@ public class IcebergTableUtil {
    * @return an Iceberg table
    */
   static Table getTable(Configuration configuration, Properties properties, boolean skipCache) {
+    return getTable(configuration, properties, skipCache, null);
+  }
+
+  private static Table getTable(Configuration configuration, Properties properties, boolean skipCache,
+      org.apache.hadoop.hive.metastore.api.Table knownHmsTable) {
     String metaTable = properties.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY);
 
     Properties props = new Properties(properties); // use input properties as default
@@ -187,7 +217,9 @@ public class IcebergTableUtil {
     String tableIdentifier = props.getProperty(Catalogs.NAME);
     Function<Void, Table> tableLoadFunc =
         unused -> {
-          Table tab = Catalogs.loadTable(configuration, props);
+          Table tab = metaTable == null && knownHmsTable != null ?
+              Catalogs.loadTable(configuration, props, knownHmsTable) :
+              Catalogs.loadTable(configuration, props);
           SessionStateUtil.addResource(configuration, tableIdentifier, tab);
           return tab;
         };

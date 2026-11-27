@@ -55,6 +55,7 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.IcebergTableProperties;
 import org.apache.iceberg.hive.IcebergViewSupport;
+import org.apache.iceberg.hive.LoadedTableHandoff;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.hive.RuntimeMetaException;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -204,7 +205,10 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
         TableIdentifier.of(tableRequest.getDbName(), tableRequest.getTblName());
     try {
       org.apache.iceberg.Table icebergTable = restCatalog.loadTable(id);
-      return MetastoreUtil.toHiveTable(icebergTable, conf);
+      Table result = MetastoreUtil.toHiveTable(icebergTable, conf);
+      // the storage handler loads the table for every metastore table it gets: this one needs no second load
+      LoadedTableHandoff.offer(result, icebergTable);
+      return result;
     } catch (NoSuchTableException tableMissing) {
       if (restCatalog instanceof ViewCatalog viewCatalog) {
         if (!viewCatalog.viewExists(id)) {

@@ -21,9 +21,12 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.iceberg.AssertHelpers;
+import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -31,13 +34,21 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 
 public class TestIcebergTableUtil {
 
@@ -86,6 +97,47 @@ public class TestIcebergTableUtil {
         HiveException.class,
         "No matching partition spec found for partition path: dept_id=1",
         () -> IcebergTableUtil.getPartitionSpec(table, "dept_id=1"));
+  }
+
+  @Test
+  public void testJustFetchedMetastoreTableIsReused() {
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = hmsTable(true);
+    try (MockedStatic<Catalogs> catalogs = mockStatic(Catalogs.class)) {
+      catalogs.when(() -> Catalogs.loadTable(any(), any(Properties.class), any())).thenReturn(mock(Table.class));
+
+      IcebergTableUtil.getTableFromFetched(new Configuration(), hmsTable);
+
+      catalogs.verify(() -> Catalogs.loadTable(any(), any(Properties.class), same(hmsTable)));
+    }
+  }
+
+  @Test
+  public void testOtherMetastoreTablesAreNotReused() {
+    try (MockedStatic<Catalogs> catalogs = mockStatic(Catalogs.class)) {
+      catalogs.when(() -> Catalogs.loadTable(any(), any(Properties.class))).thenReturn(mock(Table.class));
+
+      // a metastore table a caller may have kept for long, so the metastore is asked as before
+      IcebergTableUtil.getTable(new Configuration(), hmsTable(true));
+      // nothing to read the table from
+      IcebergTableUtil.getTableFromFetched(new Configuration(), hmsTable(false));
+
+      catalogs.verify(() -> Catalogs.loadTable(any(), any(Properties.class), any()), never());
+    }
+  }
+
+  private static org.apache.hadoop.hive.metastore.api.Table hmsTable(boolean withMetadataLocation) {
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = new org.apache.hadoop.hive.metastore.api.Table();
+    hmsTable.setDbName("db");
+    hmsTable.setTableName("tbl");
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setLocation("file:/tmp/db/tbl");
+    hmsTable.setSd(sd);
+    hmsTable.setParameters(Maps.newHashMap());
+    if (withMetadataLocation) {
+      hmsTable.putToParameters(BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
+          "file:/tmp/db/tbl/v1.metadata.json");
+    }
+    return hmsTable;
   }
 
   private Table createV1Table() throws IOException {

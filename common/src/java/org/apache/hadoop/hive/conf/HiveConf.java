@@ -5776,6 +5776,28 @@ public class HiveConf extends Configuration {
         "Comma-separated list of class names extending EventConsumer," +
          "to handle the NotificationEvents retrieved by the notification event poll."),
 
+    HIVE_METADATA_CACHE_NONTRANSACTIONAL_MODE("hive.metadata.cache.nontransactional.mode", "off",
+        new StringSet("off", "strict"),
+        "Whether queries may compile with the metadata (tables, partitions, statistics, constraints) of " +
+        "non-transactional tables cached across queries, and with the Table objects of all tables. The cache " +
+        "follows the metastore notification events, so HiveServer2 has to poll them: " +
+        "hive.notification.event.consumers lists " +
+        "org.apache.hadoop.hive.ql.metadata.events.MetadataCacheEventConsumer, and the metastore has the " +
+        "DbNotificationListener. The cache stays off if the metadata the metastore returns may depend on the " +
+        "user: hive.metastore.filter.hook is set to a filter other than the default one or the " +
+        "AuthorizationMetaStoreFilterHook, or hive.server2.enable.doAs is on and the metastore HiveServer2 " +
+        "connects to at startup filters its results (metastore.server.filter.enabled) or has " +
+        "metastore.pre.event.listeners.\n" +
+        "  off: the cache by events is not used.\n" +
+        "  strict: before compiling, the events are applied up to the latest one in the metastore (one more " +
+        "metastore call); the query compiles without the cache if that does not finish within a few seconds."),
+
+    HIVE_METADATA_CACHE_NONTRANSACTIONAL_MAX_STALENESS("hive.metadata.cache.nontransactional.max.staleness", "5min",
+        new TimeValidator(TimeUnit.SECONDS),
+        "How long the metadata of a table is cached by notification events before a query loads it again from the " +
+        "metastore. It bounds how late a change the metastore records no event for is seen. A nonpositive value " +
+        "means no limit. A HiveServer2 setting, read at startup."),
+
     HIVE_DESCRIBE_PARTITIONED_TABLE_IGNORE_STATS("hive.describe.partitionedtable.ignore.stats", false,
         "Disable partitioned table stats collection for 'DESCRIBE FORMATTED' or 'DESCRIBE EXTENDED' commands."),
 
@@ -6842,6 +6864,7 @@ public class HiveConf extends Configuration {
     "hive\\.merge\\..*",
     "hive\\.optimize\\..*",
     "hive\\.materializedview\\..*",
+    "hive\\.metadata\\.cache\\.nontransactional\\.mode",
     "hive\\.orc\\..*",
     "hive\\.outerjoin\\..*",
     "hive\\.parquet\\..*",
