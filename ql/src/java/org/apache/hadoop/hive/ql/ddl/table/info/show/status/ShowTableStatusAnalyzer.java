@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.info.show.status;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -28,12 +29,15 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
 
 /**
  * Analyzer for show table status commands.
@@ -70,8 +74,12 @@ public class ShowTableStatusAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (partitionSpec != null) {
+      Table table = getTable(dbName, tableNames, true);
+      inputs.add(new ReadEntity(table));
       // validate that partition exists
-      PartitionUtils.getPartition(db, getTable(HiveTableName.of(tableNames)), partitionSpec, true);
+      PartitionUtils.getPartition(db, table, partitionSpec, true);
+    } else {
+      addReadEntitiesForShowTableExtendedPattern(dbName, tableNames);
     }
 
     ShowTableStatusDesc desc = new ShowTableStatusDesc(ctx.getResFile(), dbName, tableNames, partitionSpec);
@@ -80,5 +88,25 @@ public class ShowTableStatusAnalyzer extends BaseSemanticAnalyzer {
 
     task.setFetchSource(true);
     setFetchTask(createFetchTask(ShowTableStatusDesc.SCHEMA));
+  }
+
+  /**
+   * Register table read inputs for authorization. Resolves the SQL LIKE pattern against the tables
+   * in the database the same way {@link ShowTableStatusOperation} does, so every table whose
+   * metadata is returned is authorized.
+   */
+  private void addReadEntitiesForShowTableExtendedPattern(String dbName, String pattern)
+      throws SemanticException {
+    try {
+      Pattern likePattern = Pattern.compile(UDFLike.likePatternToRegExp(pattern),
+          Pattern.CASE_INSENSITIVE);
+      for (String name : db.getTablesForDb(dbName, null)) {
+        if (likePattern.matcher(name).matches()) {
+          inputs.add(new ReadEntity(getTable(dbName, name, true)));
+        }
+      }
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
   }
 }

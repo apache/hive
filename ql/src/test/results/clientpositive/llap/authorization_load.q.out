@@ -52,8 +52,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t_auth_load
 PREHOOK: query: show table extended like t_auth_load
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@t_auth_load
 POSTHOOK: query: show table extended like t_auth_load
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@t_auth_load
 tableName:t_auth_load
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -87,8 +89,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t_auth_load2
 PREHOOK: query: show table extended like t_auth_load2
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@t_auth_load2
 POSTHOOK: query: show table extended like t_auth_load2
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@t_auth_load2
 tableName:t_auth_load2
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

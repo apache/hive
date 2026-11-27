@@ -32,8 +32,10 @@ POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: default@result_n2
 PREHOOK: query: show table extended like result_n2
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@result_n2
 POSTHOOK: query: show table extended like result_n2
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@result_n2
 tableName:result_n2
 #### A masked pattern was here ####
 location:hdfs://### HDFS PATH ###
@@ -66,8 +68,10 @@ POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: default@result_n2
 PREHOOK: query: show table extended like result_n2
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@result_n2
 POSTHOOK: query: show table extended like result_n2
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@result_n2
 tableName:result_n2
 #### A masked pattern was here ####
 location:hdfs://### HDFS PATH ###
@@ -100,8 +104,10 @@ POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: default@result_n2
 PREHOOK: query: show table extended like result_n2
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@result_n2
 POSTHOOK: query: show table extended like result_n2
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@result_n2
 tableName:result_n2
 #### A masked pattern was here ####
 location:hdfs://### HDFS PATH ###

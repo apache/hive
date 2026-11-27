@@ -12,8 +12,10 @@ POSTHOOK: Lineage: dmv_mat_view.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchem
 POSTHOOK: Lineage: dmv_mat_view.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: show table extended like dmv_mat_view
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@dmv_mat_view
 POSTHOOK: query: show table extended like dmv_mat_view
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@dmv_mat_view
 tableName:dmv_mat_view
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.orc.OrcInputFormat

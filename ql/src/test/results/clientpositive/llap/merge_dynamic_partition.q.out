@@ -694,8 +694,10 @@ POSTHOOK: Input: default@merge_dynamic_part_n1@ds=2008-04-08/hr=11
 98	val_98	2008-04-08	11
 PREHOOK: query: show table extended like `merge_dynamic_part_n1`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@merge_dynamic_part_n1
 POSTHOOK: query: show table extended like `merge_dynamic_part_n1`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@merge_dynamic_part_n1
 tableName:merge_dynamic_part_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -1342,8 +1344,10 @@ POSTHOOK: Input: default@merge_dynamic_part_n1@ds=2008-04-08/hr=11
 98	val_98	2008-04-08	11
 PREHOOK: query: show table extended like `merge_dynamic_part_n1`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@merge_dynamic_part_n1
 POSTHOOK: query: show table extended like `merge_dynamic_part_n1`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@merge_dynamic_part_n1
 tableName:merge_dynamic_part_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -2006,8 +2010,10 @@ POSTHOOK: Input: default@merge_dynamic_part_n1@ds=2008-04-08/hr=11
 98	val_98	2008-04-08	11
 PREHOOK: query: show table extended like `merge_dynamic_part_n1`
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@merge_dynamic_part_n1
 POSTHOOK: query: show table extended like `merge_dynamic_part_n1`
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@merge_dynamic_part_n1
 tableName:merge_dynamic_part_n1
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat

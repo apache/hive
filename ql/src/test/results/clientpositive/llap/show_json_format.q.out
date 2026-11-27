@@ -34,8 +34,10 @@ POSTHOOK: Input: database:default
 {"tables":[{"Table Name":"t","Table Type":"MANAGED_TABLE"}]}
 PREHOOK: query: SHOW TABLE EXTENDED LIKE 't'
 PREHOOK: type: SHOW_TABLESTATUS
+PREHOOK: Input: default@t
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE 't'
 POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 PREHOOK: query: DESC t
 PREHOOK: type: DESCTABLE
