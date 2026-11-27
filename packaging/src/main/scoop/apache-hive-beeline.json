@@ -1,0 +1,23 @@
+{
+    "version": "4.2.1",
+    "description": "Hive Beeline JDBC command-line client",
+    "homepage": "https://hive.apache.org/",
+    "license": "Apache-2.0",
+    "url": "https://repo1.maven.org/maven2/org/apache/hive/hive-beeline/4.2.1/hive-beeline-4.2.1-standalone.jar",
+    "hash": "REPLACE_WITH_SHA256_FROM_hive-beeline-4.2.1-standalone.jar.sha256",
+    "depends": "java/openjdk21",
+    "bin": [
+        [
+            "hive-beeline-4.2.1-standalone.jar",
+            "beeline",
+            "-Dlog4j.configurationFile=beeline-log4j2.properties --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED"
+        ]
+    ],
+    "checkver": {
+        "url": "https://repo1.maven.org/maven2/org/apache/hive/hive-beeline/maven-metadata.xml",
+        "regex": "<release>([\\d.]+)</release>"
+    },
+    "autoupdate": {
+        "url": "https://repo1.maven.org/maven2/org/apache/hive/hive-beeline/$version/hive-beeline-$version-standalone.jar"
+    }
+}
