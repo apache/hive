@@ -122,9 +122,7 @@ struct StageType {
     RANGER_DUMP = 19,
     RANGER_LOAD = 20,
     RANGER_DENY = 21,
-    ATLAS_DUMP = 22,
-    ATLAS_LOAD = 23,
-    CLEAR_DANGLING_TXNS = 24
+    CLEAR_DANGLING_TXNS = 22
   };
 };
 
