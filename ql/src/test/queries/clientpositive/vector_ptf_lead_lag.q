@@ -173,3 +173,34 @@ lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
 lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
 lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
 from vector_ptf_lead_lag_decimal;
+
+
+select "************ HIVE-30136: DOUBLE LITERAL DEFAULT ************";
+set hive.vectorized.execution.ptf.enabled=false;
+select name, rowindex, mynumber,
+lag(mynumber, 1, 2.5) over (partition by name order by mynumber) as lag1_default_double,
+lead(mynumber, 1, 2.5) over (partition by name order by mynumber) as lead1_default_double
+from vector_ptf_lead_lag_double
+where name = 'first' and rowindex in (1, 2, 21);
+
+set hive.vectorized.execution.ptf.enabled=true;
+select name, rowindex, mynumber,
+lag(mynumber, 1, 2.5) over (partition by name order by mynumber) as lag1_default_double,
+lead(mynumber, 1, 2.5) over (partition by name order by mynumber) as lead1_default_double
+from vector_ptf_lead_lag_double
+where name = 'first' and rowindex in (1, 2, 21);
+
+select "************ HIVE-30136: DECIMAL LITERAL DEFAULT ************";
+set hive.vectorized.execution.ptf.enabled=false;
+select name, rowindex, mynumber,
+lag(mynumber, 1, 2.5) over (partition by name order by mynumber) as lag1_default_decimal,
+lead(mynumber, 1, 2.5) over (partition by name order by mynumber) as lead1_default_decimal
+from vector_ptf_lead_lag_decimal
+where name = 'first' and rowindex in (1, 2, 21);
+
+set hive.vectorized.execution.ptf.enabled=true;
+select name, rowindex, mynumber,
+lag(mynumber, 1, 2.5) over (partition by name order by mynumber) as lag1_default_decimal,
+lead(mynumber, 1, 2.5) over (partition by name order by mynumber) as lead1_default_decimal
+from vector_ptf_lead_lag_decimal
+where name = 'first' and rowindex in (1, 2, 21);
