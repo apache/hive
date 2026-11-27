@@ -19,15 +19,20 @@
 
 package org.apache.iceberg.mr.mapreduce;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ScanTaskGroup;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.util.ContentFileUtil;
 import org.apache.iceberg.util.SerializationUtil;
 
 // Since this class extends `mapreduce.InputSplit and implements `mapred.InputSplit`, it can be returned by both MR v1
@@ -80,7 +85,11 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
 
   @Override
   public void write(DataOutput out) throws IOException {
-    byte[] data = SerializationUtil.serializeToBytes(this.taskGroup);
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (ObjectOutputStream stream = new TaskGroupOutputStream(bytes)) {
+      stream.writeObject(taskGroup);
+    }
+    byte[] data = bytes.toByteArray();
     out.writeInt(data.length);
     out.write(data);
   }
@@ -90,5 +99,25 @@ public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
     byte[] data = new byte[in.readInt()];
     in.readFully(data);
     this.taskGroup = SerializationUtil.deserializeFromBytes(data);
+  }
+
+  /**
+   * Writes the delete files that are not file-scoped without their column stats: a task reads none of them. A
+   * file-scoped delete keeps the file_path bounds that name its data file.
+   */
+  private static final class TaskGroupOutputStream extends ObjectOutputStream {
+
+    TaskGroupOutputStream(OutputStream out) throws IOException {
+      super(out);
+      enableReplaceObject(true);
+    }
+
+    @Override
+    protected Object replaceObject(Object obj) {
+      if (obj instanceof DeleteFile delete && ContentFileUtil.referencedDataFile(delete) == null) {
+        return delete.copyWithoutStats();
+      }
+      return obj;
+    }
   }
 }
