@@ -38,9 +38,10 @@ import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableIntList;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.google.common.collect.ImmutableList;
+
+import javax.annotation.Nullable;
 
 public class HiveSqlCountAggFunction extends SqlAggFunction {
   final SqlReturnTypeInference returnTypeInference;

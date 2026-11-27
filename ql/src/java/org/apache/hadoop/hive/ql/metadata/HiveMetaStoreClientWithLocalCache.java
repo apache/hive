@@ -58,11 +58,11 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.thrift.TException;
-import org.checkerframework.checker.index.qual.NonNegative;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnegative;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -129,7 +129,7 @@ public class HiveMetaStoreClientWithLocalCache extends MetaStoreClientWrapper {
     int initSize = 100;
     Weigher<CacheKey, Object> weigher = new Weigher<CacheKey, Object>() {
       @Override
-      public @NonNegative int weigh(@NonNull CacheKey key, @NonNull Object val) {
+      public @Nonnegative int weigh(@NonNull CacheKey key, @NonNull Object val) {
         return MetaStoreClientCacheUtils.getWeight(key, val, sizeEstimator);
       }
     };
