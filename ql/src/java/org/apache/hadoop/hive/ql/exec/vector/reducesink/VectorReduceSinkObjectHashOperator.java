@@ -254,6 +254,15 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
 
       final int size = batch.size;
 
+      // Partition columns that all repeat give every row of the batch the same hashCode.
+      final boolean isRepeatingPartition =
+          !isEmptyPartitions && isRepeating(batch, reduceSinkPartitionColumnMap);
+      int repeatingPartitionHashCode = 0;
+      if (isRepeatingPartition) {
+        partitionVectorExtractRow.extractRow(batch, 0, partitionFieldValues);
+        repeatingPartitionHashCode = partitionHashFunc.applyAsInt(partitionFieldValues);
+      }
+
       for (int logical = 0; logical< size; logical++) {
         final int batchIndex = (selectedInUse ? selected[logical] : logical);
         int hashCode;
@@ -265,6 +274,8 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
             // Empty partition, multiple reducers -> random hashCode
             hashCode = nonPartitionRandom.nextInt();
           }
+        } else if (isRepeatingPartition) {
+          hashCode = repeatingPartitionHashCode;
         } else {
           // Compute hashCode from partitions
           partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
@@ -287,6 +298,15 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  private static boolean isRepeating(VectorizedRowBatch batch, int[] columnMap) {
+    for (int column : columnMap) {
+      if (!batch.cols[column].isRepeating) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void processKey(VectorizedRowBatch batch, int batchIndex, int tag)
