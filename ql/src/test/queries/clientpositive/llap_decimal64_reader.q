@@ -4,7 +4,6 @@ SET hive.vectorized.execution.enabled=true;
 SET hive.llap.io.enabled=false;
 
 SET hive.exec.orc.default.row.index.stride=1000;
-SET hive.optimize.index.filter=true;
 set hive.auto.convert.join=false;
 
 DROP TABLE orc_llap_n0;

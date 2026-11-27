@@ -10,7 +10,6 @@ set hive.convert.join.bucket.mapjoin.tez=true;
 set hive.fetch.task.conversion=none;
 set hive.merge.nway.joins=false;
 set hive.optimize.dynamic.partition.hashjoin=true;
-set hive.optimize.index.filter=true;
 set hive.optimize.remove.sq_count_check=true;
 set hive.prewarm.enabled=false;
 set hive.join.inner.residual=false;

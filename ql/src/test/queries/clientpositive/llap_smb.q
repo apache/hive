@@ -8,7 +8,6 @@ SET hive.vectorized.execution.enabled=true;
 SET hive.llap.io.enabled=true;
 SET hive.exec.orc.default.buffer.size=32768;
 SET hive.exec.orc.default.row.index.stride=1000;
-SET hive.optimize.index.filter=true;
 set hive.fetch.task.conversion=none;
 
 

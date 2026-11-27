@@ -11,7 +11,6 @@ load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merg
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET mapred.min.split.size=1000;
 SET mapred.max.split.size=50000;
-SET hive.optimize.index.filter=true;
 set hive.merge.orcfile.stripe.level=false;
 set hive.merge.tezfiles=false;
 set hive.merge.mapfiles=false;

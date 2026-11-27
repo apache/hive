@@ -1,5 +1,4 @@
 set hive.explain.user=true;
-set hive.optimize.index.filter=true;
 set hive.auto.convert.join=true;
 set hive.vectorized.execution.enabled=true;
 
@@ -45,7 +44,6 @@ alter table x1_date_dim update statistics set(
 set hive.auto.convert.join.noconditionaltask.size=1;
 set hive.tez.dynamic.partition.pruning=true;
 set hive.tez.dynamic.semijoin.reduction=true;
-set hive.optimize.index.filter=true;
 set hive.tez.bigtable.minsize.semijoin.reduction=1;
 set hive.tez.min.bloom.filter.entries=1;
 set hive.tez.bloom.filter.factor=1.0f;
