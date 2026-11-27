@@ -30,11 +30,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -872,11 +870,7 @@ public class MetaStoreServerUtils {
     // when schematool or metatool use this, its possible that the saslServer.getRemoteAddress() returns null
     // use localhost address first to see if it part of hadoop.proxyuser hosts.
     if (ipAddress == null) {
-      try {
-        ipAddress = InetAddress.getLocalHost().getHostAddress();
-      } catch (UnknownHostException e) {
-        ipAddress = StringUtils.EMPTY;
-      }
+      ipAddress = MetaStoreUtils.getHostAddressString();
     }
     return machineList.includes(ipAddress);
   }
@@ -932,7 +926,7 @@ public class MetaStoreServerUtils {
     while (true) {
       try {
         Socket socket = new Socket();
-        socket.connect(new InetSocketAddress(port), 5000);
+        socket.connect(new InetSocketAddress("localhost", port), 5000);
         socket.close();
         return;
       } catch (Exception e) {

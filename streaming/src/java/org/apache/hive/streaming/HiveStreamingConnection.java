@@ -21,8 +21,6 @@ package org.apache.hive.streaming;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +37,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.StreamCapabilities;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -187,12 +186,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     this.recordWriter = builder.recordWriter;
     this.connectionStats = new ConnectionStats();
     if (agentInfo == null) {
-      try {
-        agentInfo = username + ":" + InetAddress.getLocalHost().getHostName() + ":" + Thread.currentThread().getName();
-      } catch (UnknownHostException e) {
-        // ignore and use UUID instead
-        this.agentInfo = UUID.randomUUID().toString();
-      }
+      agentInfo = username + ":" + ServerUtils.hostname() + ":" + Thread.currentThread().getName();
     }
     if (conf == null) {
       conf = createHiveConf(this.getClass(), DEFAULT_METASTORE_URI);
