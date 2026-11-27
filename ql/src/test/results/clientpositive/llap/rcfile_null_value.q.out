@@ -279,6 +279,6 @@ POSTHOOK: Input: default@dest1_rc
 18	val_18	18	val_18
 18	val_18	18	val_18
 19	val_19	19	val_19
+NULL	NULL	24	val_24
+NULL	NULL	24	val_24
 NULL	NULL	20	val_20
-NULL	NULL	24	val_24
-NULL	NULL	24	val_24

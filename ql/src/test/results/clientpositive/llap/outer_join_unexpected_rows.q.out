@@ -12,8 +12,8 @@ select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1	x	NULL	NULL
 NULL	NULL	0	a
+1	x	NULL	NULL
 1	y	1	y
 PREHOOK: query: create table t_y (id integer,s string)
 PREHOOK: type: CREATETABLE
@@ -61,8 +61,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_xy
 POSTHOOK: Input: default@t_y
 #### A masked pattern was here ####
-1	x	NULL	NULL
 NULL	NULL	0	a
+1	x	NULL	NULL
 1	y	1	y
 1	y	1	x
 PREHOOK: query: select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
@@ -75,8 +75,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_xy
 POSTHOOK: Input: default@t_y
 #### A masked pattern was here ####
-1	x	NULL	NULL
 NULL	NULL	0	a
+1	x	NULL	NULL
 1	y	1	y
 1	y	1	x
 PREHOOK: query: select * from t_xy l full outer join t_y r on (l.id=r.id and l.s='y')
@@ -89,7 +89,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_xy
 POSTHOOK: Input: default@t_y
 #### A masked pattern was here ####
-1	x	NULL	NULL
 NULL	NULL	0	a
+1	x	NULL	NULL
 1	y	1	y
 1	y	1	x

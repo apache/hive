@@ -265,11 +265,11 @@ POSTHOOK: Input: default@table_list_types1
 #### A masked pattern was here ####
 1	[1,1]	[2,1]	1	[1,1]	[2,1]
 6	[1,1,1]	[1,2,3]	4	[1,1,1]	[1,2,3]
-8	[1,1,1,1]	[4,3,2,1]	6	[1,1,1,1]	[2,2,2,2]
 2	[1,2]	[2,2]	2	[1,2]	[2,2]
-7	[1,2,3]	[3,2,1]	5	[1,2,3]	[2,2,2]
-5	[1,4]	[null,4]	3	[1,4]	[1,3]
 4	[1,4]	[1,4]	3	[1,4]	[1,3]
+5	[1,4]	[null,4]	3	[1,4]	[1,3]
+8	[1,1,1,1]	[4,3,2,1]	6	[1,1,1,1]	[2,2,2,2]
+7	[1,2,3]	[3,2,1]	5	[1,2,3]	[2,2,2]
 PREHOOK: query: explain select * from table_list_types t1 inner join table_list_types1 t2 on t1.c2 = t2.c2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_list_types
@@ -365,9 +365,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_list_types
 POSTHOOK: Input: default@table_list_types1
 #### A masked pattern was here ####
+2	[1,2]	[2,2]	2	[1,2]	[2,2]
 6	[1,1,1]	[1,2,3]	4	[1,1,1]	[1,2,3]
 1	[1,1]	[2,1]	1	[1,1]	[2,1]
-2	[1,2]	[2,2]	2	[1,2]	[2,2]
 PREHOOK: query: explain select * from table_list_types t1 inner join table_list_types1 t2 on t1.c1 = t2.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_list_types
