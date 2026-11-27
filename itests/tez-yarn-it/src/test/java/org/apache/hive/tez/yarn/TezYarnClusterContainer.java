@@ -18,6 +18,7 @@
  */
 package org.apache.hive.tez.yarn;
 
+import com.github.dockerjava.api.exception.DockerException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
@@ -30,6 +31,7 @@ import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -41,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * Starts an HDFS + YARN cluster from docker-compose.yml via Testcontainers ComposeContainer.
@@ -51,7 +54,11 @@ public class TezYarnClusterContainer {
 
   private static final Logger LOG = LoggerFactory.getLogger(TezYarnClusterContainer.class);
 
-  public static final String CONTAINER_JAVA_HOME = "/opt/jdk21";
+  public static final String CONTAINER_JAVA_HOME = "/opt/jdk25";
+
+  // Must match the "image:" entries in docker-compose.yml.
+  private static final String HADOOP_IMAGE_REPOSITORY = "hive-it-hadoop";
+  private static final String HADOOP_IMAGE_TAG = "latest";
 
   private final String hadoopImage;
 
@@ -102,6 +109,7 @@ public class TezYarnClusterContainer {
 
   public void stop() {
     compose.stop();
+    untagHadoopImage();
   }
 
   public String getHdfsUri() {
@@ -291,9 +299,30 @@ public class TezYarnClusterContainer {
   private static String buildHadoopImage() {
     String basedir = System.getProperty("basedir", ".");
     Path dockerfile = Paths.get(basedir, "src/test/docker/hadoop-yarn/Dockerfile");
-    String imageName = "hive-it-hadoop-" + java.util.UUID.randomUUID();
-    return new ImageFromDockerfile(imageName, false)
+    String imageName = HADOOP_IMAGE_REPOSITORY + "-" + UUID.randomUUID();
+    String builtImage = new ImageFromDockerfile(imageName, true)
         .withDockerfile(dockerfile)
         .get();
+    // docker-compose.yml references the fixed tag, so point it at the image just built;
+    // otherwise compose would use a stale local tag or try to pull it from a registry.
+    DockerClientFactory.instance().client()
+        .tagImageCmd(builtImage, HADOOP_IMAGE_REPOSITORY, HADOOP_IMAGE_TAG)
+        .withForce()
+        .exec();
+    LOG.info("Tagged {} as {}:{}", builtImage, HADOOP_IMAGE_REPOSITORY, HADOOP_IMAGE_TAG);
+    return builtImage;
+  }
+
+  /**
+   * Drops the fixed tag so Ryuk can delete the image built by {@link #buildHadoopImage()} on JVM
+   * exit: it removes images by ID without force, which Docker refuses while a second tag exists.
+   */
+  private static void untagHadoopImage() {
+    String taggedImage = HADOOP_IMAGE_REPOSITORY + ":" + HADOOP_IMAGE_TAG;
+    try {
+      DockerClientFactory.instance().client().removeImageCmd(taggedImage).exec();
+    } catch (DockerException e) {
+      LOG.info("Failed to remove tag {}", taggedImage, e);
+    }
   }
 }
