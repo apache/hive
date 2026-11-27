@@ -37,11 +37,13 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByFilterRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
@@ -143,20 +145,21 @@ public class GetPartitionsHandler<R, T> extends AbstractRequestHandler<GetPartit
   }
 
   private void checkLimitNumberOfPartitionsByPs(List<String> partVals, int requestMax) throws TException {
-    if (exceedsPartitionFetchLimit(requestMax)) {
-      checkLimitNumberOfPartitions(tblName, rs.getNumPartitionsByPs(catName, dbName, tblName, partVals));
+    if (exceedsPartitionFetchLimit(conf, requestMax)) {
+      checkLimitNumberOfPartitions(conf, tblName,
+          rs.getNumPartitionsByPs(catName, dbName, tblName, partVals));
     }
   }
 
   private GetPartitionsResult<Partition> getPartitionsByFilter(GetPartitionsByFilterRequest filterReq) throws TException {
     List<Partition> ret;
     GetPartitionsArgs args = GetPartitionsArgs.from(filterReq);
-    if (exceedsPartitionFetchLimit(args.getMax())) {
+    if (exceedsPartitionFetchLimit(conf, args.getMax())) {
       // Since partition limit is configured, we need fetch at most (limit + 1) partition names
       int max = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST) + 1;
       args = new GetPartitionsArgs.GetPartitionsArgsBuilder(args).max(max).build();
       List<String> partNames = rs.listPartitionNamesByFilter(catName, dbName, tblName, args);
-      checkLimitNumberOfPartitions(tblName, partNames.size());
+      checkLimitNumberOfPartitions(conf, tblName, partNames.size());
       ret = rs.getPartitionsByNames(catName, dbName, tblName,
           new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build());
     } else {
@@ -183,7 +186,7 @@ public class GetPartitionsHandler<R, T> extends AbstractRequestHandler<GetPartit
     rs.openTransaction();
     try {
       GetPartitionsArgs args = GetPartitionsArgs.from(gpbr);
-      checkLimitNumberOfPartitions(tblName, args.getPartNames().size());
+      checkLimitNumberOfPartitions(conf, tblName, args.getPartNames().size());
       ret = rs.getPartitionsByNames(catName, dbName, tblName, args);
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
 
@@ -240,8 +243,8 @@ public class GetPartitionsHandler<R, T> extends AbstractRequestHandler<GetPartit
   }
 
   private void checkLimitNumberOfPartitionsByFilter(String filterString, int requestMax) throws TException {
-    if (exceedsPartitionFetchLimit(requestMax)) {
-      checkLimitNumberOfPartitions(tblName, rs.getNumPartitionsByFilter(catName, dbName, tblName, filterString));
+    if (exceedsPartitionFetchLimit(conf, requestMax)) {
+      checkLimitNumberOfPartitions(conf, tblName, rs.getNumPartitionsByFilter(catName, dbName, tblName, filterString));
     }
   }
 
@@ -254,12 +257,12 @@ public class GetPartitionsHandler<R, T> extends AbstractRequestHandler<GetPartit
     } else {
       List<Partition> partitions = new LinkedList<>();
       boolean hasUnknownPartitions = false;
-      if (exceedsPartitionFetchLimit(args.getMax())) {
+      if (exceedsPartitionFetchLimit(conf, args.getMax())) {
         // Since partition limit is configured, we need fetch at most (limit + 1) partition names
-        int max = MetastoreConf.getIntVar(handler.getConf(), MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST) + 1;
+        int max = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST) + 1;
         List<String> partNames = rs.listPartitionNames(catName, dbName, tblName, args.getDefaultPartName(),
             args.getExpr(), null, max);
-        checkLimitNumberOfPartitions(tblName, partNames.size());
+        checkLimitNumberOfPartitions(conf, tblName, partNames.size());
         partitions = rs.getPartitionsByNames(catName, dbName, tblName,
             new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build());
       } else {
@@ -274,18 +277,75 @@ public class GetPartitionsHandler<R, T> extends AbstractRequestHandler<GetPartit
   // Check input count exceeding partition limit iff:
   //  1. partition limit is enabled.
   //  2. input count is greater than the limit.
-  private boolean exceedsPartitionFetchLimit(int count) {
+  public static boolean exceedsPartitionFetchLimit(Configuration conf, int count) {
     int partitionLimit = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST);
     return partitionLimit > -1 && (count < 0 || count > partitionLimit);
   }
 
-  private void checkLimitNumberOfPartitions(String tblName, int numPartitions) throws MetaException {
-    if (exceedsPartitionFetchLimit(numPartitions)) {
+  public static void checkLimitNumberOfPartitions(Configuration conf, String tblName, int numPartitions)
+      throws MetaException {
+    if (exceedsPartitionFetchLimit(conf, numPartitions)) {
       int partitionLimit = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST);
       String configName = MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST.toString();
       throw new MetaException(String.format(PARTITION_NUMBER_EXCEED_LIMIT_MSG, numPartitions,
           tblName, partitionLimit, configName));
     }
+  }
+
+  // Fail fast before the expensive partition fetch performed by get_partitions_with_specs:
+  // when the partition limit is configured, count the partitions the filter spec would match
+  // with cheap count queries (mirroring checkLimitNumberOfPartitionsByFilter /
+  // checkLimitNumberOfPartitionsByPs) and reject the request before the partitions are
+  // materialized. The check on the fetched result remains as the final backstop.
+  public static void checkLimitNumberOfPartitionsByFilterSpec(Configuration conf, RawStore rs,
+      String catName, String dbName, String tblName, GetPartitionsFilterSpec filterSpec)
+      throws MetaException, NoSuchObjectException {
+    if (MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST) < 0) {
+      // partition limit is not configured; nothing to fail fast on
+      return;
+    }
+    if (filterSpec == null || !filterSpec.isSetFilterMode()) {
+      // filter mode is not set: all partitions of the table would be returned
+      checkLimitNumberOfPartitions(conf, tblName,
+          rs.getNumPartitionsByFilter(catName, dbName, tblName, NO_FILTER_STRING));
+      return;
+    }
+    List<String> filters = filterSpec.getFilters();
+    if (filters == null || filters.isEmpty()) {
+      // the store rejects a set filter mode without filters; nothing to count up front
+      return;
+    }
+    switch (filterSpec.getFilterMode()) {
+    case BY_NAMES:
+      // mirror get_partitions_by_names: check the requested partition names count
+      checkLimitNumberOfPartitions(conf, tblName, filters.size());
+      break;
+    case BY_VALUES:
+      // counts exactly the partitions the BY_VALUES fetch would return: both use
+      // MetaStoreUtils.makePartNameMatcher on the same values
+      checkLimitNumberOfPartitions(conf, tblName,
+          rs.getNumPartitionsByPs(catName, dbName, tblName, filters));
+      break;
+    case BY_EXPR:
+      // same filter grammar the projection path parses (see initExpressionTree)
+      checkLimitNumberOfPartitions(conf, tblName,
+          rs.getNumPartitionsByFilter(catName, dbName, tblName, joinFilterExpressions(filters)));
+      break;
+    default:
+      // unknown filter mode: rejected by the store during the fetch itself
+      break;
+    }
+  }
+
+  private static String joinFilterExpressions(List<String> filters) {
+    StringBuilder filterBuilder = new StringBuilder();
+    for (int i = 0; i < filters.size(); i++) {
+      filterBuilder.append('(').append(filters.get(i)).append(')');
+      if (i + 1 < filters.size()) {
+        filterBuilder.append(" AND ");
+      }
+    }
+    return filterBuilder.toString();
   }
 
   @Override
