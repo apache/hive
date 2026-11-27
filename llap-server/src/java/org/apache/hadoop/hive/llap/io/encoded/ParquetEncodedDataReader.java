@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
+import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetBloomFilters;
 import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
 import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
@@ -273,9 +274,10 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
   /**
    * The row groups this split has to read: the ones whose first data page falls inside the split, as
    * Parquet's own input format assigns them, minus any the pushed-down predicate rules out on its
-   * statistics. Returned in file order, since the fetch pipeline reads them in that order.
+   * statistics or bloom filters. Returned in file order, since the fetch pipeline reads them in that order.
    */
-  private List<BlockMetaData> selectRowGroups(List<BlockMetaData> blocks, MessageType fileSchema) {
+  private List<BlockMetaData> selectRowGroups(List<BlockMetaData> blocks, MessageType fileSchema)
+      throws IOException {
     long splitStart = split.getStart();
     long splitEnd = splitStart + split.getLength();
     List<BlockMetaData> selected = new ArrayList<>();
@@ -289,7 +291,11 @@ public class ParquetEncodedDataReader extends CallableWithNdc<Void>
     if (predicate == null) {
       return selected;
     }
-    return RowGroupFilter.filterRowGroups(FilterCompat.get(predicate), selected, fileSchema);
+    FilterCompat.Filter filter = FilterCompat.get(predicate);
+    // A miss opens the inode the filters are keyed on, as openFile does for the data.
+    Path filtersPath = (fileKey == null) ? path : HdfsUtils.getFileIdPath(path, fileKey, daemonConf);
+    return ParquetBloomFilters.filterRowGroups(filter, RowGroupFilter.filterRowGroups(filter, selected, fileSchema),
+        footer.getFileMetaData(), filtersPath, jobConf, fileKey, cacheTag);
   }
 
   /** Whether the projection reaches into a group type, which this reader does not decode. */
