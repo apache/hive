@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnector
 import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
 import org.apache.hadoop.hive.metastore.metastore.impl.ColStatsStoreImpl;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -85,6 +86,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -1403,6 +1405,74 @@ public abstract class TestHiveMetaStore {
       System.err.println("testDatabaseLocationOnDrop() failed.");
       throw e;
     }
+  }
+
+  /**
+   * HIVE-30284: DROP DATABASE CASCADE must delete the managed dir even when
+   * table count exceeds {@link ConfVars#BATCH_RETRIEVE_MAX} (i.e. the
+   * dropDatabaseCascadePerTable path). Uses txnId=0 + softDelete=false to
+   * match what Hive.dropDatabase sends on a non-ACID session.
+   */
+  @Test
+  public void testDropDatabaseCascadeDeletesManagedDirForLargeDb() throws Throwable {
+    silentDropDatabase(TEST_DB1_NAME);
+
+    String dbLocation =
+        MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/testdb_cascade.db";
+    String mgdLocation =
+        MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/testdb_cascade.db";
+    new DatabaseBuilder()
+        .setName(TEST_DB1_NAME)
+        .setLocation(dbLocation)
+        .setManagedLocation(mgdLocation)
+        .create(client, conf);
+
+    // Use the URI the server assigned so transformers / auth rewrites are honoured.
+    Path mgdPath = new Path(client.getDatabase(TEST_DB1_NAME).getManagedLocationUri());
+
+    // setUp() sets BATCH_RETRIEVE_MAX=2, so 3 tables forces dropDatabaseCascadePerTable.
+    int numTables = (int) MetastoreConf.getLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX) + 1;
+    for (int i = 0; i < numTables; i++) {
+      new TableBuilder()
+          .setDbName(TEST_DB1_NAME)
+          .setTableName("t_" + i)
+          .addCol("id", ColumnType.INT_TYPE_NAME)
+          .create(client, conf);
+    }
+
+    FileSystem mgdFs = FileSystem.get(mgdPath.toUri(), conf);
+    org.junit.Assume.assumeTrue(
+        "Managed dir not materialized in this harness", mgdFs.exists(mgdPath));
+
+    // Mirror Hive.dropDatabase: txnId=0 still flips the thrift isSet bit, which is the trigger.
+    DropDatabaseRequest req = new DropDatabaseRequest();
+    req.setCatalogName(MetaStoreUtils.getDefaultCatalog(conf));
+    req.setName(TEST_DB1_NAME);
+    req.setIgnoreUnknownDb(false);
+    req.setDeleteData(true);
+    req.setCascade(true);
+    req.setSoftDelete(false);
+    req.setTxnId(0L);
+    client.dropDatabase(req);
+
+    boolean objectNotExist = false;
+    try {
+      client.getDatabase(TEST_DB1_NAME);
+    } catch (NoSuchObjectException e) {
+      objectNotExist = true;
+    }
+    assertTrue("DB metadata should be gone", objectNotExist);
+    assertFalse("Managed dir leaked after CASCADE drop", mgdFs.exists(mgdPath));
+
+    // Would fail with "Unable to create database managed directory" if the dir was leaked.
+    new DatabaseBuilder()
+        .setName(TEST_DB1_NAME)
+        .setLocation(dbLocation)
+        .setManagedLocation(mgdLocation)
+        .create(client, conf);
+    assertNotNull(client.getDatabase(TEST_DB1_NAME));
+
+    silentDropDatabase(TEST_DB1_NAME);
   }
 
   @Test
