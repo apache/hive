@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -959,7 +960,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       ExprNodeGenericFuncDesc pruningExpr = SerializationUtilities.deserializeExpression(pruningFilter);
       if (filterExpr != null) {
         // Combine the 2 filters with AND
-        filterExpr = ExprNodeDescUtils.and(filterExpr, pruningExpr);
+        ExprNodeDesc combinedExpr = ExprNodeDescUtils.and(filterExpr, pruningExpr);
+        if (combinedExpr instanceof ExprNodeGenericFuncDesc combinedFuncExpr) {
+          filterExpr = combinedFuncExpr;
+        }
       } else {
         // Use the pruning filter if there was no filter before
         filterExpr = pruningExpr;

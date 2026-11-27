@@ -153,7 +153,8 @@ public class SemiJoinReductionMerge extends Transform {
         }
       }
       // Update tableScan with the new semi-join predicate
-      sjTargetTable.getConf().setFilterExpr(and(sjTargetTable.getConf().getFilterExpr(), sjPredicate));
+      sjTargetTable.getConf()
+          .setFilterExpr((ExprNodeGenericFuncDesc) and(sjTargetTable.getConf().getFilterExpr(), sjPredicate));
 
       for (ReduceSinkOperator rs : sjBranches) {
         GenTezUtils.removeSemiJoinOperator(parseContext, rs, sjTargetTable);
@@ -249,7 +250,8 @@ public class SemiJoinReductionMerge extends Transform {
     sjPredicates.add(
         new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFInBloomFilter(), "in_bloom_filter",
             Arrays.asList(hashExp, new ExprNodeDynamicValueDesc(bloomDynamic))));
-    return and(sjPredicates);
+    // There are always at least two distinct predicates (BETWEEN and IN_BLOOM_FILTER) so the result is an AND
+    return (ExprNodeGenericFuncDesc) and(sjPredicates);
   }
 
   /**
