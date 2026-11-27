@@ -32,7 +32,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ldap.support.LdapEncoder;
 
 /**
  * Implements search for LDAP.
@@ -184,7 +183,7 @@ public final class LdapSearch implements DirSearch {
    */
   @Override
   public List<String> executeUserAndGroupFilterQuery(String user, String userDn, String groupSearchFilter, String groupBaseDn) throws NamingException {
-    String userDnTransformed = Matcher.quoteReplacement(LdapEncoder.filterEncode(userDn));
+    String userDnTransformed = Matcher.quoteReplacement(LdapUtils.escapeFilterValue(userDn));
     Query query = queries.findDnByUserAndGroupSearch(user, userDnTransformed, groupSearchFilter);
     return execute(Collections.singletonList(groupBaseDn), query).getAllLdapNames();
   }
