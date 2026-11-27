@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.cli.S3Container;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -94,6 +95,7 @@ public class QTestMiniClusters {
   private HadoopShims.HdfsEncryptionShim hes = null;
   private MiniLlapCluster llapCluster = null;
   private SingleNodeKafkaCluster kafkaCluster = null;
+  private S3Container s3Container;
 
   public enum CoreClusterType {
     MR, TEZ
@@ -222,6 +224,7 @@ public class QTestMiniClusters {
     this.clusterType = testArgs.getClusterType();
     this.testArgs = testArgs;
 
+    setupS3(conf);
     setupFileSystem(testArgs.getFsType(), conf);
 
     this.setup = testArgs.getQTestSetup();
@@ -327,6 +330,11 @@ public class QTestMiniClusters {
       SessionState.get().getTezSession().destroy();
     }
 
+    if (s3Container != null) {
+      s3Container.stop();
+      s3Container = null;
+    }
+
     if (kafkaCluster != null) {
       kafkaCluster.stop();
       kafkaCluster = null;
@@ -397,6 +405,16 @@ public class QTestMiniClusters {
             e.getMessage());
       }
     }
+  }
+
+  private void setupS3(HiveConf conf) {
+    S3Container.Bucket bucket = testArgs.getS3Bucket();
+    if (bucket == null) {
+      return;
+    }
+    s3Container = new S3Container(bucket);
+    s3Container.start();
+    s3Container.applyS3Settings(conf);
   }
 
   private void setupFileSystem(FsType fsType, HiveConf conf) throws IOException {
