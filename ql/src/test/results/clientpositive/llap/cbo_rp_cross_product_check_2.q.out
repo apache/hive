@@ -238,7 +238,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[34][tables = [a_n18, ]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[35][tables = [a_n18, ]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from A_n18 join 
          (select d1.key 
           from B_n14 d1 join B_n14 d2 on d1.key = d2.key 
@@ -290,7 +290,7 @@ STAGE PLANS:
                 TableScan
                   alias: od1:d1
                   filterExpr: key is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_33_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.0
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:key, smallTablePos:1, keyRatio:2.0
                   Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -299,22 +299,24 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: key
                       Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 key (type: string)
-                          1 key (type: string)
-                        outputColumnNames: key
-                        input vertices:
-                          1 Map 5
-                        Statistics: Num rows: 20 Data size: 1720 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: key (type: string)
-                          outputColumnNames: key
+                      Group By Operator
+                        keys: key (type: string)
+                        minReductionHashAggr: 0.5
+                        mode: partialhash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col0 (type: string)
+                            1 key (type: string)
+                          outputColumnNames: _col0
+                          input vertices:
+                            1 Map 5
                           Statistics: Num rows: 20 Data size: 1720 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
-                            keys: key (type: string)
+                            keys: _col0 (type: string)
                             minReductionHashAggr: 0.75
                             mode: hash
                             outputColumnNames: _col0
@@ -386,8 +388,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[17][tables = [od1:d1, od1:d2]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[18][tables = [a_n18, ]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[18][tables = [od1:d1, od1:d2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[19][tables = [a_n18, ]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from A_n18 join (select d1.key from B_n14 d1 join B_n14 d2 where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n18
@@ -437,11 +439,17 @@ STAGE PLANS:
                     expressions: key (type: string)
                     outputColumnNames: key
                     Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
+                    Group By Operator
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.5
+                      mode: partialhash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: key (type: string)
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 6 
@@ -484,24 +492,20 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: key
+                outputColumnNames: _col0
                 Statistics: Num rows: 100 Data size: 8600 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: key (type: string)
-                  outputColumnNames: key
-                  Statistics: Num rows: 100 Data size: 8600 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: key (type: string)
-                    minReductionHashAggr: 0.95
-                    mode: hash
-                    outputColumnNames: _col0
+                Group By Operator
+                  keys: _col0 (type: string)
+                  minReductionHashAggr: 0.95
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 5 Data size: 430 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -522,7 +526,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[37][tables = [, ]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[38][tables = [, ]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from 
 (select A_n18.key from A_n18 group by key) ss join 
 (select d1.key from B_n14 d1 join B_n14 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
@@ -580,7 +584,7 @@ STAGE PLANS:
                 TableScan
                   alias: od1:d1
                   filterExpr: key is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_36_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.0
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_37_container, bigKeyColName:key, smallTablePos:1, keyRatio:2.0
                   Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -589,22 +593,24 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: key
                       Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 key (type: string)
-                          1 key (type: string)
-                        outputColumnNames: key
-                        input vertices:
-                          1 Map 6
-                        Statistics: Num rows: 20 Data size: 1720 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: key (type: string)
-                          outputColumnNames: key
+                      Group By Operator
+                        keys: key (type: string)
+                        minReductionHashAggr: 0.5
+                        mode: partialhash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 10 Data size: 860 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col0 (type: string)
+                            1 key (type: string)
+                          outputColumnNames: _col0
+                          input vertices:
+                            1 Map 6
                           Statistics: Num rows: 20 Data size: 1720 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
-                            keys: key (type: string)
+                            keys: _col0 (type: string)
                             minReductionHashAggr: 0.75
                             mode: hash
                             outputColumnNames: _col0

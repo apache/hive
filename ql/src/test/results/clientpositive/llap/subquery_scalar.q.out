@@ -6263,7 +6263,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t_n11
 POSTHOOK: Lineage: t_n11.i SCRIPT []
 POSTHOOK: Lineage: t_n11.j SCRIPT []
-Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_n11
@@ -6307,11 +6307,18 @@ STAGE PLANS:
                     expressions: j (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int)
+                    Group By Operator
+                      aggregations: count()
+                      keys: _col0 (type: int)
+                      minReductionHashAggr: 0.5
+                      mode: partialhash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: bigint)
                   Filter Operator
                     predicate: i is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6363,27 +6370,23 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col2, _col1
                 residual filter predicates: {(_col0 <> _col1)}
-                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col1 (type: int)
-                  outputColumnNames: _col1
-                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    aggregations: count()
-                    keys: _col1 (type: int)
-                    minReductionHashAggr: 0.5
-                    mode: hash
-                    outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(_col2)
+                  keys: _col1 (type: int)
+                  minReductionHashAggr: 0.5
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: bigint)
+                    value expressions: _col1 (type: bigint)
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -6424,7 +6427,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_n11
@@ -6434,7 +6437,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_n11
 #### A masked pattern was here ####
 1	1
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_n11
@@ -6467,11 +6470,18 @@ STAGE PLANS:
                     expressions: i (type: int), j (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int)
+                    Group By Operator
+                      aggregations: sum(_col0), count(_col0)
+                      keys: _col1 (type: int)
+                      minReductionHashAggr: 0.5
+                      mode: partialhash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint)
                   Filter Operator
                     predicate: i is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6509,27 +6519,23 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2
-                residual filter predicates: {(_col1 <> _col2)}
-                Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col0 (type: int), _col2 (type: int)
-                  outputColumnNames: _col0, _col2
-                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    aggregations: sum(_col0), count(_col0)
-                    keys: _col2 (type: int)
-                    minReductionHashAggr: 0.5
-                    mode: hash
-                    outputColumnNames: _col0, _col1, _col2
+                outputColumnNames: _col0, _col1, _col3, _col2
+                residual filter predicates: {(_col0 <> _col2)}
+                Statistics: Num rows: 4 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col1), count(_col3)
+                  keys: _col2 (type: int)
+                  minReductionHashAggr: 0.5
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: bigint), _col2 (type: bigint)
+                    value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -6590,7 +6596,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_n11

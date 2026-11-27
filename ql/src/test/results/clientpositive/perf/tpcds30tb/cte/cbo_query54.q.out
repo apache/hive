@@ -6,12 +6,12 @@ CTE Suggestion:
 HiveFilter(condition=[AND(=($6, 1999), =($8, 3), IS NOT NULL($3))])
   HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
-Warning: Map Join MAPJOIN[296][bigTable=?] in task 'Map 3' is a cross product
-Warning: Map Join MAPJOIN[302][bigTable=?] in task 'Reducer 11' is a cross product
-Warning: Map Join MAPJOIN[329][bigTable=?] in task 'Map 12' is a cross product
+Warning: Map Join MAPJOIN[297][bigTable=?] in task 'Map 3' is a cross product
+Warning: Map Join MAPJOIN[303][bigTable=?] in task 'Reducer 11' is a cross product
 Warning: Map Join MAPJOIN[330][bigTable=?] in task 'Map 12' is a cross product
-Warning: Map Join MAPJOIN[349][bigTable=?] in task 'Map 14' is a cross product
+Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Map 12' is a cross product
 Warning: Map Join MAPJOIN[350][bigTable=?] in task 'Map 14' is a cross product
+Warning: Map Join MAPJOIN[351][bigTable=?] in task 'Map 14' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(segment=[$0], num_customers=[$1], segment_base=[*($0, 50)])
