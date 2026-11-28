@@ -24,22 +24,27 @@ import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.rex.RexUnknownAs;
+import org.apache.calcite.rex.RexWindowBounds;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Sarg;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
@@ -60,6 +65,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableRangeSet;
+import com.google.common.collect.Range;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -505,6 +515,246 @@ public class TestFilterSelectivityEstimator {
     RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, inputRef0, int10);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testNotWithUnknownNdvIsUnknown() {
+    doReturn(null).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode equality = REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1);
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.NOT, equality);
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate));
+  }
+
+  @Test
+  public void testNotWithKnownNdv() {
+    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode equality = REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1);
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.NOT, equality);
+    Assert.assertEquals(0.9, new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate), DELTA);
+  }
+
+  @Test
+  public void testSearchPointWithUnknownNdvIsUnknown() {
+    assertSearchSelectivity(ImmutableRangeSet.of(Range.singleton(BigDecimal.ONE)), null, null);
+  }
+
+  @Test
+  public void testSearchPointsWithUnknownNdvIsUnknown() {
+    assertSearchSelectivity(ImmutableRangeSet.<BigDecimal>builder()
+        .add(Range.singleton(BigDecimal.ONE)).add(Range.singleton(BigDecimal.TEN)).build(), null, null);
+  }
+
+  @Test
+  public void testSearchRangeWithUnknownNdvIsUnknown() {
+    assertSearchSelectivity(ImmutableRangeSet.of(Range.closed(BigDecimal.ONE, BigDecimal.TEN)), null, null);
+  }
+
+  @Test
+  public void testSearchRangesWithUnknownNdvUseDisjunctionFallback() {
+    assertSearchSelectivity(ImmutableRangeSet.<BigDecimal>builder()
+        .add(Range.closed(BigDecimal.ONE, BigDecimal.valueOf(3)))
+        .add(Range.closed(BigDecimal.valueOf(5), BigDecimal.TEN)).build(), null, 0.9999);
+  }
+
+  @Test
+  public void testSearchRangeAndPointWithUnknownNdvUseDisjunctionFallback() {
+    assertSearchSelectivity(ImmutableRangeSet.<BigDecimal>builder()
+        .add(Range.singleton(BigDecimal.ONE))
+        .add(Range.closed(BigDecimal.valueOf(5), BigDecimal.TEN)).build(), null, 0.9999);
+  }
+
+  @Test
+  public void testSearchPointWithKnownNdv() {
+    assertSearchSelectivity(ImmutableRangeSet.of(Range.singleton(BigDecimal.ONE)), 10.0, 0.1);
+  }
+
+  @Test
+  public void testSearchPointsWithKnownNdv() {
+    assertSearchSelectivity(ImmutableRangeSet.<BigDecimal>builder()
+        .add(Range.singleton(BigDecimal.ONE)).add(Range.singleton(BigDecimal.TEN)).build(), 10.0, 0.2);
+  }
+
+  @Test
+  public void testSearchRangeWithKnownNdv() {
+    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode range = REX_BUILDER.makeSearchArgumentLiteral(
+        Sarg.of(RexUnknownAs.UNKNOWN, ImmutableRangeSet.of(Range.closed(BigDecimal.ONE, BigDecimal.TEN))),
+        inputRef0.getType());
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.SEARCH, inputRef0, range);
+    Assert.assertNotNull(new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate));
+  }
+
+  @Test
+  public void testSearchRangeAndPointWithKnownNdv() {
+    assertSearchSelectivity(ImmutableRangeSet.<BigDecimal>builder()
+        .add(Range.singleton(BigDecimal.ONE))
+        .add(Range.closed(BigDecimal.valueOf(5), BigDecimal.TEN)).build(), 10.0, 0.19);
+  }
+
+  @Test
+  public void testOrWithUnknownPartIsUnknownWhenPropagating() {
+    doReturn(null).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.OR,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int2));
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(predicate));
+    Assert.assertNotNull(new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate));
+  }
+
+  @Test
+  public void testAndWithUnknownPartIsUnknownWhenPropagating() {
+    doReturn(null).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1), boolTrue);
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(predicate));
+    Assert.assertEquals(1.0, new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate), DELTA);
+  }
+
+  @Test
+  public void testOrWithKnownNdvIsKnownWhenPropagating() {
+    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.OR,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int2));
+    Assert.assertEquals(0.19, new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(predicate), DELTA);
+  }
+
+  @Test
+  public void testKnownConjunctionAndNegationArePreservedInBothModes() {
+    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(10), REX_BUILDER.makeLiteral(true));
+    RexNode conjunction = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef10, int2));
+    RexNode negation = REX_BUILDER.makeCall(SqlStdOperatorTable.NOT, conjunction);
+    for (boolean propagateUnknown : new boolean[] {false, true}) {
+      FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq, propagateUnknown);
+      Assert.assertEquals(0.01, estimator.estimateSelectivity(conjunction), DELTA);
+      Assert.assertEquals(0.99, estimator.estimateSelectivity(negation), DELTA);
+    }
+  }
+
+  @Test
+  public void testSearchRangesWithUnknownNdvAreUnknownWhenPropagating() {
+    doReturn(null).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode search = REX_BUILDER.makeCall(SqlStdOperatorTable.SEARCH, inputRef0,
+        REX_BUILDER.makeSearchArgumentLiteral(Sarg.of(RexUnknownAs.UNKNOWN, ImmutableRangeSet.<BigDecimal>builder()
+            .add(Range.closed(BigDecimal.ONE, BigDecimal.valueOf(3)))
+            .add(Range.closed(BigDecimal.valueOf(5), BigDecimal.TEN)).build()), inputRef0.getType()));
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(search));
+    Assert.assertNotNull(new FilterSelectivityEstimator(scan, mq).estimateSelectivity(search));
+  }
+
+  @Test
+  public void testSearchMixingOneSidedAndTwoSidedUnknownRangesIsUnknownWhenPropagating() {
+    doReturn(null).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode search = REX_BUILDER.makeCall(SqlStdOperatorTable.SEARCH, inputRef0,
+        REX_BUILDER.makeSearchArgumentLiteral(Sarg.of(RexUnknownAs.UNKNOWN, ImmutableRangeSet.<BigDecimal>builder()
+            .add(Range.lessThan(BigDecimal.valueOf(3)))
+            .add(Range.closed(BigDecimal.valueOf(5), BigDecimal.TEN)).build()), inputRef0.getType()));
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(search));
+    // one-sided range: fixed 1/3; two-sided range: unknown NDV, so the disjunction uses 0.99 for it
+    Assert.assertEquals(0.99333, new FilterSelectivityEstimator(scan, mq).estimateSelectivity(search), 1e-5);
+  }
+
+  @Test
+  public void testNotOverUnknownConjunctIsUnknownWhenPropagating() {
+    doReturn(null).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode conjunction = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1), boolTrue);
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.NOT, conjunction);
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(predicate));
+    Assert.assertEquals(0.0, new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate), DELTA);
+  }
+
+  @Test
+  public void testOrWithNestedUnknownConjunctIsUnknownWhenPropagating() {
+    doReturn(null).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode nestedConjunction = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1), boolTrue);
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.OR, nestedConjunction,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int2));
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(predicate));
+    Assert.assertEquals(0.99, new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate), DELTA);
+  }
+
+  @Test
+  public void testWindowEstimateDependsOnItsArgumentOnly() {
+    RexNode value = REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1);
+    // partition and order keys are not predicates, so a non-boolean key does not make the window unknown
+    RexNode window = REX_BUILDER.makeOver(boolTrue.getType(), SqlStdOperatorTable.LAST_VALUE, List.of(value),
+        List.of(inputRef10), ImmutableList.of(new RexFieldCollation(inputRef10, Set.of())),
+        RexWindowBounds.UNBOUNDED_PRECEDING, RexWindowBounds.CURRENT_ROW, true, true, false, false);
+    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    Assert.assertEquals(0.1, new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(window), DELTA);
+    doReturn(null).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(window));
+  }
+
+  @Test
+  public void testDynamicParamConjunctIsUnknownWhenPropagating() {
+    RexNode dynamicParam = REX_BUILDER.makeDynamicParam(TYPE_FACTORY.createSqlType(SqlTypeName.BOOLEAN), 0);
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.AND, dynamicParam, boolTrue);
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(predicate));
+    Assert.assertEquals(1.0, new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate), DELTA);
+  }
+
+  @Test
+  public void testBooleanCastOfDynamicParamKeepsItsEstimateInBothModes() {
+    RexNode dynamicParam = REX_BUILDER.makeDynamicParam(TYPE_FACTORY.createSqlType(SqlTypeName.NULL), 0);
+    RexNode cast = REX_BUILDER.makeCast(boolTrue.getType(), dynamicParam);
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.AND, cast, boolTrue);
+    for (boolean propagateUnknown : new boolean[] {false, true}) {
+      Assert.assertEquals(1.0,
+          new FilterSelectivityEstimator(scan, mq, propagateUnknown).estimateSelectivity(predicate), DELTA);
+    }
+  }
+
+  @Test
+  public void testCorrelatedVariableConjunctIsUnknownWhenPropagating() {
+    RelDataType correlType = TYPE_FACTORY.builder().add("flag", SqlTypeName.BOOLEAN).build();
+    RexNode correlVariable = REX_BUILDER.makeCorrel(correlType, new CorrelationId(0));
+    RexNode field = REX_BUILDER.makeFieldAccess(correlVariable, "flag", true);
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.AND, field, boolTrue);
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(predicate));
+    Assert.assertEquals(1.0, new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate), DELTA);
+  }
+
+  @Test
+  public void testPropagatingEstimatorHasNoStateAcrossCalls() {
+    doReturn(null).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(10), REX_BUILDER.makeLiteral(true));
+    RexNode known = REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef10, int1);
+    RexNode mixed = REX_BUILDER.makeCall(SqlStdOperatorTable.AND, known,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.EQUALS, inputRef0, int1));
+    for (boolean propagateUnknown : new boolean[] {false, true}) {
+      FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq, propagateUnknown);
+      Assert.assertEquals(0.1, estimator.estimateSelectivity(known), DELTA);
+      if (propagateUnknown) {
+        Assert.assertNull(estimator.estimateSelectivity(mixed));
+      } else {
+        Assert.assertEquals(0.1, estimator.estimateSelectivity(mixed), DELTA);
+      }
+      Assert.assertEquals(0.1, estimator.estimateSelectivity(known), DELTA);
+    }
+  }
+
+  @Test
+  public void testNonBooleanColumnAsPredicateIsUnknownInBothModes() {
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq, true).estimateSelectivity(inputRef0));
+    Assert.assertNull(new FilterSelectivityEstimator(scan, mq).estimateSelectivity(inputRef0));
+  }
+
+  private void assertSearchSelectivity(ImmutableRangeSet<BigDecimal> ranges, Double ndv, Double expected) {
+    doReturn(ndv).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
+    RexNode predicate = REX_BUILDER.makeCall(SqlStdOperatorTable.SEARCH, inputRef0,
+        REX_BUILDER.makeSearchArgumentLiteral(Sarg.of(RexUnknownAs.UNKNOWN, ranges), inputRef0.getType()));
+    Double actual = new FilterSelectivityEstimator(scan, mq).estimateSelectivity(predicate);
+    if (expected == null) {
+      Assert.assertNull(actual);
+    } else {
+      Assert.assertEquals(expected, actual, DELTA);
+    }
   }
 
   private RexNode simplify(RexNode e) {

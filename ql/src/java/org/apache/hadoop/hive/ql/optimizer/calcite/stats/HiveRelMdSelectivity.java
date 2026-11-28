@@ -58,7 +58,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
   public Double getSelectivity(HiveTableScan t, RelMetadataQuery mq, RexNode predicate) {
     if (predicate != null) {
       FilterSelectivityEstimator filterSelEstmator = new FilterSelectivityEstimator(t, mq);
-      return filterSelEstmator.estimateSelectivity(predicate);
+      return noFilteringIfUnknown(filterSelEstmator.estimateSelectivity(predicate));
     }
 
     return 1.0;
@@ -68,7 +68,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     if (j.getJoinType().equals(JoinRelType.INNER) || j.isSemiJoin() || j.getJoinType().equals(JoinRelType.ANTI)) {
       Double selectivity =  computeInnerJoinSelectivity(j, mq, predicate);
       if (j.getJoinType().equals(JoinRelType.ANTI)) {
-        return 1 - selectivity;
+        return antiJoinSelectivity(j, mq, predicate, selectivity);
       }
       return selectivity;
     } else if (j.getJoinType().equals(JoinRelType.LEFT) ||
@@ -85,13 +85,28 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     return 1.0;
   }
 
+  /** A predicate whose selectivity the statistics cannot estimate is assumed to keep every row. */
+  private static Double noFilteringIfUnknown(Double selectivity) {
+    return selectivity != null ? selectivity : 1.0;
+  }
+
+  private Double antiJoinSelectivity(Join j, RelMetadataQuery mq, RexNode predicate, Double selectivity) {
+    Pair<Boolean, RexNode> predInfo = getCombinedPredicateForJoin(j, predicate);
+    if (Boolean.FALSE.equals(predInfo.getKey())) {
+      // inverting the fallback values used for an unknown NDV would lower the estimate: keep every row instead
+      Double filterSelectivity = new FilterSelectivityEstimator(j, mq, true).estimateSelectivity(predInfo.getValue());
+      if (filterSelectivity == null) {
+        return 1.0;
+      }
+    }
+    return 1 - selectivity;
+  }
+
   private Double computeInnerJoinSelectivity(Join j, RelMetadataQuery mq, RexNode predicate) {
     Pair<Boolean, RexNode> predInfo =
         getCombinedPredicateForJoin(j, predicate);
-    if (!predInfo.getKey()) {
-      return
-          new FilterSelectivityEstimator(j, mq).
-          estimateSelectivity(predInfo.getValue());
+    if (Boolean.FALSE.equals(predInfo.getKey())) {
+      return noFilteringIfUnknown(new FilterSelectivityEstimator(j, mq).estimateSelectivity(predInfo.getValue()));
     }
 
     RexNode combinedPredicate = predInfo.getValue();
@@ -112,9 +127,8 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
       Double ljkDistRowCount =
           HiveRelMdDistinctRowCount.getDistinctRowCount(j.getLeft(), mq, ljk);
       if (ljkDistRowCount == null) {
-        // Distinct row count could not be determined,
-        // return default selectivity
-        return 1.0;
+        // unknown distinct row count: leave the key out, the known keys bound the join NDV from below
+        continue;
       }
       colStatMapBuilder.put(ljk, ljkDistRowCount);
     }
@@ -125,9 +139,8 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
       Double rjkDistRowCount =
           HiveRelMdDistinctRowCount.getDistinctRowCount(j.getRight(), mq, rjk);
       if (rjkDistRowCount == null) {
-        // Distinct row count could not be determined,
-        // return default selectivity
-        return 1.0;
+        // unknown distinct row count: leave the key out, the known keys bound the join NDV from below
+        continue;
       }
       colStatMapBuilder.put(rjk + rightOffSet, rjkDistRowCount);
     }
@@ -286,8 +299,10 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
 
     for (Integer projIndx : projectionSet) {
       colNDV = colStatMap.get(projIndx);
-      if (colNDV > maxNDVSoFar)
+      // a key missing from the map has an unknown distinct row count
+      if (colNDV != null && colNDV > maxNDVSoFar) {
         maxNDVSoFar = colNDV;
+      }
     }
 
     return maxNDVSoFar;
