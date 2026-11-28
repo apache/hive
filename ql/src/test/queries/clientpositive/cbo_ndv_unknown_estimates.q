@@ -204,6 +204,12 @@ where t.kb <> cast('val_100' as binary) or t.ks = 'val_200';
 select count(*) from (select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t
 where t.kb <> cast('val_100' as binary) or t.ks = 'val_200') t2;
 
+-- Filter above ORDER BY LIMIT over an anti join, AND of an unknown-NDV part and a known-NDV part
+explain cbo joincost select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t
+where t.kb <> cast('val_100' as binary) and t.ks <> 'val_200';
+select count(*) from (select * from (select f.ks, f.kb from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) order by f.ks limit 300) t
+where t.kb <> cast('val_100' as binary) and t.ks <> 'val_200') t2;
+
 -- HAVING over an anti join: the anti join's own condition is estimated, not a filter
 explain cbo joincost select f.ks, count(*) c from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) group by f.ks having count(*) > 1;
 select count(*) from (select f.ks, count(*) c from ndv_unknown_bin f where not exists (select 1 from ndv_known_dim d where d.v = f.ks) group by f.ks having count(*) > 1) t;

@@ -93,10 +93,9 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
   private Double antiJoinSelectivity(Join j, RelMetadataQuery mq, RexNode predicate, Double selectivity) {
     Pair<Boolean, RexNode> predInfo = getCombinedPredicateForJoin(j, predicate);
     if (Boolean.FALSE.equals(predInfo.getKey())) {
-      FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(j, mq);
-      Double filterSelectivity = estimator.estimateSelectivity(predInfo.getValue());
       // inverting the fallback values used for an unknown NDV would lower the estimate: keep every row instead
-      if (filterSelectivity == null || estimator.isUnknownSeen()) {
+      Double filterSelectivity = new FilterSelectivityEstimator(j, mq, true).estimateSelectivity(predInfo.getValue());
+      if (filterSelectivity == null) {
         return 1.0;
       }
     }

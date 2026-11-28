@@ -74,23 +74,27 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final double  childCardinality;
   private final RelMetadataQuery mq;
   private final RexBuilder rexBuilder;
-  private boolean unknownSeen;
+  private final boolean propagateUnknown;
 
   public FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
+    this(childRel, mq, false);
+  }
+
+  /**
+   * Creates an estimator. If propagateUnknown is true, a part without an estimate makes the whole estimate null;
+   * otherwise AND skips it and OR assumes a fixed selectivity for it.
+   */
+  FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq, boolean propagateUnknown) {
     super(true);
     this.mq = mq;
     this.childRel = childRel;
     this.childCardinality = mq.getRowCount(childRel);
     this.rexBuilder = childRel.getCluster().getRexBuilder();
+    this.propagateUnknown = propagateUnknown;
   }
 
   public Double estimateSelectivity(RexNode predicate) {
     return predicate.accept(this);
-  }
-
-  /** Whether any predicate part estimated so far had no estimate: an unknown NDV, or a non-boolean column. */
-  boolean isUnknownSeen() {
-    return unknownSeen;
   }
 
   @Override
@@ -100,7 +104,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       // it will filter half the rows
       return 0.5;
     }
-    unknownSeen = true;
     return null;
   }
 
@@ -778,7 +781,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return computeDisjunctionSelectivity(selectivityList);
   }
 
-  private double computeDisjunctionSelectivity(List<Double> selectivityList) {
+  private Double computeDisjunctionSelectivity(List<Double> selectivityList) {
     Double tmpCardinality;
     Double tmpSelectivity;
     double selectivity = 1;
@@ -786,6 +789,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     for (Double sel : selectivityList) {
       tmpSelectivity = sel;
       if (tmpSelectivity == null) {
+        if (propagateUnknown) {
+          return null;
+        }
         tmpSelectivity = 0.99;
       }
       tmpCardinality = childCardinality * tmpSelectivity;
@@ -821,6 +827,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       tmpSelectivity = cje.accept(this);
       if (tmpSelectivity != null) {
         selectivity *= tmpSelectivity;
+      } else if (propagateUnknown) {
+        return null;
       }
     }
 
@@ -867,7 +875,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, mq,
             ((RexInputRef) op).getIndex());
         if (tmpNDV == null) {
-          unknownSeen = true;
           return null;
         }
         if (tmpNDV > maxNDV) {
@@ -880,7 +887,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
           tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel,
               mq, childProjIndx);
           if (tmpNDV == null) {
-            unknownSeen = true;
             return null;
           }
           if (tmpNDV > maxNDV) {
